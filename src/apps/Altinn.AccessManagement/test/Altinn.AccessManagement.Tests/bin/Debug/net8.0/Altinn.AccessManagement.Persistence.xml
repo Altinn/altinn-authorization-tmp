@@ -1,0 +1,529 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Altinn.AccessManagement.Persistence</name>
+    </assembly>
+    <members>
+        <member name="T:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration">
+            <summary>
+            Settings for Azure storage
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.MetadataAccountName">
+            <summary>
+            The storage account name for Metadata
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.MetadataAccountKey">
+            <summary>
+            The storage account key for Metadata
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.MetadataContainer">
+            <summary>
+            The name of the storage container in the Metadata storage account
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.MetadataBlobEndpoint">
+            <summary>
+            The url for the blob end point for Metadata
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.DelegationsAccountName">
+            <summary>
+            The storage account name for Delegations
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.DelegationsAccountKey">
+            <summary>
+            The storage account key for Delegations
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.DelegationsContainer">
+            <summary>
+            The name of the storage container in the Delegations storage account
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.DelegationsBlobEndpoint">
+            <summary>
+            The url for the blob end point for Delegations
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.ResourceRegistryAccountName">
+            <summary>
+            The storage account name for the resource registry
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.ResourceRegistryAccountKey">
+            <summary>
+            The storage account key for the resource registry
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.ResourceRegistryContainer">
+            <summary>
+            The name of the storage container in the resource registry storage account
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.ResourceRegistryBlobEndpoint">
+            <summary>
+            The url for the blob end point for the resource registry
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.BlobLeaseTimeout">
+            <summary>
+            The blob lease timeout value in seconds
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.DelegationEventQueueEndpoint">
+            <summary>
+            The endpoint url for the storage account for delegation event queue
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.DelegationEventQueueAccountName">
+            <summary>
+            The storage account name for delegation event queue
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration.DelegationEventQueueAccountKey">
+            <summary>
+            The account key for the storage account for delegation event queue
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.Configuration.PostgreSQLSettings">
+            <summary>
+            Settings for Postgres database
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.PostgreSQLSettings.ConnectionString">
+            <summary>
+            Connection string for the postgres db
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Configuration.PostgreSQLSettings.AuthorizationDbPwd">
+            <summary>
+            Password for app user for the postgres db
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.Configuration.TelemetryConfig">
+            <summary>
+            Config to be used for Telemetry in Altinn.AccessManagement.Persistence
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Persistence.Configuration.TelemetryConfig.ActivitySource">
+            <summary>
+            Used as source for the current project
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.DelegationChangeEventQueue">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationChangeEventQueue.#ctor(Altinn.AccessManagement.Core.Services.Interfaces.IEventMapperService,Microsoft.Extensions.Options.IOptions{Altinn.AccessManagement.Persistence.Configuration.AzureStorageConfiguration})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Persistence.DelegationChangeEventQueue"/> class.
+            </summary>
+            <param name="eventMapperService">Mapper service responsible for mapping models</param>
+            <param name="storageConfig">Azure storage queue config</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationChangeEventQueue.Push(Altinn.AccessManagement.Core.Models.DelegationChange)">
+            <summary>
+            Converts the delegation change to a delegation change event and pushes it to the event queue.
+            Throws exception if something fails
+            </summary>
+            <param name="delegationChange">The delegation change stored in postgresql</param>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.DelegationMetadataRepo">
+            <summary>
+            Repository implementation for PostgreSQL operations on delegations.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.#ctor(Npgsql.NpgsqlDataSource)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Persistence.DelegationMetadataRepo"/> class
+            </summary>
+            <param name="conn">PostgreSQL datasource connection</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetAllAppDelegationChanges(System.String,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetAllCurrentAppDelegationChanges(System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetAllCurrentAppDelegationChanges(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.Int32},Altinn.AccessManagement.Enums.UuidType,System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetCurrentDelegationChange(Altinn.AccessManagement.Core.Enums.ResourceAttributeMatchType,System.String,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Guid},Altinn.AccessManagement.Enums.UuidType,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.InsertDelegation(Altinn.AccessManagement.Core.Enums.ResourceAttributeMatchType,Altinn.AccessManagement.Core.Models.DelegationChange,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetAllCurrentResourceRegistryDelegationChanges(System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.Int32},System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetAllCurrentResourceRegistryDelegationChanges(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.Int32},Altinn.AccessManagement.Enums.UuidType,System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetOfferedResourceRegistryDelegations(System.Int32,System.Collections.Generic.List{System.String},System.Collections.Generic.List{Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceType},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetReceivedResourceRegistryDelegationsForCoveredByPartys(System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.String},System.Collections.Generic.List{Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceType},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetReceivedResourceRegistryDelegationsForCoveredByUser(System.Int32,System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.String},System.Collections.Generic.List{Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceType},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetResourceRegistryDelegationChanges(System.Collections.Generic.List{System.String},System.Int32,System.Int32,Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceType,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetOfferedDelegations(System.Collections.Generic.List{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepo.GetAllDelegationChangesForAuthorizedParties(System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.DelegationMetadataRepository">
+            <summary>
+            Repository implementation for PostgreSQL operations on delegations.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.#ctor(Npgsql.NpgsqlDataSource)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Persistence.DelegationMetadataRepository"/> class
+            </summary>
+            <param name="conn">The database connection</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.InsertDelegation(Altinn.AccessManagement.Core.Enums.ResourceAttributeMatchType,Altinn.AccessManagement.Core.Models.DelegationChange,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetCurrentDelegationChange(Altinn.AccessManagement.Core.Enums.ResourceAttributeMatchType,System.String,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Guid},Altinn.AccessManagement.Enums.UuidType,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetAllAppDelegationChanges(System.String,System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetAllCurrentAppDelegationChanges(System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetAllCurrentAppDelegationChanges(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.Int32},Altinn.AccessManagement.Enums.UuidType,System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetAllCurrentResourceRegistryDelegationChanges(System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.Int32},System.Nullable{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetAllCurrentResourceRegistryDelegationChanges(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.Int32},Altinn.AccessManagement.Enums.UuidType,System.Guid,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetOfferedResourceRegistryDelegations(System.Int32,System.Collections.Generic.List{System.String},System.Collections.Generic.List{Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceType},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetReceivedResourceRegistryDelegationsForCoveredByPartys(System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.String},System.Collections.Generic.List{Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceType},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetReceivedResourceRegistryDelegationsForCoveredByUser(System.Int32,System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.String},System.Collections.Generic.List{Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceType},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetOfferedDelegations(System.Collections.Generic.List{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetAllDelegationChangesForAuthorizedParties(System.Collections.Generic.List{System.Int32},System.Collections.Generic.List{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.DelegationMetadataRepository.GetResourceRegistryDelegationChanges(System.Collections.Generic.List{System.String},System.Int32,System.Int32,Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceType,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.Extensions.ActivityExtensions">
+            <summary>
+            Extension for Activity used in Altinn.AccessManagement
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.ActivityExtensions.StopWithError(System.Diagnostics.Activity,System.Exception,System.String)">
+            <summary>
+            Sets status and records exception
+            </summary>
+            <param name="activity">Current activity</param>
+            <param name="ex">Exception to record</param>
+            <param name="statusDescription">Optional description/message for error</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.ActivityExtensions.StopWithError(System.Diagnostics.Activity,System.Diagnostics.ActivityEvent,System.Collections.Generic.Dictionary{System.String,System.String},System.String)">
+            <summary>
+            Sets status and records event
+            </summary>
+            <param name="activity">Current activity</param>
+            <param name="evnt">ActivityEvent to record</param>
+            <param name="tags">Information to record</param>
+            <param name="statusDescription">Optional status description (Default: event.Name)</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.ActivityExtensions.StopOk(System.Diagnostics.Activity,System.String,System.Nullable{System.Int32})">
+            <summary>
+            Sets status and records exception
+            </summary>
+            <param name="activity">Current activity</param>
+            <param name="statusDescription">Optional description/message for error</param>
+            <param name="resultSize">Optional metric of resultsize</param>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions">
+            <summary>
+            Helper extensions for Npgsql.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions.CreateCommand(Npgsql.NpgsqlConnection,System.String)">
+            <summary>
+            Create a <see cref="T:Npgsql.NpgsqlCommand"/> with the command text set.
+            </summary>
+            <param name="conn">The <see cref="T:Npgsql.NpgsqlConnection"/>.</param>
+            <param name="sql">The command text as a string.</param>
+            <returns>A <see cref="T:Npgsql.NpgsqlCommand"/>.</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions.ExecuteEnumerableAsync(Npgsql.NpgsqlCommand,System.Threading.CancellationToken)">
+            <summary>
+            Executes a command against the database, returning a <see cref="T:System.Collections.Generic.IAsyncEnumerable`1"/>
+            that can be easily mapped over.
+            </summary>
+            <param name="cmd">The <see cref="T:Npgsql.NpgsqlCommand"/>.</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken"/>.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions.AddWithNullableValue(Npgsql.NpgsqlParameterCollection,System.String,NpgsqlTypes.NpgsqlDbType,System.Object)">
+            <summary>
+            Adds a <see cref="T:Npgsql.NpgsqlParameter"/> to the <see cref="T:Npgsql.NpgsqlParameterCollection"/> given the parameter name and the data type
+            and value.
+            </summary>
+            <param name="parameters">The <see cref="T:Npgsql.NpgsqlParameterCollection"/> to add the parameter to.</param>
+            <param name="parameterName">The name of the parameter.</param>
+            <param name="parameterType">One of the <see cref="T:NpgsqlTypes.NpgsqlDbType"/> values.</param>
+            <param name="value">The parameter value. If this is <see langword="null"/>, <see cref="F:System.DBNull.Value"/> is used instead.</param>
+            <returns>The index of the new <see cref="T:Npgsql.NpgsqlParameter"/> object.</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions.SetValue(Npgsql.NpgsqlParameter,System.Object)">
+            <summary>
+            Sets the value of the <see cref="T:Npgsql.NpgsqlParameter"/> to the given value.
+            </summary>
+            <param name="parameter">The <see cref="T:Npgsql.NpgsqlParameter"/></param>
+            <param name="value">The new value</param>
+            <returns><paramref name="parameter"/></returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions.SetNullableValue(Npgsql.NpgsqlParameter,System.Object)">
+            <summary>
+            Sets the value of the <see cref="T:Npgsql.NpgsqlParameter"/> to the given value, converting <see langword="null"/>
+            to <see cref="F:System.DBNull.Value"/>.
+            </summary>
+            <param name="parameter">The <see cref="T:Npgsql.NpgsqlParameter"/></param>
+            <param name="value">The new value</param>
+            <returns><paramref name="parameter"/></returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions.SetOptionalImmutableArrayValue``1(Npgsql.NpgsqlParameter{System.Collections.Generic.IList{``0}},System.Collections.Immutable.ImmutableArray{``0})">
+            <summary>
+            Sets the value of the <see cref="T:Npgsql.NpgsqlParameter"/> to the given value, converting <see langword="default"/>
+            to <see cref="F:System.DBNull.Value"/>.
+            </summary>
+            <typeparam name="T">The array item type</typeparam>
+            <param name="parameter">The <see cref="T:Npgsql.NpgsqlParameter"/></param>
+            <param name="value">The new value</param>
+            <returns><paramref name="parameter"/></returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions.GetStringOrNull(Npgsql.NpgsqlDataReader,System.Int32)">
+            <summary>
+            Gets the value of the specified column as an instance of <see langword="string"/> or <see langword="null"/>
+            if the value is <see cref="F:System.DBNull.Value"/>.
+            </summary>
+            <param name="reader">The <see cref="T:Npgsql.NpgsqlDataReader"/></param>
+            <param name="ordinal">The column ordinal</param>
+            <returns></returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions.GetStringOrNull(Npgsql.NpgsqlDataReader,System.String)">
+            <summary>
+            Gets the value of the specified column as an instance of <see langword="string"/> or <see langword="null"/>
+            if the value is <see cref="F:System.DBNull.Value"/>.
+            </summary>
+            <param name="reader">The <see cref="T:Npgsql.NpgsqlDataReader"/></param>
+            <param name="name">The column name</param>
+            <returns>The value of the specified column.</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions.Add``1(Npgsql.NpgsqlParameterCollection,System.String,NpgsqlTypes.NpgsqlDbType)">
+            <summary>
+            Adds a <see cref="T:Npgsql.NpgsqlParameter"/> to the <see cref="T:Npgsql.NpgsqlParameterCollection"/> given the specified parameter name and
+            data type.
+            </summary>
+            <param name="parameters">The <see cref="T:Npgsql.NpgsqlParameterCollection"/> to add the parameter to.</param>
+            <param name="parameterName">The name of the <see cref="T:Npgsql.NpgsqlParameter"/>.</param>
+            <param name="parameterType">One of the NpgsqlDbType values.</param>
+            <returns>The parameter that was added.</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions.GetFieldValueArrayAsync``1(Npgsql.NpgsqlDataReader,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Reads a column as a immutable array of values.
+            </summary>
+            <typeparam name="T">The element type.</typeparam>
+            <param name="reader">The reader.</param>
+            <param name="ordinal">The column index.</param>
+            <param name="cancellationToken">The async cancellation token.</param>
+            <returns>The column data</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.NpgsqlExtensions.GetFieldValueArrayAsync``1(Npgsql.NpgsqlDataReader,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Reads a column as a immutable array of values.
+            </summary>
+            <typeparam name="T">The element type.</typeparam>
+            <param name="reader">The reader.</param>
+            <param name="name">The column name.</param>
+            <param name="cancellationToken">The async cancellation token.</param>
+            <returns>The column data</returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.Extensions.PersistenceDependencyInjectionExtensions">
+            <summary>
+            Extension methods for adding access management services to the dependency injection container.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.PersistenceDependencyInjectionExtensions.AddAccessManagementPersistence(Microsoft.AspNetCore.Builder.WebApplicationBuilder)">
+            <summary>
+            Registers access management persistence services with the dependency injection container.
+            </summary>
+            <param name="builder">The <see cref="T:Microsoft.AspNetCore.Builder.WebApplicationBuilder"/>.</param>
+            <returns><paramref name="builder"/> for further chaining.</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.PersistenceDependencyInjectionExtensions.AddDelegationPolicyRepository(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Registers a <see cref="T:Altinn.AccessManagement.Core.Repositories.Interfaces.IPolicyRepository"/> with the dependency injection container.
+            </summary>
+            <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/>.</param>
+            <param name="configuration">The <see cref="T:Microsoft.Extensions.Configuration.IConfiguration"/>.</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Extensions.PersistenceDependencyInjectionExtensions.AddDelegationPolicyRepository(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{System.Collections.Generic.List{Altinn.AccessManagement.Persistence.Policy.PolicyOptions}})">
+            <summary>
+            Registers a <see cref="T:Altinn.AccessManagement.Core.Repositories.Interfaces.IPolicyRepository"/> with the dependency injection container.
+            </summary>
+            <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/>.</param>
+            <param name="configureOptions">options for configuring blob service</param>
+            <returns><paramref name="services"/> for further chaining.</returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.Policy.PolicyFactory">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyFactory.#ctor(Microsoft.Extensions.Azure.IAzureClientFactory{Azure.Storage.Blobs.BlobServiceClient},Microsoft.Extensions.Options.IOptionsFactory{Altinn.AccessManagement.Persistence.Policy.PolicyOptions})">
+            <summary>
+            Creates a new factory that handles blobs
+            </summary>
+            <param name="factory">Azure client factory for creating blob clients</param>
+            <param name="options">options for configuring azure blob clients</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyFactory.Create(Altinn.AccessManagement.Core.Enums.PolicyAccountType,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyFactory.Create(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.Policy.PolicyOptions">
+            <summary>
+            Options for configuring storage account
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyOptions.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Persistence.Policy.PolicyOptions"/> class.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyOptions.#ctor(Altinn.AccessManagement.Core.Enums.PolicyAccountType,System.String,System.String,System.String,System.String,System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Persistence.Policy.PolicyOptions"/> class.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Policy.PolicyOptions.Account">
+            <summary>
+            Specifies Storage Account. Mostly used as a symbol for consumer for making it simpler to targeting storage account
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Policy.PolicyOptions.AccountName">
+            <summary>
+            AzureRM account name
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Policy.PolicyOptions.Container">
+            <summary>
+            Container name
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Policy.PolicyOptions.Uri">
+            <summary>
+            Blob URI
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Policy.PolicyOptions.Key">
+            <summary>
+            SAS key for authentication
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Policy.PolicyOptions.LeaseAcquireTimeout">
+            <summary>
+            Timeout for some specific operations. Defaults to 3 seconds
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.Policy.PolicyRepository">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyRepository.#ctor(Azure.Storage.Blobs.BlobClient,Altinn.AccessManagement.Persistence.Policy.PolicyOptions)">
+            <inheritdoc/>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Policy.PolicyRepository.Client">
+            <summary>
+            Azure Blob Storage client
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Persistence.Policy.PolicyRepository.Options">
+            <summary>
+            Policy Options
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyRepository.DeletePolicyVersionAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyRepository.GetPolicyAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyRepository.GetPolicyVersionAsync(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyRepository.PolicyExistsAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyRepository.ReleaseBlobLease(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyRepository.TryAcquireBlobLease(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyRepository.WritePolicyAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.Policy.PolicyRepository.WritePolicyConditionallyAsync(System.IO.Stream,System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.ResourceMetadataRepo">
+            <summary>
+            Storing Resource Rigistry metadata to Access management
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.ResourceMetadataRepo.#ctor(Npgsql.NpgsqlDataSource)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Persistence.ResourceMetadataRepo"/> class
+            </summary>
+            <param name="conn">PostgreSQL datasource connection</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.ResourceMetadataRepo.InsertAccessManagementResource(Altinn.AccessManagement.Core.Models.AccessManagementResource,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Altinn.AccessManagement.Persistence.ResourceMetadataRepository">
+            <summary>
+            Storing Resource Rigistry metadata to Access management
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.ResourceMetadataRepository.#ctor(Microsoft.Extensions.Options.IOptions{Altinn.AccessManagement.Persistence.Configuration.PostgreSQLSettings})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Persistence.ResourceMetadataRepository"/> class
+            </summary>
+            <param name="config">The postgreSQL configurations for AuthorizationDB</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Persistence.ResourceMetadataRepository.InsertAccessManagementResource(Altinn.AccessManagement.Core.Models.AccessManagementResource,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

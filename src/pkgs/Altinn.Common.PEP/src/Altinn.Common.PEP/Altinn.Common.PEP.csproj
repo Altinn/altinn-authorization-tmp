@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <!-- SonarCloud needs this -->
+    <ProjectGuid>{92f10f90-79c5-459f-8238-0ec4d02aa93c}</ProjectGuid>
+    <IsPackable>true</IsPackable>
+    <!-- NuGet package properties -->
+    <PackageId>Altinn.Common.PEP</PackageId>
+    <Version>4.0.0</Version>
+    <PackageTags>Altinn;Studio;Authorization;Policy;Enforcement;Point</PackageTags>
+    <Description>
+      Policy Enforcement Point for Attribute-based authorization using Altinn.Authorization.ABAC in
+      ASP.Net apps.
+      See our repository for the full documentation.
+    </Description>
+    <PackageReleaseNotes>
+    </PackageReleaseNotes>
+    <Authors>Altinn Platform Contributors</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
+    <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="all" />
+    <PackageReference Include="Altinn.Authorization.ABAC" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
+  </ItemGroup>
+
+  <ItemGroup>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+</Project>

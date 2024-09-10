@@ -1,0 +1,105 @@
+{
+  "format": 1,
+  "restore": {
+    "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Authorization.ABAC/src/Altinn.Authorization.ABAC/Altinn.Authorization.ABAC.csproj": {}
+  },
+  "projects": {
+    "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Authorization.ABAC/src/Altinn.Authorization.ABAC/Altinn.Authorization.ABAC.csproj": {
+      "version": "0.0.8",
+      "restore": {
+        "projectUniqueName": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Authorization.ABAC/src/Altinn.Authorization.ABAC/Altinn.Authorization.ABAC.csproj",
+        "projectName": "Altinn.Authorization.ABAC",
+        "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Authorization.ABAC/src/Altinn.Authorization.ABAC/Altinn.Authorization.ABAC.csproj",
+        "packagesPath": "/home/andreas/.nuget/packages/",
+        "outputPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Authorization.ABAC/src/Altinn.Authorization.ABAC/obj/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "configFilePaths": [
+          "/home/andreas/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netstandard2.0"
+        ],
+        "sources": {
+          "/usr/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netstandard2.0": {
+            "targetAlias": "netstandard2.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netstandard2.0": {
+          "targetAlias": "netstandard2.0",
+          "dependencies": {
+            "DotNet.ReproducibleBuilds": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.4, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.SourceLink.GitHub": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "NETStandard.Library": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.0.3, )",
+              "autoReferenced": true
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.556, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[8.0.4, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Altinn.Authorization.ABAC": "[0.0.8, )",
+            "coverlet.collector": "[6.0.2, )",
+            "DotNet.ReproducibleBuilds": "[1.2.4, )",
+            "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[6.0.33, )",
+            "Microsoft.AspNetCore.Mvc.Testing": "[8.0.7, )",
+            "Microsoft.NET.Test.Sdk": "[17.10.0, )",
+            "Microsoft.SourceLink.GitHub": "[8.0.0, )",
+            "Moq": "[4.20.70, )",
+            "MSTest.TestFramework": "[3.5.2, )",
+            "StyleCop.Analyzers": "[1.2.0-beta.556, )",
+            "System.Text.Json": "[8.0.4, )",
+            "xunit": "[2.9.0, )",
+            "xunit.runner.visualstudio": "[2.8.2, )"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.107/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

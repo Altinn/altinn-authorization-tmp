@@ -1,0 +1,778 @@
+{
+  "format": 1,
+  "restore": {
+    "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement/Altinn.AccessManagement.csproj": {}
+  },
+  "projects": {
+    "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Core/Altinn.AccessManagement.Core.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Core/Altinn.AccessManagement.Core.csproj",
+        "projectName": "Altinn.AccessManagement.Core",
+        "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Core/Altinn.AccessManagement.Core.csproj",
+        "packagesPath": "/home/andreas/.nuget/packages/",
+        "outputPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Core/obj/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "configFilePaths": [
+          "/home/andreas/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "/usr/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Altinn.Authorization.ABAC": {
+              "target": "Package",
+              "version": "[0.0.8, )",
+              "versionCentrallyManaged": true
+            },
+            "Altinn.Common.AccessTokenClient": {
+              "target": "Package",
+              "version": "[3.0.6, )",
+              "versionCentrallyManaged": true
+            },
+            "Altinn.Platform.Models": {
+              "target": "Package",
+              "version": "[1.6.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Altinn.Platform.Storage.Interface": {
+              "target": "Package",
+              "version": "[3.30.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Azure.Identity": {
+              "target": "Package",
+              "version": "[1.12.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Azure.Security.KeyVault.Certificates": {
+              "target": "Package",
+              "version": "[4.6.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Azure.Security.KeyVault.Secrets": {
+              "target": "Package",
+              "version": "[4.6.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Azure.Storage.Blobs": {
+              "target": "Package",
+              "version": "[12.21.2, )",
+              "versionCentrallyManaged": true
+            },
+            "Azure.Storage.Queues": {
+              "target": "Package",
+              "version": "[12.19.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Caching.Abstractions": {
+              "target": "Package",
+              "version": "[8.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Logging.Debug": {
+              "target": "Package",
+              "version": "[8.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Telemetry.Abstractions": {
+              "target": "Package",
+              "version": "[8.7.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Npgsql": {
+              "target": "Package",
+              "version": "[8.0.3, )",
+              "versionCentrallyManaged": true
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.556, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Altinn.ApiClients.Maskinporten": "[9.1.0, )",
+            "Altinn.Authorization.ABAC": "[0.0.8, )",
+            "Altinn.Authorization.ServiceDefaults": "[2.2.2, )",
+            "Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql": "[2.2.2, )",
+            "Altinn.Common.AccessToken": "[4.5.0, )",
+            "Altinn.Common.AccessTokenClient": "[3.0.6, )",
+            "Altinn.Common.PEP": "[3.0.0, )",
+            "Altinn.Platform.Models": "[1.6.1, )",
+            "Altinn.Platform.Storage.Interface": "[3.30.0, )",
+            "AutoMapper.Extensions.Microsoft.DependencyInjection": "[12.0.1, )",
+            "Azure.Extensions.AspNetCore.Configuration.Secrets": "[1.3.1, )",
+            "Azure.Identity": "[1.12.0, )",
+            "Azure.Monitor.OpenTelemetry.Exporter": "[1.3.0, )",
+            "Azure.Security.KeyVault.Certificates": "[4.6.0, )",
+            "Azure.Security.KeyVault.Secrets": "[4.6.0, )",
+            "Azure.Storage.Blobs": "[12.21.2, )",
+            "Azure.Storage.Queues": "[12.19.1, )",
+            "coverlet.collector": "[6.0.2, )",
+            "Dapper": "[2.1.35, )",
+            "JWTCookieAuthentication": "[3.0.1, )",
+            "Microsoft.ApplicationInsights.AspNetCore": "[2.22.0, )",
+            "Microsoft.AspNetCore.Hosting": "[2.2.7, )",
+            "Microsoft.AspNetCore.Hosting.Abstractions": "[2.2.0, )",
+            "Microsoft.AspNetCore.Mvc.Testing": "[8.0.7, )",
+            "Microsoft.Azure.DocumentDB.Core": "[2.22.0, )",
+            "Microsoft.Azure.Services.AppAuthentication": "[1.6.2, )",
+            "Microsoft.Extensions.Azure": "[1.7.4, )",
+            "Microsoft.Extensions.Caching.Abstractions": "[8.0.0, )",
+            "Microsoft.Extensions.Configuration.AzureKeyVault": "[3.1.24, )",
+            "Microsoft.Extensions.Configuration.Json": "[8.0.0, )",
+            "Microsoft.Extensions.FileProviders.Embedded": "[8.0.7, )",
+            "Microsoft.Extensions.Logging.Abstractions": "[8.0.1, )",
+            "Microsoft.Extensions.Logging.ApplicationInsights": "[2.22.0, )",
+            "Microsoft.Extensions.Logging.Debug": "[8.0.0, )",
+            "Microsoft.Extensions.Options": "[8.0.2, )",
+            "Microsoft.Extensions.Telemetry.Abstractions": "[8.7.0, )",
+            "Microsoft.FeatureManagement.AspNetCore": "[3.5.0, )",
+            "Microsoft.IdentityModel.Logging": "[8.0.1, )",
+            "Microsoft.IdentityModel.Protocols.OpenIdConnect": "[8.0.1, )",
+            "Microsoft.NET.Test.Sdk": "[17.10.0, )",
+            "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": "[1.21.0, )",
+            "Moq": "[4.20.70, )",
+            "MSTest.TestFramework": "[3.5.2, )",
+            "Npgsql": "[8.0.3, )",
+            "Npgsql.OpenTelemetry": "[8.0.3, )",
+            "OpenTelemetry": "[1.9.0, )",
+            "OpenTelemetry.Exporter.Console": "[1.9.0, )",
+            "StyleCop.Analyzers": "[1.2.0-beta.556, )",
+            "Swashbuckle.AspNetCore": "[6.7.0, )",
+            "Swashbuckle.AspNetCore.Filters": "[8.0.2, )",
+            "System.Linq.Async": "[6.0.1, )",
+            "System.Text.Json": "[8.0.4, )",
+            "Testcontainers.PostgreSql": "[3.9.0, )",
+            "xunit": "[2.9.0, )",
+            "xunit.runner.visualstudio": "[2.8.2, )",
+            "Yuniql.AspNetCore": "[1.2.25, )",
+            "Yuniql.PostgreSql": "[1.3.15, )"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.7, 8.0.7]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.107/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Integration/Altinn.AccessManagement.Integration.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Integration/Altinn.AccessManagement.Integration.csproj",
+        "projectName": "Altinn.AccessManagement.Integration",
+        "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Integration/Altinn.AccessManagement.Integration.csproj",
+        "packagesPath": "/home/andreas/.nuget/packages/",
+        "outputPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Integration/obj/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "configFilePaths": [
+          "/home/andreas/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "/usr/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Core/Altinn.AccessManagement.Core.csproj": {
+                "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Core/Altinn.AccessManagement.Core.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Altinn.Platform.Models": {
+              "target": "Package",
+              "version": "[1.6.1, )",
+              "versionCentrallyManaged": true
+            },
+            "JWTCookieAuthentication": {
+              "target": "Package",
+              "version": "[3.0.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[8.0.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Options": {
+              "target": "Package",
+              "version": "[8.0.2, )",
+              "versionCentrallyManaged": true
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.556, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Altinn.ApiClients.Maskinporten": "[9.1.0, )",
+            "Altinn.Authorization.ABAC": "[0.0.8, )",
+            "Altinn.Authorization.ServiceDefaults": "[2.2.2, )",
+            "Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql": "[2.2.2, )",
+            "Altinn.Common.AccessToken": "[4.5.0, )",
+            "Altinn.Common.AccessTokenClient": "[3.0.6, )",
+            "Altinn.Common.PEP": "[3.0.0, )",
+            "Altinn.Platform.Models": "[1.6.1, )",
+            "Altinn.Platform.Storage.Interface": "[3.30.0, )",
+            "AutoMapper.Extensions.Microsoft.DependencyInjection": "[12.0.1, )",
+            "Azure.Extensions.AspNetCore.Configuration.Secrets": "[1.3.1, )",
+            "Azure.Identity": "[1.12.0, )",
+            "Azure.Monitor.OpenTelemetry.Exporter": "[1.3.0, )",
+            "Azure.Security.KeyVault.Certificates": "[4.6.0, )",
+            "Azure.Security.KeyVault.Secrets": "[4.6.0, )",
+            "Azure.Storage.Blobs": "[12.21.2, )",
+            "Azure.Storage.Queues": "[12.19.1, )",
+            "coverlet.collector": "[6.0.2, )",
+            "Dapper": "[2.1.35, )",
+            "JWTCookieAuthentication": "[3.0.1, )",
+            "Microsoft.ApplicationInsights.AspNetCore": "[2.22.0, )",
+            "Microsoft.AspNetCore.Hosting": "[2.2.7, )",
+            "Microsoft.AspNetCore.Hosting.Abstractions": "[2.2.0, )",
+            "Microsoft.AspNetCore.Mvc.Testing": "[8.0.7, )",
+            "Microsoft.Azure.DocumentDB.Core": "[2.22.0, )",
+            "Microsoft.Azure.Services.AppAuthentication": "[1.6.2, )",
+            "Microsoft.Extensions.Azure": "[1.7.4, )",
+            "Microsoft.Extensions.Caching.Abstractions": "[8.0.0, )",
+            "Microsoft.Extensions.Configuration.AzureKeyVault": "[3.1.24, )",
+            "Microsoft.Extensions.Configuration.Json": "[8.0.0, )",
+            "Microsoft.Extensions.FileProviders.Embedded": "[8.0.7, )",
+            "Microsoft.Extensions.Logging.Abstractions": "[8.0.1, )",
+            "Microsoft.Extensions.Logging.ApplicationInsights": "[2.22.0, )",
+            "Microsoft.Extensions.Logging.Debug": "[8.0.0, )",
+            "Microsoft.Extensions.Options": "[8.0.2, )",
+            "Microsoft.Extensions.Telemetry.Abstractions": "[8.7.0, )",
+            "Microsoft.FeatureManagement.AspNetCore": "[3.5.0, )",
+            "Microsoft.IdentityModel.Logging": "[8.0.1, )",
+            "Microsoft.IdentityModel.Protocols.OpenIdConnect": "[8.0.1, )",
+            "Microsoft.NET.Test.Sdk": "[17.10.0, )",
+            "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": "[1.21.0, )",
+            "Moq": "[4.20.70, )",
+            "MSTest.TestFramework": "[3.5.2, )",
+            "Npgsql": "[8.0.3, )",
+            "Npgsql.OpenTelemetry": "[8.0.3, )",
+            "OpenTelemetry": "[1.9.0, )",
+            "OpenTelemetry.Exporter.Console": "[1.9.0, )",
+            "StyleCop.Analyzers": "[1.2.0-beta.556, )",
+            "Swashbuckle.AspNetCore": "[6.7.0, )",
+            "Swashbuckle.AspNetCore.Filters": "[8.0.2, )",
+            "System.Linq.Async": "[6.0.1, )",
+            "System.Text.Json": "[8.0.4, )",
+            "Testcontainers.PostgreSql": "[3.9.0, )",
+            "xunit": "[2.9.0, )",
+            "xunit.runner.visualstudio": "[2.8.2, )",
+            "Yuniql.AspNetCore": "[1.2.25, )",
+            "Yuniql.PostgreSql": "[1.3.15, )"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.7, 8.0.7]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.107/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Persistence/Altinn.AccessManagement.Persistence.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Persistence/Altinn.AccessManagement.Persistence.csproj",
+        "projectName": "Altinn.AccessManagement.Persistence",
+        "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Persistence/Altinn.AccessManagement.Persistence.csproj",
+        "packagesPath": "/home/andreas/.nuget/packages/",
+        "outputPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Persistence/obj/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "configFilePaths": [
+          "/home/andreas/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "/usr/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Core/Altinn.AccessManagement.Core.csproj": {
+                "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Core/Altinn.AccessManagement.Core.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Altinn.Authorization.ServiceDefaults": {
+              "target": "Package",
+              "version": "[2.2.2, )",
+              "versionCentrallyManaged": true
+            },
+            "Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql": {
+              "target": "Package",
+              "version": "[2.2.2, )",
+              "versionCentrallyManaged": true
+            },
+            "Dapper": {
+              "target": "Package",
+              "version": "[2.1.35, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Azure": {
+              "target": "Package",
+              "version": "[1.7.4, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.FileProviders.Embedded": {
+              "target": "Package",
+              "version": "[8.0.7, )",
+              "versionCentrallyManaged": true
+            },
+            "Npgsql.OpenTelemetry": {
+              "target": "Package",
+              "version": "[8.0.3, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry": {
+              "target": "Package",
+              "version": "[1.9.0, )",
+              "versionCentrallyManaged": true
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.556, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Linq.Async": {
+              "target": "Package",
+              "version": "[6.0.1, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Altinn.ApiClients.Maskinporten": "[9.1.0, )",
+            "Altinn.Authorization.ABAC": "[0.0.8, )",
+            "Altinn.Authorization.ServiceDefaults": "[2.2.2, )",
+            "Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql": "[2.2.2, )",
+            "Altinn.Common.AccessToken": "[4.5.0, )",
+            "Altinn.Common.AccessTokenClient": "[3.0.6, )",
+            "Altinn.Common.PEP": "[3.0.0, )",
+            "Altinn.Platform.Models": "[1.6.1, )",
+            "Altinn.Platform.Storage.Interface": "[3.30.0, )",
+            "AutoMapper.Extensions.Microsoft.DependencyInjection": "[12.0.1, )",
+            "Azure.Extensions.AspNetCore.Configuration.Secrets": "[1.3.1, )",
+            "Azure.Identity": "[1.12.0, )",
+            "Azure.Monitor.OpenTelemetry.Exporter": "[1.3.0, )",
+            "Azure.Security.KeyVault.Certificates": "[4.6.0, )",
+            "Azure.Security.KeyVault.Secrets": "[4.6.0, )",
+            "Azure.Storage.Blobs": "[12.21.2, )",
+            "Azure.Storage.Queues": "[12.19.1, )",
+            "coverlet.collector": "[6.0.2, )",
+            "Dapper": "[2.1.35, )",
+            "JWTCookieAuthentication": "[3.0.1, )",
+            "Microsoft.ApplicationInsights.AspNetCore": "[2.22.0, )",
+            "Microsoft.AspNetCore.Hosting": "[2.2.7, )",
+            "Microsoft.AspNetCore.Hosting.Abstractions": "[2.2.0, )",
+            "Microsoft.AspNetCore.Mvc.Testing": "[8.0.7, )",
+            "Microsoft.Azure.DocumentDB.Core": "[2.22.0, )",
+            "Microsoft.Azure.Services.AppAuthentication": "[1.6.2, )",
+            "Microsoft.Extensions.Azure": "[1.7.4, )",
+            "Microsoft.Extensions.Caching.Abstractions": "[8.0.0, )",
+            "Microsoft.Extensions.Configuration.AzureKeyVault": "[3.1.24, )",
+            "Microsoft.Extensions.Configuration.Json": "[8.0.0, )",
+            "Microsoft.Extensions.FileProviders.Embedded": "[8.0.7, )",
+            "Microsoft.Extensions.Logging.Abstractions": "[8.0.1, )",
+            "Microsoft.Extensions.Logging.ApplicationInsights": "[2.22.0, )",
+            "Microsoft.Extensions.Logging.Debug": "[8.0.0, )",
+            "Microsoft.Extensions.Options": "[8.0.2, )",
+            "Microsoft.Extensions.Telemetry.Abstractions": "[8.7.0, )",
+            "Microsoft.FeatureManagement.AspNetCore": "[3.5.0, )",
+            "Microsoft.IdentityModel.Logging": "[8.0.1, )",
+            "Microsoft.IdentityModel.Protocols.OpenIdConnect": "[8.0.1, )",
+            "Microsoft.NET.Test.Sdk": "[17.10.0, )",
+            "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": "[1.21.0, )",
+            "Moq": "[4.20.70, )",
+            "MSTest.TestFramework": "[3.5.2, )",
+            "Npgsql": "[8.0.3, )",
+            "Npgsql.OpenTelemetry": "[8.0.3, )",
+            "OpenTelemetry": "[1.9.0, )",
+            "OpenTelemetry.Exporter.Console": "[1.9.0, )",
+            "StyleCop.Analyzers": "[1.2.0-beta.556, )",
+            "Swashbuckle.AspNetCore": "[6.7.0, )",
+            "Swashbuckle.AspNetCore.Filters": "[8.0.2, )",
+            "System.Linq.Async": "[6.0.1, )",
+            "System.Text.Json": "[8.0.4, )",
+            "Testcontainers.PostgreSql": "[3.9.0, )",
+            "xunit": "[2.9.0, )",
+            "xunit.runner.visualstudio": "[2.8.2, )",
+            "Yuniql.AspNetCore": "[1.2.25, )",
+            "Yuniql.PostgreSql": "[1.3.15, )"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.7, 8.0.7]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.107/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement/Altinn.AccessManagement.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement/Altinn.AccessManagement.csproj",
+        "projectName": "Altinn.AccessManagement",
+        "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement/Altinn.AccessManagement.csproj",
+        "packagesPath": "/home/andreas/.nuget/packages/",
+        "outputPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement/obj/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "configFilePaths": [
+          "/home/andreas/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "/usr/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Core/Altinn.AccessManagement.Core.csproj": {
+                "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Core/Altinn.AccessManagement.Core.csproj"
+              },
+              "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Integration/Altinn.AccessManagement.Integration.csproj": {
+                "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Integration/Altinn.AccessManagement.Integration.csproj"
+              },
+              "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Persistence/Altinn.AccessManagement.Persistence.csproj": {
+                "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement.Persistence/Altinn.AccessManagement.Persistence.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Altinn.Authorization.ABAC": {
+              "target": "Package",
+              "version": "[0.0.8, )",
+              "versionCentrallyManaged": true
+            },
+            "Altinn.Authorization.ServiceDefaults": {
+              "target": "Package",
+              "version": "[2.2.2, )",
+              "versionCentrallyManaged": true
+            },
+            "Altinn.Common.AccessToken": {
+              "target": "Package",
+              "version": "[4.5.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Altinn.Common.PEP": {
+              "target": "Package",
+              "version": "[3.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "AutoMapper.Extensions.Microsoft.DependencyInjection": {
+              "target": "Package",
+              "version": "[12.0.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Azure.Extensions.AspNetCore.Configuration.Secrets": {
+              "target": "Package",
+              "version": "[1.3.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Azure.Identity": {
+              "target": "Package",
+              "version": "[1.12.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Azure.Monitor.OpenTelemetry.Exporter": {
+              "target": "Package",
+              "version": "[1.3.0, )",
+              "versionCentrallyManaged": true
+            },
+            "JWTCookieAuthentication": {
+              "target": "Package",
+              "version": "[3.0.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.ApplicationInsights.AspNetCore": {
+              "target": "Package",
+              "version": "[2.22.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.AzureKeyVault": {
+              "target": "Package",
+              "version": "[3.1.24, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Logging.ApplicationInsights": {
+              "target": "Package",
+              "version": "[2.22.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.FeatureManagement.AspNetCore": {
+              "target": "Package",
+              "version": "[3.5.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.IdentityModel.Logging": {
+              "target": "Package",
+              "version": "[8.0.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
+              "target": "Package",
+              "version": "[1.21.0, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Exporter.Console": {
+              "target": "Package",
+              "version": "[1.9.0, )",
+              "versionCentrallyManaged": true
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.556, )",
+              "versionCentrallyManaged": true
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.7.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Swashbuckle.AspNetCore.Filters": {
+              "target": "Package",
+              "version": "[8.0.2, )",
+              "versionCentrallyManaged": true
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[8.0.4, )",
+              "versionCentrallyManaged": true
+            },
+            "Yuniql.AspNetCore": {
+              "target": "Package",
+              "version": "[1.2.25, )",
+              "versionCentrallyManaged": true
+            },
+            "Yuniql.PostgreSql": {
+              "target": "Package",
+              "version": "[1.3.15, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Altinn.ApiClients.Maskinporten": "[9.1.0, )",
+            "Altinn.Authorization.ABAC": "[0.0.8, )",
+            "Altinn.Authorization.ServiceDefaults": "[2.2.2, )",
+            "Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql": "[2.2.2, )",
+            "Altinn.Common.AccessToken": "[4.5.0, )",
+            "Altinn.Common.AccessTokenClient": "[3.0.6, )",
+            "Altinn.Common.PEP": "[3.0.0, )",
+            "Altinn.Platform.Models": "[1.6.1, )",
+            "Altinn.Platform.Storage.Interface": "[3.30.0, )",
+            "AutoMapper.Extensions.Microsoft.DependencyInjection": "[12.0.1, )",
+            "Azure.Extensions.AspNetCore.Configuration.Secrets": "[1.3.1, )",
+            "Azure.Identity": "[1.12.0, )",
+            "Azure.Monitor.OpenTelemetry.Exporter": "[1.3.0, )",
+            "Azure.Security.KeyVault.Certificates": "[4.6.0, )",
+            "Azure.Security.KeyVault.Secrets": "[4.6.0, )",
+            "Azure.Storage.Blobs": "[12.21.2, )",
+            "Azure.Storage.Queues": "[12.19.1, )",
+            "coverlet.collector": "[6.0.2, )",
+            "Dapper": "[2.1.35, )",
+            "JWTCookieAuthentication": "[3.0.1, )",
+            "Microsoft.ApplicationInsights.AspNetCore": "[2.22.0, )",
+            "Microsoft.AspNetCore.Hosting": "[2.2.7, )",
+            "Microsoft.AspNetCore.Hosting.Abstractions": "[2.2.0, )",
+            "Microsoft.AspNetCore.Mvc.Testing": "[8.0.7, )",
+            "Microsoft.Azure.DocumentDB.Core": "[2.22.0, )",
+            "Microsoft.Azure.Services.AppAuthentication": "[1.6.2, )",
+            "Microsoft.Extensions.Azure": "[1.7.4, )",
+            "Microsoft.Extensions.Caching.Abstractions": "[8.0.0, )",
+            "Microsoft.Extensions.Configuration.AzureKeyVault": "[3.1.24, )",
+            "Microsoft.Extensions.Configuration.Json": "[8.0.0, )",
+            "Microsoft.Extensions.FileProviders.Embedded": "[8.0.7, )",
+            "Microsoft.Extensions.Logging.Abstractions": "[8.0.1, )",
+            "Microsoft.Extensions.Logging.ApplicationInsights": "[2.22.0, )",
+            "Microsoft.Extensions.Logging.Debug": "[8.0.0, )",
+            "Microsoft.Extensions.Options": "[8.0.2, )",
+            "Microsoft.Extensions.Telemetry.Abstractions": "[8.7.0, )",
+            "Microsoft.FeatureManagement.AspNetCore": "[3.5.0, )",
+            "Microsoft.IdentityModel.Logging": "[8.0.1, )",
+            "Microsoft.IdentityModel.Protocols.OpenIdConnect": "[8.0.1, )",
+            "Microsoft.NET.Test.Sdk": "[17.10.0, )",
+            "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": "[1.21.0, )",
+            "Moq": "[4.20.70, )",
+            "MSTest.TestFramework": "[3.5.2, )",
+            "Npgsql": "[8.0.3, )",
+            "Npgsql.OpenTelemetry": "[8.0.3, )",
+            "OpenTelemetry": "[1.9.0, )",
+            "OpenTelemetry.Exporter.Console": "[1.9.0, )",
+            "StyleCop.Analyzers": "[1.2.0-beta.556, )",
+            "Swashbuckle.AspNetCore": "[6.7.0, )",
+            "Swashbuckle.AspNetCore.Filters": "[8.0.2, )",
+            "System.Linq.Async": "[6.0.1, )",
+            "System.Text.Json": "[8.0.4, )",
+            "Testcontainers.PostgreSql": "[3.9.0, )",
+            "xunit": "[2.9.0, )",
+            "xunit.runner.visualstudio": "[2.8.2, )",
+            "Yuniql.AspNetCore": "[1.2.25, )",
+            "Yuniql.PostgreSql": "[1.3.15, )"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.7, 8.0.7]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.107/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

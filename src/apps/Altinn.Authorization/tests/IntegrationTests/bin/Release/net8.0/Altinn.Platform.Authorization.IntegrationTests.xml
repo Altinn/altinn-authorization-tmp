@@ -1,0 +1,1390 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Altinn.Platform.Authorization.IntegrationTests</name>
+    </assembly>
+    <members>
+        <member name="T:Altinn.Platform.Authorization.IntegrationTests.ContextHandlerTest">
+            <summary>
+            Test class for <see cref="T:Altinn.Platform.Authorization.Services.Implementation.ContextHandler"></see>
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ContextHandlerTest.ContextHandler_TC01">
+            <summary>
+            Scenario:
+            Tests if the xacml request is enriched with the required resource, subject attributes
+            Input:
+            Instance id, user id, action
+            Expected Result:
+            Xacml request is enriched with the missing resource, roles and subject attributes
+            Success Criteria:
+            A xacml request populated with the required attributes is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ContextHandlerTest.ContextHandler_TC02">
+            <summary>
+            Scenario:
+            Tests if the xacml request is enriched with the required resource, subject attributes
+            Input:
+            Instance id, org, action
+            Expected Result:
+            Xacml request is enriched with the missing resource and subject attributes
+            Success Criteria:
+            A xacml request populated with the required attributes is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ContextHandlerTest.ContextHandler_TC03">
+            <summary>
+            Scenario:
+            Tests if the xacml request is enriched with the required resource, subject attributes
+            Input:
+            Complete resource attributes
+            Expected Result:
+            Xacml request is enriched with the missing role attributes
+            Success Criteria:
+            A xacml request populated with the required attributes is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ContextHandlerTest.ContextHandler_TC04">
+            <summary>
+            Scenario:
+            Tests if the xacml request is enriched with the required resource, subject attributes
+            Input:
+            org, app, userid, partyid, action
+            Expected Result:
+            Xacml request is enriched with the missing role attributes
+            Success Criteria:
+            A xacml request populated with the required attributes is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ContextHandlerTest.ContextHandler_TC05">
+            <summary>
+            Scenario:
+            Tests if the xacml request is enriched with the required resource, subject attributes
+            Input:
+            org, app, party id, action
+            Expected Result:
+            Xacml request is enriched with the missing role attributes
+            Success Criteria:
+            A xacml request populated with the required attributes is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ContextHandlerTest.ContextHandler_TC06">
+            <summary>
+            Scenario:
+            Tests if the xacml request is enriched with the required resource, subject attributes
+            Input:
+            Instance-id, user-id, party-id
+            Expected Result:
+            Xacml request is enriched with the missing attributes
+            Success Criteria:
+            A xacml request populated with the required attributes is returned
+            </summary>
+        </member>
+        <member name="T:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest">
+            <summary>
+            Test class for <see cref="T:Altinn.Platform.Authorization.Services.Implementation.ContextHandler"></see>
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest.SortRulesByDelegationPolicyPath_ThreeAppsSameOfferedByAndCoveredBy_Success">
+            <summary>
+            Scenario:
+            Tests the SortRulesByDelegationPolicyPath function
+            Input:
+            List of un ordered rules for delegation of 3 different apps to/from the same set of OfferedBy/CoveredBy parties
+            Expected Result:
+            Dictionary with rules sorted by the path of the 3 delegation policy files
+            Success Criteria:
+            Dictionary with the expected keys (policy paths) and values (sorted rules for each file)
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest.SortRulesByDelegationPolicyPath_OneAppSameOfferedBy_ThreeCoveredBy_Success">
+            <summary>
+            Scenario:
+            Tests the SortRulesByDelegationPolicyPath function
+            Input:
+            List of un ordered rules for delegation of the same apps from the same OfferedBy to two CoveredBy users, and one coveredBy organization/partyid
+            Expected Result:
+            Dictionary with rules sorted by the path of the 3 delegation policy files
+            Success Criteria:
+            Dictionary with the expected keys (policy paths) and values (sorted rules for each file)
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest.SortRulesByDelegationPolicyPath_Unsortables_Success">
+            <summary>
+            Scenario:
+            Tests the SortRulesByDelegationPolicyPath function
+            Input:
+            List of un ordered rules for delegation of the same apps from the same OfferedBy to two CoveredBy users, and one coveredBy organization/partyid
+            Expected Result:
+            Dictionary with rules sorted by the path of the 3 delegation policy files
+            Success Criteria:
+            Dictionary with the expected keys (policy paths) and values (sorted rules for each file)
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest.PolicyContainsMatchingRule_PolicyContainsRule_True">
+            <summary>
+            Scenario:
+            Tests that the PolicyContainsMatchingRule function returns true when it finds a given API rule model as a XacmlRule in a XacmlPolicy
+            Input:
+            A XacmlPolicy containing read and write rules for org1/app1, and a API Rule model for write
+            Expected Result:
+            True
+            Success Criteria:
+            Rule is found and expected result is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest.PolicyContainsMatchingRule_PolicyContainsRule_PolicyResourcesOutOfOrder_True">
+            <summary>
+            Scenario:
+            Tests that the PolicyContainsMatchingRule function returns true when it finds a given API rule model as a XacmlRule in a XacmlPolicy
+            Input:
+            A XacmlPolicy containing read and write rules for org1/app1, and a API Rule model for read
+            Expected Result:
+            True
+            Success Criteria:
+            Rule is found and expected result is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest.PolicyContainsMatchingRule_PolicyContainsRule_SingleComplexRulePolicy_True">
+            <summary>
+            Scenario:
+            Tests that the PolicyContainsMatchingRule function returns true when it finds a given API rule model as a XacmlRule in a XacmlPolicy
+            Input:
+            A XacmlPolicy containing a single rule for spanning multiple different resources and actions
+            A rule for one of the last combinations for action and resource (eat, banana) 
+            Expected Result:
+            True
+            Success Criteria:
+            Rule is found and expected result is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest.PolicyContainsMatchingRule_PolicyContainsRule_SignForTask_True">
+            <summary>
+            Scenario:
+            Tests that the PolicyContainsMatchingRule function returns true when it finds a given API rule model as a XacmlRule in a XacmlPolicy
+            Input:
+            A XacmlPolicy containing XacmlRule for sign on task1 for org1/app1, and a API Rule model representation for the same rule
+            Expected Result:
+            True
+            Success Criteria:
+            Rule is found and expected result is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest.PolicyContainsMatchingRule_PolicyContainsRule_InvalidAction_False">
+            <summary>
+            Scenario:
+            Tests that the PolicyContainsMatchingRule function returns false when it does not find a given API rule model as a XacmlRule in a XacmlPolicy
+            Input:
+            A XacmlPolicy containing read and write rules for org1/app1, and a API Rule model for sign
+            Expected Result:
+            False
+            Success Criteria:
+            Rule is not found and expected result is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest.PolicyContainsMatchingRule_PolicyContainsRule_InvalidOrg_False">
+            <summary>
+            Scenario:
+            Tests that the PolicyContainsMatchingRule function returns false when it does not find a given API rule model as a XacmlRule in a XacmlPolicy
+            Input:
+            A XacmlPolicy containing read and write rules for org1/app1, and a API Rule model for read but for org2/app1
+            Expected Result:
+            False
+            Success Criteria:
+            Rule is not found and expected result is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest.PolicyContainsMatchingRule_PolicyContainsRule_InvalidApp_False">
+            <summary>
+            Scenario:
+            Tests that the PolicyContainsMatchingRule function returns false when it does not find a given API rule model as a XacmlRule in a XacmlPolicy
+            Input:
+            A XacmlPolicy containing read and write rules for org1/app1, and a API Rule model for read but for org1/app2
+            Expected Result:
+            False
+            Success Criteria:
+            Rule is not found and expected result is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationHelperTest.PolicyContainsMatchingRule_PolicyContainsRule_PolicyWithoutAppLevelResource_False">
+            <summary>
+            Scenario:
+            Tests that the PolicyContainsMatchingRule function returns false when the App policy does not contain org/app level resource specification.
+            Input:
+            A XacmlPolicy containing no rules with resource specification on org/app level (all resources are more specific e.g incl task/appresource)
+            A rule which match action but not a complete resource match
+            Expected Result:
+            False
+            Success Criteria:
+            Rule is not found and expected result is returned
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Get_HelloWorld">
+            <summary>
+            Test case: Calling the "Hello world" GET endpoint on the DelegationsController
+            Expected: returns 200 OK with content: "Hello world!"
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeleteRules_Success">
+            <summary>
+            Test case: Calling the POST operation for DeleteRules to perform a valid deletion of org1/app3
+            Expected: DeleteRules returns status code 201 and list of rules created match expected
+            
+            Scenario:
+            Calling the POST operation for DeleteRules to perform a valid deletion
+            Input:
+            List of two one rule in one policy for deletion of the app org1/app3 between for a single offeredby/coveredby combination resulting in a single policyfile beeing updated.
+            Expected Result:
+            Rules are deleted and returned with the CreatedSuccessfully flag set and rule ids
+            Success Criteria:
+            DeleteRules returns status code 201 and list of rules deleted to match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeleteRulesNotExistingRuleId_PartialSuccess">
+            <summary>
+            Test case: Calling the POST operation for DeleteRules to perform a valid deletion of org1/app3
+            Expected: DeleteRules returns status code 206 and list of rules created match expected one of the rules does not exist
+            
+            Scenario:
+            Calling the POST operation for DeleteRules to perform a valid deletion and one not existing 
+            Input:
+            List of two one rule in one policy for deletion of the app org1/app3 between for a single offeredby/coveredby combination resulting in a single policyfile beeing updated.
+            Expected Result:
+            Rules are deleted and returned with the CreatedSuccessfully flag set and rule id deleted
+            Success Criteria:
+            DeleteRules returns status code 206 and list of rules deleted to match expected (one rule)
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeleteRules_WithoutAuthorization">
+            <summary>
+            Test case: Calling the POST operation for DeleteRules to perform a valid deletion of org1/app3 without a valid bearertoken
+            Expected: DeleteRules returns status code 401
+            
+            Scenario:
+            Calling the POST operation for DeleteRules to perform a valid deletion
+            Input:
+            List of two one rule in one policy for deletion of the app org1/app3 between for a single offeredby/coveredby combination resulting in a single policyfile beeing updated.
+            Expected Result:
+            Responce declined as it is not Authorized
+            Success Criteria:
+            DeleteRules returns status code 401
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeleteRules_OnePolicyMissing_PartialSucess">
+            <summary>
+            Test case: Calling the POST operation for DeleteRules to perform a valid deletion of org1/app3 org1/app4 org1/app8
+            Expected: DeleteRules returns status code 206 and list of rules created match expected
+            
+            Scenario:
+            Calling the POST operation for DeleteRules to perform a valid deletion but one of the policy files was not found and some rules was therfore not deleted
+            Input:
+            List of four rules for deletion spread accross 3 policy files of the app org1/app3 org1/app4 and org1/app8 between for a single offeredby/coveredby combination resulting in two policyfile beeing updated.
+            Expected Result:
+            Rules are deleted and returned with the CreatedSuccessfully flag set and rule ids but not all rules is retuned
+            Success Criteria:
+            DeleteRules returns status code 206 and list of rules dleted to match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeleteRules_InvalidInput_BadRequest">
+            <summary>
+            Test case: Calling the POST operation for DeleteRules to perform a deletion of org1/app4 and org1/app3 without rules defined
+            Expected: DeleteRules returns status code 500 and no list of rules as one of the policies had no ruleids defined
+            
+            Scenario:
+            Calling the POST operation for DeleteRules to delete rules without giving a RuleId
+            Input:
+            List of three rules for delegation of the app org1/app3 and org1/app4 between for a single offeredby/coveredby combination resulting in no policy file beeing updated.
+            Expected Result:
+            No Rules are deleted and no rules are returned
+            Success Criteria:
+            DeleteRules returns status code 500 and no deletion is performed
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeleteRules_InvalidUserPerformingDeleteRule_BadRequest">
+            <summary>
+            Test case: Calling the POST operation for DeleteRules to perform a deletion of org1/app4 and org1/app3 where the user performing the task is not defined
+            Expected: DeleteRules returns status code 500 and no list of rules as one of the policies had no DeletedByUser set (0)
+            
+            Scenario:
+            Calling the POST operation for DeleteRules to delete rules without giving a DeletedByUserId
+            Input:
+            List of three rules for delegation of the app org1/app3 and org1/app4 between for a single offeredby/coveredby combination resulting in no policy file beeing updated.
+            Expected Result:
+            No Rules are deleted and no rules are returned
+            Success Criteria:
+            DeleteRules returns status code 500 and no deletion is performed
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeletePolicies_InvalidUserPerformingDeleteRule_BadRequest">
+             <summary>
+             Test case: Calling the POST operation for DeleteRules to perform a deletion of org1/app4 and org1/app3 where the user performing the task is not defined
+             Expected: DeleteRules returns status code 500 and no list of rules as one of the policies had no DeletedByUser set (0)
+            
+             Scenario:
+             Calling the POST operation for DeleteRules to delete rules without giving a DeletedByUserId
+             Input:
+             List of three rules for delegation of the app org1/app3 and org1/app4 between for a single offeredby/coveredby combination resulting in no policy file beeing updated.
+             Expected Result:
+             No Rules are deleted and no rules are returned
+             Success Criteria:
+             DeleteRules returns status code 500 and no deletion is performed
+             </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeleteRules_ValidInputAllFails_BadRequest">
+            <summary>
+            Test case: Calling the POST operation for DeleteRules to perform a deletion of org1/app4 and org1/app3 without rules defined
+            Expected: DeleteRules returns status code 500 and no list of rules as one of the policies had no ruleids defined
+            
+            Scenario:
+            Calling the POST operation for DeleteRules to delete rules without giving a RuleId
+            Input:
+            List of three rules for delegation of the app org1/app3 and org1/app4 between for a single offeredby/coveredby combination resulting in no policy file beeing updated.
+            Expected Result:
+            No Rules are deleted and no rules are returned
+            Success Criteria:
+            DeleteRules returns status code 500 and no deletion is performed
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeleteRules_DuplicatePolicy_BadRequest">
+            <summary>
+            Test case: Calling the POST operation for DeleteRules to perform a deletion of org1/app3 with difrent rules on same policy declared in two requests
+            Expected: DeleteRules returns status code 500 and no list of rules as the same policy was tried to delete from twice
+            
+            Scenario:
+            Calling the POST operation for DeleteRules to delete rules giving the dame policy twice
+            Input:
+            List of two rules for deletion of the app org1/app3 for a single offeredby/coveredby combination resulting in no policy file beeing updated.
+            Expected Result:
+            No Rules are deleted and no rules are returned
+            Success Criteria:
+            DeleteRules returns status code 500 and no deletion is performed
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeletePolicies_Sucess">
+            <summary>
+            Test case: Calling the POST operation for DeletePolicy to perform a valid deletion of org1/app3 org1/app4
+            Expected: DeletePolicy returns status code 201 and list of rules created match expected
+            
+            Scenario:
+            Calling the POST operation for DeletePolicy to perform a valid deletion
+            Input:
+            List of 2 policy files of the app org1/app3 and org1/app4 between for a single offeredby/coveredby combination resulting in all rules in two policyfile beeing removed.
+            Expected Result:
+            Rules are deleted and returned with the CreatedSuccessfully flag set and rule ids but not all rules is retuned
+            Success Criteria:
+            DeleteRules returns status code 201 and list of rules deleted to match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeletePolicies_InvalidBearerToken_Unauthorized">
+            <summary>
+            Test case: Calling the POST operation for DeletePolicy to perform a valid deletion of org1/app3 with invalid Authorization token
+            Expected: DeletePolicy returns status code 401
+            
+            Scenario:
+            Calling the POST operation for DeletePolicy to perform a valid deletion withot valid bearertoken
+            Input:
+            List of 2 policy files of the app org1/app3 and org1/app4 between for a single offeredby/coveredby combination resulting Http Unauthorized
+            Expected Result:
+            Nothing is performed and responce has UnAuthorized responcecode
+            Success Criteria:
+            DeleteRules returns status code 401
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeletePolicies_OneMissingPolicyFile_PartialSucess">
+            <summary>
+            Test case: Calling the POST operation for DeletePolicy to perform a valid deletion of org1/app3 org1/app4 and one who does not exixt org1/app8
+            Expected: DeletePolicy returns status code 206 and list of rules deleted match expected
+            
+            Scenario:
+            Calling the POST operation for DeletePolicy to perform a valid deletion
+            Input:
+            List of 3 policy files of the app org1/app3 and org1/app4 and org1/app8 between for a single offeredby/coveredby combination resulting in two policyfile beeing updated.
+            Expected Result:
+            Rules are deleted and returned with the CreatedSuccessfully flag set and rule in defoned policy files but not all policyfiles was touched so only rules from updated policyfiles is returned
+            Success Criteria:
+            DeletePolicy returns status code 206 and list of rules deleted to match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeletePolicies_AllPoliciesFail_Fail">
+            <summary>
+            Test case: Calling the POST operation for DeletePolicy to perform a valid deletion of org1/app8 error/postgrewritechangefail
+            Expected: DeletePolicy returns status code 500
+            
+            Scenario:
+            Calling the POST operation for DeletePolicy to perform a valid deletion
+            Input:
+            List of four rules for deletion spread accross 2 policy files of the app org1/app8 and error/postgrewritechangefail between for a single offeredby/coveredby combination.
+            Expected Result:
+            Nothing are deleted and 500 status code is returned
+            Success Criteria:
+            postgrewritechangefail returns status code 500
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeletePolicies_DuplicatePoliciesDefinedInput">
+            <summary>
+            Test case: Calling the POST operation for DeletePolicy to perform a invalid deletion of org1/app3 with the same policy defined twice
+            Expected: DeletePolicy returns status code 500
+            
+            Scenario:
+            Calling the POST operation for DeletePolicy to perform a valid deletion
+            Input:
+            List of four rules for deletion spread accross 2 policy files of the app org1/app8 and error/postgrewritechangefail between for a single offeredby/coveredby combination.
+            Expected Result:
+            Nothing are deleted and 500 status code is returned
+            Success Criteria:
+            returns status code 500
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_DeletePolicies_EmptyInput">
+            <summary>
+            Test case: Calling the POST operation for DeletePolicy to perform a invalid deletion of org1/app3 with the same policy defined twice
+            Expected: DeletePolicy returns status code 500
+            
+            Scenario:
+            Calling the POST operation for DeletePolicy to perform a valid deletion
+            Input:
+            List of four rules for deletion spread accross 2 policy files of the app org1/app8 and error/postgrewritechangefail between for a single offeredby/coveredby combination.
+            Expected Result:
+            Nothing are deleted and 500 status code is returned
+            Success Criteria:
+            returns status code 500
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_AddRules_Unauthorized">
+            <summary>
+            Scenario:
+            Calling the POST operation for AddRules to without AccessToken
+            Expected Result:
+            Call should return Unauthorized
+            Success Criteria:
+            AddRules returns status code 401 Unauthorized
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_AddRules_Badrequest_NoRules">
+            <summary>
+            Scenario:
+            Calling the POST operation for AddRules to without any rules specified in the body
+            Expected Result:
+            Call should return Badrequest
+            Success Criteria:
+            AddRules returns status code 400 Badrequest
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_AddRules_Badrequest_InvalidModel">
+            <summary>
+            Scenario:
+            Calling the POST operation for AddRules to with invalid rule model
+            Expected Result:
+            Call should return Badrequest
+            Success Criteria:
+            AddRules returns status code 400 Badrequest
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_AddRules_Success">
+            <summary>
+            Scenario:
+            Calling the POST operation for AddRules to perform a valid delegation
+            Input:
+            List of two rules for delegation of the app org1/app1 between for a single offeredby/coveredby combination resulting in a single delegation policy.
+            Expected Result:
+            Rules are created and returned with the CreatedSuccessfully flag set and rule ids
+            Success Criteria:
+            AddRules returns status code 201 and list of rules created match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_AddRules_DuplicateSuccess">
+            <summary>
+            Scenario:
+            Calling the POST operation for AddRules to perform a valid delegation
+            Input:
+            List of two rules for delegation of the app org1/app3 between for a single offeredby/coveredby combination resulting in a single delegation policy.
+            Expected Result:
+            Rules are created and returned with the CreatedSuccessfully flag set and rule ids but since the delegation is already existing the RuleId is known before delegating as they are already existing in the Xacml file
+            Success Criteria:
+            AddRules returns status code 201 and list of rules created match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_AddRules_MultipleAppsOfferedBysAndCoveredBys_Success">
+            <summary>
+            Scenario:
+            Calling the POST operation for AddRules to perform a valid delegation
+            Input:
+            List of 4 rules for delegation of from 4 different offeredBys to 4 different coveredBys for 4 different apps. Resulting in 4 different delegation policy files
+            Expected Result:
+            Rules are created and returned with the CreatedSuccessfully flag set and rule ids
+            Success Criteria:
+            AddRules returns status code 201 and list of rules created match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_AddRules_OneInvalidApp_PartialSuccess">
+            <summary>
+            Scenario:
+            Calling the POST operation for AddRules to perform a partially valid delegation
+            Input:
+            List of 4 rules for delegation of from 4 different offeredBys to 4 different coveredBys for 4 different apps. Resulting in 4 different delegation policy files. 1 of the rules are for an app which does not exist
+            Expected Result:
+            3 Rules are created and returned with the CreatedSuccessfully flag set and rule ids
+            1 Rule is not created and returned with the CreatedSuccessfully flag set to false and no rule id
+            Success Criteria:
+            AddRules returns status code 206 and list of rules created match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_AddRules_OneIncompleteInput_MissingOrgApp_PartialSuccess">
+            <summary>
+            Scenario:
+            Calling the POST operation for AddRules to perform a partially valid delegation
+            Input:
+            List of 4 rules for delegation of from 4 different offeredBys to 4 different coveredBys for 4 different apps. Resulting in 4 different delegation policy files. 1 of the rules are incomplete (missing org/app resource specification)
+            Expected Result:
+            3 Rules are created and returned with the CreatedSuccessfully flag set and rule ids
+            1 Rule is not created and returned with the CreatedSuccessfully flag set to false and no rule id
+            Success Criteria:
+            AddRules returns status code 206 and list of rules created match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.Post_AddRules_DelegationEventQueue_Push_Exception">
+            <summary>
+            Scenario:
+            Calling the POST operation for AddRules to perform a valid delegation, but pushing the delegation event to the queue fails.
+            Input:
+            List with a rule for delegation of the app error/delegationeventfail between for a single offeredby/coveredby combination resulting in a single delegation policy.
+            Expected Result:
+            Internal exception cause pushing delegation event to fail, after delegation has been stored.
+            Success Criteria:
+            AddRules returns status code Created, but a Critical Error has been logged
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.GetRules_RuleType_Is_DirectlyDelegated">
+            <summary>
+            Test case: GetRules returns a list of rules offeredby has given coveredby
+            Expected: GetRules returns a list of rules offeredby has given coveredby
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.GetRules_RuleType_Is_InheritedViaKeyRole">
+            <summary>
+            Test case: GetRules returns a list of rules that have been inherited by the recipient via keyrole
+            Expected: GetRules returns a list of rules offeredby's main unit has given to the recipient via keyrole
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.GetRules_RuleType_Is_InheritedAsSubunitViaKeyrole">
+            <summary>
+            Test case: GetRules returns a list of rules that have been inherited by the subunit recipient via keyrole
+            Expected: GetRules returns a list of rules offeredby's main unit has given to the subunit recipient via keyrole
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.GetRules_RuleType_Is_InheritedAsSubunit">
+            <summary>
+            Test case: GetRules returns rule that is inherited by a subunit from the main unit
+            Expected: GetRules returns a list of rules the subunit has received from the main unit
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.GetRules_MissingValuesInRequest">
+            <summary>
+            Test case: GetRules with missing values in the request
+            Expected: GetRules returns a BadRequest response
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.GetRules_MissingOfferedByInRequest">
+            <summary>
+            Test case: GetRules with missing values in the request
+            Expected: GetRules returns a BadRequest response
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.GetRules_NoRulesRequest">
+            <summary>
+            Test case: GetRules for a coveredby that does not have any rules
+            Expected: GetRules returns an empty list
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.GetRules_WithKeyRolePartyIdsSuccess">
+            <summary>
+            Test case: GetRules returns a list of rules offeredby has given two coveredbys (a userid and partyid)
+            Expected: GetRules returns a list of rules offeredby has given coveredby
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.ReplayDelegationEvents_NoToken_Unauthorized">
+            <summary>
+            Test case: ReplayDelegationEvents from startId=100000 to endId=100005, without a token for authorized access
+            Expected: ReplayDelegationEvents returns 401 Unauthorized
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.ReplayDelegationEvents_Success">
+            <summary>
+            Test case: ReplayDelegationEvents from startId=100000 to endId=100005
+            Expected: ReplayDelegationEvents returns 200 OK and all expected events have been pushed to the queue 
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.ReplayDelegationEvents_EndId0_Success">
+            <summary>
+            Test case: ReplayDelegationEvents from startId=100000 to endId=0 meaning all events from the startId is replayed
+            Expected: ReplayDelegationEvents returns 200 OK and all expected events have been pushed to the queue
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.ReplayDelegationEvents_InvalidRange_Unprocessable">
+            <summary>
+            Test case: ReplayDelegationEvents from startId=100100 to endId=0 but no changes exists in this range
+            Expected: ReplayDelegationEvents returns 422 Unprocessable
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.ReplayDelegationEvents_InvalidStartId_ProblemDetails">
+            <summary>
+            Test case: ReplayDelegationEvents with 
+            Expected: ReplayDelegationEvents returns 200 OK and all expected events have been pushed to the queue
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.DelegationsControllerTest.ReplayDelegationEvents_EndIdLessThenStartId_ProblemDetails">
+            <summary>
+            Test case: ReplayDelegationEvents from startId=100000 to endId=0 meaning all events from the startId is replayed
+            Expected: ReplayDelegationEvents returns 200 OK and all expected events have been pushed to the queue
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ExternalDecisionTest.PDPExternal_Decision_AltinnResourceRegistry0009">
+            <summary>
+            Scenario where org is listed in policy. Should work. Policy org is digir. Authz subject org is digdir
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ExternalDecisionTest.PDPExternal_Decision_AltinnResourceRegistry0010">
+            <summary>
+            Scenario where org is listed in policy. Should not work. Policy org is digir. Authz subject org is nav
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ExternalDecisionTest.PDPExternal_Decision_AltinnResourceRegistry0011">
+            <summary>
+            Scenario where org is listed in policy. Should work. Policy org is digir. Authz subject org is digdir. Uses old attribute id
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ExternalDecisionTest.PDPExternal_Decision_SystemUserWithResourceDelegation_Permit">
+            <summary>
+            Scenario where systemuser has received delegation from the resource party for the resource. Should give Permit result.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ExternalDecisionTest.PDPExternal_Decision_SystemUserWithAppDelegation_Permit">
+            <summary>
+            Scenario where systemuser has received delegation from the resource party for the resource. Should give Permit result.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.ExternalDecisionTest.PDPExternal_Decision_SystemUserWithDelegation_TooManyRequestSubjects_Indeterminate">
+            <summary>
+            Scenario where systemuser has received delegation, but request includes multiple subjects as org and orgnumber. Should NOT give Permit. 
+            </summary>
+        </member>
+        <member name="T:Altinn.Platform.Authorization.IntegrationTests.Health.HealthCheckTests">
+            <summary>
+            Health check 
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Health.HealthCheckTests.#ctor(Altinn.Platform.Authorization.IntegrationTests.Webfactory.CustomWebApplicationFactory{Altinn.Platform.Authorization.Health.HealthCheck})">
+            <summary>
+            Default constructor
+            </summary>
+            <param name="fixture">The web application fixture</param>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Health.HealthCheckTests.VerifyHealthCheck_OK">
+            <summary>
+            Verify that component responds on health check
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Altinn.Platform.Authorization.IntegrationTests.MockServices.ConfigurationManagerStub">
+            <summary>
+            Represents a stub of <see cref="T:Microsoft.IdentityModel.Protocols.ConfigurationManager`1"/> to be used in integration tests.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.MockServices.ConfigurationManagerStub.GetConfigurationAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.MockServices.ConfigurationManagerStub.RequestRefresh">
+            <inheritdoc />
+        </member>
+        <member name="T:Altinn.Platform.Authorization.IntegrationTests.MockServices.DelegationChangeEventQueueMock">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.MockServices.DelegationChangeEventQueueMock.Push(Altinn.Platform.Authorization.Models.DelegationChange)">
+            <summary>
+            Mocks pushing delegation changes to the event queue
+            </summary>
+            <param name="delegationChange">The delegation change stored in postgresql</param>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.MockServices.InstanceMetadataRepositoryMock.GetInstance(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.MockServices.InstanceMetadataRepositoryMock.GetApplication(System.String,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.Platform.Authorization.IntegrationTests.MockServices.JwtCookiePostConfigureOptionsStub">
+            <summary>
+            Represents a stub for the <see cref="T:AltinnCore.Authentication.JwtCookie.JwtCookiePostConfigureOptions"/> class to be used in integration tests.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.MockServices.JwtCookiePostConfigureOptionsStub.PostConfigure(System.String,AltinnCore.Authentication.JwtCookie.JwtCookieOptions)">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PartiesControllerTest.GetPartyList_TC01">
+            <summary>
+            Test case: Write a xml file to storage.
+            Expected: WritePolicyAsync returns true and status code 200.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.WritePolicy_TC01">
+            <summary>
+            Test case: Write to storage a file.
+            Expected: WritePolicyAsync returns true.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.WritePolicy_TC02">
+            <summary>
+            Test case: Write a file to storage where the org parameter arguments is empty.
+            Expected: WritePolicyAsync throws ArgumentException.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.WritePolicy_TC03">
+            <summary>
+            Test case: Write a file to storage where the app parameter arguments is empty.
+            Expected: WritePolicyAsync throws ArgumentException.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.WritePolicy_TC04">
+            <summary>
+            Test case: Write to storage a file that is null.
+            Expected: WritePolicyAsync throws ArgumentException.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicyRules_Valid">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, where all rules are deleted the db is updated with RevokeLast status
+            Input:
+            List of unordered rules for deletion multiple apps same OfferedBy to one CoveredBy user, and one coveredBy organization/partyid
+            Expected Result:
+            List of all rules actualy deleted.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicyRules_Valid_DelegationEventQueue_Push_Exception">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, where all rules are deleted the db is updated with RevokeLast status,
+            but pushing RevokeLast event to DelegationChangeEventQueue fails which should trigger crittical error logging
+            Input:
+            List of unordered rules for deletion multiple apps same OfferedBy to one CoveredBy user, and one coveredBy organization/partyid
+            Expected Result:
+            List of all rules are deleted from policy and delegationchange stored in postgresql, critical error is logged
+            Success Criteria:
+            All returned rules match expected, and critical error has been logged
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicyRules_PolicyAlredyDeleted">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, whether one policy is returned as already deleted the rules ok to delete is deleted the one already deleted ignored
+            Input:
+            List of unordered rules for deletion multiple apps same OfferedBy to one CoveredBy user, and one coveredBy organization/partyid
+            Expected Result:
+            List of deleted policy is ignored rest is deleted.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicyRules_ForOrganizationValid">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, whether all rules are returned as successfully deleated whera all rules are deleted the db is also updated with isDeleted status
+            Input:
+            List of unordered rules for deletion multiple apps same OfferedBy to one CoveredBy user, and one coveredBy organization/partyid
+            Expected Result:
+            List of all rules actualy deleted.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicyRules_DBFetchFail">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, whether one rules are returned as not successfully deleated due to error retriving data from db whera all rules are deleted the db is also updated with isDeleted status
+            Input:
+            List of unordered rules for deletion multiple apps same OfferedBy to one CoveredBy user, and one coveredBy organization/partyid
+            Expected Result:
+            List of all rules actualy deleted.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicyRules_DataStorageLeaseFail">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, whether one rules are returned as not successfully deleted due to error locking data for update in blob storage where all rules are deleted the db is also updated with isDeleted status
+            Input:
+            List of unordered rules for deletion multiple apps same OfferedBy to one CoveredBy user, and one coveredBy organization/partyid
+            Expected Result:
+            List of all rules actualy deleted.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicyRules_DataWriteFail">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, whether one rules are returned as not successfully deleted due to error writing data for update in blob storage.
+            Input:
+            List of unordered rules for deletion multiple apps same OfferedBy to one CoveredBy user, and one coveredBy organization/partyid
+            Expected Result:
+            List of all rules actualy deleted.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicyRules_PolicyPathInvalid">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, whether one rules are returned as not successfully deleted due to undefined resource
+            Input:
+            List of unordered rules for deletion multiple apps same OfferedBy to one CoveredBy user, and one coveredBy organization/partyid
+            Expected Result:
+            List of all rules actualy deleted.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicyRules_PostgreeUpdateFail">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, whether one policy are returned as not successfully deleted due to error update changelog.
+            Input:
+            List of unordered rules for deletion multiple apps same OfferedBy to one CoveredBy user, and one coveredBy organization/partyid
+            Expected Result:
+            List of all rules actualy deleted.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicyRules_PolicyPathDoesNotExist">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, whether one rules are returned as not successfully deleated due to error finding the file on blob storage where all rules are deleted the db is also updated with isDeleted status
+            Input:
+            List of unordered rules for deletion multiple apps same OfferedBy to one CoveredBy user, and one coveredBy organization/partyid
+            Expected Result:
+            List of all rules actualy deleted.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicies_Valid">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicies function, all rules are returned as successfully created
+            Input:
+            List of unordered rules for deletion of the same apps from the same OfferedBy to one CoveredBy user
+            Expected Result:
+            List of all rules deleted returned.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicies_Valid_DelegationEventQueue_Push_Exception">
+            <summary>
+            Scenario:
+            Tests the TryDeleteDelegationPolicies operation, where all rules in a given delegation policy are deleted and stored in delegationchange database with RevokeLast status,
+            but pushing RevokeLast event to DelegationChangeEventQueue fails which should trigger crittical error logging
+            Input:
+            List of RequestToDelete models identifying the delegation policies to be deleted
+            Expected Result:
+            List of all rules are deleted from policy and delegationchange stored in postgresql, critical error is logged
+            Success Criteria:
+            All returned rules match expected, and critical error has been logged
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicies_StorageLeaseFail">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicies function, one rule are returned as failed due to error locking the data for update
+            Input:
+            List of unordered rules for deletion of the same apps from the same OfferedBy to one CoveredBy user
+            Expected Result:
+            List of all rules deleted returned.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicies_DBFetchFail">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicies function, one rule are returned as failed due to error fetching data from DB
+            Input:
+            List of unordered rules for deletion of the same apps from the same OfferedBy to one CoveredBy user
+            Expected Result:
+            List of all rules deleted returned.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicies_PolicyPathDoesNotExist">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicies function, one rule are returned as failed due to error finding data on blob storage
+            Input:
+            List of unordered rules for deletion of the same apps from the same OfferedBy to one CoveredBy user
+            Expected Result:
+            List of all rules deleted returned.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicies_DBUpdateFails">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicies function, one rule are returned as failed due to error updating data in DB
+            Input:
+            List of unordered rules for deletion of the same apps from the same OfferedBy to one CoveredBy user
+            Expected Result:
+            List of all rules deleted returned.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicies_UndefinedResource">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicies function, one rule are returned as failed due to error in resource to delete
+            Input:
+            List of unordered rules for deletion of the same apps from the same OfferedBy to one CoveredBy user
+            Expected Result:
+            List of all rules deleted returned.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryDeleteDelegationPolicies_PolicyAlreadyDeleted">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicies function, one rule are returned as failed due to policy already deleted
+            Input:
+            List of unordered rules for deletion of the same apps from the same OfferedBy to one CoveredBy user
+            Expected Result:
+            List of all rules deleted returned.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryWriteDelegationPolicyRules_Valid">
+            <summary>
+            Tests the TryWriteDelegationPolicyRules function, whether all rules are returned as successfully created
+            Input:
+            List of unordered rules for delegation of the same apps from the same OfferedBy to two CoveredBy users, and one coveredBy organization/partyid
+            Expected Result:
+            List of all rules (now in sorted order of the resulting 3 delegation policy files) with success flag and rule id set.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryWriteDelegationPolicyRules_UnknownApp_PartialSuccess">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, when only partial set of the rules are returned as successfully created.
+            Input:
+            List of unordered rules for delegation from the same OfferedBy to two CoveredBy users, and one coveredBy organization/partyid
+            One of the rules are for an app where no app policy exists and should fail.
+            Expected Result:
+            List of all rules (now in sorted order of the resulting 3 delegation policy files).
+            Only stored rules should have success flag and rule id set.
+            Success Criteria:
+            All returned rules match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryWriteDelegationPolicyRules_UnknownResource_PartialSuccess">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, when only partial set of the rules are returned as successfully created.
+            Input:
+            List of unordered rules for delegation from the same OfferedBy to two CoveredBy users, and one coveredBy organization/partyid
+            One of the rules for org1, app1 contains a non-existing resource and should fail all rules for that app.
+            Expected Result:
+            List of all rules (now in sorted order of the resulting 3 delegation policy files).
+            Only stored rules should have success flag and rule id set.
+            Success Criteria:
+            All returned rules match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryWriteDelegationPolicyRules_UnknownActionForResource_PartialSuccess">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, when only partial set of the rules are returned as successfully created.
+            Input:
+            List of unordered rules for delegation from the same OfferedBy to two CoveredBy users, and one coveredBy organization/partyid
+            One of the rules for org1, app1 is for an action which does not exist for that resource in the app policy and should fail all rules for that app.
+            Expected Result:
+            List of all rules (now in sorted order of the resulting 3 delegation policy files).
+            Only stored rules should have success flag and rule id set.
+            Success Criteria:
+            All returned rules match expected
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryWriteDelegationPolicyRules_PartialSuccess_UnsortableRule">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, when only partial set of the rules are returned as successfully created, caused by one of the rules not having a complete model for sorting to a delegation policy filepath
+            Input:
+            List of unordered rules for delegation of the same apps from the same OfferedBy to two CoveredBy users, and one coveredBy organization/partyid
+            Expected Result:
+            List of all rules (now in sorted order of the resulting 3 delegation policy files) with success flag and rule id set.
+            Success Criteria:
+            All returned rules match expected and have success flag and rule id set
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryWriteDelegationPolicyRules_Error_BlobStorageAqcuireLeaseLockException">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, when blobLeaseClient.AcquireAsync throws exception when trying to get lease lock on delegation policy blob
+            Input:
+            Single rule
+            Expected Result:
+            The blob storage throws exception when aqcuiring lease lock
+            Success Criteria:
+            The blob storage exception is handled and logged. The rule is returned as not created.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryWriteDelegationPolicyRules_Error_BlobStorageLeaseLockWriteException">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, when blob storage write throws exception caused by lease locking
+            Input:
+            Single rule
+            Expected Result:
+            The blob storage write throws exception
+            Success Criteria:
+            The blob storage exception is handled and logged. The rule is returned as not created.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryWriteDelegationPolicyRules_Error_PostgreGetCurrentException">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, when getting current delegation change from postgre fails
+            Input:
+            Single rule
+            Expected Result:
+            The postgre integration throws exception when getting the current change from the database
+            Success Criteria:
+            The postgre exception is handled and logged. The rule is returned as not created.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryWriteDelegationPolicyRules_Error_PostgreWriteDelegationChangeException">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, when writing the new current delegation change to postgre fails
+            Input:
+            Single rule
+            Expected Result:
+            The postgre integration throws exception when writing the new delegation change to the database
+            Success Criteria:
+            The postgre exception is handled and logged. The rule is returned as not created.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyAdministrationPointTest.TryWriteDelegationPolicyRules_DelegationEventQueue_Push_Exception">
+            <summary>
+            Scenario:
+            Tests the TryWriteDelegationPolicyRules function, but pushing the delegation event to the queue fails.
+            Input:
+            List with a rule for delegation of the app error/delegationeventfail between for a single offeredby/coveredby combination resulting in a single delegation policy.
+            Expected Result:
+            Internal exception cause pushing delegation event to fail, after delegation has been stored.
+            Success Criteria:
+            TryWriteDelegationPolicyRules returns rules as created, but a Critical Error has been logged
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.WritePolicy_TC01">
+            <summary>
+            Test case: Write a xml file to storage.
+            Expected: WritePolicyAsync returns true and status code 200.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.WritePolicy_TC02">
+            <summary>
+            Test case: Write a json file to storage.
+            Expected: WritePolicyAsync returns true and status code 200.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.WritePolicy_TC03">
+            <summary>
+            Test case: Write to storage a file that is null. 
+            Expected: GetPolicyAsync returns status code 500.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.WritePolicy_TC04">
+            <summary>
+            Test case: Write a xml file to storage where org query string is not set.
+            Expected: WritePolicyAsync returns status code 500. 
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.WritePolicy_TC05">
+            <summary>
+            Test case: Write a xml file to storage where app query string is not set.
+            Expected: WritePolicyAsync returns status code 500. 
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.WritePolicy_TC06">
+            <summary>
+            Test case: Write a json file to storage with incorrect claims in designer token
+            Expected: WritePolicyAsync returns 401
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.GetRolesWithAccess_TC01">
+            <summary>
+            Test case: GetRolesWithAccess happy path
+            Expected: GetRolesWithAccess returns 200 with list of roles
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.GetRolesWithAccess_TC02">
+            <summary>
+            Test case: Trying to get roles for an non-existing app
+            Expected: GetRolesWithAccess returns 404
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.GetRolesWithAccess_TC03">
+            <summary>
+            Test case: Trying to get roles without org
+            Expected: GetRolesWithAccess returns 400
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.GetRolesWithAccess_TC04">
+            <summary>
+            Test case: GetRolesWithAccess returns empty list when no roles in policy
+            Expected: GetRolesWithAccess returns 200 with empty list
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.GetResourcePoliciesFromXacmlPolicies_TC05">
+            <summary>
+            Test case: GetResourcepolicies returns a list of ResourcePolicy
+            Expected: GetResourcepolicies returns a list of ResourcePolicy that contains 3 ResourcePolicies and several actions
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.GetResourcePoliciesFromXacmlPolicies_InvalidApp_TC06">
+            <summary>
+            Test case: Try GetResourcePolicies with an invalid list of org/app Attributematches
+            Expected: GetResourcepolicies returns a ResoucrcePolicyResponse with a "not found" errormessage
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.GetResourcePoliciesFromXacmlPolicies_NoApp_TC07">
+            <summary>
+            Test case: Try GetResourcePolicies without an app Attributematch
+            Expected: GetResourcepolicies returns a ResoucrcePolicyResponse with an "app must be defined" errormessage
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.GetResourcePoliciesFromXacmlPolicies_NoOrg_TC08">
+            <summary>
+            Test case: Try GetResourcePolicies without an org Attributematch
+            Expected: GetResourcepolicies returns a ResoucrcePolicyResponse with an "Organisation must be defined" errormessage
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.GetResourcePoliciesFromXacmlPolicies_TC09">
+            <summary>
+            Test case: Try GetResourcepolicies where a ResourcePolicy exists in blobstorage, but resource specification in the xacml policy does not match the Org/App in the request
+            Expected: GetResourcepolicies returns a MinimumAuthenticationLevel and an empty ResourcePolicies list
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyControllerTest.GetResourcePoliciesFromXacmlPolicies_IgnoresXacmlRules_WithOrgSubject">
+            <summary>
+            Test case: Try GetResourcePolicies for app with rule for Org subject in XACML app policy
+            Expected: Rules not associated with a RoleCode should be ignored in the Resource Policy
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyInformationRepositoryTest.Dispose">
+            <summary>
+            Make sure repository is cleaned after the tests is run.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyInformationRepositoryTest.GetInstance_TC01">
+            <summary>
+            Test case: Get from cosmos a exsisting instance
+            Expected: GetInstance returns instance that is not null
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyInformationRepositoryTest.GetInstance_TC02">
+            <summary>
+            Test case: Get from cosmos a instance that do not exist
+            Expected: GetInstance returns null
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyInformationRepositoryTest.GetInstance_TC03">
+            <summary>
+            Test case: Get instance from cosmos where instanceId is null
+            Expected: GetInstance throws ArgumentNullException
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyInformationRepositoryTest.GetInstance_TC04">
+            <summary>
+            Test case: Get instance from cosmos where instanceOwnerId is negative or 0
+            Expected: GetInstance throws ArgumentException
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyInformationRepositoryTest.GetInstance_TC05">
+            <summary>
+            Test case: Get from cosmos a exsisting instance
+            Expected: GetInstance returns instance with same instanceId and instanceOwnerId as sent in
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyInformationRepositoryTest.GetApplication_TC01">
+            <summary>
+            Test case: Get from cosmos an exsisting application
+            Expected: GetInstance returns application that is not null
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyInformationRepositoryTest.GetApplication_TC02">
+            <summary>
+            Test case: Get from cosmos an application that do not exist
+            Expected: GetInstance returns null
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyInformationRepositoryTest.GetApplication_TC03">
+            <summary>
+            Test case: Get from cosmos an application where app is null
+            Expected: GetInstance throws ArgumentNullException
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyInformationRepositoryTest.GetApplication_TC04">
+            <summary>
+            Test case: Get from cosmos an application where org is null
+            Expected: GetInstance throws ArgumentNullException
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyInformationRepositoryTest.GetApplication_TC05">
+            <summary>
+            Test case: Get from cosmos an exsisting application
+            Expected: GetApplication returns application with the same app and org as sent in
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyRetrievalPointTest.GetPolicy_TC01">
+            <summary>
+            Test case: Get file from storage.
+            Expected: GetPolicyAsync returns a file that is not null.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyRetrievalPointTest.GetPolicy_TC02">
+            <summary>
+            Test case: Get a file from storage that does not exists.
+            Expected: GetPolicyAsync returns null.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyRetrievalPointTest.GetPolicy_TC03">
+            <summary>
+            Test case: Get a file from storage with a request that does not contain information about org and app. 
+            Expected: GetPolicyAsync throws ArgumentException.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyRetrievalPointTest.GetPolicy_TCResourceRegistry01">
+            <summary>
+            Test case: Get file from storage.
+            Expected: GetPolicyAsync returns a file that is not null.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyRetrievalPointTest.GetPolicy_ByOrgApp_ReturnsPolicy">
+            <summary>
+            Test case: Get file from storage.
+            Expected: GetPolicyAsync returns a file that is not null.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyRetrievalPointTest.GetPolicy_ByOrgApp_NullWhenPolicyNotExists">
+            <summary>
+            Test case: Get a file from storage that does not exists.
+            Expected: GetPolicyAsync returns null.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.PolicyRetrievalPointTest.GetPolicy_ByOrgApp_ThrowsException">
+            <summary>
+            Test case: Get a file from storage with a request that does not contain information about app. 
+            Expected: GetPolicyAsync throws ArgumentException.
+            </summary>
+        </member>
+        <member name="T:Altinn.Platform.Authorization.IntegrationTests.Util.AssertionUtil">
+            <summary>
+            Class with methods that can help with assertions of larger objects.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Util.AssertionUtil.AssertCollections``1(System.Collections.Generic.ICollection{``0},System.Collections.Generic.ICollection{``0},System.Action{``0,``0})">
+            <summary>
+            Asserts that two collections of objects have the same property values in the same positions.
+            </summary>
+            <typeparam name="T">The Type</typeparam>
+            <param name="expected">A collection of expected instances</param>
+            <param name="actual">The collection of actual instances</param>
+            <param name="assertMethod">The assertion method to be used</param>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Util.AssertionUtil.AssertEqual(Altinn.Authorization.ABAC.Xacml.XacmlContextResponse,Altinn.Authorization.ABAC.Xacml.XacmlContextResponse)">
+            <summary>
+            Assert that two <see cref="T:Altinn.Authorization.ABAC.Xacml.XacmlContextResponse"/> have the same property values.
+            </summary>
+            <param name="expected">An instance with the expected values.</param>
+            <param name="actual">The instance to verify.</param>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Util.AssertionUtil.AssertEqual(Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonResponse,Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonResponse)">
+            <summary>
+            Assert that two <see cref="T:Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonResponse"/> have the same property values.
+            </summary>
+            <param name="expected">An instance with the expected values.</param>
+            <param name="actual">The instance to verify.</param>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Util.AssertionUtil.AssertEqual(Altinn.Authorization.ABAC.Xacml.XacmlContextRequest,Altinn.Authorization.ABAC.Xacml.XacmlContextRequest)">
+            <summary>
+            Assert that two <see cref="T:Altinn.Authorization.ABAC.Xacml.XacmlContextRequest"/> have the same property values.
+            </summary>
+            <param name="expected">An instance with the expected values.</param>
+            <param name="actual">The instance to verify.</param>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Util.AssertionUtil.AssertEqual(System.Collections.Generic.List{Altinn.Platform.Authorization.Models.Rule},System.Collections.Generic.List{Altinn.Platform.Authorization.Models.Rule},System.Boolean)">
+            <summary>
+            Assert that two Lists of <see cref="T:Altinn.Platform.Authorization.Models.Rule"/> have the same number of rules and each rule have the same property values.
+            </summary>
+            <param name="expected">An instance with the expected values.</param>
+            <param name="actual">The instance to verify.</param>
+            <param name="assertOutputValues">Whether output only values should also be asserted</param>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Util.AssertionUtil.AssertEqual(Altinn.Platform.Authorization.Models.Rule,Altinn.Platform.Authorization.Models.Rule,System.Boolean)">
+            <summary>
+            Assert that two <see cref="T:Altinn.Platform.Authorization.Models.Rule"/> have the same property values.
+            </summary>
+            <param name="expected">An instance with the expected values.</param>
+            <param name="actual">The instance to verify.</param>
+            <param name="assertOutputValues">Whether output only values should also be asserted</param>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Util.AssertionUtil.AssertResourcePolicyResponseEqual(Altinn.Platform.Authorization.Models.ResourcePolicyResponse,Altinn.Platform.Authorization.Models.ResourcePolicyResponse)">
+            <summary>
+            Assert that two <see cref="T:Altinn.Platform.Authorization.Models.ResourcePolicyResponse"/> have the same property in the same positions.
+            </summary>
+            <param name="expected">An instance with the expected values.</param>
+            <param name="actual">The instance to verify.</param>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Util.AssertionUtil.AssertRuleEqual(Altinn.Platform.Authorization.Models.Rule,Altinn.Platform.Authorization.Models.Rule)">
+            <summary>
+            Assert that two <see cref="T:Altinn.Platform.Authorization.Models.Rule"/> have the same property in the same positions.
+            </summary>
+            <param name="expected">An instance with the expected values.</param>
+            <param name="actual">The instance to verify.</param>
+        </member>
+        <member name="T:Altinn.Platform.Authorization.IntegrationTests.Util.JwtTokenMock">
+            <summary>
+            Represents a mechanism for creating JSON Web tokens for use in integration tests.
+            </summary>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Util.JwtTokenMock.GenerateToken(System.Security.Claims.ClaimsPrincipal,System.TimeSpan,System.String)">
+            <summary>
+            Generates a token with a self signed certificate included in the integration test project.
+            </summary>
+            <param name="principal">The claims principal to include in the token.</param>
+            <param name="tokenExpiry">How long the token should be valid for.</param>
+            <param name="issuer">The URL of the token issuer</param>
+            <returns>A new token.</returns>
+        </member>
+        <member name="M:Altinn.Platform.Authorization.IntegrationTests.Util.XacmlTestDataParser.ParseResponse(System.String,System.String)">
+            <summary>
+            Parses a XACML Response document
+            </summary>
+            <param name="responseDocumentTitle">The response document title</param>
+            <param name="responsePath">The response path</param>
+            <returns></returns>
+        </member>
+        <member name="M:Altinn.ResourceRegistry.Tests.Mocks.OidcProviderSettingsStub.GetConfigurationAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,6 @@
+{
+  "Altinn.AccessManagement.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/home\/andreas\/Projects\/digdir\/altinn-authorization-tmp\/src\/apps\/Altinn.AccessManagement\/src\/Altinn.AccessManagement.Core",
+  "Altinn.AccessManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/home\/andreas\/Projects\/digdir\/altinn-authorization-tmp\/src\/apps\/Altinn.AccessManagement\/src\/Altinn.AccessManagement",
+  "Altinn.AccessManagement.Integration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/home\/andreas\/Projects\/digdir\/altinn-authorization-tmp\/src\/apps\/Altinn.AccessManagement\/src\/Altinn.AccessManagement.Integration",
+  "Altinn.AccessManagement.Persistence, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/home\/andreas\/Projects\/digdir\/altinn-authorization-tmp\/src\/apps\/Altinn.AccessManagement\/src\/Altinn.AccessManagement.Persistence"
+}

@@ -1,0 +1,45 @@
+meta {
+  name: digdir-am-k6-read
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/maskinporten/delegations?supplierOrg={{supplierOrg}}&consumerOrg={{consumerOrg}}&scope={{scope}}
+  body: none
+  auth: inherit
+}
+
+query {
+  supplierOrg: {{supplierOrg}}
+  consumerOrg: {{consumerOrg}}
+  scope: {{scope}}
+}
+
+headers {
+  Accept: application/json
+}
+
+vars:pre-request {
+  supplierOrg: 
+  consumerOrg: 
+  scope: test:am/k6.read
+  auth_tokenType: Enterprise
+  auth_partyId: 50088610
+  auth_org: digdir
+  auth_orgNo: 991825827
+  auth_scopes: altinn:maskinporten/delegations.admin
+  bearerToken: 
+}
+
+script:pre-request {
+  bru.setVar("bearerToken", await tokenGenerator.getToken("altinn:maskinporten/delegations.admin"));   
+}
+
+tests {
+  test("getMaskinportenDelegations", function() {
+    var body = res.getBody();  
+    expect(res.status).to.equal(200);
+    expect(body[0]).to.have.property('resourceid', 'ttd-am-k6');
+  });
+}

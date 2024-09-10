@@ -1,0 +1,296 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Altinn.AccessManagement.Integration</name>
+    </assembly>
+    <members>
+        <member name="T:Altinn.AccessManagement.Integration.Clients.Altinn2RightsClient">
+            <summary>
+            Client for getting Altinn roles from AltinnII SBL Bridge
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.Altinn2RightsClient.#ctor(System.Net.Http.HttpClient,Microsoft.Extensions.Options.IOptions{Altinn.AccessManagement.Integration.Configuration.SblBridgeSettings},Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Integration.Clients.AltinnRolesClient},Altinn.AccessManagement.Integration.Services.Interfaces.IPlatformAuthorizationTokenProvider)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Integration.Clients.AltinnRolesClient"/> class
+            </summary>
+            <param name="httpClient">HttpClient from default httpclientfactory</param>
+            <param name="sblBridgeSettings">the sbl bridge settings</param>
+            <param name="logger">the logger</param>
+            <param name="sblTokenProvider">instance of authorization platform token provider</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.Altinn2RightsClient.PostDelegationCheck(System.Int32,System.Int32,System.String,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.Altinn2RightsClient.PostDelegation(System.Int32,System.Int32,Altinn.AccessManagement.Core.Models.SblRightDelegationRequest)">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.Altinn2RightsClient.ClearReporteeRights(System.Int32,System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Clients.AltinnRolesClient">
+            <summary>
+            Client for getting Altinn roles from AltinnII SBL Bridge
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.AltinnRolesClient.#ctor(System.Net.Http.HttpClient,Microsoft.Extensions.Options.IOptions{Altinn.AccessManagement.Integration.Configuration.SblBridgeSettings},Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Integration.Clients.AltinnRolesClient})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Integration.Clients.AltinnRolesClient"/> class
+            </summary>
+            <param name="httpClient">HttpClient from default httpclientfactory</param>
+            <param name="sblBridgeSettings">the sbl bridge settings</param>
+            <param name="logger">the logger</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.AltinnRolesClient.GetDecisionPointRolesForUser(System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.AltinnRolesClient.GetRolesForDelegation(System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.AltinnRolesClient.GetAuthorizedPartiesWithRoles(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Clients.AuthenticationClient">
+            <summary>
+            A client for authentication actions in Altinn Platform.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.AuthenticationClient.#ctor(Microsoft.Extensions.Options.IOptions{Altinn.AccessManagement.Integration.Configuration.PlatformSettings},Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Integration.Clients.AuthenticationClient},Microsoft.AspNetCore.Http.IHttpContextAccessor,System.Net.Http.HttpClient)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Integration.Clients.AuthenticationClient"/> class
+            </summary>
+            <param name="platformSettings">The current platform settings.</param>
+            <param name="logger">the logger</param>
+            <param name="httpContextAccessor">The http context accessor </param>
+            <param name="httpClient">A HttpClient provided by the HttpClientFactory.</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.AuthenticationClient.RefreshToken(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.AuthenticationClient.GetSystemUser(System.Int32,System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.AuthenticationClient.GetDefaultRightsForRegisteredSystem(System.String,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Clients.PartiesClient">
+            <summary>
+            Proxy implementation for parties
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.PartiesClient.#ctor(System.Net.Http.HttpClient,Microsoft.Extensions.Options.IOptions{Altinn.AccessManagement.Integration.Configuration.SblBridgeSettings},Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Integration.Clients.PartiesClient},Microsoft.AspNetCore.Http.IHttpContextAccessor,Microsoft.Extensions.Options.IOptions{Altinn.AccessManagement.Integration.Configuration.PlatformSettings},Altinn.Common.AccessTokenClient.Services.IAccessTokenGenerator)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Integration.Clients.PartiesClient"/> class
+            </summary>
+            <param name="httpClient">HttpClient from default httpclientfactory</param>
+            <param name="sblBridgeSettings">the sbl bridge settings</param>
+            <param name="logger">the logger</param>
+            <param name="httpContextAccessor">handler for http context</param>
+            <param name="platformSettings">the platform setttings</param>
+            <param name="accessTokenGenerator">An instance of the AccessTokenGenerator service.</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.PartiesClient.GetPartyAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.PartiesClient.GetPartiesAsync(System.Collections.Generic.List{System.Int32},System.Boolean,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.PartiesClient.GetPartiesAsync(System.Collections.Generic.List{System.Guid},System.Boolean,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.PartiesClient.GetPartiesForUserAsync(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.PartiesClient.GetKeyRoleParties(System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.PartiesClient.GetMainUnits(Altinn.AccessManagement.Core.Models.SblBridge.MainUnitQuery,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.PartiesClient.LookupPartyBySSNOrOrgNo(Altinn.Platform.Register.Models.PartyLookup,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Clients.ProfileClient">
+            <summary>
+            A client for retrieving profiles from Altinn Platform.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.ProfileClient.#ctor(Microsoft.Extensions.Options.IOptions{Altinn.AccessManagement.Integration.Configuration.PlatformSettings},Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Integration.Clients.ProfileClient},System.Net.Http.HttpClient)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Integration.Clients.ProfileClient"/> class
+            </summary>
+            <param name="platformSettings">the platform settings</param>
+            <param name="logger">the logger</param>
+            <param name="httpClient">A HttpClient provided by the HttpClientFactory.</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.ProfileClient.GetUser(Altinn.AccessManagement.Core.Models.Profile.UserProfileLookup,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Clients.ResourceRegistryClient">
+            <summary>
+            Client implementation for integration with the Resource Registry
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.ResourceRegistryClient.#ctor(Microsoft.Extensions.Options.IOptions{Altinn.AccessManagement.Integration.Configuration.PlatformSettings},Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Core.Clients.Interfaces.IResourceRegistryClient})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Integration.Clients.ResourceRegistryClient"/> class
+            </summary>
+            <param name="settings">The resource registry config settings</param>
+            <param name="logger">Logger instance for this ResourceRegistryClient</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.ResourceRegistryClient.GetResource(System.String,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.ResourceRegistryClient.GetResources(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.ResourceRegistryClient.GetResourceList(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Clients.ResourceRegistryClient.GetSubjectResources(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Configuration.PlatformSettings">
+            <summary>
+            General configuration settings
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Integration.Configuration.PlatformSettings.OpenIdWellKnownEndpoint">
+            <summary>
+            Open Id Connect Well known endpoint
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Integration.Configuration.PlatformSettings.JwtCookieName">
+            <summary>
+            Name of the cookie for where JWT is stored
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Integration.Configuration.PlatformSettings.ApiProfileEndpoint">
+            <summary>
+            Gets or sets the profile api endpoint.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Integration.Configuration.PlatformSettings.ApiRegisterEndpoint">
+            <summary>
+            Gets or sets the register api endpoint.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Integration.Configuration.PlatformSettings.ApiResourceRegistryEndpoint">
+            <summary>
+            Gets or sets the resource registry api endpoint.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Integration.Configuration.PlatformSettings.SubscriptionKey">
+            <summary>
+            Gets or sets the subscriptionkey.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Integration.Configuration.PlatformSettings.SubscriptionKeyHeaderName">
+            <summary>
+            Gets or sets the SubscriptionKeyHeaderName
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Integration.Configuration.PlatformSettings.ApiAuthenticationEndpoint">
+            <summary>
+            Endpoint for authentication
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Integration.Configuration.PlatformSettings.ApiAuthorizationEndpoint">
+            <summary>
+            Altinn Authorization base url
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Configuration.SblBridgeSettings">
+            <summary>
+            Configuration settings for integration with the SBL Bridge
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Integration.Configuration.SblBridgeSettings.BaseApiUrl">
+            <summary>
+            Gets or sets the base api url for the SBL Bridge
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Services.EventMapperService">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Services.EventMapperService.MapToDelegationChangeEventList(System.Collections.Generic.List{Altinn.AccessManagement.Core.Models.DelegationChange})">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Services.Interfaces.IKeyVaultService">
+            <summary>
+            Interface for interacting with key vault
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Services.Interfaces.IKeyVaultService.GetCertificateAsync(System.String,System.String)">
+            <summary>
+            Gets the value of a secret from the given key vault.
+            </summary>
+            <param name="vaultUri">The URI of the key vault to ask for secret. </param>
+            <param name="secretId">The id of the secret.</param>
+            <returns>The secret value.</returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Services.Interfaces.IPlatformAuthorizationTokenProvider">
+            <summary>
+            Provides a platform authorization access token that can be used by HTTP clients for authorization for SBL Bridge
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Services.Interfaces.IPlatformAuthorizationTokenProvider.GetAccessToken">
+            <summary>
+            Gets the platform authorization token.
+            </summary>
+            <returns>An platform authorization token as a printable string</returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Services.KeyVaultService">
+            <summary>
+            Wrapper implementation for a KeyVaultClient. The wrapped client is created with a principal obtained through configuration.
+            </summary>
+            <remarks>This class is excluded from code coverage because it has no logic to be tested.</remarks>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Services.KeyVaultService.GetCertificateAsync(System.String,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Services.PlatformAuthorizationTokenProvider">
+            <inheritdoc />
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Services.PlatformAuthorizationTokenProvider.#ctor(Altinn.AccessManagement.Integration.Services.Interfaces.IKeyVaultService,Altinn.Common.AccessTokenClient.Services.IAccessTokenGenerator,Microsoft.Extensions.Options.IOptions{Altinn.Common.AccessTokenClient.Configuration.AccessTokenSettings},Microsoft.Extensions.Options.IOptions{AltinnCore.Authentication.Constants.KeyVaultSettings},Microsoft.Extensions.Options.IOptions{Altinn.Common.Authentication.Configuration.OidcProviderSettings})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Integration.Services.PlatformAuthorizationTokenProvider"/> class.
+            </summary>
+            <param name="keyVaultService">The key vault service.</param>
+            <param name="accessTokenGenerator">The access token generator.</param>
+            <param name="accessTokenSettings">The access token settings.</param>
+            <param name="keyVaultSettings">The key vault settings.</param>
+            <param name="oidcProviderSettings">The oidc provider settings.</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Services.PlatformAuthorizationTokenProvider.GetAccessToken">
+            <inheritdoc />
+        </member>
+        <member name="T:Altinn.AccessManagement.Integration.Extensions.IntegrationDependencyInjectionExtensions">
+            <summary>
+            Extension methods for adding access management services to the dependency injection container.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Integration.Extensions.IntegrationDependencyInjectionExtensions.AddAccessManagementIntegration(Microsoft.AspNetCore.Builder.WebApplicationBuilder)">
+            <summary>
+            Registers access management integration services with the dependency injection container.
+            </summary>
+            <param name="builder">The <see cref="T:Microsoft.AspNetCore.Builder.WebApplicationBuilder"/>.</param>
+            <returns><paramref name="builder"/> for further chaining.</returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Services.DelegationRequestProxy">
+            <summary>
+            Proxy implementation for delegation requests
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Services.DelegationRequestProxy.#ctor(System.Net.Http.HttpClient,Microsoft.Extensions.Options.IOptions{Altinn.AccessManagement.Integration.Configuration.SblBridgeSettings},Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Services.DelegationRequestProxy})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Services.DelegationRequestProxy"/> class
+            </summary>
+            <param name="httpClient">HttpClient from default httpclientfactory</param>
+            <param name="sblBridgeSettings">the sbl bridge settings</param>
+            <param name="logger">the logger</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Services.DelegationRequestProxy.GetDelegationRequestsAsync(System.String,System.String,System.Nullable{System.Int32},Altinn.AccessManagement.Core.Enums.RestAuthorizationRequestDirection,System.Collections.Generic.List{Altinn.AccessManagement.Core.Models.RestAuthorizationRequestStatus},System.String)">
+            <inheritdoc/>
+        </member>
+    </members>
+</doc>

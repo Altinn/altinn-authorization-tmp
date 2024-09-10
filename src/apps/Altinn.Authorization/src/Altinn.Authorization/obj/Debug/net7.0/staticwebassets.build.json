@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "oaZaej+kYGt5fZtwRelxs3JpL1qP/oHcR0UFsBWguVM=",
+  "Source": "Altinn.Platform.Authorization",
+  "BasePath": "_content/Altinn.Platform.Authorization",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

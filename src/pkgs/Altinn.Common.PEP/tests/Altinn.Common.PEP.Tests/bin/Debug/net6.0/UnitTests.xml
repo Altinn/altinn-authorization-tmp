@@ -1,0 +1,212 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>UnitTests</name>
+    </assembly>
+    <members>
+        <member name="M:Altinn.Common.PEP.Authorization.AppAccessHandlerTest.HandleRequirementAsync_TC01Async">
+            <summary>
+            Test case: Send request and get response that fulfills all requirements
+            Expected: Context will succeed
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.AppAccessHandlerTest.HandleRequirementAsync_TC02Async">
+            <summary>
+            Test case: Send request and get respons with result deny
+            Expected: Context will fail
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.AppAccessHandlerTest.HandleRequirementAsync_TC03Async">
+            <summary>
+            Test case: Send request and get respons with two results
+            Expected: Context will fail
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.AppAccessHandlerTest.HandleRequirementAsync_TC04Async">
+            <summary>
+            Test case: Send request and get respons with obligation that contains min authentication level that the user meets
+            Expected: context will succeed
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.AppAccessHandlerTest.HandleRequirementAsync_TC05Async">
+            <summary>
+            Test case: Send request and get respons with obligation that contains min authentication level that the user do not meet
+            Expected: context will fail
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.AppAccessHandlerTest.HandleRequirementAsync_TC06">
+            <summary>
+            Test case: Send request and get response that is null
+            Expected: Context will fail 
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.AppAccessHandlerTest.HandleRequirementAsync_TC07">
+            <summary>
+            Test case: Send request and get response with a result list that is null
+            Expected: Context will fail 
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.AppAccessHandlerTest.HandleRequirementAsync_TC08Async">
+            <summary>
+            Test case: Send request verify if the ipaddress from the x-forwarded-for header is received
+            Expected: XForwardedForHeader proeprty in request receives the ipaddress from the header
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ResourceAccessHandlerTest.HandleRequirementAsync_TC01Async">
+            <summary>
+            Test case: Send request and get response that fulfills all requirements
+            Expected: Context will succeed
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ResourceAccessHandlerTest.HandleRequirementAsync_TC02Async">
+            <summary>
+            Test case: Send request and get response that fulfills all requirements
+            Expected: Context will succeed
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ResourceAccessHandlerTest.HandleRequirementAsync_TC03">
+            <summary>
+            Test case: Send request and get response that fulfills all requirements
+            Expected: Exception since format of who is incorrect
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ResourceAccessHandlerTest.HandleRequirementAsync_TC04Async">
+            <summary>
+            Test case: Send request and get response that fulfills all requirements
+            Expected: True
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ResourceAccessHandlerTest.HandleRequirementAsync_TC05Async">
+            <summary>
+            Test case: Send request and get response that fulfills all requirements
+            Expected: Exception since format of who is incorrect
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ResourceAccessHandlerTest.HandleRequirementAsync_TC06Async">
+            <summary>
+            Test case: Send request and verify the XForwardedForHeader property in request
+            Expected: Request header does not have a xforwardedforheader and therefore the header property in xacmljsonrequest will be null
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ResourceAccessHandlerTest.HandleRequirementAsync_TC07Async">
+            <summary>
+            Test case: Send request verify if the ipaddress from the x-forwarded-for header is received
+            Expected: XForwardedForHeader proeprty in request receives the ipaddress from the header
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.CreateXacmlJsonRequest_TC01">
+            <summary>
+            Test case: Send attributes and creates request out of it 
+            Expected: All values sent in will be created to attributes
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.CreateXacmlJsonRequest_TC02">
+            <summary>
+            Test case: Send attributes and creates request out of it 
+            Expected: Only valid urn values sent in will be created to attributes
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.CreateXacmlJsonRequest_TC03">
+            <summary>
+            Test case: Send attributes and creates request out of it 
+            Expected: Only valid urn, scope and orgnumber with correct values sent in will be created to attributes
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.ValidatePdpDecision_TC01">
+            <summary>
+            Test case: Response with result permit
+            Expected: Returns true
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.ValidatePdpDecision_TC02">
+            <summary>
+            Test case: Respons contains obligation with min authentication level that the user meets
+            Expected: Returns true
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.ValidatePdpDecision_TC03">
+            <summary>
+            Test case: Respons contains obligation with min authentication level that the user do not meet
+            Expected: Returns false
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.ValidatePdpDecision_TC04">
+            <summary>
+            Test case: Respons with result deny
+            Expected: Returns false
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.ValidatePdpDecision_TC05">
+            <summary>
+            Test case: Respons with two results
+            Expected: Returns false
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.ValidatePdpDecision_TC06">
+            <summary>
+            Test case: Result list is null
+            Expected: Throws ArgumentNullException
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.ValidatePdpDecision_TC07">
+            <summary>
+            Test case: User is null
+            Expected: Throws ArgumentNullException
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.ValidatePdpDecision_TC08">
+            <summary>
+            Test case: Response contains obligation with min authentication level that the user do not meet, get detailed response
+            Expected: Returns false
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.ValidatePdpDecision_TC09">
+            <summary>
+            Test case: Response contains obligation with min authentication level that the user do not meet, get detailed response
+            Expected: Returns false
+            </summary>
+        </member>
+        <member name="M:UnitTests.DecisionHelperTest.ValidatePdpDecision_TC10">
+            <summary>
+            Test case: Response contains obligation with min authentication level that the user do not meet, get detailed response
+            Expected: Returns false
+            </summary>
+        </member>
+        <member name="M:UnitTests.ScopeAccessHandlerTest.HandleAsync_ValidScope_ContextSuccess">
+            <summary>
+            Test case: Valid scope claim is included in context.
+            Expected: Context will succeed.
+            </summary>
+        </member>
+        <member name="M:UnitTests.ScopeAccessHandlerTest.HandleAsync_ValidScopeOf2_OneInvalidPresent_ContextSuccess">
+            <summary>
+            Test case: Valid scope claim is included in context.
+            Expected: Context will succeed.
+            </summary>
+        </member>
+        <member name="M:UnitTests.ScopeAccessHandlerTest.HandleAsync_ValidScopeOf2_OneInvalidPresent_ContextFail">
+            <summary>
+            Test case: Valid scope is missing in context
+            Expected: Context will fail.
+            </summary>
+        </member>
+        <member name="M:UnitTests.ScopeAccessHandlerTest.HandleAsync_ValidScopeOf2_ContextSuccess">
+            <summary>
+            Test case: Valid scope claim is included in context.
+            Expected: Context will succeed.
+            </summary>
+        </member>
+        <member name="M:UnitTests.ScopeAccessHandlerTest.HandleAsync_InvalidScope_ContextFail">
+            <summary>
+            Test case: Invalid scope claim is included in context.
+            Expected: Context will fail.
+            </summary>
+        </member>
+        <member name="M:UnitTests.ScopeAccessHandlerTest.HandleAsync_EmptyScope_ContextFail">
+            <summary>
+            Test case: Empty scope claim is included in context.
+            Expected: Context will fail.
+            </summary>
+        </member>
+    </members>
+</doc>

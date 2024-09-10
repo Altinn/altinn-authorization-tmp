@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Altinn.Authorization.ABAC.UnitTest</name>
+    </assembly>
+    <members>
+        <member name="M:Altinn.Authorization.ABAC.UnitTest.Utils.XacmlTestDataParser.ParseResponse(System.String,System.String)">
+            <summary>
+            Parses a XACML Response document
+            </summary>
+            <param name="responseDocumentTitle">The response document title</param>
+            <param name="responsePath">The response path</param>
+            <returns></returns>
+        </member>
+        <member name="M:Altinn.Authorization.ABAC.UnitTest.Utils.XacmlTestDataParser.ParsePolicy(System.String,System.String)">
+            <summary>
+            Parses a Xacml 3.0 Policy
+            </summary>
+            <param name="policyDocumentTitle">Policy document title</param>
+            <param name="policyPath">Policy path</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

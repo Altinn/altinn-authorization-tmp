@@ -1,0 +1,597 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Altinn.Common.PEP</name>
+    </assembly>
+    <members>
+        <member name="T:Altinn.Common.PEP.Authorization.AppAccessHandler">
+            <summary>
+            AuthorizationHandler that is created for handling access to app.
+            Authorizes based om AppAccessRequirement and app id from route
+            <see href="https://docs.asp.net/en/latest/security/authorization/policies.html"/> for details about authorization
+            in asp.net core
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.AppAccessHandler.#ctor(Microsoft.AspNetCore.Http.IHttpContextAccessor,Altinn.Common.PEP.Interfaces.IPDP,Microsoft.Extensions.Logging.ILogger{Altinn.Common.PEP.Authorization.AppAccessHandler})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.Common.PEP.Authorization.AppAccessHandler"/> class.
+            </summary>
+            <param name="httpContextAccessor">The http context accessor</param>
+            <param name="pdp">The pdp</param>
+            <param name="logger">The logger. </param>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.AppAccessHandler.HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext,Altinn.Common.PEP.Authorization.AppAccessRequirement)">
+            <summary>
+            This method authorize access bases on context and requirement
+            Is triggered by annotation on MVC action and setup in startup.
+            </summary>
+            <param name="context">The context</param>
+            <param name="requirement">The requirement</param>
+            <returns>A Task</returns>
+        </member>
+        <member name="T:Altinn.Common.PEP.Authorization.AppAccessRequirement">
+            <summary>
+            Requirement for authorization policies used for accessing apps.
+            <see href="https://docs.asp.net/en/latest/security/authorization/policies.html"/> for details about authorization
+            in asp.net core.
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.AppAccessRequirement.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.Common.PEP.Authorization.AppAccessRequirement"/> class
+            </summary>
+            <param name="actionType">The Action type for this requirement</param>
+        </member>
+        <member name="P:Altinn.Common.PEP.Authorization.AppAccessRequirement.ActionType">
+            <summary>
+            Gets or sets The Action type defined for the policy using this requirement
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Authorization.ClaimAccessHandler">
+            <summary>
+            Authorization handler that verifies that the user has a given claimtype with a given value
+            from a given issuer
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ClaimAccessHandler.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.Common.PEP.Authorization.AppAccessHandler"/> class.
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ClaimAccessHandler.HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext,Altinn.Common.PEP.Authorization.ClaimAccessRequirement)">
+            <summary>
+            This method authorize access bases on context and requirement
+            Is triggered by annotation on MVC action and setup in startup.
+            </summary>
+            <param name="context">The context</param>
+            <param name="requirement">The requirement</param>
+            <returns>No object or value is returned by this method when it completes.</returns>
+        </member>
+        <member name="T:Altinn.Common.PEP.Authorization.ClaimAccessRequirement">
+            <summary>
+            Requirement for authorization policies used for accessing apps.
+            <see href="https://docs.asp.net/en/latest/security/authorization/policies.html"/> for details about authorization
+            in asp.net core.
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ClaimAccessRequirement.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.Common.PEP.Authorization.ClaimAccessRequirement"/> class
+            </summary>
+            <param name="claimType">The claim type.</param>
+            <param name="claimValue">The claim value</param>
+        </member>
+        <member name="P:Altinn.Common.PEP.Authorization.ClaimAccessRequirement.ClaimType">
+            <summary>
+            Gets or sets the claim type for the required claim
+            </summary>
+        </member>
+        <member name="P:Altinn.Common.PEP.Authorization.ClaimAccessRequirement.ClaimValue">
+            <summary>
+            Gets or sets the claim value
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Authorization.IScopeAccessRequirement">
+            <summary>
+            This interface describes the implementation of a scope access requirement in policy based authorization
+            </summary>
+        </member>
+        <member name="P:Altinn.Common.PEP.Authorization.IScopeAccessRequirement.Scope">
+            <summary>
+            Gets or sets the scope defined for the policy using this requirement
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Authorization.ResourceAccessHandler">
+            <summary>
+            AuthorizationHandler that is created for handling access to app.
+            Authorizes based om AppAccessRequirement and app id from route
+            <see href="https://docs.asp.net/en/latest/security/authorization/policies.html"/> for details about authorization
+            in asp.net core
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ResourceAccessHandler.#ctor(Microsoft.AspNetCore.Http.IHttpContextAccessor,Altinn.Common.PEP.Interfaces.IPDP,Microsoft.Extensions.Logging.ILogger{Altinn.Common.PEP.Authorization.ResourceAccessHandler})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.Common.PEP.Authorization.ResourceAccessHandler"/> class.
+            </summary>
+            <param name="httpContextAccessor">The http context accessor</param>
+            <param name="pdp">The pdp</param>
+            <param name="logger">The logger. </param>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ResourceAccessHandler.HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext,Altinn.Common.PEP.Authorization.ResourceAccessRequirement)">
+            <summary>
+            This method authorize access bases on context and requirement
+            Is triggered by annotation on MVC action and setup in startup.
+            </summary>
+            <param name="context">The context</param>
+            <param name="requirement">The requirement</param>
+            <returns>A Task</returns>
+        </member>
+        <member name="T:Altinn.Common.PEP.Authorization.ResourceAccessRequirement">
+            <summary>
+            Requirement for authorization policies used for accessing apps.
+            <see href="https://docs.asp.net/en/latest/security/authorization/policies.html"/> for details about authorization
+            in asp.net core.
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ResourceAccessRequirement.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.Common.PEP.Authorization.ResourceAccessRequirement"/> class
+            </summary>
+            <param name="actionType">The Action type for this requirement</param>
+            <param name="resourceId">The resource id for the resource authorization is verified for</param>
+        </member>
+        <member name="P:Altinn.Common.PEP.Authorization.ResourceAccessRequirement.ActionType">
+            <summary>
+            Gets or sets The Action type defined for the policy using this requirement
+            </summary>
+        </member>
+        <member name="P:Altinn.Common.PEP.Authorization.ResourceAccessRequirement.ResourceId">
+            <summary>
+            Gets or sets the resourcId for the resource that authorization should verified for
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Authorization.ScopeAccessHandler">
+            <summary>
+            Represents an authorization handler that can perform authorization based on scope
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ScopeAccessHandler.HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext,Altinn.Common.PEP.Authorization.IScopeAccessRequirement)">
+            <summary>
+            Performs necessary logic to evaluate the scope requirement.
+            </summary>
+            <param name="context">The current <see cref="T:Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext"/></param>
+            <param name="requirement">The scope requirement to evaluate.</param>
+            <returns>Returns a Task for async await</returns>
+        </member>
+        <member name="T:Altinn.Common.PEP.Authorization.ScopeAccessRequirement">
+            <summary>
+            Requirement for authorization policies used for validating a client scope.
+            <see href="https://docs.asp.net/en/latest/security/authorization/policies.html"/> for details about authorization
+            in asp.net core.
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ScopeAccessRequirement.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.Common.PEP.Authorization.ScopeAccessRequirement"/> class and 
+            pupulates the Scope property with the given scope.
+            </summary>
+            <param name="scope">The scope for this requirement</param>
+        </member>
+        <member name="M:Altinn.Common.PEP.Authorization.ScopeAccessRequirement.#ctor(System.String[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.Common.PEP.Authorization.ScopeAccessRequirement"/> class with the given scopes.
+            </summary>
+            <param name="scopes">The scope for this requirement</param>
+        </member>
+        <member name="P:Altinn.Common.PEP.Authorization.ScopeAccessRequirement.Scope">
+            <summary>
+            Gets or sets the scope defined for the policy using this requirement
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Clients.AuthorizationApiClient">
+            <summary>
+            Represents a form of types HttpClient for communication with the Authorization platform service.
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Clients.AuthorizationApiClient.#ctor(Microsoft.AspNetCore.Http.IHttpContextAccessor,System.Net.Http.HttpClient,Microsoft.Extensions.Options.IOptions{Altinn.Common.PEP.Configuration.PlatformSettings},Microsoft.Extensions.Logging.ILogger{Altinn.Common.PEP.Clients.AuthorizationApiClient})">
+            <summary>
+            Initialize a new instance of the <see cref="T:Altinn.Common.PEP.Clients.AuthorizationApiClient"/> class.
+            </summary>
+            <param name="httpContextAccessor">the heep context accessor</param>
+            <param name="client">A HttpClient provided by the built in HttpClientFactory.</param>
+            <param name="platformSettings">The current platform settings</param>
+            <param name="logger">A logger provided by the built in LoggerFactory.</param>
+        </member>
+        <member name="M:Altinn.Common.PEP.Clients.AuthorizationApiClient.AuthorizeRequest(Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonRequestRoot)">
+            <summary>
+            Method for performing authorization.
+            </summary>
+            <param name="xacmlJsonRequest">An authorization request.</param>
+            <returns>The result of the authorization request.</returns>
+        </member>
+        <member name="T:Altinn.Common.PEP.Configuration.PepSettings">
+            <summary>
+            General configuration settings
+            </summary>
+        </member>
+        <member name="P:Altinn.Common.PEP.Configuration.PepSettings.PdpDecisionCachingTimeout">
+            <summary>
+            The timout on pdp decions
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Configuration.PlatformSettings">
+            <summary>
+            Configuratin for platform settings
+            </summary>
+        </member>
+        <member name="P:Altinn.Common.PEP.Configuration.PlatformSettings.ApiAuthorizationEndpoint">
+            <summary>
+            Gets or sets the url for the API Authorization endpoint
+            </summary>
+        </member>
+        <member name="P:Altinn.Common.PEP.Configuration.PlatformSettings.SubscriptionKey">
+            <summary>
+            Gets or sets the subscription key value to use in requests against the platform.
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Constants.AltinnObligations">
+            <summary>
+            Represents a set of Obligation values
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnObligations.RequiredAuthenticationLevel">
+            <summary>
+            Get the name of the obligation authentication level.
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Constants.AltinnXacmlUrns">
+            <summary>
+            Represents a collection of URN values for different Altinn specific XACML attributes.
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.PartyId">
+            <summary>
+            Get the URN value for party id.
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.Ssn">
+            <summary>
+            Get the URN value for 
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.OrganizationNumber">
+            <summary>
+            Get the URN value for 
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.InstanceId">
+            <summary>
+            Get the URN value for instance id
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.OrgId">
+            <summary>
+            Get the URN value for org (application owner)
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.AppId">
+            <summary>
+            Get the URN value for app id
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.AppResource">
+            <summary>
+            Get the URN value for app resource
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.EventId">
+            <summary>
+            Get the value for for event id
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.TaskId">
+            <summary>
+            Get the value task id
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.ResourceId">
+            <summary>
+            Get the value resourceId
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.ResourceInstance">
+            <summary>
+            Get the value Resource Instance
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.EventType">
+            <summary>
+            Get the value eventType
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.EventSource">
+            <summary>
+            Get the value EventSource
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.Scope">
+            <summary>
+            Get the value scope
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Constants.AltinnXacmlUrns.SessionId">
+            <summary>
+            Get the value sessionid
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Helpers.DecisionHelper">
+            <summary>
+            Represents a collection of helper methods for creating a decision request
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Helpers.DecisionHelper.CreateDecisionRequest(System.String,System.String,System.Security.Claims.ClaimsPrincipal,System.String,System.Int32,System.Nullable{System.Guid},System.String)">
+            <summary>
+            Create decision request based for policy decision point.
+            </summary>
+            <param name="org">Unique identifier of the organisation responsible for the app.</param>
+            <param name="app">Application identifier which is unique within an organisation.</param>
+            <param name="user">Claims principal user.</param>
+            <param name="actionType">Policy action type i.e. read, write, delete, instantiate.</param>
+            <param name="instanceOwnerPartyId">Unique id of the party that is the owner of the instance.</param>
+            <param name="instanceGuid">Unique id to identify the instance.</param>
+            <param name="taskid">The taskid. Will override contexthandler if present</param>
+            <returns>The decision request.</returns>
+        </member>
+        <member name="M:Altinn.Common.PEP.Helpers.DecisionHelper.CreateDecisionRequest(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext,Altinn.Common.PEP.Authorization.AppAccessRequirement,Microsoft.AspNetCore.Routing.RouteData)">
+            <summary>
+            Create a new <see cref="T:Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonRequestRoot"/> to represent a decision request.
+            </summary>
+            <param name="context">The current <see cref="T:Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext"/></param>
+            <param name="requirement">The access requirements</param>
+            <param name="routeData">The route data from a request.</param>
+            <returns>A decision request</returns>
+        </member>
+        <member name="M:Altinn.Common.PEP.Helpers.DecisionHelper.CreateDecisionRequest(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext,Altinn.Common.PEP.Authorization.ResourceAccessRequirement,Microsoft.AspNetCore.Routing.RouteData,Microsoft.AspNetCore.Http.IHeaderDictionary)">
+            <summary>
+            Creates a decision request based on input
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Altinn.Common.PEP.Helpers.DecisionHelper.CreateSubjectCategory(System.Collections.Generic.IEnumerable{System.Security.Claims.Claim})">
+            <summary>
+            Create a new <see cref="T:Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonCategory"/> with a list of subject attributes based on the given claims.
+            </summary>
+            <param name="claims">The list of claims</param>
+            <returns>A populated subject category</returns>
+        </member>
+        <member name="M:Altinn.Common.PEP.Helpers.DecisionHelper.CreateActionCategory(System.String,System.Boolean)">
+            <summary>
+            Create a new <see cref="T:Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonCategory"/> attribute of type Action with the given action type
+            </summary>
+            <param name="actionType">The action type</param>
+            <param name="includeResult">A value indicating whether the value should be included in the result.</param>
+            <returns>The created category</returns>
+        </member>
+        <member name="M:Altinn.Common.PEP.Helpers.DecisionHelper.CreateXacmlJsonAttribute(System.String,System.String,System.String,System.String,System.Boolean)">
+            <summary>
+            Create a new <see cref="T:Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonAttribute"/> with the given values.
+            </summary>
+            <param name="attributeId">The attribute id</param>
+            <param name="value">The attribute value</param>
+            <param name="dataType">The datatype for the attribute value</param>
+            <param name="issuer">The issuer</param>
+            <param name="includeResult">A value indicating whether the value should be included in the result.</param>
+            <returns>A new created attribute</returns>
+        </member>
+        <member name="M:Altinn.Common.PEP.Helpers.DecisionHelper.ValidatePdpDecision(System.Collections.Generic.List{Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonResult},System.Security.Claims.ClaimsPrincipal)">
+            <summary>
+            Validate the response from PDP
+            </summary>
+            <param name="results">The response to validate</param>
+            <param name="user">The <see cref="T:System.Security.Claims.ClaimsPrincipal"/></param>
+            <returns>true or false, valid or not</returns>
+        </member>
+        <member name="M:Altinn.Common.PEP.Helpers.DecisionHelper.ValidatePdpDecisionDetailed(System.Collections.Generic.List{Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonResult},System.Security.Claims.ClaimsPrincipal)">
+            <summary>
+            Validate the response from PDP
+            </summary>
+            <param name="results">The response to validate</param>
+            <param name="user">The <see cref="T:System.Security.Claims.ClaimsPrincipal"/></param>
+            <returns>The result of the validation</returns>
+        </member>
+        <member name="M:Altinn.Common.PEP.Helpers.DecisionHelper.ValidateDecisionResult(Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonResult,System.Security.Claims.ClaimsPrincipal)">
+            <summary>
+            Validate the response from PDP
+            </summary>
+            <param name="result">The response to validate</param>
+            <param name="user">The <see cref="T:System.Security.Claims.ClaimsPrincipal"/></param>
+            <returns>true or false, valid or not</returns>
+        </member>
+        <member name="M:Altinn.Common.PEP.Helpers.DecisionHelper.ValidateDecisionResultDetailed(Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonResult,System.Security.Claims.ClaimsPrincipal)">
+            <summary>
+            Validate the response from PDP
+            </summary>
+            <param name="result">The response to validate</param>
+            <param name="user">The <see cref="T:System.Security.Claims.ClaimsPrincipal"/></param>
+            <returns>The result of the validation</returns>
+        </member>
+        <member name="T:Altinn.Common.PEP.Implementation.PDPAppSI">
+            <summary>
+            App implementation of the authorization service where the app uses the Altinn platform api.
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Implementation.PDPAppSI.#ctor(Microsoft.Extensions.Logging.ILogger{Altinn.Common.PEP.Implementation.PDPAppSI},Altinn.Common.PEP.Clients.AuthorizationApiClient)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.Common.PEP.Implementation.PDPAppSI"/> class
+            </summary>
+            <param name="logger">the handler for logger service</param>
+            <param name="authorizationApiClient">A typed Http client accessor</param>
+        </member>
+        <member name="M:Altinn.Common.PEP.Implementation.PDPAppSI.GetDecisionForRequest(Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonRequestRoot)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.Common.PEP.Implementation.PDPAppSI.GetDecisionForUnvalidateRequest(Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonRequestRoot,System.Security.Claims.ClaimsPrincipal)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.Common.PEP.Interfaces.IPDP">
+            <summary>
+            This interface describes the minimum set of methods for any implementation of a Policy Decision Point.
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Interfaces.IPDP.GetDecisionForRequest(Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonRequestRoot)">
+            <summary>
+            Sends in a request and get response with result of the request
+            </summary>
+            <param name="xacmlJsonRequest">The Xacml Json Request</param>
+            <returns>The Xacml Json response contains the result of the request</returns>
+        </member>
+        <member name="M:Altinn.Common.PEP.Interfaces.IPDP.GetDecisionForUnvalidateRequest(Altinn.Authorization.ABAC.Xacml.JsonProfile.XacmlJsonRequestRoot,System.Security.Claims.ClaimsPrincipal)">
+            <summary>
+            Change this to a better one???????
+            </summary>
+            <param name="xacmlJsonRequest">The Xacml Json Request</param>
+            <param name="user">The claims principal</param>
+            <returns>Returns true if request is permitted and false if not</returns>
+        </member>
+        <member name="T:Altinn.Common.PEP.Models.EnforcementResult">
+            <summary>
+            Represents the result of an authorization enforcement
+            </summary>
+        </member>
+        <member name="P:Altinn.Common.PEP.Models.EnforcementResult.Authorized">
+            <summary>
+            Value indicating whether enforcement result shows authorized or not
+            </summary>
+        </member>
+        <member name="P:Altinn.Common.PEP.Models.EnforcementResult.FailedObligations">
+            <summary>
+            Collection of obligations that did not pass validation
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Models.IDFormat">
+            <summary>
+             IDFormat is used to communicate the format of a suspected string of either OrgNr or SSN -type.
+            </summary>
+            <remarks>
+             Author: Ole Hansen
+             Date: 29/04/2009
+            </remarks>
+        </member>
+        <member name="F:Altinn.Common.PEP.Models.IDFormat.Unknown">
+            <summary>
+            IDFormat is unknown
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Models.IDFormat.SSN">
+            <summary>
+            IDFormat is SSN
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Models.IDFormat.OrgNr">
+            <summary>
+            IDFormat is OrgNr
+            </summary>
+        </member>
+        <member name="F:Altinn.Common.PEP.Models.IDFormat.UserName">
+            <summary>
+            IDFormat is Self Identified User
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Program">
+            <summary>
+            The main entry point for the PEP, library?
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Program.Main(System.String[])">
+            <summary>
+            The main entry point for the PEP, library?
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Program.CreateHostBuilder(System.String[])">
+            <summary>
+            Configure logging for setting up application. Temporary
+            </summary>
+        </member>
+        <member name="T:Altinn.Common.PEP.Startup">
+            <summary>
+            The application startup definition for PEP.
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            This method gets called by the runtime. Use this method to add services to the container.
+            For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+            </summary>
+            <param name="services">the service configuration</param>
+        </member>
+        <member name="M:Altinn.Common.PEP.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
+            <summary>
+            This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+            </summary>
+            <param name="app">the application builder</param>
+            <param name="env">the hosting environment</param>
+        </member>
+        <member name="T:Altinn.Common.PEP.Utils.IDFormatDeterminator">
+            <summary>
+            This class is used to get the ID-type (if any) from a string input.
+            </summary>
+        </member>
+        <member name="M:Altinn.Common.PEP.Utils.IDFormatDeterminator.DetermineIDFormat(System.String)">
+            <summary>
+            Method to get the IDFormat from an arbitrary string.
+            Non-numeric strings will yield an IDFormat.Unknown
+            E.g. "000 000 000", "010170 00000" or "01.01.70 00000"
+            Leading and trailing spaces are trimmed off.
+            </summary>
+            <param name="input">
+            The string to test, 9 or 11 consecutive digits (e.g. 000000000 or 00000000000)
+            or username of self identified user
+            </param>
+            <returns>
+            An IDFormat corresponding to the input
+            </returns>
+        </member>
+        <member name="M:Altinn.Common.PEP.Utils.IDFormatDeterminator.IsValidOrganizationNumber(System.String)">
+            <summary>
+            Validates that a given organization number is valid.
+            </summary>
+            <param name="orgNo">
+            Organization number to validate
+            </param>
+            <returns>
+            true if valid, false otherwise.
+            </returns>
+            <remarks>
+            Validates length, numeric and modulus 11.
+            </remarks>
+        </member>
+        <member name="M:Altinn.Common.PEP.Utils.IDFormatDeterminator.IsValidSSN(System.String)">
+            <summary>
+            Validates that a given social security number is valid.
+            </summary>
+            <param name="ssnNo">
+            Social security number to validate
+            </param>
+            <returns>
+            true if valid, false otherwise.
+            </returns>
+            <remarks>
+            Validates length, numeric and modulus 11.
+            </remarks>
+        </member>
+        <member name="M:Altinn.Common.PEP.Utils.IDFormatDeterminator.IsValidUserName(System.String)">
+            <summary>
+            Validates that a given user name is valid.
+            </summary>
+            <param name="siUsername">
+            User name to validate
+            </param>
+            <returns>
+            true if valid, false otherwise.
+            </returns>
+            <remarks>
+            Validates username with a regular expression
+            </remarks>
+        </member>
+    </members>
+</doc>

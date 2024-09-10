@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "35L5mDedtimvNdPkJykH4mufjDgKG9cAX27Senu9Wko=",
+  "Source": "Altinn.AccessManagement",
+  "BasePath": "_content/Altinn.AccessManagement",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

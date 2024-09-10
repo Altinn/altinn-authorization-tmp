@@ -1,0 +1,1573 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Altinn.AccessManagement</name>
+    </assembly>
+    <members>
+        <member name="T:Altinn.AccessManagement.AccessManagementHost">
+            <summary>
+            Configures the register host.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.AccessManagementHost.Create(System.String[])">
+            <summary>
+            Configures the register host.
+            </summary>
+            <param name="args">The command line arguments.</param>
+        </member>
+        <member name="T:Altinn.AccessManagement.Configuration.ConsoleTraceService">
+            <summary>
+            Copied from sample project.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Configuration.ConsoleTraceService.IsDebugEnabled">
+            <inheritdoc/>
+        </member>
+        <member name="P:Altinn.AccessManagement.Configuration.ConsoleTraceService.IsTraceSensitiveData">
+            <inheritdoc/>
+        </member>
+        <member name="P:Altinn.AccessManagement.Configuration.ConsoleTraceService.IsTraceToFile">
+            <inheritdoc/>
+        </member>
+        <member name="P:Altinn.AccessManagement.Configuration.ConsoleTraceService.IsTraceToDirectory">
+            <inheritdoc/>
+        </member>
+        <member name="P:Altinn.AccessManagement.Configuration.ConsoleTraceService.TraceDirectory">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Configuration.ConsoleTraceService.Info(System.String,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Configuration.ConsoleTraceService.Error(System.String,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Configuration.ConsoleTraceService.Debug(System.String,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Configuration.ConsoleTraceService.Success(System.String,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Altinn.AccessManagement.Configuration.ConsoleTraceService.Warn(System.String,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Configuration.CustomTelemetryInitializer">
+            <summary>
+            Set up custom telemetry for Application Insights
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Configuration.CustomTelemetryInitializer.Initialize(Microsoft.ApplicationInsights.Channel.ITelemetry)">
+            <summary>
+            Custom TelemetryInitializer that sets some specific values for the component
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Controllers.AuthorizedPartiesController">
+            <summary>
+            Controller responsible for all operations for retrieving AuthorizedParties list for a user / organization / system
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.AuthorizedPartiesController.#ctor(Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Controllers.AuthorizedPartiesController},AutoMapper.IMapper,Altinn.AccessManagement.Core.Services.Interfaces.IAuthorizedPartiesService,Altinn.AccessManagement.Core.Services.Interfaces.IContextRetrievalService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Controllers.AuthorizedPartiesController"/> class.
+            </summary>
+            <param name="logger">logger service</param>
+            <param name="mapper">mapper service</param>
+            <param name="authorizedPartiesService">service implementation for authorized parties</param>
+            <param name="contextRetrievalService">service implementation for getting information regaring users, party etc.</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.AuthorizedPartiesController.GetAuthorizedParties(System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for retrieving all authorized parties (with option to include Authorized Parties, aka Reportees, from Altinn 2) for the authenticated user
+            </summary>
+            <param name="includeAltinn2">Optional (Default: False): Whether Authorized Parties from Altinn 2 should be included in the result set, and if access to Altinn 3 resources through having Altinn 2 roles should be included.</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken"/></param>
+            <response code="200" cref="T:System.Collections.Generic.List`1">Ok</response>
+            <response code="401">Unauthorized</response>
+            <response code="403">Forbidden</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.AuthorizedPartiesController.GetAuthorizedParty(System.Int32,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for retrieving a given authorized party if it exists (with option to include Authorized Parties, aka Reportees from Altinn 2, when getting the underlying list of authorized parties) in the authenticated user's list of authorized parties
+            </summary>
+            <param name="partyId">The partyId to get if exists in the authenticated user's list of authorized parties</param>
+            <param name="includeAltinn2">Optional (Default: False): Whether Authorized Parties from Altinn 2 should be included in the underlying result set, and if access to Altinn 3 resources through having Altinn 2 roles should be included.</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken"/></param>
+            <response code="200" cref="T:System.Collections.Generic.List`1">Ok</response>
+            <response code="401">Unauthorized</response>
+            <response code="403">Forbidden</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.AuthorizedPartiesController.GetAuthorizedPartiesAsAccessManager(System.Int32,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for retrieving all authorized parties (with option to include Authorized Parties, aka Reportees, from Altinn 2) for the authenticated user
+            </summary>
+            <param name="party">The party to retrieve the list of authorized parties for</param>
+            <param name="includeAltinn2">Optional (Default: False): Whether Authorized Parties from Altinn 2 should be included in the result set, and if access to Altinn 3 resources through having Altinn 2 roles should be included.</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken"/></param>
+            <response code="200" cref="T:System.Collections.Generic.List`1">Ok</response>
+            <response code="401">Unauthorized</response>
+            <response code="403">Forbidden</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="T:Altinn.AccessManagement.Controllers.DelegationRequestsController">
+            <summary>
+            Controller responsible for all operations for managing delegation requests
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.DelegationRequestsController.#ctor(Altinn.AccessManagement.Core.Services.Interfaces.IDelegationRequests)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Controllers.DelegationRequestsController"/> class.
+            </summary>
+            <param name="delegationRequsts">The service implementation for</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.DelegationRequestsController.Get(System.String,System.String,System.Nullable{System.Int32},Altinn.AccessManagement.Core.Enums.RestAuthorizationRequestDirection,System.Collections.Generic.List{Altinn.AccessManagement.Core.Models.RestAuthorizationRequestStatus},System.String)">
+            <summary>
+            Gets a list of delegation requests for the reportee if the user is authorized
+            </summary>
+            <param name="who">The reportee to get delegation requests for</param>
+            <param name="serviceCode">Optional filter parameter for serviceCode</param>
+            <param name="serviceEditionCode">Optional filter parameter for serviceEditionCode</param>
+            <param name="direction">Optional filter parameter for directions (incoming, outgoing). If no direction is specified, both incoming and outgoing requests will be returned</param>
+            <param name="status">Optional filter parameter for status. (created, unopened, approved, rejected, deleted)</param>
+            <param name="continuation">Optional filter parameter for continuationToken</param>
+            <returns>List of delegation requests</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.DelegationRequestsController.Get(System.String)">
+            <summary>
+            Gets a single Delegation Requests by its id, if the id exists and the user is authorized
+            </summary>
+            <param name="id">The delegation request id</param>
+            <returns>The delegation request</returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Controllers.DelegationsController">
+            <summary>
+            Controller responsible for all operations for managing delegations of Altinn Apps
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.DelegationsController.#ctor(Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Controllers.DelegationsController},Altinn.AccessManagement.Core.Services.Interfaces.IPolicyInformationPoint,Altinn.AccessManagement.Core.Services.Interfaces.IPolicyAdministrationPoint)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Controllers.DelegationsController"/> class.
+            </summary>
+            <param name="logger">the logger.</param>
+            <param name="policyInformationPoint">The policy information point</param>
+            <param name="policyAdministrationPoint">The policy administration point</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.DelegationsController.Post(System.Collections.Generic.List{Altinn.AccessManagement.Core.Models.Rule},System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for adding one or more rules for the given app/offeredby/coveredby. This updates or creates a new delegated policy of type "DirectlyDelegated". DelegatedByUserId is included to store history information in 3.0.
+            </summary>
+            <param name="rules">All rules to be delegated</param>
+            <param name="cancellationToken">CancellationToken</param>
+            <response code="201" cref="T:System.Collections.Generic.List`1">Created</response>
+            <response code="206" cref="T:System.Collections.Generic.List`1">Partial Content</response>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.DelegationsController.GetRules(Altinn.AccessManagement.Core.Models.RuleQuery,System.Threading.CancellationToken,System.Boolean)">
+            <summary>
+            Endpoint for retrieving delegated rules between parties
+            </summary>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.DelegationsController.DeleteRule(Altinn.AccessManagement.Core.Models.RequestToDeleteRuleList,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for deleting delegated rules between parties
+            </summary>
+            <response code="200" cref="T:System.Collections.Generic.List`1">Deleted</response>
+            <response code="206" cref="T:System.Collections.Generic.List`1">Partial Content</response>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.DelegationsController.DeletePolicy(Altinn.AccessManagement.Core.Models.RequestToDeletePolicyList,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for deleting an entire delegated policy between parties
+            </summary>
+            <response code="200" cref="T:System.Collections.Generic.List`1">Deleted</response>
+            <response code="206" cref="T:System.Collections.Generic.List`1">Partial Content</response>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="T:Altinn.AccessManagement.Controllers.ErrorController">
+            <summary>
+            Handles the presentation of unhandled exceptions during the execution of a request.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.ErrorController.Error">
+            <summary>
+            Create a response with a new <see cref="T:Microsoft.AspNetCore.Mvc.ProblemDetails"/> instance with limited information.
+            </summary>
+            <remarks>
+            This method cannot be called directly. It is used by the API framework as a way to output ProblemDetails
+            if there has been an unhandled exception.
+            </remarks>
+            <returns>A new <see cref="T:Microsoft.AspNetCore.Mvc.ObjectResult"/> instance.</returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Controllers.LookupController">
+            <summary>
+            Controller responsible for all operations for lookup
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.LookupController.#ctor(Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Controllers.DelegationsController},AutoMapper.IMapper,Altinn.AccessManagement.Core.Services.Interfaces.IContextRetrievalService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Controllers.DelegationsController"/> class.
+            </summary>
+            <param name="logger">the logger.</param>
+            <param name="mapper">mapper handler</param>
+            <param name="contextRetrieval">handler for context retrieval</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.LookupController.GetPartyFromReporteeListIfExists(System.Int32)">
+            <summary>
+            Endpoint for retrieving party if party exists in the authenticated users reporteelist
+            </summary>
+            <param name="partyId">The partyId for the reportee to look up</param>
+            <returns>Reportee if party is in authenticated users reporteelist</returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Controllers.MaskinportenSchemaController">
+            <summary>
+            Controller responsible for all operations regarding Maskinporten Schema
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.MaskinportenSchemaController.#ctor(Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Controllers.MaskinportenSchemaController},Altinn.AccessManagement.Core.Services.Interfaces.IMaskinportenSchemaService,AutoMapper.IMapper)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Controllers.MaskinportenSchemaController"/> class.
+            </summary>
+            <param name="logger">logger instance</param>
+            <param name="delegationsService">Handler for the delegation service</param>
+            <param name="mapper">mapper handler</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.MaskinportenSchemaController.GetMaskinportenDelegations(System.String,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for API owners and integration with Maskinporten for retrieval of information from Altinn 3 Access Management regarding active delegations of maskinporten schemas between organizations, giving access to one or more scopes in maskinporten.
+            </summary>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.MaskinportenSchemaController.DelegationCheck(System.String,Altinn.AccessManagement.Models.RightsDelegationCheckRequestExternal,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for performing a query of what rights a user can delegate to others on behalf of a specified reportee and maskinporten schema.
+            </summary>
+            <param name="party">The reportee party</param>
+            <param name="rightsDelegationCheckRequest">Request model for user rights delegation check</param>
+            <param name="cancellationToken">CancellationToken</param>
+            <response code="200" cref="T:System.Collections.Generic.List`1">Ok</response>
+            <response code="400">Bad Request</response>
+            <response code="401">Unauthorized</response>
+            <response code="403">Forbidden</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.MaskinportenSchemaController.MaskinportenScopeDelegation(System.String,Altinn.AccessManagement.Models.RightsDelegationRequestExternal,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for delegating maskinporten scheme resources between two parties
+            </summary>
+            <response code="201">Created</response>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.MaskinportenSchemaController.GetOfferedMaskinportenSchemaDelegations(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for retrieving delegated Maskinporten resources offered by the reportee party to others
+            </summary>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.MaskinportenSchemaController.RevokeOfferedMaskinportenScopeDelegation(System.String,Altinn.AccessManagement.Models.RevokeOfferedDelegationExternal,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for revoking a maskinporten scope delegation on behalf of the party having offered the delegation
+            </summary>
+            <response code="204">No Content</response>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.MaskinportenSchemaController.GetReceivedMaskinportenSchemaDelegations(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for retrieving received Maskinporten resource delegation to the reportee party from others
+            </summary>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.MaskinportenSchemaController.RevokeReceivedMaskinportenScopeDelegation(System.String,Altinn.AccessManagement.Models.RevokeReceivedDelegationExternal,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for revoking a maskinporten scope delegation on behalf of the party having received the delegation
+            </summary>
+            <response code="204">No Content</response>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="T:Altinn.AccessManagement.Controllers.PolicyInformationPointController">
+            <summary>
+            Controller responsible for all operations for managing delegations of Altinn Apps
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.PolicyInformationPointController.#ctor(Altinn.AccessManagement.Core.Services.Interfaces.IPolicyInformationPoint,AutoMapper.IMapper)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Controllers.PolicyInformationPointController"/> class.
+            </summary>
+            <param name="pip">The policy information point</param>
+            <param name="mapper">The mapper</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.PolicyInformationPointController.GetAllDelegationChanges(Altinn.AccessManagement.Core.Models.DelegationChangeInput,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint to find all delegation changes for a given user, reportee and app/resource context
+            </summary>
+            <param name="request">The input model that contains id info about user, reportee, resource and resourceMatchType </param>
+            <param name="cancellationToken">CancellationToken</param>
+            <returns>A list of delegation changes that's stored in the database </returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Controllers.ResourceController">
+            <summary>
+            Controller to update AccessManagement with resources existing i ResourceRegister.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.ResourceController.#ctor(Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Controllers.ResourceController},Altinn.AccessManagement.Core.Services.Interfaces.IResourceAdministrationPoint)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Controllers.DelegationsController"/> class.
+            </summary>
+            <param name="logger">the logger.</param>
+            <param name="resourceAdministrationPoint">The resource administration point</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.ResourceController.Post(System.Collections.Generic.List{Altinn.AccessManagement.Core.Models.AccessManagementResource})">
+            <summary>
+            Updates or creates a Resource placeholder in AccessManagement to be used for describing which resource a given delegation is connected with
+            </summary>
+            <param name="resources">List of new Resources to add or update</param>
+            <returns></returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Controllers.ResourceOwnerAuthorizedPartiesController">
+            <summary>
+            Controller responsible for all operations for retrieving AuthorizedParties list for a user / organization / system
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.ResourceOwnerAuthorizedPartiesController.#ctor(Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Controllers.ResourceOwnerAuthorizedPartiesController},AutoMapper.IMapper,Altinn.AccessManagement.Core.Services.Interfaces.IAuthorizedPartiesService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Controllers.ResourceOwnerAuthorizedPartiesController"/> class.
+            </summary>
+            <param name="logger">logger service</param>
+            <param name="mapper">mapper service</param>
+            <param name="authorizedPartiesService">service implementation for authorized parties</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.ResourceOwnerAuthorizedPartiesController.GetAuthorizedPartiesAsServiceOwner(Altinn.AccessManagement.Models.BaseAttributeExternal,System.Boolean,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for retrieving all authorized parties (with option to include Authorized Parties, aka Reportees, from Altinn 2) for a given user or organization 
+            </summary>
+            <param name="subject">Subject input model identifying the user or organization to retrieve the list of authorized parties for</param>
+            <param name="includeAltinn2">Optional (Default: False): Whether Authorized Parties from Altinn 2 should be included in the result set, and if access to Altinn 3 resources through having Altinn 2 roles should be included.</param>
+            <param name="includeAuthorizedResourcesThroughRoles">Optional (Default: False): Whether Authorized Resources per party should be enriched with resources the user has access to through AuthorizedRoles</param>
+            <param name="cancellationToken">The <see cref="T:System.Threading.CancellationToken"/></param>
+            <response code="200" cref="T:System.Collections.Generic.List`1">Ok</response>
+            <response code="401">Unauthorized</response>
+            <response code="403">Forbidden</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="T:Altinn.AccessManagement.Controllers.RightsInternalController">
+            <summary>
+            Controller responsible for all operations regarding rights retrieval
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.RightsInternalController.#ctor(Microsoft.Extensions.Logging.ILogger{Altinn.AccessManagement.Controllers.RightsInternalController},AutoMapper.IMapper,Altinn.AccessManagement.Core.Services.Interfaces.IPolicyInformationPoint,Altinn.AccessManagement.Core.Services.Interfaces.ISingleRightsService,Altinn.AccessManagement.Core.Services.Interfaces.IAltinn2RightsService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Controllers.RightsInternalController"/> class.
+            </summary>
+            <param name="logger">the logger</param>
+            <param name="mapper">handler for mapping between internal and external models</param>
+            <param name="policyInformationPoint">The policy information point</param>
+            <param name="singleRightsService">Service implementation for providing rights operations for BFF and external integrations</param>
+            <param name="rightsForAltinn2">Service implementation for providing rights operations for Altinn 2 integrations</param>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.RightsInternalController.RightsQuery(Altinn.AccessManagement.Models.RightsQueryExternal,System.Threading.CancellationToken,System.Boolean)">
+            <summary>
+            Endpoint for performing a query of rights between two parties for a specific resource
+            </summary>
+            <param name="rightsQuery">Query model for rights lookup</param>
+            <param name="cancellationToken">CancellationToken</param>
+            <param name="returnAllPolicyRights">Whether the response should return all possible rights for the resource, not just the rights the user have access to</param>
+            <response code="200" cref="T:System.Collections.Generic.List`1">Ok</response>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.RightsInternalController.DelegableRightsQuery(Altinn.AccessManagement.Models.RightsQueryExternal,System.Threading.CancellationToken,System.Boolean)">
+            <summary>
+            Endpoint for performing a query of rights a user can delegate to others a specified reportee and resource.
+            IMPORTANT: The delegable rights lookup does itself not check that the user has access to the necessary RolesAdministration/MainAdmin or MaskinportenSchema delegation system resources needed to be allowed to perform delegation.
+            </summary>
+            <param name="rightsQuery">Query model for rights lookup</param>
+            <param name="cancellationToken">CancellationToken</param>
+            <param name="returnAllPolicyRights">Whether the response should return all possible rights for the resource, not just the rights the user is allowed to delegate</param>
+            <response code="200" cref="T:System.Collections.Generic.List`1">Ok</response>
+            <response code="400">Bad Request</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.RightsInternalController.DelegationCheck(System.String,Altinn.AccessManagement.Models.RightsDelegationCheckRequestExternal)">
+            <summary>
+            Endpoint for performing a query of what rights a user can delegate to others on behalf of a specified reportee and resource.
+            </summary>
+            <param name="party">The reportee party</param>
+            <param name="rightsDelegationCheckRequest">Request model for user rights delegation check</param>
+            <response code="200" cref="T:System.Collections.Generic.List`1">Ok</response>
+            <response code="400">Bad Request</response>
+            <response code="401">Unauthorized</response>
+            <response code="403">Forbidden</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.RightsInternalController.Delegation(System.String,Altinn.AccessManagement.Models.RightsDelegationRequestExternal,System.Threading.CancellationToken)">
+            <summary>
+            Endpoint for performing a delegation of rights on behalf of a specified reportee and resource, to a recipient.
+            </summary>
+            <param name="party">The reportee party</param>
+            <param name="rightsDelegationRequest">Request model for rights delegation</param>
+            <param name="cancellationToken">CancellationToken</param>
+            <response code="200" cref="T:System.Collections.Generic.List`1">Ok</response>
+            <response code="400">Bad Request</response>
+            <response code="401">Unauthorized</response>
+            <response code="403">Forbidden</response>
+            <response code="500">Internal Server Error</response>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.RightsInternalController.GetOfferedRights(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Gets a list of all recipients having received right delegations from the reportee party including the resource/app/service info, but not specific rights
+            </summary>
+            <param name="party">reportee acting on behalf of</param>
+            <param name="cancellationToken">Cancellation token used for cancelling the inbound HTTP</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task`1"/> representing the result of the asynchronous operation.</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.RightsInternalController.GetReceivedRights(System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Gets a list of all recipients having received right delegations from the reportee party including the resource/app/service info, but not specific rights
+            </summary>
+            <param name="party">reportee acting on behalf of</param>
+            <param name="cancellationToken">Cancellation token used for cancelling the inbound HTTP</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task`1"/> representing the result of the asynchronous operation.</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.RightsInternalController.RevokeReceivedDelegation(Altinn.AccessManagement.Models.AuthorizedPartyInput,Altinn.AccessManagement.Models.RevokeReceivedDelegationExternal,System.Threading.CancellationToken)">
+            <summary>
+            Gets a list of all recipients having received right delegations from the reportee party including the resource/app/service info, but not specific rights
+            </summary>
+            <param name="input">Used to specify the reportee party the authenticated user is acting on behalf of. Can either be the PartyId, or the placeholder values: 'person' or 'organization' in combination with providing the social security number or the organization number using the header values.</param>
+            <param name="body">The specific delegation to be revoked</param>
+            <param name="cancellationToken">Cancellation token used for cancelling the inbound HTTP</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task`1"/> representing the result of the asynchronous operation.</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.RightsInternalController.RevokeOfferedDelegation(Altinn.AccessManagement.Models.AuthorizedPartyInput,Altinn.AccessManagement.Models.RevokeOfferedDelegationExternal,System.Threading.CancellationToken)">
+            <summary>
+            Gets a list of all recipients having received right delegations from the reportee party including the resource/app/service info, but not specific rights
+            </summary>
+            <param name="input">Used to specify the reportee party the authenticated user is acting on behalf of. Can either be the PartyId, or the placeholder values: 'person' or 'organization' in combination with providing the social security number or the organization number using the header values.</param>
+            <param name="body">payload</param>
+            <param name="cancellationToken">Cancellation token used for cancelling the inbound HTTP</param>
+            <returns>A <see cref="T:System.Threading.Tasks.Task`1"/> representing the result of the asynchronous operation.</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Controllers.RightsInternalController.ClearAccessCache(System.Int32,Altinn.AccessManagement.Models.BaseAttributeExternal,System.Threading.CancellationToken)">
+            <summary>
+            Clears access chaching for a given recipient having received right delegations from the reportee party, in order for the rights to take effect as imidiately as possible in the distributed authorization system between Altinn 2 and Altinn 3.
+            </summary>
+            <param name="party">Used to specify the reportee party id the authenticated user is acting on behalf of.</param>
+            <param name="to">Attribute specification of the uuid of the recipient to clear access caching for</param>
+            <param name="cancellationToken">Cancellation token used for cancelling the inbound HTTP</param>
+        </member>
+        <member name="T:Altinn.AccessManagement.Enums.AuthorizedPartyTypeExternal">
+            <summary>
+            Enum for different types of Authorized Party
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.AuthorizedPartyTypeExternal.None">
+            <summary>
+            Unknown or unspecified
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.AuthorizedPartyTypeExternal.Person">
+            <summary>
+            Party Type is a Person
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.AuthorizedPartyTypeExternal.Organization">
+            <summary>
+            Party Type is an Organization
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.AuthorizedPartyTypeExternal.SelfIdentified">
+            <summary>
+            Party Type is a Self Identified user
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Enums.DelegableStatusExternal">
+            <summary>
+            Enum for different right delegation status responses
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DelegableStatusExternal.NotDelegable">
+            <summary>
+            User is not able to delegate the right
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DelegableStatusExternal.Delegable">
+            <summary>
+            User is able to delegate the right
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Enums.DelegationStatusExternal">
+            <summary>
+            Enum for different right delegation status responses
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DelegationStatusExternal.NotDelegated">
+            <summary>
+            Right was not delegated
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DelegationStatusExternal.Delegated">
+            <summary>
+            Right was delegated
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Enums.DetailCodeExternal">
+            <summary>
+            Fixed values for DetailCodes
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DetailCodeExternal.Unknown">
+            <summary>
+            Unknown reason should not be used
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DetailCodeExternal.RoleAccess">
+            <summary>
+            Has access by a delegated role in ER or Altinn 
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DetailCodeExternal.DelegationAccess">
+            <summary>
+            Has access by direct delegation
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DetailCodeExternal.SrrRightAccess">
+            <summary>
+            The service requires explicit access in SRR and the reportee has this
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DetailCodeExternal.MissingRoleAccess">
+            <summary>
+            Has not access by a delegation of role in ER or Altinn
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DetailCodeExternal.MissingDelegationAccess">
+            <summary>
+            Has not access by direct delegation
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DetailCodeExternal.MissingSrrRightAccess">
+            <summary>
+            The service requires explicit access in SRR and the reportee is missing this
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DetailCodeExternal.InsufficientAuthenticationLevel">
+            <summary>
+            The service requires explicit authentication level and the reportee is missing this
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.DetailCodeExternal.AlreadyDelegated">
+            <summary>
+            The receiver already has the right
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Enums.ResourceRegistry.ReferenceSourceExternal">
+            <summary>
+            Enum for the different reference sources for resources in the resource registry
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Enums.ResourceRegistry.ReferenceTypeExternal">
+            <summary>
+            Enum for reference types of resources in the resource registry
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Enums.ResourceRegistry.ResourceTypeExternal">
+            <summary>
+            Enum representation of the different types of resources supported by the resource registry
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Enums.RightSourceTypeExternal">
+            <summary>
+            Enum for different the source types exist for a right in Altinn Authorization
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.RightSourceTypeExternal.Unknown">
+            <summary>
+            Default value
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.RightSourceTypeExternal.AppPolicy">
+            <summary>
+            XACML policy for an Altinn app
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.RightSourceTypeExternal.ResourceRegistryPolicy">
+            <summary>
+            XACML policy for a resource from the resource registry
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.RightSourceTypeExternal.DelegationPolicy">
+            <summary>
+            Altinn delegation policy
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Enums.UuidTypeExternal">
+            <summary>
+            Enum defining the different uuids used for defining parts in a delegation
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.UuidTypeExternal.NotSpecified">
+            <summary>
+            Placeholder when type is not specified should only happen when there is no Uuid to match it with
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.UuidTypeExternal.Person">
+            <summary>
+            Defining a person this could also be identified with "Fødselsnummer"/"Dnummer"
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.UuidTypeExternal.Organization">
+            <summary>
+            Identifies a unit could also be identified with a Organization number
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.UuidTypeExternal.SystemUser">
+            <summary>
+            Identifies a systemuser this is a identifier for machine integration it could also be identified with a unique name
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Enums.UuidTypeExternal.EnterpriseUser">
+            <summary>
+            Identifies a enterpriseuser this is marked as obsolete and is used for existing integration is also identified with an unique username
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Filters.IdentityTelemetryFilter">
+            <summary>
+            Filter to enrich request telemetry with identity information
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Filters.IdentityTelemetryFilter.#ctor(Microsoft.ApplicationInsights.Extensibility.ITelemetryProcessor,Microsoft.AspNetCore.Http.IHttpContextAccessor)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Filters.IdentityTelemetryFilter"/> class.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Filters.IdentityTelemetryFilter.Process(Microsoft.ApplicationInsights.Channel.ITelemetry)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Health.HealthCheck">
+            <summary>
+            Health check service configured in startup. See https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks
+            Listen to 
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Health.HealthCheck.CheckHealthAsync(Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext,System.Threading.CancellationToken)">
+            <summary>
+            Verifies the health status
+            </summary>
+            <param name="context">The healtcheck context</param>
+            <param name="cancellationToken">The cancellationtoken</param>
+            <returns>The health check result</returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Health.HealthTelemetryFilter">
+            <summary>
+            Filter to exclude health check request from Application Insights
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Health.HealthTelemetryFilter.#ctor(Microsoft.ApplicationInsights.Extensibility.ITelemetryProcessor)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Altinn.AccessManagement.Health.HealthTelemetryFilter"/> class.
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Health.HealthTelemetryFilter.Process(Microsoft.ApplicationInsights.Channel.ITelemetry)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Altinn.AccessManagement.Mappers.AccessManagementConfiguration">
+            <summary>
+            Configuration for automapper for access management
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Mappers.AccessManagementConfiguration.#ctor">
+            <summary>
+            access management mapping configuration
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Mappers.AccessManagementMapper">
+            <summary>
+            A class that holds the access management mapper configuration
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Mappers.AccessManagementMapper.#ctor">
+            <summary>
+            Configuration for accessmanagement mapper
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.AttributeMatchExternal">
+            <summary>
+            This model describes a pair of AttributeId and AttributeValue for use in matching in XACML policies, for instance a resource, a user, a party or an action.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.AttributeMatchExternal.Id">
+            <summary>
+            Gets or sets the attribute id for the match
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.AttributeMatchExternal.Value">
+            <summary>
+            Gets or sets the attribute value for the match
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.BaseAttributeExternal">
+            <summary>
+            This model describes a an Attribute consisting of an Attribute Type and Attribute Value which can also be represented as a Urn by combining the properties as '{type}:{value}'
+            It's used both for external API input/output but also internally for working with attributes and matching to XACML-attributes used in policies, indentifying for instance a resource, a user, a party or an action.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.BaseAttributeExternal.Type">
+            <summary>
+            Gets or sets the attribute id for the match
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.BaseAttributeExternal.Value">
+            <summary>
+            Gets or sets the attribute value for the match
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.CompetentAuthorityExternal">
+            <summary>
+            Model representation of Competent Authority part of the ServiceResource model
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.CompetentAuthorityExternal.Organization">
+            <summary>
+            The organization number
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.CompetentAuthorityExternal.Orgcode">
+            <summary>
+            The organization code
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.CompetentAuthorityExternal.Name">
+            <summary>
+            The organization name. If not set it will be retrived from register based on Organization number
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.DelegationChangeExternal">
+            <summary>
+            This is an external model that describes a delegation change as stored in the Authorization postgre DelegationChanges table.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.DelegationChangeId">
+            <summary>
+            Gets or sets the delegation change id
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.ResourceRegistryDelegationChangeId">
+            <summary>
+            Gets or sets the resource registry delegation change id
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.DelegationChangeType">
+            <summary>
+            Gets or sets the delegation change type
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.ResourceId">
+            <summary>
+            Gets or sets the resource id.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.ResourceType">
+            <summary>
+            Gets or sets the resourcetype.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.OfferedByPartyId">
+            <summary>
+            Gets or sets the offeredbypartyid, refering to the party id of the user or organization offering the delegation.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.FromUuid">
+            <summary>
+            The uuid of the party the right is on behalf of
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.FromUuidType">
+            <summary>
+            The type of party the right is on behalf of (Person, Organization, SystemUser)
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.CoveredByPartyId">
+            <summary>
+            Gets or sets the coveredbypartyid, refering to the party id of the organization having received the delegation. Otherwise Null if the recipient is a user.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.CoveredByUserId">
+            <summary>
+            Gets or sets the coveredbyuserid, refering to the user id of the user having received the delegation. Otherwise Null if the recipient is an organization.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.ToUuid">
+            <summary>
+            The uuid of the party holding the right
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.ToUuidType">
+            <summary>
+            The type of party holding the right
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.PerformedByUserId">
+            <summary>
+            Gets or sets the user id of the user that performed the delegation change (either added or removed rules to the policy, or deleted it entirely).
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.PerformedByPartyId">
+            <summary>
+            Gets or sets the party id of the user that performed the delegation change (either added or removed rules to the policy, or deleted it entirely).
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.PerformedByUuid">
+            <summary>
+            The uuid of the party that performed the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.PerformedByUuidType">
+            <summary>
+            The type of the party that performed the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.BlobStoragePolicyPath">
+            <summary>
+            Gets or sets blobstoragepolicypath.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.BlobStorageVersionId">
+            <summary>
+            Gets or sets the blobstorage versionid
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationChangeExternal.Created">
+            <summary>
+            Gets or sets the created date and timestamp for the delegation change
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.DelegationChangeTypeExternal">
+            <summary>
+            The type of delegation change
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Models.DelegationChangeTypeExternal.Undefined">
+            <summary>
+            Undefined default value
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Models.DelegationChangeTypeExternal.Grant">
+            <summary>
+            Grant event
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Models.DelegationChangeTypeExternal.Revoke">
+            <summary>
+            Revoke event
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Models.DelegationChangeTypeExternal.RevokeLast">
+            <summary>
+            Revoke last right event
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.DelegationExternal">
+            <summary>
+            This model describes a delegation. A delegation is an action that says if a resource is delegated to you or you have delegated a resource to another person/org
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationExternal.CoveredByName">
+            <summary>
+            Gets or sets the name of the delegation receiver
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationExternal.OfferedByName">
+            <summary>
+            Gets or sets the name of the delegator
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationExternal.OfferedByPartyId">
+            <summary>
+            Gets or sets the userid id for the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationExternal.CoveredByPartyId">
+            <summary>
+            Gets or sets the reportee that received the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationExternal.PerformedByUserId">
+            <summary>
+            Gets or sets the user id of the user that performed the delegation change (either added or removed rules to the policy, or deleted it entirely).
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationExternal.Created">
+            <summary>
+            Gets or sets the userid that performed the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationExternal.OfferedByOrganizationNumber">
+            <summary>
+            Gets or sets the organization number that offered the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationExternal.CoveredByOrganizationNumber">
+            <summary>
+            Gets or sets the organization number that received the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationExternal.ResourceId">
+            <summary>
+            Gets or sets the organization number that received the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationExternal.ResourceTitle">
+            <summary>
+            The title of resource
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DelegationExternal.ResourceType">
+            <summary>
+            Gets or sets the resource type of the delegation
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.DetailExternal">
+            <summary>
+            This model describes a detail while providing a specific code for identifying a specific recurring detail and parameters needed for context and understanding.
+            Can be extended for specific detailing/metadata/informational purposes.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DetailExternal.Code">
+            <summary>
+            Gets or sets the detail identifier code
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DetailExternal.Description">
+            <summary>
+            Gets or sets a human readable (english) description of the detail
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.DetailExternal.Parameters">
+            <summary>
+            Gets or sets a dictionary of parameters which is related to the detail code and description
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.MaskinportenSchemaDelegationExternal">
+            <summary>
+            This model describes a delegation of a Maskinporten Schema from a client/consumer organization to a supplier organization, giving the supplier access to the scopes covered by the schema.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MaskinportenSchemaDelegationExternal.OfferedByPartyId">
+            <summary>
+            Gets or sets the PartyId of the client/consumer organization having delegated the maskinporten schema
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MaskinportenSchemaDelegationExternal.OfferedByName">
+            <summary>
+            Gets or sets the name of the client/consumer organization having delegated the maskinporten schema
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MaskinportenSchemaDelegationExternal.OfferedByOrganizationNumber">
+            <summary>
+            Gets or sets the organization number of the client/consumer organization having delegated the maskinporten schema
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MaskinportenSchemaDelegationExternal.CoveredByPartyId">
+            <summary>
+            Gets or sets the PartyId of the supplier organization having received the delegated maskinporten schema
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MaskinportenSchemaDelegationExternal.CoveredByName">
+            <summary>
+            Gets or sets the name of the supplier organization having received the delegated maskinporten schema
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MaskinportenSchemaDelegationExternal.CoveredByOrganizationNumber">
+            <summary>
+            Gets or sets the organization number of the supplier organization having received the delegated maskinporten schema
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MaskinportenSchemaDelegationExternal.PerformedByUserId">
+            <summary>
+            Gets or sets the user id of the user that performed the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MaskinportenSchemaDelegationExternal.Created">
+            <summary>
+            Gets or sets the date and timestamp when the delegation was performed
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MaskinportenSchemaDelegationExternal.ResourceId">
+            <summary>
+            Gets or sets the identifier of the maskinporten schema resource registered in the resource registry
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.MPDelegationExternal">
+            <summary>
+            This model describes a delegation. A delegation is an action that says which resource is delegated by supplier to consumer org
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MPDelegationExternal.ConsumerOrg">
+            <summary>
+            Gets or sets the organization number of the consumer that gives the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MPDelegationExternal.SupplierOrg">
+            <summary>
+            Gets or sets the organization number of the supplier that received the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MPDelegationExternal.DelegationSchemeId">
+            <summary>
+            Gets or sets the id of the DelegationScheme that is delegated
+            </summary>
+            <value>The id of the delegation scheme.</value>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MPDelegationExternal.Scopes">
+            <summary>
+            Gets or sets a list of scopes in the DelegationScheme
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MPDelegationExternal.Created">
+            <summary>
+            Gets or sets the time for when the delegation was preformed
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.MPDelegationExternal.ResourceId">
+            <summary>
+            Gets or sets the id of the resource
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.PartyExternal">
+            <summary>
+            This model describes a party. A party can be a person/organisation/enterprise user/selfidentified user
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PartyExternal.PartyId">
+            <summary>
+            Gets or sets the ID of the party
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PartyExternal.PartyTypeName">
+            <summary>
+            Gets or sets the type of party
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PartyExternal.OrgNumber">
+            <summary>
+            Gets the parties org number
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PartyExternal.SSN">
+            <summary>
+            Gets the parties ssn
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PartyExternal.UnitType">
+            <summary>
+            Gets or sets the UnitType
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PartyExternal.Name">
+            <summary>
+            Gets or sets the Name
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PartyExternal.IsDeleted">
+            <summary>
+            Gets or sets the IsDeleted
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PartyExternal.OnlyHierarchyElementWithNoAccess">
+            <summary>
+            Gets or sets a value indicating whether if the reportee in the list is only there for showing the hierarchy (a parent unit with no access)
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PartyExternal.Person">
+            <summary>
+            Gets or sets the person details for this party (will only be set if the party type is Person)
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PartyExternal.Organization">
+            <summary>
+            Gets or sets the organization details for this party (will only be set if the party type is Organization)
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PartyExternal.ChildParties">
+            <summary>
+            Gets or sets the value of ChildParties
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.PolicyAttributeMatchExternal">
+            <summary>
+            This model extends the AttributeMatch model with a boolean value indicating whether the ABAC found a match for the attribute
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.PolicyAttributeMatchExternal.MatchFound">
+            <summary>
+            Gets or sets a value indicating whether the ABAC found a match for the attribute
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.RevokeOfferedDelegationExternal">
+            <summary>
+            Model for revoking a delegation of one or more rights a reportee has offered to another party.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RevokeOfferedDelegationExternal.To">
+            <summary>
+            Gets or sets a set of Attribute Id and Attribute Value identifying the party the delegated rights to be revoked, have been offered to.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RevokeOfferedDelegationExternal.Rights">
+            <summary>
+            Gets or sets a list of rights identifying what is to be revoked
+            NOTE:
+            If the right only specifies the top-level resource identifier or org/app without an action specification,
+            the operation will find and revoke all the rights the recipient party have received for the given resource.
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.RevokeReceivedDelegationExternal">
+            <summary>
+            Model for revoking a delegation of one or more rights a reportee has received from another party.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RevokeReceivedDelegationExternal.From">
+            <summary>
+            Gets or sets a set of Attribute Id and Attribute Value identifying the party the delegated rights to be revoked, have been received from.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RevokeReceivedDelegationExternal.Rights">
+            <summary>
+            Gets or sets a list of rights identifying what is to be revoked
+            NOTE:
+            If the right only specifies the top-level resource identifier or org/app without an action specification,
+            the operation will find and revoke all the rights received from the delegating party.
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.AuthorizedPartyInput">
+            <summary>
+            Input model
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.AuthorizedPartyInput.OrganizationNumber">
+            <summary>
+            Used to provide the organization number of the party, in combination with 'organization' as placeholder value for the {party} path parameter
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.AuthorizedPartyInput.PartySSN">
+            <summary>
+            Used to provide the social security number of the party, in combination with 'person' as placeholder value for the {party} path parameter
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.AuthorizedPartyInput.Party">
+            <summary>
+            Used to specify the reportee party the authenticated user is acting on behalf of. Can either be the PartyId, or the placeholder values: 'person' or 'organization' in combination with providing the social security number or the organization number using the header values.
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.BaseRightExternal">
+            <summary>
+            This model describes a single right
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.BaseRightExternal.Resource">
+            <summary>
+            Gets or sets the list of resource matches which uniquely identifies the resource this right applies to.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.BaseRightExternal.Action">
+            <summary>
+            Gets or sets the set of Attribute Id and Attribute Value for a specific action, to identify the action this right applies to
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.RightDelegationCheckResultExternal">
+            <summary>
+            Response model describing the delegation status for a given single right, whether the authenticated user is able to delegate the right or not on behalf of the from part.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationCheckResultExternal.RightKey">
+            <summary>
+            Gets or sets the right key
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationCheckResultExternal.Resource">
+            <summary>
+            Gets or sets the set of Attribute Id and Attribute Value for identifying the resource the rights 
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationCheckResultExternal.Action">
+            <summary>
+            Gets or sets the set of Attribute Id and Attribute Value for a specific action, to identify the action this right applies to
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationCheckResultExternal.Status">
+            <summary>
+            Gets or sets a value indicating whether the right is delegable or not
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationCheckResultExternal.Details">
+            <summary>
+            Gets or sets a list of details describing why or why not the right is valid in the current user and reportee party context
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.RightDelegationExternal">
+            <summary>
+            Describes the delegation result for a given single right.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationExternal.From">
+            <summary>
+            Specifies who have delegated permissions 
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationExternal.To">
+            <summary>
+            Receiver of the permissions
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationExternal.Resource">
+            <summary>
+            Specifies the permissions
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.RightDelegationResultExternal">
+            <summary>
+            Response model describing the delegation result for a given single right, whether the authenticated user was able to delegate the right or not on behalf of the from part.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationResultExternal.RightKey">
+            <summary>
+            Gets or sets the right key
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationResultExternal.Resource">
+            <summary>
+            Gets or sets the set of Attribute Id and Attribute Value for identifying the resource which the right provides access to
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationResultExternal.Action">
+            <summary>
+            Gets or sets the action the right gives access to perform on the resource
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationResultExternal.Status">
+            <summary>
+            Gets or sets a value indicating whether the right was successfully delegated or not
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightDelegationResultExternal.Details">
+            <summary>
+            Gets or sets a list of details describing the reason(s) behind the status (if any can be provided)
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.RightExternal">
+            <summary>
+            This model describes a single right including specification of right source information and whether the user have access or delegation access for the right
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightExternal.RightKey">
+            <summary>
+            Gets or sets the right key
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightExternal.HasPermit">
+            <summary>
+            Gets or sets a value indicating whether the user or party has the right
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightExternal.CanDelegate">
+            <summary>
+            Gets or sets a value indicating whether the user or party is permitted to delegate the right to others
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightExternal.RightSources">
+            <summary>
+            Gets or sets the set of identified sources providing the right
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.RightsDelegationCheckRequestExternal">
+            <summary>
+            Request model for a list of all rights for a specific resource, that a user can delegate from a given reportee to a given recipient.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightsDelegationCheckRequestExternal.Resource">
+            <summary>
+            Gets or sets the set of Attribute Id and Attribute Value for identifying the resource of the rights to be checked
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.RightsDelegationRequestExternal">
+            <summary>
+            Model for performing a delegation of one or more rights to a recipient.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightsDelegationRequestExternal.To">
+            <summary>
+            Gets or sets a set of Attribute Id and Attribute Value identfying the single person or entity receiving the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightsDelegationRequestExternal.Rights">
+            <summary>
+            Gets or sets a list of rights which is to be delegated to the recipient.
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.RightsDelegationResponseExternal">
+            <summary>
+            Response model for the result of a delegation of one or more rights to a recipient.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightsDelegationResponseExternal.To">
+            <summary>
+            Gets or sets a set of Attribute Id and Attribute Value identfying the single person or entity receiving the delegation
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightsDelegationResponseExternal.RightDelegationResults">
+            <summary>
+            Gets or sets a list of rights delegation results with status wheter the delegation was successfully delegated to the recipient.
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.RightSourceExternal">
+            <summary>
+            This model describes a source from where a right exist for a user or party
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightSourceExternal.RightSourceType">
+            <summary>
+            Gets or sets the set of type of source this right originated from (Role, AccessGroup, AppDelegation, ResourceRegistryDelegation etc.)
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightSourceExternal.PolicyId">
+            <summary>
+            Gets or sets the unique identifier for the specific policy the right originates (Output only).
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightSourceExternal.PolicyVersion">
+            <summary>
+            Gets or sets the version of the policy which the right originates (Output only).
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightSourceExternal.RuleId">
+            <summary>
+            Gets or sets the unique identifier for the specific rule within the policy the right originates (Output only).
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightSourceExternal.OfferedByPartyId">
+            <summary>
+            Gets or sets the party offering the rights to the receiving (CoveredBy) entity.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightSourceExternal.HasPermit">
+            <summary>
+            Gets or sets a value indicating whether the user or party has the right
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightSourceExternal.CanDelegate">
+            <summary>
+            Gets or sets a value indicating whether the user or party is permitted to delegate the right to others
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightSourceExternal.MinimumAuthenticationLevel">
+            <summary>
+            Gets or sets a value specifying the minimum required authentication level
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightSourceExternal.UserSubjects">
+            <summary>
+            Gets or sets the list of subject matches the user has.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightSourceExternal.PolicySubjects">
+            <summary>
+            Gets or sets the list of subject matches which provides access to this right in the resource policy
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Models.RightsQueryExternal">
+            <summary>
+            Queries for a list of all rights between two parties for a specific resource.
+            If coveredby user has any key roles, those party ids should be included in the query to have the 3.0 PIP lookup rights inheirited through those as well.
+            If offeredby is a sub unit, parenty party id should be supplied to include inheirited rights received through the main unit.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightsQueryExternal.From">
+            <summary>
+            Gets or sets the set of Attribute Id and Attribute Value for the entity having offered rights
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightsQueryExternal.To">
+            <summary>
+            Gets or sets the set of Attribute Id and Attribute Value for the entity having received rights
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Models.RightsQueryExternal.Resource">
+            <summary>
+            Gets or sets the set of Attribute Id and Attribute Value for identifying the resource the rights 
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal">
+            <summary>
+            Model representing an authorized party, meaning a party for which the subject which has been authorized, has received one or more rights (either directly or through role(s), rightspackages).
+            Used in new implementation of what has previously been named ReporteeList in Altinn 2.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.PartyUuid">
+            <summary>
+            Gets or sets the universally unique identifier of the party
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.Name">
+            <summary>
+            Gets or sets the name of the party
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.OrganizationNumber">
+            <summary>
+            Gets the organization number if the party is an organization
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.PersonId">
+            <summary>
+            Gets the national identity number if the party is a person
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.PartyId">
+            <summary>
+            Gets or sets the party id
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.Type">
+            <summary>
+            Gets or sets the type of party
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.UnitType">
+            <summary>
+            Gets or sets the unit type if the party is an organization
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.IsDeleted">
+            <summary>
+            Gets or sets whether this party is marked as deleted in the Central Coordinating Register for Legal Entities
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.OnlyHierarchyElementWithNoAccess">
+            <summary>
+            Gets or sets a value indicating whether the party is only included as a hierarchy element without any access. Meaning a main unit where the authorized subject only have access to one or more of the subunits.
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.AuthorizedResources">
+            <summary>
+            Gets or sets a collection of all resource identifier the authorized subject has some access to on behalf of this party
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.AuthorizedRoles">
+            <summary>
+            Gets or sets a collection of all rolecodes for roles from either Enhetsregisteret or Altinn 2 which the authorized subject has been authorized for on behalf of this party
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.AuthorizedPartyExternal.Subunits">
+            <summary>
+            Gets or sets a set of subunits of this party, which the authorized subject also has some access to.
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceReferenceExternal">
+            <summary>
+            Model representation of the resource reference part of the ServiceResource model
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceReferenceExternal.ReferenceSource">
+            <summary>
+            The source the reference identifier points to
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceReferenceExternal.Reference">
+            <summary>
+            The reference identifier
+            </summary>
+        </member>
+        <member name="P:Altinn.AccessManagement.Core.Models.ResourceRegistry.ResourceReferenceExternal.ReferenceType">
+            <summary>
+            The reference type
+            </summary>
+        </member>
+        <member name="T:Altinn.AccessManagement.Utilities.IdentifierUtil">
+            <summary>
+            Utility class for working with internal and external identifiers
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Utilities.IdentifierUtil.PersonHeader">
+            <summary>
+            Default HTTP header for SSN input
+            </summary>
+        </member>
+        <member name="F:Altinn.AccessManagement.Utilities.IdentifierUtil.OrganizationNumberHeader">
+            <summary>
+            Default HTTP header for Organization number input
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Utilities.IdentifierUtil.IsValidOrganizationNumber(System.String)">
+            <summary>
+            Validates that a given organization number is valid.
+            </summary>
+            <param name="orgNo">
+            Organization number to validate
+            </param>
+            <returns>
+            true if valid, false otherwise.
+            </returns>
+            <remarks>
+            Validates length, numeric and modulus 11.
+            </remarks>
+        </member>
+        <member name="M:Altinn.AccessManagement.Utilities.IdentifierUtil.IsValidSSN(System.String)">
+            <summary>
+            Validates that a given social security number is valid.
+            </summary>
+            <param name="ssnNo">
+            Social security number to validate
+            </param>
+            <returns>
+            true if valid, false otherwise.
+            </returns>
+            <remarks>
+            Validates length, numeric and modulus 11.
+            </remarks>
+        </member>
+        <member name="M:Altinn.AccessManagement.Utilities.IdentifierUtil.MaskSSN(System.String)">
+            <summary>
+            Masks an incoming SSN.
+            </summary>
+            <param name="input">SSN that should be masked</param>
+            <returns>Masked SSN</returns>
+        </member>
+        <member name="M:Altinn.AccessManagement.Utilities.IdentifierUtil.GetIdentifierAsAttributeMatch(System.String,Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Route allowes for specifying the reportee party in the path.
+            This value must either be a PartyId, or the placeholder values: "organization" or "person"
+            if the placeholder value is used the organization number or social security number must be specified in a corresponding header value: "Altinn-Party-OrganizationNumber" or "Altinn-Party-SocialSecurityNumber"
+            </summary>
+            <param name="party">The party value from route</param>
+            <param name="context">The httpcontext for getting header values</param>
+            <returns>AttributeMatch model representation of the identifier</returns>
+        </member>
+        <member name="T:Altinn.AccessManagement.Utilities.MaskinportenSchemaAuthorizer">
+            <summary>
+            Authorization helper for custom authorization for maskinporten schema API operations
+            </summary>
+        </member>
+        <member name="M:Altinn.AccessManagement.Utilities.MaskinportenSchemaAuthorizer.IsAuthorizedDelegationLookupAccess(System.String,System.Security.Claims.ClaimsPrincipal)">
+            <summary>
+            Authorization of whether the provided claims is authorized for lookup of delegations of the given scope
+            </summary>
+            <param name="scope">The scope to authorize for delegation lookup</param>
+            <param name="claims">The claims principal of the authenticated organization</param>
+            <returns>bool</returns>
+        </member>
+        <member name="T:Program">
+            <summary>
+            Startup class.
+            </summary>
+        </member>
+    </members>
+</doc>

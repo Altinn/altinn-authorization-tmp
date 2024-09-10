@@ -1,0 +1,5 @@
+is_global = true
+build_property.RootNamespace = Altinn.Authorization.ABAC
+build_property.ProjectDir = /home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Authorization.ABAC/src/Altinn.Authorization.ABAC/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 

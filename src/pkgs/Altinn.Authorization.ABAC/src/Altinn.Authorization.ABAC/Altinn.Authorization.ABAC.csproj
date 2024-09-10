@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <!-- SonarCloud requires a ProjectGuid to separate projects. -->
+    <ProjectGuid>{C9ABF5DB-928C-4280-B587-13E6DCE010BC}</ProjectGuid>
+
+    <!-- NuGet package properties -->
+    <PackageId>Altinn.Authorization.ABAC</PackageId>
+    <Version>0.0.8</Version>
+    <PackageTags>Altinn;Authorization;ABAC</PackageTags>
+    <Description>
+      Attribute Based Access Control library for .Net Core implementing XACML 3.0 xml and JSON
+      Profile.
+      See details at https://docs.altinn.studio.
+    </Description>
+    <PackageReleaseNotes>
+    </PackageReleaseNotes>
+    <Authors>Altinn Platform Contributors</Authors>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
+    <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="all" />
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+</Project>

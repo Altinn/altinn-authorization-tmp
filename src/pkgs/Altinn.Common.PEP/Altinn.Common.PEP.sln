@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7CF9EA3C-7524-42AD-9C40-D88E31ACF837}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Common.PEP", "src\Altinn.Common.PEP\Altinn.Common.PEP.csproj", "{92F10F90-79C5-459F-8238-0EC4D02AA93C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{810F1228-1553-4D9F-847A-E963CB92F1BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "tests\Altinn.Common.PEP.Tests\UnitTests.csproj", "{DD28D869-A930-4D38-9CF9-BABC48FFCA1B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{92F10F90-79C5-459F-8238-0EC4D02AA93C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92F10F90-79C5-459F-8238-0EC4D02AA93C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92F10F90-79C5-459F-8238-0EC4D02AA93C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92F10F90-79C5-459F-8238-0EC4D02AA93C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD28D869-A930-4D38-9CF9-BABC48FFCA1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD28D869-A930-4D38-9CF9-BABC48FFCA1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD28D869-A930-4D38-9CF9-BABC48FFCA1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD28D869-A930-4D38-9CF9-BABC48FFCA1B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{92F10F90-79C5-459F-8238-0EC4D02AA93C} = {7CF9EA3C-7524-42AD-9C40-D88E31ACF837}
+		{DD28D869-A930-4D38-9CF9-BABC48FFCA1B} = {810F1228-1553-4D9F-847A-E963CB92F1BA}
+	EndGlobalSection
+EndGlobal

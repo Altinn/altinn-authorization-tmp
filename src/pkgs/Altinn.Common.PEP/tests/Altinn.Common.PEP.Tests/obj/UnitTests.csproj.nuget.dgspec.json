@@ -1,0 +1,249 @@
+{
+  "format": 1,
+  "restore": {
+    "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Common.PEP/tests/Altinn.Common.PEP.Tests/UnitTests.csproj": {}
+  },
+  "projects": {
+    "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Common.PEP/src/Altinn.Common.PEP/Altinn.Common.PEP.csproj": {
+      "version": "4.0.0",
+      "restore": {
+        "projectUniqueName": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Common.PEP/src/Altinn.Common.PEP/Altinn.Common.PEP.csproj",
+        "projectName": "Altinn.Common.PEP",
+        "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Common.PEP/src/Altinn.Common.PEP/Altinn.Common.PEP.csproj",
+        "packagesPath": "/home/andreas/.nuget/packages/",
+        "outputPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Common.PEP/src/Altinn.Common.PEP/obj/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "configFilePaths": [
+          "/home/andreas/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "/usr/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "Altinn.Authorization.ABAC": {
+              "target": "Package",
+              "version": "[0.0.8, )",
+              "versionCentrallyManaged": true
+            },
+            "DotNet.ReproducibleBuilds": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.4, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.AspNetCore.Mvc.NewtonsoftJson": {
+              "target": "Package",
+              "version": "[6.0.33, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.SourceLink.GitHub": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.556, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Altinn.Authorization.ABAC": "[0.0.8, )",
+            "coverlet.collector": "[6.0.2, )",
+            "DotNet.ReproducibleBuilds": "[1.2.4, )",
+            "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[6.0.33, )",
+            "Microsoft.AspNetCore.Mvc.Testing": "[8.0.7, )",
+            "Microsoft.NET.Test.Sdk": "[17.10.0, )",
+            "Microsoft.SourceLink.GitHub": "[8.0.0, )",
+            "Moq": "[4.20.70, )",
+            "MSTest.TestFramework": "[3.5.2, )",
+            "StyleCop.Analyzers": "[1.2.0-beta.556, )",
+            "System.Text.Json": "[8.0.4, )",
+            "xunit": "[2.9.0, )",
+            "xunit.runner.visualstudio": "[2.8.2, )"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[6.0.32, 6.0.32]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[6.0.32, 6.0.32]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.107/RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Common.PEP/tests/Altinn.Common.PEP.Tests/UnitTests.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Common.PEP/tests/Altinn.Common.PEP.Tests/UnitTests.csproj",
+        "projectName": "UnitTests",
+        "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Common.PEP/tests/Altinn.Common.PEP.Tests/UnitTests.csproj",
+        "packagesPath": "/home/andreas/.nuget/packages/",
+        "outputPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Common.PEP/tests/Altinn.Common.PEP.Tests/obj/",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "configFilePaths": [
+          "/home/andreas/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "/usr/share/dotnet/library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {
+              "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Common.PEP/src/Altinn.Common.PEP/Altinn.Common.PEP.csproj": {
+                "projectPath": "/home/andreas/Projects/digdir/altinn-authorization-tmp/src/pkgs/Altinn.Common.PEP/src/Altinn.Common.PEP/Altinn.Common.PEP.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "Altinn.Authorization.ABAC": {
+              "target": "Package",
+              "version": "[0.0.8, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[17.10.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Moq": {
+              "target": "Package",
+              "version": "[4.20.70, )",
+              "versionCentrallyManaged": true
+            },
+            "StyleCop.Analyzers": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.2.0-beta.556, )",
+              "versionCentrallyManaged": true
+            },
+            "coverlet.collector": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[6.0.2, )",
+              "versionCentrallyManaged": true
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.9.0, )",
+              "versionCentrallyManaged": true
+            },
+            "xunit.runner.visualstudio": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.8.2, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "Altinn.Authorization.ABAC": "[0.0.8, )",
+            "coverlet.collector": "[6.0.2, )",
+            "DotNet.ReproducibleBuilds": "[1.2.4, )",
+            "Microsoft.AspNetCore.Mvc.NewtonsoftJson": "[6.0.33, )",
+            "Microsoft.AspNetCore.Mvc.Testing": "[8.0.7, )",
+            "Microsoft.NET.Test.Sdk": "[17.10.0, )",
+            "Microsoft.SourceLink.GitHub": "[8.0.0, )",
+            "Moq": "[4.20.70, )",
+            "MSTest.TestFramework": "[3.5.2, )",
+            "StyleCop.Analyzers": "[1.2.0-beta.556, )",
+            "System.Text.Json": "[8.0.4, )",
+            "xunit": "[2.9.0, )",
+            "xunit.runner.visualstudio": "[2.8.2, )"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[6.0.32, 6.0.32]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[6.0.32, 6.0.32]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.107/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
