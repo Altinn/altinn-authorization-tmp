@@ -95,7 +95,7 @@ jobs:
       fail-fast: false
       matrix:
         name: ${{ fromJson(needs.bundle.outputs.dirs) }}
-        environment: [at21, at22, at23, at24]
+        environment: [at21]
     with:
       working_dir: src/apps/${{ matrix.name }}/deploy
       environment: ${{ matrix.environment }}
