@@ -89,7 +89,7 @@ resource "azurerm_role_assignment" "key_vault_secret_reader" {
 }
 
 module "key_vault" {
-  source              = "../../../../infra/modules/key_vault"
+  source              = "../../modules/key_vault"
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
   metadata            = local.metadata
@@ -100,7 +100,7 @@ module "key_vault" {
 }
 
 module "postgres_server" {
-  source              = "../../../../infra/modules/postgres_server"
+  source              = "../../modules/postgres_server"
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
   metadata            = local.metadata
