@@ -6,14 +6,13 @@ terraform {
     }
   }
 
-  # backend "azurerm" {
-  #   use_azuread_auth = true
-  # }
+  backend "azurerm" {
+    use_azuread_auth = true
+  }
 }
 
 provider "azurerm" {
-  use_oidc        = true
-  subscription_id = "45177a0a-d27e-490f-9f23-b4726de8ccc1"
+  use_oidc = true
   features {}
 }
 
