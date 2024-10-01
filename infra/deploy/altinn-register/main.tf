@@ -58,6 +58,11 @@ data "azurerm_private_dns_zone" "postgres" {
   resource_group_name = local.infrastructure_resource_group_name
 }
 
+data "azurerm_private_dns_zone" "key_vault" {
+  name                = "privatelink.vaultcore.azure.net"
+  resource_group_name = local.infrastructure_resource_group_name
+}
+
 resource "azurerm_resource_group" "rg" {
   name     = local.resource_group_name
   location = var.location
@@ -97,7 +102,7 @@ module "key_vault" {
   location            = var.location
   metadata            = local.metadata
 
-  dns_zones = []
+  dns_zones = [data.azurerm_private_dns_zone.key_vault.id]
   subnet_id = data.azurerm_subnet.default.id
   tenant_id = data.azurerm_client_config.current.tenant_id
 }
