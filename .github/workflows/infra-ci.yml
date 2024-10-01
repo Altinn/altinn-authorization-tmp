@@ -28,7 +28,7 @@ jobs:
       working_dir: infra/deploy/auth
 
   register:
-    name: Register
+    name: Altinn Register
     secrets: inherit
     uses: ./.github/workflows/infra-ci-template.yml
     with:
