@@ -118,7 +118,7 @@ module "postgres_server" {
 
 resource "azurerm_postgresql_flexible_server_database" "database" {
   name      = "register"
-  server_id = data.azurerm_postgresql_flexible_server.server.id
+  server_id = module.postgres_server.id
   collation = "en_US.utf8"
   charset   = "utf8"
 
