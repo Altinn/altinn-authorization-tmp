@@ -33,6 +33,7 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
     password_auth_enabled         = false
     tenant_id                     = var.tenant_id
   }
+
   identity {
     type         = "UserAssigned"
     identity_ids = [azurerm_user_assigned_identity.postgres_server_admin.id]

@@ -27,8 +27,3 @@ variable "subnet_id" {
 variable "dns_zones" {
   type = list(string)
 }
-
-variable "prevent_destroy" {
-  type    = bool
-  default = true
-}

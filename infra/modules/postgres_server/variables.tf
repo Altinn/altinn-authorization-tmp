@@ -25,16 +25,17 @@ variable "key_vault_id" {
   type = string
 }
 
-variable "is_prod_like" {
-  type = bool
-}
-
 variable "subnet_id" {
   type = string
 }
 
+variable "is_prod_like" {
+  type = bool
+}
+
 variable "dns_zone" {
-  type = string
+  type        = string
+  description = "Specifies if DNS should be resolved internally or not. If specifies public endpoint is disabled"
 }
 
 variable "postgres_version" {
