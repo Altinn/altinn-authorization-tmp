@@ -69,6 +69,10 @@ resource "azurerm_user_assigned_identity" "mi" {
   name                = "mi${local.metadata.suffix}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_role_assignment" "mass_transit_role" {
@@ -110,4 +114,16 @@ module "postgres_server" {
 
   subnet_id = data.azurerm_subnet.postgres.id
   tenant_id = data.azurerm_client_config.current.tenant_id
+}
+
+resource "azurerm_postgresql_flexible_server_database" "database" {
+  name      = "register"
+  server_id = data.azurerm_postgresql_flexible_server.server.id
+  collation = "en_US.utf8"
+  charset   = "utf8"
+
+  # prevent the possibility of accidental data loss
+  lifecycle {
+    prevent_destroy = true
+  }
 }
