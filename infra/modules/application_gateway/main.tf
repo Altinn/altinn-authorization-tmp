@@ -79,22 +79,22 @@ resource "azurerm_application_gateway" "appgw" {
   }
 
   backend_address_pool {
-    name  = "backend_address_pool_container_app_index"
+    name  = "index"
     fqdns = ["index.${var.domains["frontend"]}"]
   }
 
   backend_http_settings {
-    name                                = "backend_http_settings_container_app_index"
+    name                                = "index"
     cookie_based_affinity               = "Disabled"
     path                                = ""
     port                                = 80
     protocol                            = "Http"
-    probe_name                          = "probe_container_app_index"
+    probe_name                          = "index"
     pick_host_name_from_backend_address = true
   }
 
   probe {
-    name                                      = "probe_container_app_index"
+    name                                      = "index"
     protocol                                  = "Http"
     path                                      = "/"
     pick_host_name_from_backend_http_settings = true
@@ -148,8 +148,8 @@ resource "azurerm_application_gateway" "appgw" {
   dynamic "url_path_map" {
     content {
       name                               = "url_path_map_container_app_${url_path_map.key}"
-      default_backend_address_pool_name  = "backend_address_pool_container_app_index"
-      default_backend_http_settings_name = "backend_http_settings_container_app_index"
+      default_backend_address_pool_name  = "index"
+      default_backend_http_settings_name = "index"
       dynamic "path_rule" {
         content {
           name                       = "path_rule_container_app_${path_rule.value.domain}_${path_rule.value.hostname}"

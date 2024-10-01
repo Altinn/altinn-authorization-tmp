@@ -96,11 +96,6 @@ variable "services" {
       domain   = "api" # Must be present
       path     = "accesspackages"
       hostname = "accesspackages"
-    },
-    {
-      domain   = "frontend" # Must be present
-      path     = "/"
-      hostname = "index"
     }
   ]
 
