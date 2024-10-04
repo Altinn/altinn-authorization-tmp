@@ -45,6 +45,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Access
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.AccessPackages.Models", "src\apps\Altinn.Authorization.AccessPackages\src\Altinn.Authorization.AccessPackages.Models\Altinn.Authorization.AccessPackages.Models.csproj", "{AF91ACE5-6AE2-47B2-9BD1-064064AA910A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Altinn.Authorization.DeployApi", "Altinn.Authorization.DeployApi", "{400D49D3-87B7-4960-B553-C8693CDB5755}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.DeployApi", "src\apps\Altinn.Authorization.DeployApi\src\Altinn.Authorization.DeployApi\Altinn.Authorization.DeployApi.csproj", "{3238A95C-CC93-4E46-B11F-EADABDD1D17B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +91,10 @@ Global
 		{AF91ACE5-6AE2-47B2-9BD1-064064AA910A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF91ACE5-6AE2-47B2-9BD1-064064AA910A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF91ACE5-6AE2-47B2-9BD1-064064AA910A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3238A95C-CC93-4E46-B11F-EADABDD1D17B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3238A95C-CC93-4E46-B11F-EADABDD1D17B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3238A95C-CC93-4E46-B11F-EADABDD1D17B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3238A95C-CC93-4E46-B11F-EADABDD1D17B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -111,5 +119,10 @@ Global
 		{C38C05DD-A87C-4166-8D30-58E9305E1FB1} = {7EB60BDC-609B-4A73-9765-F4B9BFADB007}
 		{3E719CAF-CE38-4412-B372-D73FFA3DFADE} = {C38C05DD-A87C-4166-8D30-58E9305E1FB1}
 		{AF91ACE5-6AE2-47B2-9BD1-064064AA910A} = {C38C05DD-A87C-4166-8D30-58E9305E1FB1}
+		{400D49D3-87B7-4960-B553-C8693CDB5755} = {15B73811-7124-43E0-9DAF-895121B12EBA}
+		{3238A95C-CC93-4E46-B11F-EADABDD1D17B} = {400D49D3-87B7-4960-B553-C8693CDB5755}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {995C226B-55B2-491E-A8D2-4E390CFD6CE1}
 	EndGlobalSection
 EndGlobal
