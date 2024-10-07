@@ -29,7 +29,7 @@ internal sealed class CreateDatabaseTask
         {
             await cmd.ExecuteNonQueryAsync(cancellationToken);
         }
-        catch (PostgresException ex) when (ex.SqlState == "42P04")
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.DuplicateDatabase)
         {
             // Database already exists
         }

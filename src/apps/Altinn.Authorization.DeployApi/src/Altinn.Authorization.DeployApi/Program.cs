@@ -12,7 +12,13 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
-    cred = new ManagedIdentityCredential();
+    var clientId = builder.Configuration.GetValue<string>("ManagedIdentity:ClientId");
+    if (string.IsNullOrEmpty(clientId))
+    {
+        throw new InvalidOperationException("ManagedIdentity:ClientId is required in production mode");
+    }
+
+    cred = new ManagedIdentityCredential(clientId);
 }
 
 builder.Services.AddSingleton(cred);

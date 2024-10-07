@@ -43,7 +43,7 @@ internal sealed class CreateDatabaseRoleTask
         {
             await cmd.ExecuteNonQueryAsync(cancellationToken);
         }
-        catch (PostgresException ex) when (ex.SqlState == "42710")
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.DuplicateObject)
         {
             if (pw.Updated)
             {
