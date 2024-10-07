@@ -9,6 +9,16 @@ variable "metadata" {
   })
 }
 
+variable "entraid_admins" {
+  type = list(object({
+    principal_name = string
+    principal_type = string
+    principal_id   = string
+  }))
+
+  default = [{}]
+}
+
 variable "resource_group_name" {
   type = string
 }

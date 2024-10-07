@@ -93,14 +93,18 @@ variable "services" {
 
   default = [
     {
-      domain   = "api" # Must be present
-      path     = "accesspackages"
+      domain   = "api"
+      path     = "/accesspackages"
       hostname = "accesspackages"
     },
     {
-      domain   = "frontend" # Must be present
+      domain   = "frontend"
       path     = "/"
       hostname = "index"
+    },
+    {
+      domain = "api"
+      path   = "/bootstrapper"
     }
   ]
 

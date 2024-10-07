@@ -8,6 +8,11 @@ variable "metadata" {
   })
 }
 
+variable "entraid_admins" {
+  type        = list(string)
+  description = "List of objects IDs"
+}
+
 variable "resource_group_name" {
   type = string
 }

@@ -63,6 +63,11 @@ data "azurerm_private_dns_zone" "key_vault" {
   resource_group_name = local.infrastructure_resource_group_name
 }
 
+data "azurerm_user_assigned_identity" "admin" {
+  name                = "miappadmin${local.infrastructure_suffix}"
+  resource_group_name = local.infrastructure_resource_group_name
+}
+
 resource "azurerm_resource_group" "rg" {
   name     = local.resource_group_name
   location = var.location
@@ -101,6 +106,8 @@ module "key_vault" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
   metadata            = local.metadata
+  entraid_admins      = [data.azurerm_user_assigned_identity.admin.principal_id]
+
 
   dns_zones = [data.azurerm_private_dns_zone.key_vault.id]
   subnet_id = data.azurerm_subnet.default.id
@@ -112,6 +119,14 @@ module "postgres_server" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
   metadata            = local.metadata
+
+  entraid_admins = [
+    {
+      principal_id   = data.azurerm_user_assigned_identity.admin.principal_id
+      principal_name = data.azurerm_user_assigned_identity.admin.name
+      principal_type = "ServicePrincipal"
+    }
+  ]
 
   is_prod_like = var.is_prod_like
   key_vault_id = module.key_vault.id
