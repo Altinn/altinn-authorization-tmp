@@ -108,7 +108,6 @@ module "key_vault" {
   metadata            = local.metadata
   entraid_admins      = [data.azurerm_user_assigned_identity.admin.principal_id]
 
-
   dns_zones = [data.azurerm_private_dns_zone.key_vault.id]
   subnet_id = data.azurerm_subnet.default.id
   tenant_id = data.azurerm_client_config.current.tenant_id
@@ -134,16 +133,4 @@ module "postgres_server" {
 
   subnet_id = data.azurerm_subnet.postgres.id
   tenant_id = data.azurerm_client_config.current.tenant_id
-}
-
-resource "azurerm_postgresql_flexible_server_database" "database" {
-  name      = "register"
-  server_id = module.postgres_server.id
-  collation = "en_US.utf8"
-  charset   = "utf8"
-
-  # prevent the possibility of accidental data loss
-  lifecycle {
-    prevent_destroy = true
-  }
 }
