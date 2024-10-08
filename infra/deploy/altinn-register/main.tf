@@ -106,7 +106,7 @@ module "key_vault" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
   metadata            = local.metadata
-  entraid_admins      = [data.azurerm_user_assigned_identity.admin.principal_id]
+  entraid_admins      = { "app" : data.azurerm_user_assigned_identity.admin.principal_id }
 
   dns_zones = [data.azurerm_private_dns_zone.key_vault.id]
   subnet_id = data.azurerm_subnet.default.id

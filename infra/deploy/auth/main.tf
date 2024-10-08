@@ -94,13 +94,13 @@ module "key_vault" {
   resource_group_name = local.resource_group_name
   location            = var.location
 
-  entraid_admins = [azurerm_user_assigned_identity.application_admin.principal_id]
+  entraid_admins = { "app" : azurerm_user_assigned_identity.application_admin.principal_id }
 
   tenant_id = var.tenant_id
   dns_zones = [module.dns.zones["key_vault"].id]
   subnet_id = module.vnet.subnets["default"].id
 
-  depends_on = [azurerm_resource_group.auth]
+  depends_on = [azurerm_resource_group.auth, azurerm_user_assigned_identity.application_admin]
 }
 
 module "service_bus" {
@@ -138,7 +138,7 @@ module "postgres_server" {
   key_vault_id = module.key_vault.id
   subnet_id    = module.vnet.subnets["postgres"].id
 
-  depends_on = [azurerm_resource_group.auth, module.key_vault, azurerm_user_assigned_identity.application_admin]
+  depends_on = [azurerm_resource_group.auth, module.key_vault]
 }
 
 module "application_insights" {
