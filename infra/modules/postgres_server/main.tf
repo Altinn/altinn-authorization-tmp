@@ -41,5 +41,5 @@ resource "azurerm_postgresql_flexible_server_active_directory_administrator" "ad
   principal_name = each.value.prinicpal_name
   principal_type = each.value.prinicpal_type
 
-  for_each = toset(var.entraid_admins)
+  for_each = { for value in var.entraid_admins : value.principal_name => value }
 }
