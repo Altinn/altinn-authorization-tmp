@@ -138,7 +138,7 @@ module "postgres_server" {
   key_vault_id = module.key_vault.id
   subnet_id    = module.vnet.subnets["postgres"].id
 
-  depends_on = [azurerm_resource_group.auth, module.key_vault]
+  depends_on = [azurerm_resource_group.auth, module.key_vault, azurerm_user_assigned_identity.application_admin]
 }
 
 module "application_insights" {
