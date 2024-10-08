@@ -33,6 +33,7 @@ builder.Services.AddAuthentication()
 
 var app = builder.Build();
 
+app.UseAltinnHostDefaults();
 app.MapPost("deployapi/api/v1/databases/bootstrap", (BootstrapDatabasePipeline pipeline, HttpContext context) => pipeline.Run(context));
 
 app.Run();
