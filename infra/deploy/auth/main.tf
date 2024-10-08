@@ -128,8 +128,8 @@ module "postgres_server" {
 
   entraid_admins = [
     {
-      principal_id   = azurerm_user_assigned_identity.postgres_admin.id
-      principal_name = azurerm_user_assigned_identity.postgres_admin.name
+      principal_id   = azurerm_user_assigned_identity.application_admin.principal_id
+      principal_name = azurerm_user_assigned_identity.application_admin.name
       principal_type = "ServicePrincipal"
     }
   ]

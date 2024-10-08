@@ -22,11 +22,6 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
     tenant_id                     = var.tenant_id
   }
 
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.postgres_server_admin.id]
-  }
-
   sku_name = local.postgres_server_sku
 
   tags = var.metadata
