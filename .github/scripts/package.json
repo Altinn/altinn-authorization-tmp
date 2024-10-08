@@ -6,6 +6,7 @@
   "author": "",
   "private": true,
   "devDependencies": {
+    "@actions/core": "^1.11.1",
     "@octokit/action": "^7.0.0",
     "@types/node": "^20.11.30",
     "chalk": "^5.3.0",

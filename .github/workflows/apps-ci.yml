@@ -11,22 +11,20 @@ on:
 
 env:
   DOTNET_VERSION: 8.0.x
-  DIR: src/apps
 
 jobs:
-  bundle:
-    name: Bundle Apps
-    uses: ./.github/workflows/bundle-template.yml
+  find-verticals:
+    uses: ./.github/workflows/_find-verticals.yml
     with:
-      dir: apps
+      type: app
 
   ci:
     name: CI
     runs-on: ubuntu-latest
-    needs: bundle
+    needs: find-verticals
     strategy:
       matrix:
-        name: ${{ fromJson(needs.bundle.outputs.dirs) }}
+        path: ${{ fromJson(needs.find-verticals.outputs.verticals) }}
 
     steps:
       - uses: actions/checkout@v4
@@ -36,10 +34,10 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Build
-        working-directory: ${{ env.DIR }}/${{ matrix.name }}
+        working-directory: ${{ matrix.path }}
         run: dotnet build
 
       - name: Test
         if: always()
-        working-directory: src/apps/${{ matrix.name }}
+        working-directory: ${{ matrix.path }}
         run: dotnet test --no-build

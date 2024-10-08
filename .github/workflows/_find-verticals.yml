@@ -1,0 +1,36 @@
+name: "Template: Find verticals"
+
+on:
+  workflow_call:
+    outputs:
+      verticals:
+        value: ${{ jobs.list.outputs.verticals }}
+        description: JSON list of folders in either <apps, pkgs, libs>
+
+    inputs:
+      type:
+        required: true
+        description: <app, pkg, lib>
+        type: string
+
+jobs:
+  list:
+    name: Find ${{ inputs.type }}s
+    runs-on: ubuntu-latest
+
+    outputs:
+      verticals: ${{ steps.list.outputs.verticals }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          run_install: |
+            - cwd: .github/scripts
+              args: [--frozen-lockfile]
+            - args: [--global, tsx]
+
+      - name: Update all sln files
+        id: list
+        run: tsx ./.github/scripts/list-verticals.mts ${{ inputs.type }}
