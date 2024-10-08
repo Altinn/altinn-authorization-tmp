@@ -8,6 +8,7 @@ export type Vertical = {
   readonly type: VerticalType;
   readonly name: string;
   readonly path: string;
+  readonly relPath: string;
   readonly rawConfig: Readonly<Record<string, unknown>>;
 };
 
@@ -33,7 +34,13 @@ const readVertical = (type: VerticalType, dirPath: string): Vertical => {
     name = config.name;
   }
 
-  return { type, name, path: verticalPath, rawConfig: config };
+  return {
+    type,
+    name,
+    path: verticalPath,
+    relPath: dirPath,
+    rawConfig: config,
+  };
 };
 
 const apps = await globby(`${vertialDirs.app}/*`, { onlyDirectories: true });

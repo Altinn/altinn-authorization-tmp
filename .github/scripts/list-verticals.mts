@@ -8,4 +8,4 @@ if (type) {
   output = verticals.filter((v) => v.type === type);
 }
 
-actions.setOutput("verticals", JSON.stringify(output.map((v) => v.name)));
+actions.setOutput("verticals", JSON.stringify(output.map((v) => v.relPath)));
