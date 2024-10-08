@@ -29,7 +29,7 @@ resource "azurerm_key_vault" "key_vault" {
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment
 resource "azurerm_role_assignment" "key_vault_administrator" {
   scope                = azurerm_key_vault.key_vault.id
-  principal_id         = data.azurerm_client_config.current.object_id
+  principal_id         = each.key
   role_definition_name = "Key Vault Administrator" # https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#security
   for_each             = toset(concat([data.azurerm_client_config.current.object_id], var.entraid_admins))
 }
