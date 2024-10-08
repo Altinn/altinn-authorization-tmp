@@ -103,8 +103,9 @@ variable "services" {
       hostname = "index"
     },
     {
-      domain = "api"
-      path   = "/bootstrapper"
+      domain   = "api"
+      path     = "/bootstrapper"
+      hostname = "bootstrapper"
     }
   ]
 

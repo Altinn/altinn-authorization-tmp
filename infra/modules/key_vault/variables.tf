@@ -10,6 +10,7 @@ variable "metadata" {
 
 variable "entraid_admins" {
   type        = list(string)
+  default     = []
   description = "List of objects IDs"
 }
 

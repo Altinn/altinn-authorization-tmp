@@ -189,19 +189,12 @@ module "app_configuration" {
   resource_group_name = local.resource_group_name
   location            = var.location
 
-  variables = merge(
-    {
-      for service in var.services : "AltinnApiEndpoints:${title(service.hostname)}" => "http://${service.hostname}.${local.domains.api}" if service.domain == "api"
-    },
-    {
-      for service in var.services : "AltinnFrontendEndpoints:${title(service.hostname)}" => "http://${service.hostname}.${local.domains.frontend}" if service.domain == "frontend"
-    },
-    {
-      "Postgres:Host"                        = module.postgres_server.host
-      "ServiceBus:Endpoint"                  = module.service_bus.host
-      "ApplicationInsights:ConnectionString" = module.application_insights.connection_string,
-      "Sentinel"                             = timestamp()
-  })
+  variables = {
+    "Postgres:Host"                        = module.postgres_server.host
+    "ServiceBus:Endpoint"                  = module.service_bus.host
+    "ApplicationInsights:ConnectionString" = module.application_insights.connection_string,
+    "Sentinel"                             = timestamp()
+  }
 
   depends_on = [azurerm_resource_group.auth]
 }

@@ -16,7 +16,7 @@ variable "entraid_admins" {
     principal_id   = string
   }))
 
-  default = [{}]
+  default = []
 }
 
 variable "resource_group_name" {
