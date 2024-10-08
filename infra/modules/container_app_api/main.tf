@@ -63,7 +63,6 @@ resource "azurerm_role_assignment" "rbac" {
   role_definition_name = each.value.role_definition_name
   scope                = each.value.scope
 
-  condition_version = var.can_use_auth_app_configuration
   for_each = { for arm in [
     {
       id                   = "service_bus_mass_transit"

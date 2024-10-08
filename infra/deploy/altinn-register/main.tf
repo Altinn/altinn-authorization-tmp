@@ -75,7 +75,7 @@ resource "azurerm_resource_group" "rg" {
   tags = local.metadata
 }
 
-resource "azurerm_user_assigned_identity" "mi" {
+resource "azurerm_user_assigned_identity" "managed_identity" {
   name                = "mi${local.metadata.suffix}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
@@ -86,7 +86,7 @@ resource "azurerm_user_assigned_identity" "mi" {
 }
 
 resource "azurerm_role_assignment" "mass_transit_role" {
-  principal_id                     = azurerm_user_assigned_identity.mi.principal_id
+  principal_id                     = azurerm_user_assigned_identity.managed_identity.principal_id
   scope                            = data.azurerm_servicebus_namespace.sb.id
   principal_type                   = "ServicePrincipal"
   skip_service_principal_aad_check = true
@@ -94,7 +94,7 @@ resource "azurerm_role_assignment" "mass_transit_role" {
 }
 
 resource "azurerm_role_assignment" "key_vault_secret_reader" {
-  principal_id                     = azurerm_user_assigned_identity.mi.principal_id
+  principal_id                     = azurerm_user_assigned_identity.managed_identity.principal_id
   scope                            = module.key_vault.id
   principal_type                   = "ServicePrincipal"
   skip_service_principal_aad_check = true
