@@ -1,9 +1,11 @@
 using Altinn.Authorization.DeployApi.BootstrapDatabase;
+using Altinn.Authorization.Hosting.Extensions;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddAltinnHostDefaults();
 
 TokenCredential cred;
 if (builder.Environment.IsDevelopment())
