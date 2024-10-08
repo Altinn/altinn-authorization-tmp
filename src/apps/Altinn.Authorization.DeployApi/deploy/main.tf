@@ -10,7 +10,6 @@ terraform {
     use_azuread_auth = true
   }
 }
-
 provider "azurerm" {
   use_oidc = true
   features {}
@@ -21,12 +20,10 @@ locals {
   infrastructure_resource_group_name = "rg${local.infrastructure_suffix}"
 }
 
-
 data "azurerm_user_assigned_identity" "application_admin" {
   name                = "miappadmin${local.infrastructure_suffix}"
   resource_group_name = local.infrastructure_resource_group_name
 }
-
 
 module "app" {
   source = "../../../../infra/modules/container_app_api"
