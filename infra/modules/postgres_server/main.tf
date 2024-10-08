@@ -37,9 +37,9 @@ resource "azurerm_postgresql_flexible_server_active_directory_administrator" "ad
   resource_group_name = var.resource_group_name
   tenant_id           = var.tenant_id
 
-  object_id      = each.value.prinicpal_id
-  principal_name = each.value.prinicpal_name
-  principal_type = each.value.prinicpal_type
+  object_id      = each.value.principal_id
+  principal_name = each.value.principal_name
+  principal_type = each.value.principal_type
 
   for_each = { for value in var.entraid_admins : value.principal_name => value }
 }
