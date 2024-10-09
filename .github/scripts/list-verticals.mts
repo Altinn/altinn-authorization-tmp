@@ -19,7 +19,7 @@ const paths = output.map((v) => v.relPath);
 var matrix = {
   shortName: output.map((v) => v.shortName),
   include: output.map((v) => {
-    const ret = {
+    const ret: Record<string, string> = {
       path: v.relPath,
       name: v.name,
       shortName: v.shortName,
