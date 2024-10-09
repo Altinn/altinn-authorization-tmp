@@ -37,6 +37,6 @@ var app = builder.Build();
 app.UseAltinnHostDefaults();
 app.UseWebSockets();
 
-app.MapTaskPipeline<BootstrapDatabasePipeline>("/deployapi/api/v1/databases/bootstrap");
+app.MapTaskPipeline<BootstrapDatabasePipeline>("/deployapi/api/v1/database/bootstrap");
 
 app.Run();

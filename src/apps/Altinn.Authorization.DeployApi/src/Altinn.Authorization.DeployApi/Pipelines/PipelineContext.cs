@@ -28,7 +28,7 @@ public sealed class PipelineContext
 
         ////await using var textWriter = new StreamWriter(responseBody.Stream, Encoding.UTF8);
         await Run(pipeline, responseBody.Writer, context.RequestServices, ct);
-        
+
         await responseBody.CompleteAsync();
     }
 
@@ -72,10 +72,9 @@ public sealed class PipelineContext
                     reader.AdvanceTo(buffer.End);
                 }
                 while (!result.IsCompleted);
-            }, 
+            },
             ct);
 
-        AggregateException? ex = null;
         try
         {
             return await Run(pipeline, writer, services, ct);
