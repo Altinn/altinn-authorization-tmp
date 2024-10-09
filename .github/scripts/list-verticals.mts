@@ -15,14 +15,15 @@ if (argv.type) {
   output = verticals.filter((v) => argv.type.includes(v.type));
 }
 
+const paths = output.map((v) => v.relPath);
 var matrix = {
-  path: output.map((v) => v.relPath),
+  name: output.map((v) => v.name),
   include: output.map((v) => ({
-    vertical: v.relPath,
+    path: v.relPath,
     name: v.name,
     type: v.type,
   })),
 };
 
 actions.setOutput("matrix", JSON.stringify(matrix));
-actions.setOutput("verticals", JSON.stringify(matrix.path));
+actions.setOutput("verticals", JSON.stringify(paths));
