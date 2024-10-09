@@ -3,6 +3,10 @@ name: "Template: Find verticals"
 on:
   workflow_call:
     outputs:
+      matrix:
+        value: ${{ github.event.inputs.matrix }}
+        description: JSON object containing a job matrix of verticals
+
       verticals:
         value: ${{ jobs.list.outputs.verticals }}
         description: JSON list of folders in either <apps, pkgs, libs>
@@ -20,6 +24,7 @@ jobs:
 
     outputs:
       verticals: ${{ steps.list.outputs.verticals }}
+      matrix: ${{ steps.list.outputs.matrix }}
 
     steps:
       - uses: actions/checkout@v4
