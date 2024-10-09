@@ -1,7 +1,7 @@
-name: "CI: Check solution files"
+name: "PR: Check solution files"
 
 on:
-  push: {}
+  pull_request: {}
 
 jobs:
   check-slns:

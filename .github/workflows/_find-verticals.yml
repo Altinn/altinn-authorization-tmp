@@ -4,7 +4,7 @@ on:
   workflow_call:
     outputs:
       matrix:
-        value: ${{ github.event.inputs.matrix }}
+        value: ${{ jobs.list.outputs.matrix }}
         description: JSON object containing a job matrix of verticals
 
       verticals:
