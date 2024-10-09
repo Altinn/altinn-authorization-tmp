@@ -1,9 +1,7 @@
-name: "CI: Apps"
+name: "PR: Apps"
 
 on:
-  push:
-    branches-ignore:
-      - main
+  pull_request:
     paths:
       - src/**
       - .github/workflows/apps-*
