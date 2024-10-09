@@ -38,4 +38,4 @@ jobs:
 
       - name: Find all ${{ inputs.type }}
         id: list
-        run: tsx ./.github/scripts/list-verticals.mts ${{ inputs.type }}
+        run: tsx ./.github/scripts/list-verticals.mts --type ${{ inputs.type }}
