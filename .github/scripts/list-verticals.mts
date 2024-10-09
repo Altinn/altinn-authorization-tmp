@@ -17,10 +17,11 @@ if (argv.type) {
 
 const paths = output.map((v) => v.relPath);
 var matrix = {
-  name: output.map((v) => v.name),
+  shortName: output.map((v) => v.shortName),
   include: output.map((v) => ({
     path: v.relPath,
     name: v.name,
+    shortName: v.shortName,
     type: v.type,
   })),
 };
