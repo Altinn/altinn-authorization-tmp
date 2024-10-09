@@ -18,12 +18,20 @@ if (argv.type) {
 const paths = output.map((v) => v.relPath);
 var matrix = {
   shortName: output.map((v) => v.shortName),
-  include: output.map((v) => ({
-    path: v.relPath,
-    name: v.name,
-    shortName: v.shortName,
-    type: v.type,
-  })),
+  include: output.map((v) => {
+    const ret = {
+      path: v.relPath,
+      name: v.name,
+      shortName: v.shortName,
+      type: v.type,
+    };
+
+    if (v.image && v.image.name) {
+      ret.imageName = v.image.name;
+    }
+
+    return ret;
+  }),
 };
 
 actions.setOutput("matrix", JSON.stringify(matrix));

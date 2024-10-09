@@ -4,12 +4,17 @@ import fs from "node:fs";
 
 export type VerticalType = "app" | "lib" | "pkg";
 
+export type ImageInfo = {
+  readonly name: string;
+};
+
 export type Vertical = {
   readonly type: VerticalType;
   readonly name: string;
   readonly shortName: string;
   readonly path: string;
   readonly relPath: string;
+  readonly image?: ImageInfo;
   readonly rawConfig: Readonly<Record<string, unknown>>;
 };
 
@@ -42,12 +47,21 @@ const readVertical = (type: VerticalType, dirPath: string): Vertical => {
     shortName = config.shortName;
   }
 
+  let image: ImageInfo | undefined;
+  if ("image" in config) {
+    // TODO: validate?
+    image = {
+      name: (config.image as any).name,
+    };
+  }
+
   return {
     type,
     name,
     shortName,
     path: verticalPath,
     relPath: dirPath,
+    image,
     rawConfig: config,
   };
 };
