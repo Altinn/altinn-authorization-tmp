@@ -1,4 +1,4 @@
-name: Apps CD
+name: "CD: Apps"
 
 on:
   workflow_dispatch:
