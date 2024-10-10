@@ -7,10 +7,6 @@ on:
       - main
       - ci/cd-fix
 
-env:
-  registry: ghcr.io
-  image_repository: altinn/altinn-authorization-tmp
-
 jobs:
   find-verticals:
     uses: ./.github/workflows/_find-verticals.yml
