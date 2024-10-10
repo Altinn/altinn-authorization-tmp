@@ -50,8 +50,3 @@ jobs:
           tf_state_name: ${{ inputs.tf_state }}
           tf_args: -var-file=${{ env.TF_VARS_FILE }} ${{ inputs.tf_args }}
           gh_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set Terraform output
-        run: |
-          output=$(terraform output test)
-          echo $output

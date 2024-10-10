@@ -74,3 +74,8 @@ jobs:
           arm_subscription_id: ${{ vars.ARM_SUBSCRIPTION_ID }}
 
           tf_state_name: ${{ inputs.tf_state }}
+
+      - name: Set Terraform output
+        run: |
+          output=$(terraform output test)
+          echo $output
