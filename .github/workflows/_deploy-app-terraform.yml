@@ -64,7 +64,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Terraform Apply
-        uses: altinn/altinn-platform/actions/terraform/apply@main
+        uses: altinn/altinn-platform/actions/terraform/apply@repo-authorization-tmp
+        id: apply
         with:
           working_directory: ${{ inputs.working_dir }}
           oidc_type: environment
@@ -78,5 +79,4 @@ jobs:
       - name: Set Terraform output
         working-directory: ${{ inputs.working_dir }}
         run: |
-          output=$(terraform output)
-          echo $output
+          echo ${{ apply.outputs.result.key_vault_name.name }}
