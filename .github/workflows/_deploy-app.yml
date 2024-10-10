@@ -26,6 +26,9 @@ jobs:
       - uses: actions/checkout@v4
         name: Checkout repository
 
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+
       - uses: pnpm/action-setup@v3
         with:
           version: 9
