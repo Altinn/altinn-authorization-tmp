@@ -32,3 +32,7 @@ $.cwd = app.path;
 await $`dotnet publish ${source} --os linux-musl -t:PublishContainer -p:ContainerImageTag=${tag} -bl`.verbose(
   true
 );
+
+const fullImage = `ghcr.io/altinn/altinn-authorization-tmp/${imgCfg.name}:${tag}`;
+actions.setOutput("image", fullImage);
+actions.setOutput("tag", tag);

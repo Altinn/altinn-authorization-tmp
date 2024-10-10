@@ -54,5 +54,13 @@ jobs:
       #     tags: ghrc.io/${{ inputs.repository }}/${{ inputs.imageName }}:${{ env.short_sha }}
 
       - name: Build and Push ${{ inputs.name }}
-        id: list
+        id: img
         run: tsx ./.github/scripts/build-push-app.mts "${{ inputs.name }}"
+
+      - name: Print outputs
+        env:
+          IMAGE: ${{ steps.img.outputs.image }}
+          TAG: ${{ steps.img.outputs.tag }}
+        run: |
+          echo "Image: ${IMAGE}"
+          echo "Tag: ${TAG}"
