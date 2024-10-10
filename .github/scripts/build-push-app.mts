@@ -2,6 +2,7 @@ import { $ } from "zx";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { getApp } from "./_meta.mts";
+import * as actions from "@actions/core";
 
 const argv = yargs(hideBin(process.argv))
   .positional("name", {
@@ -10,11 +11,12 @@ const argv = yargs(hideBin(process.argv))
   })
   .option("tag", {
     type: "string",
-    required: true,
   })
   .parse();
 
 const app = getApp(argv.name);
+const tag =
+  argv.tag || (process.env.GITHUB_SHA ?? "").substring(0, 7) || "latest";
 
 if (!app.image) {
   throw new Error(`No image config found for ${app.name}`);
@@ -27,6 +29,6 @@ if (imgCfg.type !== "dotnet") {
 
 const source = imgCfg.source.replaceAll("\\", "/");
 $.cwd = app.path;
-await $`dotnet publish ${source} --os linux-musl -t:PublishContainer -p:ContainerImageTag=${argv.tag} -bl`.verbose(
+await $`dotnet publish ${source} --os linux-musl -t:PublishContainer -p:ContainerImageTag=${tag} -bl`.verbose(
   true
 );
