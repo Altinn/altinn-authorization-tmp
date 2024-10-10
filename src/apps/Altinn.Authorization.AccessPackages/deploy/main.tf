@@ -28,3 +28,4 @@ module "app" {
   can_use_auth_app_configuration = true
   can_use_auth_key_vault         = true
 }
+
