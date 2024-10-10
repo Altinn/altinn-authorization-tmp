@@ -5,6 +5,16 @@ import { z } from "zod";
 import { fromError } from "zod-validation-error";
 import { $, within } from "zx";
 
+let _queue: Promise<void> = Promise.resolve();
+const enqueue = <T extends unknown>(fn: () => Promise<T>): Promise<T> => {
+  var task = _queue.then(() => within(fn));
+  _queue = task.then(
+    (_) => {},
+    (_) => {}
+  );
+  return task;
+};
+
 const configSchema = z.object({
   name: z.string().optional(),
   shortName: z.string().optional(),
@@ -82,38 +92,39 @@ const readVertical = async (
 
   let image: ImageInfo | undefined;
   if (type === "app") {
-    await within(async () => {
-      $.cwd = verticalPath;
-      const confImage = config.image ?? { type: "dotnet" };
+    $.cwd = verticalPath;
+    const confImage = config.image ?? { type: "dotnet" };
 
-      switch (confImage.type) {
-        case "dotnet": {
-          if (!confImage.source) {
-            confImage.source = `src/${name}`;
-          }
-
-          if (!confImage.name) {
-            confImage.name = (
-              await $`dotnet msbuild ${confImage.source} -getProperty:ContainerName`
-            ).stdout.trim();
-          }
-          break;
+    switch (confImage.type) {
+      case "dotnet": {
+        if (!confImage.source) {
+          confImage.source = `src/${name}`;
         }
 
-        case "docker": {
-          if (!confImage.source) {
-            confImage.source = "Dockerfile";
-          }
-          break;
+        if (!confImage.name) {
+          confImage.name = await enqueue(async () => {
+            $.cwd = verticalPath;
+            const result =
+              await $`dotnet msbuild ${confImage.source} -getProperty:ContainerName`;
+            return result.stdout.trim();
+          });
         }
-
-        default: {
-          throw new Error(`Unsupported image type: ${confImage.type}`);
-        }
+        break;
       }
 
-      image = confImage as ImageInfo;
-    });
+      case "docker": {
+        if (!confImage.source) {
+          confImage.source = "Dockerfile";
+        }
+        break;
+      }
+
+      default: {
+        throw new Error(`Unsupported image type: ${confImage.type}`);
+      }
+    }
+
+    image = confImage as ImageInfo;
   }
 
   return {
