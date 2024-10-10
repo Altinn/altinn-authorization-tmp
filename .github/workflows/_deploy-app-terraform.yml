@@ -76,6 +76,7 @@ jobs:
           tf_state_name: ${{ inputs.tf_state }}
 
       - name: Set Terraform output
+        working-directory: ${{ inputs.working_dir }}
         run: |
           output=$(terraform output)
           echo $output
