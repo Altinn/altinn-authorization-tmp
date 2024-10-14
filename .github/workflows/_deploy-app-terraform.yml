@@ -79,4 +79,4 @@ jobs:
       - name: Set Terraform output
         working-directory: ${{ inputs.working_dir }}
         run: |
-          cat
+          cat tf_output.json
