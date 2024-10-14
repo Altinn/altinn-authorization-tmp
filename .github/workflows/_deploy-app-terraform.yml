@@ -79,4 +79,4 @@ jobs:
       - name: Set Terraform output
         working-directory: ${{ inputs.working_dir }}
         run: |
-          echo ${{ steps.apply.outputs.result.key_vault_name.name }}
+          cat
