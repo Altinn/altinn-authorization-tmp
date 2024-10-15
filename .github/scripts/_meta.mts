@@ -38,19 +38,15 @@ const terraformSchema = z.object({
   stateFile: z.string().min(10),
 });
 
-const databaseSchema = z.object({
-  bootstrap: z.boolean(),
-  name: z.string().min(3),
-  roleprefix: z.string().min(3),
-  schema: z.map(z.string().min(3), z.any()),
-});
-
 const infraSchema = z.object({
   terraform: terraformSchema.optional(),
 });
 
-const infraDatabase = z.object({
-  database: terraformSchema.optional(),
+const databaseSchema = z.object({
+  bootstrap: z.boolean().optional().default(false),
+  name: z.string().min(3).optional(),
+  roleprefix: z.string().min(3).optional(),
+  schema: z.map(z.string().min(3), z.any()).optional(),
 });
 
 const configSchema = z.object({
