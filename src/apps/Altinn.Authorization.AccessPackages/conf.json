@@ -1,4 +1,9 @@
 {
+  "infra": {
+    "terraform": {
+      "stateFile": "Altinn.Authorization.AccessPackages.tfstate"
+    }
+  },
   "image": {
     "name": "altinn-authorization-access-packages"
   },
