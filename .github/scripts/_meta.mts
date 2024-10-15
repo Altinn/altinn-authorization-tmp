@@ -77,7 +77,7 @@ export type DatabaseInfo = {
   readonly bootstrap: boolean;
   readonly name: string;
   readonly roleprefix: string;
-  readonly schema: Map<string, any>;
+  readonly schema: object;
 };
 
 export type Vertical = {
@@ -174,7 +174,7 @@ const readVertical = async (
 
     const confDatabase = config.database;
     if (confDatabase) {
-      database = confInfra as DatabaseInfo;
+      database = confDatabase as DatabaseInfo;
     }
 
     image = confImage as ImageInfo;

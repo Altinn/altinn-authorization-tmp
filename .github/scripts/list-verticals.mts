@@ -45,7 +45,7 @@ var matrix = {
       ret.databaseBootstrap = v.database.bootstrap.toString();
       ret.databaseName = v.database.name;
       ret.databaseRolePrefix = v.database.roleprefix;
-      ret.databaseSchema = Array.from(v.database.schema.keys()).join(",");
+      ret.databaseSchema = Array.from(Object.keys(v.database.schema)).join(",");
     } else {
       ret.databaseBootstrap = "false";
     }
