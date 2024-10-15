@@ -105,7 +105,7 @@ jobs:
             - args: [--global, tsx]
 
       - name: Bootstrap Database ${{ inputs.name }}
-        if: inputs.config_bootstrap
+        if: inputs.databaseBootstrap
         id: img
         run: |
           tsx ./.github/scripts/boostrap-db.mts \
