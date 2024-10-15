@@ -46,7 +46,7 @@ const databaseSchema = z.object({
   bootstrap: z.boolean().optional().default(false),
   name: z.string().min(3).optional(),
   roleprefix: z.string().min(3).optional(),
-  schema: z.map(z.string().min(3), z.any()).optional(),
+  schema: z.any().optional(),
 });
 
 const configSchema = z.object({
