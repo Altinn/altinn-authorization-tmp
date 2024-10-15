@@ -38,8 +38,19 @@ const terraformSchema = z.object({
   stateFile: z.string().min(10),
 });
 
+const databaseSchema = z.object({
+  bootstrap: z.boolean(),
+  name: z.string().min(3),
+  roleprefix: z.string().min(3),
+  schema: z.map(z.string().min(3), z.any()),
+});
+
 const infraSchema = z.object({
   terraform: terraformSchema.optional(),
+});
+
+const infraDatabase = z.object({
+  database: terraformSchema.optional(),
 });
 
 const configSchema = z.object({
@@ -47,6 +58,7 @@ const configSchema = z.object({
   shortName: z.string().optional(),
   image: imageSchema.optional(),
   infra: infraSchema.optional(),
+  database: databaseSchema.optional(),
 });
 
 export type VerticalType = "app" | "lib" | "pkg";
@@ -126,6 +138,7 @@ const readVertical = async (
 
   let image: ImageInfo | undefined = void 0;
   let infra: InfraInfo | undefined = void 0;
+  let database: DatabaseInfo | undefined = void 0;
   if (type === "app") {
     const confImage = config.image ?? { type: "dotnet" };
 
@@ -163,6 +176,11 @@ const readVertical = async (
       infra = confInfra as InfraInfo;
     }
 
+    const confDatabase = config.database;
+    if (confDatabase) {
+      database = confInfra as DatabaseInfo;
+    }
+
     image = confImage as ImageInfo;
   }
 
@@ -174,6 +192,7 @@ const readVertical = async (
     relPath: dirPath,
     image,
     infra,
+    database,
   };
 };
 
