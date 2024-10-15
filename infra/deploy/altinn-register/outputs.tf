@@ -1,5 +1,5 @@
 
-output "database_name" {
+output "postgres_server_name" {
   value       = module.postgres_server.name
   description = "Name of the postgres server"
 }

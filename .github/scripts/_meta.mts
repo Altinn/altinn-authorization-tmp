@@ -65,6 +65,13 @@ export type InfraInfo = {
   readonly terraform?: TerraformInfo;
 };
 
+export type DatabaseInfo = {
+  readonly bootstrap: boolean;
+  readonly name: string;
+  readonly roleprefix: string;
+  readonly schema: Map<string, any>;
+};
+
 export type Vertical = {
   readonly type: VerticalType;
   readonly name: string;
@@ -73,6 +80,7 @@ export type Vertical = {
   readonly relPath: string;
   readonly image?: ImageInfo;
   readonly infra?: InfraInfo;
+  readonly database?: DatabaseInfo;
 };
 
 const vertialDirs = {

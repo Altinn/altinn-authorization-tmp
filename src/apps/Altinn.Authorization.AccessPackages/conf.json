@@ -4,6 +4,10 @@
   },
   "database": {
     "bootstrap": true,
-    "name": "accesspackage"
+    "name": "accesspackage",
+    "roleprefix": "accesspackage",
+    "schema": {
+      "test": {}
+    }
   }
 }
