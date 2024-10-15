@@ -1,5 +1,6 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import { readFileSync } from "node:fs";
 
 const argv = yargs(hideBin(process.argv))
   .option("deploy-api", {
@@ -7,19 +8,19 @@ const argv = yargs(hideBin(process.argv))
   })
   .option("subscription-id", {
     type: "string",
-    required: true,
+    required: false,
   })
   .option("resource-group", {
     type: "string",
-    required: true,
+    required: false,
   })
   .option("server-name", {
     type: "string",
-    required: true,
+    required: false,
   })
   .option("key-vault-name", {
     type: "string",
-    required: true,
+    required: false,
   })
   .option("user", {
     type: "string",
@@ -37,6 +38,10 @@ const argv = yargs(hideBin(process.argv))
     type: "array",
     required: true,
   })
+  .option("tf-outfile", {
+    type: "string",
+    required: false,
+  })
   .parse();
 
 const request = {
@@ -52,6 +57,15 @@ const request = {
   schemas: Object.fromEntries(argv.schema.map((n) => [n, {}])),
 };
 
+if (argv.tfOutfile) {
+  const buffer = readFileSync(argv.tfOutfile, "utf8");
+  const tfout = JSON.parse(buffer);
+  request.resources.subscriptionId ||= tfout.subscription_id.value;
+  request.resources.resourceGroup ||= tfout.resource_group_name.value;
+  request.resources.serverName ||= tfout.postgres_server_name.value;
+  request.resources.keyVaultName ||= tfout.key_vault_name.value;
+}
+
 // console.log(request);
 // process.exit(1);
 
@@ -65,7 +79,7 @@ if (baseUrl.protocol === "http:") {
 }
 
 const ws = new WebSocket(
-  new URL("api/v1/database/bootstrap", baseUrl),
+  new URL("deployapi/api/v1/database/bootstrap", baseUrl),
   "altinn.task-pipeline"
 );
 
