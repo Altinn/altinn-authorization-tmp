@@ -25,7 +25,7 @@ const argv = yargs(hideBin(process.argv))
   })
   .option("user", {
     type: "string",
-    required: true,
+    required: false,
   })
   .option("database", {
     type: "string",
@@ -65,6 +65,7 @@ if (argv.tfOutfile) {
   request.resources.resourceGroup ||= tfout.resource_group_name.value;
   request.resources.serverName ||= tfout.postgres_server_name.value;
   request.resources.keyVaultName ||= tfout.key_vault_name.value;
+  request.resources.user ||= tfout.database_user.value;
 }
 
 // console.log(request);
