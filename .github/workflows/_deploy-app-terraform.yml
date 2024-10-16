@@ -108,8 +108,7 @@ jobs:
         id: bootstrap
         run: |
           tsx ./.github/scripts/bootstrap-db.mts \
-            --deploy-api https://api.auth.at21.altinn.cloud \
-            --user miappadminauth001at21 \
+            --deploy-api ${{ vars.GATEWAY_API_URL }} \
             --database ${{ inputs.databaseName }} \
             --role-prefix ${{ inputs.databaseRoleprefix }} \
             --schema ${{ inputs.databaseSchema }} \

@@ -45,3 +45,8 @@ data "azurerm_key_vault" "auth" {
   name                = "kvaltinn${local.infrastructure_suffix}"
   resource_group_name = local.infrastructure_resource_group_name
 }
+
+data "azurerm_user_assigned_identity" "auth" {
+  name                = "miappadmin${local.infrastructure_suffix}"
+  resource_group_name = local.infrastructure_resource_group_name
+}

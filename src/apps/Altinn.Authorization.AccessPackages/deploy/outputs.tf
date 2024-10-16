@@ -17,3 +17,8 @@ output "subscription_id" {
   value       = data.azurerm_client_config.current.subscription_id
   description = "Azure subscription ID"
 }
+
+output "database_user" {
+  value       = data.azurerm_user_assigned_identity.auth.name
+  description = "Name of the user assigned identity"
+}
