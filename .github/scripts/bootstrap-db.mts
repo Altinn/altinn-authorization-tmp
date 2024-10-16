@@ -1,5 +1,6 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import { WebSocket } from "ws";
 import { readFileSync } from "node:fs";
 
 const argv = yargs(hideBin(process.argv))
