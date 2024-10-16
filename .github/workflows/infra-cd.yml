@@ -18,7 +18,7 @@ jobs:
   cert:
     name: Cert
     secrets: inherit
-    uses: ./.github/workflows/infra-cd-template.yml
+    uses: ./.github/workflows/_deploy-app-terraform.yml
     strategy:
       matrix:
         environment: [at21]
@@ -30,7 +30,7 @@ jobs:
   auth:
     name: Auth
     secrets: inherit
-    uses: ./.github/workflows/infra-cd-template.yml
+    uses: ./.github/workflows/_deploy-app-terraform.yml
     strategy:
       matrix:
         environment: [at21]
@@ -42,7 +42,7 @@ jobs:
   register:
     name: Altinn Register
     secrets: inherit
-    uses: ./.github/workflows/infra-cd-template.yml
+    uses: ./.github/workflows/_deploy-app-terraform.yml
     strategy:
       matrix:
         environment: [at21]
