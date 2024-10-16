@@ -103,9 +103,6 @@ jobs:
               args: [--frozen-lockfile]
             - args: [--global, tsx]
 
-      - name: Cat tf
-        run: cat ${{ inputs.working_dir }}/tf_output.json
-
       - name: Bootstrap Database ${{ inputs.name }}
         if: inputs.databaseBootstrap
         id: bootstrap
