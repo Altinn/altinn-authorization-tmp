@@ -37,7 +37,7 @@ module "app" {
 }
 
 data "azurerm_postgresql_flexible_server" "auth" {
-  name                = "psqlsrvaltinn${local.infrastructure_suffix.suffix}"
+  name                = "psqlsrvaltinn${local.infrastructure_suffix}"
   resource_group_name = local.infrastructure_resource_group_name
 }
 
