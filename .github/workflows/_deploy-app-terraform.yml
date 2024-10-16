@@ -107,7 +107,7 @@ jobs:
         if: inputs.databaseBootstrap
         id: bootstrap
         run: |
-          npx tsx ./.github/scripts/bootstrap-db.mts \
+          tsx ./.github/scripts/bootstrap-db.mts \
             --deploy-api https://api.auth.at21.altinn.cloud \
             --user fafb9277-a1c4-4d7b-a5ff-e19c55e85a04 \
             --database ${{ inputs.databaseName }} \

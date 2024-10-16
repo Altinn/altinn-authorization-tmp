@@ -1,5 +1,6 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import { WebSocket } from "ws";
 import { readFileSync } from "node:fs";
 
 const argv = yargs(hideBin(process.argv))
@@ -79,45 +80,28 @@ if (baseUrl.protocol === "http:") {
 }
 
 const ws = new WebSocket(
-  new URL("deployapi/api/v1/database/bootstrap", baseUrl),
+  new URL("deployapi/api/v1/database/bootstrap", baseUrl).toString(),
   "altinn.task-pipeline"
 );
 
-let pending = Promise.resolve();
-
-const write = (data: Blob) => {
-  const buffer = data.arrayBuffer();
-  pending = pending
-    .then(() => buffer)
-    .then((buffer) => {
-      var arr = new Uint8Array(buffer);
-      process.stderr.write(arr);
-    })
-    .catch((err) => {
-      console.error(err);
-      process.exit(1);
-    });
-};
-
-ws.addEventListener("open", (e) => {
+ws.on("open", () => {
   ws.send(JSON.stringify(request));
 });
 
-ws.addEventListener("message", (ev) => {
-  write(ev.data);
+ws.on("message", (data: Buffer) => {
+  process.stderr.write(data); // 'data' is already a Buffer in Node.js
 });
 
-ws.addEventListener("close", (ev) => {
-  console.log("closed", ev.code, ev.reason);
+ws.on("close", (code, reason) => {
+  console.log("closed", code, reason);
   ws.close();
 
-  if (ev.code !== 4000) {
+  if (code !== 4000) {
     process.exit(1);
   }
 });
 
-ws.addEventListener("error", (ev) => {
-  if (ev && "message" in ev) {
-    console.error("error", ev.message);
-  }
+ws.on("error", (err) => {
+  console.error("error", err.message);
+  process.exit(1);
 });
