@@ -106,11 +106,11 @@ jobs:
 
       - name: Bootstrap Database ${{ inputs.name }}
         if: inputs.databaseBootstrap
-        id: img
+        id: bootstrap
         run: |
-          tsx ./.github/scripts/boostrap-db.mts \
+          tsx ./.github/scripts/bootstrap-db.mts \
             --user fafb9277-a1c4-4d7b-a5ff-e19c55e85a04 \
-            --database ${{ inputs.config_database_name }} \
-            --role-prefix ${{ inputs.config_database_roleprefix }} \
-            --schema ${{ inputs.config_database_schema }} \
+            --database ${{ inputs.databaseName }} \
+            --role-prefix ${{ inputs.databaseRoleprefix }} \
+            --schema ${{ inputs.databaseSchema }} \
             --tf-outfile ${{ inputs.working_dir }}/tf_output.json
