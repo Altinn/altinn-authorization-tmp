@@ -89,7 +89,7 @@ ws.on("open", () => {
 });
 
 ws.on("message", (data: Buffer) => {
-  process.stderr.write(data); // 'data' is already a Buffer in Node.js
+  process.stderr.write(data);
 });
 
 ws.on("close", (code, reason) => {
