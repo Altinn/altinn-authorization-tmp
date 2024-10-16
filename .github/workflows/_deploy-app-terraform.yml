@@ -93,7 +93,6 @@ jobs:
 
           arm_client_id: ${{ vars.ARM_CLIENT_ID }}
           arm_subscription_id: ${{ vars.ARM_SUBSCRIPTION_ID }}
-          tf_output_file: tf_outputs.json
           tf_state_name: ${{ inputs.tf_state }}
 
       - uses: pnpm/action-setup@v3
