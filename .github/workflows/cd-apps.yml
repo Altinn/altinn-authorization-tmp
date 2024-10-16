@@ -29,4 +29,4 @@ jobs:
       databaseBootstrap: ${{ matrix.databaseBootstrap == 'true' }}
       databaseName: ${{ matrix.databaseName }}
       databaseRoleprefix: ${{ matrix.databaseRolePrefix }}
-      databaseSchema: ${{ matrix.database.databaseSchema }}
+      databaseSchema: ${{ matrix.databaseSchema }}
