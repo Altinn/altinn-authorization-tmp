@@ -89,7 +89,7 @@ ws.on("open", () => {
 });
 
 ws.on("message", (data: Buffer) => {
-  process.stderr.write(data);
+  process.stdout.write(data);
 });
 
 ws.on("close", (code, reason) => {
