@@ -1,0 +1,6 @@
+@Altinn.Authorization.AccessPackages_HostAddress = http://localhost:5152
+
+GET {{Altinn.Authorization.AccessPackages_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

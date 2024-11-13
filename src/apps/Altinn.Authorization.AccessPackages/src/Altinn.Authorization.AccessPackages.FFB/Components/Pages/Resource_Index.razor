@@ -1,0 +1,212 @@
+﻿@page "/resources"
+@inject IResourceService resourceData
+@inject ITagService tagData
+@inject ITagGroupService tagGroupData
+
+<PageTitle>Ressurser</PageTitle>
+
+@if(Resources != null)
+{
+    <PageHeader>
+        <LeftContent>
+            <h1>Ressurser (@GetResources().Count())</h1>
+        </LeftContent>
+        <RightContent>
+            <input style="min-width:400px;" @bind="SearchTerm" @bind:event="oninput" placeholder="Search" />
+        </RightContent>
+    </PageHeader>
+
+<div style="display:flex; flex-direction:row;width:100%;">
+
+    <div style="width:500px;">
+        <h3>Gruppering</h3>
+        <div>
+            
+            <div class="toggleButton @(SelectedGroupBy.Equals("Category") ? "selected":"")" @onclick=@(() => ToggleGroupBy("Category"))>
+                <span class="icon">✔</span>
+                <span>Kategori</span>
+            </div>
+
+            <div class="toggleButton @(SelectedGroupBy.Equals("Industry") ? "selected":"")" @onclick=@(() => ToggleGroupBy("Industry"))>
+                <span class="icon">✔</span>
+                <span>Bransje</span>
+            </div>
+
+            <div class="toggleButton @(SelectedGroupBy.Equals("Provider") ? "selected":"")" @onclick=@(() => ToggleGroupBy("Provider"))>
+                <span class="icon">✔</span>
+                <span>Tilbyder</span>
+            </div>
+
+        </div>
+
+
+        <h3>Filtrering</h3>
+
+        <div>
+            <h4>Tag</h4>
+
+            @foreach (var tag in SimpleTags.Where(t=>t.GroupId.HasValue == false))
+            {
+                <div class="toggleButton @(SelectedTags.Contains(tag.Id) ? "selected":"")" @onclick="() => ToggleTag(tag.Id)">
+                    <span class="icon">✔</span>
+                    <span>@tag.Name</span>
+                </div>
+            }
+            <hr />
+        </div>
+
+        @foreach(var tagGroup in Tags.Where(t=>t.Group != null).Select(t => t.Group).DistinctBy(t => t.Id))
+        {
+            <div>
+            <h4>@tagGroup.Name</h4>
+
+            @foreach(var tag in Tags.Where(t=>t.GroupId == tagGroup.Id))
+            {
+                    
+            <div class="toggleButton @(SelectedTags.Contains(tag.Id) ? "selected":"")" @onclick="() => ToggleTag(tag.Id)">
+                <span class="icon">✔</span>
+                <span>@tag.Name</span>
+            </div>
+
+            }
+                    <hr />
+            </div>
+        }
+
+        <div>
+            <h4>Tilbyder</h4>
+                
+            @foreach(var p in Providers)
+            {
+                <div class="toggleButton @(@SelectedProviders.Contains(p.Id) ? "selected":"")" @onclick="() => ToggleProvider(p.Id)">
+                    <span class="icon">✔</span>
+                    <span>@p.Name</span>
+                </div>
+            }
+
+        </div>
+
+    </div>
+        <div style="width:100%;">
+
+    @foreach (var gr in GetGroupedResources())
+    {
+        <h3>@gr.Key</h3>
+        <div class="box grey">
+        @foreach(var r in gr.Value)
+        {                
+        <div class="box-element" style="display: flex; justify-content: space-between;">
+            <a href=@($"/resource/{r.Id}")>@r.Name</a>
+            <span class="tag">@r.Provider.Name</span>
+        </div>    
+        }
+        </div>
+    }
+    </div>
+
+</div>
+}
+@code {
+
+    public List<ExtResource> Resources { get; set; }
+
+    public string SearchTerm { get; set; } = "";
+    protected override async Task OnParametersSetAsync()
+    {
+        Resources = [.. await resourceData.ExtendedRepo.GetExtended()];
+        Providers = Resources.Select(t => t.Provider).DistinctBy(t => t.Id).ToList();
+        Tags = [.. await tagData.ExtendedRepo.GetExtended()];
+        SimpleTags = [.. await tagData.Get()];
+        SelectedProviders = new List<Guid>();
+        SelectedTags = new List<Guid>();
+    }
+
+    #region Providers
+    public List<Provider> Providers { get; set; }
+    public List<Guid> SelectedProviders { get; set; }
+    List<Provider> PossibleProviders => GetResources().Select(t => t.Provider).DistinctBy(t=>t.Id).ToList();
+    private void ToggleProvider(Guid id)
+    {
+        if (SelectedProviders.Contains(id))
+        {
+            SelectedProviders.Remove(id);
+        }
+        else
+        {
+            SelectedProviders.Add(id);
+        }
+    }
+    #endregion
+
+    /*Need ResourceTag data ... */
+    public List<Tag> SimpleTags { get; set; }
+    public List<ExtTag> Tags { get; set; }
+    public List<Guid> SelectedTags { get; set; }
+    private void ToggleTag(Guid id)
+    {
+        if(SelectedTags.Contains(id))
+        {
+            SelectedTags.Remove(id);
+        }
+        else
+        {
+            SelectedTags.Add(id);
+        }
+    }
+
+    private string SelectedGroupBy { get; set; } = "";
+    private void ToggleGroupBy(string name)
+    {
+        if(SelectedGroupBy == name)
+        {
+            SelectedGroupBy = "";
+        }
+        else
+        {
+            SelectedGroupBy = name;
+        }
+    }
+
+    private Dictionary<string, List<ExtResource>> GetGroupedResources()
+    {
+        var result = new Dictionary<string, List<ExtResource>>();
+        var filteredResources = GetResources();
+
+        if (string.IsNullOrEmpty(SelectedGroupBy))
+        {
+            result.Add("", filteredResources);
+        }
+
+        if(SelectedGroupBy == "Provider")
+        {
+            foreach(var p in filteredResources.Select(t => t.Provider).DistinctBy(t => t.Id))
+            {
+                result.Add(p.Name, filteredResources.Where(t => t.ProviderId == p.Id).ToList());
+            }
+        }
+        this.ShouldRender();
+        return result;
+    }
+    private List<ExtResource> GetResources()
+    {
+        List<ExtResource> result = new List<ExtResource>();
+        foreach(var r in Resources)
+        {
+            if (!r.Name.ToLower().Contains(SearchTerm.ToLower()))
+            {
+                continue;
+            }
+            if(SelectedProviders != null && SelectedProviders.Any())
+            {
+                if (!SelectedProviders.Contains(r.ProviderId))
+                {
+                    continue;
+                }
+            }
+
+            result.Add(r);
+        }
+
+        return result;
+    }
+}

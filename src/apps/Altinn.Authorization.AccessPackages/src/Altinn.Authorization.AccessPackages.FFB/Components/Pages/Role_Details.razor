@@ -1,0 +1,273 @@
+﻿@page "/role/{Id:guid}"
+@inject IRoleService roleData
+@inject IProviderService providerData
+@inject IPackageService packageData
+@inject IRolePackageService rolePackageData
+@inject IPackageTagService packageTagData
+@inject ITagService tagData
+@inject IEntityTypeService entityTypeData
+@inject IEntityVariantRoleService variantRoleData
+@inject IRoleMapService roleMapData
+@inject IAreaService areaData
+
+@if(Role != null)
+{
+    <PageTitle>Role - @Role.Name</PageTitle>
+
+    <Grid Medium="2">
+
+        <GridSpan Columns="2">
+            <PageHeader>
+                <LeftContent>
+                    <BreadcrumbContainer>
+                        <BreadcrumbItem Url="/roles">Roller</BreadcrumbItem>
+                        <BreadcrumbItem Url=@($"/role/{Role.Id}")>@Role.Name</BreadcrumbItem>
+                    </BreadcrumbContainer>
+                    <H1><Icon Name="hat-cowboy-side"></Icon> @Role.Name</H1>
+                    <span>@Role.Description</span>
+                </LeftContent>
+                <RightContent>
+                    <Button>New role package</Button>
+                    <Button>Edit</Button>
+                </RightContent>
+            </PageHeader>
+        </GridSpan>
+
+        <div>
+            <H2>Egenskaper</H2>
+            <table class="bf-table bfc-base-3-bg bf-table-vertical-header" style="width: auto">
+                <tbody>
+                    <tr class="bf-table-row bf-table-row-compact">
+                        <th>Provider</th>
+                        <td><a href=@($"/provider/{Provider.Id}")>@Provider.Name</a></td>
+                    </tr>
+                    <tr class="bf-table-row bf-table-row-compact">
+                        <th>Type</th>
+                        <td>
+                            <a href=@($"/entitytype/{Role.EntityType.Id}")>@Role.EntityType.Name</a>
+                        </td>
+                    </tr>
+                    <tr class="bf-table-row bf-table-row-compact">
+                        <th>Code</th>
+                        <td>@Role.Code</td>
+                    </tr>
+                    <tr class="bf-table-row bf-table-row-compact">
+                        <th>Urn</th>
+                        <td>@Role.Urn</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <H2>Rolle til rolle</H2>
+            <table class="bf-table bfc-base-3-bg">
+                <thead>
+                    <tr>
+                        <th>Har</th>
+                        <th>Gir</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var roleMap in RoleMaps)
+                    {
+                        <tr class="bf-table-row bf-table-row-compact">
+                            <td><a href=@($"/role/{roleMap.HasRole.Id}")>@roleMap.HasRole.Name (@roleMap.HasRole.Code)</a></td>
+                            <td><a href=@($"/role/{roleMap.GetRole.Id}")>@roleMap.GetRole.Name (@roleMap.GetRole.Code)</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+
+        <GridSpan Columns="1">
+            <H2>Tilgangspakker</H2>
+                @if (RolePackages != null)
+                {
+                    <table class="bf-table bfc-base-3-bg">
+                       <thead>
+                           <tr>
+                               <th>Område</th>
+                                <th>Pack</th>
+                                <th>Tags</th>
+                                <th>Kan delegere</th>
+                                <th>Har tilgang</th>
+                                <th>Variant</th>
+                                <th>&nbsp;</th>
+                           </tr>
+                       </thead>
+                       <tbody>
+                        @foreach (var r in RolePackages.OrderBy(t=>t.Package.AreaId).ThenBy(t=>t.Package.Name))
+                        {
+                            <tr class="bf-table-row bf-table-row-compact">
+                                <td>
+                                    <a href=@($"/area/{r.Package.AreaId}")>@GetArea(r.Package.AreaId).Name</a>
+                                </td>
+                                <td title="@r.Package.Description"><a href=@($"/package/{r.PackageId}")>@r.Package.Name</a></td>
+                                <td>
+                                    @foreach (var t in GetPackageTags(r.Package.Id))
+                                    {
+                                        <span class="tag">@t.Name</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (r.IsAdmin)
+                                    {
+                                        <Icon Name="square-check"></Icon>
+                                    }
+                                    else
+                                    {
+                                        <Icon Name="ban"></Icon>
+                                    }
+                                </td>
+                                <td>
+                                    @if (r.IsActor)
+                                    {
+                                        <Icon Name="square-check"></Icon>
+                                    }
+                                    else
+                                    {
+                                        <Icon Name="ban"></Icon>
+                                    }
+                                </td>
+                                <td><a href=@($"/entityvariant/{r.EntityVariant?.Id}")>@r.EntityVariant?.Name</a></td>
+                                <td>&nbsp;</td>
+                           </tr>
+                        }
+                       </tbody>
+                   </table>
+                }
+        </GridSpan>
+
+        <GridSpan Columns="1">
+            <H2>Variants</H2>
+            <table class="bf-table bfc-base-3-bg">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var variant in RoleVariants.OrderBy(t => t.Name))
+                    {
+                        <tr class="bf-table-row bf-table-row-compact">
+                            <td><a href=@($"/entityvariant/{variant.Id}")>@variant.Name</a></td>
+                            <td><a href=@($"/entitytype/{variant.Type.Id}")>@variant.Type.Name</a></td>
+                            <td>@variant.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </GridSpan>
+
+    </Grid>
+
+        <Drawer Title="Create Role Package">
+            <h5>Select package</h5>
+            <input @bind-value=NewSerchTerm />
+            
+            @foreach(var p in NewFilteredPackage)
+            {
+                <em>@p.Name</em>
+            }
+            <hr />
+            <button>Opprett</button>
+        </Drawer>
+
+        <Drawer Title="Edit role package">
+            <input placeholder="Name" />
+            <hr />
+            <button>Save</button>
+        </Drawer>
+
+
+
+}
+
+@code {
+
+    [Parameter] public Guid Id { get; set; }
+    public ExtRole Role { get; set; }
+    public Provider Provider { get; set; }
+    public IEnumerable<ExtRolePackage> RolePackages { get; set; }
+    public List<ExtEntityVariant> RoleVariants { get; set; }
+
+    public List<PackageTag> PackageTags { get; set; }
+    public List<Tag> Tags { get; set; }
+    public List<ExtRoleMap> RoleMaps { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var opt = UserData.GetRequestOptions();
+
+        Role = await roleData.GetExtended(Id, options: opt);
+        if(Role != null)
+        {            
+            Provider = await providerData.Get(Role.EntityType.ProviderId, options: opt);
+            Policies = [.. await packageData.Get(options: opt)];
+            RolePackages = await rolePackageData.GetExtended("RoleId", Role.Id, options: opt);
+
+            var hasRoleMaps = await roleMapData.GetExtended("HasRoleId", Role.Id, options: opt);
+            var getRoleMaps = await roleMapData.GetExtended("GetRoleId", Role.Id, options: opt);
+            RoleMaps = new List<ExtRoleMap>();
+            RoleMaps.AddRange(hasRoleMaps);
+            RoleMaps.AddRange(getRoleMaps);
+
+            var entityTypes = await entityTypeData.Get(options: opt);
+            var variants = await variantRoleData.GetA(Role.Id, options: opt);
+            RoleVariants = new List<ExtEntityVariant>();
+            foreach(var variant in variants)
+            {
+                var extVariant = new ExtEntityVariant()
+                    {
+                        Id = variant.Id,
+                        Name = variant.Name,
+                        Description = variant.Description,
+                        TypeId = variant.TypeId,
+                        Type = entityTypes.First(t => t.Id == variant.TypeId)
+                    };
+                RoleVariants.Add(extVariant);
+            }
+
+            Areas = [.. await areaData.GetExtended(options: opt)];
+            PackageTags = [.. await packageTagData.Get(options: opt) ?? new List<PackageTag>()];
+            Tags = [.. await tagData.Get(options: opt) ?? new List<Tag>()];
+        }
+    }
+
+    public List<ExtArea> Areas { get; set; }
+    private ExtArea GetArea(Guid areaId)
+    {
+
+        if(Areas == null || !Areas.Any())
+        {
+            var opt = UserData.GetRequestOptions();
+            Areas = [.. areaData.GetExtended(options: opt).Result];
+        }
+
+        return Areas.FirstOrDefault(t => t.Id == areaId) ?? new ExtArea();
+    }
+
+    protected IEnumerable<Tag> GetPackageTags(Guid packageId)
+    {
+        var pt = PackageTags.Where(t => t.PackageId == packageId).Select(t => t.TagId);
+        if (pt.Any())
+        {
+            return Tags.Where(t => pt.Contains(t.Id));
+        }
+        return new List<Tag>();
+    }
+
+    protected void ToggleEditRolePackage(RolePackage rolePackage)
+    {
+        
+    }
+
+    public List<Package> Policies { get; set; }
+    public Package SelectedPackage { get; set; }
+    public string NewSerchTerm { get; set; } = "";
+    public List<Package> NewFilteredPackage => Policies.Where(t => t.Name.ToLower().Contains(NewSerchTerm.ToLower())).ToList();
+}

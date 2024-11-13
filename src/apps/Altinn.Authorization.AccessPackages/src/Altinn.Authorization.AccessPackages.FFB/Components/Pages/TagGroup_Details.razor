@@ -1,0 +1,157 @@
+﻿@page "/taggroup/{Id:guid}"
+@inject ITagGroupService tagGroupData
+@inject ITagService tagData
+
+@if(TagGroup != null)
+{
+    <PageTitle>Tag Group - @TagGroup.Name</PageTitle>
+
+    <Grid Medium="2">
+
+        <GridSpan Columns="2">
+            <PageHeader>
+                <LeftContent>
+                    <H1><Icon Name="tags"></Icon> @TagGroup.Name</H1>
+                </LeftContent>
+                <RightContent>
+                    <Button OnClick="() => NewTagIsOpen =! NewTagIsOpen">Legg til ny tag</Button>
+                </RightContent>
+            </PageHeader>
+        </GridSpan>
+
+        <div>
+            <H2>Tags</H2>
+
+            <Accordion>
+                @foreach(var tag in Tags)
+                {
+                    <ListItem Title="@tag.Name" Icon="hashtag" Url="@($"tag/{tag.Id}")"></ListItem>
+                }
+            </Accordion>
+        </div>
+
+        @if(Translations != null)
+        {  
+            <div>
+                <H2>Oversettelser</H2>
+                <table class="bf-table bfc-base-3-bg">
+                    <thead>
+                        <tr>
+                            <th>Språk</th>
+                            <th>Navn</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var translation in Translations)
+                        {
+                            <tr class="bf-table-row bf-table-row-compact">
+                                <td>@translation.Key</td>
+                                <td>@translation.Value.Name</td>
+                                <td><Button Variant="Button.ButtonVariant.Flat" OnClick="@(() => ToggleTranslate(translation.Key))"><Icon Name="pencil"></Icon></Button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </Grid>
+
+    <Drawer Title="Oversettelse" @bind-IsOpen=TranslateIsOpen>
+        <Grid>
+            <Input Title="Språk" Disabled @bind-Value=TranslateLanguage></Input>
+            <Input Title="Value" @bind-Value=TranslateName></Input>
+            <div>
+                <Button Variant="Button.ButtonVariant.Filled">Oppdater</Button>
+            </div>
+        </Grid>
+    </Drawer>
+
+    <Drawer Title="Ny tag" @bind-IsOpen=NewTagIsOpen>
+        <Grid>
+
+            <Input Title="Navn" Description="Nytt unik navn for denne gruppen" Placeholder="Tag" @bind-Value=NewTag.Name></Input>
+            <div>
+                <Button Variant="Button.ButtonVariant.Filled" OnClick="CreateTag">Lagre</Button>
+                <Button Variant="Button.ButtonVariant.Normal" State="Button.ButtonState.Neutral">Avbryt</Button>
+            </div>
+            
+            @if(!string.IsNullOrEmpty(NewTagFeedback.msg))
+            {
+                <Message State="@NewTagFeedback.state" Title="@NewTagFeedback.msg">
+                    @NewTagFeedback.details
+                </Message>
+            }
+
+        </Grid>
+    </Drawer>
+
+}
+
+@code {
+
+    [Parameter] public Guid Id { get; set; }
+    public TagGroup TagGroup { get; set; }
+    public List<Tag> Tags { get; set; }
+
+    public bool TranslateIsOpen { get; set; }
+    public string TranslateLanguage { get; set; }
+    public string TranslateName { get; set; }
+
+    public bool NewTagIsOpen { get; set; }
+    public Tag NewTag { get; set; } = new Tag();
+    public (string msg, Styx.Message.MsgState state, string details) NewTagFeedback { get; set; }
+
+    public Dictionary<string, TagGroup> Translations { get; set; } = new Dictionary<string, TagGroup>();
+
+    protected async override Task OnParametersSetAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        var opt = UserData.GetRequestOptions();
+
+        TagGroup = await tagGroupData.Get(Id, options: opt);
+        Tags = [.. await tagData.Get("GroupId", Id, options: opt) ?? new List<Tag>()];
+
+        List<string> languages = ["nob", "nno", "eng"];
+        Translations = new Dictionary<string, TagGroup>();
+        foreach(var lang in languages)
+        {
+            Translations.Add(lang, await tagGroupData.Get(Id, options: new RequestOptions() { Language = lang }));
+        }
+    }
+
+    private void ToggleTranslate(string lang)
+    {
+        TranslateLanguage = lang;
+        TranslateName = Translations[lang].Name;
+        TranslateIsOpen = !TranslateIsOpen;
+    }
+
+    private async Task CreateTag()
+    {
+        if (!string.IsNullOrEmpty(NewTag.Name))
+        {
+            NewTag.Id = Guid.NewGuid();
+            NewTag.GroupId = TagGroup.Id;
+            try
+            {                
+                var res = await tagData.Create(NewTag);
+                if(res != 1)
+                {
+                    throw new Exception("Unable to create...");
+                }
+                NewTagFeedback = ("Vellykket!", Message.MsgState.Success, "");
+                NewTag = new Tag();
+            }
+            catch (Exception ex)
+            {
+                NewTagFeedback = ("Feil oppstod!", Message.MsgState.Alert, ex.Message);
+            }
+        }
+    }
+
+}

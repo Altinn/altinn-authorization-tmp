@@ -1,0 +1,116 @@
+﻿@page "/tag/{id:guid}"
+@inject ITagService tagData
+@inject IPackageTagService packageTagData
+
+@if(Tag != null)
+{
+
+    <PageTitle>Tag - @Tag.Name</PageTitle>
+
+    <Grid Medium="2">
+
+        <GridSpan Columns="2">
+
+            <PageHeader>
+                <LeftContent>
+                    <H5><a href=@($"/taggroup/{Tag.Group?.Id}")><Icon Name="tags"></Icon> @Tag.Group?.Name</a></H5>
+                    <H1>@Tag.Name</H1>
+                </LeftContent>
+                <RightContent>
+                    @*   <button @onclick=@(() => Flyouts.ToggleFlyout("newRolePackage"))>New role package</button>
+                <button @onclick=@(() => Flyouts.ToggleFlyout("edit"))>Edit</button> *@
+                </RightContent>
+            </PageHeader>
+
+        </GridSpan>
+
+        @if(Policies != null)
+        {   
+            <div>
+                <H2>Tilgangspakker</H2>
+                <Accordion>
+                    @foreach (var package in Policies)
+                    {
+                        <ListItem Title="@package.Name" Icon="fa-file-certificate" Url="@($"package/{package.Id}")"></ListItem>
+                    }
+                </Accordion>
+            </div>
+        }
+
+        @if (Translations != null)
+        {
+            <div>
+                <H2>Oversettelser</H2>
+                <table class="bf-table bfc-base-3-bg">
+                    <thead>
+                        <tr>
+                            <th>Språk</th>
+                            <th>Navn</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var translation in Translations)
+                        {
+                            <tr class="bf-table-row bf-table-row-compact">
+                                <td>@translation.Key</td>
+                                <td>@translation.Value.Name</td>
+                                <td><Button Variant="Button.ButtonVariant.Flat" OnClick=@(() => ToggleTranslate(translation.Key))><Icon Name="pencil"></Icon></Button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+
+    </Grid>
+
+    <Drawer Title="Oversettelse" @bind-IsOpen=TranslateIsOpen>
+
+        <Grid>
+
+            <Input Title="Språk" Disabled Description="Spåkkoden du vil benytte (Bokmål: nob, Nynorsk: nno, Engelsk: eng)" @bind-Value="SelectedLanguage" ></Input>
+            <Input Title="Navn" Description="Navnet på denne tag-en for gitt språk" @bind-Value="TranslatedName"></Input>
+
+            <div>
+                <Button Variant="Button.ButtonVariant.Filled">Lagre</Button>
+            </div>
+
+        </Grid>
+    </Drawer>
+
+}
+@code {
+
+    [Parameter] public Guid Id { get; set; }
+    public ExtTag Tag { get; set; }
+    public Dictionary<string, ExtTag> Translations { get; set; } = new Dictionary<string, ExtTag>();
+
+    public bool TranslateIsOpen { get; set; } = false;
+    public string SelectedLanguage { get; set; } = "eng";
+    public string TranslatedName { get; set; }
+
+    public List<Package> Policies { get; set; }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        var opt = UserData.GetRequestOptions();
+        Tag = await tagData.GetExtended(Id, options: opt);
+        List<string> languages = ["nob", "nno", "eng"];
+        Translations = new Dictionary<string, ExtTag>();
+        foreach (var lang in languages)
+        {
+            Translations.Add(lang, await tagData.GetExtended(Id, options: new RequestOptions() { Language = lang }));
+        }
+
+        Policies = [.. await packageTagData.GetA(Id)];
+    }
+
+    private void ToggleTranslate(string lang)
+    {
+        SelectedLanguage = lang;
+        TranslatedName = Translations[lang].Name;
+        TranslateIsOpen = !TranslateIsOpen;
+    }
+}

@@ -1,0 +1,134 @@
+﻿@page "/entity/{Id:guid}"
+@inject IEntityService entityData
+@inject IRoleAssignmentService roleAssignmentData
+
+@if(Entity != null)
+{
+
+    <PageTitle>Entity - @Entity.Name</PageTitle>
+
+    <PageHeader>
+        <LeftContent>
+            <H1><EntityTypeIcon Id="@Entity.TypeId" /> @Entity.Name</H1>
+        </LeftContent>
+        <RightContent>
+           @*  <button @onclick=@(() => Flyouts.ToggleFlyout("edit"))>Edit</button>
+            <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Resource</button>
+            <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Tags</button>
+            <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Translation</button> *@
+        </RightContent>
+    </PageHeader>
+
+    <table class="bf-table bfc-base-3-bg bf-table-vertical-header" style="width: auto">
+        <tbody>
+            <tr class="bf-table-row bf-table-row-compact">
+                <th>Type</th>
+                <td><a href=@($"/entitytype/{Entity.Type.Id}")>@Entity.Type.Name</a></td>
+            </tr>
+            <tr class="bf-table-row bf-table-row-compact">
+                <th>Variant</th>
+                <td><a href=@($"/entityvariant/{Entity.Variant.Id}")>@Entity.Variant.Name</a></td>
+            </tr>
+            <tr class="bf-table-row bf-table-row-compact">
+                <th>RefId</th>
+                <td>@Entity.RefId</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    @if(ForRoleAssignments != null && ForRoleAssignments.Any())
+    {
+        <div>
+            <h4>Roller (for)</h4>
+
+            <table class="bf-table bfc-base-3-bg">
+                <thead>
+                    <tr>
+                        <th>For</th>
+                        <th>Role</th>
+                        <th>To</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var toId in ForRoleAssignments.Select(t=>t.ToId).Distinct())
+                    {
+                        var assignment = ForRoleAssignments.First(t => t.ToId == toId);
+                        <tr class="bf-table-row bf-table-row-compact">
+                            <td title="@assignment.For.RefId"><a href=@($"/entity/{assignment.For.Id}")><EntityTypeIcon Id="@assignment.For.TypeId" />@assignment.For.Name</a></td>
+                            <td>
+                                 <div style="display:flex; gap:4px;">
+                                    @foreach (var assignmentRole in ForRoleAssignments.Where(t=>t.ToId == toId).OrderBy(t=>t.Role.Name))
+                                    {
+                                        <Badge Title="@assignmentRole.Role.Description">@assignmentRole.Role.Code</Badge>
+                                    }
+                                </div>
+                            </td>
+                            <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    }
+
+    @if (ToRoleAssignments != null && ToRoleAssignments.Any())
+    {
+        <div>
+            <h4>Roller (to)</h4>
+
+            <table class="bf-table bfc-base-3-bg">
+                <thead>
+                    <tr>
+                        <th>For</th>
+                        <th>Role</th>
+                        <th>To</th>
+                    </tr>
+                </thead>    
+                <tbody>
+
+                    @foreach (var forId in ToRoleAssignments.Select(t => t.ForId).Distinct())
+                    {
+                        var assignment = ToRoleAssignments.First(t => t.ForId == forId);
+                        <tr class="bf-table-row bf-table-row-compact">
+                            <td title="@assignment.For.RefId"><a href=@($"/entity/{assignment.For.Id}")><EntityTypeIcon Id="@assignment.For.TypeId" />@assignment.For.Name</a></td>
+                            <td>
+                                <div style="display:flex; gap:4px;">
+                                @foreach (var assignmentRole in ToRoleAssignments.Where(t => t.ForId == forId).OrderBy(t => t.Role.Name))
+                                {
+                                    <Badge Title="@assignmentRole.Role.Description">@assignmentRole.Role.Code</Badge>
+                                }
+                                </div>
+                            </td>
+                            <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    }
+}
+
+
+@code {
+
+    [Parameter] public Guid Id { get; set; }
+    public ExtEntity Entity { get; set; }
+    public List<ExtRoleAssignment> ForRoleAssignments { get; set; }
+    public List<ExtRoleAssignment> ToRoleAssignments { get; set; }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        var opt = UserData.GetRequestOptions();
+
+        Entity = await entityData.GetExtended(Id, options: opt);
+        if(Entity != null)
+        {
+            ForRoleAssignments = [.. await roleAssignmentData.GetExtended("ForId", Entity.Id, options: opt) ?? new List<ExtRoleAssignment>()];
+            ToRoleAssignments = [.. await roleAssignmentData.GetExtended("ToId", Entity.Id, options: opt) ?? new List<ExtRoleAssignment>()];
+        } 
+    }
+
+}

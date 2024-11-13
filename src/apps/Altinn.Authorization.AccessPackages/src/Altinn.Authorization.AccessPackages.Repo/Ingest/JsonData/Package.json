@@ -1,0 +1,326 @@
+[
+  {
+    "id": "25be54f6-370b-40ec-8c13-0d41a2f61e1d",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Miljørydding, miljørensing og lignende",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til miljørydding, miljørensing og lignende.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "A8834A7C-ED89-4C73-B5D5-19A2347F3B13",
+    "isDelegable": false
+  },
+  {
+    "id": "b188e64c-93d4-4d2d-aa4e-0e84069eacf0",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Generelle helfotjenester",
+    "description": "Denne fullmakten gir tilgang til ordinære tjenester knyttet til virksomhetens dialog med Helfo der bruker kan få tilgang til personopplysninger om personer det rapporteres om.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "5a1601c7-8d5d-4a4b-a185-19a35cf08e54",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Rapportering av statistikk",
+    "description": "Denne fullmakten gir tilgang til alle pålagte rapportering av statistikk.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "e7dc823f-1b4c-4e66-bcaa-1a94f17364b3",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Dokumentbasert tilsyn",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til dokumentbaserte tilsyn.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "f9420288-3ff4-47b1-b5c3-1e230f70229e",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Merverdiavgift",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til merverdiavgift.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "7D32591D-34B7-4AFC-8AFA-013722F8C05D",
+    "isDelegable": false
+  },
+  {
+    "id": "e6d35dae-c9a6-42af-875e-201667767526",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Politi og domstol",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til virksomhetens dialog om juridiske forhold med politi og jusitsmyndigheter. ",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "15981458-26da-4098-8eca-27fa02ff39cc",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Kundeadministrator",
+    "description": "Denne tilgangspakken gir bruker mulighet til å administrere tilganger man har mottatt for sine kunder til ansatte i egen virksomheten.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "E4AE823F-41DB-46ED-873F-8A5D1378FFF8",
+    "isDelegable": false
+  },
+  {
+    "id": "7ec10749-ec63-473f-b8f3-329f9b984bf7",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Ulykke og yrkesskade",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til ulykke og yrkesskade.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "A8834A7C-ED89-4C73-B5D5-19A2347F3B13",
+    "isDelegable": false
+  },
+  {
+    "id": "d55263a6-2839-4207-abad-3813baad0ec5",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Starte, drive, endre og avvikle virksomhet",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til å starte, endre og avvikle en virksomhet.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "65358653-2639-499d-ae11-4053bf55d094",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Tilgangsstyring",
+    "description": "Denne tilgangspakken gir bruker mulighet til å gi videre tilganger for virksomheten som man selv har mottatt.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "E4AE823F-41DB-46ED-873F-8A5D1378FFF8",
+    "isDelegable": false
+  },
+  {
+    "id": "932501b0-7a7b-4bca-b761-4b705e3e5268",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Forskning",
+    "description": "Denne fullmakten gir tilgang til tjenester knyttet til forskning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "4edc0b48-ed79-46a4-9dc7-5158eaf3cd0f",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Opptre for virksomhetens kunder",
+    "description": "Denne tilgangspakken gir fullmakter til når en leverandørvirksomhet skal utføre tjenester på vegne av sine kunder via et programmeringsgrensesnitt (API). Fullmakten kan gis til til virksomhetsbruker som er knyttet til leverandørens organisasjonsnummer. Men denne fullmakten vil virksomhetsbrukeren kunne utføre alle tjenester som leverandøren har tilgang til å utføre på vegne av alle sine kunder/klienter. Fullmakten gir ikke virksomhetsbruker tilgang til å utføre tjenester på vegne av leverandøren selv, bare kunder av leverandøren. Denne fullmakten har tidligere hatt navnet “ECKEYROLE”, behovet for denne må vurderes opp mot ny løsning for systembruker.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "892E98C6-1696-46E7-9BB1-59C08761EC64",
+    "isDelegable": false
+  },
+  {
+    "id": "90dff34b-6a01-438c-ab62-51d9640a9b2f",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Patent, varmerke og design",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til patent, varemerke og design.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "5ee1f6a5-8056-481f-91b4-56892ccaf2a0",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Skattegrunnlag",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til innhenting av skattegrunnlag.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "7D32591D-34B7-4AFC-8AFA-013722F8C05D",
+    "isDelegable": false
+  },
+  {
+    "id": "536170c8-2f32-474b-bda8-6c3dafbdfaf1",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Attester",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til attestering av virksomhet.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "8878ca8a-bf87-4f9a-9174-845a78397257",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Pensjon",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til pensjon.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "6F7F3B02-8B5A-4823-9468-0F4646D3A790",
+    "isDelegable": false
+  },
+  {
+    "id": "f01bab66-ce19-432f-9d8f-85544281cbb5",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Tilskudd, støtte og erstatning",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til å søke tilskudd, støtte og erstatning.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "05b53fd5-5841-443c-829d-a2c1f0906546",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Foretaksskatt",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til skatt for foretak.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "7D32591D-34B7-4AFC-8AFA-013722F8C05D",
+    "isDelegable": false
+  },
+  {
+    "id": "ca600de4-5c14-4fe2-a055-a7daffc87dcb",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Mine sider hos kommunen",
+    "description": "Denne fullmakten gir generell tilgang til tjenester av typen “mine side” tjenester hos kommuner.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "5295051b-aac7-4ded-a9fd-aabdba35fa67",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Lønn",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til lønn og honorar.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "6F7F3B02-8B5A-4823-9468-0F4646D3A790",
+    "isDelegable": false
+  },
+  {
+    "id": "4e61ea85-73ac-4ff3-ba90-ac40e0b038c6",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Bærekraft",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til tiltak og rapportering på bærekraft.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "A8834A7C-ED89-4C73-B5D5-19A2347F3B13",
+    "isDelegable": false
+  },
+  {
+    "id": "24f6639a-10f4-4caf-863c-adc619895f91",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Regnskap og øknomirapportering",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til regnskap og øknomirapportering som ikke tilhører skatt og merverdiavgift.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "7D32591D-34B7-4AFC-8AFA-013722F8C05D",
+    "isDelegable": false
+  },
+  {
+    "id": "00629157-9374-4ed4-9e39-b12d9e57c2a7",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Helfotjenester med personopplysninger av særlig kategori",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til virksomhetens dialog med Helfo der bruker kan få tilgang til personopplysninger av særlig kategori.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "51d259c5-4149-4000-84fe-bd58062529d8",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Hovedadministrator",
+    "description": "Denne tilgangspakken gir bruker mulighet til å administrere alle tilganger for virksomheten.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "E4AE823F-41DB-46ED-873F-8A5D1378FFF8",
+    "isDelegable": false
+  },
+  {
+    "id": "7ce979be-c686-43bf-be8c-c8ffac2bc552",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Ansettelsesforhold",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til ansettelsesforhold.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "6F7F3B02-8B5A-4823-9468-0F4646D3A790",
+    "isDelegable": false
+  },
+  {
+    "id": "58763f4b-1519-49f2-af45-cd5ba22254a9",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Reviorattesterer",
+    "description": "Denne fullmakten gir tilgang til alle tjenester som krever revisorattestering.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "7D32591D-34B7-4AFC-8AFA-013722F8C05D",
+    "isDelegable": false
+  },
+  {
+    "id": "06c781d4-6e9b-42d2-b231-d022bd0192c7",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Aksjer og eierforhold",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til aksjer og eierforhold.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "05ebb198-4dc2-4b4c-83d8-d7a036c95519",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Toll",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til toll og fortolling.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "7D32591D-34B7-4AFC-8AFA-013722F8C05D",
+    "isDelegable": false
+  },
+  {
+    "id": "2ce97f2a-679f-488c-afec-dbd291e8a55b",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Renovasjon",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til renovasjon.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "A8834A7C-ED89-4C73-B5D5-19A2347F3B13",
+    "isDelegable": false
+  },
+  {
+    "id": "a61c6bfa-a99c-4cdf-8bc9-de56cf0be69b",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Maskinlesbare hendelser",
+    "description": "Denne tilgangspakken gir fullmakter til å administrere tilgang til maskinlesbare hendelser.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "892E98C6-1696-46E7-9BB1-59C08761EC64",
+    "isDelegable": false
+  },
+  {
+    "id": "c80e12d9-b755-4e0a-81a1-e08fd40dc489",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Ordinær post til virksomheten",
+    "description": "Denne fullmakten gir tilgang til all mottatt post som ikke innholder sensitiv/taushetsbelagt informasjon som sendes virksomheten. Fullmakten gis normalt til de i virksomheten som håndterer mottak av post.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "6F938DE8-34F2-4BAB-A0C6-3A3EB64AAD3B",
+    "isDelegable": false
+  },
+  {
+    "id": "2a87bd18-4f3e-41ef-987e-e26d3cfc9cfd",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Permisjon og sykefravær",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til permisjon og sykefravær.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "6F7F3B02-8B5A-4823-9468-0F4646D3A790",
+    "isDelegable": false
+  },
+  {
+    "id": "7266f6c3-b82b-4675-89e1-e80fdec5cb99",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Klientadminstrasjon for Regnskapsfører og Revisor",
+    "description": "Denne tilgangspakken gir bruker mulighet til å administrere tilgang til tjenester det er naturlig at regnskapsfører eller revisor utfører. Bruker kan administrere tilgang til tjenestene til ansatte hos regnskapsfører eller revisor på vegne av deres kunder.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "E4AE823F-41DB-46ED-873F-8A5D1378FFF8",
+    "isDelegable": false
+  },
+  {
+    "id": "b0e7ffe2-d2d5-431b-96c7-e86deae98156",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Programmeringsgrensesnitt (API)",
+    "description": "Denne tilgangspakken gir fullmakter til å administrere tilgang til data og programmeringsgrensenitt (API) som benytter Maskinporten eller tilsvarende løsninger for APIsikring. ",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "892E98C6-1696-46E7-9BB1-59C08761EC64",
+    "isDelegable": false
+  },
+  {
+    "id": "5ec8ac1b-6265-48fb-aa5d-fd1024d4d438",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Infrastruktur",
+    "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til virksomhetens infrastruktur.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "3F5DF819-7ACA-49E1-BF6F-3E8F120F20D1",
+    "isDelegable": false
+  },
+  {
+    "id": "33b16201-4a65-4142-8d47-fee48680c4ab",
+    "providerId": "73dfe32a-8f21-465c-9242-40d82e61f320",
+    "name": "Post til virksomheten med taushetsbelagt innhold",
+    "description": "Denne fullmakten gir tilgang til all mottatt post som innholder sensitiv/taushetsbelagt informasjon som sendes virksomheten. Fullmakten gis normalt til de i virksomheten som håndterer mottak av post som har taushetsbelagt innhold.",
+    "entitytypeid": "8c216e2f-afdd-4234-9ba2-691c727bb33d",
+    "areaid": "6F938DE8-34F2-4BAB-A0C6-3A3EB64AAD3B",
+    "isDelegable": false
+  }
+]

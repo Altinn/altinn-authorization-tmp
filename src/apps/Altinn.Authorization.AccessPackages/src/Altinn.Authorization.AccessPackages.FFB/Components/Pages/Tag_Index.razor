@@ -1,0 +1,98 @@
+﻿@page "/tags"
+@inject ITagGroupService tagGroupData
+@inject ITagService tagData
+
+<PageTitle>Tags</PageTitle>
+
+<PageHeader>
+    <LeftContent>
+        <H2>Tags</H2>
+    </LeftContent>
+    <RightContent>
+        <ButtonGroup>
+            <Button OnClick=@(() => IsCreateTagOpen = !IsCreateTagOpen)>New tag</Button>
+            <Button OnClick=@(() => IsCreateTagGroupOpen = !IsCreateTagGroupOpen)>New group</Button>
+        </ButtonGroup>
+        <Switch @bind-Checked=GroupByGroups>Fordel i grupper</Switch>
+    </RightContent>
+</PageHeader>
+
+@if (Tags != null)
+{
+    @foreach (var tag in Tags.OrderBy(t=>t.GroupId).ThenBy(t=>t.Name))
+    {
+        if (tag.Group != null)
+        {
+            <SplitBadge Key="@tag.Group.Name" Value="@tag.Name" State="SplitBadge.BadgeState.Warning"></SplitBadge>
+        }
+        else
+        {
+            <Badge>@tag.Name</Badge>
+        }
+    }
+}
+
+<Drawer Title="Create Tag" @bind-IsOpen=IsCreateTagOpen>
+    <Grid>
+        <SelectTagGroup Title="Gruppe" Description="Velg en gruppe tag skal være i" @bind-Selected=SelectedGroup></SelectTagGroup>
+        <Input Title="Navn" Description="Unikt navn for denne tag gruppen" @bind-Value=NewName />
+        <div>
+            <Button Variant="Button.ButtonVariant.Filled" OnClick="CreateNewTag">Opprett</Button>
+        </div>    
+    </Grid>
+</Drawer>
+
+<Drawer Title="Create Group" @bind-IsOpen=IsCreateTagGroupOpen>
+    <Grid>
+        <Input Title="Navn" Description="Unikt navn for denne tag gruppen" @bind-Value=NewGroupName />
+        <div>
+            <Button Variant="Button.ButtonVariant.Filled" OnClick="CreateNewTagGroup">Opprett</Button>
+        </div>
+    </Grid>
+</Drawer>
+
+@code {
+
+    public List<TagGroup> Groups { get; set; }
+    public List<ExtTag> Tags { get; set; }
+    public bool GroupByGroups { get; set; } = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadData();
+    }
+    private async Task LoadData()
+    {
+        var opt = UserData.GetRequestOptions();
+        Groups = [.. await tagGroupData.Repo.Get(options: opt)];
+        Tags = [.. await tagData.ExtendedRepo.GetExtended(options: opt)];
+    }
+
+    #region NewTag
+    public bool IsCreateTagOpen { get; set; }
+    public TagGroup? SelectedGroup { get; set; }
+    public string NewName { get; set; }
+
+    private async Task CreateNewTag()
+    {
+        await tagData.Create(new Tag() { Id = Guid.NewGuid(), GroupId = SelectedGroup?.Id, Name = NewName, ParentId = null });
+        SelectedGroup = null;
+        NewName = "";
+        IsCreateTagOpen = false;
+        await LoadData();
+    }
+    #endregion
+
+    #region NewTagGroup
+    public bool IsCreateTagGroupOpen { get; set; }
+    public string NewGroupName { get; set; }
+    private async Task CreateNewTagGroup()
+    {
+        await tagGroupData.Create(new TagGroup() { Id = Guid.NewGuid(), Name = NewGroupName });
+        NewGroupName = "";
+        IsCreateTagGroupOpen = false;
+        await LoadData();
+    }
+    #endregion
+
+}

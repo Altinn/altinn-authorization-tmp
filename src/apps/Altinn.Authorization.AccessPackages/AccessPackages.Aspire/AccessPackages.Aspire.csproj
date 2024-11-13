@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireHost>true</IsAspireHost>
+    <UserSecretsId>2163e793-201c-46c9-9d8f-a586a3aaf7b5</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\Altinn.Authorization.AccessPackages.CLI\Altinn.Authorization.AccessPackages.CLI.csproj" />
+    <ProjectReference Include="..\src\Altinn.Authorization.AccessPackages.FFB\Altinn.Authorization.FFB.csproj" />
+    <ProjectReference Include="..\src\Altinn.Authorization.AccessPackages\Altinn.Authorization.AccessPackages.csproj" />
+  </ItemGroup>
+
+</Project>

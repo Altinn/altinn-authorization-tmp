@@ -1,0 +1,7 @@
+﻿<span>@icon</span>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    public string icon => Id.ToString().ToUpper() == "8C216E2F-AFDD-4234-9BA2-691C727BB33D" ? "🏢" : "👤";
+}
