@@ -1,0 +1,25 @@
+﻿@namespace Styx
+<CascadingValue TValue="RadioGroup" Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string Key { get; set; }
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    public void Set(string value)
+    {
+        if (Value == value)
+        {
+            Value = "";
+        }
+        else
+        {
+            Value = value;
+        }
+        ValueChanged.InvokeAsync(Value);
+    }
+}

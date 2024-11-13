@@ -14,9 +14,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\..\..\..\..\poc\Styx\Styx\Styx.csproj" />
 		<ProjectReference Include="..\Altinn.Authorization.AccessPackages.Common\Altinn.Authorization.AccessPackages.Common.csproj" />
 		<ProjectReference Include="..\Altinn.Authorization.AccessPackages.Repo\Altinn.Authorization.AccessPackages.Repo.csproj" />
+		<ProjectReference Include="..\Styx\Styx.csproj" />
 	</ItemGroup>
 
 </Project>

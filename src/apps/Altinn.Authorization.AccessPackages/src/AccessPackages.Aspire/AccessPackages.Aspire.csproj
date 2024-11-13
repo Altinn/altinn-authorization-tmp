@@ -15,9 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Altinn.Authorization.AccessPackages.CLI\Altinn.Authorization.AccessPackages.CLI.csproj" />
-    <ProjectReference Include="..\src\Altinn.Authorization.AccessPackages.FFB\Altinn.Authorization.FFB.csproj" />
-    <ProjectReference Include="..\src\Altinn.Authorization.AccessPackages\Altinn.Authorization.AccessPackages.csproj" />
+    <ProjectReference Include="..\Altinn.Authorization.AccessPackages.CLI\Altinn.Authorization.AccessPackages.CLI.csproj" />
+    <ProjectReference Include="..\Altinn.Authorization.AccessPackages.FFB\Altinn.Authorization.FFB.csproj" />
+    <ProjectReference Include="..\Altinn.Authorization.AccessPackages\Altinn.Authorization.AccessPackages.csproj" />
+    <ProjectReference Include="..\Altinn.Authorization.Importers.BRREG\Altinn.Authorization.Importers.BRREG.csproj" />
   </ItemGroup>
 
 </Project>
