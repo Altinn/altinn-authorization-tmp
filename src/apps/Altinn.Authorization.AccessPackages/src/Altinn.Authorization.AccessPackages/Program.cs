@@ -16,14 +16,14 @@ builder.Services.AddLogging();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.Configure<DbObjDefConfig>(builder.Configuration.GetRequiredSection("DbObjDefConfig"));
+builder.Services.Configure<DbObjDefConfig>(builder.Configuration.GetSection("DbObjDefConfig"));
 builder.Services.AddSingleton<DatabaseDefinitions>();
 
-builder.Services.Configure<DbMigrationConfig>(builder.Configuration.GetSection("DbMigration"));
-builder.Services.AddDbAccessMigrations();
+// builder.Services.Configure<DbMigrationConfig>(builder.Configuration.GetSection("DbMigration"));
+// builder.Services.AddDbAccessMigrations();
 
-builder.Services.Configure<JsonIngestConfig>(builder.Configuration.GetSection("JsonIngest"));
-builder.Services.AddDbAccessIngests();
+// builder.Services.Configure<JsonIngestConfig>(builder.Configuration.GetSection("JsonIngest"));
+// builder.Services.AddDbAccessIngests();
 
 builder.Services.AddDbAccessData();
 
@@ -44,8 +44,8 @@ using var tracerProvider2 = Sdk.CreateTracerProviderBuilder()
 var definitions = app.Services.GetRequiredService<DatabaseDefinitions>();
 definitions.SetDatabaseDefinitions();
 
-await app.Services.UseDbAccessMigrations();
-await app.Services.UseDbAccessIngests();
+// await app.Services.UseDbAccessMigrations();
+// await app.Services.UseDbAccessIngests();
 
 if (app.Environment.IsDevelopment())
 {

@@ -18,10 +18,11 @@ using OpenTelemetry.Trace;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder();
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddLogging();
 
-builder.Services.Configure<DbObjDefConfig>(builder.Configuration.GetRequiredSection("DbObjDefConfig"));
+builder.Services.Configure<DbObjDefConfig>(builder.Configuration.GetSection("DbObjDefConfig"));
 builder.Services.AddSingleton<DatabaseDefinitions>();
 
 builder.Services.Configure<DbMigrationConfig>(builder.Configuration.GetSection("DbMigration"));

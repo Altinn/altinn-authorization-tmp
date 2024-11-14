@@ -5,11 +5,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<NoWarn>SA1122;SA1516;CA8618;CA1860</NoWarn>
-        <IsAppProject>true</IsAppProject>
-        <ContainerName>altinn-authorization-access-packages</ContainerName>
-    </PropertyGroup>
-
-    <ItemGroup>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
@@ -22,24 +18,5 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Altinn.Authorization.AccessPackages.Repo\Altinn.Authorization.AccessPackages.Repo.csproj" />
 	</ItemGroup>
-
-    <ItemGroup>
-        <None Update="accesspackages.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference
-            Include="..\..\..\..\libs\Altinn.Authorization.Configuration\src\Altinn.Authorization.Configuration\Altinn.Authorization.Configuration.csproj" />
-        <ProjectReference
-            Include="..\..\..\..\libs\Altinn.Authorization.Configuration\src\Altinn.Authorization.Configuration.OpenTelemetry\Altinn.Authorization.Configuration.OpenTelemetry.csproj" />
-        <ProjectReference
-            Include="..\..\..\..\libs\Altinn.Authorization.Configuration\src\Altinn.Authorization.Configuration.Postgres\Altinn.Authorization.Configuration.Postgres.csproj" />
-        <ProjectReference
-            Include="..\..\..\..\libs\Altinn.Authorization.Hosting\src\Altinn.Authorization.Hosting\Altinn.Authorization.Hosting.csproj" />
-        <ProjectReference
-            Include="..\Altinn.Authorization.AccessPackages.Models\Altinn.Authorization.AccessPackages.Models.csproj" />
-    </ItemGroup>
 
 </Project>

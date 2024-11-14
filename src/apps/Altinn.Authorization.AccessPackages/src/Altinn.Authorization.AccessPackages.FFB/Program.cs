@@ -17,11 +17,11 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnCh
 builder.Services.Configure<DbObjDefConfig>(builder.Configuration.GetRequiredSection("DbObjDefConfig"));
 builder.Services.AddSingleton<DatabaseDefinitions>();
 
-builder.Services.Configure<DbMigrationConfig>(builder.Configuration.GetRequiredSection("DbMigration"));
-builder.Services.AddDbAccessMigrations();
+//builder.Services.Configure<DbMigrationConfig>(builder.Configuration.GetRequiredSection("DbMigration"));
+//builder.Services.AddDbAccessMigrations();
 
-builder.Services.Configure<JsonIngestConfig>(builder.Configuration.GetRequiredSection("JsonIngest"));
-builder.Services.AddDbAccessIngests();
+//builder.Services.Configure<JsonIngestConfig>(builder.Configuration.GetRequiredSection("JsonIngest"));
+//builder.Services.AddDbAccessIngests();
 
 builder.Services.AddDbAccessData();
 
@@ -52,8 +52,8 @@ using var tracerProvider3 = Sdk.CreateTracerProviderBuilder()
 var dbDef = app.Services.GetRequiredService<DatabaseDefinitions>();
 dbDef.SetDatabaseDefinitions();
 
-await app.Services.UseDbAccessMigrations();
-//await app.Services.UseDbAccessIngests();
+//// await app.Services.UseDbAccessMigrations();
+//// await app.Services.UseDbAccessIngests();
 
 if (!app.Environment.IsDevelopment())
 {
