@@ -9,10 +9,12 @@
   },
   "database": {
     "bootstrap": true,
-    "name": "accesspackage",
-    "roleprefix": "accesspackage",
+    "name": "accesspackages",
+    "roleprefix": "accesspackages",
     "schema": {
-      "test": {}
+      "dbo": {},
+      "translation": {},
+      "history": {}
     }
   }
 }
