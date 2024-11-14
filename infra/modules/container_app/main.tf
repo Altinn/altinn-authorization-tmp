@@ -66,7 +66,7 @@ resource "azurerm_role_assignment" "rbac" {
     {
       id                   = "service_bus_mass_transit"
       scope                = data.azurerm_servicebus_namespace.sb.id
-      role_definition_name = "Azure Service Bus Mass Transit"
+      role_definition_name = "Azure Service Bus Mass Transit ${upper(var.environment)}"
       should_assign        = var.can_use_service_bus
     },
     {
@@ -89,11 +89,6 @@ data "azurerm_postgresql_flexible_server" "server" {
   resource_group_name = local.infrastructure_resource_group_name
 }
 
-data "azurerm_user_assigned_identity" "postgres_admin" {
-  name                = "mipsqlsrvadmin${local.infrastructure_suffix}"
-  resource_group_name = local.infrastructure_resource_group_name
-}
-
 resource "azurerm_container_app" "app" {
   name = "ca${local.suffix}"
 
@@ -103,11 +98,8 @@ resource "azurerm_container_app" "app" {
   workload_profile_name        = "basic"
 
   identity {
-    type = "UserAssigned"
-    identity_ids = [
-      azurerm_user_assigned_identity.app.id,
-      data.azurerm_user_assigned_identity.postgres_admin.id
-    ]
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.app.id]
   }
 
   ingress {
@@ -127,10 +119,6 @@ resource "azurerm_container_app" "app" {
     max_replicas = var.max_replicas
 
     container {
-      env {
-        name  = "EntraId__Identities__PostgresAdmin__ClientId"
-        value = data.azurerm_user_assigned_identity.postgres_admin.client_id
-      }
       env {
         name  = "EntraId__Identities__Service__ClientId"
         value = azurerm_user_assigned_identity.app.client_id

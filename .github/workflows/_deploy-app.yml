@@ -1,0 +1,115 @@
+name: "Template: Deploy app"
+
+on:
+  workflow_call:
+    inputs:
+      name:
+        required: true
+        description: Name of the app
+        type: string
+
+      path:
+        required: true
+        description: Path to the app
+        type: string
+
+      terraform:
+        description: Whether to deploy terraform
+        type: boolean
+        default: false
+
+      terraformStateFile:
+        description: Path to the terraform state file
+        type: string
+
+      databaseBootstrap:
+        type: boolean
+        description: Bootstrap Database
+        default: false
+
+      databaseName:
+        type: string
+        description: Name of database
+        required: false
+
+      databaseRolePrefix:
+        type: string
+        description: Name of database role prefix
+        required: false
+
+      databaseSchema:
+        type: string
+        description: Name of database schema
+        required: false
+
+jobs:
+  build-push:
+    name: Build and Push
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image: ${{ steps.img.outputs.image }}
+      tag: ${{ steps.img.outputs.tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout repository
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          run_install: |
+            - cwd: .github/scripts
+              args: [--frozen-lockfile]
+            - args: [--global, tsx]
+
+      - uses: docker/login-action@v3
+        name: Login to ghcr
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push ${{ inputs.name }}
+        id: img
+        run: tsx ./.github/scripts/build-push-app.mts "${{ inputs.name }}"
+
+      - name: Print outputs
+        env:
+          IMAGE: ${{ steps.img.outputs.image }}
+          TAG: ${{ steps.img.outputs.tag }}
+        run: |
+          echo "Image: ${IMAGE}"
+          echo "Tag: ${TAG}"
+
+  deploy-terraform:
+    name: Run terraform deployment
+
+    if: inputs.terraform
+
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [at21, at22]
+
+    needs:
+      - build-push
+
+    uses: ./.github/workflows/_deploy-app-terraform.yml
+    with:
+      environment: ${{ matrix.environment }}
+      working_dir: ${{ inputs.path }}/deploy
+      tf_state: ${{ inputs.terraformStateFile }}
+      tf_args: "-var image=${{ needs.build-push.outputs.image }}"
+
+      databaseBootstrap: ${{ inputs.databaseBootstrap }}
+      databaseName: ${{ inputs.databaseName }}
+      databaseRoleprefix: ${{ inputs.databaseRoleprefix }}
+      databaseSchema: ${{ inputs.databaseSchema }}

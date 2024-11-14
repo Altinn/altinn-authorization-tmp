@@ -1,22 +1,25 @@
-﻿using Altinn.Authorization.DeployApi.Pipelines;
+﻿using System.Text.Json.Serialization;
+using Altinn.Authorization.DeployApi.Pipelines;
 using Azure.Core;
 using Azure.ResourceManager;
 using Azure.ResourceManager.KeyVault;
 using Azure.ResourceManager.PostgreSql.FlexibleServers;
 using Azure.Security.KeyVault.Secrets;
 using Npgsql;
-using System.Text.Json.Serialization;
 
 namespace Altinn.Authorization.DeployApi.BootstrapDatabase;
 
 internal sealed class BootstrapDatabasePipeline
-    : Pipeline
+    : TaskPipeline
 {
     [JsonPropertyName("resources")]
     public required ResourcesConfig Resources { get; init; }
 
     [JsonPropertyName("databaseName")]
     public required string DatabaseName { get; init; }
+
+    [JsonPropertyName("userPrefix")]
+    public required string UserPrefix { get; init; }
 
     [JsonPropertyName("schemas")]
     public required IReadOnlyDictionary<string, SchemaBootstrapModel> Schemas { get; init; }
@@ -72,8 +75,8 @@ internal sealed class BootstrapDatabasePipeline
             (_, ct) => serverConn.OpenAsync(ct),
             cancellationToken);
 
-        var migratorUser = await context.RunTask(new CreateDatabaseRoleTask(secretClient, serverConn, $"{DatabaseName}_migrator", Resources.User), cancellationToken);
-        var appUser = await context.RunTask(new CreateDatabaseRoleTask(secretClient, serverConn, $"{DatabaseName}_app", Resources.User), cancellationToken);
+        var migratorUser = await context.RunTask(new CreateDatabaseRoleTask(secretClient, serverConn, $"{UserPrefix}_migrator", Resources.User), cancellationToken);
+        var appUser = await context.RunTask(new CreateDatabaseRoleTask(secretClient, serverConn, $"{UserPrefix}_app", Resources.User), cancellationToken);
         await context.RunTask(new CreateDatabaseTask(serverConn, DatabaseName), cancellationToken);
         await context.RunTask(new GrantDatabasePrivilegesTask(serverConn, DatabaseName, migratorUser.RoleName, "CREATE, CONNECT"), cancellationToken);
         await context.RunTask(new GrantDatabasePrivilegesTask(serverConn, DatabaseName, appUser.RoleName, "CONNECT"), cancellationToken);
@@ -105,11 +108,11 @@ internal sealed class BootstrapDatabasePipeline
 
         connStringBuilder.Username = migratorUser.RoleName;
         connStringBuilder.Password = migratorUser.Password;
-        connectionStrings[$"db-{DatabaseName}-migrator"] = connStringBuilder.ToString();
+        connectionStrings[$"db-{UserPrefix}-migrator"] = connStringBuilder.ToString();
 
         connStringBuilder.Username = appUser.RoleName;
         connStringBuilder.Password = appUser.Password;
-        connectionStrings[$"db-{DatabaseName}-app"] = connStringBuilder.ToString();
+        connectionStrings[$"db-{UserPrefix}-app"] = connStringBuilder.ToString();
 
         await context.RunTask(new SaveConnectionStringsTask(secretClient, connectionStrings), cancellationToken);
     }
@@ -126,7 +129,7 @@ internal sealed class BootstrapDatabasePipeline
         public required string ServerName { get; init; }
 
         [JsonPropertyName("user")]
-        public required string User { get; init; }
+        public required string User { get; init; } = Environment.GetEnvironmentVariable("ManagedIdentity__ClientId");
 
         [JsonPropertyName("keyVaultName")]
         public required string KeyVaultName { get; init; }

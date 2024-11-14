@@ -1,9 +1,12 @@
 using Altinn.Authorization.DeployApi.BootstrapDatabase;
+using Altinn.Authorization.Hosting.Extensions;
+using Altinn.Authorization.DeployApi.Pipelines;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddAltinnHostDefaults();
 
 TokenCredential cred;
 if (builder.Environment.IsDevelopment())
@@ -31,6 +34,9 @@ builder.Services.AddAuthentication()
 
 var app = builder.Build();
 
-app.MapPost("/api/v1/database/bootstrap", (BootstrapDatabasePipeline pipeline, HttpContext context) => pipeline.Run(context));
+app.UseAltinnHostDefaults();
+app.UseWebSockets();
+
+app.MapTaskPipeline<BootstrapDatabasePipeline>("/deployapi/api/v1/database/bootstrap");
 
 app.Run();

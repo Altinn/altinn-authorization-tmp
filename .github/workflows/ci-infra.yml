@@ -1,0 +1,37 @@
+name: "CI: Infra"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  cert:
+    name: Cert
+    secrets: inherit
+    uses: ./.github/workflows/_ci-infra-template.yml
+    with:
+      environment: at21
+      tf_state: cert.tfstate
+      working_dir: infra/deploy/cert
+
+  auth:
+    name: Auth
+    secrets: inherit
+    uses: ./.github/workflows/_ci-infra-template.yml
+    with:
+      environment: at21
+      tf_state: auth.tfstate
+      working_dir: infra/deploy/auth
+
+  register:
+    name: Altinn Register
+    secrets: inherit
+    uses: ./.github/workflows/_ci-infra-template.yml
+    with:
+      environment: at21
+      tf_state: Altinn.Register.tfstate
+      working_dir: infra/deploy/altinn-register

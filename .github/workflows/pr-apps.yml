@@ -1,0 +1,35 @@
+name: "PR: Apps"
+
+on:
+  pull_request:
+    paths:
+      - src/**
+      - .github/workflows/apps-*
+      - .github/workflows/infra-*
+
+jobs:
+  find-verticals:
+    uses: ./.github/workflows/_find-verticals.yml
+    with:
+      type: app
+
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    needs: find-verticals
+    strategy:
+      matrix: ${{ fromJson(needs.find-verticals.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+
+      - name: Build
+        working-directory: ${{ matrix.path }}
+        run: dotnet build
+
+      - name: Test
+        if: always()
+        working-directory: ${{ matrix.path }}
+        run: dotnet test --no-build
