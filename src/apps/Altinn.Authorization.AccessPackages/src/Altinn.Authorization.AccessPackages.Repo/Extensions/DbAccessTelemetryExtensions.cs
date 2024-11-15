@@ -45,8 +45,6 @@ public static class DbAccessTelemetryExtensions
         return builder;
     }
 
-
-
     [Obsolete]
     public static IHostApplicationBuilder AddDbAccessTelemetry(this IHostApplicationBuilder builder, Action<TelemetryConfig>? configureOptions = null)
     {

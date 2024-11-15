@@ -3,22 +3,15 @@ using Altinn.Authorization.AccessPackages.Repo.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.Services.AddLogging();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.AddDatabaseDefinitions();
 builder.AddDbAccessData();
 
-//// builder.AddDbAccessMigrations();
-//// builder.AddJsonIngests();
-
 var app = builder.Build();
 
 app.Services.UseDatabaseDefinitions();
-//// await app.Services.UseDbAccessMigrations();
-//// await app.Services.UseJsonIngests();
 
 if (app.Environment.IsDevelopment())
 {
