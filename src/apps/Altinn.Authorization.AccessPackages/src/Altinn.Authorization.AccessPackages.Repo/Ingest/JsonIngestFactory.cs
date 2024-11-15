@@ -41,6 +41,7 @@ public class JsonIngestFactory : IDatabaseIngest
     /// <param name="tagService">ITagService</param>
     public JsonIngestFactory(
         IOptions<JsonIngestConfig> config,
+        JsonIngestMeters meters,
         IProviderService providerService,
         IAreaService areaService,
         IAreaGroupService areaGroupService,
@@ -56,18 +57,18 @@ public class JsonIngestFactory : IDatabaseIngest
         )
     {
         // jsonIngestConfig = Config.Value;
-        providerIngestService = new ProviderJsonIngestService(providerService, config);
-        areaIngestService = new AreaJsonIngestService(areaService, config);
-        areaGroupIngestService = new AreaGroupJsonIngestService(areaGroupService, config);
-        entityTypeIngestService = new EntityTypeJsonIngestService(entityTypeService, config);
-        entityVariantIngestService = new EntityVariantJsonIngestService(entityVariantService, config);
-        entityVariantRoleIngestService = new EntityVariantRoleJsonIngestService(entityVariantRoleService, config);
-        packageIngestService = new PackageJsonIngestService(packageService, config);
-        roleIngestService = new RoleJsonIngestService(roleService, config);
-        roleMapIngestService = new RoleMapJsonIngestService(roleMapService, config);
-        rolePackageIngestService = new RolePackageJsonIngestService(rolePackageService, config);
-        tagGroupIngestService = new TagGroupJsonIngestService(tagGroupService, config);
-        tagIngestService = new TagJsonIngestService(tagService, config);
+        providerIngestService = new ProviderJsonIngestService(providerService, config, meters);
+        areaIngestService = new AreaJsonIngestService(areaService, config, meters);
+        areaGroupIngestService = new AreaGroupJsonIngestService(areaGroupService, config, meters);
+        entityTypeIngestService = new EntityTypeJsonIngestService(entityTypeService, config, meters);
+        entityVariantIngestService = new EntityVariantJsonIngestService(entityVariantService, config, meters);
+        entityVariantRoleIngestService = new EntityVariantRoleJsonIngestService(entityVariantRoleService, config, meters);
+        packageIngestService = new PackageJsonIngestService(packageService, config, meters);
+        roleIngestService = new RoleJsonIngestService(roleService, config, meters);
+        roleMapIngestService = new RoleMapJsonIngestService(roleMapService, config, meters);
+        rolePackageIngestService = new RolePackageJsonIngestService(rolePackageService, config, meters);
+        tagGroupIngestService = new TagGroupJsonIngestService(tagGroupService, config, meters);
+        tagIngestService = new TagJsonIngestService(tagService, config, meters);
     }
 
     /// <summary>
@@ -75,23 +76,47 @@ public class JsonIngestFactory : IDatabaseIngest
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>IngestResults</returns>
-    public async Task<List<IngestResult>> IngestAll(CancellationToken cancellationToken)
+    public async Task<List<IngestResult>> IngestAll(CancellationToken cancellationToken = default)
     {
-        Console.WriteLine("Lets eat some data!");
+        using var a = DbAccess.DbAccessTelemetry.DbAccessSource.StartActivity("IngestAll");
+        //// Console.WriteLine("Lets eat some data!");
 
         var result = new List<IngestResult>();
 
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("areaGroupIngestService"));
         result.Add(await areaGroupIngestService.IngestData(cancellationToken));
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("areaIngestService"));
         result.Add(await areaIngestService.IngestData(cancellationToken));
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("providerIngestService"));
         result.Add(await providerIngestService.IngestData(cancellationToken));
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("entityTypeIngestService"));
         result.Add(await entityTypeIngestService.IngestData(cancellationToken));
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantIngestService"));
         result.Add(await entityVariantIngestService.IngestData(cancellationToken));
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("packageIngestService"));
         result.Add(await packageIngestService.IngestData(cancellationToken));
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("roleIngestService"));
         result.Add(await roleIngestService.IngestData(cancellationToken));
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("roleMapIngestService"));
         result.Add(await roleMapIngestService.IngestData(cancellationToken));
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("rolePackageIngestService"));
         result.Add(await rolePackageIngestService.IngestData(cancellationToken));
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("tagGroupIngestService"));
         result.Add(await tagGroupIngestService.IngestData(cancellationToken));
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("tagIngestService"));
         result.Add(await tagIngestService.IngestData(cancellationToken));
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantRoleIngestService"));
         result.Add(await entityVariantRoleIngestService.IngestData(cancellationToken));
 
         return result;

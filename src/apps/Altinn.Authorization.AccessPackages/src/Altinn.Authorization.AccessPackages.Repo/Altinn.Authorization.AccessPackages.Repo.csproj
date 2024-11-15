@@ -8,12 +8,21 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Options" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" />
+		<PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+		<PackageReference Include="OpenTelemetry.Exporter.Console" />
 		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Altinn.Authorization.AccessPackages.Common\Altinn.Authorization.AccessPackages.Common.csproj" />
 		<ProjectReference Include="..\Altinn.Authorization.AccessPackages.DbAccess\Altinn.Authorization.AccessPackages.DbAccess.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Ingest\JsonData\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>

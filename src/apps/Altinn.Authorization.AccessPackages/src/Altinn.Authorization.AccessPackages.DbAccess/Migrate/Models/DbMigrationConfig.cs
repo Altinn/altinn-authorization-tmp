@@ -1,10 +1,23 @@
-﻿namespace Altinn.Authorization.AccessPackages.DbAccess.Migrate.Models;
+﻿using Microsoft.Extensions.Options;
+
+namespace Altinn.Authorization.AccessPackages.DbAccess.Migrate.Models;
 
 /// <summary>
 /// Database Migration Configuration
 /// </summary>
 public class DbMigrationConfig
 {
+
+    public DbMigrationConfig()
+    {
+        
+    }
+
+    public DbMigrationConfig(Action<DbMigrationConfig> configureOptions)
+    {
+        configureOptions?.Invoke(this);
+    }
+
     /// <summary>
     /// ConnectionString
     /// </summary>
@@ -29,4 +42,9 @@ public class DbMigrationConfig
     /// History schema
     /// </summary>
     public string HistorySchema { get; set; }
+
+    /// <summary>
+    /// UseSqlServer
+    /// </summary>
+    public bool UseSqlServer { get; set; }
 }

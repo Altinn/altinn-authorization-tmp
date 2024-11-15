@@ -3,7 +3,7 @@
 namespace Altinn.Authorization.FFB;
 public static class Telemetry
 {
-    public static ActivitySource Source = new ActivitySource("Altinn.Authorization.FFB", "1.0.0");
+    public static ActivitySource Source = new ActivitySource("Altinn.Authorization.FFB");
 
     public static Activity? StartActivity<T>(string name, ActivityKind kind = ActivityKind.Internal)
     {

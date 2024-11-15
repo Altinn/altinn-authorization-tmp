@@ -16,7 +16,7 @@ public class AreaGroupJsonIngestService : BaseJsonIngestService<AreaGroup, IArea
     /// </summary>
     /// <param name="service">Db repo from Role</param>
     /// <param name="config">JsonIngestConfig</param>
-    public AreaGroupJsonIngestService(IAreaGroupService service, IOptions<JsonIngestConfig> config) : base(service, config) 
+    public AreaGroupJsonIngestService(IAreaGroupService service, IOptions<JsonIngestConfig> config, JsonIngestMeters meters) : base(service, config, meters)
     {
         LoadTranslations = true;
     }

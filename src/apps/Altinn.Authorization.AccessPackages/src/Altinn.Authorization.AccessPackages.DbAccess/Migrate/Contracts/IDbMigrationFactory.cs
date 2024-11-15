@@ -66,7 +66,7 @@ public interface IDbMigrationFactory
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TTarget"></typeparam>
-    /// <param name="sourceProperty">Source property</param>
+    /// <param name="sourceProperty">DbAccessSource property</param>
     /// <param name="targetProperty">Target property (default: Id)</param>
     Task CreateForeignKeyConstraint<TSource, TTarget>(string sourceProperty, string targetProperty = "Id");
 }

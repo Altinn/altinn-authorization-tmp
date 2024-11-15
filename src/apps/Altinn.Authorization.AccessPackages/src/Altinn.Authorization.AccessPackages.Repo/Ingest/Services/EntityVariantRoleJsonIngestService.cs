@@ -16,5 +16,5 @@ public class EntityVariantRoleJsonIngestService : BaseJsonIngestService<EntityVa
     /// </summary>
     /// <param name="service">Db repo from EntityVariantRole</param>
     /// <param name="config">JsonIngestConfig</param>
-    public EntityVariantRoleJsonIngestService(IEntityVariantRoleService service, IOptions<JsonIngestConfig> config) : base(service, config) { }
+    public EntityVariantRoleJsonIngestService(IEntityVariantRoleService service, IOptions<JsonIngestConfig> config, JsonIngestMeters meters) : base(service, config, meters) { }
 }

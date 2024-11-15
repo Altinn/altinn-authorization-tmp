@@ -1,9 +1,10 @@
-﻿using Altinn.Authorization.AccessPackages.DbAccess.Data;
-using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
+﻿using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Mssql;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Postgres;
+using Altinn.Authorization.AccessPackages.DbAccess.Ingest.Models;
 using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Contracts;
+using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Models;
 using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Services;
 using Altinn.Authorization.AccessPackages.Models;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
@@ -11,8 +12,10 @@ using Altinn.Authorization.AccessPackages.Repo.Data.Converters;
 using Altinn.Authorization.AccessPackages.Repo.Data.Services;
 using Altinn.Authorization.AccessPackages.Repo.Ingest;
 using Altinn.Authorization.AccessPackages.Repo.Migrate;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Altinn.Authorization.AccessPackages.Repo.Extensions;
 
@@ -22,24 +25,67 @@ namespace Altinn.Authorization.AccessPackages.Repo.Extensions;
 public static class DbAccessExtensions
 {
     /// <summary>
+    /// AddDatabaseDefinitions
+    /// </summary>
+    /// <param name="builder">IHostApplicationBuilder</param>
+    /// <param name="configureOptions">DbObjDefConfig</param>
+    /// <returns></returns>
+    public static IHostApplicationBuilder AddDatabaseDefinitions(this IHostApplicationBuilder builder, Action<DbObjDefConfig>? configureOptions = null)
+    {
+        builder.Services.Configure<DbObjDefConfig>(config =>
+        {
+            builder.Configuration.GetSection("DbObjDefConfig").Bind(config);
+            configureOptions?.Invoke(config);
+        });
+
+        builder.Services.AddSingleton<DatabaseDefinitions>();
+
+        return builder;
+    }
+
+    /// <summary>
+    /// UseDatabaseDefinitions
+    /// </summary>
+    /// <param name="services">IServiceProvider</param>
+    /// <returns></returns>
+    public static IServiceProvider UseDatabaseDefinitions(this IServiceProvider services)
+    {
+        var definitions = services.GetRequiredService<DatabaseDefinitions>();
+        definitions.SetDatabaseDefinitions();
+        return services;
+    }
+
+    /// <summary>
     /// Adds DbAccess Migrations
     /// </summary>
-    /// <param name="services">IServiceCollection</param>
-    /// <param name="useSqlServer">Use Mssql or Postgres</param>
+    /// <param name="builder">IHostApplicationBuilder</param>
+    /// <param name="configureOptions">DbMigrationConfig</param>
     /// <returns></returns>
-    public static IServiceCollection AddDbAccessMigrations(this IServiceCollection services, bool useSqlServer = false)
+    public static IHostApplicationBuilder AddDbAccessMigrations(this IHostApplicationBuilder builder, Action<DbMigrationConfig>? configureOptions = null)
     {
-        if (useSqlServer)
+        builder.Services.Configure<DbMigrationConfig>(config =>
         {
-            services.AddSingleton<IDbMigrationFactory, SqlMigrationFactory>();
+            builder.Configuration.GetSection("DbMigration").Bind(config);
+            configureOptions?.Invoke(config);
+        });
+
+        var config = new DbMigrationConfig(config =>
+        {
+            builder.Configuration.GetSection("DbMigration").Bind(config);
+            configureOptions?.Invoke(config);
+        });
+
+        if (config.UseSqlServer)
+        {
+            builder.Services.AddSingleton<IDbMigrationFactory, SqlMigrationFactory>();
         }
         else
         {
-            services.AddSingleton<IDbMigrationFactory, PostgresMigrationFactory>();
+            builder.Services.AddSingleton<IDbMigrationFactory, PostgresMigrationFactory>();
         }
 
-        services.AddSingleton<IDatabaseMigration, DatabaseMigration>();
-        return services;
+        builder.Services.AddSingleton<IDatabaseMigration, DatabaseMigration>();
+        return builder;
     }
 
     /// <summary>
@@ -57,12 +103,22 @@ public static class DbAccessExtensions
     /// <summary>
     /// Adds DbAccess Ingests
     /// </summary>
-    /// <param name="services">IServiceCollection</param>
+    /// <param name="builder">IHostApplicationBuilder</param>
+    /// <param name="configureOptions">JsonIngestConfig</param>
     /// <returns></returns>
-    public static IServiceCollection AddDbAccessIngests(this IServiceCollection services)
+    public static IHostApplicationBuilder AddJsonIngests(this IHostApplicationBuilder builder, Action<JsonIngestConfig>? configureOptions = null)
     {
-        services.AddSingleton<IDatabaseIngest, JsonIngestFactory>();
-        return services;
+        builder.Services.Configure<JsonIngestConfig>(config =>
+        {
+            builder.Configuration.GetSection("JsonIngest").Bind(config);
+            config.BasePath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "Ingest/JsonData/");
+            configureOptions?.Invoke(config);
+        });
+
+        builder.Services.AddMetrics();
+        builder.Services.AddSingleton<JsonIngestMeters>();
+        builder.Services.AddSingleton<JsonIngestFactory>();
+        return builder;
     }
 
     /// <summary>
@@ -70,9 +126,11 @@ public static class DbAccessExtensions
     /// </summary>
     /// <param name="services">IServiceProvider</param>
     /// <returns></returns>
-    public async static Task<IServiceProvider> UseDbAccessIngests(this IServiceProvider services)
+    public async static Task<IServiceProvider> UseJsonIngests(this IServiceProvider services)
     {
-        var dbIngest = services.GetRequiredService<IDatabaseIngest>();
+        var ss = services.GetRequiredService<JsonIngestMeters>();
+        ss.Test.Record(6);
+        var dbIngest = services.GetRequiredService<JsonIngestFactory>();
         await dbIngest.IngestAll();
         return services;
     }
@@ -80,67 +138,84 @@ public static class DbAccessExtensions
     /// <summary>
     /// Adds DbAccess Data
     /// </summary>
-    /// <param name="services">IServiceCollection</param>
-    /// <param name="useSqlServer">Use SqlServer or Postgres</param>
+    /// <param name="builder">IHostApplicationBuilder</param>
+    /// <param name="configureOptions">DbAccessDataConfig</param>
     /// <returns></returns>
-    public static IServiceCollection AddDbAccessData(this IServiceCollection services, bool useSqlServer = false)
+    public static IHostApplicationBuilder AddDbAccessData(this IHostApplicationBuilder builder, Action<DbAccessDataConfig>? configureOptions = null, Action<TelemetryConfig> telemetryOptions = null)
     {
+        builder.AddDbAccessDataTelemetry();
+
+        builder.Services.Configure<DbAccessDataConfig>(config =>
+        {
+            builder.Configuration.GetSection("DataService").Bind(config);
+            configureOptions?.Invoke(config);
+        });
+
+        var config = new DbAccessDataConfig(config =>
+        {
+            builder.Configuration.GetSection("DataService").Bind(config);
+            configureOptions?.Invoke(config);
+        });
+
         #region Register Converters
-        services.AddSingleton<IDbExtendedConverter<PackageResource, ExtPackageResource>, PackageResourceDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<Resource, ExtResource>, ResourceDbConverter>();
-        services.AddSingleton<IDbBasicConverter<ResourceType>, ResourceTypeDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<ResourceGroup, ExtResourceGroup>, ResourceGroupDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<Area, ExtArea>, AreaDbConverter>();
-        services.AddSingleton<IDbBasicConverter<AreaGroup>, AreaGroupDbConverter>();
-        services.AddSingleton<IDbBasicConverter<Provider>, ProviderDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<EntityType, ExtEntityType>, EntityTypeDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<EntityVariant, ExtEntityVariant>, EntityVariantDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<Package, ExtPackage>, PackageDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<Role, ExtRole>, RoleDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<RolePackage, ExtRolePackage>, RolePackageDbConverter>();
-        services.AddSingleton<IDbBasicConverter<TagGroup>, TagGroupDbConverter>();
-        services.AddSingleton<IDbCrossConverter<Package, PackageTag, Tag>, PackageTagDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<Tag, ExtTag>, TagDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<Entity, ExtEntity>, EntityDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<RoleAssignment, ExtRoleAssignment>, RoleAssignmentDbConverter>();
-        services.AddSingleton<IDbCrossConverter<EntityVariant, EntityVariantRole, Role>, EntityVariantRoleDbConverter>();
-        services.AddSingleton<IDbExtendedConverter<RoleMap, ExtRoleMap>, RoleMapDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<PackageResource, ExtPackageResource>, PackageResourceDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<Resource, ExtResource>, ResourceDbConverter>();
+        builder.Services.AddSingleton<IDbBasicConverter<ResourceType>, ResourceTypeDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<ResourceGroup, ExtResourceGroup>, ResourceGroupDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<Area, ExtArea>, AreaDbConverter>();
+        builder.Services.AddSingleton<IDbBasicConverter<AreaGroup>, AreaGroupDbConverter>();
+        builder.Services.AddSingleton<IDbBasicConverter<Provider>, ProviderDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<EntityType, ExtEntityType>, EntityTypeDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<EntityVariant, ExtEntityVariant>, EntityVariantDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<Package, ExtPackage>, PackageDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<Role, ExtRole>, RoleDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<RolePackage, ExtRolePackage>, RolePackageDbConverter>();
+        builder.Services.AddSingleton<IDbBasicConverter<TagGroup>, TagGroupDbConverter>();
+        builder.Services.AddSingleton<IDbCrossConverter<Package, PackageTag, Tag>, PackageTagDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<Tag, ExtTag>, TagDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<Entity, ExtEntity>, EntityDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<RoleAssignment, ExtRoleAssignment>, RoleAssignmentDbConverter>();
+        builder.Services.AddSingleton<IDbCrossConverter<EntityVariant, EntityVariantRole, Role>, EntityVariantRoleDbConverter>();
+        builder.Services.AddSingleton<IDbExtendedConverter<RoleMap, ExtRoleMap>, RoleMapDbConverter>();
         #endregion
 
         #region Register Data
-        if (useSqlServer)
+
+        builder.AddDbAccessRepoTelemetry();
+
+        if (config.UseSqlServer)
         {
-            RegisterSqlDataRepo(services);
+            RegisterSqlDataRepo(builder.Services);
         }
         else
         {
-            RegisterPostgresDataRepo(services);
+            RegisterPostgresDataRepo(builder.Services);
         }
         #endregion
 
         #region Register Services
-        services.AddSingleton<IPackageResourceService, PackageResourceDataService>();
-        services.AddSingleton<IResourceService, ResourceDataService>();
-        services.AddSingleton<IResourceGroupService, ResourceGroupDataService>();
-        services.AddSingleton<IResourceTypeService, ResourceTypeDataService>();
-        services.AddSingleton<IAreaService, AreaDataService>();
-        services.AddSingleton<IAreaGroupService, AreaGroupDataService>();
-        services.AddSingleton<IEntityTypeService, EntityTypeDataService>();
-        services.AddSingleton<IEntityVariantService, EntityVariantDataService>();
-        services.AddSingleton<IPackageService, PackageDataService>();
-        services.AddSingleton<IProviderService, ProviderDataService>();
-        services.AddSingleton<IRoleService, RoleDataService>();
-        services.AddSingleton<IRolePackageService, RolePackageDataService>();
-        services.AddSingleton<ITagGroupService, TagGroupDataService>();
-        services.AddSingleton<IPackageTagService, PackageTagDataService>();
-        services.AddSingleton<ITagService, TagDataService>();
-        services.AddSingleton<IEntityService, EntityDataService>();
-        services.AddSingleton<IRoleAssignmentService, RoleAssignmentDataService>();
-        services.AddSingleton<IEntityVariantRoleService, EntityVariantRoleDataService>();
-        services.AddSingleton<IRoleMapService, RoleMapDataService>();
+        builder.Services.AddSingleton<IPackageResourceService, PackageResourceDataService>();
+        builder.Services.AddSingleton<IResourceService, ResourceDataService>();
+        builder.Services.AddSingleton<IResourceGroupService, ResourceGroupDataService>();
+        builder.Services.AddSingleton<IResourceTypeService, ResourceTypeDataService>();
+        builder.Services.AddSingleton<IAreaService, AreaDataService>();
+        builder.Services.AddSingleton<IAreaGroupService, AreaGroupDataService>();
+        builder.Services.AddSingleton<IEntityTypeService, EntityTypeDataService>();
+        builder.Services.AddSingleton<IEntityVariantService, EntityVariantDataService>();
+        builder.Services.AddSingleton<IPackageService, PackageDataService>();
+        builder.Services.AddSingleton<IProviderService, ProviderDataService>();
+        builder.Services.AddSingleton<IRoleService, RoleDataService>();
+        builder.Services.AddSingleton<IRolePackageService, RolePackageDataService>();
+        builder.Services.AddSingleton<ITagGroupService, TagGroupDataService>();
+        builder.Services.AddSingleton<IPackageTagService, PackageTagDataService>();
+        builder.Services.AddSingleton<ITagService, TagDataService>();
+        builder.Services.AddSingleton<IEntityService, EntityDataService>();
+        builder.Services.AddSingleton<IRoleAssignmentService, RoleAssignmentDataService>();
+        builder.Services.AddSingleton<IEntityVariantRoleService, EntityVariantRoleDataService>();
+        builder.Services.AddSingleton<IRoleMapService, RoleMapDataService>();
         #endregion
 
-        return services;
+        return builder;
     }
 
     private static void RegisterPostgresDataRepo(IServiceCollection services)
@@ -190,52 +265,12 @@ public static class DbAccessExtensions
     }
 }
 
-/// <summary>
-/// Database Definitions
-/// </summary>
-public class DatabaseDefinitions
+public class TelemetryConfig
 {
-    private DbObjDefConfig Config { get; set; }
+    public string ServiceName { get; set; }
 
-    /// <summary>
-    /// Database Definitions
-    /// </summary>
-    /// <param name="options">DbObjDefConfig</param>
-    public DatabaseDefinitions(IOptions<DbObjDefConfig> options)
+    public TelemetryConfig(Action<TelemetryConfig> configureOptions)
     {
-        Config = options.Value;
-    }
-
-    /// <summary>
-    /// Use Database Definitions
-    /// </summary>
-    public void SetDatabaseDefinitions()
-    {
-        DbDefinitions.Add<Area>(Config);
-        DbDefinitions.Add<AreaGroup>(Config);
-
-        DbDefinitions.Add<Entity>(Config);
-        DbDefinitions.Add<EntityType>(Config);
-        DbDefinitions.Add<EntityVariant>(Config);
-        DbDefinitions.Add<EntityVariantRole>(Config);
-
-        DbDefinitions.Add<Package>(Config);
-        DbDefinitions.Add<PackageDelegation>(Config);
-        DbDefinitions.Add<PackageResource>(Config);
-        DbDefinitions.Add<PackageTag>(Config);
-
-        DbDefinitions.Add<Provider>(Config);
-
-        DbDefinitions.Add<Resource>(Config);
-        DbDefinitions.Add<ResourceGroup>(Config);
-        DbDefinitions.Add<ResourceType>(Config);
-
-        DbDefinitions.Add<Role>(Config);
-        DbDefinitions.Add<RoleAssignment>(Config);
-        DbDefinitions.Add<RoleMap>(Config);
-        DbDefinitions.Add<RolePackage>(Config);
-
-        DbDefinitions.Add<Tag>(Config);
-        DbDefinitions.Add<TagGroup>(Config);
+        configureOptions?.Invoke(this);
     }
 }

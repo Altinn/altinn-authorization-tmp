@@ -20,7 +20,7 @@ public class RoleChange
     public int Id { get; set; }
 
     /// <summary>
-    /// Source
+    /// DbAccessSource
     /// </summary>
     [JsonPropertyName("source")]
     public string Source { get; set; } = string.Empty;

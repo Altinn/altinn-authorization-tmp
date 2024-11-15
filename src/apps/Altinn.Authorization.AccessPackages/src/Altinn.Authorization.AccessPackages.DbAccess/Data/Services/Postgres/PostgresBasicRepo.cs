@@ -6,6 +6,7 @@ using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Dapper;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using NpgsqlTypes;
 using OpenTelemetry.Trace;
@@ -48,9 +49,6 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Get(List<GenericFilter>? parameters = null, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var a = Telemetry.StartActivity<T>("PostgresBasicRepo.Get");
-        a?.AddEvent(new ActivityEvent("Generate query"));
-
         options ??= new RequestOptions();
         parameters ??= [];
 
@@ -337,32 +335,21 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
     /// <returns></returns>
     private async Task<IEnumerable<T>> Execute(string query, Dictionary<string, object>? parameters = null, CancellationToken cancellationToken = default)
     {
-
-        using var a = Telemetry.StartActivity<T>("PostgresBasicRepo.Execute");
-        a?.SetCustomProperty("query", query);
-
         try
         {
-            // Console.WriteLine(query);
             using var c = new NpgsqlConnection(ConnectionString);
             var cmd = new CommandDefinition(query, parameters, cancellationToken: cancellationToken);
             return dbConverter.ConvertBasic(await c.ExecuteReaderAsync(cmd));
         }
         catch (Exception ex)
         {
-            a?.SetStatus(ActivityStatusCode.Error, "");
-            a?.RecordException(ex);
-            
-            // a?.SetCustomProperty("query", query);
-
-            // Console.WriteLine(query);
+            Console.WriteLine(query);
+            Console.WriteLine(ex.Message);
             if (parameters != null)
             {
                 foreach (var param in parameters)
                 {
-                    a?.SetCustomProperty(param.Key, param.Value);
-
-                    // Console.WriteLine($"{param.Key}:{param.Value}");
+                    Console.WriteLine($"{param.Key}:{param.Value}");
                 }
             }
 

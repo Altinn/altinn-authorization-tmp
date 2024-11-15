@@ -13,5 +13,5 @@ public class JsonIngestConfig
     /// <summary>
     /// List of used languagecodes
     /// </summary>
-    public List<string> Languages { get; set; } = [];
+    public List<string> Languages { get; set; } = ["nno", "eng"];
 }

@@ -23,8 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Styx", "src\Styx\Styx.cspro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AccessPackages.Aspire", "src\AccessPackages.Aspire\AccessPackages.Aspire.csproj", "{9EC42A8E-5CE5-4240-833C-B2673E1AE403}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Altinn.Authorization.DeployApi", "..\Altinn.Authorization.DeployApi\src\Altinn.Authorization.DeployApi\Altinn.Authorization.DeployApi.csproj", "{9CD32653-C07C-4BA2-8235-47469112611B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,10 +65,6 @@ Global
 		{9EC42A8E-5CE5-4240-833C-B2673E1AE403}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EC42A8E-5CE5-4240-833C-B2673E1AE403}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EC42A8E-5CE5-4240-833C-B2673E1AE403}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9CD32653-C07C-4BA2-8235-47469112611B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9CD32653-C07C-4BA2-8235-47469112611B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9CD32653-C07C-4BA2-8235-47469112611B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9CD32653-C07C-4BA2-8235-47469112611B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

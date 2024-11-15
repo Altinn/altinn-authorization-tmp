@@ -16,7 +16,7 @@ public class EntityTypeJsonIngestService : BaseJsonIngestService<EntityType, IEn
     /// </summary>
     /// <param name="service">Db repo from EntityType</param>
     /// <param name="config">JsonIngestConfig</param>
-    public EntityTypeJsonIngestService(IEntityTypeService service, IOptions<JsonIngestConfig> config) : base(service, config)
+    public EntityTypeJsonIngestService(IEntityTypeService service, IOptions<JsonIngestConfig> config, JsonIngestMeters meters) : base(service, config, meters)
     {
         LoadTranslations = true;
     }

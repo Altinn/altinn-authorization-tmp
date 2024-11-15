@@ -36,14 +36,12 @@ public class BaseDataService<T> : IDbBasicDataService<T>
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Get(RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var a = Telemetry.StartActivity<T>("Get");
         return await Repo.Get(parameters: new List<GenericFilter>(), options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<T?> Get(Guid id, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var a = Telemetry.StartActivity<T>("Get");
         try
         {
             var res = await Repo.Get([new GenericFilter("Id", id)], options, cancellationToken: cancellationToken);
@@ -64,28 +62,24 @@ public class BaseDataService<T> : IDbBasicDataService<T>
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Get(string property, Guid value, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var a = Telemetry.StartActivity<T>("Get");
         return await Repo.Get([new GenericFilter(property, value)], options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Get(string property, int value, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var a = Telemetry.StartActivity<T>("Get");
         return await Repo.Get([new GenericFilter(property, value)], options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Get(string property, string value, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var a = Telemetry.StartActivity<T>("Get");
         return await Repo.Get([new GenericFilter(property, value)], options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Get(Dictionary<string, object> parameters, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var a = Telemetry.StartActivity<T>("Get");
         var param = new List<GenericFilter>();
         foreach (var p in parameters)
         {
@@ -98,14 +92,12 @@ public class BaseDataService<T> : IDbBasicDataService<T>
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Search(string term, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var a = Telemetry.StartActivity<T>("Search");
         return await Repo.Get([new GenericFilter("Name", term, comparer: DbOperators.Contains)], options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
     public Task<(IEnumerable<T> Data, PagedResult PageInfo)> SearchPaged(string term, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var a = Telemetry.StartActivity<T>("SearchPaged");
         return Repo.Search(term, options ?? new RequestOptions(), cancellationToken);
     }
 

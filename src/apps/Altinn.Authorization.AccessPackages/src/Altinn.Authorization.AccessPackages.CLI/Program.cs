@@ -1,107 +1,94 @@
 ﻿using Altinn.Authorization.AccessPackages.CLI;
-using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
-using Altinn.Authorization.AccessPackages.DbAccess.Ingest.Models;
-using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Models;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
 using Altinn.Authorization.AccessPackages.Repo.Extensions;
-using Altinn.Authorization.Importers.BRREG;
+using Altinn.Authorization.Importers.BRREG.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using OpenTelemetry;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-
-
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder();
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-builder.Configuration.AddEnvironmentVariables();
 
-builder.Services.AddLogging();
+var config = new CLIConfig()
+{
+    EnableMigrations = true,
+    EnableJsonIngest = true,
+    EnableBrregIngest = false,
+    EnableBrregImport = false,
+    RunTests = true
+};
 
-builder.Services.Configure<DbObjDefConfig>(builder.Configuration.GetSection("DbObjDefConfig"));
-builder.Services.AddSingleton<DatabaseDefinitions>();
+builder.AddDbAccessTelemetry();
+builder.AddDatabaseDefinitions();
+builder.AddDbAccessData();
 
-builder.Services.Configure<DbMigrationConfig>(builder.Configuration.GetSection("DbMigration"));
-builder.Services.AddDbAccessMigrations();
+if (config.EnableMigrations)
+{
+    builder.AddDbAccessMigrations();
+}
 
-builder.Services.Configure<JsonIngestConfig>(builder.Configuration.GetSection("JsonIngest"));
-builder.Services.AddDbAccessIngests();
+if (config.EnableJsonIngest)
+{
+    builder.AddJsonIngests();
+}
 
-builder.Services.AddDbAccessData();
+if (config.EnableBrregIngest)
+{
+    builder.AddBrregIngestor();
+}
 
-builder.Services.AddSingleton<Ingestor>();
-builder.Services.AddSingleton<Importer>();
+if (config.EnableBrregImport)
+{
+    builder.AddBrregImporter();
+}
 
 var host = builder.Build();
 
-using var tracerProvider = Sdk.CreateTracerProviderBuilder()
-              .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("AccessPackages", serviceInstanceId: "cli"))
-              .AddSource("Altinn.Authorization.AccessPackages.Repo")
-              .AddOtlpExporter()
-              .Build();
+host.Services.UseDatabaseDefinitions();
 
-using var tracerProvider2 = Sdk.CreateTracerProviderBuilder()
-                .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("DbAccess", serviceInstanceId: "cli"))
-                .AddSource("Altinn.Authorization.DbAccess")
-                .AddOtlpExporter()
-                .Build();
-
-var definitions = host.Services.GetRequiredService<DatabaseDefinitions>();
-definitions.SetDatabaseDefinitions();
-
-await host.Services.UseDbAccessMigrations();
-await host.Services.UseDbAccessIngests();
-
-var ingestor = host.Services.GetRequiredService<Ingestor>();
-//await ingestor.IngestAll();
-
-//var importer = host.Services.GetRequiredService<Importer>();
-/*
-await importer.ImportUnit();
-await importer.ImportSubUnit();
-await importer.ImportRoles();
-importer.WriteChangeRefsToConsole();
-*/
-
-/* Testing stuff */
-
-using var a = Telemetry.Source.StartActivity();
-a?.AddEvent(new System.Diagnostics.ActivityEvent("dfdfdf"));
-
-var providerService = host.Services.GetRequiredService<IProviderService>();
-var res = await providerService.Get();
-foreach (var item in res)
+if (config.EnableMigrations)
 {
-    Console.WriteLine(item.Name);
+    await host.Services.UseDbAccessMigrations();
 }
 
-
-/*
-// Test Provider
-var providerService = host.Services.GetRequiredService<IProviderService>();
-var providerResult = await providerService.Repo.Get(requestOption);
-foreach (var item in providerResult)
+if (config.EnableJsonIngest)
 {
-    Console.WriteLine($"{item.Id}:{item.Name}");
+    await host.Services.UseJsonIngests();
 }
 
-// Test Variant
-var variantService = host.Services.GetRequiredService<IEntityVariantService>();
-var variantResult = await variantService.Repo.Get(requestOption);
-foreach (var item in variantResult)
+if (config.EnableBrregIngest)
 {
-    Console.WriteLine($"{item.Id}:{item.Name}");
+    await host.Services.UseBrregIngestor();
 }
 
-// Test Package
-var packageService = host.Services.GetRequiredService<IPackageService>();
-var packageResult = await packageService.Repo.Get(requestOption);
-foreach (var item in packageResult)
+if (config.EnableBrregImport)
 {
-    Console.WriteLine($"{item.Id}:{item.Name}");
+    await host.Services.UseBrregImporter();
 }
-*/
+
+if (config.RunTests)
+{
+    // Test Provider
+    var providerService = host.Services.GetRequiredService<IProviderService>();
+    var res = await providerService.Get();
+    foreach (var item in res)
+    {
+        Console.WriteLine(item.Name);
+    }
+
+    // Test Variant
+    var variantService = host.Services.GetRequiredService<IEntityVariantService>();
+    var variantResult = await variantService.Repo.Get();
+    foreach (var item in variantResult)
+    {
+        Console.WriteLine($"{item.Id}:{item.Name}");
+    }
+
+    // Test Package
+    var packageService = host.Services.GetRequiredService<IPackageService>();
+    var packageResult = await packageService.Repo.Get();
+    foreach (var item in packageResult)
+    {
+        Console.WriteLine($"{item.Id}:{item.Name}");
+    }
+}

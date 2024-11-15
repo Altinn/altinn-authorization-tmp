@@ -11,13 +11,20 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="OpenTelemetry" />
-    <PackageReference Include="OpenTelemetry.Exporter.Console" />
+	<PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+	<PackageReference Include="OpenTelemetry.Exporter.Console" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Altinn.Authorization.AccessPackages.Repo\Altinn.Authorization.AccessPackages.Repo.csproj" />
     <ProjectReference Include="..\Altinn.Authorization.Importers.BRREG\Altinn.Authorization.Importers.BRREG.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

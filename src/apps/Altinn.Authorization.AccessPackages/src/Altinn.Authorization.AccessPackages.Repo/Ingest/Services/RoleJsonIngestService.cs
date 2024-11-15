@@ -16,7 +16,7 @@ public class RoleJsonIngestService : BaseJsonIngestService<Role, IRoleService>, 
     /// </summary>
     /// <param name="service">Db repo from Role</param>
     /// <param name="config">JsonIngestConfig</param>
-    public RoleJsonIngestService(IRoleService service, IOptions<JsonIngestConfig> config) : base(service, config)
+    public RoleJsonIngestService(IRoleService service, IOptions<JsonIngestConfig> config, JsonIngestMeters meters) : base(service, config, meters)
     {
         LoadTranslations = true;
     }

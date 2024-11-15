@@ -1,18 +1,26 @@
 ﻿using Altinn.Authorization.AccessPackages.Models;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
+using Altinn.Authorization.Importers.BRREG.Extensions;
+using Altinn.Authorization.Importers.BRREG.Telemetry;
+using Microsoft.Extensions.Options;
 
 namespace Altinn.Authorization.Importers.BRREG;
 
 /// <summary>
 /// Ingest initial data from Brreg API
 /// </summary>
+/// <param name="config">BrRegIngestorConfig</param>
 /// <param name="entityService">IEntityService</param>
 /// <param name="roleAssignmentService">IRoleAssignmentService</param>
 /// <param name="entityTypeService">IEntityTypeService</param>
 /// <param name="entityVariantService">IEntityVariantService</param>
 /// <param name="roleService">IRoleService</param>
-public class Ingestor(IEntityService entityService, IRoleAssignmentService roleAssignmentService, IEntityTypeService entityTypeService, IEntityVariantService entityVariantService, IRoleService roleService)
+public class BrRegIngestor(IOptions<BrRegIngestorConfig> config, BrregIngestMetricsOld meters, IEntityService entityService, IRoleAssignmentService roleAssignmentService, IEntityTypeService entityTypeService, IEntityVariantService entityVariantService, IRoleService roleService)
 {
+    private BrregIngestMetricsOld BrregIngestMetrics { get; } = meters;
+
+    private BrRegIngestorConfig Config { get; } = config.Value;
+
     private BrregApiWrapper BrregApi { get; set; } = new BrregApiWrapper();
     
     private IEntityService EntityService { get; } = entityService;
@@ -31,18 +39,17 @@ public class Ingestor(IEntityService entityService, IRoleAssignmentService roleA
     /// <returns></returns>
     public async Task IngestAll()
     {
-        Console.WriteLine("Ingest starting!");
+        using var a = MyTelemetry.Source.StartActivity("IngestAll");
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("Ingest starting!"));
 
         await LoadCache();
-        await IngestUnits();
+        //await IngestUnits();
 
         await LoadCache();
-        await IngestSubUnits();
+        //await IngestSubUnits();
 
         await LoadCache();
-        await IngestRoles();
-
-        Console.WriteLine("Ingest complete!");
+        //await IngestRoles();
     }
 
     /// <summary>
@@ -51,13 +58,15 @@ public class Ingestor(IEntityService entityService, IRoleAssignmentService roleA
     /// <returns></returns>
     public async Task IngestUnits()
     {
-        Console.WriteLine("Getting units");
+        using var a = MyTelemetry.Source.StartActivity("IngestUnits");
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("Getting units"));
         var units = await BrregApi.GetAllUnits();
 
-        Console.WriteLine("Converting units to entities");
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("Converting units to entities"));
         var entities = units.Select(GenerateOrgEntity);
 
-        Console.WriteLine("Writing entities to Db");
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("Writing entities to Db"));
         await EntityService.Repo.Ingest(entities.OfType<Entity>().ToList());
     }
 
@@ -429,12 +438,19 @@ public class Ingestor(IEntityService entityService, IRoleAssignmentService roleA
     private async Task LoadCache()
     {
         Console.WriteLine("Loading cache...");
+        
         CacheEntityType = [.. await EntityTypeService.Repo.Get()];
+        BrregIngestMetrics.EntityTypeCacheCounter.Add(CacheEntityType.Count);
+
         CacheEntityVariant = [.. await EntityVariantService.Repo.Get()];
+        BrregIngestMetrics.EntityVariantCacheCounter.Add(CacheEntityVariant.Count);
+
         CacheRole = [.. await RoleService.Repo.Get()];
+        BrregIngestMetrics.RoleCacheCounter.Add(CacheRole.Count);
 
         var res = await EntityService.Repo.Get();
         EntityIdCache = res.ToDictionary(k => k.RefId, v => v.Id);
+        BrregIngestMetrics.EntityIdCacheCounter.Add(EntityIdCache.Count);
 
         Console.WriteLine($"CacheEntityType:{CacheEntityType.Count}\t" +
             $"CacheEntityVariant:{CacheEntityVariant.Count}\t" +
@@ -484,5 +500,6 @@ public class Ingestor(IEntityService entityService, IRoleAssignmentService roleA
         return EntityIdCache.FirstOrDefault(t => t.Key == refIf).Value;
     }
 
+   
     #endregion
 }

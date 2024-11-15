@@ -16,5 +16,5 @@ public class RolePackageJsonIngestService : BaseJsonIngestService<RolePackage, I
     /// </summary>
     /// <param name="service">Db repo from RolePackage</param>
     /// <param name="config">JsonIngestConfig</param>
-    public RolePackageJsonIngestService(IRolePackageService service, IOptions<JsonIngestConfig> config) : base(service, config) { }
+    public RolePackageJsonIngestService(IRolePackageService service, IOptions<JsonIngestConfig> config, JsonIngestMeters meters) : base(service, config, meters) { }
 }

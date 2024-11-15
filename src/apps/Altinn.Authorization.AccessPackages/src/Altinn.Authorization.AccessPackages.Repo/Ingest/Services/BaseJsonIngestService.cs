@@ -25,6 +25,11 @@ public class BaseJsonIngestService<T, TRepo>
     public JsonIngestConfig Config { get; set; }
 
     /// <summary>
+    /// JsonIngestMeters
+    /// </summary>
+    public JsonIngestMeters Meters { get; set; }
+
+    /// <summary>
     /// Type to ingest
     /// </summary>
     private Type Type { get { return typeof(T); } }
@@ -39,10 +44,11 @@ public class BaseJsonIngestService<T, TRepo>
     /// </summary>
     /// <param name="service">Data service</param>
     /// <param name="config">JsonIngestConfig</param>
-    public BaseJsonIngestService(TRepo service, IOptions<JsonIngestConfig> config)
+    public BaseJsonIngestService(TRepo service, IOptions<JsonIngestConfig> config, JsonIngestMeters meters)
     {
         DataService = service;
         Config = config.Value;
+        Meters = meters;
     }
 
     /// <summary>
@@ -52,7 +58,7 @@ public class BaseJsonIngestService<T, TRepo>
     /// <returns></returns>
     public async Task<IngestResult> IngestData(CancellationToken cancellationToken)
     {
-        using var a = Telemetry.StartActivity<T>("IngestData");
+        //using var a = RepoTelemetry.StartDbAccessActivity<T>("IngestData");
         var jsonData = await ReadJsonData(cancellationToken: cancellationToken);
         if (jsonData == "[]")
         {
@@ -66,6 +72,9 @@ public class BaseJsonIngestService<T, TRepo>
         }
 
         var dbItems = await DataService.Get();
+
+        //Meters.SetIngestValues(Type.Name, jsonItems.Count, dbItems.Count());
+
         Console.WriteLine($"Ingest {Type.Name} Json:{jsonItems.Count} Db:{dbItems.Count()}");
 
         if (dbItems == null || !dbItems.Any())
@@ -112,7 +121,8 @@ public class BaseJsonIngestService<T, TRepo>
     /// <returns></returns>
     private async Task<string> ReadJsonData(string? language = null, CancellationToken cancellationToken = default)
     {
-        string fileName = $"{Config.BasePath}{Type.Name}{(string.IsNullOrEmpty(language) ? string.Empty : "_" + language)}.json";
+        
+        string fileName = $"{Config.BasePath}{Path.DirectorySeparatorChar}{Type.Name}{(string.IsNullOrEmpty(language) ? string.Empty : "_" + language)}.json";
         if (File.Exists(fileName))
         {
             return await File.ReadAllTextAsync(fileName, cancellationToken);

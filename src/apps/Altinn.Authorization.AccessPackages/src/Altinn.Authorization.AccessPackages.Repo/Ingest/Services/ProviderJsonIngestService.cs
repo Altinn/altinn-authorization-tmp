@@ -16,5 +16,5 @@ public class ProviderJsonIngestService : BaseJsonIngestService<Provider, IProvid
     /// </summary>
     /// <param name="service">Db repo from Role</param>
     /// <param name="config">JsonIngestConfig</param>
-    public ProviderJsonIngestService(IProviderService service, IOptions<JsonIngestConfig> config) : base(service, config) { }
+    public ProviderJsonIngestService(IProviderService service, IOptions<JsonIngestConfig> config, JsonIngestMeters meters) : base(service, config, meters) { }
 }

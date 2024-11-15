@@ -52,6 +52,10 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     /// <inheritdoc/>
     public async Task<IEnumerable<TExtended>> GetExtended(List<GenericFilter>? filters = null, RequestOptions? options = null)
     {
+        using var a = DbAccess.DbAccessTelemetry.StartRepoActivity<T>("GetExtended");
+        try
+        {
+
         options ??= new RequestOptions();
         var cmd = GetCommand(options, filters);
         var param = new Dictionary<string, object>();
@@ -75,21 +79,35 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
         }
 
         return await ExecuteExtended(cmd, param);
+        }
+        finally
+        {
+            a?.Stop();
+            
+        }
     }
 
     #region Internal
     private async Task<IEnumerable<TExtended>> ExecuteExtended(string query, Dictionary<string, object>? parameters = null, CancellationToken cancellationToken = default)
     {
+        using var a = DbAccess.DbAccessTelemetry.StartRepoActivity<T>("ExecuteExtended");
         try
         {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("Start"));
             using var connection = new NpgsqlConnection(ConnectionString);
             CommandDefinition cmd = new CommandDefinition(query, parameters, cancellationToken: cancellationToken);
             return dbExtendedConverter.ConvertExtended(await connection.ExecuteReaderAsync(cmd));
         }
         catch
         {
+            a?.SetStatus(System.Diagnostics.ActivityStatusCode.Error);
             Console.WriteLine(query);
             throw;
+        }
+        finally
+        {
+            a?.SetStatus(System.Diagnostics.ActivityStatusCode.Ok);
+            a?.Stop();
         }
     }
 

@@ -16,7 +16,7 @@ public class PackageJsonIngestService : BaseJsonIngestService<Package, IPackageS
     /// </summary>
     /// <param name="service">Db repo from Package</param>
     /// <param name="config">JsonIngestConfig</param>
-    public PackageJsonIngestService(IPackageService service, IOptions<JsonIngestConfig> config) : base(service, config)
+    public PackageJsonIngestService(IPackageService service, IOptions<JsonIngestConfig> config, JsonIngestMeters meters) : base(service, config, meters)
     {
         LoadTranslations = true;
     }

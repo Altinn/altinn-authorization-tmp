@@ -23,6 +23,7 @@ public class BaseExtendedDataService<T, TExtended> : BaseDataService<T>, IDbExte
     /// <inheritdoc/>
     public async Task<TExtended?> GetExtended(Guid id, RequestOptions? options = null)
     {
+        using var a = DbAccess.DbAccessTelemetry.StartDbAccessActivity<T>("GetExtended");
         var result = await ExtendedRepo.GetExtended([new GenericFilter("Id", id)], options);
         if (result != null)
         {
@@ -35,24 +36,28 @@ public class BaseExtendedDataService<T, TExtended> : BaseDataService<T>, IDbExte
     /// <inheritdoc/>
     public async Task<IEnumerable<TExtended>> GetExtended(RequestOptions? options = null)
     {
+        using var a = DbAccess.DbAccessTelemetry.StartDbAccessActivity<T>("GetExtended");
         return await ExtendedRepo.GetExtended(filters: [], options: options);
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<TExtended>> GetExtended(string property, string value, RequestOptions? options = null)
     {
+        using var a = DbAccess.DbAccessTelemetry.StartDbAccessActivity<T>("GetExtended");
         return await ExtendedRepo.GetExtended([new GenericFilter(property, value)], options);
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<TExtended>> GetExtended(string property, int value, RequestOptions? options = null)
     {
+        using var a = DbAccess.DbAccessTelemetry.StartDbAccessActivity<T>("GetExtended");
         return await ExtendedRepo.GetExtended([new GenericFilter(property, value)], options);
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<TExtended>> GetExtended(string property, Guid value, RequestOptions? options = null)
     {
+        using var a = DbAccess.DbAccessTelemetry.StartDbAccessActivity<T>("GetExtended");
         return await ExtendedRepo.GetExtended([new GenericFilter(property, value)], options);
     }
 

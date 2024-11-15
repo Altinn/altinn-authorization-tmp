@@ -16,7 +16,7 @@ public class TagGroupJsonIngestService : BaseJsonIngestService<TagGroup, ITagGro
     /// </summary>
     /// <param name="service">Db repo from TagGroup</param>
     /// <param name="config">JsonIngestConfig</param>
-    public TagGroupJsonIngestService(ITagGroupService service, IOptions<JsonIngestConfig> config) : base(service, config)
+    public TagGroupJsonIngestService(ITagGroupService service, IOptions<JsonIngestConfig> config, JsonIngestMeters meters) : base(service, config, meters)
     {
         LoadTranslations = true;
     }
