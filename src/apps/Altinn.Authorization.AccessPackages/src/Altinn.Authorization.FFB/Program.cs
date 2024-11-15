@@ -3,10 +3,6 @@ using Altinn.Authorization.AccessPackages.Repo.Extensions;
 using Altinn.Authorization.FFB.Components;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using Microsoft.Extensions.Hosting;
-using OpenTelemetry;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
