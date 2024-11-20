@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Data;
+using System.Reflection;
 
 namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 
@@ -38,11 +39,51 @@ public class ObjectDefinition
     public Dictionary<string, PropertyInfo> Properties { get; set; }
 
     /// <summary>
+    /// ExtendedType
+    /// </summary>
+    public Type? ExtendedType { get; set; }
+
+    /// <summary>
+    /// Extended properties
+    /// </summary>
+    public Dictionary<string, PropertyInfo> ExtendedProperties { get; set; }
+
+    /// <summary>
     /// New Database Object Definition
     /// </summary>
     /// <param name="type">Type</param>
     /// <param name="config">DbObjDefConfig</param>
     public ObjectDefinition(Type type, DbObjDefConfig config)
+    {
+        SetBasic(type, config);
+    }
+
+    /// <summary>
+    /// New Database Object Definition
+    /// </summary>
+    /// <param name="type">Type</param>
+    /// <param name="extendedType">Extended type</param>
+    /// <param name="config">DbObjDefConfig</param>
+    public ObjectDefinition(Type type, Type extendedType, DbObjDefConfig config)
+    {
+        SetBasic(type, config);
+        SetExtended(extendedType);
+    }
+
+    private void SetExtended(Type type)
+    {
+        ExtendedType = type;
+        ExtendedProperties = new Dictionary<string, PropertyInfo>();
+        foreach (var property in type.GetProperties())
+        {
+            if (!Properties.ContainsKey(property.Name))
+            {
+                ExtendedProperties.Add(property.Name, property);
+            }
+        }
+    }
+
+    private void SetBasic(Type type, DbObjDefConfig config)
     {
         var name = type.Name;
         Properties = new Dictionary<string, PropertyInfo>();

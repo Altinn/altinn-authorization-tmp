@@ -16,7 +16,7 @@ public class PackageResourceDataService : BaseExtendedDataService<PackageResourc
     /// <param name="repo">Extended repo</param>
     public PackageResourceDataService(IDbExtendedRepo<PackageResource, ExtPackageResource> repo) : base(repo)
     {
-        ExtendedRepo.Join<Package>();
-        ExtendedRepo.Join<Resource>();
+        ExtendedRepo.Join<Package>(t => t.PackageId, t => t.Id, t => t.Package);
+        ExtendedRepo.Join<Resource>(t => t.ResourceId, t => t.Id, t => t.Resource);
     }
 }

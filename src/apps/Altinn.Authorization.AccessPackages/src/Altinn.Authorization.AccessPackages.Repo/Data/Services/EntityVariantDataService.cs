@@ -16,6 +16,6 @@ public class EntityVariantDataService : BaseExtendedDataService<EntityVariant, E
     /// <param name="repo">Extended repo</param>
     public EntityVariantDataService(IDbExtendedRepo<EntityVariant, ExtEntityVariant> repo) : base(repo)
     {
-        ExtendedRepo.Join<EntityType>("Type");
+        ExtendedRepo.Join<EntityType>(t => t.TypeId, t => t.Id, t => t.Type);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
+using Altinn.Authorization.AccessPackages.DbAccess.Data.Services;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Mssql;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Postgres;
 using Altinn.Authorization.AccessPackages.DbAccess.Ingest.Models;
@@ -8,14 +9,12 @@ using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Models;
 using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Services;
 using Altinn.Authorization.AccessPackages.Models;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
-using Altinn.Authorization.AccessPackages.Repo.Data.Converters;
 using Altinn.Authorization.AccessPackages.Repo.Data.Services;
 using Altinn.Authorization.AccessPackages.Repo.Ingest;
 using Altinn.Authorization.AccessPackages.Repo.Migrate;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Altinn.Authorization.AccessPackages.Repo.Extensions;
 
@@ -140,11 +139,10 @@ public static class DbAccessExtensions
     /// </summary>
     /// <param name="builder">IHostApplicationBuilder</param>
     /// <param name="configureOptions">DbAccessDataConfig</param>
+    /// <param name="telemetryOptions">TelemetryConfig</param>
     /// <returns></returns>
-    public static IHostApplicationBuilder AddDbAccessData(this IHostApplicationBuilder builder, Action<DbAccessDataConfig>? configureOptions = null, Action<TelemetryConfig> telemetryOptions = null)
+    public static IHostApplicationBuilder AddDbAccessData(this IHostApplicationBuilder builder, Action<DbAccessDataConfig>? configureOptions = null, Action<TelemetryConfig>? telemetryOptions = null)
     {
-        builder.AddDbAccessDataTelemetry();
-
         builder.Services.Configure<DbAccessDataConfig>(config =>
         {
             builder.Configuration.GetSection("DataService").Bind(config);
@@ -157,30 +155,9 @@ public static class DbAccessExtensions
             configureOptions?.Invoke(config);
         });
 
-        #region Register Converters
-        builder.Services.AddSingleton<IDbExtendedConverter<PackageResource, ExtPackageResource>, PackageResourceDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<Resource, ExtResource>, ResourceDbConverter>();
-        builder.Services.AddSingleton<IDbBasicConverter<ResourceType>, ResourceTypeDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<ResourceGroup, ExtResourceGroup>, ResourceGroupDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<Area, ExtArea>, AreaDbConverter>();
-        builder.Services.AddSingleton<IDbBasicConverter<AreaGroup>, AreaGroupDbConverter>();
-        builder.Services.AddSingleton<IDbBasicConverter<Provider>, ProviderDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<EntityType, ExtEntityType>, EntityTypeDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<EntityVariant, ExtEntityVariant>, EntityVariantDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<Package, ExtPackage>, PackageDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<Role, ExtRole>, RoleDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<RolePackage, ExtRolePackage>, RolePackageDbConverter>();
-        builder.Services.AddSingleton<IDbBasicConverter<TagGroup>, TagGroupDbConverter>();
-        builder.Services.AddSingleton<IDbCrossConverter<Package, PackageTag, Tag>, PackageTagDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<Tag, ExtTag>, TagDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<Entity, ExtEntity>, EntityDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<RoleAssignment, ExtRoleAssignment>, RoleAssignmentDbConverter>();
-        builder.Services.AddSingleton<IDbCrossConverter<EntityVariant, EntityVariantRole, Role>, EntityVariantRoleDbConverter>();
-        builder.Services.AddSingleton<IDbExtendedConverter<RoleMap, ExtRoleMap>, RoleMapDbConverter>();
-        #endregion
+        builder.Services.AddSingleton<DbConverter>();
 
-        #region Register Data
-
+        builder.AddDbAccessDataTelemetry();
         builder.AddDbAccessRepoTelemetry();
 
         if (config.UseSqlServer)
@@ -191,7 +168,6 @@ public static class DbAccessExtensions
         {
             RegisterPostgresDataRepo(builder.Services);
         }
-        #endregion
 
         #region Register Services
         builder.Services.AddSingleton<IPackageResourceService, PackageResourceDataService>();
@@ -262,15 +238,5 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<RoleAssignment, ExtRoleAssignment>, SqlExtendedRepo<RoleAssignment, ExtRoleAssignment>>();
         services.AddSingleton<IDbCrossRepo<EntityVariant, EntityVariantRole, Role>, SqlCrossRepo<EntityVariant, EntityVariantRole, Role>>();
         services.AddSingleton<IDbExtendedRepo<RoleMap, ExtRoleMap>, SqlExtendedRepo<RoleMap, ExtRoleMap>>();
-    }
-}
-
-public class TelemetryConfig
-{
-    public string ServiceName { get; set; }
-
-    public TelemetryConfig(Action<TelemetryConfig> configureOptions)
-    {
-        configureOptions?.Invoke(this);
     }
 }

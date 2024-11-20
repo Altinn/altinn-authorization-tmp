@@ -9,8 +9,17 @@ using OpenTelemetry.Trace;
 
 namespace Altinn.Authorization.AccessPackages.Repo.Extensions;
 
+/// <summary>
+/// DbAccess Telemetry Extensions
+/// </summary>
 public static class DbAccessTelemetryExtensions
 {
+    /// <summary>
+    /// Add DbAccessRepo Telemetry 
+    /// </summary>
+    /// <param name="builder">IHostApplicationBuilder</param>
+    /// <param name="configureOptions">TelemetryConfig</param>
+    /// <returns></returns>
     public static IHostApplicationBuilder AddDbAccessRepoTelemetry(this IHostApplicationBuilder builder, Action<TelemetryConfig>? configureOptions = null)
     {
         var config = new TelemetryConfig(config =>
@@ -28,6 +37,12 @@ public static class DbAccessTelemetryExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Add DbAccessData Telemetry
+    /// </summary>
+    /// <param name="builder">IHostApplicationBuilder</param>
+    /// <param name="configureOptions">TelemetryConfig</param>
+    /// <returns></returns>
     public static IHostApplicationBuilder AddDbAccessDataTelemetry(this IHostApplicationBuilder builder, Action<TelemetryConfig>? configureOptions = null)
     {
         var config = new TelemetryConfig(config =>
@@ -44,70 +59,24 @@ public static class DbAccessTelemetryExtensions
 
         return builder;
     }
+}
 
-    [Obsolete]
-    public static IHostApplicationBuilder AddDbAccessTelemetry(this IHostApplicationBuilder builder, Action<TelemetryConfig>? configureOptions = null)
+/// <summary>
+/// TelemetryConfig
+/// </summary>
+public class TelemetryConfig
+{
+    /// <summary>
+    /// ServiceName
+    /// </summary>
+    public string ServiceName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// TelemetryConfig
+    /// </summary>
+    /// <param name="configureOptions">Configuration</param>
+    public TelemetryConfig(Action<TelemetryConfig> configureOptions)
     {
-        builder.Services.Configure<TelemetryConfig>(c => 
-        {
-            builder.Configuration.GetRequiredSection("TelemetryConfig").Bind(c);
-            configureOptions?.Invoke(c);
-        });
-
-        var config = new TelemetryConfig(config =>
-        {
-            builder.Configuration.GetSection("TelemetryConfig").Bind(config);
-            configureOptions?.Invoke(config);
-        });
-        
-        //builder.Logging.AddOpenTelemetry(options =>
-        //{
-        //    options
-        //        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(config.ServiceName))
-        //        .AddOtlpExporter()
-        //        .AddConsoleExporter();
-        //});
-
-        return builder;
-    }
-
-    [Obsolete]
-    public static IHostApplicationBuilder AddDbAccessDataTelemetryOld(this IHostApplicationBuilder builder, Action<TelemetryConfig>? configureOptions = null)
-    {
-        var config = new TelemetryConfig(config =>
-        {
-            builder.Configuration.GetSection("TelemetryConfig").Bind(config);
-            configureOptions?.Invoke(config);
-        });
-
-        builder.Services.AddOpenTelemetry()
-            .ConfigureResource(resource => resource.AddService("DbAccess"))
-            .WithTracing(opts => opts
-                .AddSource("Altinn.Authorization.DbAccess")
-                .AddConsoleExporter()
-                .AddOtlpExporter()
-            );
-
-        return builder;
-    }
-
-    [Obsolete]
-    public static IHostApplicationBuilder AddDbAccessRepoTelemetryOld(this IHostApplicationBuilder builder, Action<TelemetryConfig>? configureOptions = null)
-    {
-        var config = new TelemetryConfig(config =>
-        {
-            builder.Configuration.GetSection("TelemetryConfig").Bind(config);
-            configureOptions?.Invoke(config);
-        });
-
-        builder.Services.AddOpenTelemetry()
-            .ConfigureResource(resource => resource.AddService("Repo"))
-            .WithTracing(opts => opts
-                .AddSource("Altinn.Authorization.Repo")
-                .AddConsoleExporter()
-                .AddOtlpExporter()
-            );
-
-        return builder;
+        configureOptions?.Invoke(this);
     }
 }

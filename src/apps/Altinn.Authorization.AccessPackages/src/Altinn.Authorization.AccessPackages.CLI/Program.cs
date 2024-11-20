@@ -11,14 +11,14 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnCh
 
 var config = new CLIConfig()
 {
-    EnableMigrations = true,
-    EnableJsonIngest = true,
+    EnableMigrations = false,
+    EnableJsonIngest = false,
     EnableBrregIngest = false,
     EnableBrregImport = false,
     RunTests = true
 };
 
-builder.AddDbAccessTelemetry();
+//// builder.AddDbAccessTelemetry();
 builder.AddDatabaseDefinitions();
 builder.AddDbAccessData();
 
@@ -68,27 +68,41 @@ if (config.EnableBrregImport)
 
 if (config.RunTests)
 {
-    // Test Provider
+    /*
+    //// Test Provider
     var providerService = host.Services.GetRequiredService<IProviderService>();
     var res = await providerService.Get();
     foreach (var item in res)
     {
         Console.WriteLine(item.Name);
     }
+    */
 
-    // Test Variant
-    var variantService = host.Services.GetRequiredService<IEntityVariantService>();
-    var variantResult = await variantService.Repo.Get();
-    foreach (var item in variantResult)
+    var areaService = host.Services.GetRequiredService<IAreaService>();
+    var areaRes = await areaService.GetExtended();
+    foreach (var item in areaRes)
+    {
+        Console.WriteLine(item.Name);
+    }
+
+    /*
+    //// Test Variant
+    var TagService = host.Services.GetRequiredService<ITagService>();
+    var TagResult = await TagService.GetExtended();
+    Console.WriteLine(JsonSerializer.Serialize(TagResult));
+    foreach (var item in TagResult)
     {
         Console.WriteLine($"{item.Id}:{item.Name}");
     }
+    */
 
-    // Test Package
+    /*
+    //// Test Package
     var packageService = host.Services.GetRequiredService<IPackageService>();
-    var packageResult = await packageService.Repo.Get();
+    var packageResult = await packageService.GetExtended();
     foreach (var item in packageResult)
     {
         Console.WriteLine($"{item.Id}:{item.Name}");
     }
+    */
 }

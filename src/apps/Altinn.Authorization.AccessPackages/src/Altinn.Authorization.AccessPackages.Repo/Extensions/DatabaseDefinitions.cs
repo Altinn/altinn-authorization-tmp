@@ -5,14 +5,14 @@ using Microsoft.Extensions.Options;
 namespace Altinn.Authorization.AccessPackages.Repo.Extensions;
 
 /// <summary>
-/// Database Definitions
+/// Database Cache
 /// </summary>
 public class DatabaseDefinitions
 {
     private DbObjDefConfig Config { get; set; }
 
     /// <summary>
-    /// Database Definitions
+    /// Database Cache
     /// </summary>
     /// <param name="options">DbObjDefConfig</param>
     public DatabaseDefinitions(IOptions<DbObjDefConfig> options)
@@ -21,35 +21,35 @@ public class DatabaseDefinitions
     }
 
     /// <summary>
-    /// Use Database Definitions
+    /// Use Database Cache
     /// </summary>
     public void SetDatabaseDefinitions()
     {
-        DbDefinitions.Add<Area>(Config);
+        DbDefinitions.Add<Area, ExtArea>(Config);
         DbDefinitions.Add<AreaGroup>(Config);
 
-        DbDefinitions.Add<Entity>(Config);
-        DbDefinitions.Add<EntityType>(Config);
-        DbDefinitions.Add<EntityVariant>(Config);
-        DbDefinitions.Add<EntityVariantRole>(Config);
+        DbDefinitions.Add<Entity, ExtEntity>(Config);
+        DbDefinitions.Add<EntityType, ExtEntityType>(Config);
+        DbDefinitions.Add<EntityVariant, ExtEntityVariant>(Config);
+        DbDefinitions.Add<EntityVariantRole, ExtEntityVariantRole>(Config);
 
-        DbDefinitions.Add<Package>(Config);
-        DbDefinitions.Add<PackageDelegation>(Config);
-        DbDefinitions.Add<PackageResource>(Config);
-        DbDefinitions.Add<PackageTag>(Config);
+        DbDefinitions.Add<Package, ExtPackage>(Config);
+        DbDefinitions.Add<PackageDelegation, ExtPackageDelegation>(Config);
+        DbDefinitions.Add<PackageResource, ExtPackageResource>(Config);
+        DbDefinitions.Add<PackageTag, ExtPackageTag>(Config);
 
         DbDefinitions.Add<Provider>(Config);
 
-        DbDefinitions.Add<Resource>(Config);
-        DbDefinitions.Add<ResourceGroup>(Config);
+        DbDefinitions.Add<Resource, ExtResource>(Config);
+        DbDefinitions.Add<ResourceGroup, ExtResourceGroup>(Config);
         DbDefinitions.Add<ResourceType>(Config);
 
-        DbDefinitions.Add<Role>(Config);
-        DbDefinitions.Add<RoleAssignment>(Config);
-        DbDefinitions.Add<RoleMap>(Config);
-        DbDefinitions.Add<RolePackage>(Config);
+        DbDefinitions.Add<Role, ExtRole>(Config);
+        DbDefinitions.Add<RoleAssignment, ExtRoleAssignment>(Config);
+        DbDefinitions.Add<RoleMap, ExtRoleMap>(Config);
+        DbDefinitions.Add<RolePackage, ExtRolePackage>(Config);
 
-        DbDefinitions.Add<Tag>(Config);
+        DbDefinitions.Add<Tag, ExtTag>(Config);
         DbDefinitions.Add<TagGroup>(Config);
     }
 }

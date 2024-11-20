@@ -16,7 +16,7 @@ public class TagDataService : BaseExtendedDataService<Tag, ExtTag>, ITagService
     /// <param name="repo">Extended repo</param>
     public TagDataService(IDbExtendedRepo<Tag, ExtTag> repo) : base(repo)
     {
-        ExtendedRepo.Join<TagGroup>("Group", optional: true);
-        ExtendedRepo.Join<Tag>("Parent", optional: true);
+        ExtendedRepo.Join<TagGroup>(t => t.GroupId, t => t.Id, t => t.Group, optional: true);
+        ExtendedRepo.Join<Tag>(t => t.ParentId, t => t.Id, t => t.Parent, optional: true);
     }
 }

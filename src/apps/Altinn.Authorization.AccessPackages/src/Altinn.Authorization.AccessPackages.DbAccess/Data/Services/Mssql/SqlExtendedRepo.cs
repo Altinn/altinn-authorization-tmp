@@ -1,4 +1,6 @@
 ﻿using System.Data.SqlClient;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
@@ -16,10 +18,25 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
     private List<Join> Joins { get; set; } = [];
 
     /// <inheritdoc/>
-    public void Join<TJoin>(string? alias = null, string baseJoinProperty = "", string joinProperty = "Id", bool optional = false)
+    public void Join<TJoin>(Expression<Func<T, object>> TProperty, Expression<Func<TJoin, object>> TJoinProperty, Expression<Func<TExtended, object>> TExtendedProperty, bool optional = false)
     {
-        alias = alias ?? typeof(TJoin).Name;
-        Joins.Add(new Join(alias, typeof(T), typeof(TJoin), baseJoinProperty, joinProperty, optional));
+        Joins.Add(new Join()
+        {
+            Alias = ExtractPropertyInfoDirectly(TExtendedProperty).Name,
+            BaseObj = DbDefinitions.Get<T>(),
+            BaseJoinProperty = ExtractPropertyInfoDirectly(TProperty).Name,
+            JoinObj = DbDefinitions.Get<TJoin>(),
+            JoinProperty = ExtractPropertyInfoDirectly(TJoinProperty).Name,
+            Optional = optional
+        });
+
+        PropertyInfo ExtractPropertyInfoDirectly<TLocal>(Expression<Func<TLocal, object>> expression)
+        {
+            MemberExpression memberExpression = (MemberExpression)expression.Body ?? ((UnaryExpression)expression.Body)?.Operand as MemberExpression;
+
+            return memberExpression?.Member as PropertyInfo
+                ?? throw new ArgumentException("Expression must refer to a property.");
+        }
     }
 
     /// <summary>

@@ -16,6 +16,6 @@ public class ResourceGroupDataService : BaseExtendedDataService<ResourceGroup, E
     /// <param name="repo">Extended repo</param>
     public ResourceGroupDataService(IDbExtendedRepo<ResourceGroup, ExtResourceGroup> repo) : base(repo)
     {
-        ExtendedRepo.Join<Provider>();
+        ExtendedRepo.Join<Provider>(t => t.ProviderId, t => t.Id, t => t.Provider);
     }
 }

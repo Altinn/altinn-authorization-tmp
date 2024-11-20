@@ -16,8 +16,8 @@ public class EntityDataService : BaseExtendedDataService<Entity, ExtEntity>, IEn
     /// <param name="repo">Extended repo</param>
     public EntityDataService(IDbExtendedRepo<Entity, ExtEntity> repo) : base(repo)
     {
-        ExtendedRepo.Join<EntityType>(alias:"type", baseJoinProperty:"typeid");
-        ExtendedRepo.Join<EntityVariant>(alias:"variant", baseJoinProperty: "variantid");
+        ExtendedRepo.Join<EntityType>(t => t.TypeId, t => t.Id, t => t.Type);
+        ExtendedRepo.Join<EntityVariant>(t => t.VariantId, t => t.Id, t => t.Variant);
     }
 
     /// <inheritdoc/>

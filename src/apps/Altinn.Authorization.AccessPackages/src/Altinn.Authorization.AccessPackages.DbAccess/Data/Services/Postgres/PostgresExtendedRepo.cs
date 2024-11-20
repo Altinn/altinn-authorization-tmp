@@ -1,4 +1,8 @@
-﻿using System.Text;
+﻿using System.Linq.Expressions;
+using System.Reflection;
+using System.Security.AccessControl;
+using System.Text;
+using System.Text.Json;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Dapper;
@@ -9,21 +13,17 @@ namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Postgres;
 
 /// <inheritdoc/>
 public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExtendedRepo<T, TExtended>
-    where T : class
-    where TExtended : class
+    where T : class, new()
+    where TExtended : class, new()
 {
     private List<Join> Joins { get; set; } = new List<Join>();
-    private readonly IDbExtendedConverter<T, TExtended> dbExtendedConverter;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresExtendedRepo{T, E}"/> class.
     /// </summary>
     /// <param name="config">IConfiguration</param>
-    /// <param name="dbConverter">IDbBasicConverter</param>
-    public PostgresExtendedRepo(IConfiguration config, IDbExtendedConverter<T, TExtended> dbConverter) : base(config, dbConverter)
-    {
-        dbExtendedConverter = dbConverter;
-    }
+    /// <param name="dataMapper">DbConverter</param>
+    public PostgresExtendedRepo(IConfiguration config, DbConverter dataMapper) : base(config, dataMapper) { }
 
     /// <inheritdoc/>
     public async Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions? options = null, bool startsWith = false)
@@ -41,10 +41,40 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     }
 
     /// <inheritdoc/>
-    public void Join<TJoin>(string? alias = null, string baseJoinProperty = "", string joinProperty = "Id", bool optional = false)
+    public void Join<TJoin>(Expression<Func<T, object?>> TProperty, Expression<Func<TJoin, object>> TJoinProperty, Expression<Func<TExtended, object?>> TExtendedProperty, bool optional = false)
     {
-        alias = string.IsNullOrEmpty(alias) ? typeof(TJoin).Name : alias;
-        Joins.Add(new Join(alias, typeof(T), typeof(TJoin), baseJoinProperty, joinProperty, optional));
+        Joins.Add(new Join()
+        {
+            Alias = ExtractPropertyInfo(TExtendedProperty as Expression<Func<TExtended, object>>).Name,
+            BaseObj = DbDefinitions.Get<T>() ?? throw new Exception($"Definition for '{typeof(T).Name}' not found"),
+            BaseJoinProperty = ExtractPropertyInfo(TProperty as Expression<Func<T, object>>).Name,
+            JoinObj = DbDefinitions.Get<TJoin>() ?? throw new Exception($"Definition for '{typeof(TJoin).Name}' not found"),
+            JoinProperty = ExtractPropertyInfo(TJoinProperty).Name,
+            Optional = optional
+        });
+
+        PropertyInfo ExtractPropertyInfo<TLocal>(Expression<Func<TLocal, object>> expression)
+        {
+            MemberExpression memberExpression;
+
+            if (expression.Body is MemberExpression)
+            {
+                // Hvis Body er direkte en MemberExpression, bruk den
+                memberExpression = (MemberExpression)expression.Body;
+            }
+            else if (expression.Body is UnaryExpression unaryExpression && unaryExpression.Operand is MemberExpression)
+            {
+                // Hvis Body er en UnaryExpression (f.eks. ved en typekonvertering), bruk Operand
+                memberExpression = (MemberExpression)unaryExpression.Operand;
+            }
+            else
+            {
+                throw new ArgumentException("Expression must refer to a property.");
+            }
+
+            return memberExpression.Member as PropertyInfo
+                ?? throw new ArgumentException("Member is not a property.");
+        }
     }
 
     /// <inheritdoc/>
@@ -86,7 +116,8 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
             a?.AddEvent(new System.Diagnostics.ActivityEvent("Start"));
             using var connection = new NpgsqlConnection(ConnectionString);
             CommandDefinition cmd = new CommandDefinition(query, parameters, cancellationToken: cancellationToken);
-            return dbExtendedConverter.ConvertExtended(await connection.ExecuteReaderAsync(cmd));
+            //// Console.WriteLine(query);
+            return DbConverter.ConvertToObjects<TExtended>(await connection.ExecuteReaderAsync(cmd));
         }
         catch
         {
@@ -202,21 +233,32 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     /// <returns></returns>
     public string GenerateJoinPostgresColumns(Join join, RequestOptions options)
     {
-        bool useTranslation = !string.IsNullOrEmpty(options.Language);
-        var columns = new List<string>();
-        foreach (var p in join.JoinObj.Properties.Values)
+        if (join.BaseObj.BaseDbObject.Name == this.DbObjDef.BaseDbObject.Name)
         {
-            if (join.JoinObj.TranslationDbObject != null && join.JoinObj.UseTranslation && useTranslation && p.PropertyType == typeof(string))
-            {
-                columns.Add($"coalesce({join.Alias}{join.JoinObj.TranslationDbObject.Alias}.{p.Name},_{join.Alias}.{p.Name}) AS {join.Alias}_{p.Name}");
-            }
-            else
-            {
-                columns.Add($"_{join.Alias}.{p.Name} AS {join.Alias}_{p.Name}");
-            }
-        }
+            //// Normal join
 
-        return string.Join(',', columns);
+            bool useTranslation = !string.IsNullOrEmpty(options.Language);
+            var columns = new List<string>();
+            foreach (var p in join.JoinObj.Properties.Values)
+            {
+                if (join.JoinObj.TranslationDbObject != null && join.JoinObj.UseTranslation && useTranslation && p.PropertyType == typeof(string))
+                {
+                    columns.Add($"coalesce({join.Alias}{join.JoinObj.TranslationDbObject.Alias}.{p.Name},_{join.Alias}.{p.Name}) AS {join.Alias}_{p.Name}");
+                }
+                else
+                {
+                    columns.Add($"_{join.Alias}.{p.Name} AS {join.Alias}_{p.Name}");
+                }
+            }
+
+            return string.Join(',', columns);
+        }
+        else
+        {
+            //// List join
+            Console.ForegroundColor = ConsoleColor.Red;
+            return $"COALESCE((SELECT JSON_AGG(ROW_TO_JSON({join.JoinObj.BaseDbObject.Alias})) FROM {join.JoinObj.BaseDbObject.GetPostgresDefinition()} WHERE {join.JoinObj.BaseDbObject.Alias}.{join.JoinProperty} = {join.BaseObj.BaseDbObject.Alias}.{join.BaseJoinProperty}), '[]') AS {join.Alias}";
+        }
     }
     #endregion
 }

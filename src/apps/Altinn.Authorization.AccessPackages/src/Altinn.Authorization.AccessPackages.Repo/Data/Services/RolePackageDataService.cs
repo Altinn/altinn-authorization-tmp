@@ -16,8 +16,8 @@ public class RolePackageDataService : BaseExtendedDataService<RolePackage, ExtRo
     /// <param name="repo">Extended repo</param>
     public RolePackageDataService(IDbExtendedRepo<RolePackage, ExtRolePackage> repo) : base(repo)
     {
-        ExtendedRepo.Join<Role>();
-        ExtendedRepo.Join<Package>();
-        ExtendedRepo.Join<EntityVariant>(optional: true);
+        ExtendedRepo.Join<Role>(t => t.RoleId, t => t.Id, t => t.Role);
+        ExtendedRepo.Join<Package>(t => t.PackageId, t => t.Id, t => t.Package);
+        ExtendedRepo.Join<EntityVariant>(t => t.EntityVariantId, t => t.Id, t => t.EntityVariant, optional: true);
     }
 }

@@ -16,8 +16,8 @@ public class RoleAssignmentDataService : BaseExtendedDataService<RoleAssignment,
     /// <param name="repo">Extended repo</param>
     public RoleAssignmentDataService(IDbExtendedRepo<RoleAssignment, ExtRoleAssignment> repo) : base(repo)
     {
-        ExtendedRepo.Join<Role>("Role");
-        ExtendedRepo.Join<Entity>("For");
-        ExtendedRepo.Join<Entity>("To");
+        ExtendedRepo.Join<Role>(t => t.RoleId, t => t.Id, t => t.Role);
+        ExtendedRepo.Join<Entity>(t => t.ForId, t => t.Id, t => t.For);
+        ExtendedRepo.Join<Entity>(t => t.ToId, t => t.Id, t => t.To);
     }
 }

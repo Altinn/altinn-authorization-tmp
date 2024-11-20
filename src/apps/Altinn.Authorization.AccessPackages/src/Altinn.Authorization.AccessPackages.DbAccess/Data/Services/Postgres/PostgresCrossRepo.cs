@@ -9,23 +9,23 @@ namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Postgres;
 
 /// <inheritdoc/>
 public class PostgresCrossRepo<TA, T, TB> : PostgresBasicRepo<T>, IDbCrossRepo<TA, T, TB>
-    where TA : class
-    where T : class
-    where TB : class
+    where TA : class, new()
+    where T : class, new()
+    where TB : class, new()
 {
     private string XAColumn { get; set; }
     private string XBColumn { get; set; }
 
-    private readonly IDbCrossConverter<TA, T, TB> dbCrossConverter;
+   //private readonly IDbCrossConverter<TA, T, TB> dbCrossConverter;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCrossRepo{A, T, B}"/> class.
     /// </summary>
     /// <param name="config">IConfiguration</param>
     /// <param name="dbConverter">IDbBasicConverter</param>
-    public PostgresCrossRepo(IConfiguration config, IDbCrossConverter<TA, T, TB> dbConverter) : base(config, dbConverter)
+    public PostgresCrossRepo(IConfiguration config, DbConverter dataMapper) : base(config, dataMapper)
     {
-        dbCrossConverter = dbConverter;
+        //dbCrossConverter = dbConverter;
         XAColumn = typeof(TA).Name + "Id";
         XBColumn = typeof(TB).Name + "Id";
     }
@@ -50,7 +50,7 @@ public class PostgresCrossRepo<TA, T, TB> : PostgresBasicRepo<T>, IDbCrossRepo<T
         {
             using var connection = new NpgsqlConnection(ConnectionString);
             CommandDefinition cmd = new CommandDefinition(query.Query, query.Parameters, cancellationToken: cancellationToken);
-            return dbCrossConverter.ConvertA(await connection.ExecuteReaderAsync(cmd));
+            return DbConverter.ConvertToObjects<TA>(await connection.ExecuteReaderAsync(cmd));
         }
         catch
         {
@@ -68,7 +68,7 @@ public class PostgresCrossRepo<TA, T, TB> : PostgresBasicRepo<T>, IDbCrossRepo<T
         {
             using var connection = new NpgsqlConnection(ConnectionString);
             CommandDefinition cmd = new CommandDefinition(query.Query, query.Parameters, cancellationToken: cancellationToken);
-            return dbCrossConverter.ConvertB(await connection.ExecuteReaderAsync(cmd));
+            return DbConverter.ConvertToObjects<TB>(await connection.ExecuteReaderAsync(cmd));
         }
         catch
         {

@@ -44,23 +44,4 @@ public class Join
     /// e.g. delete is null
     /// </summary>
     public List<GenericFilter> Filter { get; set; } = [];
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Join"/> class.
-    /// </summary>
-    /// <param name="alias">Alias</param>
-    /// <param name="baseType">Base objecttype</param>
-    /// <param name="joinType">Join objecttype</param>
-    /// <param name="baseJoinProperty">Base join property</param>
-    /// <param name="joinProperty">Join property</param>
-    /// <param name="optional">Optional</param>
-    public Join(string alias, Type baseType, Type joinType, string baseJoinProperty = "", string joinProperty = "Id", bool optional = false)
-    {
-        BaseObj = DbDefinitions.Get(baseType) ?? throw new Exception($"Definition for '{baseType.Name}' not found");
-        JoinObj = DbDefinitions.Get(joinType) ?? throw new Exception($"Definition for '{joinType.Name}' not found");
-        Alias = alias;
-        BaseJoinProperty = string.IsNullOrEmpty(baseJoinProperty) ? alias + "Id" : baseJoinProperty;
-        JoinProperty = joinProperty;
-        Optional = optional;
-    }
 }

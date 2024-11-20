@@ -1,4 +1,5 @@
-﻿using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
+﻿using System.Linq.Expressions;
+using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 
 namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 
@@ -25,12 +26,12 @@ public interface IDbExtendedRepo<T, TExtended> : IDbBasicRepo<T>
     Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions options, bool startsWith = false);
 
     /// <summary>
-    /// Adds join to configuration
+    /// Add join to configuration
     /// </summary>
-    /// <typeparam name="TJoin"></typeparam>
-    /// <param name="alias">Alias</param>
-    /// <param name="baseJoinProperty">Property on base object to join from</param>
-    /// <param name="joinProperty">Property on join object to join to</param>
+    /// <typeparam name="TJoin">Type to join</typeparam>
+    /// <param name="TProperty">Refrence property on T for join</param>
+    /// <param name="TJoinProperty">Refrence property on TJoin for join</param>
+    /// <param name="TExtendedProperty">Result property on TExtended</param>
     /// <param name="optional">Is this optional</param>
-    void Join<TJoin>(string alias = "", string baseJoinProperty = "", string joinProperty = "Id", bool optional = false);
+    void Join<TJoin>(Expression<Func<T, object?>> TProperty, Expression<Func<TJoin, object>> TJoinProperty, Expression<Func<TExtended, object?>> TExtendedProperty, bool optional = false);
 }

@@ -16,7 +16,7 @@ public class RoleMapDataService : BaseExtendedDataService<RoleMap, ExtRoleMap>, 
     /// <param name="repo">Extended repo</param>
     public RoleMapDataService(IDbExtendedRepo<RoleMap, ExtRoleMap> repo) : base(repo)
     {
-        ExtendedRepo.Join<Role>("HasRole");
-        ExtendedRepo.Join<Role>("GetRole");
+        ExtendedRepo.Join<Role>(t => t.HasRoleId, t => t.Id, t => t.HasRole);
+        ExtendedRepo.Join<Role>(t => t.GetRoleId, t => t.Id, t => t.GetRole);
     }
 }

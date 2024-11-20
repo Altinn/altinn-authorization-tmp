@@ -18,14 +18,17 @@ namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Postgres;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class PostgresBasicRepo<T> : IDbBasicRepo<T>
-    where T : class
+    where T : class, new()
 {
     /// <summary>
     /// Connection
     /// </summary>
     protected string ConnectionString { get; }
 
-    private readonly IDbBasicConverter<T> dbConverter;
+    /// <summary>
+    /// DbConverter
+    /// </summary>
+    protected readonly DbConverter DbConverter;
 
     /// <summary>
     /// Database object definition for T
@@ -36,14 +39,14 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
     /// Initializes a new instance of the <see cref="PostgresBasicRepo{T}"/> class.
     /// </summary>
     /// <param name="config">Configuration</param>
-    /// <param name="dbConverter">IDbBasicConverter</param>
-    public PostgresBasicRepo(IConfiguration config, IDbBasicConverter<T> dbConverter)
+    /// <param name="dbConverter">DbConverter</param>
+    public PostgresBasicRepo(IConfiguration config, DbConverter dbConverter)
     {
         DefaultTypeMap.MatchNamesWithUnderscores = true;
         var configSection = config.GetSection("DataService");
         ConnectionString = configSection["ConnectionString"] ?? throw new Exception("Missing connectionstring");
-        this.dbConverter = dbConverter;
         DbObjDef = DbDefinitions.Get<T>() ?? throw new Exception($"Definition for '{typeof(T).Name}' not found");
+        DbConverter = dbConverter;
     }
 
     /// <inheritdoc/>
@@ -339,7 +342,8 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
         {
             using var c = new NpgsqlConnection(ConnectionString);
             var cmd = new CommandDefinition(query, parameters, cancellationToken: cancellationToken);
-            return dbConverter.ConvertBasic(await c.ExecuteReaderAsync(cmd));
+            //// Console.WriteLine(query);
+            return DbConverter.ConvertToObjects<T>(await c.ExecuteReaderAsync(cmd));
         }
         catch (Exception ex)
         {

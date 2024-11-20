@@ -7,12 +7,12 @@ using Microsoft.Extensions.Logging;
 namespace Altinn.Authorization.AccessPackages.Repo.Data.Services;
 
 /// <summary>
-/// Data service for AreaGroup
+/// Data service for Group
 /// </summary>
 public class AreaGroupDataService : BaseDataService<AreaGroup>, IAreaGroupService
 {
     /// <summary>
-    /// Data service for AreaGroup
+    /// Data service for Group
     /// </summary>
     /// <param name="repo">Extended repo</param>
     public AreaGroupDataService(IDbBasicRepo<AreaGroup> repo) : base(repo) { }
