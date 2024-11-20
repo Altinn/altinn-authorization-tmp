@@ -1,6 +1,8 @@
-﻿using Altinn.Authorization.AccessPackages.DbAccess.Ingest.Models;
+﻿using System.Text.Json;
+using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
+using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
+using Altinn.Authorization.AccessPackages.Models;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
-using Altinn.Authorization.AccessPackages.Repo.Ingest.Services;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.Authorization.AccessPackages.Repo.Ingest;
@@ -8,20 +10,25 @@ namespace Altinn.Authorization.AccessPackages.Repo.Ingest;
 /// <summary>
 /// Json Ingest Factory
 /// </summary>
-public class JsonIngestFactory : IDatabaseIngest
+public class JsonIngestFactory
 {
-    private readonly ProviderJsonIngestService providerIngestService;
-    private readonly AreaJsonIngestService areaIngestService;
-    private readonly AreaGroupJsonIngestService areaGroupIngestService;
-    private readonly EntityTypeJsonIngestService entityTypeIngestService;
-    private readonly EntityVariantJsonIngestService entityVariantIngestService;
-    private readonly EntityVariantRoleJsonIngestService entityVariantRoleIngestService;
-    private readonly PackageJsonIngestService packageIngestService;
-    private readonly RoleJsonIngestService roleIngestService;
-    private readonly RoleMapJsonIngestService roleMapIngestService;
-    private readonly RolePackageJsonIngestService rolePackageIngestService;
-    private readonly TagGroupJsonIngestService tagGroupIngestService;
-    private readonly TagJsonIngestService tagIngestService;
+    /// <summary>
+    /// Configuration
+    /// </summary>
+    public JsonIngestConfig Config { get; set; }
+
+    private readonly IProviderService providerService;
+    private readonly IAreaService areaService;
+    private readonly IAreaGroupService areaGroupService;
+    private readonly IEntityTypeService entityTypeService;
+    private readonly IEntityVariantService entityVariantService;
+    private readonly IEntityVariantRoleService entityVariantRoleService;
+    private readonly IPackageService packageService;
+    private readonly IRoleService roleService;
+    private readonly IRoleMapService roleMapService;
+    private readonly IRolePackageService rolePackageService;
+    private readonly ITagGroupService tagGroupService;
+    private readonly ITagService tagService;
 
     /// <summary>
     /// JsonIngestFactory
@@ -41,7 +48,6 @@ public class JsonIngestFactory : IDatabaseIngest
     /// <param name="tagService">ITagService</param>
     public JsonIngestFactory(
         IOptions<JsonIngestConfig> config,
-        JsonIngestMeters meters,
         IProviderService providerService,
         IAreaService areaService,
         IAreaGroupService areaGroupService,
@@ -56,69 +62,281 @@ public class JsonIngestFactory : IDatabaseIngest
         ITagService tagService
         )
     {
-        // jsonIngestConfig = Config.Value;
-        providerIngestService = new ProviderJsonIngestService(providerService, config, meters);
-        areaIngestService = new AreaJsonIngestService(areaService, config, meters);
-        areaGroupIngestService = new AreaGroupJsonIngestService(areaGroupService, config, meters);
-        entityTypeIngestService = new EntityTypeJsonIngestService(entityTypeService, config, meters);
-        entityVariantIngestService = new EntityVariantJsonIngestService(entityVariantService, config, meters);
-        entityVariantRoleIngestService = new EntityVariantRoleJsonIngestService(entityVariantRoleService, config, meters);
-        packageIngestService = new PackageJsonIngestService(packageService, config, meters);
-        roleIngestService = new RoleJsonIngestService(roleService, config, meters);
-        roleMapIngestService = new RoleMapJsonIngestService(roleMapService, config, meters);
-        rolePackageIngestService = new RolePackageJsonIngestService(rolePackageService, config, meters);
-        tagGroupIngestService = new TagGroupJsonIngestService(tagGroupService, config, meters);
-        tagIngestService = new TagJsonIngestService(tagService, config, meters);
+        Config = config.Value;
+        this.providerService = providerService;
+        this.areaService = areaService;
+        this.areaGroupService = areaGroupService;
+        this.entityTypeService = entityTypeService;
+        this.entityVariantService = entityVariantService;
+        this.entityVariantRoleService = entityVariantRoleService;
+        this.packageService = packageService;
+        this.roleService = roleService;
+        this.roleMapService = roleMapService;
+        this.rolePackageService = rolePackageService;
+        this.tagGroupService = tagGroupService;
+        this.tagService = tagService;
     }
 
     /// <summary>
-    /// Ingest all services
+    /// Ingest all
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns>IngestResults</returns>
+    /// <returns></returns>
     public async Task<List<IngestResult>> IngestAll(CancellationToken cancellationToken = default)
     {
         using var a = DbAccess.DbAccessTelemetry.DbAccessSource.StartActivity("IngestAll");
-        //// Console.WriteLine("Lets eat some data!");
 
         var result = new List<IngestResult>();
 
         a?.AddEvent(new System.Diagnostics.ActivityEvent("areaGroupIngestService"));
-        result.Add(await areaGroupIngestService.IngestData(cancellationToken));
+        result.Add(await IngestData<AreaGroup, IAreaGroupService>(areaGroupService, cancellationToken));
 
         a?.AddEvent(new System.Diagnostics.ActivityEvent("areaIngestService"));
-        result.Add(await areaIngestService.IngestData(cancellationToken));
+        result.Add(await IngestData<Area, IAreaService>(areaService, cancellationToken));
 
         a?.AddEvent(new System.Diagnostics.ActivityEvent("providerIngestService"));
-        result.Add(await providerIngestService.IngestData(cancellationToken));
+        result.Add(await IngestData<Provider, IProviderService>(providerService, cancellationToken));
 
         a?.AddEvent(new System.Diagnostics.ActivityEvent("entityTypeIngestService"));
-        result.Add(await entityTypeIngestService.IngestData(cancellationToken));
-
+        result.Add(await IngestData<EntityType, IEntityTypeService>(entityTypeService, cancellationToken));
+        
         a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantIngestService"));
-        result.Add(await entityVariantIngestService.IngestData(cancellationToken));
-
+        result.Add(await IngestData<EntityVariant, IEntityVariantService>(entityVariantService, cancellationToken));
+        
         a?.AddEvent(new System.Diagnostics.ActivityEvent("packageIngestService"));
-        result.Add(await packageIngestService.IngestData(cancellationToken));
-
+        result.Add(await IngestData<Package, IPackageService>(packageService, cancellationToken));
+        
         a?.AddEvent(new System.Diagnostics.ActivityEvent("roleIngestService"));
-        result.Add(await roleIngestService.IngestData(cancellationToken));
-
+        result.Add(await IngestData<Role, IRoleService>(roleService, cancellationToken));
+        
         a?.AddEvent(new System.Diagnostics.ActivityEvent("roleMapIngestService"));
-        result.Add(await roleMapIngestService.IngestData(cancellationToken));
-
+        result.Add(await IngestData<RoleMap, IRoleMapService>(roleMapService, cancellationToken));
+        
         a?.AddEvent(new System.Diagnostics.ActivityEvent("rolePackageIngestService"));
-        result.Add(await rolePackageIngestService.IngestData(cancellationToken));
-
+        result.Add(await IngestData<RolePackage, IRolePackageService>(rolePackageService, cancellationToken));
+        
         a?.AddEvent(new System.Diagnostics.ActivityEvent("tagGroupIngestService"));
-        result.Add(await tagGroupIngestService.IngestData(cancellationToken));
-
+        result.Add(await IngestData<TagGroup, ITagGroupService>(tagGroupService, cancellationToken));
+        
         a?.AddEvent(new System.Diagnostics.ActivityEvent("tagIngestService"));
-        result.Add(await tagIngestService.IngestData(cancellationToken));
-
+        result.Add(await IngestData<Tag, ITagService>(tagService, cancellationToken));
+        
         a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantRoleIngestService"));
-        result.Add(await entityVariantRoleIngestService.IngestData(cancellationToken));
+        result.Add(await IngestData<EntityVariantRole, IEntityVariantRoleService>(entityVariantRoleService, cancellationToken));
 
         return result;
+    }
+
+    /// <summary>
+    /// Ingest single type
+    /// </summary>
+    /// <typeparam name="T">Type</typeparam>
+    /// <typeparam name="TService">Type Data Service</typeparam>
+    /// <param name="service">Service</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
+    public async Task<IngestResult> IngestData<T, TService>(TService service, CancellationToken cancellationToken)
+        where TService : IDbBasicDataService<T>
+    {
+        var type = typeof(T);
+
+        var jsonData = await ReadJsonData<T>(cancellationToken: cancellationToken);
+        if (jsonData == "[]")
+        {
+            return new IngestResult(type) { Success = false };
+        }
+
+        var jsonItems = JsonSerializer.Deserialize<List<T>>(jsonData, options: new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        if (jsonItems == null)
+        {
+            return new IngestResult(type) { Success = false };
+        }
+
+        var dbItems = await service.Get();
+
+        Console.WriteLine($"Ingest {type.Name} Json:{jsonItems.Count} Db:{dbItems.Count()}");
+
+        if (dbItems == null || !dbItems.Any())
+        {
+            foreach (var item in jsonItems)
+            {
+                await service.Create(item);
+            }
+        }
+        else
+        {
+            foreach (var item in jsonItems)
+            {
+                if (dbItems.Count(t => IdComparer(item, t)) == 0)
+                {
+                    await service.Create(item);
+                    continue;
+                }
+
+                if (dbItems.Count(t => PropertyComparer(item, t)) == 0)
+                {
+                    var id = GetId(item);
+                    if (id.HasValue)
+                    {
+                        await service.Update(id.Value, item);
+                    }
+                }
+            }
+        }
+
+        await IngestTranslation<T, TService>(service, cancellationToken);
+        
+        return new IngestResult(type) { Success = true };
+    }
+    
+    private async Task<string> ReadJsonData<T>(string? language = null, CancellationToken cancellationToken = default)
+    {
+
+        string fileName = $"{Config.BasePath}{Path.DirectorySeparatorChar}{typeof(T).Name}{(string.IsNullOrEmpty(language) ? string.Empty : "_" + language)}.json";
+        if (File.Exists(fileName))
+        {
+            return await File.ReadAllTextAsync(fileName, cancellationToken);
+        }
+
+        return "[]";
+    }
+
+    private async Task IngestTranslation<T, TService>(TService service, CancellationToken cancellationToken)
+         where TService : IDbBasicDataService<T>
+    {
+        var type = typeof(T);
+        foreach (var lang in Config.Languages)
+        {
+            var jsonData = await ReadJsonData<T>(language: lang, cancellationToken: cancellationToken);
+            if (jsonData == "[]")
+            {
+                continue;
+            }
+
+            var jsonItems = JsonSerializer.Deserialize<List<T>>(jsonData, options: new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            if (jsonItems == null)
+            {
+                return;
+            }
+
+            var dbItems = await service.Get(options: new RequestOptions() { Language = lang });
+            Console.WriteLine($"Ingest {lang} {type.Name} Json:{jsonItems.Count} Db:{dbItems.Count()}");
+            foreach (var item in jsonItems)
+            {
+                if (dbItems == null || !dbItems.Any())
+                {
+                    await service.Repo.CreateTranslation(item, lang);
+                }
+                else
+                {
+                    // Console.WriteLine(JsonSerializer.Serialize(item));
+
+                    // TODO : Make it better .... 
+                    try
+                    {
+                        var id = GetId(item);
+                        if (id == null)
+                        {
+                            throw new Exception($"Failed to get Id for '{typeof(T).Name}'");
+                        }
+
+                        await service.Repo.UpdateTranslation(id.Value, item, lang);
+                        continue;
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Failed to update translation");
+                    }
+
+                    try
+                    {
+                        await service.Repo.CreateTranslation(item, lang);
+                        continue;
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Failed to create translation");
+                    }
+                }
+            }
+        }
+    }
+
+    private TValue? GetValue<T, TValue>(T item, string propertyName)
+    {
+        var pt = typeof(T).GetProperty(propertyName);
+        if (pt == null)
+        {
+            return default;
+        }
+
+        return (TValue?)pt.GetValue(item) ?? default;
+    }
+
+    private Guid? GetId<T>(T item)
+    {
+        return GetValue<T, Guid?>(item, "Id");
+    }
+
+    private bool PropertyComparer<T>(T a, T b)
+    {
+        foreach (var prop in typeof(T).GetProperties())
+        {
+            if (prop.PropertyType.Name.ToLower() == "string")
+            {
+                string? valueA = (string?)prop.GetValue(a);
+                string? valueB = (string?)prop.GetValue(b);
+                if (string.IsNullOrEmpty(valueA) || string.IsNullOrEmpty(valueB))
+                {
+                    return false;
+                }
+
+                if (!valueA.Equals(valueB))
+                {
+                    return false;
+                }
+            }
+
+            if (prop.PropertyType.Name.ToLower() == "guid")
+            {
+                Guid? valueA = (Guid?)prop.GetValue(a);
+                Guid? valueB = (Guid?)prop.GetValue(b);
+                if (!valueA.HasValue || !valueB.HasValue)
+                {
+                    return false;
+                }
+
+                if (!valueA.Equals(valueB))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private bool IdComparer<T>(T a, T b)
+    {
+        try
+        {
+            var idA = GetId(a);
+            var idB = GetId(b);
+            if (!idA.HasValue || !idB.HasValue)
+            {
+                return false;
+            }
+
+            if (idA.Value.Equals(idB.Value))
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

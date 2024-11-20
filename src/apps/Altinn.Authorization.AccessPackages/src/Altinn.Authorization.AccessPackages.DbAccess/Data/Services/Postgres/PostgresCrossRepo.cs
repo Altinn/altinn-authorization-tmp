@@ -16,16 +16,13 @@ public class PostgresCrossRepo<TA, T, TB> : PostgresBasicRepo<T>, IDbCrossRepo<T
     private string XAColumn { get; set; }
     private string XBColumn { get; set; }
 
-   //private readonly IDbCrossConverter<TA, T, TB> dbCrossConverter;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCrossRepo{A, T, B}"/> class.
     /// </summary>
     /// <param name="config">IConfiguration</param>
-    /// <param name="dbConverter">IDbBasicConverter</param>
+    /// <param name="dataMapper">DbConverter</param>
     public PostgresCrossRepo(IConfiguration config, DbConverter dataMapper) : base(config, dataMapper)
     {
-        //dbCrossConverter = dbConverter;
         XAColumn = typeof(TA).Name + "Id";
         XBColumn = typeof(TB).Name + "Id";
     }

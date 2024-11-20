@@ -1,4 +1,4 @@
-﻿namespace Altinn.Authorization.AccessPackages.DbAccess.Ingest.Models;
+﻿namespace Altinn.Authorization.AccessPackages.Repo.Ingest;
 
 /// <summary>
 /// Result generated from an ingest action

@@ -3,7 +3,6 @@ using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Services;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Mssql;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Postgres;
-using Altinn.Authorization.AccessPackages.DbAccess.Ingest.Models;
 using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Models;
 using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Services;

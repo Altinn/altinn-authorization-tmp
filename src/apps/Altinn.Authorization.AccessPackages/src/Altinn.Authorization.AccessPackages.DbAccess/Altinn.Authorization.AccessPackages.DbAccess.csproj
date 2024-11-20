@@ -17,8 +17,4 @@
 		<PackageReference Include="System.Data.SqlClient" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Ingest\Services\" />
-	</ItemGroup>
-
 </Project>
