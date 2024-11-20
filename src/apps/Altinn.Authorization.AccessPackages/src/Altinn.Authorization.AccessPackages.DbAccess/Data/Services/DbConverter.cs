@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Data;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Services;
 
@@ -16,39 +18,23 @@ public sealed class DbConverter
     /// </summary>
     public static DbConverter Instance => _instance.Value;
 
-    /// <summary>
-    /// DbConverter
-    /// </summary>
-    public DbConverter()
-    {
-    }
+    private static readonly ConcurrentDictionary<Type, Dictionary<string, (PropertyInfo Property, Type? ElementType)>> PropertyCache = new();
 
-    private static readonly ConcurrentDictionary<Type, Dictionary<string, PropertyInfo>> PropertyCache = new();
-
-    private List<(PropertyInfo Property, string Prefix)> GetPropertiesWithPrefix<T>()
+    private Dictionary<string, (PropertyInfo Property, Type? ElementType)> CreatePropertyCacheWithPrefix(Type type, string prefix)
     {
-        return GetPropertiesWithPrefix(typeof(T));
-    }
-
-    private List<(PropertyInfo Property, string Prefix)> GetPropertiesWithPrefix(Type type)
-    {
-        return PropertyCache.GetOrAdd(type, type => CreatePropertyCacheWithPrefix(type, string.Empty))
-                            .Select(kv => (kv.Value, kv.Key.Contains("_") ? kv.Key.Substring(0, kv.Key.LastIndexOf('_') + 1) : string.Empty))
-                            .ToList();
-    }
-
-    private Dictionary<string, PropertyInfo> CreatePropertyCacheWithPrefix(Type type, string prefix)
-    {
-        var properties = new Dictionary<string, PropertyInfo>();
+        var properties = new Dictionary<string, (PropertyInfo, Type?)>();
 
         foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            string propertyKey = prefix + property.Name.ToLower();
+            string propertyKey = (prefix + property.Name.ToLower());
 
-            properties[propertyKey] = property;
+            // Sjekk om typen er en generisk List<T> eller IEnumerable<T>
+            Type? elementType = GetListOrEnumerableElementType(property);
 
-            // Hvis det er et komplekst objekt, cache dets egenskaper med prefiks
-            if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+            properties[propertyKey] = (property, elementType);
+
+            // Hvis det er et komplekst objekt og ikke en liste/enumerable, cache egenskaper med prefiks
+            if (elementType == null && property.PropertyType.IsClass && property.PropertyType != typeof(string))
             {
                 var subProperties = CreatePropertyCacheWithPrefix(property.PropertyType, propertyKey + "_");
                 foreach (var subProperty in subProperties)
@@ -59,6 +45,22 @@ public sealed class DbConverter
         }
 
         return properties;
+    }
+
+    private List<(PropertyInfo Property, string Prefix, Type? ElementType)> GetPropertiesWithPrefix<T>()
+    {
+        return GetPropertiesWithPrefix(typeof(T));
+    }
+
+    private List<(PropertyInfo Property, string Prefix, Type? ElementType)> GetPropertiesWithPrefix(Type type)
+    {
+        return PropertyCache.GetOrAdd(type, type => CreatePropertyCacheWithPrefix(type, string.Empty))
+                            .Select(kv =>
+                            {
+                                string prefix = kv.Key.Contains("_") ? kv.Key.Substring(0, kv.Key.LastIndexOf('_') + 1) : string.Empty;
+                                return (kv.Value.Property, prefix, kv.Value.ElementType);
+                            })
+                            .ToList();
     }
 
     /// <summary>
@@ -76,14 +78,32 @@ public sealed class DbConverter
         }
     }
 
+    private Type? GetListOrEnumerableElementType(PropertyInfo property)
+    {
+        var propertyType = property.PropertyType;
+
+        // Sjekk om det er en generisk List<T>
+        if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(List<>))
+        {
+            return propertyType.GetGenericArguments()[0]; // Returner T i List<T>
+        }
+
+        // Sjekk om det er en generisk IEnumerable<T>
+        if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+        {
+            return propertyType.GetGenericArguments()[0]; // Returner T i IEnumerable<T>
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// ConvertToObjects
     /// </summary>
     /// <typeparam name="T">Type</typeparam>
     /// <param name="reader">IDataReader</param>
     /// <returns></returns>
-    public List<T> ConvertToObjects<T>(IDataReader reader) 
-        where T : new()
+    public List<T> ConvertToObjects<T>(IDataReader reader) where T : new()
     {
         var properties = GetPropertiesWithPrefix<T>();
         var result = new List<T>();
@@ -96,22 +116,14 @@ public sealed class DbConverter
             for (int i = 0; i < reader.FieldCount; i++)
             {
                 string columnName = reader.GetName(i).ToLower();
-                object? value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                object value = reader.IsDBNull(i) ? null : reader.GetValue(i);
 
-                foreach (var (property, prefix) in properties)
+                foreach (var (property, prefix, elementType) in properties)
                 {
                     if (columnName == (prefix + property.Name.ToLower()))
                     {
-                        object? currentObject = instance;
+                        object currentObject = instance;
                         Type currentType = typeof(T);
-
-                        // Sjekk om vi har en identifikator for et sub-objekt
-                        if (!string.IsNullOrEmpty(prefix) && property.Name.ToLower() == "id" && value == null)
-                        {
-                            // Marker at dette sub-objektet skal være null
-                            subObjectNullCheck[prefix] = true;
-                            break;
-                        }
 
                         // Naviger til riktig sub-objekt hvis det er nødvendig
                         if (!string.IsNullOrEmpty(prefix))
@@ -124,19 +136,19 @@ public sealed class DbConverter
                                     // Sjekk om hele sub-objektet skal være null
                                     if (subObjectNullCheck.TryGetValue(prefix, out bool isNull) && isNull)
                                     {
-                                        parentProperty.SetValue(currentObject, null);
+                                        parentProperty.Property.SetValue(currentObject, null);
                                         break;
                                     }
 
-                                    var subObject = parentProperty.GetValue(currentObject);
+                                    var subObject = parentProperty.Property.GetValue(currentObject);
                                     if (subObject == null)
                                     {
-                                        subObject = Activator.CreateInstance(parentProperty.PropertyType);
-                                        parentProperty.SetValue(currentObject, subObject);
+                                        subObject = Activator.CreateInstance(parentProperty.Property.PropertyType);
+                                        parentProperty.Property.SetValue(currentObject, subObject);
                                     }
 
                                     currentObject = subObject;
-                                    currentType = parentProperty.PropertyType;
+                                    currentType = parentProperty.Property.PropertyType;
                                 }
                                 else
                                 {
@@ -145,8 +157,18 @@ public sealed class DbConverter
                             }
                         }
 
-                        // Bruk SetPropertyValue for å sette verdien
-                        SetPropertyValue(property, currentObject, value);
+                        // Håndter List<T> eller IEnumerable<T> egenskaper
+                        if (elementType != null)
+                        {
+                            var valueData = JsonSerializer.Deserialize(value?.ToString() ?? "[]", property.PropertyType);
+                            property.SetValue(currentObject, valueData);
+                        }
+                        else
+                        {
+                            // Bruk SetPropertyValue for andre typer
+                            SetPropertyValue(property, currentObject, value);
+                        }
+
                         break; // Gå til neste kolonne når verdien er satt
                     }
                 }
@@ -157,7 +179,7 @@ public sealed class DbConverter
 
         return result;
     }
-    
+
     private void SetPropertyValue(PropertyInfo property, object? target, object? value)
     {
         if (value != null)

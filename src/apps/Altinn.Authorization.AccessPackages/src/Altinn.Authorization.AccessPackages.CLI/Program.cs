@@ -82,7 +82,7 @@ if (config.RunTests)
     var areaRes = await areaService.GetExtended();
     foreach (var item in areaRes)
     {
-        Console.WriteLine(item.Name);
+        Console.WriteLine(item.Name + ":" + item.Packages.Count());
     }
 
     /*

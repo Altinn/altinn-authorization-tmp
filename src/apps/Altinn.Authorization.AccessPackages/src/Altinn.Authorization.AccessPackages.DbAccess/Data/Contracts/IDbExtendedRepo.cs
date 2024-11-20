@@ -33,5 +33,6 @@ public interface IDbExtendedRepo<T, TExtended> : IDbBasicRepo<T>
     /// <param name="TJoinProperty">Refrence property on TJoin for join</param>
     /// <param name="TExtendedProperty">Result property on TExtended</param>
     /// <param name="optional">Is this optional</param>
-    void Join<TJoin>(Expression<Func<T, object?>> TProperty, Expression<Func<TJoin, object>> TJoinProperty, Expression<Func<TExtended, object?>> TExtendedProperty, bool optional = false);
+    /// <param name="isList">Returns list</param>
+    void Join<TJoin>(Expression<Func<T, object?>> TProperty, Expression<Func<TJoin, object>> TJoinProperty, Expression<Func<TExtended, object?>> TExtendedProperty, bool optional = false, bool isList = false);
 }

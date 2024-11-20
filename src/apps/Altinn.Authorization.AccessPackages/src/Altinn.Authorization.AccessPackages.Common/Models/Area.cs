@@ -40,4 +40,9 @@ public class ExtArea : Area
     /// Group
     /// </summary>
     public AreaGroup Group { get; set; }
+
+    /// <summary>
+    /// Packages
+    /// </summary>
+    public IEnumerable<Package> Packages { get; set; }
 }

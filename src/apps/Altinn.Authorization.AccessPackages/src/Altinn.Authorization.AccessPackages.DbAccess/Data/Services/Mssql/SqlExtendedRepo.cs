@@ -18,7 +18,7 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
     private List<Join> Joins { get; set; } = [];
 
     /// <inheritdoc/>
-    public void Join<TJoin>(Expression<Func<T, object>> TProperty, Expression<Func<TJoin, object>> TJoinProperty, Expression<Func<TExtended, object>> TExtendedProperty, bool optional = false)
+    public void Join<TJoin>(Expression<Func<T, object>> TProperty, Expression<Func<TJoin, object>> TJoinProperty, Expression<Func<TExtended, object>> TExtendedProperty, bool optional = false, bool isList = false)
     {
         Joins.Add(new Join()
         {
@@ -27,7 +27,8 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
             BaseJoinProperty = ExtractPropertyInfoDirectly(TProperty).Name,
             JoinObj = DbDefinitions.Get<TJoin>(),
             JoinProperty = ExtractPropertyInfoDirectly(TJoinProperty).Name,
-            Optional = optional
+            Optional = optional,
+            IsList = isList
         });
 
         PropertyInfo ExtractPropertyInfoDirectly<TLocal>(Expression<Func<TLocal, object>> expression)

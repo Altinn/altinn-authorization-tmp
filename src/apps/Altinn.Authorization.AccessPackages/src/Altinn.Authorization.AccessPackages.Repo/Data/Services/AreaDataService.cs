@@ -17,5 +17,6 @@ public class AreaDataService : BaseExtendedDataService<Area, ExtArea>, IAreaServ
     public AreaDataService(IDbExtendedRepo<Area, ExtArea> repo) : base(repo) 
     {
         ExtendedRepo.Join<AreaGroup>(t => t.GroupId, t => t.Id, t => t.Group);
+        ExtendedRepo.Join<Package>(t => t.Id, t => t.AreaId, t => t.Packages, isList: true);
     }
 }

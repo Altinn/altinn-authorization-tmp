@@ -1,8 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
-using System.Security.AccessControl;
 using System.Text;
-using System.Text.Json;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Dapper;
@@ -41,7 +39,7 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     }
 
     /// <inheritdoc/>
-    public void Join<TJoin>(Expression<Func<T, object?>> TProperty, Expression<Func<TJoin, object>> TJoinProperty, Expression<Func<TExtended, object?>> TExtendedProperty, bool optional = false)
+    public void Join<TJoin>(Expression<Func<T, object?>> TProperty, Expression<Func<TJoin, object>> TJoinProperty, Expression<Func<TExtended, object?>> TExtendedProperty, bool optional = false, bool isList = false)
     {
         Joins.Add(new Join()
         {
@@ -50,7 +48,8 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
             BaseJoinProperty = ExtractPropertyInfo(TProperty as Expression<Func<T, object>>).Name,
             JoinObj = DbDefinitions.Get<TJoin>() ?? throw new Exception($"Definition for '{typeof(TJoin).Name}' not found"),
             JoinProperty = ExtractPropertyInfo(TJoinProperty).Name,
-            Optional = optional
+            Optional = optional,
+            IsList = isList
         });
 
         PropertyInfo ExtractPropertyInfo<TLocal>(Expression<Func<TLocal, object>> expression)
@@ -80,7 +79,7 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     /// <inheritdoc/>
     public async Task<IEnumerable<TExtended>> GetExtended(List<GenericFilter>? filters = null, RequestOptions? options = null)
     {
-        using var a = DbAccess.DbAccessTelemetry.StartRepoActivity<T>("GetExtended");
+        using var a = DbAccessTelemetry.StartActivity<T>("GetExtended");
            
         options ??= new RequestOptions();
         var cmd = GetCommand(options, filters);
@@ -110,13 +109,13 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     #region Internal
     private async Task<IEnumerable<TExtended>> ExecuteExtended(string query, Dictionary<string, object>? parameters = null, CancellationToken cancellationToken = default)
     {
-        using var a = DbAccess.DbAccessTelemetry.StartRepoActivity<T>("ExecuteExtended");
+        using var a = DbAccessTelemetry.StartActivity<T>("ExecuteExtended");
         try
         {
             a?.AddEvent(new System.Diagnostics.ActivityEvent("Start"));
             using var connection = new NpgsqlConnection(ConnectionString);
             CommandDefinition cmd = new CommandDefinition(query, parameters, cancellationToken: cancellationToken);
-            //// Console.WriteLine(query);
+            Console.WriteLine(query);
             return DbConverter.ConvertToObjects<TExtended>(await connection.ExecuteReaderAsync(cmd));
         }
         catch
@@ -157,7 +156,7 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
         }
 
         sb.AppendLine("FROM " + GenerateSource(options));
-        foreach (var j in Joins)
+        foreach (var j in Joins.Where(t => !t.IsList))
         {
             var joinStatement = GetJoinPostgresStatement(j, options);
             sb.AppendLine(joinStatement.Query);
@@ -233,10 +232,8 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     /// <returns></returns>
     public string GenerateJoinPostgresColumns(Join join, RequestOptions options)
     {
-        if (join.BaseObj.BaseDbObject.Name == this.DbObjDef.BaseDbObject.Name)
+        if (!join.IsList)
         {
-            //// Normal join
-
             bool useTranslation = !string.IsNullOrEmpty(options.Language);
             var columns = new List<string>();
             foreach (var p in join.JoinObj.Properties.Values)
@@ -255,8 +252,6 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
         }
         else
         {
-            //// List join
-            Console.ForegroundColor = ConsoleColor.Red;
             return $"COALESCE((SELECT JSON_AGG(ROW_TO_JSON({join.JoinObj.BaseDbObject.Alias})) FROM {join.JoinObj.BaseDbObject.GetPostgresDefinition()} WHERE {join.JoinObj.BaseDbObject.Alias}.{join.JoinProperty} = {join.BaseObj.BaseDbObject.Alias}.{join.BaseJoinProperty}), '[]') AS {join.Alias}";
         }
     }

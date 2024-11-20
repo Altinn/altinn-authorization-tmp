@@ -16,6 +16,11 @@ public class Join
     public bool Optional { get; set; }
 
     /// <summary>
+    /// Join returns list
+    /// </summary>
+    public bool IsList { get; set; }
+
+    /// <summary>
     /// DbObject that holds the refrenceId
     /// e.g. Entity
     /// </summary>
