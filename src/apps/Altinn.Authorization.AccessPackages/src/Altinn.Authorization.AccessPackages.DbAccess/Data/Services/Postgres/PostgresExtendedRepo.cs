@@ -5,6 +5,7 @@ using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Dapper;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Postgres;
@@ -21,7 +22,7 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     /// </summary>
     /// <param name="config">IConfiguration</param>
     /// <param name="dataMapper">DbConverter</param>
-    public PostgresExtendedRepo(IConfiguration config, DbConverter dataMapper) : base(config, dataMapper) { }
+    public PostgresExtendedRepo(IOptions<DbAccessDataConfig> config, DbConverter dataMapper) : base(config, dataMapper) { }
 
     /// <inheritdoc/>
     public async Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions? options = null, bool startsWith = false)
@@ -116,6 +117,7 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
             using var connection = new NpgsqlConnection(ConnectionString);
             CommandDefinition cmd = new CommandDefinition(query, parameters, cancellationToken: cancellationToken);
             Console.WriteLine(query);
+            Console.WriteLine(ConnectionString);
             return DbConverter.ConvertToObjects<TExtended>(await connection.ExecuteReaderAsync(cmd));
         }
         catch

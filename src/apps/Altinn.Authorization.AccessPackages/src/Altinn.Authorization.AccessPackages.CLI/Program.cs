@@ -11,9 +11,9 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnCh
 
 var config = new CLIConfig()
 {
-    EnableMigrations = false,
-    EnableJsonIngest = false,
-    EnableBrregIngest = false,
+    EnableMigrations = true,
+    EnableJsonIngest = true,
+    EnableBrregIngest = true,
     EnableBrregImport = false,
     RunTests = true
 };

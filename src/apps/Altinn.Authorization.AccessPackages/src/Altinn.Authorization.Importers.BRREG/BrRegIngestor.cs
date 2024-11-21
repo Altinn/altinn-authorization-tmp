@@ -43,13 +43,13 @@ public class BrRegIngestor(IOptions<BrRegIngestorConfig> config, BrregIngestMetr
         a?.AddEvent(new System.Diagnostics.ActivityEvent("Ingest starting!"));
 
         await LoadCache();
-        //await IngestUnits();
+        await IngestUnits();
 
         await LoadCache();
-        //await IngestSubUnits();
+        await IngestSubUnits();
 
         await LoadCache();
-        //await IngestRoles();
+        await IngestRoles();
     }
 
     /// <summary>

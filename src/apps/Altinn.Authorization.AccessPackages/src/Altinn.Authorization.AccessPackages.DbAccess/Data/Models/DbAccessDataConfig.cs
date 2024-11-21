@@ -1,4 +1,4 @@
-﻿namespace Altinn.Authorization.AccessPackages.Repo.Extensions;
+﻿namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 
 public class DbAccessDataConfig
 {
@@ -11,8 +11,8 @@ public class DbAccessDataConfig
     {
         configureOptions?.Invoke(this);
     }
-    
+
     public string ConnectionString { get; set; }
-    
+
     public bool UseSqlServer { get; set; }
 }

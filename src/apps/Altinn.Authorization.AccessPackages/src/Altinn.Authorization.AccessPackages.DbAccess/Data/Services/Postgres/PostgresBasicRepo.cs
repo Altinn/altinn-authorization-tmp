@@ -7,6 +7,7 @@ using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using NpgsqlTypes;
 using OpenTelemetry.Trace;
@@ -40,11 +41,11 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
     /// </summary>
     /// <param name="config">Configuration</param>
     /// <param name="dbConverter">DbConverter</param>
-    public PostgresBasicRepo(IConfiguration config, DbConverter dbConverter)
+    public PostgresBasicRepo(IOptions<DbAccessDataConfig> config, DbConverter dbConverter)
     {
         DefaultTypeMap.MatchNamesWithUnderscores = true;
-        var configSection = config.GetSection("DataService");
-        ConnectionString = configSection["ConnectionString"] ?? throw new Exception("Missing connectionstring");
+        var configuration = config.Value;
+        ConnectionString = configuration.ConnectionString;
         DbObjDef = DbDefinitions.Get<T>() ?? throw new Exception($"Definition for '{typeof(T).Name}' not found");
         DbConverter = dbConverter;
     }

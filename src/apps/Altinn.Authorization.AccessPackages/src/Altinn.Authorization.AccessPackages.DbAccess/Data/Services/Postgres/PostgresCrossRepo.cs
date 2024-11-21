@@ -3,6 +3,7 @@ using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Dapper;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Postgres;
@@ -21,7 +22,7 @@ public class PostgresCrossRepo<TA, T, TB> : PostgresBasicRepo<T>, IDbCrossRepo<T
     /// </summary>
     /// <param name="config">IConfiguration</param>
     /// <param name="dataMapper">DbConverter</param>
-    public PostgresCrossRepo(IConfiguration config, DbConverter dataMapper) : base(config, dataMapper)
+    public PostgresCrossRepo(IOptions<DbAccessDataConfig> config, DbConverter dataMapper) : base(config, dataMapper)
     {
         XAColumn = typeof(TA).Name + "Id";
         XBColumn = typeof(TB).Name + "Id";
