@@ -3,16 +3,17 @@ using System.Diagnostics.Metrics;
 
 namespace Altinn.Authorization.AccessPackages.Repo;
 
-//public static class RepoTelemetry
-//{
-//    public static ActivitySource DbAccessSource = new ActivitySource("Altinn.Authorization.Repo");
-//    public static Activity? StartDbAccessActivity<T>(string name, ActivityKind kind = ActivityKind.Internal)
-//    {
-//        var a = DbAccessSource.StartDbAccessActivity(name + $"<{typeof(T).Name}>", kind);
-//        a?.SetCustomProperty("Type", typeof(T));
-//        return a;
-//    }
-//}
+public static class RepoTelemetry
+{
+    public static ActivitySource RepoSource = new ActivitySource("Altinn.Authorization.AccessPackages.Repo");
+
+    public static Activity? StartActivity<T>(string name, ActivityKind kind = ActivityKind.Internal)
+    {
+        var a = RepoSource.StartActivity(name + $"<{typeof(T).Name}>", kind);
+        a?.SetCustomProperty("Type", typeof(T));
+        return a;
+    }
+}
 
 public class JsonIngestMeters
 {
