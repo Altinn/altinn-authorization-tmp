@@ -43,13 +43,27 @@ public class BrRegIngestor(IOptions<BrRegIngestorConfig> config, BrregIngestMetr
         a?.AddEvent(new System.Diagnostics.ActivityEvent("Ingest starting!"));
 
         await LoadCache();
-        //await IngestUnits();
 
-        await LoadCache();
-        //await IngestSubUnits();
+        if (EntityIdCache.Count == 0)
+        {
+            await IngestUnits();
+            await LoadCache();
+            await IngestSubUnits();
+        }
+        else
+        {
+            Console.WriteLine("Entities in db. Abort ingest");
+        }
 
-        await LoadCache();
-        //await IngestRoles();
+        if (CacheRole.Count == 0)
+        {
+            await LoadCache();
+            await IngestRoles();
+        }
+        else
+        {
+            Console.WriteLine("Roles in db. Abort ingest");
+        }
     }
 
     /// <summary>
