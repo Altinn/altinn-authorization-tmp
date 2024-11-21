@@ -49,6 +49,7 @@ public class DatabaseMigration : IDatabaseMigration
     {
         await _factory.CreateTable<Provider>(withHistory: UseHistory);
         await _factory.CreateColumn<Provider>("Name", DataTypes.String(75));
+        await _factory.CreateColumn<Provider>("RefId", DataTypes.String(15), nullable: true);
         await _factory.CreateUniqueConstraint<Provider>(["Name"]);
     }
 
@@ -216,7 +217,9 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateColumn<Resource>("ProviderId", DataTypes.Guid);
         await _factory.CreateColumn<Resource>("TypeId", DataTypes.Guid);
         await _factory.CreateColumn<Resource>("GroupId", DataTypes.Guid);
-        await _factory.CreateUniqueConstraint<Resource>(["Name"]);
+        await _factory.CreateColumn<Resource>("RefId", DataTypes.String(150));
+        await _factory.CreateColumn<Resource>("Description", DataTypes.String(150), nullable: true);
+        await _factory.CreateUniqueConstraint<Resource>(["ProviderId", "GroupId", "RefId"]);
         await _factory.CreateForeignKeyConstraint<Resource, Provider>("ProviderId");
         await _factory.CreateForeignKeyConstraint<Resource, ResourceType>("TypeId");
         await _factory.CreateForeignKeyConstraint<Resource, ResourceGroup>("GroupId");

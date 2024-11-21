@@ -18,6 +18,7 @@
 	
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Altinn.Authorization.Importers.ResReg\Altinn.Authorization.Importers.ResReg.csproj" />
     <ProjectReference Include="..\Altinn.Authorization.AccessPackages.CLI\Altinn.Authorization.AccessPackages.CLI.csproj" />
     <ProjectReference Include="..\Altinn.Authorization.AccessPackages\Altinn.Authorization.AccessPackages.csproj" />
     <ProjectReference Include="..\Altinn.Authorization.FFB\Altinn.Authorization.FFB.csproj" />

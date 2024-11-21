@@ -29,6 +29,16 @@ public class Resource
     /// Name
     /// </summary>
     public string Name { get; set; }
+
+    /// <summary>
+    /// Description
+    /// </summary>
+    public string Description { get; set; }
+
+    /// <summary>
+    /// Refrence identifier
+    /// </summary>
+    public string RefId { get; set; }
 }
 
 /// <summary>
