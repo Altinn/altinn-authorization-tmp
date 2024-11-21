@@ -24,7 +24,10 @@ builder.AddDbAccessData();
 
 if (config.EnableMigrations)
 {
-    builder.AddDbAccessMigrations();
+    builder.AddDbAccessMigrations(opt =>
+    {
+        opt.ConnectionString = "ddd";
+    });
 }
 
 if (config.EnableJsonIngest)
