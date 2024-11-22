@@ -25,7 +25,7 @@ public class BaseExtendedDataService<T, TExtended> : BaseDataService<T>, IDbExte
     {
         using var a = DbAccess.DbAccessTelemetry.StartActivity<T>("GetExtended");
         var result = await ExtendedRepo.GetExtended([new GenericFilter("Id", id)], options);
-        if (result != null)
+        if (result != null && result.Any())
         {
             return result.First();
         }

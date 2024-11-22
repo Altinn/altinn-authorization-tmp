@@ -20,6 +20,11 @@ public class ResourceRegisterWrapper
 
     public async Task<List<RawResource>> GetResources()
     {
+        /*
+         /resource/{id}/policy/subjects
+        /resource/bysubjects
+         */
+
         HttpClient client = new HttpClient();
         return await client.GetFromJsonAsync<List<RawResource>>($"{BaseUrl}/resourceregistry/api/v1/resource/resourcelist") ?? new List<RawResource>();
     }

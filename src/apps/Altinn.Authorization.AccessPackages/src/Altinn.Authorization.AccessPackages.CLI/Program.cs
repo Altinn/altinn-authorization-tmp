@@ -7,13 +7,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder();
-builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+builder.Configuration.AddUserSecrets("2163e793-201c-46c9-9d8f-a586a3aaf7b5");
 
 var config = new CLIConfig()
 {
-    EnableMigrations = true,
-    EnableJsonIngest = true,
-    EnableBrregIngest = true,
+    EnableMigrations = false,
+    EnableJsonIngest = false,
+    EnableBrregIngest = false,
     EnableBrregImport = false,
     RunTests = true
 };
@@ -24,10 +25,7 @@ builder.AddDbAccessData();
 
 if (config.EnableMigrations)
 {
-    builder.AddDbAccessMigrations(opt =>
-    {
-        opt.ConnectionString = "ddd";
-    });
+    builder.AddDbAccessMigrations();
 }
 
 if (config.EnableJsonIngest)

@@ -32,6 +32,15 @@ public class GenericFilter
         Comparer = comparer ?? DbOperators.EqualTo;
         Value = value;
     }
+
+    /// <summary>
+    /// Return statement
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString()
+    {
+        return $"{Comparer.Code.Replace("{$Key}", Key).Replace("{$Value}", $"@{Key}")}";
+    }
 }
 
 /// <summary>
@@ -62,22 +71,32 @@ public static class DbOperators
     /// <summary>
     /// Contains
     /// </summary>
-    public static DbOperator Contains => new("like", "{$Key} LIKE '%{$}%'");
+    public static DbOperator Contains => new("like", "{$Key} ILIKE '%{$Value}%'");
 
     /// <summary>
     /// NotContains
     /// </summary>
-    public static DbOperator NotContains => new("not like", "{$Key} NOT LIKE '%{$Value}%'");
+    public static DbOperator NotContains => new("not like", "{$Key} NOT ILIKE '%{$Value}%'");
 
     /// <summary>
     /// StartsWith
     /// </summary>
-    public static DbOperator StartsWith => new("like", "LIKE '{$}%'");
+    public static DbOperator StartsWith => new("like", "{$Key} ILIKE @{$Key}");
+
+    /// <summary>
+    /// NotStartsWith
+    /// </summary>
+    public static DbOperator NotStartsWith => new("like", "{$Key} NOT ILIKE @{$Key}");
 
     /// <summary>
     /// EndsWith
     /// </summary>
-    public static DbOperator EndsWith => new("like", "LIKE '%{$}'");
+    public static DbOperator EndsWith => new("like", "{$Key} ILIKE '%{$Value}'");
+
+    /// <summary>
+    /// NotEndsWith
+    /// </summary>
+    public static DbOperator NotEndsWith => new("like", "{$Key} NOT ILIKE '%{$Value}'");
 }
 
 /// <summary>

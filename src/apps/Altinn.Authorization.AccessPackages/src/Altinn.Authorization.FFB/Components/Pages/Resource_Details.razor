@@ -15,6 +15,7 @@
                 <BreadcrumbItem Url=@($"/provider/{Resource.Provider.Id}")>@Resource.Provider.Name</BreadcrumbItem>
             </BreadcrumbContainer>
             <H1>@Resource.Name</H1>
+            <p>@Resource.Description</p>
         </LeftContent>
         <RightContent>
            @*  <button @onclick=@(() => Flyouts.ToggleFlyout("edit"))>Edit</button>
@@ -22,43 +23,46 @@
         </RightContent>
     </PageHeader>
 
+    <div>
+        <table class="bf-table bfc-base-3-bg bf-table-vertical-header" style="width: auto">
+            <tbody>
+                <tr class="bf-table-row bf-table-row-compact">
+                    <th>Id</th>
+                    <td>@Resource.RefId</td>
+                </tr>
+                <tr class="bf-table-row bf-table-row-compact">
+                    <th>Provider</th>
+                    <td><a href=@($"/provider/{Provider.Id}")>@Provider.Name</a></td>
+                </tr>
+                <tr class="bf-table-row bf-table-row-compact">
+                    <th>Group</th>
+                    <td>@Resource.Group.Name</td>
+                </tr>
+                <tr class="bf-table-row bf-table-row-compact">
+                    <th>Type</th>
+                    <td>@Resource.Type.Name</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <span>
+        &nbsp;
+    </span>
+
     <Grid Medium="2">
+        <div>
+            <H2>Tilgangspakker</H2>
 
-        <GridSpan Columns="2">
-            <H3>Egenskaper</H3>
-            <table class="bf-table bfc-base-3-bg bf-table-vertical-header" style="width: auto">
-                <tbody>
-                    <tr class="bf-table-row bf-table-row-compact">
-                        <th>Provider</th>
-                        <td><a href=@($"/provider/{Provider.Id}")>@Provider.Name</a></td>
-                    </tr>
-                    <tr class="bf-table-row bf-table-row-compact">
-                        <th>Group</th>
-                        <td>@Resource.Group.Name</td>
-                    </tr>
-                    <tr class="bf-table-row bf-table-row-compact">
-                        <th>Type</th>
-                        <td>@Resource.Type.Name</td>
-                    </tr>
-                </tbody>
-            </table>
-        </GridSpan>
-
-    <GridSpan Columns="2">
-        <H3>Tilgangspakker</H3>
-
-        @if (Resources != null)
-        {
-            <Accordion>
-                @foreach (var r in Resources)
-                {
-                    <ListItem Url=@($"/package/{r.PackageId}") Title="@r.Package.Name"></ListItem>
-                }
-            </Accordion>
-        }
-
-    </GridSpan>
-
+            @if (Resources != null)
+            {
+                <Accordion>
+                    @foreach (var r in Resources)
+                    {
+                        <ListItem Url=@($"/package/{r.PackageId}") Title="@r.Package.Name"></ListItem>
+                    }
+                </Accordion>
+            }
+        </div>
     </Grid>
 }
 

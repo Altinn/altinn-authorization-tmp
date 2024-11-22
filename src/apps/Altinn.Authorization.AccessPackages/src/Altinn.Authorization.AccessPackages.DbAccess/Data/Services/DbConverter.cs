@@ -96,6 +96,38 @@ public sealed class DbConverter
 
         return null;
     }
+    private void SetPropertyValue(PropertyInfo property, object? target, object? value)
+    {
+        if (value != null)
+        {
+            if (property.PropertyType == typeof(Guid))
+            {
+                // Sett Guid direkte eller parse fra string
+                property.SetValue(target, value is Guid ? value : Guid.Parse(value.ToString()));
+            }
+            else if (property.PropertyType == typeof(Guid?))
+            {
+                // Håndter nullable Guid og sett til null hvis strengen er tom eller Guid er Guid.Empty
+                if (value is Guid guidValue)
+                {
+                    property.SetValue(target, guidValue == Guid.Empty ? null : (Guid?)guidValue);
+                }
+                else if (string.IsNullOrWhiteSpace(value.ToString()))
+                {
+                    property.SetValue(target, null);
+                }
+                else
+                {
+                    property.SetValue(target, (Guid?)Guid.Parse(value.ToString()));
+                }
+            }
+            else
+            {
+                // Generell konvertering for andre typer
+                property.SetValue(target, Convert.ChangeType(value, property.PropertyType));
+            }
+        }
+    }
 
     /// <summary>
     /// ConvertToObjects
@@ -103,7 +135,8 @@ public sealed class DbConverter
     /// <typeparam name="T">Type</typeparam>
     /// <param name="reader">IDataReader</param>
     /// <returns></returns>
-    public List<T> ConvertToObjects<T>(IDataReader reader) where T : new()
+    public List<T> ConvertToObjectOlds<T>(IDataReader reader) 
+        where T : new()
     {
         var properties = GetPropertiesWithPrefix<T>();
         var result = new List<T>();
@@ -122,6 +155,92 @@ public sealed class DbConverter
                 {
                     if (columnName == (prefix + property.Name.ToLower()))
                     {
+                        object currentObject = instance;
+                        Type currentType = typeof(T);
+
+                        // Naviger til riktig sub-objekt hvis det er nødvendig
+                        if (!string.IsNullOrEmpty(prefix))
+                        {
+                            var parts = prefix.Split('_', StringSplitOptions.RemoveEmptyEntries);
+                            foreach (var part in parts)
+                            {
+                                if (PropertyCache[currentType].TryGetValue(part, out var parentProperty))
+                                {
+
+                                    // Sjekk om hele sub-objektet skal være null
+                                    if (subObjectNullCheck.TryGetValue(prefix, out bool isNull) && isNull)
+                                    {
+                                        parentProperty.Property.SetValue(currentObject, null);
+                                        break;
+                                    }
+
+                                    var subObject = parentProperty.Property.GetValue(currentObject);
+                                    if (subObject == null)
+                                    {
+                                        subObject = Activator.CreateInstance(parentProperty.Property.PropertyType);
+                                        parentProperty.Property.SetValue(currentObject, subObject);
+                                    }
+
+                                    currentObject = subObject;
+                                    currentType = parentProperty.Property.PropertyType;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Håndter List<T> eller IEnumerable<T> egenskaper
+                        if (elementType != null)
+                        {
+                            var valueData = JsonSerializer.Deserialize(value?.ToString() ?? "[]", property.PropertyType);
+                            property.SetValue(currentObject, valueData);
+                        }
+                        else
+                        {
+                            // Bruk SetPropertyValue for andre typer
+                            SetPropertyValue(property, currentObject, value);
+                        }
+
+                        break; // Gå til neste kolonne når verdien er satt
+                    }
+                }
+            }
+
+            result.Add(instance);
+        }
+
+        return result;
+    }
+
+    public List<T> ConvertToObjects<T>(IDataReader reader)
+    where T : new()
+    {
+        var properties = GetPropertiesWithPrefix<T>();
+        var result = new List<T>();
+
+        while (reader.Read())
+        {
+            var instance = new T();
+            var subObjectNullCheck = new Dictionary<string, bool>();
+
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                string columnName = reader.GetName(i).ToLower();
+                object value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+
+                foreach (var (property, prefix, elementType) in properties)
+                {
+                    if (columnName == (prefix + property.Name.ToLower()))
+                    {
+                        // Sjekk om vi skal markere et sub-objekt som null
+                        if (!string.IsNullOrEmpty(prefix) && property.Name.ToLower() == "id" && value == null)
+                        {
+                            subObjectNullCheck[prefix] = true;
+                            break;
+                        }
+
                         object currentObject = instance;
                         Type currentType = typeof(T);
 
@@ -180,36 +299,5 @@ public sealed class DbConverter
         return result;
     }
 
-    private void SetPropertyValue(PropertyInfo property, object? target, object? value)
-    {
-        if (value != null)
-        {
-            if (property.PropertyType == typeof(Guid))
-            {
-                // Sett Guid direkte eller parse fra string
-                property.SetValue(target, value is Guid ? value : Guid.Parse(value.ToString()));
-            }
-            else if (property.PropertyType == typeof(Guid?))
-            {
-                // Håndter nullable Guid og sett til null hvis strengen er tom eller Guid er Guid.Empty
-                if (value is Guid guidValue)
-                {
-                    property.SetValue(target, guidValue == Guid.Empty ? null : (Guid?)guidValue);
-                }
-                else if (string.IsNullOrWhiteSpace(value.ToString()))
-                {
-                    property.SetValue(target, null);
-                }
-                else
-                {
-                    property.SetValue(target, (Guid?)Guid.Parse(value.ToString()));
-                }
-            }
-            else
-            {
-                // Generell konvertering for andre typer
-                property.SetValue(target, Convert.ChangeType(value, property.PropertyType));
-            }
-        }
-    }
+
 }

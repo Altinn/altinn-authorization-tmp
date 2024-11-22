@@ -90,6 +90,21 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
         {
             foreach (var filter in filters)
             {
+                if (filter.Comparer.Name == DbOperators.Contains.Name || filter.Comparer.Name == DbOperators.NotContains.Name)
+                {
+                    filter.Value = "%" + filter.Value + "%";
+                }
+
+                if (filter.Comparer.Name == DbOperators.StartsWith.Name || filter.Comparer.Name == DbOperators.NotStartsWith.Name)
+                {
+                    filter.Value = filter.Value + "%";
+                }
+
+                if (filter.Comparer.Name == DbOperators.EndsWith.Name || filter.Comparer.Name == DbOperators.NotEndsWith.Name)
+                {
+                    filter.Value = "%" + filter.Value;
+                }
+
                 param.Add(filter.Key, filter.Value);
             }
         }
@@ -120,9 +135,10 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
             Console.WriteLine(ConnectionString);
             return DbConverter.ConvertToObjects<TExtended>(await connection.ExecuteReaderAsync(cmd));
         }
-        catch
+        catch (Exception ex)
         {
             a?.SetStatus(System.Diagnostics.ActivityStatusCode.Error);
+            Console.WriteLine(ex.Message);
             Console.WriteLine(query);
             throw;
         }
@@ -166,7 +182,8 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
 
         if (filters != null && filters.Count > 0)
         {
-            sb.AppendLine("WHERE " + string.Join(" AND ", filters.Select(t => $"{DbObjDef.BaseDbObject.Alias}.{t.Key} {t.Comparer} @{t.Key}")));
+            //// sb.AppendLine("WHERE " + string.Join(" AND ", filters.Select(t => $"{DbObjDef.BaseDbObject.Alias}.{t.Key} {t.Comparer} @{t.Key}")));
+            sb.AppendLine("WHERE " + string.Join(" AND ", filters.Select(t => $"{DbObjDef.BaseDbObject.Alias}.{t.ToString()}")));
         }
 
         if (options.UsePaging)
