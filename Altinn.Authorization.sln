@@ -53,6 +53,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{7E2E4A16
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Hosting.Tests", "src\libs\Altinn.Authorization.Hosting\tests\Altinn.Authorization.Hosting.Tests\Altinn.Authorization.Hosting.Tests.csproj", "{53F3961A-B2F9-4BF8-9365-80D93DB621B2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Altinn.Authorization.AccessManagement", "Altinn.Authorization.AccessManagement", "{AAD00281-4A05-44C6-8D48-0F7F353A9319}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{BD64EDE7-B4EB-4F9D-85E0-FA9D16D4027F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Tests", "src\apps\Altinn.Authorization.AccessManagement\test\Altinn.AccessManagement.Tests\Altinn.AccessManagement.Tests.csproj", "{1147F19E-C547-4D1E-8E12-1A09055B542B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3B9101A0-330F-45FE-A41F-3195770D55ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement", "src\apps\Altinn.Authorization.AccessManagement\src\Altinn.AccessManagement\Altinn.AccessManagement.csproj", "{0B57252C-2770-402D-9CD5-B67632963A04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Core", "src\apps\Altinn.Authorization.AccessManagement\src\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj", "{6A97882B-BD8B-4D70-9791-2FBBC4FE8019}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Integration", "src\apps\Altinn.Authorization.AccessManagement\src\Altinn.AccessManagement.Integration\Altinn.AccessManagement.Integration.csproj", "{30B22C40-7349-4BF3-8D65-2425AE78F1D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Persistence", "src\apps\Altinn.Authorization.AccessManagement\src\Altinn.AccessManagement.Persistence\Altinn.AccessManagement.Persistence.csproj", "{61DB1AB6-1B8C-4BDA-931E-04FD48A2370B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -102,6 +118,26 @@ Global
 		{53F3961A-B2F9-4BF8-9365-80D93DB621B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53F3961A-B2F9-4BF8-9365-80D93DB621B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53F3961A-B2F9-4BF8-9365-80D93DB621B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1147F19E-C547-4D1E-8E12-1A09055B542B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1147F19E-C547-4D1E-8E12-1A09055B542B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1147F19E-C547-4D1E-8E12-1A09055B542B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1147F19E-C547-4D1E-8E12-1A09055B542B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B57252C-2770-402D-9CD5-B67632963A04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B57252C-2770-402D-9CD5-B67632963A04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B57252C-2770-402D-9CD5-B67632963A04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B57252C-2770-402D-9CD5-B67632963A04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A97882B-BD8B-4D70-9791-2FBBC4FE8019}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A97882B-BD8B-4D70-9791-2FBBC4FE8019}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A97882B-BD8B-4D70-9791-2FBBC4FE8019}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A97882B-BD8B-4D70-9791-2FBBC4FE8019}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30B22C40-7349-4BF3-8D65-2425AE78F1D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30B22C40-7349-4BF3-8D65-2425AE78F1D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30B22C40-7349-4BF3-8D65-2425AE78F1D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30B22C40-7349-4BF3-8D65-2425AE78F1D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61DB1AB6-1B8C-4BDA-931E-04FD48A2370B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61DB1AB6-1B8C-4BDA-931E-04FD48A2370B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61DB1AB6-1B8C-4BDA-931E-04FD48A2370B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61DB1AB6-1B8C-4BDA-931E-04FD48A2370B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7A57912A-A922-4866-8BD8-A55CEB91B2FD} = {975139F1-669A-47EF-B6FB-9514471F6058}
@@ -128,5 +164,13 @@ Global
 		{C7F9BA45-8010-4B92-8CC7-5050107F2BFE} = {D4E493DD-D9AB-4D68-BD8E-9BE156CD175A}
 		{7E2E4A16-8A53-4E6A-BC22-832D541E1B92} = {EB54B6F3-D4CE-4C49-90AC-993D59327008}
 		{53F3961A-B2F9-4BF8-9365-80D93DB621B2} = {7E2E4A16-8A53-4E6A-BC22-832D541E1B92}
+		{AAD00281-4A05-44C6-8D48-0F7F353A9319} = {7A57912A-A922-4866-8BD8-A55CEB91B2FD}
+		{BD64EDE7-B4EB-4F9D-85E0-FA9D16D4027F} = {AAD00281-4A05-44C6-8D48-0F7F353A9319}
+		{1147F19E-C547-4D1E-8E12-1A09055B542B} = {BD64EDE7-B4EB-4F9D-85E0-FA9D16D4027F}
+		{3B9101A0-330F-45FE-A41F-3195770D55ED} = {AAD00281-4A05-44C6-8D48-0F7F353A9319}
+		{0B57252C-2770-402D-9CD5-B67632963A04} = {3B9101A0-330F-45FE-A41F-3195770D55ED}
+		{6A97882B-BD8B-4D70-9791-2FBBC4FE8019} = {3B9101A0-330F-45FE-A41F-3195770D55ED}
+		{30B22C40-7349-4BF3-8D65-2425AE78F1D7} = {3B9101A0-330F-45FE-A41F-3195770D55ED}
+		{61DB1AB6-1B8C-4BDA-931E-04FD48A2370B} = {3B9101A0-330F-45FE-A41F-3195770D55ED}
 	EndGlobalSection
 EndGlobal
