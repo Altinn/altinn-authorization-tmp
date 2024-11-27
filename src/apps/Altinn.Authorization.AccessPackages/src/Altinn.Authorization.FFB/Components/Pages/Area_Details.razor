@@ -5,7 +5,7 @@
 @if (Area != null)
 {
     <PageTitle>@Area.Name</PageTitle>
-    
+
     <PageHeader>
         <LeftContent>
             <BreadcrumbContainer>
@@ -81,7 +81,7 @@
         Area = await areaService.GetExtended(id, options: opt);
         if(Area != null)
         {
-            Packages = [.. await packageService.GetExtended("areaid", Area.Id, options: opt)];
+            Packages = [.. await packageService.GetExtended(t => t.AreaId, Area.Id, options: opt)];
         }
     }
 }

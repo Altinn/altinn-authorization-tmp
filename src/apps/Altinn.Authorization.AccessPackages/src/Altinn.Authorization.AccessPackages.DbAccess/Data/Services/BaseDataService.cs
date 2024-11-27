@@ -1,15 +1,19 @@
-﻿using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
+﻿using System.Linq.Expressions;
+using System.Reflection;
+using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Microsoft.Extensions.Logging;
-using Npgsql;
-using OpenTelemetry;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Trace;
 
 namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Services;
 
+/// <summary>
+/// Logs
+/// </summary>
 public static class Logs
 {
+    /// <summary>
+    /// LoggerFactory
+    /// </summary>
     public static ILoggerFactory LoggerFactory { get; set; } = new LoggerFactory();
 
 }
@@ -21,6 +25,10 @@ public class BaseDataService<T> : IDbBasicDataService<T>
     /// Extended repo
     /// </summary>
     public IDbBasicRepo<T> Repo { get; }
+
+    /// <summary>
+    /// Logger
+    /// </summary>
     public ILogger Logger { get; }
 
     /// <summary>
@@ -36,7 +44,7 @@ public class BaseDataService<T> : IDbBasicDataService<T>
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Get(RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await Repo.Get(parameters: new List<GenericFilter>(), options, cancellationToken: cancellationToken);
+        return await Repo.Get(filters: new List<GenericFilter>(), options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -45,37 +53,44 @@ public class BaseDataService<T> : IDbBasicDataService<T>
         try
         {
             var res = await Repo.Get([new GenericFilter("Id", id)], options, cancellationToken: cancellationToken);
-            if (res != null)
-            {
-                return res.First();
-            }
-
-            return default;
+            return res.FirstOrDefault();
         }
         catch (Exception ex)
         {
+            Console.WriteLine(id);
             Console.WriteLine(ex.Message);
             throw;
         }
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get(string property, Guid value, RequestOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await Repo.Get([new GenericFilter(property, value)], options, cancellationToken: cancellationToken);
+        string propertyName = ExtractPropertyInfo(property).Name;
+        var filters = new List<GenericFilter>
+        {
+            new GenericFilter(propertyName, value, FilterComparer.Equals)
+        };
+        return await Repo.Get(filters, options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get(string property, int value, RequestOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> Get(IEnumerable<GenericFilter> filters, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await Repo.Get([new GenericFilter(property, value)], options, cancellationToken: cancellationToken);
+        return await Repo.Get(filters.ToList(), options, cancellationToken: cancellationToken);
     }
 
-    /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get(string property, string value, RequestOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        return await Repo.Get([new GenericFilter(property, value)], options, cancellationToken: cancellationToken);
-    }
+    protected PropertyInfo ExtractPropertyInfo<TLocal, TProperty>(Expression<Func<TLocal, TProperty>> expression)
+        {
+            MemberExpression? memberExpression = expression.Body switch
+            {
+                MemberExpression member => member,
+                UnaryExpression { Operand: MemberExpression member } => member,
+                _ => null
+            };
+
+            return memberExpression?.Member as PropertyInfo ?? throw new ArgumentException($"Expression '{expression}' does not refer to a valid property.");
+        }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Get(Dictionary<string, object> parameters, RequestOptions? options = null, CancellationToken cancellationToken = default)
@@ -92,7 +107,7 @@ public class BaseDataService<T> : IDbBasicDataService<T>
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Search(string term, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return await Repo.Get([new GenericFilter("Name", term, comparer: DbOperators.Contains)], options, cancellationToken: cancellationToken);
+        return await Repo.Get([new GenericFilter("Name", term, comparer: FilterComparer.Contains)], options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>

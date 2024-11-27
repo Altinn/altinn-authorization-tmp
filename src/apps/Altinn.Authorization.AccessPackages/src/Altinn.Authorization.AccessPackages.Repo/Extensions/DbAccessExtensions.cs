@@ -188,6 +188,10 @@ public static class DbAccessExtensions
         builder.Services.AddSingleton<IRoleAssignmentService, RoleAssignmentDataService>();
         builder.Services.AddSingleton<IEntityVariantRoleService, EntityVariantRoleDataService>();
         builder.Services.AddSingleton<IRoleMapService, RoleMapDataService>();
+
+        //// TODO: IVAR
+        builder.Services.AddSingleton<IRelationService, RelationDataService>();
+        builder.Services.AddSingleton<IRelationAssignmentService, RelationAssignmentDataService>();
         #endregion
 
         return builder;
@@ -214,6 +218,10 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<RoleAssignment, ExtRoleAssignment>, PostgresExtendedRepo<RoleAssignment, ExtRoleAssignment>>();
         services.AddSingleton<IDbCrossRepo<EntityVariant, EntityVariantRole, Role>, PostgresCrossRepo<EntityVariant, EntityVariantRole, Role>>();
         services.AddSingleton<IDbExtendedRepo<RoleMap, ExtRoleMap>, PostgresExtendedRepo<RoleMap, ExtRoleMap>>();
+
+        //// TODO: IVAR
+        services.AddSingleton<IDbExtendedRepo<Relation, ExtRelation>, PostgresExtendedRepo<Relation, ExtRelation>>();
+        services.AddSingleton<IDbExtendedRepo<RelationAssignment, ExtRelationAssignment>, PostgresExtendedRepo<RelationAssignment, ExtRelationAssignment>>();
     }
 
     private static void RegisterSqlDataRepo(IServiceCollection services)

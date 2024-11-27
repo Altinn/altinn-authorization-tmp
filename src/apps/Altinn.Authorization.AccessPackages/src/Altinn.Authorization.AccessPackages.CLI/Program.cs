@@ -1,7 +1,6 @@
 ﻿using Altinn.Authorization.AccessPackages.CLI;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
 using Altinn.Authorization.AccessPackages.Repo.Extensions;
-using Altinn.Authorization.Importers.BRREG.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,12 +11,14 @@ builder.Configuration.AddUserSecrets("2163e793-201c-46c9-9d8f-a586a3aaf7b5");
 
 var config = new CLIConfig()
 {
-    EnableMigrations = false,
-    EnableJsonIngest = false,
+    EnableMigrations = true,
+    EnableJsonIngest = true,
     EnableBrregIngest = false,
     EnableBrregImport = false,
     RunTests = true
 };
+
+builder.Services.AddSingleton<Mockups>();
 
 //// builder.AddDbAccessTelemetry();
 builder.AddDatabaseDefinitions();
@@ -31,16 +32,6 @@ if (config.EnableMigrations)
 if (config.EnableJsonIngest)
 {
     builder.AddJsonIngests();
-}
-
-if (config.EnableBrregIngest)
-{
-    builder.AddBrregIngestor();
-}
-
-if (config.EnableBrregImport)
-{
-    builder.AddBrregImporter();
 }
 
 var host = builder.Build();
@@ -57,15 +48,8 @@ if (config.EnableJsonIngest)
     await host.Services.UseJsonIngests();
 }
 
-if (config.EnableBrregIngest)
-{
-    await host.Services.UseBrregIngestor();
-}
-
-if (config.EnableBrregImport)
-{
-    await host.Services.UseBrregImporter();
-}
+var mockService = host.Services.GetRequiredService<Mockups>();
+await mockService.KlientDelegeringMock();
 
 if (config.RunTests)
 {

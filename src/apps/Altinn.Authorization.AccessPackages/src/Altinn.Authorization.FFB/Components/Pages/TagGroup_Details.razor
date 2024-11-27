@@ -75,7 +75,7 @@
                 <Button Variant="Button.ButtonVariant.Filled" OnClick="CreateTag">Lagre</Button>
                 <Button Variant="Button.ButtonVariant.Normal" State="Button.ButtonState.Neutral">Avbryt</Button>
             </div>
-            
+
             @if(!string.IsNullOrEmpty(NewTagFeedback.msg))
             {
                 <Message State="@NewTagFeedback.state" Title="@NewTagFeedback.msg">
@@ -114,7 +114,7 @@
         var opt = UserData.GetRequestOptions();
 
         TagGroup = await tagGroupData.Get(Id, options: opt);
-        Tags = [.. await tagData.Get("GroupId", Id, options: opt) ?? new List<Tag>()];
+        Tags = [.. await tagData.Get(t => t.GroupId, Id, options: opt) ?? new List<Tag>()];
 
         List<string> languages = ["nob", "nno", "eng"];
         Translations = new Dictionary<string, TagGroup>();

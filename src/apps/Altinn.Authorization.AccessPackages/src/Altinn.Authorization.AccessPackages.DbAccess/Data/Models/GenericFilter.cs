@@ -1,22 +1,14 @@
-﻿using System.Data.SqlClient;
-using Npgsql;
-
-namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
+﻿namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 
 /// <summary>
-/// Generic filter
+/// Generic Filter
 /// </summary>
 public class GenericFilter
 {
     /// <summary>
-    /// Key
+    /// PropertyName
     /// </summary>
-    public string Key { get; set; }
-
-    /// <summary>
-    /// Comparer
-    /// </summary>
-    public DbOperator Comparer { get; set; }
+    public string PropertyName { get; set; }
 
     /// <summary>
     /// Value
@@ -24,122 +16,20 @@ public class GenericFilter
     public object Value { get; set; }
 
     /// <summary>
-    /// Constructor
+    /// FilterComparer
     /// </summary>
-    public GenericFilter(string key, object value, DbOperator? comparer = null)
+    public FilterComparer Comparer { get; set; }
+
+    /// <summary>
+    /// GenericFilter
+    /// </summary>
+    /// <param name="propertyName">propertyName</param>
+    /// <param name="value">value</param>
+    /// <param name="comparer">comparer</param>
+    public GenericFilter(string propertyName, object value, FilterComparer comparer = FilterComparer.Equals)
     {
-        Key = key;
-        Comparer = comparer ?? DbOperators.EqualTo;
+        PropertyName = propertyName;
         Value = value;
+        Comparer = comparer;
     }
-
-    /// <summary>
-    /// Return statement
-    /// </summary>
-    /// <returns></returns>
-    public override string ToString()
-    {
-        return $"{Comparer.Code.Replace("{$Key}", Key).Replace("{$Value}", $"@{Key}")}";
-    }
-}
-
-/// <summary>
-/// DbOperators
-/// </summary>
-public static class DbOperators
-{
-    /// <summary>
-    /// EqualTo
-    /// </summary>
-    public static DbOperator EqualTo => new("=", "{$Key} = {$Value}");
-
-    /// <summary>
-    /// NotEqualTo
-    /// </summary>
-    public static DbOperator NotEqualTo => new("<>", "{$Key} <> {$Value}");
-
-    /// <summary>
-    /// In
-    /// </summary>
-    public static DbOperator In => new("in", "{$Key} IN({$Value})");
-
-    /// <summary>
-    /// NotIn
-    /// </summary>
-    public static DbOperator NotIn => new("not in", "{$Key} NOT IN({$Value})");
-
-    /// <summary>
-    /// Contains
-    /// </summary>
-    public static DbOperator Contains => new("like", "{$Key} ILIKE '%{$Value}%'");
-
-    /// <summary>
-    /// NotContains
-    /// </summary>
-    public static DbOperator NotContains => new("not like", "{$Key} NOT ILIKE '%{$Value}%'");
-
-    /// <summary>
-    /// StartsWith
-    /// </summary>
-    public static DbOperator StartsWith => new("like", "{$Key} ILIKE @{$Key}");
-
-    /// <summary>
-    /// NotStartsWith
-    /// </summary>
-    public static DbOperator NotStartsWith => new("like", "{$Key} NOT ILIKE @{$Key}");
-
-    /// <summary>
-    /// EndsWith
-    /// </summary>
-    public static DbOperator EndsWith => new("like", "{$Key} ILIKE '%{$Value}'");
-
-    /// <summary>
-    /// NotEndsWith
-    /// </summary>
-    public static DbOperator NotEndsWith => new("like", "{$Key} NOT ILIKE '%{$Value}'");
-}
-
-/// <summary>
-/// DbOperator
-/// </summary>
-/// <param name="name">Name (used for ToString override)</param>
-/// <param name="code">Code</param>
-public readonly struct DbOperator(string name, string code)
-{
-    /// <summary>
-    /// Name (used for ToString override)
-    /// </summary>
-    public string Name { get; } = name;
-
-    /// <summary>
-    /// Code 
-    /// </summary>
-    public string Code { get; } = code;
-
-    /// <summary>
-    /// Returns Name
-    /// </summary>
-    /// <returns></returns>
-    public override string ToString()
-    {
-        return Name;
-    }
-}
-
-/// <summary>
-/// Generic Parameter
-/// </summary>
-/// <param name="key">Key</param>
-/// <param name="value">Value</param>
-public class GenericParameter(string key, object value)
-{
-    /// <summary>
-    /// Key
-    /// </summary>
-    public string Key { get; set; } = key;
-
-    /// <summary>
-    /// Value
-    /// </summary>
-    public object Value { get; set; } = value;
 }

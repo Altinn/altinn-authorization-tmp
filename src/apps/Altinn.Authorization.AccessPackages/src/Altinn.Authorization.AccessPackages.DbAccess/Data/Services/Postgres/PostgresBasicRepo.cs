@@ -1,16 +1,12 @@
 ﻿using System.Data;
-using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Dapper;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using NpgsqlTypes;
-using OpenTelemetry.Trace;
 
 namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Services.Postgres;
 
@@ -51,31 +47,12 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get(List<GenericFilter>? parameters = null, RequestOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> Get(List<GenericFilter>? filters = null, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
         options ??= new RequestOptions();
-        parameters ??= [];
-
-        var cmd = GetCommand(options, parameters);
-        var param = new Dictionary<string, object>();
-        if (parameters.Count > 0)
-        {
-            foreach (var kv in parameters)
-            {
-                param.Add(kv.Key, kv.Value);
-            }
-        }
-
-        if (options.Language != null)
-        {
-            param.Add("Language", options.Language);
-        }
-
-        if (options.AsOf.HasValue)
-        {
-            param.Add("_AsOf", options.AsOf.Value);
-        }
-
+        filters ??= [];
+        var cmd = GetCommand(options, filters);
+        var param = PrepareParameters(filters, options);
         return await Execute(cmd, param, cancellationToken: cancellationToken);
     }
 
@@ -83,11 +60,12 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
     public async Task<(IEnumerable<T> Data, PagedResult PageInfo)> Search(string term, RequestOptions options, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
+        ////DbPageResult
         /*
         // SQL Implementation
         try
         {
-            var json = await GetJson([new GenericFilter("Name", term.GetValue(), comparer: "LIKE")], options, cancellationToken);
+            var json = await GetJson([new GenericFilterOLD("Name", term.GetValue(), comparer: "LIKE")], options, cancellationToken);
             var data = JsonSerializer.Deserialize<IEnumerable<T>>(json) ?? throw new Exception("Unable to deserialize data");
             var pageInfo = JsonSerializer.Deserialize<List<DbPageResult>>(json) ?? throw new Exception("Unable to deserialize page data");
 
@@ -247,42 +225,101 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
 
     private string GetCommand(RequestOptions? options = null, List<GenericFilter>? filters = null)
     {
-        /* check from cache */
-
         options ??= new RequestOptions();
         var sb = new StringBuilder();
-        
-        if (options.UsePaging)
-        {
-            sb.AppendLine("WITH pagedresult AS (");
-        }
 
         sb.AppendLine("SELECT ");
         sb.AppendLine(GenerateColumns(options));
-
-        if (options.UsePaging)
-        {
-            string orderBy = string.IsNullOrEmpty(options.OrderBy) ? "Id" : options.OrderBy;
-            sb.AppendLine($",ROW_NUMBER() OVER (ORDER BY {DbObjDef.BaseDbObject.Alias}.{orderBy}) AS _rownum");
-        }
-
         sb.AppendLine("FROM " + GenerateSource(options));
-        if (filters != null && filters.Count > 0)
+        sb.AppendLine(GenerateStatementFromFilters(DbObjDef.BaseDbObject.Alias, filters));
+
+        var query = sb.ToString();
+        query = AddPagingToQuery(query, options);
+        
+        return query;
+    }
+
+    protected string AddPagingToQuery(string query, RequestOptions options)
+    {
+        if (!options.UsePaging)
         {
-            sb.AppendLine("WHERE " + string.Join(" AND ", filters.Select(t => $"{DbObjDef.BaseDbObject.Alias}.{t.Key} {t.Comparer} @{t.Key}")));
+            return query;
         }
 
-        if (options.UsePaging)
-        {
-            sb.AppendLine(")");
-            sb.AppendLine("SELECT *");
-            sb.AppendLine("FROM pagedresult, (SELECT MAX(pagedresult._rownum) AS totalitems FROM pagedresult) AS pageinfo");
-            sb.AppendLine($"ORDER BY _rownum OFFSET {options.PageSize * (options.PageNumber - 1)} ROWS FETCH NEXT {options.PageSize} ROWS ONLY");
-        }
+        var sb = new StringBuilder();
 
-        /* save to cache */
+        sb.AppendLine("WITH pagedresult AS (");
+        sb.AppendLine(query);
+        sb.AppendLine(")");
+        sb.AppendLine("SELECT *");
+        sb.AppendLine("FROM pagedresult, (SELECT MAX(pagedresult._rownum) AS totalitems FROM pagedresult) AS pageinfo");
+        sb.AppendLine($"ORDER BY _rownum OFFSET {options.PageSize * (options.PageNumber - 1)} ROWS FETCH NEXT {options.PageSize} ROWS ONLY");
 
         return sb.ToString();
+    }
+
+    protected Dictionary<string, object> PrepareParameters(IEnumerable<GenericFilter>? filters, RequestOptions options)
+    {
+        var parameters = new Dictionary<string, object>();
+
+        if (filters != null)
+        {
+            foreach (var filter in filters)
+            {
+                object value = filter.Comparer switch
+                {
+                    FilterComparer.StartsWith => $"{filter.Value}%",
+                    FilterComparer.EndsWith => $"%{filter.Value}",
+                    FilterComparer.Contains => $"%{filter.Value}%",
+                    _ => filter.Value
+                };
+
+                parameters.Add(filter.PropertyName, value);
+            }
+        }
+
+        if (options.Language != null)
+        {
+            parameters.Add("Language", options.Language);
+        }
+
+        if (options.AsOf.HasValue)
+        {
+            parameters.Add("_AsOf", options.AsOf.Value);
+        }
+
+        return parameters;
+    }
+
+    protected string GenerateStatementFromFilters(string tableAlias, IEnumerable<GenericFilter>? filters)
+    {
+        if (filters == null)
+        {
+            return string.Empty;
+        }
+
+        var conditions = new List<string>();
+
+        foreach (var filter in filters)
+        {
+            string condition = filter.Comparer switch
+            {
+                FilterComparer.Equals => $"{tableAlias}.{filter.PropertyName} = @{filter.PropertyName}",
+                FilterComparer.NotEqual => $"{tableAlias}.{filter.PropertyName} <> @{filter.PropertyName}",
+                FilterComparer.GreaterThan => $"{tableAlias}.{filter.PropertyName} > @{filter.PropertyName}",
+                FilterComparer.GreaterThanOrEqual => $"{tableAlias}.{filter.PropertyName} >= @{filter.PropertyName}",
+                FilterComparer.LessThan => $"{tableAlias}.{filter.PropertyName} < @{filter.PropertyName}",
+                FilterComparer.LessThanOrEqual => $"{tableAlias}.{filter.PropertyName} <= @{filter.PropertyName}",
+                FilterComparer.StartsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
+                FilterComparer.EndsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
+                FilterComparer.Contains => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
+                _ => throw new NotSupportedException($"Comparer '{filter.Comparer}' is not supported.")
+            };
+
+            conditions.Add(condition);
+        }
+
+        return conditions.Count > 0 ? "WHERE " + string.Join(" AND ", conditions) : string.Empty;
     }
 
     private async Task<int> ExecuteCommand(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
@@ -299,13 +336,6 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
         return await ExecuteCommand(query, queryParameters, cancellationToken);
     }
 
-    /// <summary>
-    /// Execute command
-    /// </summary>
-    /// <param name="query">Query</param>
-    /// <param name="parameters">Parameters</param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns>TA <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     private async Task<int> ExecuteCommand(string query, List<NpgsqlParameter> parameters, CancellationToken cancellationToken = default)
     {
         try
@@ -363,7 +393,7 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
     }
 
     /// <summary>
-    /// Get translation parameters
+    /// Get translation filters
     /// Ignores non-string values
     /// </summary>
     /// <param name="entity">Translated object</param>
@@ -426,7 +456,7 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
     }
 
     /// <summary>
-    /// Generate parameters based on object
+    /// Generate filters based on object
     /// </summary>
     /// <param name="entity">Object</param>
     /// <returns></returns>
@@ -519,6 +549,12 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
             {
                 columns.Add($"{dbObjDef.BaseDbObject.Alias}.{p.Name} AS {p.Name}");
             }
+        }
+
+        if (options.UsePaging)
+        {
+            string orderBy = string.IsNullOrEmpty(options.OrderBy) ? "Id" : options.OrderBy;
+            columns.Add($"ROW_NUMBER() OVER (ORDER BY {dbObjDef.BaseDbObject.Alias}.{orderBy}) AS _rownum");
         }
 
         return string.Join(',', columns);

@@ -162,8 +162,8 @@
     {
         var opt = UserData.GetRequestOptions();
         Package = await packageData.GetExtended(Id, options: opt);
-        Resources = await packageResourceService.GetExtended("PackageId", Package.Id, options: opt);
-        RolePolicies = await rolePackageService.GetExtended("PackageId", Package.Id, options: opt);
+        Resources = await packageResourceService.GetExtended(t => t.PackageId, Package.Id, options: opt);
+        RolePolicies = await rolePackageService.GetExtended(t => t.PackageId, Package.Id, options: opt);
         AreaGroups = [.. await areaGroupData.Get(options: opt) ?? new List<AreaGroup>()];
         Tags = [.. await packageTagData.GetB(Package.Id, options: opt) ?? new List<Tag>()];
 

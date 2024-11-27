@@ -17,7 +17,7 @@
             <H1>@EntityType.Name</H1>
         </LeftContent>
         <RightContent>
-          @*   <button @onclick=@(() => Flyouts.ToggleFlyout("edit"))>Edit</button>
+            @*   <button @onclick=@(() => Flyouts.ToggleFlyout("edit"))>Edit</button>
             <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Resource</button>
             <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Tags</button>
             <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Translation</button> *@
@@ -25,29 +25,29 @@
     </PageHeader>
 
     <Grid Medium="2">
-    
+
         @if(Variants != null && Variants.Any())
         {
-        <div>
-            <h3>Variants</h3>
+            <div>
+                <h3>Variants</h3>
                 <table class="bf-table bfc-base-3-bg">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var variant in Variants.OrderBy(t => t.Name))
-                    {
-                            <tr class="bf-table-row bf-table-row-compact">
-                            <td><a href=@($"/entityvariant/{variant.Id}")>@variant.Name</a></td>
-                            <td>@variant.Description</td>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @foreach (var variant in Variants.OrderBy(t => t.Name))
+                        {
+                            <tr class="bf-table-row bf-table-row-compact">
+                                <td><a href=@($"/entityvariant/{variant.Id}")>@variant.Name</a></td>
+                                <td>@variant.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         }
 
 
@@ -80,7 +80,7 @@
             </div>
         }
 
-        
+
 
     </Grid>
 
@@ -100,8 +100,8 @@
         EntityType = await entityTypeData.GetExtended(Id, options: opt);
         if(EntityType !=  null)
         {
-            Variants = [.. await variantData.GetExtended("TypeId", EntityType.Id, options: opt)];
-            Roles = [.. await roleData.GetExtended("EntityTypeId", EntityType.Id, options: opt)];
+            Variants = [.. await variantData.GetExtended(t => t.TypeId, EntityType.Id, options: opt)];
+            Roles = [.. await roleData.GetExtended(t => t.EntityTypeId, EntityType.Id, options: opt)];
         }
     }
 

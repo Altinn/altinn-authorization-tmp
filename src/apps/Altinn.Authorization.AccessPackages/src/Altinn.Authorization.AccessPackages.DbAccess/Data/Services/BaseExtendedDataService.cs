@@ -1,4 +1,5 @@
-﻿using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
+﻿using System.Linq.Expressions;
+using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 
 namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Services;
@@ -21,10 +22,10 @@ public class BaseExtendedDataService<T, TExtended> : BaseDataService<T>, IDbExte
     }
 
     /// <inheritdoc/>
-    public async Task<TExtended?> GetExtended(Guid id, RequestOptions? options = null)
+    public async Task<TExtended?> GetExtended(Guid id, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
         using var a = DbAccess.DbAccessTelemetry.StartActivity<T>("GetExtended");
-        var result = await ExtendedRepo.GetExtended([new GenericFilter("Id", id)], options);
+        var result = await ExtendedRepo.GetExtended([new GenericFilter("Id", id)], options, cancellationToken);
         if (result != null && result.Any())
         {
             return result.First();
@@ -34,36 +35,28 @@ public class BaseExtendedDataService<T, TExtended> : BaseDataService<T>, IDbExte
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<TExtended>> GetExtended(RequestOptions? options = null)
+    public async Task<IEnumerable<TExtended>> GetExtended<TProperty>(Expression<Func<TExtended, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
         using var a = DbAccess.DbAccessTelemetry.StartActivity<T>("GetExtended");
-        return await ExtendedRepo.GetExtended(filters: [], options: options);
+        string propertyName = ExtractPropertyInfo(property).Name;
+        var filters = new List<GenericFilter>
+        {
+            new GenericFilter(propertyName, value, FilterComparer.Equals)
+        };
+        return await ExtendedRepo.GetExtended(filters, options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<TExtended>> GetExtended(string property, string value, RequestOptions? options = null)
+    public async Task<IEnumerable<TExtended>> GetExtended(RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
         using var a = DbAccess.DbAccessTelemetry.StartActivity<T>("GetExtended");
-        return await ExtendedRepo.GetExtended([new GenericFilter(property, value)], options);
+        return await ExtendedRepo.GetExtended(filters: [], options: options, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<TExtended>> GetExtended(string property, int value, RequestOptions? options = null)
+    public async Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions? options = null, bool startsWith = false, CancellationToken cancellationToken = default)
     {
-        using var a = DbAccess.DbAccessTelemetry.StartActivity<T>("GetExtended");
-        return await ExtendedRepo.GetExtended([new GenericFilter(property, value)], options);
-    }
-
-    /// <inheritdoc/>
-    public async Task<IEnumerable<TExtended>> GetExtended(string property, Guid value, RequestOptions? options = null)
-    {
-        using var a = DbAccess.DbAccessTelemetry.StartActivity<T>("GetExtended");
-        return await ExtendedRepo.GetExtended([new GenericFilter(property, value)], options);
-    }
-
-    /// <inheritdoc/>
-    public async Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions? options = null, bool startsWith = false)
-    {
-        return await ExtendedRepo.SearchExtended(term, options ?? new RequestOptions(), startsWith);
+        using var a = DbAccess.DbAccessTelemetry.StartActivity<T>("SearchExtended");
+        return await ExtendedRepo.SearchExtended(term, options ?? new RequestOptions(), startsWith, cancellationToken);
     }
 }

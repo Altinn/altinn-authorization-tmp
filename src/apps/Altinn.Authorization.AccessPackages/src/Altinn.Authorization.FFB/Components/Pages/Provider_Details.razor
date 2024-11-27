@@ -18,7 +18,7 @@
             <H1>@Provider.Name</H1>
         </LeftContent>
         <RightContent>
-            
+
         </RightContent>
     </PageHeader>
 
@@ -46,14 +46,14 @@
                     <tbody>
                         @foreach (var role in RolesFiltered.OrderBy(t => t.Name))
                         {
-                        <tr class="bf-table-row bf-table-row-compact">
-                            <td><a href=@($"/role/{role.Id}")>@role.Name</a></td>
-                            <td><a href=@($"/provider/{role.Provider.Id}")>@role.Provider.Name</a></td>
-                            <td><a href=@($"/entitytype/{role.EntityType.Id}")>@role.EntityType.Name</a></td>
-                            <td>@role.Urn</td>
-                            <td>@role.Description</td>
-                            <td>@role.Code</td>
-                        </tr>
+                            <tr class="bf-table-row bf-table-row-compact">
+                                <td><a href=@($"/role/{role.Id}")>@role.Name</a></td>
+                                <td><a href=@($"/provider/{role.Provider.Id}")>@role.Provider.Name</a></td>
+                                <td><a href=@($"/entitytype/{role.EntityType.Id}")>@role.EntityType.Name</a></td>
+                                <td>@role.Urn</td>
+                                <td>@role.Description</td>
+                                <td>@role.Code</td>
+                            </tr>
                         }
                     </tbody>
                 </table>
@@ -114,14 +114,15 @@
         var opt = UserData.GetRequestOptions();
 
         Provider = await providerData.Get(Id, options: opt);
-        Roles = [.. await roleData.GetExtended("ProviderId", Id, options: opt)];
-        ResourceGroups = [.. await resourceGroupData.Get("ProviderId", Provider.Id) ?? new List<ResourceGroup>()];
+        Roles = [.. await roleData.GetExtended(t => t.ProviderId, Id, options: opt)];
+        //ResourceGroups = [.. await resourceGroupData.Get("ProviderId", Provider.Id) ?? new List<ResourceGroup>()];
+        ResourceGroups = [.. await resourceGroupData.Get(t => t.ProviderId, Provider.Id, options: opt) ?? new List<ResourceGroup>()];
         if(ResourceGroups != null)
         {
             Resources = new List<ExtResource>();
             foreach(var rg in ResourceGroups)
             {
-                Resources.AddRange(await resourceData.GetExtended("GroupId", rg.Id) ?? new List<ExtResource>());
+                Resources.AddRange(await resourceData.GetExtended(t => t.GroupId, rg.Id) ?? new List<ExtResource>());
             }
         }
     }

@@ -3,12 +3,11 @@ using Projects;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var cli = builder.AddProject<Altinn_Authorization_AccessPackages_CLI>("cli");
-builder.AddProject<Altinn_Authorization_AccessPackages>("api").WaitForCompletion(cli);
-builder.AddProject<Altinn_Authorization_FFB>("web").WaitForCompletion(cli);
 
-/*
-builder.AddProject<Altinn_Authorization_Importers_ResReg>("altinn-authorization-importers-resreg").WaitForCompletion(cli);
-builder.AddProject<Altinn_Authorization_Importers_BRREG>("brreg").WaitForCompletion(cli);
-*/
+var brreg = builder.AddProject<Altinn_Authorization_Workers_BrReg>("workers-brreg").WaitForCompletion(cli);
+var resreg = builder.AddProject<Altinn_Authorization_Workers_ResReg>("workers-resreg").WaitForCompletion(cli);
+
+var api = builder.AddProject<Altinn_Authorization_AccessPackages>("api").WaitFor(brreg).WaitFor(resreg);
+var web = builder.AddProject<Altinn_Authorization_FFB>("web").WaitFor(api);
 
 builder.Build().Run();

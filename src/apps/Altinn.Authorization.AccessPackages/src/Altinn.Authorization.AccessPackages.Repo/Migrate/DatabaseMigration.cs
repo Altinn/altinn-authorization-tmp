@@ -37,7 +37,32 @@ public class DatabaseMigration : IDatabaseMigration
         await CreatePackage();
         await CreateRole();
         await CreateResource();
+
+        await CreateKlientDelegeringMock();
+
     }
+
+    private async Task CreateKlientDelegeringMock()
+    {
+        //// TODO: IVAR
+        await _factory.CreateTable<Relation>(withHistory: UseHistory);
+        await _factory.CreateColumn<Relation>("FromId", DataTypes.Guid);
+        await _factory.CreateColumn<Relation>("RoleId", DataTypes.Guid);
+        await _factory.CreateColumn<Relation>("IsDelegable", DataTypes.Bool);
+        await _factory.CreateUniqueConstraint<Relation>(["FromId", "RoleId"]);
+        await _factory.CreateForeignKeyConstraint<Relation, Entity>("FromId");
+        await _factory.CreateForeignKeyConstraint<Relation, Role>("RoleId");
+
+        await _factory.CreateTable<RelationAssignment>(withHistory: UseHistory);
+        await _factory.CreateColumn<RelationAssignment>("RelationId", DataTypes.Guid);
+        await _factory.CreateColumn<RelationAssignment>("ToId", DataTypes.Guid);
+        await _factory.CreateUniqueConstraint<RelationAssignment>(["RelationId", "ToId"]);
+        await _factory.CreateForeignKeyConstraint<RelationAssignment, Entity>("ToId");
+        await _factory.CreateForeignKeyConstraint<RelationAssignment, Relation>("RelationId");
+
+        /*GROUPS!*/
+    }
+
 
     private async Task CreateSchema()
     {

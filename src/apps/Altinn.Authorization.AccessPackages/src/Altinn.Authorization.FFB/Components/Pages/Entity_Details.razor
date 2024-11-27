@@ -1,6 +1,9 @@
 ﻿@page "/entity/{Id:guid}"
 @inject IEntityService entityData
 @inject IRoleAssignmentService roleAssignmentData
+@inject IRelationService relationService
+@inject IRelationAssignmentService relationAssignmentService
+@inject IEntityService entityService
 
 @if(Entity != null)
 {
@@ -12,7 +15,7 @@
             <H1><EntityTypeIcon Id="@Entity.TypeId" /> @Entity.Name</H1>
         </LeftContent>
         <RightContent>
-           @*  <button @onclick=@(() => Flyouts.ToggleFlyout("edit"))>Edit</button>
+            @*  <button @onclick=@(() => Flyouts.ToggleFlyout("edit"))>Edit</button>
             <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Resource</button>
             <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Tags</button>
             <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Translation</button> *@
@@ -36,6 +39,81 @@
         </tbody>
     </table>
 
+    @if (FromRelations != null && FromRelations.Any())
+    {
+        <div>
+            <h4>Relasjoner</h4>
+
+            <table class="bf-table bfc-base-3-bg">
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th>Role</th>
+                        <th>Delegerbar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var relation in FromRelations)
+                    {
+                        <tr class="bf-table-row bf-table-row-compact">
+                            <td title="@relation.Role.Description"><a href=@($"/role/{relation.Role.Id}")>@relation.Role.Name</a></td>
+                            <td>
+                                <div style="display:flex; gap:4px;">
+                                    @if(FromAssignments.ContainsKey(relation.Id))
+                                    {
+                                        @foreach (var assignment in FromAssignments[relation.Id])
+                                        {
+                                            <Badge>@assignment.To.Name</Badge>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                            <td>@relation.IsDelegable</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    }
+
+    @if (ToRelations != null && ToRelations.Any())
+    {
+        <div>
+            <h4>Relasjoner (til)</h4>
+
+            <table class="bf-table bfc-base-3-bg">
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th>Role</th>
+                        <th>Delegerbar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var relation in ToRelations)
+                    {
+                        <tr class="bf-table-row bf-table-row-compact">
+                            <td title="@relation.Role.Description"><a href=@($"/role/{relation.Role.Id}")>@relation.Role.Name</a></td>
+                            <td>
+                                <div style="display:flex; gap:4px;">
+                                    @if (ToAssignments.ContainsKey(relation.Id))
+                                    {
+                                        @foreach (var assignment in ToAssignments[relation.Id])
+                                        {
+                                            <Badge>@relation.From.Name</Badge>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                            <td>@relation.IsDelegable</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    }
 
     @if(ForRoleAssignments != null && ForRoleAssignments.Any())
     {
@@ -57,7 +135,7 @@
                         <tr class="bf-table-row bf-table-row-compact">
                             <td title="@assignment.For.RefId"><a href=@($"/entity/{assignment.For.Id}")><EntityTypeIcon Id="@assignment.For.TypeId" />@assignment.For.Name</a></td>
                             <td>
-                                 <div style="display:flex; gap:4px;">
+                                <div style="display:flex; gap:4px;">
                                     @foreach (var assignmentRole in ForRoleAssignments.Where(t=>t.ToId == toId).OrderBy(t=>t.Role.Name))
                                     {
                                         <Badge Title="@assignmentRole.Role.Description">@assignmentRole.Role.Code</Badge>
@@ -95,10 +173,10 @@
                             <td title="@assignment.For.RefId"><a href=@($"/entity/{assignment.For.Id}")><EntityTypeIcon Id="@assignment.For.TypeId" />@assignment.For.Name</a></td>
                             <td>
                                 <div style="display:flex; gap:4px;">
-                                @foreach (var assignmentRole in ToRoleAssignments.Where(t => t.ForId == forId).OrderBy(t => t.Role.Name))
-                                {
-                                    <Badge Title="@assignmentRole.Role.Description">@assignmentRole.Role.Code</Badge>
-                                }
+                                    @foreach (var assignmentRole in ToRoleAssignments.Where(t => t.ForId == forId).OrderBy(t => t.Role.Name))
+                                    {
+                                        <Badge Title="@assignmentRole.Role.Description">@assignmentRole.Role.Code</Badge>
+                                    }
                                 </div>
                             </td>
                             <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
@@ -118,16 +196,45 @@
     public ExtEntity Entity { get; set; }
     public List<ExtRoleAssignment> ForRoleAssignments { get; set; }
     public List<ExtRoleAssignment> ToRoleAssignments { get; set; }
+    public List<ExtRelation> FromRelations { get; set; }
+    public Dictionary<Guid, List<ExtRelationAssignment>> FromAssignments { get; set; }
+
+    public List<ExtRelation> ToRelations { get; set; }
+    public Dictionary<Guid, List<ExtRelationAssignment>> ToAssignments { get; set; }
 
     protected async override Task OnParametersSetAsync()
     {
         var opt = UserData.GetRequestOptions();
+        FromAssignments = new Dictionary<Guid, List<ExtRelationAssignment>>();
+        ToAssignments = new Dictionary<Guid, List<ExtRelationAssignment>>();
+        ToRelations = new List<ExtRelation>();
 
         Entity = await entityData.GetExtended(Id, options: opt);
         if(Entity != null)
         {
-            ForRoleAssignments = [.. await roleAssignmentData.GetExtended("ForId", Entity.Id, options: opt) ?? new List<ExtRoleAssignment>()];
-            ToRoleAssignments = [.. await roleAssignmentData.GetExtended("ToId", Entity.Id, options: opt) ?? new List<ExtRoleAssignment>()];
+            ForRoleAssignments = [.. await roleAssignmentData.GetExtended(t => t.ForId, Entity.Id, options: opt) ?? new List<ExtRoleAssignment>()];
+            ToRoleAssignments = [.. await roleAssignmentData.GetExtended(t => t.ToId, Entity.Id, options: opt) ?? new List<ExtRoleAssignment>()];
+
+            FromRelations = [.. await relationService.GetExtended(t => t.FromId, Entity.Id, options: opt)];
+            foreach(var relation in FromRelations)
+            {
+                FromAssignments.Add(relation.Id, [.. await relationAssignmentService.GetExtended(t => t.RelationId, relation.Id)]);
+            }
+
+            var toAssignments = await relationAssignmentService.GetExtended(t => t.ToId, Entity.Id);
+            foreach (var assignment in toAssignments)
+            {
+                if(!ToAssignments.ContainsKey(assignment.Relation.Id)){
+                    ToAssignments.Add(assignment.Relation.Id, new List<ExtRelationAssignment>());
+                }
+                if(ToRelations.Count(t=>t.Id == assignment.Relation.Id) == 0)
+                {
+                    ToRelations.Add(await relationService.GetExtended(assignment.Relation.Id));
+                }
+                ToAssignments[assignment.Relation.Id].Add(assignment);
+            }
+
+
         } 
     }
 

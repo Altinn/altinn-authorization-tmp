@@ -5,6 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	  <NoWarn>CS8618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Altinn.Authorization.AccessPackages.Repo\Altinn.Authorization.AccessPackages.Repo.csproj" />
-    <ProjectReference Include="..\Altinn.Authorization.Importers.BRREG\Altinn.Authorization.Importers.BRREG.csproj" />
   </ItemGroup>
 
   <ItemGroup>

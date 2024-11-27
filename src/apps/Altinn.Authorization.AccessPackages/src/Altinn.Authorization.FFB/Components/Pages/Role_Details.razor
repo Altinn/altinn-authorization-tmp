@@ -208,10 +208,11 @@
         {            
             Provider = await providerData.Get(Role.EntityType.ProviderId, options: opt);
             Policies = [.. await packageData.Get(options: opt)];
-            RolePackages = await rolePackageData.GetExtended("RoleId", Role.Id, options: opt);
+            RolePackages = await rolePackageData.GetExtended(t => t.RoleId, Role.Id, options: opt);
 
-            var hasRoleMaps = await roleMapData.GetExtended("HasRoleId", Role.Id, options: opt);
-            var getRoleMaps = await roleMapData.GetExtended("GetRoleId", Role.Id, options: opt);
+            var hasRoleMaps = await roleMapData.GetExtended(t => t.HasRoleId, Role.Id, options: opt);
+            var getRoleMaps = await roleMapData.GetExtended(t => t.GetRoleId, Role.Id, options: opt);
+
             RoleMaps = new List<ExtRoleMap>();
             RoleMaps.AddRange(hasRoleMaps);
             RoleMaps.AddRange(getRoleMaps);

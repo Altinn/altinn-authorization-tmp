@@ -13,9 +13,10 @@ public interface IDbExtendedRepo<T, TExtended> : IDbBasicRepo<T>
     /// <summary>
     /// Get extended object
     /// </summary>
-    /// <param name="filters">GenericFilter</param>
+    /// <param name="filters">GenericFilterOLD</param>
     /// <param name="options">RequestOptions</param>
-    Task<IEnumerable<TExtended>> GetExtended(List<GenericFilter>? filters = null, RequestOptions? options = null);
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task<IEnumerable<TExtended>> GetExtended(List<GenericFilter>? filters = null, RequestOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Search
@@ -23,7 +24,8 @@ public interface IDbExtendedRepo<T, TExtended> : IDbBasicRepo<T>
     /// <param name="term">Searchterm</param>
     /// <param name="options">RequestOptions</param>
     /// <param name="startsWith">Starts with</param>
-    Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions options, bool startsWith = false);
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions options, bool startsWith = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Add join to configuration

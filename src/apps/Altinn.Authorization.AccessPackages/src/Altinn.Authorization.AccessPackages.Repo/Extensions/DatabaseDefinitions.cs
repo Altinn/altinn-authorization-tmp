@@ -51,5 +51,9 @@ public class DatabaseDefinitions
 
         DbDefinitions.Add<Tag, ExtTag>(Config);
         DbDefinitions.Add<TagGroup>(Config);
+
+        //// TODO: IVAR
+        DbDefinitions.Add<Relation, ExtRelation>(Config);
+        DbDefinitions.Add<RelationAssignment, ExtRelationAssignment>(Config);
     }
 }

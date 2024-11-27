@@ -25,9 +25,9 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     public PostgresExtendedRepo(IOptions<DbAccessDataConfig> config, DbConverter dataMapper) : base(config, dataMapper) { }
 
     /// <inheritdoc/>
-    public async Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions? options = null, bool startsWith = false)
+    public async Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions? options = null, bool startsWith = false, CancellationToken cancellationToken = default)
     {
-        var data = await GetExtended([new GenericFilter("Name", term, comparer: startsWith ? DbOperators.StartsWith : DbOperators.Contains)], options);
+        var data = await GetExtended([new GenericFilter("Name", term, comparer: startsWith ? FilterComparer.StartsWith : FilterComparer.Contains)], options);
         var paged = new PagedResult()
         {
             PageCount = 1,
@@ -47,7 +47,7 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
             Alias = ExtractPropertyInfo(TExtendedProperty as Expression<Func<TExtended, object>>).Name,
             BaseObj = DbDefinitions.Get<T>() ?? throw new Exception($"Definition for '{typeof(T).Name}' not found"),
             BaseJoinProperty = ExtractPropertyInfo(TProperty as Expression<Func<T, object>>).Name,
-            JoinObj = DbDefinitions.Get<TJoin>() ?? throw new Exception($"Definition for '{typeof(TJoin).Name}' not found"),
+            JoinObj = DbDefinitions.Get<TJoin>() ?? DbDefinitions.GetExtended<TJoin>() ?? throw new Exception($"Definition for '{typeof(TJoin).Name}' not found"),
             JoinProperty = ExtractPropertyInfo(TJoinProperty).Name,
             Optional = optional,
             IsList = isList
@@ -78,46 +78,13 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<TExtended>> GetExtended(List<GenericFilter>? filters = null, RequestOptions? options = null)
+    public async Task<IEnumerable<TExtended>> GetExtended(List<GenericFilter>? filters = null, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
         using var a = DbAccessTelemetry.StartActivity<T>("GetExtended");
-           
         options ??= new RequestOptions();
+        filters ??= [];
         var cmd = GetCommand(options, filters);
-        var param = new Dictionary<string, object>();
-
-        if (filters != null)
-        {
-            foreach (var filter in filters)
-            {
-                if (filter.Comparer.Name == DbOperators.Contains.Name || filter.Comparer.Name == DbOperators.NotContains.Name)
-                {
-                    filter.Value = "%" + filter.Value + "%";
-                }
-
-                if (filter.Comparer.Name == DbOperators.StartsWith.Name || filter.Comparer.Name == DbOperators.NotStartsWith.Name)
-                {
-                    filter.Value = filter.Value + "%";
-                }
-
-                if (filter.Comparer.Name == DbOperators.EndsWith.Name || filter.Comparer.Name == DbOperators.NotEndsWith.Name)
-                {
-                    filter.Value = "%" + filter.Value;
-                }
-
-                param.Add(filter.Key, filter.Value);
-            }
-        }
-
-        if (options.Language != null)
-        {
-            param.Add("Language", options.Language);
-        }
-
-        if (options.AsOf.HasValue)
-        {
-            param.Add("_AsOf", options.AsOf.Value);
-        }
+        var param = PrepareParameters(filters, options);
 
         return await ExecuteExtended(cmd, param);
     }
@@ -154,23 +121,12 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
         options ??= new RequestOptions();
         StringBuilder sb = new StringBuilder();
 
-        if (options.UsePaging)
-        {
-            sb.AppendLine("WITH PagedResult AS (");
-        }
-
         sb.AppendLine("SELECT ");
         sb.AppendLine(GenerateColumns(options));
         foreach (var j in Joins)
         {
             sb.Append(",");
             sb.AppendLine(GenerateJoinPostgresColumns(j, options));
-        }
-
-        if (options.UsePaging)
-        {
-            string orderBy = string.IsNullOrEmpty(options.OrderBy) ? "Id" : options.OrderBy;
-            sb.AppendLine($",ROW_NUMBER() OVER (ORDER BY {DbObjDef.BaseDbObject.Alias}.{orderBy}) AS _RowNum");
         }
 
         sb.AppendLine("FROM " + GenerateSource(options));
@@ -180,22 +136,12 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
             sb.AppendLine(joinStatement.Query);
         }
 
-        if (filters != null && filters.Count > 0)
-        {
-            //// sb.AppendLine("WHERE " + string.Join(" AND ", filters.Select(t => $"{DbObjDef.BaseDbObject.Alias}.{t.Key} {t.Comparer} @{t.Key}")));
-            sb.AppendLine("WHERE " + string.Join(" AND ", filters.Select(t => $"{DbObjDef.BaseDbObject.Alias}.{t.ToString()}")));
-        }
+        sb.AppendLine(GenerateStatementFromFilters(DbObjDef.BaseDbObject.Alias, filters));
 
-        if (options.UsePaging)
-        {
-            sb.AppendLine(")");
-            sb.AppendLine("SELECT *");
-            sb.AppendLine("FROM PagedResult, (SELECT MAX(PagedResult._RowNum) AS TotalItems FROM PagedResult) AS PageInfo");
-            sb.AppendLine($"ORDER BY _RowNum OFFSET {options.PageSize * (options.PageNumber - 1)} ROWS FETCH NEXT {options.PageSize} ROWS ONLY");
-        }
+        var query = sb.ToString();
+        query = AddPagingToQuery(query, options);
 
-        // Console.WriteLine(sb.ToString());
-        return sb.ToString();
+        return query;
     }
 
     private string GetJoinPostgresFilterString(Join join)
@@ -209,7 +155,7 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
 
         foreach (var filter in join.Filter)
         {
-            result += $" AND {join.BaseObj.BaseDbObject.Alias}.{filter.Key} = _{join.Alias}.{filter.Value}";
+            result += $" AND {join.BaseObj.BaseDbObject.Alias}.{filter.PropertyName} = _{join.Alias}.{filter.Value}";
         }
 
         return result;

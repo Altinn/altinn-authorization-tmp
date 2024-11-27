@@ -1,4 +1,5 @@
 ﻿using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
+using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Services;
 using Altinn.Authorization.AccessPackages.Models;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;

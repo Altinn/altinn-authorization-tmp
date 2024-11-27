@@ -55,7 +55,7 @@ public class SqlBasicRepo<T> : IDbBasicRepo<T>
     {
         try
         {
-            var json = await GetJson([new GenericFilter("Name", term, comparer: DbOperators.Contains)], options, cancellationToken);
+            var json = await GetJson([new GenericFilter("Name", term, comparer: FilterComparer.Contains)], options, cancellationToken);
             var data = JsonSerializer.Deserialize<IEnumerable<T>>(json) ?? throw new Exception("Unable to deserialize data");
             var pageInfo = JsonSerializer.Deserialize<List<DbPageResult>>(json) ?? throw new Exception("Unable to deserialize page data");
 
@@ -139,7 +139,7 @@ public class SqlBasicRepo<T> : IDbBasicRepo<T>
 
         if (filters != null && filters.Count > 0)
         {
-            sb.AppendLine("WHERE " + string.Join(" AND ", filters.Select(t => $"[{DbObjDef.BaseDbObject.Alias}].[{t.Key}] {t.Comparer} @{t.Key}")));
+            sb.AppendLine("WHERE " + string.Join(" AND ", filters.Select(t => $"[{DbObjDef.BaseDbObject.Alias}].[{t.PropertyName}] {t.Comparer} @{t.PropertyName}")));
         }
 
         if (options.UsePaging)
@@ -330,7 +330,7 @@ public class SqlBasicRepo<T> : IDbBasicRepo<T>
 
     private SqlParameter ConvertToSqlParamter(GenericFilter filter)
     {
-        return new SqlParameter(filter.Key, filter.Value);
+        return new SqlParameter(filter.PropertyName, filter.Value);
     }
 
     /// <summary>

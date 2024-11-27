@@ -14,11 +14,11 @@ public interface IDbBasicRepo<T>
     /// <summary>
     /// Get single entity based on identity
     /// </summary>
-    /// <param name="parameters">GenericFilter</param>
+    /// <param name="filters">GenericFilter</param>
     /// <param name="options">RequestOptions</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>T<see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<IEnumerable<T>> Get(List<GenericFilter>? parameters = null, RequestOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> Get(List<GenericFilter>? filters = null, RequestOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create entity

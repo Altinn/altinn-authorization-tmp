@@ -10,7 +10,8 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.AddDatabaseDefinitions();
 builder.AddDbAccessData();
-builder.AddDbAccessMigrations();
+
+//// builder.AddDbAccessMigrations();
 
 builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddBlazoredLocalStorage();
@@ -19,7 +20,8 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 var app = builder.Build();
 
 app.Services.UseDatabaseDefinitions();
-await app.Services.UseDbAccessMigrations();
+
+////await app.Services.UseDbAccessMigrations();
 
 if (!app.Environment.IsDevelopment())
 {

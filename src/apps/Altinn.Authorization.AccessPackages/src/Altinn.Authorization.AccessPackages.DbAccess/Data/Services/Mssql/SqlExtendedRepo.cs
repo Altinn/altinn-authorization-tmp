@@ -40,6 +40,8 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
         }
     }
 
+
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlExtendedRepo{T, E}"/> class.
     /// </summary>
@@ -47,34 +49,7 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
     public SqlExtendedRepo(IConfiguration config) : base(config) { }
 
     /// <inheritdoc/>
-    public async Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions options, bool startsWith = false)
-    {
-        try
-        {
-            var json = await GetExtJson([new GenericFilter("Name", term, comparer: startsWith ? DbOperators.StartsWith : DbOperators.Contains)], options);
-
-            var data = JsonSerializer.Deserialize<IEnumerable<TExtended>>(json) ?? throw new Exception("Unable to deserialize data");
-            var pageInfo = JsonSerializer.Deserialize<List<DbPageResult>>(json) ?? throw new Exception("Unable to deserialize page data");
-
-            var info = pageInfo.First();
-            var paged = new PagedResult()
-            {
-                PageCount = (info.TotalItems + options.PageSize - 1) / options.PageSize,
-                ItemCount = pageInfo.First().TotalItems
-            };
-            paged.CurrentPage = options.PageNumber;
-            paged.PageSize = options.PageSize;
-
-            return (data, paged);
-        }
-        catch
-        {
-            return default;
-        }
-    }
-
-    /// <inheritdoc/>
-    public async Task<IEnumerable<TExtended>> GetExtended(List<GenericFilter>? filters = null, RequestOptions? options = null)
+    public async Task<IEnumerable<TExtended>> GetExtended(List<GenericFilter>? filters = null, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
         options ??= new RequestOptions();
         filters ??= new List<GenericFilter>();
@@ -98,6 +73,35 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
 
         return JsonSerializer.Deserialize<List<TExtended>>(jsonResult) ?? throw new Exception("Unable to deserialize data");
     }
+
+    /// <inheritdoc/>
+    public async Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions options, bool startsWith = false, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var json = await GetExtJson([new GenericFilter("Name", term, comparer: startsWith ? FilterComparer.StartsWith : FilterComparer.Contains)], options);
+
+            var data = JsonSerializer.Deserialize<IEnumerable<TExtended>>(json) ?? throw new Exception("Unable to deserialize data");
+            var pageInfo = JsonSerializer.Deserialize<List<DbPageResult>>(json) ?? throw new Exception("Unable to deserialize page data");
+
+            var info = pageInfo.First();
+            var paged = new PagedResult()
+            {
+                PageCount = (info.TotalItems + options.PageSize - 1) / options.PageSize,
+                ItemCount = pageInfo.First().TotalItems
+            };
+            paged.CurrentPage = options.PageNumber;
+            paged.PageSize = options.PageSize;
+
+            return (data, paged);
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    #region internal
 
     private async Task<string> GetExtJson(List<GenericFilter> filters, RequestOptions? options = null)
     {
@@ -158,7 +162,7 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
 
         if (filters != null && filters.Count > 0)
         {
-            sb.AppendLine("WHERE " + string.Join(" AND ", filters.Select(t => $"[{DbObjDef.BaseDbObject.Alias}].[{t.Key}] {t.Comparer} @{t.Key}")));
+            sb.AppendLine("WHERE " + string.Join(" AND ", filters.Select(t => $"[{DbObjDef.BaseDbObject.Alias}].[{t.PropertyName}] {t.Comparer} @{t.PropertyName}")));
         }
 
         if (options.UsePaging)
@@ -183,7 +187,7 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
 
         foreach (var filter in join.Filter)
         {
-            result += $" AND [{join.BaseObj.BaseDbObject.Alias}].[{filter.Key}] {filter.Comparer} [{join.Alias}].[{filter.Value}]";
+            result += $" AND [{join.BaseObj.BaseDbObject.Alias}].[{filter.PropertyName}] {filter.Comparer} [{join.Alias}].[{filter.Value}]";
         }
 
         return result;
@@ -196,7 +200,7 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
     /// <param name="options">RequestOptions</param>
     /// <returns></returns>
     /// 
-    public (string Query, List<GenericFilter> Parameters) GetJoinStatement(Join join, RequestOptions options)
+    private (string Query, List<GenericFilter> Parameters) GetJoinStatement(Join join, RequestOptions options)
     {
         // TODO: If table hasHistory...
         string asOfCommand = options.AsOf.HasValue ? " FOR SYSTEM_TIME AS OF @_AsOf " : "";
@@ -220,7 +224,7 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
     /// <param name="join">Join</param>
     /// <param name="options">RequestOptions</param>
     /// <returns></returns>
-    public string GenerateJoinColumns(Join join, RequestOptions options)
+    private string GenerateJoinColumns(Join join, RequestOptions options)
     {
         bool useTranslation = !string.IsNullOrEmpty(options.Language);
         var columns = new List<string>();
@@ -238,4 +242,8 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
 
         return string.Join(',', columns);
     }
+
+   
+
+    #endregion
 }

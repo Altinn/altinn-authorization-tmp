@@ -1,4 +1,5 @@
-﻿using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
+﻿using System.Linq.Expressions;
+using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 
 namespace Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 
@@ -38,27 +39,16 @@ public interface IDbBasicDataService<T>
     /// <param name="options">RequestOptions</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>T<see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<IEnumerable<T>> Get(string property, Guid value, RequestOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Get Entities based on property and value
+    /// Get Entities based on multiple property and value pairs
     /// </summary>
-    /// <param name="property">Filter property</param>
-    /// <param name="value">Filter value</param>
+    /// <param name="filters">GenericFilter</param>
     /// <param name="options">RequestOptions</param>
     /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns>T<see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<IEnumerable<T>> Get(string property, int value, RequestOptions? options = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get Entities based on property and value
-    /// </summary>
-    /// <param name="property">Filter property</param>
-    /// <param name="value">Filter value</param>
-    /// <param name="options">RequestOptions</param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns>T<see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<IEnumerable<T>> Get(string property, string value, RequestOptions? options = null, CancellationToken cancellationToken = default);
+    /// <returns></returns>
+    Task<IEnumerable<T>> Get(IEnumerable<GenericFilter> filters, RequestOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get Entities based on filters

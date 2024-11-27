@@ -81,7 +81,7 @@
         if(Resource != null)
         {
             Provider = await providerData.Get(Resource.Group.ProviderId, options: opt);
-            Resources = await packageResourceService.GetExtended("ResourceId", Resource.Id, options: opt);
+            Resources = await packageResourceService.GetExtended(t => t.ResourceId, Resource.Id, options: opt);
         }
     }
 }
