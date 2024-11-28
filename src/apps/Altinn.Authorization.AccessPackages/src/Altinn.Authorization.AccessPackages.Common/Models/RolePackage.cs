@@ -26,16 +26,14 @@ public class RolePackage
     public Guid? EntityVariantId { get; set; }
 
     /// <summary>
-    /// IsActor
-    /// TODO : Rename => HasAccess
+    /// HasAccess
     /// </summary>
-    public bool IsActor { get; set; } // Is this the right place? Or is it Package Permission? No.... Or PackageResource?
+    public bool HasAccess { get; set; } // Is this the right place? Or is it Package Permission? No.... Or PackageResource?
 
     /// <summary>
-    /// IsAdmin
-    /// TODO : Rename => CanDelegate
+    /// CanDelegate
     /// </summary>
-    public bool IsAdmin { get; set; } // Is this the right place?
+    public bool CanDelegate { get; set; } // Is this the right place?
 }
 
 /// <summary>

@@ -45,7 +45,6 @@ public class DatabaseDefinitions
         DbDefinitions.Add<ResourceType>(Config);
 
         DbDefinitions.Add<Role, ExtRole>(Config);
-        DbDefinitions.Add<RoleAssignment, ExtRoleAssignment>(Config);
         DbDefinitions.Add<RoleMap, ExtRoleMap>(Config);
         DbDefinitions.Add<RolePackage, ExtRolePackage>(Config);
 

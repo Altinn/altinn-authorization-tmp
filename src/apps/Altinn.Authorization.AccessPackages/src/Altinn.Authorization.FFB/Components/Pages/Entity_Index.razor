@@ -61,7 +61,7 @@
         opt.PageNumber = page;
         opt.PageSize = 20;
 
-        var res = await entityData.ExtendedRepo.SearchExtended(SearchTerm, opt, true);
+        var res = await entityData.SearchExtended(SearchTerm, opt, true);
         if(res.Data == null)
         {
             Entities = new List<ExtEntity>();

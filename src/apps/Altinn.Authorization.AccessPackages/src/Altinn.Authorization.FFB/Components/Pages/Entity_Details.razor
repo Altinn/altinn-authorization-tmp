@@ -1,6 +1,6 @@
 ﻿@page "/entity/{Id:guid}"
 @inject IEntityService entityData
-@inject IRoleAssignmentService roleAssignmentData
+@inject IAssignmentService assignmentData
 @inject IEntityService entityService
 
 @if(Entity != null)
@@ -37,7 +37,7 @@
         </tbody>
     </table>
 
-    @if(ForRoleAssignments != null && ForRoleAssignments.Any())
+    @if(FromAssignments != null && FromAssignments.Any())
     {
         <div>
             <h4>Roller (for)</h4>
@@ -45,20 +45,20 @@
             <table class="bf-table bfc-base-3-bg">
                 <thead>
                     <tr>
-                        <th>For</th>
+                        <th>From</th>
                         <th>Role</th>
                         <th>To</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var toId in ForRoleAssignments.Select(t=>t.ToId).Distinct())
+                    @foreach (var toId in FromAssignments.Select(t=>t.ToId).Distinct())
                     {
-                        var assignment = ForRoleAssignments.First(t => t.ToId == toId);
+                        var assignment = FromAssignments.First(t => t.ToId == toId);
                         <tr class="bf-table-row bf-table-row-compact">
-                            <td title="@assignment.For.RefId"><a href=@($"/entity/{assignment.For.Id}")><EntityTypeIcon Id="@assignment.For.TypeId" />@assignment.For.Name</a></td>
+                            <td title="@assignment.From.RefId"><a href=@($"/entity/{assignment.From.Id}")><EntityTypeIcon Id="@assignment.From.TypeId" />@assignment.From.Name</a></td>
                             <td>
                                 <div style="display:flex; gap:4px;">
-                                    @foreach (var assignmentRole in ForRoleAssignments.Where(t=>t.ToId == toId).OrderBy(t=>t.Role.Name))
+                                    @foreach (var assignmentRole in FromAssignments.Where(t=>t.ToId == toId).OrderBy(t=>t.Role.Name))
                                     {
                                         <Badge Title="@assignmentRole.Role.Description">@assignmentRole.Role.Code</Badge>
                                     }
@@ -73,7 +73,7 @@
         </div>
     }
 
-    @if (ToRoleAssignments != null && ToRoleAssignments.Any())
+    @if (ToAssignments != null && ToAssignments.Any())
     {
         <div>
             <h4>Roller (to)</h4>
@@ -81,21 +81,21 @@
             <table class="bf-table bfc-base-3-bg">
                 <thead>
                     <tr>
-                        <th>For</th>
+                        <th>From</th>
                         <th>Role</th>
                         <th>To</th>
                     </tr>
                 </thead>    
                 <tbody>
 
-                    @foreach (var forId in ToRoleAssignments.Select(t => t.ForId).Distinct())
+                    @foreach (var forId in ToAssignments.Select(t => t.FromId).Distinct())
                     {
-                        var assignment = ToRoleAssignments.First(t => t.ForId == forId);
+                        var assignment = ToAssignments.First(t => t.FromId == forId);
                         <tr class="bf-table-row bf-table-row-compact">
-                            <td title="@assignment.For.RefId"><a href=@($"/entity/{assignment.For.Id}")><EntityTypeIcon Id="@assignment.For.TypeId" />@assignment.For.Name</a></td>
+                            <td title="@assignment.From.RefId"><a href=@($"/entity/{assignment.From.Id}")><EntityTypeIcon Id="@assignment.From.TypeId" />@assignment.From.Name</a></td>
                             <td>
                                 <div style="display:flex; gap:4px;">
-                                    @foreach (var assignmentRole in ToRoleAssignments.Where(t => t.ForId == forId).OrderBy(t => t.Role.Name))
+                                    @foreach (var assignmentRole in ToAssignments.Where(t => t.FromId == forId).OrderBy(t => t.Role.Name))
                                     {
                                         <Badge Title="@assignmentRole.Role.Description">@assignmentRole.Role.Code</Badge>
                                     }
@@ -116,8 +116,8 @@
 
     [Parameter] public Guid Id { get; set; }
     public ExtEntity Entity { get; set; }
-    public List<ExtRoleAssignment> ForRoleAssignments { get; set; }
-    public List<ExtRoleAssignment> ToRoleAssignments { get; set; }
+    public List<ExtAssignment> FromAssignments { get; set; }
+    public List<ExtAssignment> ToAssignments { get; set; }
     
 
 
@@ -128,8 +128,8 @@
         Entity = await entityData.GetExtended(Id, options: opt);
         if(Entity != null)
         {
-            ForRoleAssignments = [.. await roleAssignmentData.GetExtended(t => t.ForId, Entity.Id, options: opt) ?? new List<ExtRoleAssignment>()];
-            ToRoleAssignments = [.. await roleAssignmentData.GetExtended(t => t.ToId, Entity.Id, options: opt) ?? new List<ExtRoleAssignment>()];
+            FromAssignments = [.. await assignmentData.GetExtended(t => t.FromId, Entity.Id, options: opt) ?? new List<ExtAssignment>()];
+            ToAssignments = [.. await assignmentData.GetExtended(t => t.ToId, Entity.Id, options: opt) ?? new List<ExtAssignment>()];
         } 
     }
 

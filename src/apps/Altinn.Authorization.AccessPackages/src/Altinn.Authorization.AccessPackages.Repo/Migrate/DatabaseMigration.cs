@@ -237,8 +237,8 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateTable<RolePackage>(withHistory: UseHistory);
         await _factory.CreateColumn<RolePackage>(t => t.RoleId, DataTypes.Guid);
         await _factory.CreateColumn<RolePackage>(t => t.PackageId, DataTypes.Guid);
-        await _factory.CreateColumn<RolePackage>(t => t.IsActor, DataTypes.Bool);
-        await _factory.CreateColumn<RolePackage>(t => t.IsAdmin, DataTypes.Bool);
+        await _factory.CreateColumn<RolePackage>(t => t.HasAccess, DataTypes.Bool);
+        await _factory.CreateColumn<RolePackage>(t => t.CanDelegate, DataTypes.Bool);
         await _factory.CreateColumn<RolePackage>(t => t.EntityVariantId, DataTypes.Guid, nullable: true);
         await _factory.CreateForeignKeyConstraint<RolePackage, Role>(t => t.RoleId);
         await _factory.CreateForeignKeyConstraint<RolePackage, Package>(t => t.PackageId);
@@ -252,14 +252,14 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateForeignKeyConstraint<EntityVariantRole, Role>(t => t.RoleId);
         await _factory.CreateUniqueConstraint<EntityVariantRole>([t => t.VariantId, t => t.RoleId]);
 
-        await _factory.CreateTable<RoleAssignment>(withHistory: UseHistory);
-        await _factory.CreateColumn<RoleAssignment>(t => t.RoleId, DataTypes.Guid);
-        await _factory.CreateColumn<RoleAssignment>(t => t.ForId, DataTypes.Guid);
-        await _factory.CreateColumn<RoleAssignment>(t => t.ToId, DataTypes.Guid);
-        await _factory.CreateForeignKeyConstraint<RoleAssignment, Role>(t => t.RoleId);
-        await _factory.CreateForeignKeyConstraint<RoleAssignment, Entity>(t => t.ForId);
-        await _factory.CreateForeignKeyConstraint<RoleAssignment, Entity>(t => t.ToId);
-        await _factory.CreateUniqueConstraint<RoleAssignment>([t => t.ForId, t => t.RoleId, t => t.ToId]);
+        ////await _factory.CreateTable<RoleAssignment>(withHistory: UseHistory);
+        ////await _factory.CreateColumn<RoleAssignment>(t => t.RoleId, DataTypes.Guid);
+        ////await _factory.CreateColumn<RoleAssignment>(t => t.ForId, DataTypes.Guid);
+        ////await _factory.CreateColumn<RoleAssignment>(t => t.ToId, DataTypes.Guid);
+        ////await _factory.CreateForeignKeyConstraint<RoleAssignment, Role>(t => t.RoleId);
+        ////await _factory.CreateForeignKeyConstraint<RoleAssignment, Entity>(t => t.ForId);
+        ////await _factory.CreateForeignKeyConstraint<RoleAssignment, Entity>(t => t.ToId);
+        ////await _factory.CreateUniqueConstraint<RoleAssignment>([t => t.ForId, t => t.RoleId, t => t.ToId]);
 
         await _factory.CreateTable<RoleMap>(withHistory: UseHistory);
         await _factory.CreateColumn<RoleMap>(t => t.HasRoleId, DataTypes.Guid);

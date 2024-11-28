@@ -4,2527 +4,2527 @@
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "5ec8ac1b-6265-48fb-aa5d-fd1024d4d438",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "ce8a6e0b-947e-4559-b360-00930935ace4",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "06c781d4-6e9b-42d2-b231-d022bd0192c7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "7161beda-9593-4909-a261-00b1b6a5e9b8",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "90dff34b-6a01-438c-ab62-51d9640a9b2f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "9a24f02f-c430-445d-b6eb-0171deb50cd8",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "25be54f6-370b-40ec-8c13-0d41a2f61e1d",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "bb7a09e6-e6f2-4101-8147-01b8d2536201",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "90dff34b-6a01-438c-ab62-51d9640a9b2f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "e76bbbca-19ec-49f1-91a6-02699da53dd1",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "7266f6c3-b82b-4675-89e1-e80fdec5cb99",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "377dc2ff-3a8a-4705-b413-045fd3b56027",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "05ebb198-4dc2-4b4c-83d8-d7a036c95519",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "658393d5-a219-4133-bc59-04701b4a2548",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "2a87bd18-4f3e-41ef-987e-e26d3cfc9cfd",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "c00ed31d-c877-45f4-8aef-04bad0017377",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "ca600de4-5c14-4fe2-a055-a7daffc87dcb",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "5350190c-ab5a-478f-853f-05381fc15654",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "58763f4b-1519-49f2-af45-cd5ba22254a9",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "733c7094-d1b1-415b-8159-059d3a642b41",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "d55263a6-2839-4207-abad-3813baad0ec5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "263d03bf-df31-40cb-a208-05f0a3ca10af",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "b0e7ffe2-d2d5-431b-96c7-e86deae98156",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "55a755b5-2ebd-4770-b7f1-0614277f784a",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "536170c8-2f32-474b-bda8-6c3dafbdfaf1",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6b1b1041-30b7-4bd5-90b8-068c8b8c2f45",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "00629157-9374-4ed4-9e39-b12d9e57c2a7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "18628b74-c052-47f0-9ce6-077bfcfd2db0",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "51d259c5-4149-4000-84fe-bd58062529d8",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "2d9688c4-dbad-4b13-9f29-084407dadfc3",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "c80e12d9-b755-4e0a-81a1-e08fd40dc489",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "b9d8bd86-1805-4971-982e-08e97b8b6dbd",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "4e61ea85-73ac-4ff3-ba90-ac40e0b038c6",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "a4312800-8047-4b88-b456-0a6b918ec62b",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "536170c8-2f32-474b-bda8-6c3dafbdfaf1",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "48e2923a-efc4-454d-8e10-0b7c35942546",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "15981458-26da-4098-8eca-27fa02ff39cc",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "3e87a996-5d7c-422d-bb43-0bac00aa87fc",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "15981458-26da-4098-8eca-27fa02ff39cc",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "cee4a305-912e-4078-bbad-0bb5d50a13a8",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "932501b0-7a7b-4bca-b761-4b705e3e5268",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "d45c8fd2-2002-44b2-be92-0c1fc5235969",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "90dff34b-6a01-438c-ab62-51d9640a9b2f",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "8bb66eca-d62c-4043-98b0-0d91c927056c",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "7266f6c3-b82b-4675-89e1-e80fdec5cb99",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "c87774ab-6770-49c9-baad-0e0d2bafdb0b",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "c80e12d9-b755-4e0a-81a1-e08fd40dc489",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "099fdc6f-8a25-44c1-9968-0e885363aad3",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "51d259c5-4149-4000-84fe-bd58062529d8",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "df5a253a-7eb5-4194-85e8-0f4610dfc9a5",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "536170c8-2f32-474b-bda8-6c3dafbdfaf1",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "ab08db68-96b6-47a3-866b-0f5d23466be9",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "ca600de4-5c14-4fe2-a055-a7daffc87dcb",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "fe26088d-ec1c-45ad-aabf-0fbcb8db4779",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "b0e7ffe2-d2d5-431b-96c7-e86deae98156",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "61b83c8e-8b02-436a-b588-10086b630835",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "4edc0b48-ed79-46a4-9dc7-5158eaf3cd0f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "9d5c92d1-5c34-41f4-8634-1136568e0dd1",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "00629157-9374-4ed4-9e39-b12d9e57c2a7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "b1d96ded-5783-4810-aa2e-1225889c09b6",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "f01bab66-ce19-432f-9d8f-85544281cbb5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "bcd57d8e-986b-4107-9a7a-12eed650bb4e",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "7ec10749-ec63-473f-b8f3-329f9b984bf7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "15922974-a203-4fc0-957a-14dc1c0bc9b7",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "7ce979be-c686-43bf-be8c-c8ffac2bc552",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "03744f55-b80f-47e0-8b21-14e76d4385dc",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "90dff34b-6a01-438c-ab62-51d9640a9b2f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "061853c8-4d2f-4d7d-b469-1617edcb3448",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "15981458-26da-4098-8eca-27fa02ff39cc",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "d64cae4b-75aa-4cac-9a3f-162d538b4cf6",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "51d259c5-4149-4000-84fe-bd58062529d8",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6a514112-305c-4adc-a4fb-1647e525c193",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "15981458-26da-4098-8eca-27fa02ff39cc",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f9ee0672-39ad-40cf-a30b-17335f79979a",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "4edc0b48-ed79-46a4-9dc7-5158eaf3cd0f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "a561f9de-a292-413f-b93b-175779bf5935",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "5ee1f6a5-8056-481f-91b4-56892ccaf2a0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "ef867164-0fd7-4b38-9a3c-1850f4f232c5",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "06c781d4-6e9b-42d2-b231-d022bd0192c7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "df167cef-9ecf-40c1-9b8f-18e22af8a268",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "536170c8-2f32-474b-bda8-6c3dafbdfaf1",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "caf9e1a6-aeb5-4fd0-9c6c-194d3db83c18",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "7ce979be-c686-43bf-be8c-c8ffac2bc552",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "747ed2a6-e954-4f28-995a-1a53867c3b94",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "2a87bd18-4f3e-41ef-987e-e26d3cfc9cfd",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "bf2d6493-cce9-4922-abee-1a8c7413455e",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "58763f4b-1519-49f2-af45-cd5ba22254a9",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "83fbf3cd-5475-4cb1-8d45-1b6c38255282",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "7ec10749-ec63-473f-b8f3-329f9b984bf7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "a352f8b0-5307-429e-91bc-1b9d71732840",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "51d259c5-4149-4000-84fe-bd58062529d8",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "eecca6ae-184b-462e-b99a-1be29338494a",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "536170c8-2f32-474b-bda8-6c3dafbdfaf1",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "58f617b7-4d49-425d-9361-1eb41a09bb5d",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "7ce979be-c686-43bf-be8c-c8ffac2bc552",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "5b9d3d22-a85f-4df9-ad25-1eead8c8dd3a",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "65358653-2639-499d-ae11-4053bf55d094",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "ecd24734-471e-4abf-a766-2079d0a9b784",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "05ebb198-4dc2-4b4c-83d8-d7a036c95519",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "023c424d-751c-450f-aa8f-209e204fd25e",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "5ee1f6a5-8056-481f-91b4-56892ccaf2a0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "ecbc6e76-a02c-4826-8977-22debc469df2",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "e6d35dae-c9a6-42af-875e-201667767526",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "108dc74b-2d15-4aa5-b142-2442cafbd233",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "b188e64c-93d4-4d2d-aa4e-0e84069eacf0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "68e3f2a1-0f84-49bc-b190-25e049430805",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "5295051b-aac7-4ded-a9fd-aabdba35fa67",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "5f45f4c7-4337-4170-bd03-260b1194f1eb",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "e7dc823f-1b4c-4e66-bcaa-1a94f17364b3",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "3052cb7c-b2bd-4b99-ae07-261d2a5da1ff",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "d55263a6-2839-4207-abad-3813baad0ec5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "8fcfb49c-954d-4adc-a68e-264989cc8d4f",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "7ce979be-c686-43bf-be8c-c8ffac2bc552",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "1d77a27d-13e1-4382-829b-26a4bdaf4650",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "b0e7ffe2-d2d5-431b-96c7-e86deae98156",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "50453693-08b4-47be-a595-270d13ebd1b4",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "90dff34b-6a01-438c-ab62-51d9640a9b2f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "542de7d0-2a4c-467c-995d-278231e22414",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "2ce97f2a-679f-488c-afec-dbd291e8a55b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "9f18459d-72d2-4fea-ba62-2838ade1a746",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "5a1601c7-8d5d-4a4b-a185-19a35cf08e54",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "18520b04-8849-46db-a79a-292a4e9104aa",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "8878ca8a-bf87-4f9a-9174-845a78397257",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "700afdf6-6342-46c5-993d-2a383d1169f4",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "2a87bd18-4f3e-41ef-987e-e26d3cfc9cfd",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "95b87b44-a82e-4e39-8cb2-2c2a40d46801",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "b0e7ffe2-d2d5-431b-96c7-e86deae98156",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "d949d63f-69bc-4ec7-88d1-2d79ca14d6fb",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "51d259c5-4149-4000-84fe-bd58062529d8",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "dbcb0f58-1af7-4aba-b0a4-2e1673bf9a18",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "4edc0b48-ed79-46a4-9dc7-5158eaf3cd0f",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "8afe073d-7cbf-407e-9a61-2f92b9c66c59",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "05b53fd5-5841-443c-829d-a2c1f0906546",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "e5e2df62-11b5-4714-a3c8-304b3be7e68b",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "f01bab66-ce19-432f-9d8f-85544281cbb5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "55419236-de8e-49a2-8805-307d53ed5f02",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "25be54f6-370b-40ec-8c13-0d41a2f61e1d",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "98d3cb18-aed1-4c71-a94d-32520f3f0a76",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "2a87bd18-4f3e-41ef-987e-e26d3cfc9cfd",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "35f929c1-dbb9-4681-9859-32b5fe9c8f93",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "4e61ea85-73ac-4ff3-ba90-ac40e0b038c6",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "1624fb55-a4a2-48e0-bea3-346721ea44da",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "2ce97f2a-679f-488c-afec-dbd291e8a55b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f27d73d8-1a02-4eb3-92b6-352837b941b8",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "4e61ea85-73ac-4ff3-ba90-ac40e0b038c6",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "2640ed20-3bf9-4360-94cc-3644ec6e1320",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "00629157-9374-4ed4-9e39-b12d9e57c2a7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "a98f935e-2cc8-4022-9cb1-364f5b6774ac",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "24f6639a-10f4-4caf-863c-adc619895f91",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "4660ac61-8f71-4036-a40e-3731d005a302",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "e7dc823f-1b4c-4e66-bcaa-1a94f17364b3",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "4c5d5cd4-5297-4c65-884e-374624879561",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "58763f4b-1519-49f2-af45-cd5ba22254a9",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "2474071e-a3af-4539-b794-37a16ed5a72d",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "ca600de4-5c14-4fe2-a055-a7daffc87dcb",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "10dcf648-79ce-4341-808c-37ba36ec23cc",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "05ebb198-4dc2-4b4c-83d8-d7a036c95519",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "0bcdf218-7fdc-4b11-8965-37e5630f49dd",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "5295051b-aac7-4ded-a9fd-aabdba35fa67",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f2409983-eb71-40aa-b13c-38ad93b77bee",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "06c781d4-6e9b-42d2-b231-d022bd0192c7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "0d0345ab-a4c1-460a-be62-38de0867ac07",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "15981458-26da-4098-8eca-27fa02ff39cc",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "c46a0e01-d819-4d78-9226-3901bb1d166c",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "c80e12d9-b755-4e0a-81a1-e08fd40dc489",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "60f687c7-b3a7-4a5d-9e4b-398a0286439e",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "f9420288-3ff4-47b1-b5c3-1e230f70229e",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "13164a45-23c9-48b7-9440-3a632f02f0f9",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "f01bab66-ce19-432f-9d8f-85544281cbb5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "5c802f5a-1447-4bf5-9529-3a86616e884d",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "e6d35dae-c9a6-42af-875e-201667767526",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "96a46505-a2d8-4f3d-9c98-3a99a883a9d3",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "7ec10749-ec63-473f-b8f3-329f9b984bf7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "aefdfaba-4517-4496-beb4-3adadc2fa627",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "a61c6bfa-a99c-4cdf-8bc9-de56cf0be69b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6a9a9efc-04ac-44e1-b12c-3ae9d29f4328",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "8878ca8a-bf87-4f9a-9174-845a78397257",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "96d55432-6e3f-4eb8-8297-3af4ddf59076",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "5ee1f6a5-8056-481f-91b4-56892ccaf2a0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "54330e1e-4076-41f4-9d45-3b64ec84beb8",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "24f6639a-10f4-4caf-863c-adc619895f91",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "d541a4e9-1016-44f4-8a83-3bac733d7334",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "05b53fd5-5841-443c-829d-a2c1f0906546",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f90927c5-b747-4417-98e3-3e3b5dcca12d",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "7266f6c3-b82b-4675-89e1-e80fdec5cb99",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f66584d8-e6ab-42f5-87ca-3e7d86ee20e9",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "f9420288-3ff4-47b1-b5c3-1e230f70229e",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "56bdfeb0-72e1-4107-8d0d-3eb2c0bb83ac",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "58763f4b-1519-49f2-af45-cd5ba22254a9",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "a85ee78c-aa3e-4ef6-bc40-408ad8f0a5e2",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "05ebb198-4dc2-4b4c-83d8-d7a036c95519",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "10a35f0e-6a21-402a-a696-41b2190834d3",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "b188e64c-93d4-4d2d-aa4e-0e84069eacf0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "84f0fa25-6983-40ff-84da-42f8faf5f41a",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "5a1601c7-8d5d-4a4b-a185-19a35cf08e54",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6c623ebc-0da2-4372-8a61-44e0178bbfac",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "7ec10749-ec63-473f-b8f3-329f9b984bf7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6ba9fe9f-5fb8-4343-b500-44e887248051",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "d55263a6-2839-4207-abad-3813baad0ec5",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "072e98ee-342e-4281-943c-4571262bcda8",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "65358653-2639-499d-ae11-4053bf55d094",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f68ccbef-48fa-45f0-9b36-463979b0a89d",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "4e61ea85-73ac-4ff3-ba90-ac40e0b038c6",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "acbc0528-a5ba-41a7-844b-4668e1233e99",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "51d259c5-4149-4000-84fe-bd58062529d8",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "d0520f40-2650-4972-b4f0-473d33851d51",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "65358653-2639-499d-ae11-4053bf55d094",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "b5eb08d7-e702-44b1-8db8-4758ee0509f4",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "d55263a6-2839-4207-abad-3813baad0ec5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6e8d4a47-4393-4029-b565-47f1df86658b",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "7ce979be-c686-43bf-be8c-c8ffac2bc552",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "4f86cf8f-c909-4215-857e-47fed039102d",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "2a87bd18-4f3e-41ef-987e-e26d3cfc9cfd",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "440adb2e-f1e7-4ba8-a2fd-48199e755975",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "b188e64c-93d4-4d2d-aa4e-0e84069eacf0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "a0eaf131-ddcb-4453-b19c-49a250f67073",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "a61c6bfa-a99c-4cdf-8bc9-de56cf0be69b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "22f8c118-b6f2-476f-9f89-4b097bc6fc00",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "7266f6c3-b82b-4675-89e1-e80fdec5cb99",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "c9496ff3-9c37-4087-9b8d-4b269acedf27",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "05b53fd5-5841-443c-829d-a2c1f0906546",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "e3f3655f-821b-4691-8e26-4b6ed5d47710",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "2ce97f2a-679f-488c-afec-dbd291e8a55b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "950a6c23-6acc-455a-8f09-4bdbd5fd51e5",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "7ec10749-ec63-473f-b8f3-329f9b984bf7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "8eb980e1-a340-42b5-bbda-4e84a5cf7cff",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "e6d35dae-c9a6-42af-875e-201667767526",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "73f1b48f-7149-4e30-a0f3-4fc1fcbaecbc",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "b0e7ffe2-d2d5-431b-96c7-e86deae98156",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "7d44b057-37cc-4830-8e45-50b639babe37",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "4edc0b48-ed79-46a4-9dc7-5158eaf3cd0f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "16cf63b5-b231-43f1-ab84-51f023297677",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "5295051b-aac7-4ded-a9fd-aabdba35fa67",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "08b6d4e3-e366-409d-81e4-52ac2764300e",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "f01bab66-ce19-432f-9d8f-85544281cbb5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "20f7dd49-6b4b-4536-b0e1-53d22e3294b4",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "05b53fd5-5841-443c-829d-a2c1f0906546",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "5636c5e4-c134-4c1d-be43-5489c070e6a2",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "15981458-26da-4098-8eca-27fa02ff39cc",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "55b07ebf-a276-48de-90a1-54da8e4055e0",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "7ce979be-c686-43bf-be8c-c8ffac2bc552",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "09ac15a1-3a45-4835-b60a-54ec0ef6f5e2",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "932501b0-7a7b-4bca-b761-4b705e3e5268",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "332c076c-acfe-48ba-9225-578cef8aa9c2",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "00629157-9374-4ed4-9e39-b12d9e57c2a7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "07d2f622-666e-45fc-b0b2-57b76290e2e6",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "536170c8-2f32-474b-bda8-6c3dafbdfaf1",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "1052e8b4-e380-4599-93c6-58493fea97b7",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "f9420288-3ff4-47b1-b5c3-1e230f70229e",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "93e16f96-a477-42a2-a034-5904b756f456",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "932501b0-7a7b-4bca-b761-4b705e3e5268",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "3fc01a65-c67b-4536-a6f9-5a66a768fcd4",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "5ee1f6a5-8056-481f-91b4-56892ccaf2a0",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "709a19d3-b14e-47a1-a5bf-5a756f1633cb",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "b0e7ffe2-d2d5-431b-96c7-e86deae98156",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "7748ea19-a899-45b7-a1da-5c005f611b30",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "a61c6bfa-a99c-4cdf-8bc9-de56cf0be69b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f3575501-220d-4125-80ca-5cd0a621a994",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "e7dc823f-1b4c-4e66-bcaa-1a94f17364b3",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "060168cf-7b11-4cef-ae60-5d7cb7f44e3d",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "7ce979be-c686-43bf-be8c-c8ffac2bc552",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "896efe94-310c-466e-951c-5deabc6ce96e",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "f9420288-3ff4-47b1-b5c3-1e230f70229e",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "88d3f2f9-9cc3-4cec-9dd4-5e0b84c5403b",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "05b53fd5-5841-443c-829d-a2c1f0906546",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "7f9a0261-f95d-46a4-a5eb-5f4a817a5e82",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "f9420288-3ff4-47b1-b5c3-1e230f70229e",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "56f077d3-45bc-4cf1-ad77-60a94dc52f08",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "06c781d4-6e9b-42d2-b231-d022bd0192c7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "0efe167f-67b1-4218-873a-60f4fc517bab",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "f01bab66-ce19-432f-9d8f-85544281cbb5",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "35fe81be-33cc-4e4d-8617-61a5e57238b6",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "a61c6bfa-a99c-4cdf-8bc9-de56cf0be69b",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "d3b9bebd-a365-486c-99c6-62e9844761a5",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "c80e12d9-b755-4e0a-81a1-e08fd40dc489",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "ed1da60d-6960-498a-a775-63995bc207e0",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "90dff34b-6a01-438c-ab62-51d9640a9b2f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "4a641e7e-b25e-482b-8244-6847581316f3",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "33b16201-4a65-4142-8d47-fee48680c4ab",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "44885cc1-09e5-4efb-acbf-684e4468642f",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "4e61ea85-73ac-4ff3-ba90-ac40e0b038c6",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "256e129b-77a6-477a-b142-6857828a894a",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "f01bab66-ce19-432f-9d8f-85544281cbb5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "a4f64494-624b-4536-8d76-68bc5430f6df",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "5ec8ac1b-6265-48fb-aa5d-fd1024d4d438",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "3919b363-c40e-4a76-bb46-6904c456ebff",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "2a87bd18-4f3e-41ef-987e-e26d3cfc9cfd",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "150ba3de-dd6f-4034-af86-694d9ba87009",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "f9420288-3ff4-47b1-b5c3-1e230f70229e",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "06cee842-0650-4240-bd74-6966ae7600bd",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "2ce97f2a-679f-488c-afec-dbd291e8a55b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "59b8e92d-4d42-4708-b523-6b373f0f367f",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "00629157-9374-4ed4-9e39-b12d9e57c2a7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "d1ce52e6-53a7-4f10-9d7f-6bc75e1d80fc",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "e6d35dae-c9a6-42af-875e-201667767526",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "dd5945d5-2d25-4277-b100-6c37f3e308f6",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "4e61ea85-73ac-4ff3-ba90-ac40e0b038c6",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "86d5ebc7-d14c-42f1-8e16-6cfce47e43b5",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "5ec8ac1b-6265-48fb-aa5d-fd1024d4d438",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "fb8a5fcd-dc07-436e-95ec-6d5387bb6df3",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "e7dc823f-1b4c-4e66-bcaa-1a94f17364b3",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "1b65a5d1-0228-4db1-a529-70761480791b",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "a61c6bfa-a99c-4cdf-8bc9-de56cf0be69b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "89145e52-1b38-464f-bc03-707d7817b34b",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "ca600de4-5c14-4fe2-a055-a7daffc87dcb",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "87311a0e-3e11-4726-8ee9-70e7e4dc14ce",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "2a87bd18-4f3e-41ef-987e-e26d3cfc9cfd",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "90d3c8e5-9f95-463f-abd6-7106bbec354f",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "7ec10749-ec63-473f-b8f3-329f9b984bf7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "57825a08-084c-44ff-a648-72245bbc8d5e",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "d55263a6-2839-4207-abad-3813baad0ec5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "0d28d8d6-0994-4f10-b33d-7364b43d6e77",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "90dff34b-6a01-438c-ab62-51d9640a9b2f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "7f402c2b-7dc2-4b3c-8d4a-739f16240c03",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "00629157-9374-4ed4-9e39-b12d9e57c2a7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "9ed097d4-effb-41cf-8e6a-73b5e1ce1e95",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "2ce97f2a-679f-488c-afec-dbd291e8a55b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "4a80c73f-b7ee-4c7d-a43d-747fb62a3eae",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "25be54f6-370b-40ec-8c13-0d41a2f61e1d",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "ad0c9e4a-d841-4a22-b233-75c0aceedd6a",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "8878ca8a-bf87-4f9a-9174-845a78397257",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "0a952cbf-68b6-4e29-a7a4-7696832788a9",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "51d259c5-4149-4000-84fe-bd58062529d8",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "8b8aa8b5-7b15-49b6-a164-77413eff66bd",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "e7dc823f-1b4c-4e66-bcaa-1a94f17364b3",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "8aaa5114-6afd-4ac9-93a0-774a07e1bea5",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "25be54f6-370b-40ec-8c13-0d41a2f61e1d",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "678dad1d-9af5-4739-8c90-78a51bc4c85d",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "7266f6c3-b82b-4675-89e1-e80fdec5cb99",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "b521bc6c-1e68-4c96-a3b2-78cde66b545e",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "ca600de4-5c14-4fe2-a055-a7daffc87dcb",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "07f54035-2b04-4fa1-8984-7905c8f64ba0",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "b188e64c-93d4-4d2d-aa4e-0e84069eacf0",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "88d6558f-d99e-4b10-a4a9-791dde819d17",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "5a1601c7-8d5d-4a4b-a185-19a35cf08e54",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "8b177e57-1b27-42ab-b8cd-79c994ae6c5e",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "25be54f6-370b-40ec-8c13-0d41a2f61e1d",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "c407a6af-0755-453d-8bf5-7cf1d8ff8f2a",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "ca600de4-5c14-4fe2-a055-a7daffc87dcb",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "4ffa4880-86bd-44fb-a6ca-7d464067601b",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "932501b0-7a7b-4bca-b761-4b705e3e5268",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "64d72e3c-4b8b-404d-8b5c-7d6b01e363d3",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "25be54f6-370b-40ec-8c13-0d41a2f61e1d",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "7561d827-8f5a-40b8-a7bc-7da4affe889e",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "e7dc823f-1b4c-4e66-bcaa-1a94f17364b3",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "8c2ad5e2-ad9d-4be8-abe6-7e388a76ba78",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "24f6639a-10f4-4caf-863c-adc619895f91",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "92ae8906-08ca-491f-b4af-7f6eae899ee8",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "90dff34b-6a01-438c-ab62-51d9640a9b2f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "97ef4c41-19c9-4d9f-9bfe-7f70da92302a",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "5295051b-aac7-4ded-a9fd-aabdba35fa67",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "1f31123b-a9b0-4235-bdb6-809a1bdcfe89",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "5ee1f6a5-8056-481f-91b4-56892ccaf2a0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "463f3bb7-fbe2-4c30-9c88-82bc759d7cbe",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "c80e12d9-b755-4e0a-81a1-e08fd40dc489",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "af1dd997-c818-459a-b704-8484b511ec53",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "5ec8ac1b-6265-48fb-aa5d-fd1024d4d438",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "9a90d9d5-0cba-4ef7-a85d-8544d570dd55",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "b188e64c-93d4-4d2d-aa4e-0e84069eacf0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "068a3b2d-f454-4f9c-9d9d-85c85706f708",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "5a1601c7-8d5d-4a4b-a185-19a35cf08e54",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f2b8ae58-6ed6-4b4f-a2c5-867bed23361b",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "ca600de4-5c14-4fe2-a055-a7daffc87dcb",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "00f17ca5-b694-4ea2-b305-8776c5247f27",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "25be54f6-370b-40ec-8c13-0d41a2f61e1d",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "5b12c28a-2bf6-41be-a588-878f2a45bb3a",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "00629157-9374-4ed4-9e39-b12d9e57c2a7",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "4292b7e9-43d1-44c1-99e8-87aae179ea38",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "c80e12d9-b755-4e0a-81a1-e08fd40dc489",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "1f0cc1fc-3ea4-49e1-b23d-883060b67f5b",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "5295051b-aac7-4ded-a9fd-aabdba35fa67",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6c19ff3a-1c08-4abf-a39c-8837b332ee2e",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "e6d35dae-c9a6-42af-875e-201667767526",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "190c0332-056b-4bac-a57c-8a719c03913f",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "f01bab66-ce19-432f-9d8f-85544281cbb5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "179cba1f-8f82-4b11-8ea0-8ae1082b45cf",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "4e61ea85-73ac-4ff3-ba90-ac40e0b038c6",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "0fc42894-c86d-4dfd-9cfb-8bf6842b01a1",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "932501b0-7a7b-4bca-b761-4b705e3e5268",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "25eead10-52bc-46b7-be2c-8c247f203151",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "7ec10749-ec63-473f-b8f3-329f9b984bf7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "310b6076-8c23-44ea-bdce-8c9b68b9af2d",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "05b53fd5-5841-443c-829d-a2c1f0906546",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "720d5032-edfc-46fd-a175-8cb45dc921f7",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "5ee1f6a5-8056-481f-91b4-56892ccaf2a0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "44e8dbab-82f4-4228-9e49-8cb6000d4110",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "2ce97f2a-679f-488c-afec-dbd291e8a55b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "3e288770-162e-4d33-8287-8d0458374a64",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "4edc0b48-ed79-46a4-9dc7-5158eaf3cd0f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "560e7100-204b-4868-ac22-8e53dcb97cb7",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "2a87bd18-4f3e-41ef-987e-e26d3cfc9cfd",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "6127866e-4eea-486d-bfbf-8f5488379992",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "5295051b-aac7-4ded-a9fd-aabdba35fa67",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "952edeb2-105d-40c1-b5ca-93246976415a",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "932501b0-7a7b-4bca-b761-4b705e3e5268",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f2c26a9c-e9e2-4b2b-9468-932a5901ceee",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "b188e64c-93d4-4d2d-aa4e-0e84069eacf0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "705996c8-1166-4250-b95d-9423dc665f8a",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "24f6639a-10f4-4caf-863c-adc619895f91",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "db8ad09b-3314-4fe3-8ff9-944ab6b2c6de",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "f9420288-3ff4-47b1-b5c3-1e230f70229e",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "7704546e-cfc0-459a-b4bd-944efd752955",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "24f6639a-10f4-4caf-863c-adc619895f91",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "892dda80-dddb-4230-9b8b-94db0ca02db1",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "8878ca8a-bf87-4f9a-9174-845a78397257",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "77c7936b-64cd-4969-8c93-98a0cf07b6d2",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "536170c8-2f32-474b-bda8-6c3dafbdfaf1",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "ff90bfaf-3c05-4c63-bdc2-9a646b896792",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "4edc0b48-ed79-46a4-9dc7-5158eaf3cd0f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "d79264a4-bb95-49e0-a391-9c6c154a2910",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "4e61ea85-73ac-4ff3-ba90-ac40e0b038c6",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "51c38a47-6f08-4ba2-aa1e-9c73a6c8d3cc",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "24f6639a-10f4-4caf-863c-adc619895f91",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "bbdf8feb-2970-4725-809c-9d35fe831b58",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "65358653-2639-499d-ae11-4053bf55d094",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "a3a92cbd-b271-4d00-a547-9e272629fe1c",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "a61c6bfa-a99c-4cdf-8bc9-de56cf0be69b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "8fb443f9-068e-425c-95af-9e90df91817a",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "d55263a6-2839-4207-abad-3813baad0ec5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "4975ea5b-4cb5-4360-92ae-9f03894f9fa4",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "ca600de4-5c14-4fe2-a055-a7daffc87dcb",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "b2c9879f-89a6-463c-a754-9f69ff71542c",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "7ce979be-c686-43bf-be8c-c8ffac2bc552",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "3897e0ea-9907-4d3d-a2c0-a2957a3d5019",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "2ce97f2a-679f-488c-afec-dbd291e8a55b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "600e81e8-0029-448f-b6ee-a320eb615a63",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "4edc0b48-ed79-46a4-9dc7-5158eaf3cd0f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "9a002c25-43e7-4199-9a86-a33fbb85d031",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "b188e64c-93d4-4d2d-aa4e-0e84069eacf0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "8442c37c-1bdc-46bc-b6e7-a3db72cc2964",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "a61c6bfa-a99c-4cdf-8bc9-de56cf0be69b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "142f4ce8-995e-424b-8e98-a46745c0cee0",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "05ebb198-4dc2-4b4c-83d8-d7a036c95519",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "85b1fe9c-7a55-4b0e-bc61-a4713886438a",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "15981458-26da-4098-8eca-27fa02ff39cc",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "915b5eaf-0d93-4702-9707-a48cf182f4c7",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "d55263a6-2839-4207-abad-3813baad0ec5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "240e2186-a546-4e5c-ad37-a514eb6ddd09",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "5a1601c7-8d5d-4a4b-a185-19a35cf08e54",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "7d20ae7b-78dd-47d0-bccd-a63fed8e9aa7",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "932501b0-7a7b-4bca-b761-4b705e3e5268",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "578fce07-5792-4f6c-82e0-a674529ff694",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "58763f4b-1519-49f2-af45-cd5ba22254a9",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "8cdcb106-e57d-4399-9dd8-a746dda727dc",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "05ebb198-4dc2-4b4c-83d8-d7a036c95519",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6f538500-c28a-4623-aad8-a7c31243496b",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "5ec8ac1b-6265-48fb-aa5d-fd1024d4d438",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "c9f591bf-1542-4f2a-aa6b-a7e40c7c40d9",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "5ee1f6a5-8056-481f-91b4-56892ccaf2a0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "d5f3b432-3fcb-4e78-a8e3-a895ee1b090f",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "e7dc823f-1b4c-4e66-bcaa-1a94f17364b3",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "1cb52971-56ef-4219-9348-a9285e48ad20",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "d55263a6-2839-4207-abad-3813baad0ec5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "d906d5b5-673b-45f0-820e-aa11a21813eb",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "d55263a6-2839-4207-abad-3813baad0ec5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "0c30f246-02cb-4bb0-add0-aa5b26926343",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "24f6639a-10f4-4caf-863c-adc619895f91",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "eec4bc7e-de0c-4ac6-bc7e-ab3ba850c9f6",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "58763f4b-1519-49f2-af45-cd5ba22254a9",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "6ecb3618-5096-4140-9000-ab9c4c3fa6c4",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "7ec10749-ec63-473f-b8f3-329f9b984bf7",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "5a18414e-a9cb-49ce-b1c7-ac2af20c91e7",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "b0e7ffe2-d2d5-431b-96c7-e86deae98156",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "5f6fd148-2f30-425b-81ec-ac9aea7db8d4",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "00629157-9374-4ed4-9e39-b12d9e57c2a7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "21ee6243-cfb7-47db-9384-ad2b77365009",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "5ec8ac1b-6265-48fb-aa5d-fd1024d4d438",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "b0e85b75-1eff-4915-bb28-ae9c73ca24b9",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "5295051b-aac7-4ded-a9fd-aabdba35fa67",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "09e43e7a-a8e7-45f6-b15f-b022b6eff68f",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "06c781d4-6e9b-42d2-b231-d022bd0192c7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "2e306a7b-da05-4777-9b7e-b1664b6717f6",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "7ec10749-ec63-473f-b8f3-329f9b984bf7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "3197fbf1-2060-4af9-8513-b2b5a31fe93c",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "c80e12d9-b755-4e0a-81a1-e08fd40dc489",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "77479960-d12a-41e5-bb0f-b3586a7afb31",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "2ce97f2a-679f-488c-afec-dbd291e8a55b",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "cd054f5e-1a85-4bee-8010-b3bf07a0f217",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "7266f6c3-b82b-4675-89e1-e80fdec5cb99",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "47c0c070-a0c9-44f2-8a2c-b3e04e792079",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "25be54f6-370b-40ec-8c13-0d41a2f61e1d",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "4d7f3542-d7ef-4c91-b824-b41338fd23d5",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "f9420288-3ff4-47b1-b5c3-1e230f70229e",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "7606c148-a091-4adb-a92d-b4ae2f7e82af",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "05b53fd5-5841-443c-829d-a2c1f0906546",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "4fc09567-8509-494d-9857-b6506d0d3cca",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "932501b0-7a7b-4bca-b761-4b705e3e5268",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "9aa3e6d8-64ec-4184-880d-b69d9e143d4e",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "5a1601c7-8d5d-4a4b-a185-19a35cf08e54",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "a8ac8da8-794e-4ad8-960d-b7e68e695280",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "65358653-2639-499d-ae11-4053bf55d094",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "4169aeb9-4bae-4369-a5e7-b88cdd0751d7",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "15981458-26da-4098-8eca-27fa02ff39cc",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "cae259fe-4aa7-4f2a-a526-b937b47e34ba",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "06c781d4-6e9b-42d2-b231-d022bd0192c7",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "0d18106d-514b-4b4d-80c2-b984f20ce034",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "ca600de4-5c14-4fe2-a055-a7daffc87dcb",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "0bca79d7-a2e3-4918-9e7e-ba8f9c65fe8a",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "5ec8ac1b-6265-48fb-aa5d-fd1024d4d438",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "14fe11c1-c780-461a-8e0d-bc6c18483601",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "f01bab66-ce19-432f-9d8f-85544281cbb5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "5b093970-4160-449d-8565-bd111163c8a2",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "c80e12d9-b755-4e0a-81a1-e08fd40dc489",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "c99e3306-a750-4452-9bb8-bed4b2762f0d",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "b188e64c-93d4-4d2d-aa4e-0e84069eacf0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6dbc555c-2bd6-4c38-9f3c-c14983e59512",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "5a1601c7-8d5d-4a4b-a185-19a35cf08e54",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "3f7e3ad3-4d39-43e5-a839-c15c73650df1",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "b0e7ffe2-d2d5-431b-96c7-e86deae98156",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "264e9f31-36ec-4011-a554-c19974c5e809",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "58763f4b-1519-49f2-af45-cd5ba22254a9",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "1538188c-18f7-4447-bce1-c1aedf629ed0",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "15981458-26da-4098-8eca-27fa02ff39cc",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "63634e24-a7bb-46de-8d6d-c277aa1d102d",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "5295051b-aac7-4ded-a9fd-aabdba35fa67",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "460fd7a9-6261-495b-a23a-c47aa73962ee",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "05b53fd5-5841-443c-829d-a2c1f0906546",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "cccf85a2-c813-47d1-b587-c499313a0ae4",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "e6d35dae-c9a6-42af-875e-201667767526",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f522b1e1-a192-48b6-9319-c5b1ae466407",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "05ebb198-4dc2-4b4c-83d8-d7a036c95519",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f4697344-51cf-4a14-a3e8-c5dceb857a86",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "4edc0b48-ed79-46a4-9dc7-5158eaf3cd0f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "33905046-dfa1-4fc2-9442-c603219a07e5",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "8878ca8a-bf87-4f9a-9174-845a78397257",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "ff38e585-e65d-4544-8fbd-c824835c8edc",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "65358653-2639-499d-ae11-4053bf55d094",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "18471421-57a9-4f5f-93ca-c88c6db7376e",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "5a1601c7-8d5d-4a4b-a185-19a35cf08e54",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "96111af6-f0e5-4e10-9f5b-ca18902b3e5a",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "e6d35dae-c9a6-42af-875e-201667767526",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "5d3a2dd5-ede3-46f4-9ac5-caeb27e84691",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "58763f4b-1519-49f2-af45-cd5ba22254a9",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "14e4e200-c623-4358-a999-cb39501d551c",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "24f6639a-10f4-4caf-863c-adc619895f91",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "9228644d-7637-45a5-b24e-cc4d027b6aa9",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "25be54f6-370b-40ec-8c13-0d41a2f61e1d",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "e86b13a2-7ad8-4876-8732-cda81d9a17b0",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "7266f6c3-b82b-4675-89e1-e80fdec5cb99",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "75af49ab-341e-4bac-942f-cfc7b26ec126",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "06c781d4-6e9b-42d2-b231-d022bd0192c7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "2207330b-4300-4b43-a03d-d10055bcaed0",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "a61c6bfa-a99c-4cdf-8bc9-de56cf0be69b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6fe836d4-9a58-48f1-a57c-d12dcce49688",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "65358653-2639-499d-ae11-4053bf55d094",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "402a14ca-5f63-4050-b109-d24cfd9148ca",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "2a87bd18-4f3e-41ef-987e-e26d3cfc9cfd",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "5df75c85-8e7a-4c11-942a-d2d267cbad3c",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "06c781d4-6e9b-42d2-b231-d022bd0192c7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "d8ae546c-6e5a-4bbb-a974-d4655f3f8b6a",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "7266f6c3-b82b-4675-89e1-e80fdec5cb99",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "b5ca593a-a99f-4552-afa2-d6eb24143ad6",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "8878ca8a-bf87-4f9a-9174-845a78397257",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "e061a382-530f-4d4b-aaea-d7866b32c637",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "5ee1f6a5-8056-481f-91b4-56892ccaf2a0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "10f78c32-ee98-4afe-b37c-d7a909c07cdf",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "8878ca8a-bf87-4f9a-9174-845a78397257",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "57b3fe1f-2f8b-4525-bda0-d8e31986fb3d",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "06c781d4-6e9b-42d2-b231-d022bd0192c7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f4ca7894-3dff-4a95-97f8-d976e009f31f",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "f01bab66-ce19-432f-9d8f-85544281cbb5",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "a10051fc-0fe3-427d-b441-db8e6a434100",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "536170c8-2f32-474b-bda8-6c3dafbdfaf1",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "94010355-66cf-4199-b9a7-dd7bd3d35dec",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "c80e12d9-b755-4e0a-81a1-e08fd40dc489",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "bf47591e-f247-4a27-b04f-e0578ccb1911",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "536170c8-2f32-474b-bda8-6c3dafbdfaf1",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "2d06341b-8dba-485f-8133-e1cba48a8575",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "05ebb198-4dc2-4b4c-83d8-d7a036c95519",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "58f60cf9-0618-48e0-9015-e2b155104ec8",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "e6d35dae-c9a6-42af-875e-201667767526",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "18fd3c48-ecea-4fcf-a746-e5740d53c615",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "7ce979be-c686-43bf-be8c-c8ffac2bc552",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "25e620ea-22fd-404b-9cc9-e57ebc7f8447",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "f9420288-3ff4-47b1-b5c3-1e230f70229e",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "81d7f997-3dc6-4361-923d-e58640fa8dbe",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "5295051b-aac7-4ded-a9fd-aabdba35fa67",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "fcc82727-a848-416e-8e21-e5d4a502f3bf",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "e7dc823f-1b4c-4e66-bcaa-1a94f17364b3",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "87a8ca38-52df-49fd-9481-e64c851802d5",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "5ec8ac1b-6265-48fb-aa5d-fd1024d4d438",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f186f9b8-4b1a-4cf6-abb9-e6764488b12f",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "4edc0b48-ed79-46a4-9dc7-5158eaf3cd0f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6f3b57a2-0f9d-487b-8421-e7086932fbde",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "b188e64c-93d4-4d2d-aa4e-0e84069eacf0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "b3029fd0-0b47-49d9-a42c-e9c9902f796f",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "05ebb198-4dc2-4b4c-83d8-d7a036c95519",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "564b13d9-c3eb-4bc3-b7dd-edec67166565",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "65358653-2639-499d-ae11-4053bf55d094",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "a7619b56-93b9-476b-941b-ee4e0ad0a125",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "8878ca8a-bf87-4f9a-9174-845a78397257",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "aad9ac4e-e469-486a-af04-ee59a274b772",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "51d259c5-4149-4000-84fe-bd58062529d8",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "ebc5de8f-900d-4cb1-a521-ee9d28261e40",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "e6d35dae-c9a6-42af-875e-201667767526",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "3bd6386d-8e16-4246-83eb-ef4bc874a8cc",
         "roleId": "d7ab8fd4-de81-4c82-8b0e-9cb6470a274e",
         "packageId": "5ec8ac1b-6265-48fb-aa5d-fd1024d4d438",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6fd56746-c4c5-472d-9c87-effd172cf755",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "4e61ea85-73ac-4ff3-ba90-ac40e0b038c6",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "bcc34863-5846-4485-a3cb-f2a517512f98",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "00629157-9374-4ed4-9e39-b12d9e57c2a7",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "1bf7f4d1-fdcb-4b9e-9447-f3fe83649f1b",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "51d259c5-4149-4000-84fe-bd58062529d8",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "e021626e-08cf-4eff-b27f-f4e4ec8e4da4",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "58763f4b-1519-49f2-af45-cd5ba22254a9",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "d0c600da-9302-4d8f-bf57-f674202473f0",
         "roleId": "1005e523-9423-4037-92e7-d23dee6a9813",
         "packageId": "a61c6bfa-a99c-4cdf-8bc9-de56cf0be69b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "da322568-c403-4ca2-a2ff-f68f0af07ba5",
         "roleId": "0610a058-2046-4fb7-8566-a7cef6515baf",
         "packageId": "b0e7ffe2-d2d5-431b-96c7-e86deae98156",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "9f9389b8-2f31-4e97-ba81-f6f78ae1eaad",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "24f6639a-10f4-4caf-863c-adc619895f91",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "e6fc3221-60de-4997-a16e-f740c310b712",
         "roleId": "72c336a2-1705-4aef-b220-7f4aa6c0e69d",
         "packageId": "90dff34b-6a01-438c-ab62-51d9640a9b2f",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "aec01830-2ff9-4fd0-9414-f7f0b284248e",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "5a1601c7-8d5d-4a4b-a185-19a35cf08e54",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     },
     {
         "id": "ba41e360-0b28-4d83-9c28-f8e41a798c30",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "8878ca8a-bf87-4f9a-9174-845a78397257",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "82f45977-c064-466c-9ce2-fa5617be40f4",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "65358653-2639-499d-ae11-4053bf55d094",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "f3cb5998-bcf3-4166-a291-fb6c3cc9590d",
         "roleId": "6adad370-5524-4438-a811-932d27f655b9",
         "packageId": "2ce97f2a-679f-488c-afec-dbd291e8a55b",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "83c523ac-d8eb-41fd-a879-fcc2007c248a",
         "roleId": "77778386-d57f-4378-ac31-5f260b407079",
         "packageId": "5ee1f6a5-8056-481f-91b4-56892ccaf2a0",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "24a85b1f-a674-4247-a40c-fcf76981f34f",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "e7dc823f-1b4c-4e66-bcaa-1a94f17364b3",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "6739d606-41bf-4d77-a01d-fd2248f753f0",
         "roleId": "f96756f4-415a-45dd-8d10-4ebee0e6db84",
         "packageId": "05b53fd5-5841-443c-829d-a2c1f0906546",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "b831bf59-8f59-4640-ad61-ffaa1fbe0e26",
         "roleId": "3af9bb77-9455-44bd-8d93-4d3f2a9fda33",
         "packageId": "7266f6c3-b82b-4675-89e1-e80fdec5cb99",
         "entityVariantId": null,
-        "isActor": false,
-        "isAdmin": true
+        "hasAccess": false,
+        "canDelegate": true
     },
     {
         "id": "787a7050-0443-4088-b281-fff8519d743f",
         "roleId": "857bb1fb-fcaa-4a3c-859d-319032626539",
         "packageId": "932501b0-7a7b-4bca-b761-4b705e3e5268",
         "entityVariantId": null,
-        "isActor": true,
-        "isAdmin": true
+        "hasAccess": true,
+        "canDelegate": true
     }
 ]

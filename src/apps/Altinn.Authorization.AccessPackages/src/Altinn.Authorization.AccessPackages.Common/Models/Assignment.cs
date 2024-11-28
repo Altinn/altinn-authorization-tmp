@@ -27,7 +27,7 @@ public class Assignment
 }
 
 /// <summary>
-/// Extended RoleAssignment
+/// Extended Assignment
 /// </summary>
 public class ExtAssignment : Assignment
 {

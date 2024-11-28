@@ -65,7 +65,7 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
             filters.Add(new GenericFilter("_AsOf", options.AsOf.Value));
         }
 
-        string jsonResult = await ExecuteForJson(cmd, parameters: filters, singleResult: false);
+        string jsonResult = await ExecuteForJson(cmd, parameters: filters, singleResult: false, cancellationToken: cancellationToken);
         if (string.IsNullOrEmpty(jsonResult))
         {
             return [];
@@ -79,7 +79,7 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
     {
         try
         {
-            var json = await GetExtJson([new GenericFilter("Name", term, comparer: startsWith ? FilterComparer.StartsWith : FilterComparer.Contains)], options);
+            var json = await GetExtJson([new GenericFilter("Name", term, comparer: startsWith ? FilterComparer.StartsWith : FilterComparer.Contains)], options, cancellationToken);
 
             var data = JsonSerializer.Deserialize<IEnumerable<TExtended>>(json) ?? throw new Exception("Unable to deserialize data");
             var pageInfo = JsonSerializer.Deserialize<List<DbPageResult>>(json) ?? throw new Exception("Unable to deserialize page data");
@@ -103,7 +103,7 @@ public class SqlExtendedRepo<T, TExtended> : SqlBasicRepo<T>, IDbExtendedRepo<T,
 
     #region internal
 
-    private async Task<string> GetExtJson(List<GenericFilter> filters, RequestOptions? options = null)
+    private async Task<string> GetExtJson(List<GenericFilter> filters, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
         options ??= new RequestOptions();
         var cmd = GetCommand(options, filters);

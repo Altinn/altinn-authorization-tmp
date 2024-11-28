@@ -64,8 +64,8 @@
     private async Task LoadData()
     {
         var opt = UserData.GetRequestOptions();
-        Groups = [.. await tagGroupData.Repo.Get(options: opt)];
-        Tags = [.. await tagData.ExtendedRepo.GetExtended(options: opt)];
+        Groups = [.. await tagGroupData.Get(options: opt)];
+        Tags = [.. await tagData.GetExtended(options: opt)];
     }
 
     #region NewTag

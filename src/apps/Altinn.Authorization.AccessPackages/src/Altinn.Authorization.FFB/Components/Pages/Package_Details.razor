@@ -64,7 +64,7 @@
                             <tr class="bf-table-row bf-table-row-compact">
                                 <td><a href=@($"/role/{r.Role.Id}")>@r.Role.Name (@r.Role.Code)</a></td>
                                 <td>
-                                    @if (r.IsAdmin)
+                                    @if (r.CanDelegate)
                                     {
                                         <Icon Name="square-check"></Icon>
                                     }
@@ -74,7 +74,7 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (r.IsActor)
+                                    @if (r.HasAccess)
                                     {
                                         <Icon Name="square-check"></Icon>
                                     }

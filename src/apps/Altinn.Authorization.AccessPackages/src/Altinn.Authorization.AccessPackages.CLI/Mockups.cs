@@ -296,14 +296,14 @@ public class Mockups
         var ansatt = await GetOrCreateRole(new Role() { Id = Guid.NewGuid(), Name = "Ansatt", Code = "ANSATT", Description = "Ansatt", Urn = "digdir:role:ansatt", EntityTypeId = orgType.Type.Id, ProviderId = digdirProvider.Id });
         var sys = await GetOrCreateRole(new Role() { Id = Guid.NewGuid(), Name = "System", Code = "SYS", Description = "System", Urn = "digdir:role:sys", EntityTypeId = orgType.Type.Id, ProviderId = digdirProvider.Id });
 
-        var ra1 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = spirh.Id, ToId = mariusThuen.Id, RoleId = dagl.Id };
-        var ra2 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = spirh.Id, ToId = mariusThuen.Id, RoleId = lede.Id };
-        var ra3 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = spirh.Id, ToId = regnskapNorge.Id, RoleId = regn.Id };
+        ////var ra1 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = spirh.Id, ToId = mariusThuen.Id, RoleId = dagl.Id };
+        ////var ra2 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = spirh.Id, ToId = mariusThuen.Id, RoleId = lede.Id };
+        ////var ra3 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = spirh.Id, ToId = regnskapNorge.Id, RoleId = regn.Id };
 
-        var ra4 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = regnskapNorge.Id, ToId = gunnarJohnsen.Id, RoleId = ansatt.Id };
-        var ra5 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = regnskapNorge.Id, ToId = perHansen.Id, RoleId = ansatt.Id };
-        var ra6 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = regnskapNorge.Id, ToId = gunillaJonson.Id, RoleId = ansatt.Id };
-        var ra7 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = regnskapNorge.Id, ToId = viggoKristiansen.Id, RoleId = ansatt.Id };
+        ////var ra4 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = regnskapNorge.Id, ToId = gunnarJohnsen.Id, RoleId = ansatt.Id };
+        ////var ra5 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = regnskapNorge.Id, ToId = perHansen.Id, RoleId = ansatt.Id };
+        ////var ra6 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = regnskapNorge.Id, ToId = gunillaJonson.Id, RoleId = ansatt.Id };
+        ////var ra7 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = regnskapNorge.Id, ToId = viggoKristiansen.Id, RoleId = ansatt.Id };
 
         /*
          

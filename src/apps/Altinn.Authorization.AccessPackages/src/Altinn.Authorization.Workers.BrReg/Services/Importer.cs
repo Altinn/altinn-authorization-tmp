@@ -18,7 +18,7 @@ public class Importer
 
     private IEntityVariantService EntityVariantService { get; }
 
-    private IRoleAssignmentService RoleAssignmentService { get; }
+    private IAssignmentService AssignmentService { get; }
 
     private IRoleService RoleService { get; }
 
@@ -28,13 +28,13 @@ public class Importer
     /// <param name="entityService">IEntityService</param>
     /// <param name="entityTypeService">IEntityTypeService</param>
     /// <param name="entityVariantService">IEntityVariantService</param>
-    /// <param name="roleAssignmentService">IRoleAssignmentService</param>
+    /// <param name="assignmentService">IAssignmentService</param>
     /// <param name="roleService">IRoleService</param>
     public Importer(
        IEntityService entityService,
        IEntityTypeService entityTypeService,
        IEntityVariantService entityVariantService,
-       IRoleAssignmentService roleAssignmentService,
+       IAssignmentService assignmentService,
        IRoleService roleService
        )
     {
@@ -42,7 +42,7 @@ public class Importer
         EntityService = entityService;
         EntityTypeService = entityTypeService;
         EntityVariantService = entityVariantService;
-        RoleAssignmentService = roleAssignmentService;
+        AssignmentService = assignmentService;
         RoleService = roleService;
         ChangeRef = new Dictionary<string, int>
         {
@@ -436,13 +436,13 @@ public class Importer
             }
         }
 
-        Console.WriteLine("RoleAssignment - Done");
+        Console.WriteLine("Assignment - Done");
     }
 
     /// <summary>
-    /// RoleAssignment Comparer
+    /// Assignment Comparer
     /// </summary>
-    internal class RoleAssignmentComparer
+    internal class AssignmentComparer
     {
         /// <summary>
         /// ToId + ForId + RoleId
@@ -450,18 +450,18 @@ public class Importer
         public string Key { get; set; }
 
         /// <summary>
-        /// RoleAssignment
+        /// Assignment
         /// </summary>
-        public RoleAssignment RoleAssignment { get; set; }
+        public Assignment Assignment { get; set; }
 
         /// <summary>
-        /// RoleAssignmentComparer
+        /// AssignmentComparer
         /// </summary>
-        /// <param name="roleAssignment">RoleAssignment</param>
-        public RoleAssignmentComparer(RoleAssignment roleAssignment)
+        /// <param name="assignment">Assignment</param>
+        public AssignmentComparer(Assignment assignment)
         {
-            RoleAssignment = roleAssignment;
-            Key = RoleAssignment.ToId.ToString() + RoleAssignment.ForId.ToString() + RoleAssignment.RoleId.ToString();
+            Assignment = assignment;
+            Key = Assignment.ToId.ToString() + Assignment.FromId.ToString() + Assignment.RoleId.ToString();
         }
 
         /// <summary>
@@ -488,22 +488,22 @@ public class Importer
             var entityId = EntityIdCache[change.Data.OrgNo];
 
             Console.WriteLine($"Generate new assignments from result {roleResult.RoleGroups.Count}");
-            var (result, hasErrors) = GenerateRoleAssignments(roleResult, change.Data.OrgNo);
+            var (result, hasErrors) = GenerateAssignments(roleResult, change.Data.OrgNo);
 
             /*
              Do something with .hasErrors
              */
 
             Console.WriteLine("Getting old for assignments");
-            var oldForAssignments = await RoleAssignmentService.Get(t => t.ForId, entityId);
+            var oldForAssignments = await AssignmentService.Get(t => t.FromId, entityId);
 
             if (result == null || oldForAssignments == null)
             {
                 return;
             }
 
-            var newAssList = result.Select(t => new RoleAssignmentComparer(t)).ToList();
-            var oldAssList = oldForAssignments.Select(t => new RoleAssignmentComparer(t)).ToList();
+            var newAssList = result.Select(t => new AssignmentComparer(t)).ToList();
+            var oldAssList = oldForAssignments.Select(t => new AssignmentComparer(t)).ToList();
 
             if (newAssList == null || oldAssList == null)
             {
@@ -519,12 +519,12 @@ public class Importer
 
             foreach (var i in ingest)
             {
-                await RoleAssignmentService.Create(i.RoleAssignment);
+                await AssignmentService.Create(i.Assignment);
             }
 
             foreach (var r in remove)
             {
-                await RoleAssignmentService.Delete(r.RoleAssignment.Id);
+                await AssignmentService.Delete(r.Assignment.Id);
             }
         }
         catch (Exception ex)
@@ -534,10 +534,10 @@ public class Importer
         }
     }
 
-    private (List<RoleAssignment> Result, bool HasErrors) GenerateRoleAssignments(RoleResult roleResult, string refId)
+    private (List<Assignment> Result, bool HasErrors) GenerateAssignments(RoleResult roleResult, string refId)
     {
         bool hasErrors = false;
-        var result = new List<RoleAssignment>();
+        var result = new List<Assignment>();
 
         try
         {
@@ -562,10 +562,10 @@ public class Importer
 
                     if (entityRole != null && toEntityId.HasValue)
                     {
-                        result.Add(new RoleAssignment()
+                        result.Add(new Assignment()
                         {
                             Id = Guid.NewGuid(),
-                            ForId = forEntityId,
+                            FromId = forEntityId,
                             RoleId = entityRole.Id,
                             ToId = toEntityId.Value
                         });
@@ -581,7 +581,7 @@ public class Importer
 
         if (hasErrors)
         {
-            return (new List<RoleAssignment>(), true);
+            return (new List<Assignment>(), true);
         }
         else
         {

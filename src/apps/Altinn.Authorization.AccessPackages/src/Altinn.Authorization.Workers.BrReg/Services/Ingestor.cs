@@ -10,11 +10,11 @@ namespace Altinn.Authorization.Workers.BrReg.Services;
 /// </summary>
 /// <param name="config">IngestorConfig</param>
 /// <param name="entityService">IEntityService</param>
-/// <param name="roleAssignmentService">IRoleAssignmentService</param>
+/// <param name="assignmentService">IAssignmentService</param>
 /// <param name="entityTypeService">IEntityTypeService</param>
 /// <param name="entityVariantService">IEntityVariantService</param>
 /// <param name="roleService">IRoleService</param>
-public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityService, IRoleAssignmentService roleAssignmentService, IEntityTypeService entityTypeService, IEntityVariantService entityVariantService, IRoleService roleService)
+public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityService, IAssignmentService assignmentService, IEntityTypeService entityTypeService, IEntityVariantService entityVariantService, IRoleService roleService)
 {
     private IngestorConfig Config { get; } = config.Value;
 
@@ -22,7 +22,7 @@ public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityServ
 
     private IEntityService EntityService { get; } = entityService;
 
-    private IRoleAssignmentService RoleAssignmentService { get; } = roleAssignmentService;
+    private IAssignmentService AssignmentService { get; } = assignmentService;
 
     private IEntityTypeService EntityTypeService { get; } = entityTypeService;
 
@@ -128,10 +128,10 @@ public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityServ
         Console.WriteLine($"Clean Orgs: {orgsClean.Count}");
 
         Console.WriteLine("Converting roles to assignments");
-        var roleAssignments = new List<RoleAssignment>();
+        var assignments = new List<Assignment>();
         foreach (var r in roleResults)
         {
-            roleAssignments.AddRange(GenerateRoleAssignmentsFast(r) ?? []);
+            assignments.AddRange(GenerateAssignmentsFast(r) ?? []);
         }
 
         /*Retry*/
@@ -216,8 +216,8 @@ public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityServ
             Console.WriteLine("ALL GOOD!");
         }
 
-        Console.WriteLine($"Writing assignments ({roleAssignments.Count}) to Db");
-        await RoleAssignmentService.Repo.Ingest(roleAssignments.OfType<RoleAssignment>().DistinctBy(t => t.ToId.ToString() + t.ForId.ToString() + t.RoleId.ToString()).ToList());
+        Console.WriteLine($"Writing assignments ({assignments.Count}) to Db");
+        await AssignmentService.Repo.Ingest(assignments.OfType<Assignment>().DistinctBy(t => t.ToId.ToString() + t.FromId.ToString() + t.RoleId.ToString()).ToList());
     }
 
     #region Queue
@@ -246,16 +246,16 @@ public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityServ
     private List<RoleResult> RoleResultRetryQueue { get; set; } = [];
 
     /// <summary>
-    /// Generate RoleAssignments based on RoleResult
+    /// Generate Assignments based on RoleResult
     /// NOT Fast: Will check database for missing information
     /// </summary>
     /// <param name="roleResult">RoleResult</param>
     /// <returns></returns>
-    private List<RoleAssignment> GenerateRoleAssignments(RoleResult roleResult)
+    private List<Assignment> GenerateAssignments(RoleResult roleResult)
     {
         bool hasErrors = false;
 
-        var result = new List<RoleAssignment>();
+        var result = new List<Assignment>();
         var forEntityId = LookupEntityId(roleResult.OrgNo);
         if (!forEntityId.HasValue)
         {
@@ -292,10 +292,10 @@ public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityServ
 
                 if (entityRole != null && toEntityId.HasValue && forEntityId.HasValue)
                 {
-                    result.Add(new RoleAssignment()
+                    result.Add(new Assignment()
                     {
                         Id = Guid.NewGuid(),
-                        ForId = forEntityId.Value,
+                        FromId = forEntityId.Value,
                         RoleId = entityRole.Id,
                         ToId = toEntityId.Value
                     });
@@ -315,15 +315,15 @@ public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityServ
     }
 
     /// <summary>
-    /// Generate RoleAssignments based on RoleResult
+    /// Generate Assignments based on RoleResult
     /// Fast: Will not check database for missing information
     /// </summary>
     /// <param name="roleResult">RoleResult</param>
     /// <returns></returns>
-    private List<RoleAssignment> GenerateRoleAssignmentsFast(RoleResult roleResult)
+    private List<Assignment> GenerateAssignmentsFast(RoleResult roleResult)
     {
         bool hasErrors = false;
-        var result = new List<RoleAssignment>();
+        var result = new List<Assignment>();
 
         try
         {
@@ -347,10 +347,10 @@ public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityServ
 
                     if (entityRole != null && toEntityId.HasValue)
                     {
-                        result.Add(new RoleAssignment()
+                        result.Add(new Assignment()
                         {
                             Id = Guid.NewGuid(),
-                            ForId = forEntityId,
+                            FromId = forEntityId,
                             RoleId = entityRole.Id,
                             ToId = toEntityId.Value
                         });

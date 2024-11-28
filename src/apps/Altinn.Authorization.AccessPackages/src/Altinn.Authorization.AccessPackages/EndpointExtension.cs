@@ -18,16 +18,31 @@ public static class EndpointExtension
     /// <returns></returns>
     public static WebApplication MapDbAccessEndpoints(this WebApplication app)
     {
-        app.MapDefaultsExt<IEntityService, Entity, ExtEntity>(mapIngest: true, mapSearch: true);
+        app.MapDefaultsExt<IAreaService, Area, ExtArea>();
+        app.MapDefaults<IAreaGroupService, AreaGroup>();
+        app.MapDefaultsExt<IAssignmentService, Assignment, ExtAssignment>();
+        app.MapDefaultsExt<IAssignmentDelegationService, AssignmentDelegation, ExtAssignmentDelegation>();
+        app.MapDefaultsExt<IEntityService, Entity, ExtEntity>(mapSearch: true);
+        app.MapDefaultsExt<IEntityDelegationService, EntityDelegation, ExtEntityDelegation>();
         app.MapDefaultsExt<IEntityTypeService, EntityType, ExtEntityType>();
         app.MapDefaultsExt<IEntityVariantService, EntityVariant, ExtEntityVariant>();
         app.MapCrossDefaults<EntityVariant, IEntityVariantRoleService, EntityVariantRole, Role>("variants", "roles");
+        app.MapDefaultsExt<IGroupService, Group, ExtGroup>();
+        app.MapDefaultsExt<IGroupAdminService, GroupAdmin, ExtGroupAdmin>();
+        app.MapDefaultsExt<IGroupDelegationService, GroupDelegation, ExtGroupDelegation>();
+        app.MapDefaultsExt<IGroupMemberService, GroupMember, ExtGroupMember>();
         app.MapDefaultsExt<IPackageService, Package, ExtPackage>(mapSearch: true);
+        app.MapDefaultsExt<IPackageDelegationService, PackageDelegation, ExtPackageDelegation>();
+        app.MapDefaultsExt<IPackageResourceService, PackageResource, ExtPackageResource>();
         app.MapCrossDefaults<Package, IPackageTagService, PackageTag, Tag>("packages", "tags");
         app.MapDefaults<IProviderService, Provider>();
-        app.MapDefaults<IRoleService, Role>();
+        app.MapDefaultsExt<IResourceService, Resource, ExtResource>();
+        app.MapDefaultsExt<IResourceGroupService, ResourceGroup, ExtResourceGroup>();
+        app.MapDefaults<IResourceTypeService, ResourceType>();
+        app.MapDefaultsExt<IRoleService, Role, ExtRole>();
+        app.MapDefaultsExt<IRoleDelegationService, RoleDelegation, ExtRoleDelegation>();
+        app.MapDefaultsExt<IRoleMapService, RoleMap, ExtRoleMap>();
         app.MapDefaultsExt<IRolePackageService, RolePackage, ExtRolePackage>();
-        app.MapDefaultsExt<IRoleAssignmentService, RoleAssignment, ExtRoleAssignment>();
         app.MapDefaultsExt<ITagService, Tag, ExtTag>();
         app.MapDefaults<ITagGroupService, TagGroup>();
         return app;

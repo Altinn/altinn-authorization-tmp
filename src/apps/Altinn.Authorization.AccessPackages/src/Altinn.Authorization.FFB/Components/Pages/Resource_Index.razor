@@ -59,7 +59,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        Resources = [.. await resourceData.ExtendedRepo.GetExtended()];
+        Resources = [.. await resourceData.GetExtended()];
     }
 
     private void SetProviderFilter(Provider selected)

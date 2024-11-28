@@ -112,7 +112,7 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (r.IsAdmin)
+                                    @if (r.CanDelegate)
                                     {
                                         <Icon Name="square-check"></Icon>
                                     }
@@ -122,7 +122,7 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (r.IsActor)
+                                    @if (r.HasAccess)
                                     {
                                         <Icon Name="square-check"></Icon>
                                     }

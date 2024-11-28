@@ -38,7 +38,7 @@ app.MapCrossDefaults<Package, IPackageTagService, PackageTag, Tag>("packages", "
 app.MapDefaults<IProviderService, Provider>();
 app.MapDefaults<IRoleService, Role>();
 app.MapDefaultsExt<IRolePackageService, RolePackage, ExtRolePackage>();
-app.MapDefaultsExt<IRoleAssignmentService, RoleAssignment, ExtRoleAssignment>();
+app.MapDefaultsExt<IAssignmentService, Assignment, ExtAssignment>();
 app.MapDefaultsExt<ITagService, Tag, ExtTag>();
 app.MapDefaults<ITagGroupService, TagGroup>();
 */

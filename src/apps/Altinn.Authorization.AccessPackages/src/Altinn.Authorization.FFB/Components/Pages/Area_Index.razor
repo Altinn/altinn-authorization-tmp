@@ -95,7 +95,7 @@
     protected async override Task OnParametersSetAsync()
     {
         var opt = UserData.GetRequestOptions();
-        Areas = [.. await areaService.ExtendedRepo.GetExtended(options: opt)];
+        Areas = [.. await areaService.GetExtended(options: opt)];
         Groups = Areas.Select(t => t.Group).DistinctBy(t=>t.Id).ToList();
     }
 
