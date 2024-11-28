@@ -21,8 +21,6 @@ public class Mockups
     private readonly IPackageResourceService packageResourceService;
     private readonly IResourceService resourceService;
     private readonly IRoleService roleService;
-    private readonly IRelationService relationService;
-    private readonly IRelationAssignmentService relationAssignmentService;
 
     /// <summary>
     /// Mockups
@@ -39,8 +37,6 @@ public class Mockups
     /// <param name="packageResourceService">IPackageResourceService</param>
     /// <param name="resourceService">IResourceService</param>
     /// <param name="roleService">IRoleService</param>
-    /// <param name="relationService">IRelationService</param>
-    /// <param name="relationAssignmentService">IRelationAssignmentService</param>
     public Mockups(
         ILogger<Mockups> logger,
         IEntityTypeService entityTypeService,
@@ -53,9 +49,7 @@ public class Mockups
         IAreaService areaService,
         IPackageResourceService packageResourceService,
         IResourceService resourceService,
-        IRoleService roleService,
-        IRelationService relationService,
-        IRelationAssignmentService relationAssignmentService
+        IRoleService roleService
         )
     {
         this.logger = logger;
@@ -70,90 +64,98 @@ public class Mockups
         this.packageResourceService = packageResourceService;
         this.resourceService = resourceService;
         this.roleService = roleService;
-        this.relationService = relationService;
-        this.relationAssignmentService = relationAssignmentService;
     }
 
     #region Cache
 
-    private List<EntityType> entityTypes { get; set; }
-    private List<EntityVariant> entityVariants { get; set; }
-    private List<Entity> entities { get; set; }
-    private List<Provider> providers { get; set; }
-    private List<Resource> resources { get; set; }
-    private List<ResourceType> resourceTypes { get; set; }
-    private List<ResourceGroup> resourceGroups { get; set; }
-    private List<Package> packages { get; set; }
-    private List<Area> areas { get; set; }
-    private List<PackageResource> packageResources { get; set; }
-    public List<Role> roles { get; set; }
-    public List<Relation> relations { get; set; }
-    public List<RelationAssignment> relationAssignments { get; set; }
+    private List<EntityType> EntityTypes { get; set; }
+    
+    private List<EntityVariant> EntityVariants { get; set; }
+    
+    private List<Entity> Entities { get; set; }
+    
+    private List<Provider> Providers { get; set; }
+    
+    private List<Resource> Resources { get; set; }
+    
+    private List<ResourceType> ResourceTypes { get; set; }
+    
+    private List<ResourceGroup> ResourceGroups { get; set; }
+    
+    private List<Package> Packages { get; set; }
+    
+    private List<Area> Areas { get; set; }
+    
+    private List<PackageResource> PackageResources { get; set; }
+    
+    private List<Role> Roles { get; set; }
 
+    /// <summary>
+    /// Load cache
+    /// </summary>
+    /// <returns></returns>
     public async Task LoadCache()
     {
         logger.LogInformation("Loading cache");
-        entityTypes = [.. await entityTypeService.Get()];
-        entityVariants = [.. await entityVariantService.Get()];
-        entities = [.. await entityService.Get()];
-        providers = [.. await providerService.Get()];
-        resourceTypes = [.. await resourceTypeService.Get()];
-        resourceGroups = [.. await resourceGroupService.Get()];
-        packages = [.. await packageService.Get()];
-        areas = [.. await areaService.Get()];
-        packageResources = [.. await packageResourceService.Get()];
-        resources = [.. await resourceService.Get()];
-        roles = [.. await roleService.Get()];
-        relations = [.. await relationService.Get()];
-        relationAssignments = [.. await relationAssignmentService.Get()];
+        EntityTypes = [.. await entityTypeService.Get()];
+        EntityVariants = [.. await entityVariantService.Get()];
+        Entities = [.. await entityService.Get()];
+        Providers = [.. await providerService.Get()];
+        ResourceTypes = [.. await resourceTypeService.Get()];
+        ResourceGroups = [.. await resourceGroupService.Get()];
+        Packages = [.. await packageService.Get()];
+        Areas = [.. await areaService.Get()];
+        PackageResources = [.. await packageResourceService.Get()];
+        Resources = [.. await resourceService.Get()];
+        Roles = [.. await roleService.Get()];
         logger.LogInformation("Loading cache - Complete");
     }
 
     private EntityType GetEntityType(string name)
     {
-        return entityTypes.First(t => t.Name == name);
+        return EntityTypes.First(t => t.Name == name);
     }
 
     private EntityVariant GetEntityVariant(string typeName, string variantName)
     {
         var type = GetEntityType(typeName);
-        return entityVariants.First(t => t.TypeId == type.Id && t.Name == variantName);
+        return EntityVariants.First(t => t.TypeId == type.Id && t.Name == variantName);
     }
 
     private (EntityType Type, EntityVariant Variant) GetTypeAndVariant(string typeName, string variantName)
     {
         var type = GetEntityType(typeName);
-        var vairant = entityVariants.First(t => t.TypeId == type.Id && t.Name == variantName);
+        var vairant = EntityVariants.First(t => t.TypeId == type.Id && t.Name == variantName);
         return (type, vairant);
     }
 
     private Provider GetProvider(string name)
     {
-        return providers.First(t => t.Name == name);
+        return Providers.First(t => t.Name == name);
     }
 
     private Area GetArea(string name)
     {
-        return areas.First(t => t.Name == name);
+        return Areas.First(t => t.Name == name);
     }
     
     private Package GetPackage(string name, Guid areaId)
     {
-        return packages.First(t => t.Name == name && t.AreaId == areaId);
+        return Packages.First(t => t.Name == name && t.AreaId == areaId);
     }
 
     private Role GetRole(string code)
     {
-        return roles.First(t => t.Code == code);
+        return Roles.First(t => t.Code == code);
     }
 
     private async Task<Role> GetOrCreateRole(Role obj)
     {
-        var res = roles.FirstOrDefault(t => t.Code == obj.Code) ?? null;
+        var res = Roles.FirstOrDefault(t => t.Code == obj.Code) ?? null;
         if (res == null)
         {
             await roleService.Create(obj);
-            roles.Add(obj);
+            Roles.Add(obj);
             return obj;
         }
         else
@@ -164,11 +166,11 @@ public class Mockups
 
     private async Task<Entity> GetOrCreateEntity(Entity obj)
     {
-        var res = entities.FirstOrDefault(t => t.Name == obj.Name && t.TypeId == obj.TypeId && t.RefId == obj.RefId);
+        var res = Entities.FirstOrDefault(t => t.Name == obj.Name && t.TypeId == obj.TypeId && t.RefId == obj.RefId);
         if (res == null)
         {
             await entityService.Create(obj);
-            entities.Add(obj);
+            Entities.Add(obj);
             return obj;
         }
         else
@@ -179,12 +181,12 @@ public class Mockups
 
     private async Task<ResourceType> GetOrCreateResourceType(string name)
     {
-        var res = resourceTypes.FirstOrDefault(t => t.Name == name) ?? null;
+        var res = ResourceTypes.FirstOrDefault(t => t.Name == name) ?? null;
         if (res == null)
         {
             var obj = new ResourceType() { Id = Guid.NewGuid(), Name = name };
             await resourceTypeService.Create(obj);
-            resourceTypes.Add(obj);
+            ResourceTypes.Add(obj);
             return obj;
         }
         else
@@ -195,12 +197,12 @@ public class Mockups
 
     private async Task<ResourceGroup> GetOrCreateResourceGroup(string name, Guid providerId)
     {
-        var res = resourceGroups.FirstOrDefault(t => t.Name == name && t.ProviderId == providerId) ?? null;
+        var res = ResourceGroups.FirstOrDefault(t => t.Name == name && t.ProviderId == providerId) ?? null;
         if (res == null)
         {
-            var obj = new ResourceGroup() { Id = Guid.NewGuid(), Name = name, ProviderId = providerId};
+            var obj = new ResourceGroup() { Id = Guid.NewGuid(), Name = name, ProviderId = providerId };
             await resourceGroupService.Create(obj);
-            resourceGroups.Add(obj);
+            ResourceGroups.Add(obj);
             return obj;
         }
         else
@@ -211,11 +213,11 @@ public class Mockups
 
     private async Task<Resource> GetOrCreateResource(Resource obj)
     {
-        var res = resources.FirstOrDefault(t => t.Name == obj.Name && t.ProviderId == obj.ProviderId && t.RefId == obj.RefId) ?? null;
+        var res = Resources.FirstOrDefault(t => t.Name == obj.Name && t.ProviderId == obj.ProviderId && t.RefId == obj.RefId) ?? null;
         if (res == null)
         {
             await resourceService.Create(obj);
-            resources.Add(obj);
+            Resources.Add(obj);
             return obj;
         }
         else
@@ -226,12 +228,12 @@ public class Mockups
 
     private async Task<PackageResource> GetOrCreatePackageResource(Guid packageId, Guid resourceId)
     {
-        var res = packageResources.FirstOrDefault(t => t.PackageId == packageId && t.ResourceId == resourceId) ?? null;
+        var res = PackageResources.FirstOrDefault(t => t.PackageId == packageId && t.ResourceId == resourceId) ?? null;
         if (res == null)
         {
             var obj = new PackageResource() { Id = Guid.NewGuid(), PackageId = packageId, ResourceId = resourceId, Read = true, Write = true, Sign = true };
             await packageResourceService.Create(obj);
-            packageResources.Add(obj);
+            PackageResources.Add(obj);
             return obj;
         }
         else
@@ -239,37 +241,6 @@ public class Mockups
             return res;
         }
     }
-
-    private async Task<Relation> GetOrCreateRelation(Relation obj)
-    {
-        var res = relations.FirstOrDefault(t => t.FromId == obj.FromId && t.RoleId == obj.RoleId);
-        if (res == null)
-        {
-            await relationService.Create(obj);
-            relations.Add(obj);
-            return obj;
-        }
-        else
-        {
-            return res;
-        }
-    }
-
-    private async Task<RelationAssignment> GetOrCreateRelationAssignment(RelationAssignment obj)
-    {
-        var res = relationAssignments.FirstOrDefault(t => t.ToId == obj.ToId && t.RelationId == obj.RelationId);
-        if (res == null)
-        {
-            await relationAssignmentService.Create(obj);
-            relationAssignments.Add(obj);
-            return obj;
-        }
-        else
-        {
-            return res;
-        }
-    }
-
     #endregion
 
     /// <summary>
@@ -334,6 +305,8 @@ public class Mockups
         var ra6 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = regnskapNorge.Id, ToId = gunillaJonson.Id, RoleId = ansatt.Id };
         var ra7 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = regnskapNorge.Id, ToId = viggoKristiansen.Id, RoleId = ansatt.Id };
 
+        /*
+         
         //var spirhDagl = await GetOrCreateRelation(new Relation() { Id = Guid.NewGuid(), FromId = spirh.Id, RoleId = dagl.Id, IsDelegable = false });
         //var spirhLede = await GetOrCreateRelation(new Relation() { Id = Guid.NewGuid(), FromId = spirh.Id, RoleId = lede.Id, IsDelegable = false });
         //var spirhRegn = await GetOrCreateRelation(new Relation() { Id = Guid.NewGuid(), FromId = spirh.Id, RoleId = regn.Id, IsDelegable = true });
@@ -346,17 +319,18 @@ public class Mockups
         //await GetOrCreateRelationAssignment(new RelationAssignment() { Id = Guid.NewGuid(), RelationId = regnskapNorgeAnsatt.Id, ToId = perHansen.Id });
         //await GetOrCreateRelationAssignment(new RelationAssignment() { Id = Guid.NewGuid(), RelationId = regnskapNorgeAnsatt.Id, ToId = gunillaJonson.Id });
         //await GetOrCreateRelationAssignment(new RelationAssignment() { Id = Guid.NewGuid(), RelationId = regnskapNorgeAnsatt.Id, ToId = viggoKristiansen.Id });
+        
+        */
 
         //// KilentDelegering
-        // await GetOrCreateRelationAssignment(new RelationAssignment() { Id = Guid.NewGuid(), RelationId = spirhRegn.Id, ToId = perHansen.Id });
+        //// await GetOrCreateRelationAssignment(new RelationAssignment() { Id = Guid.NewGuid(), RelationId = spirhRegn.Id, ToId = perHansen.Id });
 
         //// KlientDelegering
         //// Nei ... Men joa ;)
-        var ra8 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = spirh.Id, ToId = gunnarJohnsen.Id, RoleId = regn.Id };
+        //// var ra8 = new RoleAssignment() { Id = Guid.NewGuid(), ForId = spirh.Id, ToId = gunnarJohnsen.Id, RoleId = regn.Id };
 
         #endregion
 
         logger.LogInformation("Mock - KlientDelegering - Complete");
     }
-
 }

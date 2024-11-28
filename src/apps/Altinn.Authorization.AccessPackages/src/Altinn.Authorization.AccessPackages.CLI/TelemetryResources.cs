@@ -48,12 +48,3 @@ public class JsonIngestMetersTest
         Counters[dbCounter].Record(db);
     }
 }
-
-public class CLIConfig
-{
-    public bool EnableMigrations { get; set; }
-    public bool EnableJsonIngest { get; set; }
-    public bool EnableBrregIngest { get; set; }
-    public bool EnableBrregImport { get; set; }
-    public bool RunTests { get; set; }
-}

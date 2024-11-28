@@ -52,8 +52,13 @@ public class DatabaseDefinitions
         DbDefinitions.Add<Tag, ExtTag>(Config);
         DbDefinitions.Add<TagGroup>(Config);
 
-        //// TODO: IVAR
-        DbDefinitions.Add<Relation, ExtRelation>(Config);
-        DbDefinitions.Add<RelationAssignment, ExtRelationAssignment>(Config);
+        DbDefinitions.Add<Assignment, ExtAssignment>(Config);
+        DbDefinitions.Add<Group, ExtGroup>(Config);
+        DbDefinitions.Add<GroupMember, ExtGroupMember>(Config);
+        DbDefinitions.Add<GroupAdmin, ExtGroupAdmin>(Config);
+        DbDefinitions.Add<AssignmentDelegation, ExtAssignmentDelegation>(Config);
+        DbDefinitions.Add<RoleDelegation, ExtRoleDelegation>(Config);
+        DbDefinitions.Add<EntityDelegation, ExtEntityDelegation>(Config);
+        DbDefinitions.Add<GroupDelegation, ExtGroupDelegation>(Config);
     }
 }

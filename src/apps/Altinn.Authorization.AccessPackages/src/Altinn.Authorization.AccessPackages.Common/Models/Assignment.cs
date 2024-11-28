@@ -1,10 +1,9 @@
 ﻿namespace Altinn.Authorization.AccessPackages.Models;
 
 /// <summary>
-/// Role Assignment
+/// Assignment
 /// </summary>
-[Obsolete("Use Assignment")]
-public class RoleAssignment
+public class Assignment
 {
     /// <summary>
     /// Id
@@ -17,9 +16,9 @@ public class RoleAssignment
     public Guid RoleId { get; set; }
 
     /// <summary>
-    /// ForId
+    /// FromId
     /// </summary>
-    public Guid ForId { get; set; }
+    public Guid FromId { get; set; }
 
     /// <summary>
     /// ToId
@@ -30,8 +29,7 @@ public class RoleAssignment
 /// <summary>
 /// Extended RoleAssignment
 /// </summary>
-[Obsolete("Use ExtAssignment")]
-public class ExtRoleAssignment : RoleAssignment
+public class ExtAssignment : Assignment
 {
     /// <summary>
     /// Role
@@ -39,9 +37,9 @@ public class ExtRoleAssignment : RoleAssignment
     public Role Role { get; set; }
 
     /// <summary>
-    /// For (Entity)
+    /// From (Entity)
     /// </summary>
-    public Entity For { get; set; }
+    public Entity From { get; set; }
 
     /// <summary>
     /// To (Entity)

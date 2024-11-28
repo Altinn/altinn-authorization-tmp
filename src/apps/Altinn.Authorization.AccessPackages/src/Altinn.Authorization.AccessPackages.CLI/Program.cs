@@ -13,8 +13,6 @@ var config = new CLIConfig()
 {
     EnableMigrations = true,
     EnableJsonIngest = true,
-    EnableBrregIngest = false,
-    EnableBrregImport = false,
     RunTests = true
 };
 

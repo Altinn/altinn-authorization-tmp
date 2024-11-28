@@ -38,31 +38,83 @@ public class DatabaseMigration : IDatabaseMigration
         await CreateRole();
         await CreateResource();
 
-        await CreateKlientDelegeringMock();
+        await CreateAssignment();
+        await CreateGroups();
+        await CreateDelegations();
 
     }
 
-    private async Task CreateKlientDelegeringMock()
+    private async Task CreateAssignment()
     {
-        //// TODO: IVAR
-        await _factory.CreateTable<Relation>(withHistory: UseHistory);
-        await _factory.CreateColumn<Relation>("FromId", DataTypes.Guid);
-        await _factory.CreateColumn<Relation>("RoleId", DataTypes.Guid);
-        await _factory.CreateColumn<Relation>("IsDelegable", DataTypes.Bool);
-        await _factory.CreateUniqueConstraint<Relation>(["FromId", "RoleId"]);
-        await _factory.CreateForeignKeyConstraint<Relation, Entity>("FromId");
-        await _factory.CreateForeignKeyConstraint<Relation, Role>("RoleId");
-
-        await _factory.CreateTable<RelationAssignment>(withHistory: UseHistory);
-        await _factory.CreateColumn<RelationAssignment>("RelationId", DataTypes.Guid);
-        await _factory.CreateColumn<RelationAssignment>("ToId", DataTypes.Guid);
-        await _factory.CreateUniqueConstraint<RelationAssignment>(["RelationId", "ToId"]);
-        await _factory.CreateForeignKeyConstraint<RelationAssignment, Entity>("ToId");
-        await _factory.CreateForeignKeyConstraint<RelationAssignment, Relation>("RelationId");
-
-        /*GROUPS!*/
+        await _factory.CreateTable<Assignment>(withHistory: UseHistory);
+        await _factory.CreateColumn<Assignment>("RoleId", DataTypes.Guid);
+        await _factory.CreateColumn<Assignment>("FromId", DataTypes.Guid);
+        await _factory.CreateColumn<Assignment>("ToId", DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<Assignment, Role>("RoleId");
+        await _factory.CreateForeignKeyConstraint<Assignment, Entity>("FromId");
+        await _factory.CreateForeignKeyConstraint<Assignment, Entity>("ToId");
+        await _factory.CreateUniqueConstraint<Assignment>(["RoleId", "ToId", "FromId"]);
     }
 
+    private async Task CreateGroups()
+    {
+        await _factory.CreateTable<Group>(withHistory: UseHistory);
+        await _factory.CreateColumn<Group>("Name", DataTypes.String(75));
+        await _factory.CreateColumn<Group>("OwnerId", DataTypes.Guid);
+        await _factory.CreateColumn<Group>("RequireRole", DataTypes.Bool);
+        await _factory.CreateForeignKeyConstraint<Group, Entity>("OwnerId");
+        await _factory.CreateUniqueConstraint<Group>(["OwnerId", "Name"]);
+
+        await _factory.CreateTable<GroupMember>(withHistory: UseHistory);
+        await _factory.CreateColumn<GroupMember>("GroupId", DataTypes.Guid);
+        await _factory.CreateColumn<GroupMember>("MemberId", DataTypes.Guid);
+        await _factory.CreateColumn<GroupMember>("From", DataTypes.DateTimeOffset, nullable: true);
+        await _factory.CreateColumn<GroupMember>("To", DataTypes.DateTimeOffset, nullable: true);
+        await _factory.CreateForeignKeyConstraint<GroupMember, Group>("GroupId");
+        await _factory.CreateForeignKeyConstraint<GroupMember, Entity>("MemberId");
+        await _factory.CreateUniqueConstraint<GroupMember>(["GroupId", "MemberId"]);
+
+        await _factory.CreateTable<GroupAdmin>(withHistory: UseHistory);
+        await _factory.CreateColumn<GroupAdmin>("GroupId", DataTypes.Guid);
+        await _factory.CreateColumn<GroupAdmin>("MemberId", DataTypes.Guid);
+        await _factory.CreateColumn<GroupAdmin>("From", DataTypes.DateTimeOffset, nullable: true);
+        await _factory.CreateColumn<GroupAdmin>("To", DataTypes.DateTimeOffset, nullable: true);
+        await _factory.CreateForeignKeyConstraint<GroupAdmin, Group>("GroupId");
+        await _factory.CreateForeignKeyConstraint<GroupAdmin, Entity>("MemberId");
+        await _factory.CreateUniqueConstraint<GroupAdmin>(["GroupId", "MemberId"]);
+    }
+
+    private async Task CreateDelegations()
+    {
+        await _factory.CreateTable<GroupDelegation>(withHistory: UseHistory);
+        await _factory.CreateColumn<GroupDelegation>("AssignmentId", DataTypes.Guid);
+        await _factory.CreateColumn<GroupDelegation>("GroupId", DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<GroupDelegation, Assignment>("AssignmentId");
+        await _factory.CreateForeignKeyConstraint<GroupDelegation, Group>("GroupId");
+        await _factory.CreateUniqueConstraint<GroupDelegation>(["AssignmentId", "GroupId"]);
+
+        await _factory.CreateTable<RoleDelegation>(withHistory: UseHistory);
+        await _factory.CreateColumn<RoleDelegation>("AssignmentId", DataTypes.Guid);
+        await _factory.CreateColumn<RoleDelegation>("RoleId", DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<RoleDelegation, Assignment>("AssignmentId");
+        await _factory.CreateForeignKeyConstraint<RoleDelegation, Role>("RoleId");
+        await _factory.CreateUniqueConstraint<RoleDelegation>(["AssignmentId", "RoleId"]);
+
+        await _factory.CreateTable<AssignmentDelegation>(withHistory: UseHistory);
+        await _factory.CreateColumn<AssignmentDelegation>("FromAssignmentId", DataTypes.Guid);
+        await _factory.CreateColumn<AssignmentDelegation>("ToAssignmentId", DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<AssignmentDelegation, Assignment>("FromAssignmentId");
+        await _factory.CreateForeignKeyConstraint<AssignmentDelegation, Assignment>("ToAssignmentId");
+        await _factory.CreateUniqueConstraint<AssignmentDelegation>(["FromAssignmentId", "ToAssignmentId"]);
+
+        await _factory.CreateTable<EntityDelegation>(withHistory: UseHistory);
+        await _factory.CreateColumn<EntityDelegation>("AssignmentId", DataTypes.Guid);
+        await _factory.CreateColumn<EntityDelegation>("EntityId", DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<EntityDelegation, Assignment>("AssignmentId");
+        await _factory.CreateForeignKeyConstraint<EntityDelegation, Role>("EntityId");
+        await _factory.CreateUniqueConstraint<EntityDelegation>(["AssignmentId", "EntityId"]);
+
+    }
 
     private async Task CreateSchema()
     {
