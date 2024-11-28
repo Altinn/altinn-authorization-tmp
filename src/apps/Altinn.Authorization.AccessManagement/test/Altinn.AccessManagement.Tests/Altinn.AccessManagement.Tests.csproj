@@ -11,7 +11,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Altinn.AccessManagement\Altinn.AccessManagement.csproj" />
+        <ProjectReference
+            Include="..\..\src\Altinn.Authorization.AccessManagement\Altinn.AccessManagement.csproj" />
     </ItemGroup>
 
     <ItemGroup>
