@@ -3,7 +3,7 @@
 /// <summary>
 /// Group administrator
 /// Members here are defined as administrators of the refrenced group
-/// From/To are optional for temporary memberships or delayed startup or end
+/// ActiveFrom/ActiveTo are optional for temporary memberships or delayed startup or end
 /// </summary>
 public class GroupAdmin
 {
@@ -23,14 +23,14 @@ public class GroupAdmin
     public Guid MemberId { get; set; } // Entity
 
     /// <summary>
-    /// Indicate for when this membership is valid from
+    /// Indicate for when this membership is active from
     /// </summary>
-    public DateTimeOffset? From { get; set; }
+    public DateTimeOffset? ActiveFrom { get; set; }
 
     /// <summary>
-    /// Indicate for when this membership is valid to
+    /// Indicate for when this membership is active to
     /// </summary>
-    public DateTimeOffset? To { get; set; }
+    public DateTimeOffset? ActiveTo { get; set; }
 }
 
 /// <summary>

@@ -44,7 +44,7 @@ public class ExtRoleAssignment : RoleAssignment
     public Entity For { get; set; }
 
     /// <summary>
-    /// To (Entity)
+    /// ActiveTo (Entity)
     /// </summary>
     public Entity To { get; set; }
 }

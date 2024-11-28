@@ -15,12 +15,12 @@ public class GroupDelegation
     /// <summary>
     /// Assignment refrence
     /// </summary>
-    public Guid AssignmentId { get; set; } // From
+    public Guid AssignmentId { get; set; } // ActiveFrom
 
     /// <summary>
     /// Group refrence
     /// </summary>
-    public Guid GroupId { get; set; } // To
+    public Guid GroupId { get; set; } // ActiveTo
 }
 
 /// <summary>

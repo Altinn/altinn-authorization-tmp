@@ -1,4 +1,5 @@
 ﻿using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
+using System.Linq.Expressions;
 
 namespace Altinn.Authorization.AccessPackages.DbAccess.Migrate.Contracts;
 
@@ -48,25 +49,25 @@ public interface IDbMigrationFactory
     /// Create column
     /// </summary>
     /// <typeparam name="T">Type</typeparam>
-    /// <param name="name">Name</param>
+    /// <param name="TProperty">Property</param>
     /// <param name="dbType">Datatype</param>
     /// <param name="nullable">Nullable</param>
     /// <param name="defaultValue">Default value</param>
-    Task CreateColumn<T>(string name, CommonDataType dbType, bool nullable = false, string? defaultValue = null);
+    Task CreateColumn<T>(Expression<Func<T, object?>> TProperty, CommonDataType dbType, bool nullable = false, string? defaultValue = null);
 
     /// <summary>
     /// Create unique constraint
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="propertyNames">Properties to be included in the constraint</param>
-    Task CreateUniqueConstraint<T>(string[] propertyNames);
+    Task CreateUniqueConstraint<T>(IEnumerable<Expression<Func<T, object?>>> propertyNames);
 
     /// <summary>
     /// Create foreign key constraint
     /// </summary>
     /// <typeparam name="TSource"></typeparam>
     /// <typeparam name="TTarget"></typeparam>
-    /// <param name="sourceProperty">DbAccessSource property</param>
-    /// <param name="targetProperty">Target property (default: Id)</param>
-    Task CreateForeignKeyConstraint<TSource, TTarget>(string sourceProperty, string targetProperty = "Id");
+    /// <param name="TSourceProperty">Source property</param>
+    /// <param name="TTargetProperty">Target property)</param>
+    Task CreateForeignKeyConstraint<TSource, TTarget>(Expression<Func<TSource, object?>> TSourceProperty, Expression<Func<TTarget, object?>>? TTargetProperty = null);
 }

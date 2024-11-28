@@ -1,4 +1,6 @@
 ﻿using System.Data;
+using System.Linq.Expressions;
+using System.Reflection;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Models;
@@ -287,8 +289,10 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     }
 
     /// <inheritdoc/>
-    public async Task CreateColumn<T>(string name, CommonDataType dbType, bool nullable = false, string? defaultValue = null)
+    public async Task CreateColumn<T>(Expression<Func<T, object?>> TProperty, CommonDataType dbType, bool nullable = false, string? defaultValue = null)
     {
+        var name = ExtractPropertyInfo(TProperty as Expression<Func<T, object>>).Name;
+
         string dbTypeString = dbType.Postgres;
         string migrationKey = $"ADD COLUMN {TableName<T>()}.{name}";
         if (NeedMigration<T>(migrationKey))
@@ -317,13 +321,17 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     }
 
     /// <inheritdoc/>
-    public async Task CreateUniqueConstraint<T>(string[] propertyNames)
+    public async Task CreateUniqueConstraint<T>(IEnumerable<Expression<Func<T, object?>>> properties)
     {
-        foreach (var property in propertyNames)
+        var propertyNames = new List<string>();
+        foreach (var property in properties)
         {
-            if (!typeof(T).GetProperties().ToList().Exists(t => t.Name == property))
+            var propertyName = ExtractPropertyInfo(property as Expression<Func<T, object>>).Name;
+            propertyNames.Add(propertyName);
+
+            if (!typeof(T).GetProperties().ToList().Exists(t => t.Name == propertyName))
             {
-                LogError($"{typeof(T).Name} does not contain the property '{property}'");
+                LogError($"{typeof(T).Name} does not contain the property '{propertyName}'");
                 return;
             }
         }
@@ -338,8 +346,11 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     }
 
     /// <inheritdoc/>
-    public async Task CreateForeignKeyConstraint<TSource, TTarget>(string sourceProperty, string targetProperty = "Id")
+    public async Task CreateForeignKeyConstraint<TSource, TTarget>(Expression<Func<TSource, object?>> TSourceProperty, Expression<Func<TTarget, object?>>? TTargetProperty = null)
     {
+        var sourceProperty = ExtractPropertyInfo(TSourceProperty as Expression<Func<TSource, object>>).Name;
+        var targetProperty = TTargetProperty == null ? "Id" : ExtractPropertyInfo(TTargetProperty as Expression<Func<TTarget, object>>).Name ?? "Id";
+
         if (!typeof(TSource).GetProperties().ToList().Exists(t => t.Name == sourceProperty))
         {
             LogError($"{typeof(TSource).Name} does not contain the property '{sourceProperty}'");
@@ -378,6 +389,29 @@ public class PostgresMigrationFactory : IDbMigrationFactory
             LogError(ex.Message);
             throw;
         }
+    }
+
+    private PropertyInfo ExtractPropertyInfo<TLocal>(Expression<Func<TLocal, object>> expression)
+    {
+        MemberExpression memberExpression;
+
+        if (expression.Body is MemberExpression)
+        {
+            // Hvis Body er direkte en MemberExpression, bruk den
+            memberExpression = (MemberExpression)expression.Body;
+        }
+        else if (expression.Body is UnaryExpression unaryExpression && unaryExpression.Operand is MemberExpression)
+        {
+            // Hvis Body er en UnaryExpression (f.eks. ved en typekonvertering), bruk Operand
+            memberExpression = (MemberExpression)unaryExpression.Operand;
+        }
+        else
+        {
+            throw new ArgumentException("Expression must refer to a property.");
+        }
+
+        return memberExpression.Member as PropertyInfo
+            ?? throw new ArgumentException("Member is not a property.");
     }
 
     private void LogError(string message)

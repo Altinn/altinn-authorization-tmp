@@ -47,7 +47,7 @@ public class ExtPackageDelegation : PackageDelegation
     public Entity For { get; set; }
 
     /// <summary>
-    /// To (Entity)
+    /// ActiveTo (Entity)
     /// </summary>
     public Entity To { get; set; }
 

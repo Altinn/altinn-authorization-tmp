@@ -37,12 +37,12 @@ public class ExtAssignment : Assignment
     public Role Role { get; set; }
 
     /// <summary>
-    /// From (Entity)
+    /// ActiveFrom (Entity)
     /// </summary>
     public Entity From { get; set; }
 
     /// <summary>
-    /// To (Entity)
+    /// ActiveTo (Entity)
     /// </summary>
     public Entity To { get; set; }
 }
