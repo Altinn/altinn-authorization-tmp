@@ -301,7 +301,7 @@ namespace Altinn.AccessManagement.Tests.Utils
             List<MaskinportenSchemaDelegationExternal> delegations = null;
 
             string unitTestFolder = Path.GetDirectoryName(new Uri(typeof(DelegationsControllerTest).Assembly.Location).LocalPath);
-            string path = Path.Combine(unitTestFolder, "Data", "Json", "MaskinportenSchema", "Offered.json");
+            string path = Path.Combine(unitTestFolder, "Data", "Json", "MPS", "Offered.json");
             if (File.Exists(path))
             {
                 string content = File.ReadAllText(path);
@@ -335,7 +335,7 @@ namespace Altinn.AccessManagement.Tests.Utils
             List<MaskinportenSchemaDelegationExternal> delegations = null;
 
             string unitTestFolder = Path.GetDirectoryName(new Uri(typeof(DelegationsControllerTest).Assembly.Location).LocalPath);
-            string path = Path.Combine(unitTestFolder, "Data", "Json", "MaskinportenSchema", "Received.json");
+            string path = Path.Combine(unitTestFolder, "Data", "Json", "MPS", "Received.json");
             if (File.Exists(path))
             {
                 string content = File.ReadAllText(path);
@@ -532,7 +532,7 @@ namespace Altinn.AccessManagement.Tests.Utils
         private static string GetDelegationPath()
         {
             string unitTestFolder = Path.GetDirectoryName(new Uri(typeof(DelegationsControllerTest).Assembly.Location).LocalPath);
-            return Path.Combine(unitTestFolder, "Data", "Json", "MaskinportenSchema");
+            return Path.Combine(unitTestFolder, "Data", "Json", "MPS");
         }
 
         private static string GetPartiesPath()

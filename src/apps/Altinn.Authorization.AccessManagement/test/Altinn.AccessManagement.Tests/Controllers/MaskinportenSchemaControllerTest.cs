@@ -1714,7 +1714,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
 
         private static StreamContent GetRequestContent(string operation, string resourceId, string from, string to, string inputFileName = "Input_Default")
         {
-            Stream dataStream = File.OpenRead($"Data/Json/MaskinportenSchema/{operation}/{resourceId}/from_{from}/to_{to}/{inputFileName}.json");
+            Stream dataStream = File.OpenRead($"Data/Json/MPS/{operation}/{resourceId}/from_{from}/to_{to}/{inputFileName}.json");
             StreamContent content = new StreamContent(dataStream);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             return content;
@@ -1722,21 +1722,21 @@ namespace Altinn.AccessManagement.Tests.Controllers
 
         private static RightsDelegationResponseExternal GetExpectedResponse(string operation, string resourceId, string from, string to, string responseFileName = "ExpectedOutput_Default")
         {
-            string responsePath = $"Data/Json/MaskinportenSchema/{operation}/{resourceId}/from_{from}/to_{to}/{responseFileName}.json";
+            string responsePath = $"Data/Json/MPS/{operation}/{resourceId}/from_{from}/to_{to}/{responseFileName}.json";
             string content = File.ReadAllText(responsePath);
             return (RightsDelegationResponseExternal)JsonSerializer.Deserialize(content, typeof(RightsDelegationResponseExternal), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
 
         private static ValidationProblemDetails GetExpectedValidationProblemDetails(string operation, string resourceId, string from, string to, string responseFileName = "ExpectedOutput_Default")
         {
-            string responsePath = $"Data/Json/MaskinportenSchema/{operation}/{resourceId}/from_{from}/to_{to}/{responseFileName}.json";
+            string responsePath = $"Data/Json/MPS/{operation}/{resourceId}/from_{from}/to_{to}/{responseFileName}.json";
             string content = File.ReadAllText(responsePath);
             return (ValidationProblemDetails)JsonSerializer.Deserialize(content, typeof(ValidationProblemDetails), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
 
         private static ValidationProblemDetails GetExpectedProblemDetails(string operation, string resourceId, string from, string to, string responseFileName = "ExpectedOutput_Default")
         {
-            string responsePath = $"Data/Json/MaskinportenSchema/{operation}/{resourceId}/from_{from}/to_{to}/{responseFileName}.json";
+            string responsePath = $"Data/Json/MPS/{operation}/{resourceId}/from_{from}/to_{to}/{responseFileName}.json";
             string content = File.ReadAllText(responsePath);
             return (ValidationProblemDetails)JsonSerializer.Deserialize(content, typeof(ValidationProblemDetails), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
@@ -1746,11 +1746,11 @@ namespace Altinn.AccessManagement.Tests.Controllers
             string content;
             if (authLevel == null)
             {
-                content = File.ReadAllText($"Data/Json/MaskinportenSchema/DelegationCheck/{resourceId}/from_{from}/authn_{user}.json");
+                content = File.ReadAllText($"Data/Json/MPS/DelegationCheck/{resourceId}/from_{from}/authn_{user}.json");
             }
             else
             {
-                content = File.ReadAllText($"Data/Json/MaskinportenSchema/DelegationCheck/{resourceId}/from_{from}/authn_{user}_authLevel{authLevel}.json");
+                content = File.ReadAllText($"Data/Json/MPS/DelegationCheck/{resourceId}/from_{from}/authn_{user}_authLevel{authLevel}.json");
             }
 
             return (List<RightDelegationCheckResultExternal>)JsonSerializer.Deserialize(content, typeof(List<RightDelegationCheckResultExternal>), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -1761,11 +1761,11 @@ namespace Altinn.AccessManagement.Tests.Controllers
             string content;
             if (authLevel == null)
             {
-                content = File.ReadAllText($"Data/Json/MaskinportenSchema/{operation}/{resourceId}/from_{from}/authn_{user}.json");
+                content = File.ReadAllText($"Data/Json/MPS/{operation}/{resourceId}/from_{from}/authn_{user}.json");
             }
             else
             {
-                content = File.ReadAllText($"Data/Json/MaskinportenSchema/{operation}/{resourceId}/from_{from}/authn_{user}_authLevel{authLevel}.json");
+                content = File.ReadAllText($"Data/Json/MPS/{operation}/{resourceId}/from_{from}/authn_{user}_authLevel{authLevel}.json");
             }
 
             return (ValidationProblemDetails)JsonSerializer.Deserialize(content, typeof(ValidationProblemDetails), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -1773,7 +1773,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
 
         private static StreamContent GetDelegationCheckContent(string resourceId)
         {
-            Stream dataStream = File.OpenRead($"Data/Json/MaskinportenSchema/DelegationCheck/{resourceId}/request.json");
+            Stream dataStream = File.OpenRead($"Data/Json/MPS/DelegationCheck/{resourceId}/request.json");
             StreamContent content = new StreamContent(dataStream);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             return content;
