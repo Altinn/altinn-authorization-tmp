@@ -2,6 +2,8 @@
     <Import Project="..\..\Directory.Build.props" />
 
     <PropertyGroup>
+        <IsAppProject>true</IsAppProject>
+        <ContainerName>altinn-authorization-accessmanagement</ContainerName>
         <IsProductProject>true</IsProductProject>
     </PropertyGroup>
 

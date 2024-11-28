@@ -56,7 +56,14 @@ public class AppsInstanceDelegationController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> DelegationCheck([FromRoute] string resourceId, [FromRoute] string instanceId, [FromHeader(Name = "PlatformAccessToken")] string token)
     {
-        AppsInstanceDelegationRequest request = new() { ResourceId = resourceId, InstanceId = instanceId, PerformedBy = GetOrgAppFromToken(token) };
+        ResourceIdUrn.ResourceId? performer = GetOrgAppFromToken(token);
+
+        if (performer == null)
+        {
+            return Forbid();
+        }
+
+        AppsInstanceDelegationRequest request = new() { ResourceId = resourceId, InstanceId = instanceId, PerformedBy = performer };
 
         Result<ResourceDelegationCheckResponse> serviceResult = await _appInstanceDelegationService.DelegationCheck(request);
 
@@ -158,7 +165,7 @@ public class AppsInstanceDelegationController : ControllerBase
 
         AppsInstanceGetRequest request = new()
         {
-            InstanceDelegationSource = Core.Enums.InstanceDelegationSource.App,
+            InstanceDelegationSource = Core.Enums.InstanceDelegationSource.App,            
             PerformingResourceId = performer,
             ResourceId = resourceId,
             InstanceId = instanceId,
@@ -232,18 +239,64 @@ public class AppsInstanceDelegationController : ControllerBase
     }
 
     /// <summary>
+    /// Revokes all access to an app instance
+    /// </summary>
+    /// <param name="resourceId">The resource identifier</param>
+    /// <param name="instanceId">The instance identifier</param>
+    /// <param name="token">the platformToken to use for Authorization</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+    /// <returns>Result</returns>
+    [HttpDelete]
+    [Authorize(Policy = AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION)]
+    [Route("v1/app/delegationrevoke/resource/{resourceId}/instance/{instanceId}")]
+    [Consumes(MediaTypeNames.Application.Json)]
+    [Produces(MediaTypeNames.Application.Json)]
+    [ProducesResponseType(typeof(AppsInstanceDelegationResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult?> RevokeAll([FromRoute] string resourceId, [FromRoute] string instanceId, [FromHeader(Name = "PlatformAccessToken")] string token, CancellationToken cancellationToken = default)
+    {
+        ResourceIdUrn.ResourceId? performer = GetOrgAppFromToken(token);
+
+        if (performer == null)
+        {
+            return Forbid();
+        }
+
+        AppsInstanceGetRequest request = new AppsInstanceGetRequest 
+        { 
+            ResourceId = resourceId,
+            InstanceId = instanceId,
+            PerformingResourceId = performer,
+            InstanceDelegationSource = Core.Enums.InstanceDelegationSource.App
+        };
+
+        Result<List<AppsInstanceRevokeResponse>> serviceResult = await _appInstanceDelegationService.RevokeAll(request, cancellationToken);
+
+        if (serviceResult.IsProblem)
+        {
+            return serviceResult.Problem?.ToActionResult();
+        }
+
+        List<AppsInstanceRevokeResponseDto> items = _mapper.Map<List<AppsInstanceRevokeResponseDto>>(serviceResult.Value);
+        PaginatedLinks links = new PaginatedLinks(null);
+
+        Paginated<AppsInstanceRevokeResponseDto> result = new(links, items);
+
+        return Ok(result);        
+    }
+
+    /// <summary>
     /// delegating app from the platform token
     /// </summary>
     private static ResourceIdUrn.ResourceId? GetOrgAppFromToken(string token)
     {
-        List<AttributeMatch> performedBy = new List<AttributeMatch>();
-
         if (!string.IsNullOrEmpty(token))
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(token);
             var appidentifier = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute);
-            performedBy.Add(new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute, Value = jwtSecurityToken.Issuer });
             if (appidentifier != null)
             {
                 return ResourceIdUrn.ResourceId.Create(ResourceIdentifier.CreateUnchecked($"app_{jwtSecurityToken.Issuer}_{appidentifier.Value}"));

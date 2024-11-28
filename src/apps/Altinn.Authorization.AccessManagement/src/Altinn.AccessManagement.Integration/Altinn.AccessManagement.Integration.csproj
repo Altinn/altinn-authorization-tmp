@@ -1,16 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <ItemGroup>
-        <PackageReference Include="JWTCookieAuthentication" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-        <PackageReference Include="Altinn.Platform.Models" />
-        <PackageReference Include="Microsoft.Extensions.Options" />
-        <PackageReference Include="Altinn.Common.AccessToken" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="JWTCookieAuthentication" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Altinn.Platform.Models" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Altinn.Common.AccessToken" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference
-            Include="..\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj" />
+  </ItemGroup>
 
 </Project>

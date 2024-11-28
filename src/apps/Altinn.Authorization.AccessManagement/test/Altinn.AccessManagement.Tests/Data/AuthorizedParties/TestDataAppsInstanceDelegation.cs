@@ -31,6 +31,8 @@ public static class TestDataAppsInstanceDelegation
 
     private static readonly string RevokeOneOfExistingDelegations = "00000000-0000-0000-0000-000000000009";
 
+    private static readonly string RevokeAllInstance = "00000000-0000-0000-0000-000000000010";
+
     /// <summary>
     /// Test case:  GET v1/apps/instancedelegation/{resourceId}/{instanceId}/delegationcheck
     ///             with: 
@@ -117,6 +119,24 @@ public static class TestDataAppsInstanceDelegation
         }
     };
 
+    public static TheoryData<string, string, string, Paginated<AppsInstanceRevokeResponseDto>> RevokeAll() => new()
+    {
+        {
+            PrincipalUtil.GetAccessToken("ttd", "am-devtest-instancedelegation"),
+            AppId,
+            RevokeAllInstance,
+            GetExpectedResponse<Paginated<AppsInstanceRevokeResponseDto>>("Revoke", AppId, RevokeAllInstance)
+        }
+    };
+
+    public static TheoryData<string, string> RevokeAllUnathorized() => new()
+    {
+        {
+            AppId,
+            RevokeAllInstance
+        }
+    }; 
+
     public static TheoryData<string, AppsInstanceDelegationRequestDto, string, string, AppsInstanceRevokeResponseDto> RevokeReadForAppNoExistingPolicyRevokeLast() => new()
     {
         {
@@ -127,7 +147,7 @@ public static class TestDataAppsInstanceDelegation
             GetExpectedResponse<AppsInstanceRevokeResponseDto>("Revoke", AppId, InstanceIdNewPolicyNoResponceOnWrite)
         }
     };
-
+    
     /// <summary>
     /// Test case:  POST v1/apps/instancedelegation/{resourceId}/{instanceId}
     ///             with: 
@@ -247,7 +267,7 @@ public static class TestDataAppsInstanceDelegation
         Assert.Equal(expected.Type, actual.Type);
         Assert.Equal(expected.Title, actual.Title);
         Assert.Equal(expected.ErrorCode, actual.ErrorCode);
-        AssertionUtil.AssertCollections(expected.Extensions.ToDictionary(), actual.Extensions.ToDictionary(), AssertProblemDetailsExtensionEqual);
+        AssertionUtil.AssertCollections(expected.Extensions.ToDictionary(), actual.Extensions.ToDictionary(), AssertProblemDetailsExtensionEqual);        
     }
 
     public static void AssertProblemDetailsExtensionEqual(KeyValuePair<string, object> expected, KeyValuePair<string, object> actual)
@@ -255,7 +275,7 @@ public static class TestDataAppsInstanceDelegation
         Assert.Equal(expected.Key, actual.Key);
         JsonElement? actualJson = actual.Value as JsonElement?;
         JsonElement? expectedJson = expected.Value as JsonElement?;
-
+        
         if (actualJson == null)
         {
             Assert.Null(expectedJson);
@@ -264,18 +284,18 @@ public static class TestDataAppsInstanceDelegation
 
         Assert.NotNull(actualJson);
         Assert.NotNull(expectedJson);
-
+        
         var actualExtensionList = actualJson.Value.EnumerateArray().AsList();
         var expectedExtensionList = expectedJson.Value.EnumerateArray().AsList();
         Assert.Equal(expectedExtensionList.Count, actualExtensionList.Count);
-
+        
         for (int i = 0; i < actualExtensionList.Count; i++)
         {
             ErrorDetails expectedDetail = JsonSerializer.Deserialize<ErrorDetails>(expectedExtensionList[i].GetRawText(), JsonOptions);
             ErrorDetails actualDetail = JsonSerializer.Deserialize<ErrorDetails>(actualExtensionList[i].GetRawText(), JsonOptions);
             Assert.Equal(expectedDetail.Code, actualDetail.Code);
             Assert.Equal(expectedDetail.Detail, actualDetail.Detail);
-
+            
             if (expectedDetail.Paths == null)
             {
                 Assert.Null(expectedDetail.Paths);
