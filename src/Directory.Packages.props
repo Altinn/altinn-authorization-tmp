@@ -37,15 +37,24 @@
             Version=" 8.2.6-develop.1998" />
         <PackageVersion Include="MassTransit.Extensions.DependencyInjection" Version=" 7.3.1" />
         <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+
+
+        <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="9.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect"
             Version="9.0.0" />
-        <PackageVersion Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
+        <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="3.0.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.2.0" />
         <PackageVersion Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
+
         <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
         <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+
         <PackageVersion Include="Microsoft.Azure.AppConfiguration.AspNetCore"
             Version="8.1.0-preview" />
+
+        <PackageVersion Include="Microsoft.Build.Artifacts" Version="6.1.47" />
         <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.9.0" />
         <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.0" />
         <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
@@ -83,8 +92,6 @@
         <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.1.0" />
         <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="7.1.0" />
         <PackageVersion Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
-        <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
-        <PackageVersion Include="System.Text.Json" Version="9.0.0" />
         <PackageVersion Include="Testcontainers.PostgreSql" Version="4.0.0" />
         <PackageVersion Include="xunit" Version="2.9.2" />
         <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
@@ -97,6 +104,9 @@
         <PackageVersion Include="Microsoft.Azure.DocumentDB.Core" Version="2.22.0" />
         <PackageVersion Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.2" />
         <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.2.1" />
+
+        <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.2.25" />
+        <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
 
     </ItemGroup>
     <PropertyGroup>
