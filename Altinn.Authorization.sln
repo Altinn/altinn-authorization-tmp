@@ -69,6 +69,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{07BEEFD7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Hosting.Tests", "src\libs\Altinn.Authorization.Hosting\tests\Altinn.Authorization.Hosting.Tests\Altinn.Authorization.Hosting.Tests.csproj", "{F592F818-1762-4BD4-A0B4-829246053E6F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Altinn.AccessManagement", "Altinn.AccessManagement", "{51F9AEC3-3367-427F-867E-E4F4A0169A5C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1B272AAB-1044-4E8C-988B-090D6F838FFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement", "src\apps\Altinn.AccessManagement\src\Altinn.AccessManagement\Altinn.AccessManagement.csproj", "{70DDC969-E82E-4A85-9651-86A5D3B68D3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Core", "src\apps\Altinn.AccessManagement\src\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj", "{7BCEAA14-AF6A-4C03-8DF6-E4461C0A612F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Integration", "src\apps\Altinn.AccessManagement\src\Altinn.AccessManagement.Integration\Altinn.AccessManagement.Integration.csproj", "{7D93124A-8BD9-4BB4-8605-126BA6D6E7D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Persistence", "src\apps\Altinn.AccessManagement\src\Altinn.AccessManagement.Persistence\Altinn.AccessManagement.Persistence.csproj", "{EFBF6A37-CB36-4323-A6D2-5A914C29C838}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6AF3BDE5-F14C-496C-90A9-29DDC108A8FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Tests", "src\apps\Altinn.AccessManagement\test\Altinn.AccessManagement.Tests\Altinn.AccessManagement.Tests.csproj", "{0DA470DA-7794-4352-89E0-0F22546DF2E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -138,6 +154,26 @@ Global
 		{F592F818-1762-4BD4-A0B4-829246053E6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F592F818-1762-4BD4-A0B4-829246053E6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F592F818-1762-4BD4-A0B4-829246053E6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70DDC969-E82E-4A85-9651-86A5D3B68D3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70DDC969-E82E-4A85-9651-86A5D3B68D3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70DDC969-E82E-4A85-9651-86A5D3B68D3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70DDC969-E82E-4A85-9651-86A5D3B68D3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BCEAA14-AF6A-4C03-8DF6-E4461C0A612F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BCEAA14-AF6A-4C03-8DF6-E4461C0A612F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BCEAA14-AF6A-4C03-8DF6-E4461C0A612F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BCEAA14-AF6A-4C03-8DF6-E4461C0A612F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D93124A-8BD9-4BB4-8605-126BA6D6E7D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D93124A-8BD9-4BB4-8605-126BA6D6E7D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D93124A-8BD9-4BB4-8605-126BA6D6E7D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D93124A-8BD9-4BB4-8605-126BA6D6E7D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFBF6A37-CB36-4323-A6D2-5A914C29C838}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFBF6A37-CB36-4323-A6D2-5A914C29C838}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFBF6A37-CB36-4323-A6D2-5A914C29C838}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFBF6A37-CB36-4323-A6D2-5A914C29C838}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DA470DA-7794-4352-89E0-0F22546DF2E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DA470DA-7794-4352-89E0-0F22546DF2E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DA470DA-7794-4352-89E0-0F22546DF2E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DA470DA-7794-4352-89E0-0F22546DF2E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3ABDFDEE-A4D9-4553-B232-E7D5FCDB2143} = {DE24A865-2B94-42FE-84BF-F21C06B28927}
@@ -172,5 +208,13 @@ Global
 		{8853EEFF-C485-4ED4-B107-EB8CFBC6B1B1} = {2324178C-A39A-4D66-B389-47715534DCD4}
 		{07BEEFD7-EF32-4213-B94B-D0911252FBFA} = {D847014E-BF21-47CB-84EE-609BBA9DC0FA}
 		{F592F818-1762-4BD4-A0B4-829246053E6F} = {07BEEFD7-EF32-4213-B94B-D0911252FBFA}
+		{51F9AEC3-3367-427F-867E-E4F4A0169A5C} = {3ABDFDEE-A4D9-4553-B232-E7D5FCDB2143}
+		{1B272AAB-1044-4E8C-988B-090D6F838FFC} = {51F9AEC3-3367-427F-867E-E4F4A0169A5C}
+		{70DDC969-E82E-4A85-9651-86A5D3B68D3E} = {1B272AAB-1044-4E8C-988B-090D6F838FFC}
+		{7BCEAA14-AF6A-4C03-8DF6-E4461C0A612F} = {1B272AAB-1044-4E8C-988B-090D6F838FFC}
+		{7D93124A-8BD9-4BB4-8605-126BA6D6E7D0} = {1B272AAB-1044-4E8C-988B-090D6F838FFC}
+		{EFBF6A37-CB36-4323-A6D2-5A914C29C838} = {1B272AAB-1044-4E8C-988B-090D6F838FFC}
+		{6AF3BDE5-F14C-496C-90A9-29DDC108A8FB} = {51F9AEC3-3367-427F-867E-E4F4A0169A5C}
+		{0DA470DA-7794-4352-89E0-0F22546DF2E4} = {6AF3BDE5-F14C-496C-90A9-29DDC108A8FB}
 	EndGlobalSection
 EndGlobal
