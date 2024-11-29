@@ -4,7 +4,6 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>dotnet-Altinn.Authorization.Workers.BrReg-472e02b8-95db-4764-8e7f-1d015126d3ea</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

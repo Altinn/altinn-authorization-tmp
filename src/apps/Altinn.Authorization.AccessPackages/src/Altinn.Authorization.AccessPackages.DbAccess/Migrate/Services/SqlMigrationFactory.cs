@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Models;
@@ -306,6 +307,34 @@ public class SqlMigrationFactory : IDbMigrationFactory
     }
 
     /// <inheritdoc/>
+    public async Task RemoveColumn<T>(string name)
+    {
+        if (!IsValidColumnName(name))
+        {
+            throw new ArgumentException("Not a valid column name", nameof(name));
+        }
+
+        string migrationKey = $"DROP COLUMN {TableName<T>()}.[{name}]";
+        if (NeedMigration<T>(migrationKey))
+        {
+            string query = $"ALTER TABLE {TableName<T>()} DROP COLUMN IF EXISTS [{name}];";
+            await ExecuteQuery(query);
+            await LogMigration<T>(migrationKey, query);
+        }
+
+        if (HasTranslation[typeof(T)])
+        {
+            string translationKey = $"DROP COLUMN {TranslationTableName<T>()}.{name}";
+            if (NeedMigration<T>(translationKey))
+            {
+                string query = $"ALTER TABLE {TranslationTableName<T>()} DROP COLUMN IF EXISTS [{name}];";
+                await ExecuteQuery(query);
+                await LogMigration<T>(translationKey, query);
+            }
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task CreateUniqueConstraint<T>(IEnumerable<Expression<Func<T, object?>>> properties)
     {
         var propertyNames = new List<string>();
@@ -331,7 +360,7 @@ public class SqlMigrationFactory : IDbMigrationFactory
     }
 
     /// <inheritdoc/>
-    public async Task CreateForeignKeyConstraint<TSource, TTarget>(Expression<Func<TSource, object?>> TSourceProperty, Expression<Func<TTarget, object?>>? TTargetProperty = null)
+    public async Task CreateForeignKeyConstraint<TSource, TTarget>(Expression<Func<TSource, object?>> TSourceProperty, Expression<Func<TTarget, object?>>? TTargetProperty = null, bool cascadeDelete = false)
     {
         var sourceProperty = ExtractPropertyInfo(TSourceProperty as Expression<Func<TSource, object>>).Name;
         var targetProperty = TTargetProperty == null ? "Id" : ExtractPropertyInfo(TTargetProperty as Expression<Func<TTarget, object>>).Name ?? "Id";
@@ -349,7 +378,7 @@ public class SqlMigrationFactory : IDbMigrationFactory
         var migrationKey = $"ADD CONSTRAINT {TableName<TSource>()}.[FK_{typeof(TSource).Name}_{sourceProperty}]";
         if (NeedMigration<TSource>(migrationKey))
         {
-            var query = $"ALTER TABLE {TableName<TSource>()} ADD CONSTRAINT [FK_{typeof(TSource).Name}_{sourceProperty}] FOREIGN KEY ([{sourceProperty}]) REFERENCES {TableName<TTarget>()}([{targetProperty}])";
+            var query = $"ALTER TABLE {TableName<TSource>()} ADD CONSTRAINT [FK_{typeof(TSource).Name}_{sourceProperty}] FOREIGN KEY ([{sourceProperty}]) REFERENCES {TableName<TTarget>()}([{targetProperty}]) {(cascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")}";
             await ExecuteQuery(query);
             await LogMigration<TSource>(migrationKey, query);
         }
@@ -370,6 +399,11 @@ public class SqlMigrationFactory : IDbMigrationFactory
             LogError(ex.Message);
             throw;
         }
+    }
+
+    private static bool IsValidColumnName(string str)
+    {
+        return Regex.IsMatch(str, @"^[a-zA-Z0-9]+$");
     }
 
     private PropertyInfo ExtractPropertyInfo<TLocal>(Expression<Func<TLocal, object>> expression)

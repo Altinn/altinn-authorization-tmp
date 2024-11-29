@@ -34,14 +34,14 @@ public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityServ
     /// Ingest Units, SubUnits and Roles
     /// </summary>
     /// <returns></returns>
-    public async Task IngestAll()
+    public async Task IngestAll(bool force = false)
     {
         ////using var a = MyTelemetry.Source.StartActivity("IngestAll");
         ////a?.AddEvent(new System.Diagnostics.ActivityEvent("Ingest starting!"));
 
         await LoadCache();
 
-        if (EntityIdCache.Count == 0)
+        if (EntityIdCache.Count == 0 || force)
         {
             await IngestUnits();
             await LoadCache();
@@ -52,7 +52,7 @@ public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityServ
             Console.WriteLine("Entities in db. Abort ingest");
         }
 
-        if (CacheRole.Count == 0)
+        if (CacheRole.Count == 0 || force)
         {
             await LoadCache();
             await IngestRoles();

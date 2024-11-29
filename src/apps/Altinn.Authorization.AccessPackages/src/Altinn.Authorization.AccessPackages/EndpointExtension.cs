@@ -240,8 +240,8 @@ public static class EndpointExtension
                     continue;
                 }
 
-                var languageCode = TranslateLanguageCode(lang.Split(',')[0]);
-                if (languageCode != "nob")
+                var languageCode = lang.Split(',')[0] ?? "nb-NO";
+                if (!languageCode.StartsWith("nb"))
                 {
                     options.Language = languageCode;
                 }
@@ -286,20 +286,5 @@ public static class EndpointExtension
         }
 
         return options;
-    }
-   
-    private static string TranslateLanguageCode(string languageCode)
-    {
-        switch (languageCode)
-        {
-            default:
-                return languageCode;
-            case "nb-NO":
-                return "nob";
-            case "nn-NO":
-                return "nno";
-            case "en-US":
-                return "eng";
-        }
     }
 }

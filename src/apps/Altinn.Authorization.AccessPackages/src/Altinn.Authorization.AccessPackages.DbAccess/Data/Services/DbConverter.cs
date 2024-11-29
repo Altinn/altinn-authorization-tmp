@@ -279,7 +279,7 @@ public sealed class DbConverter
                         // Håndter List<T> eller IEnumerable<T> egenskaper
                         if (elementType != null)
                         {
-                            var valueData = JsonSerializer.Deserialize(value?.ToString() ?? "[]", property.PropertyType);
+                            var valueData = JsonSerializer.Deserialize(value?.ToString() ?? "[]", property.PropertyType, options: new JsonSerializerOptions(JsonSerializerDefaults.Web));
                             property.SetValue(currentObject, valueData);
                         }
                         else

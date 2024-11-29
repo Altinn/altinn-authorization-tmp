@@ -330,7 +330,7 @@ public class BrregApiWrapper
         {
             string urlPath = $"https://data.brreg.no/enhetsregisteret/api/oppdateringer/roller?afterId={afterChangeId}";
             var res = await client.GetFromJsonAsync<List<RoleChange>>(urlPath);
-            if (res != null)
+            if (res != null && res.Any())
             {
                 changes.AddRange(res);
                 resultCount = res.Count;

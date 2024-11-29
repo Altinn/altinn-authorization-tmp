@@ -44,5 +44,5 @@ public class ExtArea : Area
     /// <summary>
     /// Packages
     /// </summary>
-    public IEnumerable<Package> Packages { get; set; }
+    public List<Package> Packages { get; set; }
 }

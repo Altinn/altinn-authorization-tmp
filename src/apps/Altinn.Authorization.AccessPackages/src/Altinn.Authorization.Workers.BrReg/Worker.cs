@@ -33,7 +33,7 @@ public class Worker : BackgroundService
     {
         /*INGEST*/
         Info("Starting ingest at: {time}", DateTimeOffset.Now);
-        await ingestor.IngestAll();
+        await ingestor.IngestAll(force: false);
         Info("Ingest completed at: {time}", DateTimeOffset.Now);
        
         while (!stoppingToken.IsCancellationRequested)

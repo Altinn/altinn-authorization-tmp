@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder();
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-builder.Configuration.AddUserSecrets("2163e793-201c-46c9-9d8f-a586a3aaf7b5");
 
 var config = new CLIConfig()
 {
@@ -16,7 +15,7 @@ var config = new CLIConfig()
     RunTests = true
 };
 
-builder.Services.AddSingleton<Mockups>();
+//// builder.Services.AddSingleton<Mockups>();
 
 //// builder.AddDbAccessTelemetry();
 builder.AddDatabaseDefinitions();
@@ -46,8 +45,10 @@ if (config.EnableJsonIngest)
     await host.Services.UseJsonIngests();
 }
 
+/*
 var mockService = host.Services.GetRequiredService<Mockups>();
 await mockService.KlientDelegeringMock();
+ */
 
 if (config.RunTests)
 {

@@ -40,13 +40,6 @@ public class Worker : BackgroundService
 
             var res = await wrapper.GetResources();
 
-            foreach (var resource in res.Where(t => t.Identifier == "se_4481_2"))
-            {
-                Console.WriteLine(resource.HasCompetentAuthority.Name);
-                Console.WriteLine(resource.HasCompetentAuthority.Orgcode);
-                Console.WriteLine(resource.HasCompetentAuthority.Organization);
-            }
-
             await engine.ImportResource(res);
 
             await Task.Delay(100000, stoppingToken);

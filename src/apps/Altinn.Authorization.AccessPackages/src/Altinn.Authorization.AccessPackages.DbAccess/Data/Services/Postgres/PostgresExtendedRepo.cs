@@ -99,7 +99,6 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
             using var connection = new NpgsqlConnection(ConnectionString);
             CommandDefinition cmd = new CommandDefinition(query, parameters, cancellationToken: cancellationToken);
             Console.WriteLine(query);
-            Console.WriteLine(ConnectionString);
             return DbConverter.ConvertToObjects<TExtended>(await connection.ExecuteReaderAsync(cmd));
         }
         catch (Exception ex)

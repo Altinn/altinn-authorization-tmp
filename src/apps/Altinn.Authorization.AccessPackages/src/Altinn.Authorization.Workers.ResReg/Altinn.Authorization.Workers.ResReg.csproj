@@ -4,7 +4,6 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<UserSecretsId>dotnet-Altinn.Authorization.Importers.ResReg-6e27169b-b3ee-4e52-b1e5-b927ed537e7e</UserSecretsId>
 		<NoWarn>CS8618</NoWarn>
 	</PropertyGroup>
 

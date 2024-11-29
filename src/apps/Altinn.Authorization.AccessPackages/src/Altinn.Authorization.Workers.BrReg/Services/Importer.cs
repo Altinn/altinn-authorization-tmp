@@ -46,9 +46,9 @@ public class Importer
         RoleService = roleService;
         ChangeRef = new Dictionary<string, int>
         {
-            { "enhet", 0 },
-            { "underenhet", 0 },
-            { "roller", 0 }
+            { "enhet", 19969836 },
+            { "underenhet", 19389083 },
+            { "roller", 2961954 }
         };
     }
     #endregion

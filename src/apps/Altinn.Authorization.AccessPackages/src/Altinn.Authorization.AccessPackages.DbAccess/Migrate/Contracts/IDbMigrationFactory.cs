@@ -56,6 +56,14 @@ public interface IDbMigrationFactory
     Task CreateColumn<T>(Expression<Func<T, object?>> TProperty, CommonDataType dbType, bool nullable = false, string? defaultValue = null);
 
     /// <summary>
+    /// Remove a column if exists
+    /// </summary>
+    /// <typeparam name="T">Type</typeparam>
+    /// <param name="name">Column</param>
+    /// <returns></returns>
+    Task RemoveColumn<T>(string name);
+
+    /// <summary>
     /// Create unique constraint
     /// </summary>
     /// <typeparam name="T"></typeparam>
@@ -69,5 +77,6 @@ public interface IDbMigrationFactory
     /// <typeparam name="TTarget"></typeparam>
     /// <param name="TSourceProperty">Source property</param>
     /// <param name="TTargetProperty">Target property)</param>
-    Task CreateForeignKeyConstraint<TSource, TTarget>(Expression<Func<TSource, object?>> TSourceProperty, Expression<Func<TTarget, object?>>? TTargetProperty = null);
+    /// <param name="cascadeDelete">Cascade delete</param>
+    Task CreateForeignKeyConstraint<TSource, TTarget>(Expression<Func<TSource, object?>> TSourceProperty, Expression<Func<TTarget, object?>>? TTargetProperty = null, bool cascadeDelete = false);
 }
