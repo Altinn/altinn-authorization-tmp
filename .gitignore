@@ -37,3 +37,5 @@ terraform.rc
 
 # MSBuild binlogs
 *.binlog
+src/apps/Altinn.Authorization.AccessPackages/src/Altinn.Authorization.Workers.BrReg/allsubunits
+src/apps/Altinn.Authorization.AccessPackages/src/Altinn.Authorization.Workers.BrReg/allunits
