@@ -5,7 +5,6 @@
         <PackageReference Include="Moq" />
     </ItemGroup>
 
-
     <ItemGroup>
         <ProjectReference Include="..\..\src\Altinn.Authorization\Altinn.Authorization.csproj" />
     </ItemGroup>
