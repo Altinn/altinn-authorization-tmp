@@ -1,16 +1,13 @@
-name: "PR: Libs"
+name: "PR: Pkgs"
 
 on:
   pull_request: {}
-
-env:
-  DIR: src/pkgs
 
 jobs:
   find-verticals:
     uses: ./.github/workflows/_find-verticals.yml
     with:
-      type: lib
+      type: pkg
 
   ci:
     name: CI
