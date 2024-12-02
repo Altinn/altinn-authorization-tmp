@@ -140,7 +140,7 @@ namespace Altinn.Common.PEP.Helpers
             request.Resource = new List<XacmlJsonCategory>();
 
             string party = routeData.Values[ParamParty] as string;
-           
+
             request.AccessSubject.Add(CreateSubjectCategory(context.User.Claims));
             request.Action.Add(CreateActionCategory(requirement.ActionType));
 
@@ -325,7 +325,7 @@ namespace Altinn.Common.PEP.Helpers
             return resourceCategory;
         }
 
-        private static XacmlJsonCategory CreateResourceCategoryForResource(string resourceid, int? partyId, string organizationnumber, string ssn,  bool includeResult = false)
+        private static XacmlJsonCategory CreateResourceCategoryForResource(string resourceid, int? partyId, string organizationnumber, string ssn, bool includeResult = false)
         {
             XacmlJsonCategory resourceCategory = new XacmlJsonCategory();
             resourceCategory.Attribute = new List<XacmlJsonAttribute>();
@@ -446,15 +446,8 @@ namespace Altinn.Common.PEP.Helpers
         /// <returns>true or false, valid or not</returns>
         public static bool ValidatePdpDecision(List<XacmlJsonResult> results, ClaimsPrincipal user)
         {
-            if (results == null)
-            {
-                throw new ArgumentNullException("results");
-            }
-
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
+            ArgumentNullException.ThrowIfNull(results, nameof(results));
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
 
             // We request one thing and then only want one result
             if (results.Count != 1)
@@ -473,15 +466,8 @@ namespace Altinn.Common.PEP.Helpers
         /// <returns>The result of the validation</returns>
         public static EnforcementResult ValidatePdpDecisionDetailed(List<XacmlJsonResult> results, ClaimsPrincipal user)
         {
-            if (results == null)
-            {
-                throw new ArgumentNullException("results");
-            }
-
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
+            ArgumentNullException.ThrowIfNull(results, nameof(results));
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
 
             // We request one thing and then only want one result
             if (results.Count != 1)
@@ -615,13 +601,12 @@ namespace Altinn.Common.PEP.Helpers
 
         private static int? TryParsePartyId(string party)
         {
-            int partyId;
-            if (!int.TryParse(party, out partyId))
+            if (int.TryParse(party, out var partyId))
             {
-                return null;
+                return partyId;
             }
 
-            return partyId;
+            return null;
         }
     }
 }
