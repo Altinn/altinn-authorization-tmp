@@ -4,4 +4,4 @@ using Altinn.Authorization.AccessPackages.Models;
 namespace Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
 
 /// <inheritdoc/>
-public interface IGroupService : IDbExtendedDataService<Group, ExtGroup> { }
+public interface IGroupService : IDbExtendedDataService<EntityGroup, ExtEntityGroup> { }

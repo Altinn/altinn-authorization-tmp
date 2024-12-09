@@ -15,7 +15,7 @@ var config = new CLIConfig()
     RunTests = true
 };
 
-//// builder.Services.AddSingleton<Mockups>();
+builder.Services.AddSingleton<Mockups>();
 
 //// builder.AddDbAccessTelemetry();
 builder.AddDatabaseDefinitions();
@@ -45,10 +45,8 @@ if (config.EnableJsonIngest)
     await host.Services.UseJsonIngests();
 }
 
-/*
 var mockService = host.Services.GetRequiredService<Mockups>();
 await mockService.KlientDelegeringMock();
- */
 
 if (config.RunTests)
 {

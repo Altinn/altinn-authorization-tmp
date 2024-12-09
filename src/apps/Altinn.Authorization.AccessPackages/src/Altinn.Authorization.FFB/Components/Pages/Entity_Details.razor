@@ -2,6 +2,10 @@
 @inject IEntityService entityData
 @inject IAssignmentService assignmentData
 @inject IEntityService entityService
+@inject IGroupService groupService
+@inject IDelegationService delegationService
+@inject IDelegationGroupService delegationGroupService
+@inject IDelegationAssignmentService delegationAssignmentService
 
 @if(Entity != null)
 {
@@ -48,6 +52,7 @@
                         <th>From</th>
                         <th>Role</th>
                         <th>To</th>
+                        <th>Delegated</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,6 +70,16 @@
                                 </div>
                             </td>
                             <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
+                            <td>
+                                @if (Delegations.Count(t => t.AssignmentId == assignment.Id) > 0)
+                                {
+                                    <Icon Name="check"></Icon>
+                                }
+                                else
+                                {
+                                    <Icon Name="xmark"></Icon>
+                                }
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -84,6 +99,7 @@
                         <th>From</th>
                         <th>Role</th>
                         <th>To</th>
+                        <th>Delegated</th>
                     </tr>
                 </thead>    
                 <tbody>
@@ -102,6 +118,16 @@
                                 </div>
                             </td>
                             <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
+                            <td>
+                                @if (Delegations.Count(t => t.AssignmentId == assignment.Id) > 0)
+                                {
+                                    <Icon Name="check"></Icon>
+                                }
+                                else
+                                {
+                                    <Icon Name="xmark"></Icon>
+                                }
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -109,6 +135,57 @@
 
         </div>
     }
+
+    @if (Groups != null && Groups.Any())
+    {
+        <div>
+            <h4>Grupper</h4>
+
+            <table class="bf-table bfc-base-3-bg">
+                <thead>
+                    <tr>
+                        <th>Navn</th>
+                        <th>Delegering</th>
+                    </tr>
+                </thead>    
+                <tbody>
+
+                    @foreach (var group in Groups)
+                    {
+                        <tr class="bf-table-row bf-table-row-compact">
+                            <td><a href=@($"/group/{group.Id}")>@group.Name</a></td>
+                            <td>
+                                @if (DelegationGroups.Count(t => t.GroupId == group.Id) > 0)
+                                {
+                                    <Icon Name="check"></Icon>
+                                }
+                                else
+                                {
+                                    <Icon Name="xmark"></Icon>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    }
+
+    @if (Delegations != null && Delegations.Any())
+    {
+        <div>
+            <ul>
+
+                @foreach (var delegation in Delegations)
+                {
+                    <li>@delegation.Id.ToString()</li>
+                }
+
+            </ul>
+        </div>
+    }
+
 }
 
 
@@ -118,19 +195,50 @@
     public ExtEntity Entity { get; set; }
     public List<ExtAssignment> FromAssignments { get; set; }
     public List<ExtAssignment> ToAssignments { get; set; }
-    
 
+    public List<EntityGroup> Groups { get; set; } = new List<EntityGroup>();
+
+    public List<Delegation> Delegations { get; set; } = new List<Delegation>();
+    public List<DelegationGroup> DelegationGroups { get; set; } = new List<DelegationGroup>();
+    public List<DelegationAssignment> DelegationAssignments { get; set; } = new List<DelegationAssignment>(); 
 
     protected async override Task OnParametersSetAsync()
     {
         var opt = UserData.GetRequestOptions();
-       
+
         Entity = await entityData.GetExtended(Id, options: opt);
         if(Entity != null)
         {
             FromAssignments = [.. await assignmentData.GetExtended(t => t.FromId, Entity.Id, options: opt) ?? new List<ExtAssignment>()];
             ToAssignments = [.. await assignmentData.GetExtended(t => t.ToId, Entity.Id, options: opt) ?? new List<ExtAssignment>()];
-        } 
+
+            Groups = [.. await groupService.Get(t => t.OwnerId, Entity.Id)];
+        }
+
+        // if (FromAssignments != null && FromAssignments.Any())
+        // {
+        //     foreach(var ass in FromAssignments)
+        //     {
+        //         Delegations.AddRange(await delegationService.Get(t => t.AssignmentId, value: ass.Id));
+        //     }
+        // }
+        if (ToAssignments != null && ToAssignments.Any())
+        {
+            foreach (var ass in ToAssignments)
+            {
+                Delegations.AddRange(await delegationService.Get(t => t.AssignmentId, value: ass.Id));
+            }
+        }
+
+        if(Delegations != null && Delegations.Any())
+        {
+            foreach(var delegation in Delegations)
+            {
+                DelegationGroups.AddRange(await delegationGroupService.Get(t => t.DelegationId, delegation.Id));
+                DelegationAssignments.AddRange(await delegationAssignmentService.Get(t => t.DelegationId, delegation.Id));
+            }
+        }
+
     }
 
 }

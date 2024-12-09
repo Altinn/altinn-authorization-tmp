@@ -52,7 +52,7 @@ public class ExtResource : Resource
     public Provider Provider { get; set; }
 
     /// <summary>
-    /// Group
+    /// EntityGroup
     /// </summary>
     public ResourceGroup Group { get; set; }
 

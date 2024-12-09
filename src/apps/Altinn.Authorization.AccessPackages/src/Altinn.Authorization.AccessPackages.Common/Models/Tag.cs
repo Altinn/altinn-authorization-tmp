@@ -32,7 +32,7 @@ public class Tag
 public class ExtTag : Tag
 {
     /// <summary>
-    /// Group (optional)
+    /// EntityGroup (optional)
     /// </summary>
     public TagGroup? Group { get; set; }
 

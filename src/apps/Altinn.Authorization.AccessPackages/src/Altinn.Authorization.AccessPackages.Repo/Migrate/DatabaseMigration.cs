@@ -1,6 +1,7 @@
 ﻿using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Altinn.Authorization.AccessPackages.DbAccess.Migrate.Contracts;
 using Altinn.Authorization.AccessPackages.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.Authorization.AccessPackages.Repo.Migrate;
 
@@ -9,6 +10,16 @@ namespace Altinn.Authorization.AccessPackages.Repo.Migrate;
 /// </summary>
 public class DatabaseMigration : IDatabaseMigration
 {
+    private const string ExtAssignmentView = """
+CREATE VIEW dbo.extassignment AS
+select id, roleid, fromid, toid, isdelegable
+from dbo.assignment
+union all
+select distinct on (a.fromid, map.getroleid, a.toid) a.id, map.getroleid, a.fromid, a.toid, a.isdelegable
+from dbo.assignment as a
+inner join dbo.rolemap as map on a.roleid = map.hasroleid;
+""";
+
     private readonly IDbMigrationFactory _factory;
 
     private bool UseHistory { get { return _factory.UseHistory; } }
@@ -50,27 +61,30 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateColumn<Assignment>(t => t.RoleId, DataTypes.Guid);
         await _factory.CreateColumn<Assignment>(t => t.FromId, DataTypes.Guid);
         await _factory.CreateColumn<Assignment>(t => t.ToId, DataTypes.Guid);
+        await _factory.CreateColumn<Assignment>(t => t.IsDelegable, DataTypes.Bool, defaultValue: "false");
         await _factory.CreateForeignKeyConstraint<Assignment, Role>(t => t.RoleId, cascadeDelete: true);
         await _factory.CreateForeignKeyConstraint<Assignment, Entity>(t => t.FromId, cascadeDelete: true);
         await _factory.CreateForeignKeyConstraint<Assignment, Entity>(t => t.ToId, cascadeDelete: true);
         await _factory.CreateUniqueConstraint<Assignment>([t => t.RoleId, t => t.ToId, t => t.FromId]);
+
+        await _factory.CreateView<Assignment>("assignmentmap", ExtAssignmentView);
     }
 
     private async Task CreateGroups()
     {
-        await _factory.CreateTable<Group>(withHistory: UseHistory);
-        await _factory.CreateColumn<Group>(t => t.Name, DataTypes.String(75));
-        await _factory.CreateColumn<Group>(t => t.OwnerId, DataTypes.Guid);
-        await _factory.CreateColumn<Group>(t => t.RequireRole, DataTypes.Bool);
-        await _factory.CreateForeignKeyConstraint<Group, Entity>(t => t.OwnerId, cascadeDelete: true);
-        await _factory.CreateUniqueConstraint<Group>([t => t.OwnerId, t => t.Name]);
+        await _factory.CreateTable<EntityGroup>(withHistory: UseHistory);
+        await _factory.CreateColumn<EntityGroup>(t => t.Name, DataTypes.String(75));
+        await _factory.CreateColumn<EntityGroup>(t => t.OwnerId, DataTypes.Guid);
+        await _factory.CreateColumn<EntityGroup>(t => t.RequireRole, DataTypes.Bool);
+        await _factory.CreateForeignKeyConstraint<EntityGroup, Entity>(t => t.OwnerId, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<EntityGroup>([t => t.OwnerId, t => t.Name]);
 
         await _factory.CreateTable<GroupMember>(withHistory: UseHistory);
         await _factory.CreateColumn<GroupMember>(t => t.GroupId, DataTypes.Guid);
         await _factory.CreateColumn<GroupMember>(t => t.MemberId, DataTypes.Guid);
         await _factory.CreateColumn<GroupMember>(t => t.ActiveFrom, DataTypes.DateTimeOffset, nullable: true);
         await _factory.CreateColumn<GroupMember>(t => t.ActiveTo, DataTypes.DateTimeOffset, nullable: true);
-        await _factory.CreateForeignKeyConstraint<GroupMember, Group>(t => t.GroupId, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<GroupMember, EntityGroup>(t => t.GroupId, cascadeDelete: true);
         await _factory.CreateForeignKeyConstraint<GroupMember, Entity>(t => t.MemberId, cascadeDelete: true);
         await _factory.CreateUniqueConstraint<GroupMember>([t => t.GroupId, t => t.MemberId]);
 
@@ -79,41 +93,37 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateColumn<GroupAdmin>(t => t.MemberId, DataTypes.Guid);
         await _factory.CreateColumn<GroupAdmin>(t => t.ActiveFrom, DataTypes.DateTimeOffset, nullable: true);
         await _factory.CreateColumn<GroupAdmin>(t => t.ActiveTo, DataTypes.DateTimeOffset, nullable: true);
-        await _factory.CreateForeignKeyConstraint<GroupAdmin, Group>(t => t.GroupId, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<GroupAdmin, EntityGroup>(t => t.GroupId, cascadeDelete: true);
         await _factory.CreateForeignKeyConstraint<GroupAdmin, Entity>(t => t.MemberId, cascadeDelete: true);
         await _factory.CreateUniqueConstraint<GroupAdmin>([t => t.GroupId, t => t.MemberId]);
     }
 
     private async Task CreateDelegations()
     {
-        await _factory.CreateTable<GroupDelegation>(withHistory: UseHistory);
-        await _factory.CreateColumn<GroupDelegation>(t => t.AssignmentId, DataTypes.Guid);
-        await _factory.CreateColumn<GroupDelegation>(t => t.GroupId, DataTypes.Guid);
-        await _factory.CreateForeignKeyConstraint<GroupDelegation, Assignment>(t => t.AssignmentId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<GroupDelegation, Group>(t => t.GroupId, cascadeDelete: true);
-        await _factory.CreateUniqueConstraint<GroupDelegation>([t => t.AssignmentId, t => t.GroupId]);
+        await _factory.CreateTable<Delegation>(withHistory: UseHistory);
+        await _factory.CreateColumn<Delegation>(t => t.AssignmentId, dbType: DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<Delegation, Assignment>(t => t.AssignmentId, t => t.Id, cascadeDelete: true);
 
-        await _factory.CreateTable<RoleDelegation>(withHistory: UseHistory);
-        await _factory.CreateColumn<RoleDelegation>(t => t.AssignmentId, DataTypes.Guid);
-        await _factory.CreateColumn<RoleDelegation>(t => t.RoleId, DataTypes.Guid);
-        await _factory.CreateForeignKeyConstraint<RoleDelegation, Assignment>(t => t.AssignmentId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<RoleDelegation, Role>(t => t.RoleId, cascadeDelete: true);
-        await _factory.CreateUniqueConstraint<RoleDelegation>([t => t.AssignmentId, t => t.RoleId]);
+        await _factory.CreateTable<DelegationPackage>(withHistory: UseHistory);
+        await _factory.CreateColumn<DelegationPackage>(t => t.DelegationId, dbType: DataTypes.Guid);
+        await _factory.CreateColumn<DelegationPackage>(t => t.PackageId, dbType: DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<DelegationPackage, Delegation>(t => t.DelegationId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<DelegationPackage, Package>(t => t.PackageId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<DelegationPackage>([t => t.DelegationId, t => t.PackageId]);
 
-        await _factory.CreateTable<AssignmentDelegation>(withHistory: UseHistory);
-        await _factory.CreateColumn<AssignmentDelegation>(t => t.FromAssignmentId, DataTypes.Guid);
-        await _factory.CreateColumn<AssignmentDelegation>(t => t.ToAssignmentId, DataTypes.Guid);
-        await _factory.CreateForeignKeyConstraint<AssignmentDelegation, Assignment>(t => t.FromAssignmentId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<AssignmentDelegation, Assignment>(t => t.ToAssignmentId, cascadeDelete: true);
-        await _factory.CreateUniqueConstraint<AssignmentDelegation>([t => t.FromAssignmentId, t => t.ToAssignmentId]);
+        await _factory.CreateTable<DelegationGroup>(withHistory: UseHistory);
+        await _factory.CreateColumn<DelegationGroup>(t => t.DelegationId, dbType: DataTypes.Guid);
+        await _factory.CreateColumn<DelegationGroup>(t => t.GroupId, dbType: DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<DelegationGroup, Delegation>(t => t.DelegationId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<DelegationGroup, EntityGroup>(t => t.GroupId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<DelegationGroup>([t => t.DelegationId, t => t.GroupId]);
 
-        await _factory.CreateTable<EntityDelegation>(withHistory: UseHistory);
-        await _factory.CreateColumn<EntityDelegation>(t => t.AssignmentId, DataTypes.Guid);
-        await _factory.CreateColumn<EntityDelegation>(t => t.EntityId, DataTypes.Guid);
-        await _factory.CreateForeignKeyConstraint<EntityDelegation, Assignment>(t => t.AssignmentId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<EntityDelegation, Role>(t => t.EntityId, cascadeDelete: true);
-        await _factory.CreateUniqueConstraint<EntityDelegation>([t => t.AssignmentId, t => t.EntityId]);
-
+        await _factory.CreateTable<DelegationAssignment>(withHistory: UseHistory);
+        await _factory.CreateColumn<DelegationAssignment>(t => t.DelegationId, dbType: DataTypes.Guid);
+        await _factory.CreateColumn<DelegationAssignment>(t => t.AssignmentId, dbType: DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<DelegationAssignment, Delegation>(t => t.DelegationId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<DelegationAssignment, Assignment>(t => t.AssignmentId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<DelegationAssignment>([t => t.DelegationId, t => t.AssignmentId]);
     }
 
     private async Task CreateSchema()
@@ -150,8 +160,8 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateColumn<Entity>(t => t.TypeId, DataTypes.Guid);
         await _factory.CreateColumn<Entity>(t => t.VariantId, DataTypes.Guid);
         await _factory.CreateColumn<Entity>(t => t.RefId, DataTypes.String(50));
-        await _factory.CreateForeignKeyConstraint<Entity, EntityType>(t => t.TypeId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<Entity, EntityVariant>(t => t.VariantId, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<Entity, EntityType>(t => t.TypeId, cascadeDelete: false);
+        await _factory.CreateForeignKeyConstraint<Entity, EntityVariant>(t => t.VariantId, cascadeDelete: false);
         await _factory.CreateUniqueConstraint<Entity>([t => t.Name, t => t.TypeId, t => t.RefId]);
     }
     
@@ -167,7 +177,7 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateColumn<Area>(t => t.Description, DataTypes.String(750));
         await _factory.CreateColumn<Area>(t => t.IconName, DataTypes.String(50));
         await _factory.CreateColumn<Area>(t => t.GroupId, DataTypes.Guid);
-        await _factory.CreateForeignKeyConstraint<Area, AreaGroup>(t => t.GroupId, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<Area, AreaGroup>(t => t.GroupId, cascadeDelete: false);
         await _factory.CreateUniqueConstraint<Area>([t => t.Name]);
     }
 
@@ -195,27 +205,25 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateColumn<Package>(t => t.ProviderId, DataTypes.Guid);
         await _factory.CreateColumn<Package>(t => t.EntityTypeId, DataTypes.Guid);
         await _factory.CreateColumn<Package>(t => t.AreaId, DataTypes.Guid);
-        await _factory.CreateForeignKeyConstraint<Package, Provider>(t => t.ProviderId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<Package, EntityType>(t => t.EntityTypeId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<Package, Area>(t => t.AreaId); //// TODO: cascadeDelete: true Or ???
+        await _factory.CreateForeignKeyConstraint<Package, Provider>(t => t.ProviderId, cascadeDelete: false);
+        await _factory.CreateForeignKeyConstraint<Package, EntityType>(t => t.EntityTypeId, cascadeDelete: false);
+        await _factory.CreateForeignKeyConstraint<Package, Area>(t => t.AreaId, cascadeDelete: false);
         await _factory.CreateUniqueConstraint<Package>([t => t.ProviderId, t => t.Name]);
 
         await _factory.CreateTable<PackageTag>(withHistory: UseHistory);
         await _factory.CreateColumn<PackageTag>(t => t.PackageId, DataTypes.Guid);
         await _factory.CreateColumn<PackageTag>(t => t.TagId, DataTypes.Guid);
         await _factory.CreateForeignKeyConstraint<PackageTag, Package>(t => t.PackageId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<PackageTag, Tag>(t => t.TagId, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<PackageTag, Tag>(t => t.TagId, cascadeDelete: false); // ??
         await _factory.CreateUniqueConstraint<PackageTag>([t => t.PackageId, t => t.TagId]);
 
         await _factory.CreateTable<PackageDelegation>(withHistory: UseHistory);
         await _factory.CreateColumn<PackageDelegation>(t => t.PackageId, DataTypes.Guid);
         await _factory.CreateColumn<PackageDelegation>(t => t.ForId, DataTypes.Guid);
         await _factory.CreateColumn<PackageDelegation>(t => t.ToId, DataTypes.Guid);
-        await _factory.CreateColumn<PackageDelegation>(t => t.ById, DataTypes.Guid);
         await _factory.CreateForeignKeyConstraint<PackageDelegation, Package>(t => t.PackageId, cascadeDelete: true);
         await _factory.CreateForeignKeyConstraint<PackageDelegation, Entity>(t => t.ForId, cascadeDelete: true);
         await _factory.CreateForeignKeyConstraint<PackageDelegation, Entity>(t => t.ToId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<PackageDelegation, Entity>(t => t.ById); // TODO: cascadeDelete: true ???
         await _factory.CreateUniqueConstraint<PackageDelegation>([t => t.ForId, t => t.ToId, t => t.PackageId]);
     }
 
@@ -228,8 +236,8 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateColumn<Role>(t => t.Code, DataTypes.String(15));
         await _factory.CreateColumn<Role>(t => t.Description, DataTypes.String(1500));
         await _factory.CreateColumn<Role>(t => t.Urn, DataTypes.String(250));
-        await _factory.CreateForeignKeyConstraint<Role, EntityType>(t => t.EntityTypeId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<Role, Provider>(t => t.ProviderId, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<Role, EntityType>(t => t.EntityTypeId, cascadeDelete: false); // ??
+        await _factory.CreateForeignKeyConstraint<Role, Provider>(t => t.ProviderId, cascadeDelete: false);
         await _factory.CreateUniqueConstraint<Role>([t => t.Urn]);
         await _factory.CreateUniqueConstraint<Role>([t => t.EntityTypeId, t => t.Name]);
         await _factory.CreateUniqueConstraint<Role>([t => t.EntityTypeId, t => t.Code]);
@@ -237,12 +245,11 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateTable<RolePackage>(withHistory: UseHistory);
         await _factory.CreateColumn<RolePackage>(t => t.RoleId, DataTypes.Guid);
         await _factory.CreateColumn<RolePackage>(t => t.PackageId, DataTypes.Guid);
-
         await _factory.RemoveColumn<RolePackage>("IsActor");
         await _factory.RemoveColumn<RolePackage>("IsAdmin");
-
         await _factory.CreateColumn<RolePackage>(t => t.HasAccess, DataTypes.Bool, defaultValue: "false");
         await _factory.CreateColumn<RolePackage>(t => t.CanDelegate, DataTypes.Bool, defaultValue: "false");
+
         await _factory.CreateColumn<RolePackage>(t => t.EntityVariantId, DataTypes.Guid, nullable: true);
         await _factory.CreateForeignKeyConstraint<RolePackage, Role>(t => t.RoleId, cascadeDelete: true);
         await _factory.CreateForeignKeyConstraint<RolePackage, Package>(t => t.PackageId, cascadeDelete: true);
@@ -268,8 +275,8 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateTable<RoleMap>(withHistory: UseHistory);
         await _factory.CreateColumn<RoleMap>(t => t.HasRoleId, DataTypes.Guid);
         await _factory.CreateColumn<RoleMap>(t => t.GetRoleId, DataTypes.Guid);
-        await _factory.CreateForeignKeyConstraint<RoleMap, Role>(t => t.HasRoleId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<RoleMap, Role>(t => t.GetRoleId, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<RoleMap, Role>(t => t.HasRoleId, cascadeDelete: false);
+        await _factory.CreateForeignKeyConstraint<RoleMap, Role>(t => t.GetRoleId, cascadeDelete: false);
         await _factory.CreateUniqueConstraint<RoleMap>([t => t.HasRoleId, t => t.GetRoleId]);
     }
 
@@ -282,7 +289,7 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateTable<ResourceGroup>(withHistory: UseHistory, withTranslation: UseTranslation);
         await _factory.CreateColumn<ResourceGroup>(t => t.Name, DataTypes.String(50));
         await _factory.CreateColumn<ResourceGroup>(t => t.ProviderId, DataTypes.Guid);
-        await _factory.CreateForeignKeyConstraint<ResourceGroup, Provider>(t => t.ProviderId, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<ResourceGroup, Provider>(t => t.ProviderId, cascadeDelete: false);
         await _factory.CreateUniqueConstraint<ResourceGroup>([t => t.ProviderId, t => t.Name]);
 
         /*
@@ -300,9 +307,9 @@ public class DatabaseMigration : IDatabaseMigration
         await _factory.CreateColumn<Resource>(t => t.GroupId, DataTypes.Guid);
         await _factory.CreateColumn<Resource>(t => t.RefId, DataTypes.String(150));
         await _factory.CreateColumn<Resource>(t => t.Description, DataTypes.String(150), nullable: true);
-        await _factory.CreateForeignKeyConstraint<Resource, Provider>(t => t.ProviderId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<Resource, ResourceType>(t => t.TypeId); //// TODO cascadeDelete: true ???
-        await _factory.CreateForeignKeyConstraint<Resource, ResourceGroup>(t => t.GroupId); //// TODO: cascadeDelete: true ???
+        await _factory.CreateForeignKeyConstraint<Resource, Provider>(t => t.ProviderId, cascadeDelete: false);
+        await _factory.CreateForeignKeyConstraint<Resource, ResourceType>(t => t.TypeId, cascadeDelete: false);
+        await _factory.CreateForeignKeyConstraint<Resource, ResourceGroup>(t => t.GroupId, cascadeDelete: false);
         await _factory.CreateUniqueConstraint<Resource>([t => t.ProviderId, t => t.GroupId, t => t.RefId]);
 
         /*

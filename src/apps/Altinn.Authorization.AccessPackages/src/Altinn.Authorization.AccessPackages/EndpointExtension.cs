@@ -21,15 +21,12 @@ public static class EndpointExtension
         app.MapDefaultsExt<IAreaService, Area, ExtArea>();
         app.MapDefaults<IAreaGroupService, AreaGroup>();
         app.MapDefaultsExt<IAssignmentService, Assignment, ExtAssignment>();
-        app.MapDefaultsExt<IAssignmentDelegationService, AssignmentDelegation, ExtAssignmentDelegation>();
         app.MapDefaultsExt<IEntityService, Entity, ExtEntity>(mapSearch: true);
-        app.MapDefaultsExt<IEntityDelegationService, EntityDelegation, ExtEntityDelegation>();
         app.MapDefaultsExt<IEntityTypeService, EntityType, ExtEntityType>();
         app.MapDefaultsExt<IEntityVariantService, EntityVariant, ExtEntityVariant>();
         app.MapCrossDefaults<EntityVariant, IEntityVariantRoleService, EntityVariantRole, Role>("variants", "roles");
-        app.MapDefaultsExt<IGroupService, Group, ExtGroup>();
+        app.MapDefaultsExt<IGroupService, EntityGroup, ExtEntityGroup>();
         app.MapDefaultsExt<IGroupAdminService, GroupAdmin, ExtGroupAdmin>();
-        app.MapDefaultsExt<IGroupDelegationService, GroupDelegation, ExtGroupDelegation>();
         app.MapDefaultsExt<IGroupMemberService, GroupMember, ExtGroupMember>();
         app.MapDefaultsExt<IPackageService, Package, ExtPackage>(mapSearch: true);
         app.MapDefaultsExt<IPackageDelegationService, PackageDelegation, ExtPackageDelegation>();
@@ -40,11 +37,15 @@ public static class EndpointExtension
         app.MapDefaultsExt<IResourceGroupService, ResourceGroup, ExtResourceGroup>();
         app.MapDefaults<IResourceTypeService, ResourceType>();
         app.MapDefaultsExt<IRoleService, Role, ExtRole>();
-        app.MapDefaultsExt<IRoleDelegationService, RoleDelegation, ExtRoleDelegation>();
         app.MapDefaultsExt<IRoleMapService, RoleMap, ExtRoleMap>();
         app.MapDefaultsExt<IRolePackageService, RolePackage, ExtRolePackage>();
         app.MapDefaultsExt<ITagService, Tag, ExtTag>();
         app.MapDefaults<ITagGroupService, TagGroup>();
+
+        app.MapDefaultsExt<IDelegationService, Delegation, ExtDelegation>();
+        app.MapCrossDefaults<Delegation, IDelegationPackageService, DelegationPackage, Package>("delegations", "packages");
+        app.MapCrossDefaults<Delegation, IDelegationGroupService, DelegationGroup, EntityGroup>("delegations", "groups");
+        app.MapCrossDefaults<Delegation, IDelegationAssignmentService, DelegationAssignment, Assignment>("delegations", "assignments");
         return app;
     }
 
@@ -61,7 +62,8 @@ public static class EndpointExtension
     /// <param name="mapIngest">mapIngest</param>
     /// <param name="mapSearch">mapSearch</param>
     /// <returns></returns>
-    public static WebApplication MapDefaults<TRepo, T>(this WebApplication app, bool mapPost = true, bool mapPut = true, bool mapDelete = true, bool mapGetAll = true, bool mapIngest = false, bool mapSearch = false) where TRepo : IDbBasicDataService<T>
+    public static WebApplication MapDefaults<TRepo, T>(this WebApplication app, bool mapPost = true, bool mapPut = true, bool mapDelete = true, bool mapGetAll = true, bool mapIngest = false, bool mapSearch = false) 
+        where TRepo : IDbBasicDataService<T>
     {
         string name = typeof(T).Name;
         app.MapGet($"/{name.ToLower()}" + "/{id}", (HttpRequest request, TRepo service, Guid id) => { return service.Get(id, options: GenerateRequestOptions(request)); }).WithOpenApi().WithTags(name).WithSummary("Get single " + name);

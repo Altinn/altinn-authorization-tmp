@@ -37,7 +37,7 @@ public class Area
 public class ExtArea : Area
 {
     /// <summary>
-    /// Group
+    /// EntityGroup
     /// </summary>
     public AreaGroup Group { get; set; }
 

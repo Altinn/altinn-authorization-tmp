@@ -449,4 +449,9 @@ public class SqlMigrationFactory : IDbMigrationFactory
         Console.WriteLine("INFO: " + message);
         Console.ForegroundColor = ConsoleColor.White;
     }
+
+    public Task CreateView<T>(string name, string query)
+    {
+        throw new NotImplementedException();
+    }
 }

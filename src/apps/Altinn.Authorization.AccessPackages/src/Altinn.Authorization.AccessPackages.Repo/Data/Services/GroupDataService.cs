@@ -6,15 +6,15 @@ using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
 namespace Altinn.Authorization.AccessPackages.Repo.Data.Services;
 
 /// <summary>
-/// Data service for Group
+/// Data service for EntityGroup
 /// </summary>
-public class GroupDataService : BaseExtendedDataService<Group, ExtGroup>, IGroupService
+public class GroupDataService : BaseExtendedDataService<EntityGroup, ExtEntityGroup>, IGroupService
 {
     /// <summary>
-    /// Data service for Group
+    /// Data service for EntityGroup
     /// </summary>
     /// <param name="repo">Extended repo</param>
-    public GroupDataService(IDbExtendedRepo<Group, ExtGroup> repo) : base(repo)
+    public GroupDataService(IDbExtendedRepo<EntityGroup, ExtEntityGroup> repo) : base(repo)
     {
         ExtendedRepo.Join<Entity>(t => t.OwnerId, t => t.Id, t => t.Owner);
     }

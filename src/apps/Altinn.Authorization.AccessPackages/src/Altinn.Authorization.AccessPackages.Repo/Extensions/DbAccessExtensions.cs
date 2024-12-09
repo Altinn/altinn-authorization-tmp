@@ -191,11 +191,11 @@ public static class DbAccessExtensions
         builder.Services.AddSingleton<IGroupService, GroupDataService>();
         builder.Services.AddSingleton<IGroupMemberService, GroupMemberDataService>();
         builder.Services.AddSingleton<IGroupAdminService, GroupAdminDataService>();
-        builder.Services.AddSingleton<IAssignmentDelegationService, AssignmentDelegationDataService>();
-        builder.Services.AddSingleton<IRoleDelegationService, RoleDelegationDataService>();
-        builder.Services.AddSingleton<IEntityDelegationService, EntityDelegationDataService>();
-        builder.Services.AddSingleton<IGroupDelegationService, GroupDelegationDataService>();
         builder.Services.AddSingleton<IPackageDelegationService, PackageDelegationDataService>();
+        builder.Services.AddSingleton<IDelegationService, DelegationDataService>();
+        builder.Services.AddSingleton<IDelegationPackageService, DelegationPackageDataService>();
+        builder.Services.AddSingleton<IDelegationGroupService, DelegationGroupDataService>();
+        builder.Services.AddSingleton<IDelegationAssignmentService, DelegationAssignmentDataService>();
         #endregion
 
         return builder;
@@ -206,15 +206,12 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<Area, ExtArea>, PostgresExtendedRepo<Area, ExtArea>>();
         services.AddSingleton<IDbBasicRepo<AreaGroup>, PostgresBasicRepo<AreaGroup>>();
         services.AddSingleton<IDbExtendedRepo<Assignment, ExtAssignment>, PostgresExtendedRepo<Assignment, ExtAssignment>>();
-        services.AddSingleton<IDbExtendedRepo<AssignmentDelegation, ExtAssignmentDelegation>, PostgresExtendedRepo<AssignmentDelegation, ExtAssignmentDelegation>>();
         services.AddSingleton<IDbExtendedRepo<Entity, ExtEntity>, PostgresExtendedRepo<Entity, ExtEntity>>();
-        services.AddSingleton<IDbExtendedRepo<EntityDelegation, ExtEntityDelegation>, PostgresExtendedRepo<EntityDelegation, ExtEntityDelegation>>();
         services.AddSingleton<IDbExtendedRepo<EntityType, ExtEntityType>, PostgresExtendedRepo<EntityType, ExtEntityType>>();
         services.AddSingleton<IDbExtendedRepo<EntityVariant, ExtEntityVariant>, PostgresExtendedRepo<EntityVariant, ExtEntityVariant>>();
         services.AddSingleton<IDbCrossRepo<EntityVariant, EntityVariantRole, Role>, PostgresCrossRepo<EntityVariant, EntityVariantRole, Role>>();
-        services.AddSingleton<IDbExtendedRepo<Group, ExtGroup>, PostgresExtendedRepo<Group, ExtGroup>>();
+        services.AddSingleton<IDbExtendedRepo<EntityGroup, ExtEntityGroup>, PostgresExtendedRepo<EntityGroup, ExtEntityGroup>>();
         services.AddSingleton<IDbExtendedRepo<GroupAdmin, ExtGroupAdmin>, PostgresExtendedRepo<GroupAdmin, ExtGroupAdmin>>();
-        services.AddSingleton<IDbExtendedRepo<GroupDelegation, ExtGroupDelegation>, PostgresExtendedRepo<GroupDelegation, ExtGroupDelegation>>();
         services.AddSingleton<IDbExtendedRepo<GroupMember, ExtGroupMember>, PostgresExtendedRepo<GroupMember, ExtGroupMember>>();
         services.AddSingleton<IDbExtendedRepo<Package, ExtPackage>, PostgresExtendedRepo<Package, ExtPackage>>();
         services.AddSingleton<IDbExtendedRepo<PackageDelegation, ExtPackageDelegation>, PostgresExtendedRepo<PackageDelegation, ExtPackageDelegation>>();
@@ -225,11 +222,15 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<ResourceGroup, ExtResourceGroup>, PostgresExtendedRepo<ResourceGroup, ExtResourceGroup>>();
         services.AddSingleton<IDbBasicRepo<ResourceType>, PostgresBasicRepo<ResourceType>>();
         services.AddSingleton<IDbExtendedRepo<Role, ExtRole>, PostgresExtendedRepo<Role, ExtRole>>();
-        services.AddSingleton<IDbExtendedRepo<RoleDelegation, ExtRoleDelegation>, PostgresExtendedRepo<RoleDelegation, ExtRoleDelegation>>();
         services.AddSingleton<IDbExtendedRepo<RoleMap, ExtRoleMap>, PostgresExtendedRepo<RoleMap, ExtRoleMap>>();
         services.AddSingleton<IDbExtendedRepo<RolePackage, ExtRolePackage>, PostgresExtendedRepo<RolePackage, ExtRolePackage>>();
         services.AddSingleton<IDbExtendedRepo<Tag, ExtTag>, PostgresExtendedRepo<Tag, ExtTag>>();
         services.AddSingleton<IDbBasicRepo<TagGroup>, PostgresBasicRepo<TagGroup>>();
+
+        services.AddSingleton<IDbExtendedRepo<Delegation, ExtDelegation>, PostgresExtendedRepo<Delegation, ExtDelegation>>();
+        services.AddSingleton<IDbCrossRepo<Delegation, DelegationPackage, Package>, PostgresCrossRepo<Delegation, DelegationPackage, Package>>();
+        services.AddSingleton<IDbCrossRepo<Delegation, DelegationGroup, EntityGroup>, PostgresCrossRepo<Delegation, DelegationGroup, EntityGroup>>();
+        services.AddSingleton<IDbCrossRepo<Delegation, DelegationAssignment, Assignment>, PostgresCrossRepo<Delegation, DelegationAssignment, Assignment>>();
     }
 
     private static void RegisterSqlDataRepo(IServiceCollection services)
@@ -237,15 +238,12 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<Area, ExtArea>, SqlExtendedRepo<Area, ExtArea>>();
         services.AddSingleton<IDbBasicRepo<AreaGroup>, SqlBasicRepo<AreaGroup>>();
         services.AddSingleton<IDbExtendedRepo<Assignment, ExtAssignment>, SqlExtendedRepo<Assignment, ExtAssignment>>();
-        services.AddSingleton<IDbExtendedRepo<AssignmentDelegation, ExtAssignmentDelegation>, SqlExtendedRepo<AssignmentDelegation, ExtAssignmentDelegation>>();
         services.AddSingleton<IDbExtendedRepo<Entity, ExtEntity>, SqlExtendedRepo<Entity, ExtEntity>>();
-        services.AddSingleton<IDbExtendedRepo<EntityDelegation, ExtEntityDelegation>, SqlExtendedRepo<EntityDelegation, ExtEntityDelegation>>();
         services.AddSingleton<IDbExtendedRepo<EntityType, ExtEntityType>, SqlExtendedRepo<EntityType, ExtEntityType>>();
         services.AddSingleton<IDbExtendedRepo<EntityVariant, ExtEntityVariant>, SqlExtendedRepo<EntityVariant, ExtEntityVariant>>();
         services.AddSingleton<IDbCrossRepo<EntityVariant, EntityVariantRole, Role>, SqlCrossRepo<EntityVariant, EntityVariantRole, Role>>();
-        services.AddSingleton<IDbExtendedRepo<Group, ExtGroup>, SqlExtendedRepo<Group, ExtGroup>>();
+        services.AddSingleton<IDbExtendedRepo<EntityGroup, ExtEntityGroup>, SqlExtendedRepo<EntityGroup, ExtEntityGroup>>();
         services.AddSingleton<IDbExtendedRepo<GroupAdmin, ExtGroupAdmin>, SqlExtendedRepo<GroupAdmin, ExtGroupAdmin>>();
-        services.AddSingleton<IDbExtendedRepo<GroupDelegation, ExtGroupDelegation>, SqlExtendedRepo<GroupDelegation, ExtGroupDelegation>>();
         services.AddSingleton<IDbExtendedRepo<GroupMember, ExtGroupMember>, SqlExtendedRepo<GroupMember, ExtGroupMember>>();
         services.AddSingleton<IDbExtendedRepo<Package, ExtPackage>, SqlExtendedRepo<Package, ExtPackage>>();
         services.AddSingleton<IDbExtendedRepo<PackageDelegation, ExtPackageDelegation>, SqlExtendedRepo<PackageDelegation, ExtPackageDelegation>>();
@@ -256,10 +254,14 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<ResourceGroup, ExtResourceGroup>, SqlExtendedRepo<ResourceGroup, ExtResourceGroup>>();
         services.AddSingleton<IDbBasicRepo<ResourceType>, SqlBasicRepo<ResourceType>>();
         services.AddSingleton<IDbExtendedRepo<Role, ExtRole>, SqlExtendedRepo<Role, ExtRole>>();
-        services.AddSingleton<IDbExtendedRepo<RoleDelegation, ExtRoleDelegation>, SqlExtendedRepo<RoleDelegation, ExtRoleDelegation>>();
         services.AddSingleton<IDbExtendedRepo<RoleMap, ExtRoleMap>, SqlExtendedRepo<RoleMap, ExtRoleMap>>();
         services.AddSingleton<IDbExtendedRepo<RolePackage, ExtRolePackage>, SqlExtendedRepo<RolePackage, ExtRolePackage>>();
         services.AddSingleton<IDbExtendedRepo<Tag, ExtTag>, SqlExtendedRepo<Tag, ExtTag>>();
         services.AddSingleton<IDbBasicRepo<TagGroup>, SqlBasicRepo<TagGroup>>();
+
+        services.AddSingleton<IDbExtendedRepo<Delegation, ExtDelegation>, SqlExtendedRepo<Delegation, ExtDelegation>>();
+        services.AddSingleton<IDbCrossRepo<Delegation, DelegationPackage, Package>, SqlCrossRepo<Delegation, DelegationPackage, Package>>();
+        services.AddSingleton<IDbCrossRepo<Delegation, DelegationGroup, EntityGroup>, SqlCrossRepo<Delegation, DelegationGroup, EntityGroup>>();
+        services.AddSingleton<IDbCrossRepo<Delegation, DelegationAssignment, Assignment>, SqlCrossRepo<Delegation, DelegationAssignment, Assignment>>();
     }
 }

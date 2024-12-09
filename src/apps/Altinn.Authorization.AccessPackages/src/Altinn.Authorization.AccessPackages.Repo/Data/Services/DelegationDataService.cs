@@ -6,17 +6,16 @@ using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
 namespace Altinn.Authorization.AccessPackages.Repo.Data.Services;
 
 /// <summary>
-/// Data service for RoleDelegation
+/// Data service for Delegation
 /// </summary>
-public class RoleDelegationDataService : BaseExtendedDataService<RoleDelegation, ExtRoleDelegation>, IRoleDelegationService
+public class DelegationDataService : BaseExtendedDataService<Delegation, ExtDelegation>, IDelegationService
 {
     /// <summary>
-    /// Data service for RoleDelegation
+    /// Data service for Delegation
     /// </summary>
     /// <param name="repo">Extended repo</param>
-    public RoleDelegationDataService(IDbExtendedRepo<RoleDelegation, ExtRoleDelegation> repo) : base(repo)
+    public DelegationDataService(IDbExtendedRepo<Delegation, ExtDelegation> repo) : base(repo)
     {
         ExtendedRepo.Join<Assignment>(t => t.AssignmentId, t => t.Id, t => t.Assignment);
-        ExtendedRepo.Join<Role>(t => t.RoleId, t => t.Id, t => t.Role);
     }
 }

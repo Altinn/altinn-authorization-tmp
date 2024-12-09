@@ -52,12 +52,13 @@ public class DatabaseDefinitions
         DbDefinitions.Add<TagGroup>(Config);
 
         DbDefinitions.Add<Assignment, ExtAssignment>(Config);
-        DbDefinitions.Add<Group, ExtGroup>(Config);
+        DbDefinitions.Add<EntityGroup, ExtEntityGroup>(Config);
         DbDefinitions.Add<GroupMember, ExtGroupMember>(Config);
         DbDefinitions.Add<GroupAdmin, ExtGroupAdmin>(Config);
-        DbDefinitions.Add<AssignmentDelegation, ExtAssignmentDelegation>(Config);
-        DbDefinitions.Add<RoleDelegation, ExtRoleDelegation>(Config);
-        DbDefinitions.Add<EntityDelegation, ExtEntityDelegation>(Config);
-        DbDefinitions.Add<GroupDelegation, ExtGroupDelegation>(Config);
+
+        DbDefinitions.Add<Delegation, ExtDelegation>(Config);
+        DbDefinitions.Add<DelegationPackage, ExtDelegationPackage>(Config);
+        DbDefinitions.Add<DelegationGroup, ExtDelegationGroup>(Config);
+        DbDefinitions.Add<DelegationAssignment, ExtDelegationAssignment>(Config);
     }
 }

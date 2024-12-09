@@ -37,6 +37,13 @@ public interface IDbMigrationFactory
     Task CreateFunction(string name, string query);
 
     /// <summary>
+    /// Create view
+    /// </summary>
+    /// <param name="name">Name</param>
+    /// <param name="query">Query</param>
+    Task CreateView<T>(string name, string query);
+
+    /// <summary>
     /// Create table
     /// </summary>
     /// <typeparam name="T"></typeparam>

@@ -4,4 +4,4 @@ using Altinn.Authorization.AccessPackages.Models;
 namespace Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
 
 /// <inheritdoc/>
-public interface IAssignmentDelegationService : IDbExtendedDataService<AssignmentDelegation, ExtAssignmentDelegation> { }
+public interface IDelegationAssignmentService : IDbCrossDataService<Delegation, DelegationAssignment, Assignment> { }

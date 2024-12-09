@@ -16,7 +16,7 @@ public class GroupMemberDataService : BaseExtendedDataService<GroupMember, ExtGr
     /// <param name="repo">Extended repo</param>
     public GroupMemberDataService(IDbExtendedRepo<GroupMember, ExtGroupMember> repo) : base(repo)
     {
-        ExtendedRepo.Join<Group>(t => t.GroupId, t => t.Id, t => t.Group);
+        ExtendedRepo.Join<EntityGroup>(t => t.GroupId, t => t.Id, t => t.Group);
         ExtendedRepo.Join<Entity>(t => t.MemberId, t => t.Id, t => t.Member);
     }
 }

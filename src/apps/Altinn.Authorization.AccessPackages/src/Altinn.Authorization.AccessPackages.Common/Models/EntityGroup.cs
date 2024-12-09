@@ -1,11 +1,11 @@
 ﻿namespace Altinn.Authorization.AccessPackages.Models;
 
 /// <summary>
-/// Group for grouping entities on an entity
+/// EntityGroup for grouping entities on an entity
 /// Members and Admins are stored in GroupMember and GroupAdmin
 /// RequireRole is a hint that members without an existing role should not be allowed as a member or admin
 /// </summary>
-public class Group
+public class EntityGroup
 {
     /// <summary>
     /// Identifier
@@ -29,9 +29,9 @@ public class Group
 }
 
 /// <summary>
-/// Extended Group
+/// Extended EntityGroup
 /// </summary>
-public class ExtGroup : Group
+public class ExtEntityGroup : EntityGroup
 {
     /// <summary>
     /// Owner Entity

@@ -1,7 +1,7 @@
 ﻿namespace Altinn.Authorization.AccessPackages.Models;
 
 /// <summary>
-/// Group administrator
+/// EntityGroup administrator
 /// Members here are defined as administrators of the refrenced group
 /// ActiveFrom/ActiveTo are optional for temporary memberships or delayed startup or end
 /// </summary>
@@ -13,9 +13,9 @@ public class GroupAdmin
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Group refrence
+    /// EntityGroup refrence
     /// </summary>
-    public Guid GroupId { get; set; } // Group
+    public Guid GroupId { get; set; } // EntityGroup
 
     /// <summary>
     /// Member refrence
@@ -34,14 +34,14 @@ public class GroupAdmin
 }
 
 /// <summary>
-/// Extended Group Administrator
+/// Extended EntityGroup Administrator
 /// </summary>
 public class ExtGroupAdmin : GroupAdmin
 {
     /// <summary>
-    /// Group
+    /// EntityGroup
     /// </summary>
-    public Group Group { get; set; }
+    public EntityGroup Group { get; set; }
 
     /// <summary>
     /// Member entity

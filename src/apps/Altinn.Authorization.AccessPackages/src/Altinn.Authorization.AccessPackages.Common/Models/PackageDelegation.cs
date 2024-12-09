@@ -2,6 +2,7 @@
 
 /// <summary>
 /// PackageDelegation
+/// SingleRight - Package
 /// </summary>
 public class PackageDelegation
 {
@@ -25,10 +26,10 @@ public class PackageDelegation
     /// </summary>
     public Guid ToId { get; set; }
 
-    /// <summary>
-    /// ById
-    /// </summary>
-    public Guid ById { get; set; }
+    //// <summary>
+    //// ById
+    //// </summary>
+    //// public Guid ById { get; set; }
 }
 
 /// <summary>

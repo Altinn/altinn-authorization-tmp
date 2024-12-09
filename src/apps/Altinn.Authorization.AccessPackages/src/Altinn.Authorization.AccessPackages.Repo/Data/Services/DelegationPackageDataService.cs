@@ -2,18 +2,17 @@
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Services;
 using Altinn.Authorization.AccessPackages.Models;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
-using Microsoft.Extensions.Logging;
 
 namespace Altinn.Authorization.AccessPackages.Repo.Data.Services;
 
 /// <summary>
-/// Data service for EntityGroup
+/// Data service for DelegationPackage
 /// </summary>
-public class AreaGroupDataService : BaseDataService<AreaGroup>, IAreaGroupService
+public class DelegationPackageDataService : BaseCrossDataService<Delegation, DelegationPackage, Package>, IDelegationPackageService
 {
     /// <summary>
-    /// Data service for EntityGroup
+    /// Data service for Delegation
     /// </summary>
-    /// <param name="repo">Extended repo</param>
-    public AreaGroupDataService(IDbBasicRepo<AreaGroup> repo) : base(repo) { }
+    /// <param name="repo">Cross repo</param>
+    public DelegationPackageDataService(IDbCrossRepo<Delegation, DelegationPackage, Package> repo) : base(repo) { }
 }

@@ -18,7 +18,6 @@ public class PackageDelegationDataService : BaseExtendedDataService<PackageDeleg
     {
         ExtendedRepo.Join<Entity>(t => t.ForId, t => t.Id, t => t.For);
         ExtendedRepo.Join<Entity>(t => t.ToId, t => t.Id, t => t.To);
-        ExtendedRepo.Join<Entity>(t => t.ById, t => t.Id, t => t.By);
         ExtendedRepo.Join<Package>(t => t.PackageId, t => t.Id, t => t.Package);
     }
 }

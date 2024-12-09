@@ -1,7 +1,7 @@
 ﻿namespace Altinn.Authorization.AccessPackages.Models;
 
 /// <summary>
-/// Group member
+/// EntityGroup member
 /// Members of the refrenced group
 /// ActiveFrom/ActiveTo are optional for temporary memberships or delayed startup or end
 /// </summary>
@@ -13,9 +13,9 @@ public class GroupMember
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Group refrence
+    /// EntityGroup refrence
     /// </summary>
-    public Guid GroupId { get; set; } // Group
+    public Guid GroupId { get; set; } // EntityGroup
 
     /// <summary>
     /// Member refrence
@@ -34,14 +34,14 @@ public class GroupMember
 }
 
 /// <summary>
-/// Extended Group Member
+/// Extended EntityGroup Member
 /// </summary>
 public class ExtGroupMember : GroupMember
 {
     /// <summary>
-    /// Group
+    /// EntityGroup
     /// </summary>
-    public Group Group { get; set; }
+    public EntityGroup Group { get; set; }
 
     /// <summary>
     /// Member entity

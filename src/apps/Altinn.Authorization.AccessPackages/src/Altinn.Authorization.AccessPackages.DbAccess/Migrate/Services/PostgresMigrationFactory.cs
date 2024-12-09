@@ -197,6 +197,17 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     }
 
     /// <inheritdoc/>
+    public async Task CreateView<T>(string name, string query)
+    {
+        string migrationKey = $"CREATE VIEW {defaultSchema}.{name}";
+        if (NeedMigration<T>(migrationKey))
+        {
+            //await ExecuteQuery(query);
+            await LogMigration<T>(migrationKey, query);
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task CreateSchema(string name)
     {
         string migrationKey = $"CREATE SCHEMA {name}";
