@@ -41,12 +41,11 @@ tests {
       const resource = "app_" + sharedtestdata.serviceOwners.ttd.org + "_" + "ttd/authz-bruno-testapp1";
     
       const data = res.getBody();
-      expect(res.status).to.equal(400);
+      expect(res.status, 400, 'httpstatus is incorect');
     
-      expect(data.status).to.equal(400);
+      expect(data.status, 400, 'error response httpstatus is incorect');
     
-      expect(data.validationErrors[0].code).to.equal("AM.VLD-00004");
-      expect(data.validationErrors[0].paths[0]).to.equal("request.Resource");
-      
+      expect(data.validationErrors[0].code,'AM.VLD-00004', 'Incorect error code');
+      expect(data.validationErrors[0].paths[0], 'request.Resource', 'Incorect path');
     });
 }

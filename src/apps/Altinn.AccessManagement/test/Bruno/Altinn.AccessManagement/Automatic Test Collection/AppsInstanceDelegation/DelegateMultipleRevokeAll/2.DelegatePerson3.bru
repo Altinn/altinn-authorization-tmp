@@ -88,22 +88,22 @@ tests {
       const resource = "app_" + sharedtestdata.serviceOwners.ttd.org + "_" + testdata.app;
     
       const data = res.getBody();
-      expect(res.status).to.equal(200);
+      assert.equal(res.status, 200, 'Incorect http status');
     
-      expect(data.resourceId).to.equal(resource);
-      expect(data.instanceId).to.equal(testdata.revokeallinstanceid);
+      assert.equal(data.resourceId, resource, 'Incorect resourceId');
+      assert.equal(data.instanceId, testdata.revokeallinstanceid, 'Incorect instanceId');
   
-      expect(data.from.value).to.equal(testdata.org1.partyuuid);
-      expect(data.to.value).to.equal(testdata.person3.partyuuid);
+      assert.equal(data.from.value, testdata.org1.partyuuid, 'Incorect fromId');
+      assert.equal(data.to.value, testdata.person3.partyuuid, 'Incorect toId');
     
-      expect(data.rights[0].status).to.equal('Delegated');
-      expect(data.rights[0].action.value).to.equal('read');  
-      expect(data.rights[0].resource[0].value).to.equal(resource);
-      expect(data.rights[0].resource[1].value).to.equal('task_1');
+      assert.equal(data.rights[0].status, 'Delegated', 'Incorect read delegation status');
+      assert.equal(data.rights[0].action.value, 'read', 'Incorect read delegation action');  
+      assert.equal(data.rights[0].resource[0].value, resource, 'Incorect read delegation resourceId');
+      assert.equal(data.rights[0].resource[1].value, 'task_1', 'Incorect read delegation taskId');
       
-      expect(data.rights[1].status).to.equal('Delegated');
-      expect(data.rights[1].action.value).to.equal('sign');  
-      expect(data.rights[1].resource[0].value).to.equal(resource);
-      expect(data.rights[1].resource[1].value).to.equal('task_1');
+      assert.equal(data.rights[1].status, 'Delegated', 'Incorect sign delegation status');
+      assert.equal(data.rights[1].action.value, 'sign', 'Incorect sign delegation action');  
+      assert.equal(data.rights[1].resource[0].value, resource, 'Incorect sign delegation resourceId');
+      assert.equal(data.rights[1].resource[1].value, 'task_1', 'Incorect sign delegation taskId');
     });
 }

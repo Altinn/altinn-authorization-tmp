@@ -88,8 +88,8 @@ tests {
       const resource = "app_" + sharedtestdata.serviceOwners.ttd.org + "_" + testdata.app;
     
       const data = res.getBody();
-      expect(res.status).to.equal(200);
+      assert.equal(res.status, 200, 'Incorect http status');
     
-      expect(data.data.length).to.equal(0);      
+       assert.equal(data.data.length, 0, 'After revoke no rights should remain');      
     });
 }

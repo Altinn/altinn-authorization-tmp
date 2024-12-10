@@ -88,12 +88,11 @@ tests {
       const resource = "app_" + sharedtestdata.serviceOwners.ttd.org + "_" + testdata.app;
     
       const data = res.getBody();
-      expect(res.status).to.equal(400);
+      assert.equal(res.status, 400, 'httpstatus is incorect');
     
-      expect(data.status).to.equal(400);
+      assert.equal(data.status, 400, 'error response httpstatus is incorect');
     
-      expect(data.validationErrors[0].code).to.equal("AM.VLD-00001");
-      expect(data.validationErrors[0].paths[0]).to.equal("From");
-      
+      assert.equal(data.validationErrors[0].code, 'AM.VLD-00001', 'Incorect error code');
+      assert.equal(data.validationErrors[0].paths[0], 'From', 'Incorect path');
     });
 }

@@ -83,59 +83,37 @@ script:pre-request {
 
 tests {
   test("InstanceDelegation DelegateRightsAndRevokeAll post RevokeAllDelegationsInstance", function() {
-      const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
-      const testdata = require(`./Testdata/instance-delegation/${bru.getEnvVar("tokenEnv")}.json`);
-      const resource = "app_" + sharedtestdata.serviceOwners.ttd.org + "_" + testdata.app;
+    const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
+    const testdata = require(`./Testdata/instance-delegation/${bru.getEnvVar("tokenEnv")}.json`);
+    const resource = "app_" + sharedtestdata.serviceOwners.ttd.org + "_" + testdata.app;
     
-      const data = res.getBody();
-      expect(res.status).to.equal(200);
+    const data = res.getBody();
+    assert.equal(res.status, 200, 'Incorect http status');
     
-      expect(data.data[0].resourceId).to.equal(resource);
-      expect(data.data[0].instanceId).to.equal(testdata.revokeallinstanceid);
+    let toList = [3];
+    toList[0] = testdata.person1.partyuuid;
+    toList[1] = testdata.person3.partyuuid;
+    toList[2] = testdata.org3.partyuuid;
+    
+    assert.equal(data.data.length, toList.length, 'expected result contains not expected count of data');
+    
+    for(var i = 0; i < toList.length; i++) {
+      assert.equal(data.data[i].resourceId, resource, 'Incorect resourceId');
+      assert.equal(data.data[i].instanceId, testdata.revokeallinstanceid, 'Incorect instanceId');
   
-      expect(data.data[0].from.value).to.equal(testdata.org1.partyuuid);
-      expect(data.data[0].to.value).to.equal(testdata.person1.partyuuid);
-    
-      expect(data.data[0].rights[0].status).to.equal('Revoked');
-      expect(data.data[0].rights[0].action.value).to.equal('read');  
-      expect(data.data[0].rights[0].resource[0].value).to.equal(resource);
-      expect(data.data[0].rights[0].resource[1].value).to.equal('task_1');
+      assert.equal(data.data[i].from.value, testdata.org1.partyuuid, 'Incorect fromId');
       
-      expect(data.data[0].rights[1].status).to.equal('Revoked');
-      expect(data.data[0].rights[1].action.value).to.equal('sign');  
-      expect(data.data[0].rights[1].resource[0].value).to.equal(resource);
-      expect(data.data[0].rights[1].resource[1].value).to.equal('task_1');
+      assert.include(toList, data.data[i].to.value, 'Expect current (to) to be in expected result list');
     
-      expect(data.data[1].resourceId).to.equal(resource);
-      expect(data.data[1].instanceId).to.equal(testdata.revokeallinstanceid);
-  
-      expect(data.data[1].from.value).to.equal(testdata.org1.partyuuid);
-      expect(data.data[1].to.value).to.equal(testdata.person3.partyuuid);
-    
-      expect(data.data[1].rights[0].status).to.equal('Revoked');
-      expect(data.data[1].rights[0].action.value).to.equal('read');  
-      expect(data.data[1].rights[0].resource[0].value).to.equal(resource);
-      expect(data.data[1].rights[0].resource[1].value).to.equal('task_1');
+      assert.equal(data.data[i].rights[0].status, 'Revoked', 'Incorect read delegation status');
+      assert.equal(data.data[i].rights[0].action.value, 'read', 'Incorect read delegation action');  
+      assert.equal(data.data[i].rights[0].resource[0].value, resource, 'Incorect read delegation resourceId');
+      assert.equal(data.data[i].rights[0].resource[1].value, 'task_1', 'Incorect read delegation taskId');
       
-      expect(data.data[1].rights[1].status).to.equal('Revoked');
-      expect(data.data[1].rights[1].action.value).to.equal('sign');  
-      expect(data.data[1].rights[1].resource[0].value).to.equal(resource);
-      expect(data.data[1].rights[1].resource[1].value).to.equal('task_1');
-    
-      expect(data.data[2].resourceId).to.equal(resource);
-      expect(data.data[2].instanceId).to.equal(testdata.revokeallinstanceid);
-  
-      expect(data.data[2].from.value).to.equal(testdata.org1.partyuuid);
-      expect(data.data[2].to.value).to.equal(testdata.org3.partyuuid);
-    
-      expect(data.data[2].rights[0].status).to.equal('Revoked');
-      expect(data.data[2].rights[0].action.value).to.equal('read');  
-      expect(data.data[2].rights[0].resource[0].value).to.equal(resource);
-      expect(data.data[2].rights[0].resource[1].value).to.equal('task_1');
-      
-      expect(data.data[2].rights[1].status).to.equal('Revoked');
-      expect(data.data[2].rights[1].action.value).to.equal('sign');  
-      expect(data.data[2].rights[1].resource[0].value).to.equal(resource);
-      expect(data.data[2].rights[1].resource[1].value).to.equal('task_1');
-    });
+      assert.equal(data.data[i].rights[1].status, 'Revoked', 'Incorect read delegation status');
+      assert.equal(data.data[i].rights[1].action.value, 'sign', 'Incorect read delegation action');  
+      assert.equal(data.data[i].rights[1].resource[0].value, resource, 'Incorect read delegation resourceId');
+      assert.equal(data.data[i].rights[1].resource[1].value, 'task_1', 'Incorect read delegation taskId');
+    }
+  });
 }

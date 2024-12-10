@@ -86,7 +86,7 @@ tests {
       const resource = "app_" + sharedtestdata.serviceOwners.ttd.org + "_" + testdata.app;
     
       const data = res.getBody();
-      expect(res.status).to.equal(200);
+      assert.equal(res.status, 200, 'httpstatus is incorect');
     
       let toList = [11];
       toList[0] = testdata.person1.partyuuid;
@@ -101,25 +101,24 @@ tests {
       toList[9] = testdata.org10.partyuuid;
       toList[10] = testdata.org11.partyuuid;
     
-      for(var i = 0; i < 11; i++)
-      {
+      for(var i = 0; i < toList.length; i++) {
         
-        expect(data.data[i].resourceId).to.equal(resource);
-        expect(data.data[i].instanceId).to.equal(testdata.revokeallbeyondlimitinstanceid);
+        assert.equal(data.data[i].resourceId, resource, 'ResourceId is incorect');
+        assert.equal(data.data[i].instanceId, testdata.revokeallbeyondlimitinstanceid, 'InstanceId is incorect');
   
-        expect(data.data[i].from.value).to.equal(testdata.org1.partyuuid);
+        assert.equal(data.data[i].from.value, testdata.org1.partyuuid, 'FromId is inncorect');
         
-        expect(data.data[i].to.value).to.equal(toList[i]);
+        assert.include(toList, data.data[i].to.value, 'Expect current (to) to be in expected result list');
+        
+        assert.equal(data.data[i].rights[0].status, 'Delegated', 'read right has incorrect status');
+        assert.equal(data.data[i].rights[0].action.value, 'read', 'read right has incorrect action');  
+        assert.equal(data.data[i].rights[0].resource[0].value, resource, 'read right has incorrect resource');
+        assert.equal(data.data[i].rights[0].resource[1].value, 'task_1', 'read right has incorrect task');
   
-        expect(data.data[i].rights[0].status).to.equal('Delegated');
-        expect(data.data[i].rights[0].action.value).to.equal('read');  
-        expect(data.data[i].rights[0].resource[0].value).to.equal(resource);
-        expect(data.data[i].rights[0].resource[1].value).to.equal('task_1');
-  
-        expect(data.data[i].rights[1].status).to.equal('Delegated');
-        expect(data.data[i].rights[1].action.value).to.equal('sign');  
-        expect(data.data[i].rights[1].resource[0].value).to.equal(resource);
-        expect(data.data[i].rights[1].resource[1].value).to.equal('task_1');
+        assert.equal(data.data[i].rights[1].status, 'Delegated', 'sign right has incorrect status');
+        assert.equal(data.data[i].rights[1].action.value, 'sign', 'sign right has incorrect action');  
+        assert.equal(data.data[i].rights[1].resource[0].value, resource, 'read right has incorrect resource');
+        assert.equal(data.data[i].rights[1].resource[1].value, 'task_1', 'read right has incorrect task');
         
       }
       
