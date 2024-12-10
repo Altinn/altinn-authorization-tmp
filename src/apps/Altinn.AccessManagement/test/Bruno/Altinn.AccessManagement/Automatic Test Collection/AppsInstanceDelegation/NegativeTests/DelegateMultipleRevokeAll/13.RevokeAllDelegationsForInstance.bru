@@ -93,7 +93,7 @@ tests {
       assert.equal(data.status, 400, 'error response httpstatus is incorect');
     
       assert.equal(data.validationErrors[0].code,'AM.VLD-00005', 'Incorect error code');
-      assert.equal(data.validationErrors[0].paths[0], 'ResourceId', 'Incorect path');
+      assert.equal(data.validationErrors[0].paths[0], 'InstanceId', 'Incorect path');
       
     });
 }
