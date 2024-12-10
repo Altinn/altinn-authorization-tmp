@@ -82,7 +82,7 @@ script:pre-request {
 }
 
 tests {
-  test("post InstanceDelegation NoResource", function() {
+  test("InstanceDelegation DelegateNonExistingResource post DelegateNoResource", function() {
       const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
       const testdata = require(`./Testdata/instance-delegation/${bru.getEnvVar("tokenEnv")}.json`);
       const resource = "app_" + sharedtestdata.serviceOwners.ttd.org + "_NonExistingApp";
