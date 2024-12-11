@@ -908,6 +908,8 @@ namespace Altinn.AccessManagement.Core.Services
                     OfferedByPartyId = policyToDelete.PolicyMatch.OfferedByPartyId,
                     CoveredByPartyId = coveredByPartyId,
                     CoveredByUserId = coveredByUserId,
+                    ToUuid = coveredByUuid,
+                    ToUuidType = coveredByUuidType,
                     PerformedByUserId = policyToDelete.DeletedByUserId,
                     BlobStoragePolicyPath = policyPath,
                     BlobStorageVersionId = response.Value.VersionId

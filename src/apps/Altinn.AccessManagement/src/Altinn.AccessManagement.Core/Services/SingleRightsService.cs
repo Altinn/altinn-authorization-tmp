@@ -235,16 +235,35 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             var fromAttribute = await _resolver.Resolve(delegation.From, [AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute], cancellationToken);
-            var toAttribute = await _resolver.Resolve(delegation.To, BaseUrn.Altinn2InternalIds, cancellationToken);
+            var toAttribute = await _resolver.Resolve(delegation.To, BaseUrn.RevokeInternalIds, cancellationToken);
 
-            var to = toAttribute.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute)
-                ? new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, toAttribute.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute).Value)
-                : new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, toAttribute.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute).Value);
+            var to = GetAttributeMatchFromAttributeMatchList(toAttribute);
 
             var policiesToDelete = DelegationHelper.GetRequestToDeleteResource(authenticatedUserId, delegation.Rights[0].Resource, fromAttribute.GetRequiredInt(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute), to);
 
             await _pap.TryDeleteDelegationPolicies(policiesToDelete, cancellationToken);
             return assertion;
+        }
+
+        /// <summary>
+        /// Fetch the actual internal id from the attribute match list
+        /// </summary>
+        /// <param name="attributeMatches">the list to fetch from</param>
+        /// <returns>The identified internal id</returns>
+        private AttributeMatch GetAttributeMatchFromAttributeMatchList(IEnumerable<AttributeMatch> attributeMatches)
+        {
+            if (attributeMatches.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute))
+            {
+                return new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute).Value);
+            }
+            else if (attributeMatches.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid))
+            {
+                return new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid).Value);
+            }
+            else
+            {
+                return new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute).Value);
+            }
         }
 
         /// <summary>
@@ -256,10 +275,10 @@ namespace Altinn.AccessManagement.Core.Services
             _asserter.Join(
                 _asserter.Evaluate(
                     delegation.From,
-                    _asserter.Altinn2InternalIds),
+                    _asserter.RevokeInternalIds),
                 _asserter.Evaluate(
                     delegation.To,
-                    _asserter.Altinn2InternalIds),
+                    _asserter.RevokeInternalIds),
                 _asserter.Evaluate(
                     delegation.Rights?.FirstOrDefault()?.Resource ?? [],
                     _asserter.DefaultResource));
