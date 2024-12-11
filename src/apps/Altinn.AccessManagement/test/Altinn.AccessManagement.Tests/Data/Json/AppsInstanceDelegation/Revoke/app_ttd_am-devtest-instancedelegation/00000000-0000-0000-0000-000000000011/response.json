@@ -9,7 +9,7 @@
 			"code": "AM.VLD-00005",
 			"detail": "There is to many policy files to update. Must delete individual delegations.",
 			"paths": [
-				"ResourceId"
+				"InstanceId"
 			]
 		}
 	]
