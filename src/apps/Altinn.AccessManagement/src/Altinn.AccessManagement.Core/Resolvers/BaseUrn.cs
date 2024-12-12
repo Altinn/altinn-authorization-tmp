@@ -21,7 +21,7 @@ public static class BaseUrn
     /// <summary>
     /// InternalIds from Altinn 2
     /// </summary>
-    public static string[] Altinn2InternalIds => [AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute];
+    public static string[] RevokeInternalIds => [AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid];
 
     /// <summary>
     /// Resources that belongs to Altinn 
