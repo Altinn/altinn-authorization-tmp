@@ -102,19 +102,19 @@ public class JsonIngestFactory
         
         a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantIngestService"));
         result.Add(await IngestData<EntityVariant, IEntityVariantService>(entityVariantService, cancellationToken));
-        
+
         a?.AddEvent(new System.Diagnostics.ActivityEvent("packageIngestService"));
         result.Add(await IngestData<Package, IPackageService>(packageService, cancellationToken));
-        
+
         a?.AddEvent(new System.Diagnostics.ActivityEvent("roleIngestService"));
         result.Add(await IngestData<Role, IRoleService>(roleService, cancellationToken));
         
         a?.AddEvent(new System.Diagnostics.ActivityEvent("roleMapIngestService"));
         result.Add(await IngestData<RoleMap, IRoleMapService>(roleMapService, cancellationToken));
-        
+
         a?.AddEvent(new System.Diagnostics.ActivityEvent("rolePackageIngestService"));
         result.Add(await IngestData<RolePackage, IRolePackageService>(rolePackageService, cancellationToken));
-        
+
         a?.AddEvent(new System.Diagnostics.ActivityEvent("tagGroupIngestService"));
         result.Add(await IngestData<TagGroup, ITagGroupService>(tagGroupService, cancellationToken));
         

@@ -3,6 +3,8 @@
 @inject IAssignmentService assignmentData
 @inject IEntityService entityService
 @inject IGroupService groupService
+@inject IGroupMemberService groupMemberService
+@inject IGroupAdminService groupAdminService
 @inject IDelegationService delegationService
 @inject IDelegationGroupService delegationGroupService
 @inject IDelegationAssignmentService delegationAssignmentService
@@ -17,29 +19,20 @@
             <H1><EntityTypeIcon Id="@Entity.TypeId" /> @Entity.Name</H1>
         </LeftContent>
         <RightContent>
-            @*  <button @onclick=@(() => Flyouts.ToggleFlyout("edit"))>Edit</button>
-            <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Resource</button>
-            <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Tags</button>
-            <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Translation</button> *@
+            <ButtonGroup>
+                <Button OnClick=@(() => CreateGroupModalIsOpen = !CreateGroupModalIsOpen)>Ny gruppe</Button>
+                @*<button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Resource</button>
+                <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Tags</button>
+                <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Translation</button> *@
+            </ButtonGroup>
         </RightContent>
     </PageHeader>
 
-    <table class="bf-table bfc-base-3-bg bf-table-vertical-header" style="width: auto">
-        <tbody>
-            <tr class="bf-table-row bf-table-row-compact">
-                <th>Type</th>
-                <td><a href=@($"/entitytype/{Entity.Type.Id}")>@Entity.Type.Name</a></td>
-            </tr>
-            <tr class="bf-table-row bf-table-row-compact">
-                <th>Variant</th>
-                <td><a href=@($"/entityvariant/{Entity.Variant.Id}")>@Entity.Variant.Name</a></td>
-            </tr>
-            <tr class="bf-table-row bf-table-row-compact">
-                <th>RefId</th>
-                <td>@Entity.RefId</td>
-            </tr>
-        </tbody>
-    </table>
+    <VerticalTable>
+        <VerticalTableCell Title="Type"><a href=@($"/entitytype/{Entity.Type.Id}")>@Entity.Type.Name</a></VerticalTableCell>
+        <VerticalTableCell Title="Variant"><a href=@($"/entityvariant/{Entity.Variant.Id}")>@Entity.Variant.Name</a></VerticalTableCell>
+        <VerticalTableCell Title="RefId">@Entity.RefId</VerticalTableCell>
+    </VerticalTable>
 
     @if(FromAssignments != null && FromAssignments.Any())
     {
@@ -52,7 +45,7 @@
                         <th>From</th>
                         <th>Role</th>
                         <th>To</th>
-                        <th>Delegated</th>
+                        <th>Delegation</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,9 +64,13 @@
                             </td>
                             <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
                             <td>
-                                @if (Delegations.Count(t => t.AssignmentId == assignment.Id) > 0)
+                                @if (DelegationAssignments.Count(t => t.AssignmentId == assignment.Id) > 0)
                                 {
-                                    <Icon Name="check"></Icon>
+                                    var delegationAss = DelegationAssignments.First(t => t.AssignmentId == assignment.Id);
+                                    var delegation = Delegations.First(t => t.Id == delegationAss.DelegationId);
+                                    var ass = ToAssignments.First(t => t.Id == delegation.AssignmentId);
+                                    @ass.From.Name
+                                    <Badge Title="@ass.Role.Description">@ass.Role.Code</Badge>
                                 }
                                 else
                                 {
@@ -100,6 +97,7 @@
                         <th>Role</th>
                         <th>To</th>
                         <th>Delegated</th>
+                        <th>Action</th>
                     </tr>
                 </thead>    
                 <tbody>
@@ -122,11 +120,15 @@
                                 @if (Delegations.Count(t => t.AssignmentId == assignment.Id) > 0)
                                 {
                                     <Icon Name="check"></Icon>
+
                                 }
                                 else
                                 {
                                     <Icon Name="xmark"></Icon>
                                 }
+                            </td>
+                            <td>
+                                <Button>Deleger</Button>
                             </td>
                         </tr>
                     }
@@ -157,7 +159,11 @@
                             <td>
                                 @if (DelegationGroups.Count(t => t.GroupId == group.Id) > 0)
                                 {
-                                    <Icon Name="check"></Icon>
+                                    var delegationGroup = DelegationGroups.First(t => t.GroupId == group.Id);
+                                    var delegation = Delegations.First(t => t.Id == delegationGroup.DelegationId);
+                                    var ass = ToAssignments.First(t => t.Id == delegation.AssignmentId);
+                                    @ass.From.Name
+                                    <Badge Title="@ass.Role.Description">@ass.Role.Code</Badge>
                                 }
                                 else
                                 {
@@ -172,19 +178,48 @@
         </div>
     }
 
-    @if (Delegations != null && Delegations.Any())
+    @if (GroupMemberships != null && GroupMemberships.Any())
     {
         <div>
-            <ul>
+            <h4>Gruppe medlemskap</h4>
 
-                @foreach (var delegation in Delegations)
-                {
-                    <li>@delegation.Id.ToString()</li>
-                }
+            <table class="bf-table bfc-base-3-bg">
+                <thead>
+                    <tr>
+                        <th>Navn</th>
+                        <th>Medlem</th>
+                        <th>Admin</th>
+                    </tr>
+                </thead>
+                <tbody>
 
-            </ul>
+                    @foreach (var grpMem in GroupMemberships)
+                    {
+                        <tr class="bf-table-row bf-table-row-compact">
+                            <td><a href=@($"/group/{grpMem.Group.Id}")>@grpMem.Group.Name</a></td>
+                            <td><Icon Name=@(grpMem.IsMember ? "check" : "xmark")></Icon></td>
+                            <td><Icon Name=@(grpMem.IsAdmin ? "check" : "xmark")></Icon></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
         </div>
     }
+
+    <Drawer Title="Ny gruppe" @bind-IsOpen=CreateGroupModalIsOpen >
+        <Input Title="Navn" @bind-Value=CreateGroupName Description="Et unikt navn i din organisasjon"></Input>
+        <hr />
+        @if(!string.IsNullOrEmpty(CreateGroupMessage.msg))
+        {
+            <Message State=@(CreateGroupMessage.success ? Message.MsgState.Success : Message.MsgState.Alert)>
+                @CreateGroupMessage.msg
+            </Message>
+            <hr />
+        }
+        <Button Variant="Button.ButtonVariant.Filled" OnClick=@(() => CreateGroup())>Opprett</Button>
+
+    </Drawer>
 
 }
 
@@ -196,7 +231,8 @@
     public List<ExtAssignment> FromAssignments { get; set; }
     public List<ExtAssignment> ToAssignments { get; set; }
 
-    public List<EntityGroup> Groups { get; set; } = new List<EntityGroup>();
+    public List<EntityGroup> Groups { get; set; }
+    private List<GroupMembership> GroupMemberships { get; set; }
 
     public List<Delegation> Delegations { get; set; } = new List<Delegation>();
     public List<DelegationGroup> DelegationGroups { get; set; } = new List<DelegationGroup>();
@@ -212,7 +248,7 @@
             FromAssignments = [.. await assignmentData.GetExtended(t => t.FromId, Entity.Id, options: opt) ?? new List<ExtAssignment>()];
             ToAssignments = [.. await assignmentData.GetExtended(t => t.ToId, Entity.Id, options: opt) ?? new List<ExtAssignment>()];
 
-            Groups = [.. await groupService.Get(t => t.OwnerId, Entity.Id)];
+            await LoadGroups();
         }
 
         // if (FromAssignments != null && FromAssignments.Any())
@@ -241,4 +277,65 @@
 
     }
 
+    public bool CreateGroupModalIsOpen { get; set; }
+    public string CreateGroupName { get; set; }
+    public (string msg, bool success) CreateGroupMessage { get; set; }
+    private async Task LoadGroups()
+    {
+        Groups = [.. await groupService.Get(t => t.OwnerId, Entity.Id)];
+        GroupMemberships = new List<GroupMembership>();
+
+        var groupMembers = await groupMemberService.Get(t => t.MemberId, Entity.Id);
+        var groupAdmins = await groupAdminService.Get(t => t.MemberId, Entity.Id);
+
+        foreach(var member in groupMembers)
+        {
+            if (GroupMemberships.Exists(t => t.Group.Id == member.GroupId))
+            {
+                var mem = GroupMemberships.First(t => t.Group.Id == member.GroupId);
+                mem.IsMember = true;
+            }
+            else
+            {
+                var grp = await groupService.Get(member.GroupId);
+                if(grp == null) { continue; }
+                GroupMemberships.Add(new GroupMembership() { Group = grp, IsAdmin = false, IsMember = true });
+            }
+        }
+
+        foreach (var member in groupAdmins)
+        {
+            if (GroupMemberships.Exists(t => t.Group.Id == member.GroupId))
+            {
+                var mem = GroupMemberships.First(t => t.Group.Id == member.GroupId);
+                mem.IsAdmin = true;
+            }
+            else
+            {
+                var grp = await groupService.Get(member.GroupId);
+                if (grp == null) { continue; }
+                GroupMemberships.Add(new GroupMembership() { Group = grp, IsAdmin = true, IsMember = false });
+        }
+        }
+    }
+    private async Task CreateGroup()
+    {
+        if (string.IsNullOrEmpty(CreateGroupName))
+        {
+            CreateGroupMessage = ("Name is null or empty", false);
+            return;
+        }
+        await groupService.Create(new EntityGroup() { Id = Guid.NewGuid(), Name = CreateGroupName, OwnerId = Entity.Id, RequireRole = false });
+        CreateGroupMessage = ($"Created '{CreateGroupName}' group!", true);
+        CreateGroupName = "";
+        await LoadGroups();
+    }
+
+
+    private class GroupMembership 
+    {
+        public EntityGroup Group { get; set; }
+        public bool IsMember { get; set; }
+        public bool IsAdmin { get; set; }
+    }
 }

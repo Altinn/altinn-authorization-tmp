@@ -14,5 +14,8 @@ public class DelegationGroupDataService : BaseCrossDataService<Delegation, Deleg
     /// Data service for Delegation
     /// </summary>
     /// <param name="repo">Cross repo</param>
-    public DelegationGroupDataService(IDbCrossRepo<Delegation, DelegationGroup, EntityGroup> repo) : base(repo) { }
+    public DelegationGroupDataService(IDbCrossRepo<Delegation, DelegationGroup, EntityGroup> repo) : base(repo) 
+    {
+        this.CrossRepo.SetCrossColumns("delegationid", "groupid");
+    }
 }

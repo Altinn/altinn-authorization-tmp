@@ -1,0 +1,57 @@
+﻿@page "/package/{id}"
+@using Altinn.Authorization.AccessPackages.Models
+@inject LocalRepo repo
+
+<Article>
+
+    @if (Package != null)
+    {
+        <BreadcrumbContainer>
+            <BreadcrumbItem Url=@($"/areagroup/{Group.Id}")>@Group.Name</BreadcrumbItem>
+            <BreadcrumbItem Url=@($"/area/{Area.Id}")>@Area.Name</BreadcrumbItem>
+            <BreadcrumbItem Url=@($"/package/{id}")>@Package.Name</BreadcrumbItem>
+        </BreadcrumbContainer>
+
+        <H1>@Package.Name</H1>
+
+        <p>
+            @Package.Description
+            <em>urn:altinnn:accesspackage:@Package.Name.Replace("-", "").Replace(" ", "-").ToLower()</em>
+        </p>
+
+        @*  <table class="bf-table bfc-base-3-bg">
+            <thead>
+                <tr class="bf-table-row bf-table-row-compact">
+                    <th>Områder</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var package in Packages)
+                {
+                    <tr class="bf-table-row bf-table-row-compact">
+                        <td><a href=@($"/package/{package.Id}")>@package.Name</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table> *@
+
+    }
+
+</Article>
+
+@code {
+
+    [Parameter] public string id { get; set; }
+    public Package Package { get; set; }
+    public Area Area { get; set; }
+    public AreaGroup Group { get; set; }
+    //public IEnumerable<Package> Packages { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Package = repo.GetPackage(Guid.Parse(id)) ?? new Package();
+        Area = repo.GetArea(Package.AreaId) ?? new Area();
+        Group = repo.GetGroups().First(t => t.Id == Area.GroupId);
+    }
+}
+

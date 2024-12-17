@@ -205,6 +205,7 @@ inner join dbo.rolemap as map on a.roleid = map.hasroleid;
         await _factory.CreateColumn<Package>(t => t.ProviderId, DataTypes.Guid);
         await _factory.CreateColumn<Package>(t => t.EntityTypeId, DataTypes.Guid);
         await _factory.CreateColumn<Package>(t => t.AreaId, DataTypes.Guid);
+        await _factory.CreateColumn<Package>(t => t.HasResources, DataTypes.Bool, defaultValue: "true");
         await _factory.CreateForeignKeyConstraint<Package, Provider>(t => t.ProviderId, cascadeDelete: false);
         await _factory.CreateForeignKeyConstraint<Package, EntityType>(t => t.EntityTypeId, cascadeDelete: false);
         await _factory.CreateForeignKeyConstraint<Package, Area>(t => t.AreaId, cascadeDelete: false);

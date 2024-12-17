@@ -1,6 +1,8 @@
 ﻿@namespace Styx
 <CascadingValue TValue="RadioGroup" Value="this">
-    @ChildContent
+    <div class="bf-radiogroup" style="@(Vertical ? "display: inline-grid;" : "")">
+        @ChildContent
+    </div>
 </CascadingValue>
 
 @code {
@@ -9,6 +11,7 @@
     [Parameter] public string Key { get; set; }
     [Parameter] public string Value { get; set; } = "";
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public bool Vertical { get; set; } = false;
 
     public void Set(string value)
     {

@@ -122,6 +122,7 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
 
         sb.AppendLine("SELECT ");
         sb.AppendLine(GenerateColumns(options));
+
         foreach (var j in Joins)
         {
             sb.Append(",");

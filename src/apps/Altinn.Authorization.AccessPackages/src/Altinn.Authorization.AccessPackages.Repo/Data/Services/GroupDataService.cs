@@ -2,6 +2,7 @@
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Services;
 using Altinn.Authorization.AccessPackages.Models;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
+using System.Runtime.CompilerServices;
 
 namespace Altinn.Authorization.AccessPackages.Repo.Data.Services;
 
@@ -17,5 +18,7 @@ public class GroupDataService : BaseExtendedDataService<EntityGroup, ExtEntityGr
     public GroupDataService(IDbExtendedRepo<EntityGroup, ExtEntityGroup> repo) : base(repo)
     {
         ExtendedRepo.Join<Entity>(t => t.OwnerId, t => t.Id, t => t.Owner);
+        ExtendedRepo.Join<GroupAdmin>(t => t.Id, t => t.GroupId, t => t.Administrators, isList: true);
+        ExtendedRepo.Join<GroupMember>(t => t.Id, t => t.GroupId, t => t.Members, isList: true);
     }
 }

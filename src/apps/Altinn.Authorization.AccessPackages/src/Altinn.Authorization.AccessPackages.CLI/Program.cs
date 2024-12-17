@@ -12,7 +12,7 @@ var config = new CLIConfig()
 {
     EnableMigrations = true,
     EnableJsonIngest = true,
-    RunTests = true
+    RunTests = false
 };
 
 builder.Services.AddSingleton<Mockups>();

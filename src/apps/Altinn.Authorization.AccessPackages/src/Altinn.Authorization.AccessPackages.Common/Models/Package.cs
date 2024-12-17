@@ -39,6 +39,11 @@ public class Package
     /// IsDelegable
     /// </summary>
     public bool IsDelegable { get; set; }
+
+    /// <summary>
+    /// Has resources
+    /// </summary>
+    public bool HasResources { get; set; }
 }
 
 /// <summary>

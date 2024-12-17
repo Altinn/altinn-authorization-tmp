@@ -1,0 +1,50 @@
+﻿@page "/delegation/{id}"
+@inject IDelegationService delegationService
+@inject IDelegationPackageService delegationPackageService
+
+@if(Delegation != null)
+{
+
+
+    <PageTitle>Delegation</PageTitle>
+
+    <PageHeader>
+        <LeftContent>
+            <BreadcrumbContainer>
+                <BreadcrumbItem Url=@($"/entity/{Delegation.Assignment.FromId}")>@Delegation.Assignment.FromId</BreadcrumbItem>
+            </BreadcrumbContainer>
+            <H1>Delegation</H1>
+        </LeftContent>
+        <RightContent>
+            <ButtonGroup>
+@*                 <Button OnClick=@(() => CreateAdminIsOpen = !CreateAdminIsOpen)>Ny administrator</Button>
+                <Button OnClick=@(() => CreateMemberIsOpen = !CreateMemberIsOpen)>Nytt medlem</Button> *@
+            </ButtonGroup>
+        </RightContent>
+    </PageHeader>
+
+   <VerticalTable>
+       <VerticalTableCell Title="Assignment"></VerticalTableCell>
+   </VerticalTable>
+
+     <Grid>
+    
+     
+     </Grid>
+}
+
+
+@code {
+
+    [Parameter] public string id { get; set; }
+
+    public ExtDelegation Delegation { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+       Delegation = await delegationService.GetExtended(Guid.Parse(id));
+
+
+    }
+
+}

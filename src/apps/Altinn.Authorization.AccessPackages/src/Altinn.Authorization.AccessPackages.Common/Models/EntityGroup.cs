@@ -42,5 +42,6 @@ public class ExtEntityGroup : EntityGroup
     /// Experimental
     /// List of members with valid information
     /// </summary>
-    public List<ExtGroupMember> Members { get; set; } // Based on GroupMember.GroupId
+    public List<GroupMember> Members { get; set; } // Based on GroupMember.GroupId
+    public List<GroupAdmin> Administrators { get; set; } // Based on GroupAdmin.GroupId
 }
