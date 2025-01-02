@@ -168,7 +168,19 @@ public static class AttributeMatchAsserter
     /// <param name="assert">list of assertions</param>
     /// <param name="errors">dictionary for writing assertion errors</param>
     /// <param name="values">list of attributes</param>
-    public static void RevokeInternalIds(this IAssert<AttributeMatch> assert, IDictionary<string, string[]> errors, IEnumerable<AttributeMatch> values) =>
+    public static void RevokeInternalFromIds(this IAssert<AttributeMatch> assert, IDictionary<string, string[]> errors, IEnumerable<AttributeMatch> values) =>
+        assert.All(
+            assert.Single(assert.HasAttributeTypes(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute)),
+            assert.AllAttributesHasValues,
+            assert.AttributesAreIntegers(BaseUrn.RevokeInternalFromIds))(errors, values);
+
+    /// <summary>
+    /// A list of assertions for validating input is a single value of either of the internal Altinn 2 identifiers: UserId or PartyId.
+    /// </summary>
+    /// <param name="assert">list of assertions</param>
+    /// <param name="errors">dictionary for writing assertion errors</param>
+    /// <param name="values">list of attributes</param>
+    public static void RevokeInternalToIds(this IAssert<AttributeMatch> assert, IDictionary<string, string[]> errors, IEnumerable<AttributeMatch> values) =>
         assert.All(
             assert.Single(
                 assert.HasAttributeTypes(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute),

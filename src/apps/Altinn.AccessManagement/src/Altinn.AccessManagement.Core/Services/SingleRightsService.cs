@@ -234,12 +234,12 @@ namespace Altinn.AccessManagement.Core.Services
                 return assertion;
             }
 
-            var fromAttribute = await _resolver.Resolve(delegation.From, [AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute], cancellationToken);
-            var toAttribute = await _resolver.Resolve(delegation.To, BaseUrn.RevokeInternalIds, cancellationToken);
-
-            var to = GetAttributeMatchFromAttributeMatchList(toAttribute);
-
-            var policiesToDelete = DelegationHelper.GetRequestToDeleteResource(authenticatedUserId, delegation.Rights[0].Resource, fromAttribute.GetRequiredInt(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute), to);
+            var fromAttribute = await _resolver.Resolve(delegation.From, [AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid, AltinnXacmlConstants.MatchAttributeIdentifiers.PersonUuid], cancellationToken);
+            var toAttribute = await _resolver.Resolve(delegation.To, BaseUrn.RevokeInternalToIds, cancellationToken);
+                        
+            var to = FilterRequiredAttributeMatchesFromAttributeMatchList(toAttribute);
+            bool validUuidFrom = DelegationHelper.TryGetUuidFromAttributeMatch(fromAttribute.ToList(), out Guid fromUuid, out UuidType fromUuidType);
+            var policiesToDelete = DelegationHelper.GetRequestToDeleteResource(authenticatedUserId, delegation.Rights[0].Resource, fromAttribute.GetRequiredInt(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute), to, fromUuidType, fromUuid);
 
             await _pap.TryDeleteDelegationPolicies(policiesToDelete, cancellationToken);
             return assertion;
@@ -250,20 +250,41 @@ namespace Altinn.AccessManagement.Core.Services
         /// </summary>
         /// <param name="attributeMatches">the list to fetch from</param>
         /// <returns>The identified internal id</returns>
-        private AttributeMatch GetAttributeMatchFromAttributeMatchList(IEnumerable<AttributeMatch> attributeMatches)
+        private IEnumerable<AttributeMatch> FilterRequiredAttributeMatchesFromAttributeMatchList(IEnumerable<AttributeMatch> attributeMatches)
         {
+            List<AttributeMatch> attributeMatchList = [];
+            bool userSet = false;
+
             if (attributeMatches.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute))
             {
-                return new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute).Value);
+                attributeMatchList.Add(new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute).Value));
+                userSet = true;
             }
-            else if (attributeMatches.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid))
+            
+            if (attributeMatches.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute))
             {
-                return new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid).Value);
+                if (userSet != true)
+                {
+                    attributeMatchList.Add(new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute).Value));
+                }
             }
-            else
+            
+            if (attributeMatches.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid))
             {
-                return new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute).Value);
+                attributeMatchList.Add(new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid).Value));
             }
+
+            if (attributeMatches.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PersonUuid))
+            {
+                attributeMatchList.Add(new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.PersonUuid, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PersonUuid).Value));
+            }
+
+            if (attributeMatches.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid))
+            {
+                attributeMatchList.Add(new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid).Value));
+            }
+
+            return attributeMatchList;
         }
 
         /// <summary>
@@ -275,10 +296,10 @@ namespace Altinn.AccessManagement.Core.Services
             _asserter.Join(
                 _asserter.Evaluate(
                     delegation.From,
-                    _asserter.RevokeInternalIds),
+                    _asserter.RevokeInternalFromIds),
                 _asserter.Evaluate(
                     delegation.To,
-                    _asserter.RevokeInternalIds),
+                    _asserter.RevokeInternalToIds),
                 _asserter.Evaluate(
                     delegation.Rights?.FirstOrDefault()?.Resource ?? [],
                     _asserter.DefaultResource));

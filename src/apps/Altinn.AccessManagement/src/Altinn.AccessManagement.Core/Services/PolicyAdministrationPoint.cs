@@ -910,6 +910,8 @@ namespace Altinn.AccessManagement.Core.Services
                     CoveredByUserId = coveredByUserId,
                     ToUuid = coveredByUuid,
                     ToUuidType = coveredByUuidType,
+                    FromUuid = policyToDelete.PolicyMatch.FromUuid,
+                    FromUuidType = policyToDelete.PolicyMatch.FromUuidType,
                     PerformedByUserId = policyToDelete.DeletedByUserId,
                     BlobStoragePolicyPath = policyPath,
                     BlobStorageVersionId = response.Value.VersionId
