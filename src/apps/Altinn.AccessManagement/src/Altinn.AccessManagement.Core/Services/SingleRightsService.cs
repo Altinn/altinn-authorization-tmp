@@ -238,7 +238,8 @@ namespace Altinn.AccessManagement.Core.Services
             var toAttribute = await _resolver.Resolve(delegation.To, BaseUrn.RevokeInternalToIds, cancellationToken);
                         
             var to = FilterRequiredAttributeMatchesFromAttributeMatchList(toAttribute);
-            bool validUuidFrom = DelegationHelper.TryGetUuidFromAttributeMatch(fromAttribute.ToList(), out Guid fromUuid, out UuidType fromUuidType);
+            DelegationHelper.TryGetUuidFromAttributeMatch(fromAttribute.ToList(), out Guid fromUuid, out UuidType fromUuidType);
+
             var policiesToDelete = DelegationHelper.GetRequestToDeleteResource(authenticatedUserId, delegation.Rights[0].Resource, fromAttribute.GetRequiredInt(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute), to, fromUuidType, fromUuid);
 
             await _pap.TryDeleteDelegationPolicies(policiesToDelete, cancellationToken);
@@ -250,7 +251,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// </summary>
         /// <param name="attributeMatches">the list to fetch from</param>
         /// <returns>The identified internal id</returns>
-        private IEnumerable<AttributeMatch> FilterRequiredAttributeMatchesFromAttributeMatchList(IEnumerable<AttributeMatch> attributeMatches)
+        private static List<AttributeMatch> FilterRequiredAttributeMatchesFromAttributeMatchList(IEnumerable<AttributeMatch> attributeMatches)
         {
             List<AttributeMatch> attributeMatchList = [];
             bool userSet = false;
@@ -261,12 +262,9 @@ namespace Altinn.AccessManagement.Core.Services
                 userSet = true;
             }
             
-            if (attributeMatches.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute))
+            if (attributeMatches.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute) && !userSet)
             {
-                if (userSet != true)
-                {
-                    attributeMatchList.Add(new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute).Value));
-                }
+                attributeMatchList.Add(new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, attributeMatches.First(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute).Value));
             }
             
             if (attributeMatches.Any(p => p.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid))
