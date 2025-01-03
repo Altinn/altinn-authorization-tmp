@@ -52,5 +52,8 @@
         "lastname": "KLOSETT",
         "userid": 20012655,
         "partyid": 50146491
+    },
+    "system1": {
+    	"uuid": "e6c868ef-d9d6-4847-ba25-409bbd040540"
     }
 }
