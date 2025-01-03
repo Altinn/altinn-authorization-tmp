@@ -170,7 +170,9 @@ public static class AttributeMatchAsserter
     /// <param name="values">list of attributes</param>
     public static void RevokeInternalFromIds(this IAssert<AttributeMatch> assert, IDictionary<string, string[]> errors, IEnumerable<AttributeMatch> values) =>
         assert.All(
-            assert.Single(assert.HasAttributeTypes(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute)),
+            assert.Single(
+                assert.HasAttributeTypes(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute),
+                assert.HasAttributeTypes(AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute)),
             assert.AllAttributesHasValues,
             assert.AttributesAreIntegers(BaseUrn.RevokeInternalFromIds))(errors, values);
 
