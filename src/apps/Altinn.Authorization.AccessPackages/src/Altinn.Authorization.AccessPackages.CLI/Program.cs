@@ -45,8 +45,8 @@ if (config.EnableJsonIngest)
     await host.Services.UseJsonIngests();
 }
 
-var mockService = host.Services.GetRequiredService<Mockups>();
-await mockService.KlientDelegeringMock();
+//var mockService = host.Services.GetRequiredService<Mockups>();
+//await mockService.KlientDelegeringMock();
 
 if (config.RunTests)
 {

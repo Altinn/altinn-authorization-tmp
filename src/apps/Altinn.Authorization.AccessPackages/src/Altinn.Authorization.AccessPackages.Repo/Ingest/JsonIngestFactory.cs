@@ -1,8 +1,10 @@
 ﻿using System.Text.Json;
+using System.Threading;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
 using Altinn.Authorization.AccessPackages.Models;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
+using Altinn.Authorization.AccessPackages.Repo.Ingest.RagnhildModel;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.Authorization.AccessPackages.Repo.Ingest;
@@ -88,11 +90,8 @@ public class JsonIngestFactory
 
         var result = new List<IngestResult>();
 
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("areaGroupIngestService"));
-        result.Add(await IngestData<AreaGroup, IAreaGroupService>(areaGroupService, cancellationToken));
-
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("areaIngestService"));
-        result.Add(await IngestData<Area, IAreaService>(areaService, cancellationToken));
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("areasAndPackagesIngestService"));
+        result.AddRange(await IngestAreasAndPackages(cancellationToken));
 
         a?.AddEvent(new System.Diagnostics.ActivityEvent("providerIngestService"));
         result.Add(await IngestData<Provider, IProviderService>(providerService, cancellationToken));
@@ -103,17 +102,14 @@ public class JsonIngestFactory
         a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantIngestService"));
         result.Add(await IngestData<EntityVariant, IEntityVariantService>(entityVariantService, cancellationToken));
 
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("packageIngestService"));
-        result.Add(await IngestData<Package, IPackageService>(packageService, cancellationToken));
-
         a?.AddEvent(new System.Diagnostics.ActivityEvent("roleIngestService"));
         result.Add(await IngestData<Role, IRoleService>(roleService, cancellationToken));
         
         a?.AddEvent(new System.Diagnostics.ActivityEvent("roleMapIngestService"));
         result.Add(await IngestData<RoleMap, IRoleMapService>(roleMapService, cancellationToken));
 
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("rolePackageIngestService"));
-        result.Add(await IngestData<RolePackage, IRolePackageService>(rolePackageService, cancellationToken));
+        //a?.AddEvent(new System.Diagnostics.ActivityEvent("rolePackageIngestService"));
+        //result.Add(await IngestData<RolePackage, IRolePackageService>(rolePackageService, cancellationToken));
 
         a?.AddEvent(new System.Diagnostics.ActivityEvent("tagGroupIngestService"));
         result.Add(await IngestData<TagGroup, ITagGroupService>(tagGroupService, cancellationToken));
@@ -139,6 +135,25 @@ public class JsonIngestFactory
         where TService : IDbBasicDataService<T>
     {
         var type = typeof(T);
+        var translatedItems = new Dictionary<string, List<T>>();
+
+        foreach (var lang in Config.Languages.Distinct())
+        {
+            var translatedJsonData = await ReadJsonData<T>(lang, cancellationToken: cancellationToken);
+            if (translatedJsonData == "[]")
+            {
+                continue;
+            }
+
+            var translatedJsonItems = JsonSerializer.Deserialize<List<T>>(translatedJsonData, options: new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            if (translatedJsonItems == null)
+            {
+                // send ut en feil her
+                continue;
+            }
+
+            translatedItems.Add(lang, translatedJsonItems);
+        }
 
         var jsonData = await ReadJsonData<T>(cancellationToken: cancellationToken);
         if (jsonData == "[]")
@@ -152,9 +167,15 @@ public class JsonIngestFactory
             return new IngestResult(type) { Success = false };
         }
 
+        return await IngestData(service, jsonItems, translatedItems, cancellationToken);
+    }
+
+    public async Task<IngestResult> IngestData<T, TService>(TService service, List<T> jsonItems, Dictionary<string, List<T>> languageJsonItems, CancellationToken cancellationToken)
+        where TService : IDbBasicDataService<T>
+    {
         var dbItems = await service.Get();
 
-        Console.WriteLine($"Ingest {type.Name} Json:{jsonItems.Count} Db:{dbItems.Count()}");
+        Console.WriteLine($"Ingest {typeof(T).Name} Json:{jsonItems.Count} Db:{dbItems.Count()}");
 
         if (dbItems == null || !dbItems.Any())
         {
@@ -184,15 +205,147 @@ public class JsonIngestFactory
             }
         }
 
-        await IngestTranslation<T, TService>(service, cancellationToken);
-        
-        return new IngestResult(type) { Success = true };
+        await IngestTranslation(service, languageJsonItems, cancellationToken);
+
+        return new IngestResult(typeof(T)) { Success = true };
     }
-    
+
+    private async Task<List<IngestResult>> IngestAreasAndPackages(CancellationToken cancellationToken = default) 
+    {
+        var result = new List<IngestResult>();
+        var ragnhildResult = await ReadAndSplitJson();
+        var ragnhildEngResult = await ReadAndSplitJson("eng");
+        var ragnhildNnoResult = await ReadAndSplitJson("nno");
+
+        var areaGroupItems = new Dictionary<string, List<AreaGroup>>
+        {
+            { "nno", ragnhildNnoResult.AreaGroupItems },
+            { "eng", ragnhildEngResult.AreaGroupItems }
+        };
+
+        var areaItems = new Dictionary<string, List<Area>>
+        {
+            { "nno", ragnhildNnoResult.AreaItems },
+            { "eng", ragnhildEngResult.AreaItems }
+        };
+
+        var packageItems = new Dictionary<string, List<Package>>
+        {
+            { "nno", ragnhildNnoResult.PackageItems },
+            { "eng", ragnhildEngResult.PackageItems }
+        };
+
+        result.Add(await IngestData(areaGroupService, ragnhildResult.AreaGroupItems, areaGroupItems, cancellationToken));
+        result.Add(await IngestData(areaService, ragnhildResult.AreaItems, areaItems, cancellationToken));
+        result.Add(await IngestData(packageService, ragnhildResult.PackageItems, packageItems, cancellationToken));
+        return result;
+    }
+
+    private async Task<(List<AreaGroup> AreaGroupItems, List<Area> AreaItems, List<Package> PackageItems)> ReadAndSplitJson(string language = "")
+    {
+        Console.WriteLine("RagnhildFactory.Go!!");
+        var jsonData = await ReadJsonData("All", language);
+        var metaAreaGroups = JsonSerializer.Deserialize<List<MetaAreaGroup>>(jsonData, options: new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        List<MetaAreaGroup> metaAreaGroupsList = new List<MetaAreaGroup>();
+        List<MetaArea> metaAreaList = new List<MetaArea>();
+        List<MetaPackage> metaPackagesList = new List<MetaPackage>();
+
+        foreach (var areaGroup in metaAreaGroups)
+        {
+            MetaAreaGroup newAreaGroup = new MetaAreaGroup
+            {
+                Id = areaGroup.Id,
+                Name = areaGroup.Name,
+                Description = areaGroup.Description,
+                Type = areaGroup.Type,
+                Urn = areaGroup.Urn,
+                Areas = areaGroup.Areas,
+            };
+
+            metaAreaGroupsList.Add(newAreaGroup);
+
+            foreach (var area in areaGroup.Areas)
+            {
+                MetaArea newArea = new MetaArea
+                {
+                    Id = area.Id,
+                    Name = area.Name,
+                    Description = area.Description,
+                    Icon = area.Icon,
+                    AreaGroup = area.AreaGroup,
+                    Packages = area.Packages,
+                };
+
+                metaAreaList.Add(newArea);
+
+                foreach (var package in area.Packages)
+                {
+                    MetaPackage newPackage = new MetaPackage
+                    {
+                        Id = package.Id,
+                        Urn = package.Urn,
+                        Name = package.Name,
+                        Description = package.Description,
+                        Area = area.Name,
+                    };
+                    metaPackagesList.Add(newPackage);
+                }
+            }
+        }
+
+        var areaGroups = new List<AreaGroup>();
+        var areas = new List<Area>();
+        var packages = new List<Package>();
+
+        foreach (var areaGroup in metaAreaGroupsList)
+        {
+            areaGroups.Add(new AreaGroup
+            {
+                Id = areaGroup.Id,
+                Name = areaGroup.Name,
+                Description = areaGroup.Description,
+            });
+        }
+
+        foreach (var area in metaAreaList)
+        {
+            areas.Add(new Area
+            {
+                Id = area.Id,
+                Name = area.Name,
+                Description = area.Description,
+                IconName = area.Icon,
+                GroupId = areaGroups.First(x => x.Name == area.AreaGroup).Id,
+            });
+        }
+
+        foreach (var package in metaPackagesList)
+        {
+            packages.Add(new Package
+            {
+                Id = package.Id,
+                Name = package.Name,
+                Description = package.Description,
+                AreaId = areas.First(x => x.Name == package.Area).Id,
+                IsDelegable = true,
+                HasResources = true,
+                EntityTypeId = Guid.Parse("8c216e2f-afdd-4234-9ba2-691c727bb33d"),
+                ProviderId = Guid.Parse("73dfe32a-8f21-465c-9242-40d82e61f320"),
+            });
+        }
+
+        return (areaGroups, areas, packages);
+    }
+
     private async Task<string> ReadJsonData<T>(string? language = null, CancellationToken cancellationToken = default)
     {
+        return await ReadJsonData(typeof(T).Name, language, cancellationToken);
+    }
 
-        string fileName = $"{Config.BasePath}{Path.DirectorySeparatorChar}{typeof(T).Name}{(string.IsNullOrEmpty(language) ? string.Empty : "_" + language)}.json";
+    private async Task<string> ReadJsonData(string baseName, string? language = null, CancellationToken cancellationToken = default)
+    {
+
+        string fileName = $"{Config.BasePath}{Path.DirectorySeparatorChar}{baseName}{(string.IsNullOrEmpty(language) ? string.Empty : "_" + language)}.json";
         if (File.Exists(fileName))
         {
             return await File.ReadAllTextAsync(fileName, cancellationToken);
@@ -201,62 +354,42 @@ public class JsonIngestFactory
         return "[]";
     }
 
-    private async Task IngestTranslation<T, TService>(TService service, CancellationToken cancellationToken)
+    private async Task IngestTranslation<T, TService>(TService service, Dictionary<string, List<T>> languageJsonItems, CancellationToken cancellationToken)
          where TService : IDbBasicDataService<T>
     {
         var type = typeof(T);
-        foreach (var lang in Config.Languages)
+        foreach (var translatedItems in languageJsonItems)
         {
-            var jsonData = await ReadJsonData<T>(language: lang, cancellationToken: cancellationToken);
-            if (jsonData == "[]")
+            var dbItems = await service.Get(options: new RequestOptions() { Language = translatedItems.Key });
+            //Console.WriteLine($"Ingest {lang} {type.Name} Json:{jsonItems.Count} Db:{dbItems.Count()}");
+            foreach (var item in translatedItems.Value)
             {
-                continue;
-            }
-
-            var jsonItems = JsonSerializer.Deserialize<List<T>>(jsonData, options: new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-            if (jsonItems == null)
-            {
-                return;
-            }
-
-            var dbItems = await service.Get(options: new RequestOptions() { Language = lang });
-            Console.WriteLine($"Ingest {lang} {type.Name} Json:{jsonItems.Count} Db:{dbItems.Count()}");
-            foreach (var item in jsonItems)
-            {
-                if (dbItems == null || !dbItems.Any())
+                try
                 {
-                    await service.Repo.CreateTranslation(item, lang);
+                    var id = GetId(item);
+                    if (id == null)
+                    {
+                        throw new Exception($"Failed to get Id for '{typeof(T).Name}'");
+                    }
+
+                    var rowchanges = await service.Repo.UpdateTranslation(id.Value, item, translatedItems.Key);
+                    if (rowchanges > 0)
+                    {
+                        continue;
+                    }
                 }
-                else
+                catch
                 {
-                    // Console.WriteLine(JsonSerializer.Serialize(item));
+                    Console.WriteLine("Failed to update translation");
+                }
 
-                    // TODO : Make it better .... 
-                    try
-                    {
-                        var id = GetId(item);
-                        if (id == null)
-                        {
-                            throw new Exception($"Failed to get Id for '{typeof(T).Name}'");
-                        }
-
-                        await service.Repo.UpdateTranslation(id.Value, item, lang);
-                        continue;
-                    }
-                    catch
-                    {
-                        Console.WriteLine("Failed to update translation");
-                    }
-
-                    try
-                    {
-                        await service.Repo.CreateTranslation(item, lang);
-                        continue;
-                    }
-                    catch
-                    {
-                        Console.WriteLine("Failed to create translation");
-                    }
+                try
+                {
+                    await service.Repo.CreateTranslation(item, translatedItems.Key);
+                }
+                catch
+                {
+                    Console.WriteLine("Failed to create translation");
                 }
             }
         }
