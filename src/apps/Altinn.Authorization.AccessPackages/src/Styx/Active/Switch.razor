@@ -1,4 +1,4 @@
-﻿<label class="bf-checkbox bf-switch-wrapper bf-checkbox-button">
+﻿<label class="bf-checkbox bf-switch-wrapper bf-checkbox-button" style=@(FullWidth ? "width:100%;" : "")>
     
     <input type="checkbox" checked="@Checked" @onchange="eventArgs => { CheckedChanged.InvokeAsync((bool)eventArgs.Value); }" />
     <span class="bf-switch @(Checked ? "bf-switch-checked" : "")">
@@ -13,8 +13,11 @@
 
 @code {
 
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    [Parameter] public bool FullWidth { get; set; }
+
     [Parameter] public bool Checked { get; set; }
     [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
-    [Parameter] public RenderFragment ChildContent { get; set; }
 
 }

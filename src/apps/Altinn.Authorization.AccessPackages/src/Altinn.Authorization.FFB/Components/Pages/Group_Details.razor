@@ -91,6 +91,11 @@
 
         </div>
 
+        <div>
+            <H2>Tildelinger</H2>
+            <pre>TBA</pre>
+        </div>
+
         @if(DelegatedAssignments != null && DelegatedAssignments.Any())
         {
             <div>
@@ -253,7 +258,8 @@
     }
     private async Task SearchAdmin()
     {
-        CreateAdminSearchResult = [.. await entityService.Search(CreateAdminUserSearchTerm)];
+        var res = await entityService.Search(CreateAdminUserSearchTerm, new RequestOptions() { OrderBy = "Name", PageSize = 10, PageNumber = 1, UsePaging = true });
+        CreateAdminSearchResult = [.. res];
     }
     private void SetSelectedAdmin(Entity entity)
     {
@@ -287,7 +293,9 @@
     }
     private async Task SearchMember()
     {
-        CreateMemberSearchResult = [.. await entityService.Search(CreateMemberUserSearchTerm)];
+        Console.WriteLine("Search " + CreateMemberUserSearchTerm);
+        var res = await entityService.Search(CreateMemberUserSearchTerm, new RequestOptions() { OrderBy = "Name", PageSize = 10, PageNumber = 1, UsePaging = true });
+        CreateMemberSearchResult = [.. res];
     }
     private void SetSelectedMember(Entity entity)
     {

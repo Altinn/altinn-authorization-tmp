@@ -1,7 +1,394 @@
 ﻿@page "/assignment/{id}"
 
-<em>TBA</em>
+@inject IAssignmentService assignmentService
+@inject IRoleService roleService
+@inject IRolePackageService rolePackageService
+@inject IGroupService groupService
+
+@inject IDelegationService delegationService
+@inject IDelegationPackageService delegationPackageService
+@inject IDelegationGroupService delegationGroupService
+@inject IDelegationAssignmentService delegationAssignmentService
+
+@if (Assignment != null)
+{
+    <PageTitle>Tildeling</PageTitle>
+
+    <PageHeader>
+        <LeftContent>
+            <BreadcrumbContainer>
+                <BreadcrumbItem Url=@($"/entity/{Assignment.From.Id}")>@Assignment.From.Name</BreadcrumbItem>
+                <BreadcrumbItem Url=@($"/entity/{Assignment.To.Id}")>@Assignment.To.Name</BreadcrumbItem>
+            </BreadcrumbContainer>
+            <H1>Tildeling</H1>
+            <p><Icon Name="circle-info"></Icon> <strong>@Assignment.From.Name</strong> har satt opp <strong>@Assignment.To.Name</strong> med rollen <strong>@Assignment.Role.Name</strong>.</p>
+        </LeftContent>
+        <RightContent>
+            <ButtonGroup>
+                <Button OnClick=@(() => CreateDelegationIsOpen = !CreateDelegationIsOpen)>Ny delegering</Button>
+                @*
+                <Button OnClick=@(() => CreateMemberIsOpen = !CreateMemberIsOpen)>Nytt medlem</Button> 
+                *@
+            </ButtonGroup>
+        </RightContent>
+    </PageHeader>
+
+    <div>
+        <VerticalTable>
+            <VerticalTableCell Title="Fra">@Assignment.From.Name</VerticalTableCell>
+            <VerticalTableCell Title="Rolle">@Assignment.Role.Name</VerticalTableCell>
+            <VerticalTableCell Title="Til">@Assignment.To.Name</VerticalTableCell>
+            @* <VerticalTableCell Title="Delegerbar">@Assignment.IsDelegable</VerticalTableCell> *@
+        </VerticalTable>
+    </div>
+
+    <Grid>
+
+        @if(Packages != null && Packages.Any())
+        {
+            <div>
+                <H2>Pakker</H2>
+                <p><Icon Name="circle-info"></Icon> Pakker denne tildelingen gir</p>
+                <SimpleTable>
+                    <Head>
+                        <SimpleTableRow IsHeaderRow>
+                            <th>Navn</th>
+                            <th>Beskrivelse</th>
+                            <th>Gir tilgang</th>
+                            <th>Kan delegere</th>
+                            <th>Delegerbar</th>
+                            <th>Variant</th>
+                        </SimpleTableRow>
+                    </Head>
+                    <Body>
+                        @foreach (var package in Packages)
+                        {
+                            <SimpleTableRow>
+                                <td><a href=@($"/package/{package.Package.Id}")>@package.Package.Name</a></td>
+                                <td>@package.Package.Description</td>
+                                <td><Icon Name=@(package.HasAccess ? "check" : "xmark")></Icon></td>
+                                <td><Icon Name=@(package.CanDelegate ? "check" : "xmark")></Icon></td>
+                                <td><Icon Name=@(package.Package.IsDelegable ? "check" : "xmark")></Icon></td>
+                                <td>@package.EntityVariant?.Name</td>
+                            </SimpleTableRow>
+                        }
+                    </Body>
+                </SimpleTable>
+            </div>
+        }
+
+        @if(Delegations != null && Delegations.Any())
+        {
+            <div>
+                <H2>Delegeringer</H2>
+                <p><Icon Name="circle-info"></Icon> Liste over delegeringer for denne tildelingen.</p>
+                <Accordion MultiOpen> 
+                    @foreach(var delegation in Delegations)
+                    {
+                        <AccordionItem Title=@delegation.Id.ToString() Url=@($"/delegation/{delegation.Id}")>
+
+                            @if (DelegatedPackages.ContainsKey(delegation.Id) && DelegatedPackages[delegation.Id].Any())
+                            {
+                                <div>
+                                    <H4>Pakker</H4>
+                                    <p>Følgende pakker er delegert videre.</p>
+                                    <SimpleTable>
+                                        <Head>
+                                            <SimpleTableRow IsHeaderRow>
+                                                <th>Navn</th>
+                                                <th>Beskrivelse</th>
+                                                <th>Delegerbar</th>
+                                            </SimpleTableRow>
+                                        </Head>
+                                        <Body>
+                                            @foreach (var package in DelegatedPackages[delegation.Id])
+                                            {
+                                                <SimpleTableRow>
+                                                    <td><a href=@($"/package/{package.Id}")>@package.Name</a></td>
+                                                    <td>@package.Description</td>
+                                                    <td><Icon Name=@(package.IsDelegable ? "check" : "xmark")></Icon></td>
+                                                </SimpleTableRow>
+                                            }
+                                        </Body>
+                                    </SimpleTable>
+                                </div>
+                            }
+
+                            @if (DelegatedGroups.ContainsKey(delegation.Id) && DelegatedGroups[delegation.Id].Any())
+                            {
+                                <div>
+                                    <H4>Grupper</H4>
+                                    <p>Følgende grupper mottar pakkene.</p>
+                                    <SimpleTable>
+                                        <Head>
+                                            <SimpleTableRow IsHeaderRow>
+                                                <th>Navn</th>
+                                                <th>Krever rolle tilhørighet</th>
+                                            </SimpleTableRow>
+                                        </Head>
+                                        <Body>
+                                            @foreach (var group in DelegatedGroups[delegation.Id])
+                                            {
+                                                <SimpleTableRow>
+                                                    <td>
+                                                        <a href=@($"/group/{group.Id}")>@group.Name</a>
+                                                    </td>
+                                                    <td><Icon Name=@(group.RequireRole ? "check" : "xmark")></Icon></td>
+                                                </SimpleTableRow>
+                                            }
+                                        </Body>
+                                    </SimpleTable>
+                                </div>
+                            }
+
+                            @if (DelegatedAssignments.ContainsKey(delegation.Id) && DelegatedAssignments[delegation.Id].Any())
+                            {
+                                <div>
+                                    <H4>Tildelinger</H4>
+                                    <p>Følgende tildelinger mottar pakkene. Om personen mister rollen denne delegeringen er valgt for vil den også miste denne delegeringen.</p>
+                                    <SimpleTable>
+                                        <Head>
+                                            <SimpleTableRow IsHeaderRow>
+                                                <th>From</th>
+                                                <th>Role</th>
+                                                <th>To</th>
+                                                <th>-</th>
+                                            </SimpleTableRow>
+                                        </Head>
+                                        <Body>
+                                            @foreach (var extAssignment in DelegatedAssignments[delegation.Id])
+                                            {
+                                                <SimpleTableRow>
+                                                    <td title="@extAssignment.From.RefId"><a href=@($"/entity/{extAssignment.From.Id}")><EntityTypeIcon Id="@extAssignment.From.TypeId" />@extAssignment.From.Name</a></td>
+                                                    <td>
+                                                        <Badge Title="@extAssignment.Role.Description">@extAssignment.Role.Code</Badge>
+                                                    </td>
+                                                    <td title="@extAssignment.To.RefId"><a href=@($"/entity/{extAssignment.To.Id}")><EntityTypeIcon Id="@extAssignment.To.TypeId" />@extAssignment.To.Name</a></td>
+
+                                                    <td>
+                                                        <a href=@($"/assignment/{extAssignment.Id}")><Icon Name="arrow-up-right-from-square"></Icon></a>
+                                                    </td>
+                                                </SimpleTableRow>
+                                            }
+                                        </Body>
+                                    </SimpleTable>
+                                </div>
+                            }
+                        </AccordionItem>
+                    }
+                </Accordion>
+            </div>
+        }
+
+
+    </Grid>
+
+    <Drawer Title="Opprett delegering" @bind-IsOpen=CreateDelegationIsOpen>
+
+        @if (CreateDelegationIsOpen)
+        {
+            <p>Du kan her opprette en ny delegering. Velg hvilke pakker som skal videredelegeres og hvem som skal motta.</p>
+
+            <InputContainer Title="Pakker" Description="Velg pakker som skal delegeres">
+                <SwitchContainer>
+                    @foreach (var package in Packages)
+                    {
+                        <Switch FullWidth @bind-Checked=NewDelegationPackages[package.Package.Id]>@package.Package.Name</Switch>
+                    }
+                </SwitchContainer>
+            </InputContainer>
+            <br />
+            <InputContainer Title="Velg grupper" Description="Velg de gruppene som skal motta delegeringen">
+                <input placeholder="Filter ..." class="bf-input" @bind="CreateDelegationGroupSearchTerm" @bind:event="oninput"/>
+                @if (CreateDelegationGroupResult != null && CreateDelegationGroupResult.Any())
+                {
+                    <SwitchContainer>
+                        @foreach (var group in CreateDelegationGroupResultFiltered)
+                        {
+                            <Switch FullWidth @bind-Checked=CreateDelegationGroupSelected[group.Id]>@group.Name</Switch>
+                        }
+                    </SwitchContainer>
+                }
+                else
+                {
+                    <Button OnClick="() => CreateGroupIsOpen = true">Opprett gruppe</Button>
+                }
+            </InputContainer>
+            <br />
+            <InputContainer Title="Velg personer" Description="Velg de personene som skal motta delegeringen">
+                <input placeholder="Filter ..." class="bf-input" @bind="CreateDelegationAssignmentSearchTerm" @bind:event="oninput" />
+                @if (CreateDelegationAssignmentResult != null && CreateDelegationAssignmentResult.Any())
+                {
+                    <SwitchContainer>
+                        @foreach (var entity in CreateDelegationAssignmentResultFiltered)
+                        {
+                            <Switch FullWidth @bind-Checked=CreateDelegationAssignmentSelected[entity.Id]>@entity.To.Name (@entity.Role.Code)</Switch>
+                        }
+                    </SwitchContainer>
+                }
+                else
+                {
+                    <Button>Opprett person</Button>
+                }
+            </InputContainer>
+
+            <hr />
+            @if (!string.IsNullOrEmpty(CreateDelegationMessage.msg))
+            {
+                <Message State=@(CreateDelegationMessage.success ? Message.MsgState.Success : Message.MsgState.Alert)>
+                    @CreateDelegationMessage.msg
+                </Message>
+                <hr />
+            }
+            <Button Variant="Button.ButtonVariant.Filled" OnClick="CreateDelegation">Opprett</Button>
+
+        }
+    </Drawer>
+
+    <Drawer Title="Opprett gruppe" @bind-IsOpen=CreateGroupIsOpen>
+
+    </Drawer>
+}
+
 
 @code {
 
+    [Parameter] public string id { get; set; }
+
+    public ExtAssignment Assignment { get; set; }
+    public List<ExtRolePackage> Packages { get; set; }
+
+    public List<Delegation> Delegations { get; set; }
+    public Dictionary<Guid, IEnumerable<Package>> DelegatedPackages { get; set; }
+    public Dictionary<Guid, IEnumerable<EntityGroup>> DelegatedGroups { get; set; }
+    public Dictionary<Guid, IEnumerable<ExtAssignment>> DelegatedAssignments { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        Assignment = await assignmentService.GetExtended(Guid.Parse(id));
+
+        if (Assignment != null)
+        {
+            Packages = [.. await rolePackageService.GetExtended(t => t.RoleId, Assignment.RoleId)];
+
+            /*Create stuff*/
+            NewDelegationPackages = new Dictionary<Guid, bool>();
+            foreach (var package in Packages)
+            {
+                NewDelegationPackages.Add(package.Package.Id, false);
+            }
+
+            CreateDelegationGroupResult = [.. await groupService.Get(t => t.OwnerId, Assignment.ToId) ?? new List<EntityGroup>()];
+            CreateDelegationGroupSelected = new Dictionary<Guid, bool>();
+            foreach (var group in CreateDelegationGroupResult)
+            {
+                CreateDelegationGroupSelected.Add(group.Id, false);
+            }
+
+            CreateDelegationAssignmentResult = [.. await assignmentService.GetExtended(t => t.FromId, Assignment.ToId)];
+            CreateDelegationAssignmentSelected = new Dictionary<Guid, bool>();
+            foreach (var ass in CreateDelegationAssignmentResult)
+            {
+                CreateDelegationAssignmentSelected.Add(ass.Id, false);
+            }
+
+            /* --- */
+
+            Delegations = [.. await delegationService.Get(t => t.AssignmentId, Assignment.Id)];
+            if (Delegations != null && Delegations.Any())
+            {
+                DelegatedPackages = new Dictionary<Guid, IEnumerable<Package>>();
+                DelegatedGroups = new Dictionary<Guid, IEnumerable<EntityGroup>>();
+                DelegatedAssignments = new Dictionary<Guid, IEnumerable<ExtAssignment>>();
+
+                foreach (var delegation in Delegations)
+                {
+                    DelegatedPackages.Add(delegation.Id, await delegationPackageService.GetB(delegation.Id));
+                    DelegatedGroups.Add(delegation.Id, await delegationGroupService.GetB(delegation.Id));
+                    var res = await delegationAssignmentService.GetB(delegation.Id);
+                    var extRes = new List<ExtAssignment>();
+                    foreach(var r in res)
+                    {
+                        extRes.Add(await assignmentService.GetExtended(r.Id));
+                    }
+                    DelegatedAssignments.Add(delegation.Id, extRes);
+                }
+            }
+        }
+    }
+
+    public bool CreateDelegationIsOpen { get; set; }
+    public Dictionary<Guid, bool> NewDelegationPackages { get; set; } = new Dictionary<Guid, bool>();
+
+    public string CreateDelegationGroupSearchTerm { get; set; } = "";
+    public List<EntityGroup> CreateDelegationGroupResult { get; set; } = new List<EntityGroup>();
+    public Dictionary<Guid, bool> CreateDelegationGroupSelected { get; set; }
+    List<EntityGroup> CreateDelegationGroupResultFiltered => CreateDelegationGroupResult.Where(i => i.Name.ToLower().Contains(CreateDelegationGroupSearchTerm.ToLower()) 
+    || (CreateDelegationGroupSelected != null && CreateDelegationGroupSelected.Count(t => t.Value == true && t.Key == i.Id) > 0)).ToList();
+
+
+    public string CreateDelegationAssignmentSearchTerm { get; set; } = "";
+    public List<ExtAssignment> CreateDelegationAssignmentResult { get; set; } = new List<ExtAssignment>();
+    public Dictionary<Guid, bool> CreateDelegationAssignmentSelected { get; set; }
+    List<ExtAssignment> CreateDelegationAssignmentResultFiltered => CreateDelegationAssignmentResult.Where(i => i.To.Name.ToLower().Contains(CreateDelegationAssignmentSearchTerm.ToLower())
+    || (CreateDelegationAssignmentSelected != null && CreateDelegationAssignmentSelected.Count(t => t.Value == true && t.Key == i.Id) > 0)).ToList();
+
+    public (string msg, bool success) CreateDelegationMessage { get; set; }
+    private async Task CreateDelegation()
+    {
+        try
+        {
+            var delegation = new Delegation()
+                {
+                    Id = Guid.NewGuid(),
+                    AssignmentId = Assignment.Id
+                };
+
+            await delegationService.Create(delegation);
+
+            foreach (var pack in NewDelegationPackages.Where(y => y.Value))
+            {
+                await delegationPackageService.Create(new DelegationPackage()
+                {
+                    Id = Guid.NewGuid(),
+                    DelegationId = delegation.Id,
+                    PackageId = pack.Key
+                });
+            }
+
+            foreach (var group in CreateDelegationGroupSelected.Where(y => y.Value))
+            {
+                await delegationGroupService.Create(new DelegationGroup()
+                    {
+                        Id = Guid.NewGuid(),
+                        DelegationId = delegation.Id,
+                        GroupId = group.Key
+                    });
+            }
+
+            foreach (var ass in CreateDelegationAssignmentSelected.Where(y => y.Value))
+            {
+                await delegationAssignmentService.Create(new DelegationAssignment()
+                    {
+                        Id = Guid.NewGuid(),
+                        DelegationId = delegation.Id,
+                        AssignmentId = ass.Key
+                    });
+            }
+            await Load();
+            CreateDelegationMessage = ($"Created administrator!", true);
+        } 
+        catch (Exception ex)
+        {
+            CreateDelegationMessage = ("Failed to create group administrator. " + ex.Message, false);
+        }
+
+    }
+
+    public bool CreateGroupIsOpen { get; set; }
 }

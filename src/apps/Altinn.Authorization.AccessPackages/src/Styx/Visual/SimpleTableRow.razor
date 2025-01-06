@@ -1,0 +1,8 @@
+﻿<tr class=@(IsHeaderRow ? "" : "bf-table-row bf-table-row-compact")>
+    @ChildContent
+</tr>
+
+@code {
+    [Parameter] public bool IsHeaderRow { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}
