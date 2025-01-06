@@ -53,9 +53,11 @@ public class ObjectDefinition
     /// </summary>
     /// <param name="type">Type</param>
     /// <param name="config">DbObjDefConfig</param>
-    public ObjectDefinition(Type type, DbObjDefConfig config)
+    /// <param name="useTranslation">UseTranslation (default: false)</param>
+    /// <param name="useHistory">UseHistory (default: false)</param>
+    public ObjectDefinition(Type type, DbObjDefConfig config, bool useTranslation = false, bool useHistory = false)
     {
-        SetBasic(type, config);
+        SetBasic(type, config, useTranslation, useHistory);
     }
 
     /// <summary>
@@ -64,9 +66,11 @@ public class ObjectDefinition
     /// <param name="type">Type</param>
     /// <param name="extendedType">Extended type</param>
     /// <param name="config">DbObjDefConfig</param>
-    public ObjectDefinition(Type type, Type extendedType, DbObjDefConfig config)
+    /// <param name="useTranslation">UseTranslation (default: false)</param>
+    /// <param name="useHistory">UseHistory (default: false)</param>
+    public ObjectDefinition(Type type, Type extendedType, DbObjDefConfig config, bool useTranslation = false, bool useHistory = false)
     {
-        SetBasic(type, config);
+        SetBasic(type, config, useTranslation, useHistory);
         SetExtended(extendedType);
     }
 
@@ -83,7 +87,7 @@ public class ObjectDefinition
         }
     }
 
-    private void SetBasic(Type type, DbObjDefConfig config)
+    private void SetBasic(Type type, DbObjDefConfig config, bool useTranslation, bool useHistory)
     {
         var name = type.Name;
         Properties = new Dictionary<string, PropertyInfo>();
@@ -95,15 +99,7 @@ public class ObjectDefinition
         BaseDbObject = new DbObject(type, name, config.BaseSchema, name);
         TranslationDbObject = new DbObject(type, name, config.TranslationSchema, "Translation" + name);
         HistoryDbObject = new DbObject(type, name, config.HistorySchema, "History" + name);
-
-        if (config.TranslateObjects != null && config.TranslateObjects.Contains(name))
-        {
-            UseTranslation = true;
-        }
-
-        if (config.HistoryObjects != null && config.HistoryObjects.Contains(name))
-        {
-            UseHistory = true;
-        }
+        UseTranslation = useTranslation;
+        UseHistory = useHistory;
     }
 }

@@ -5,8 +5,7 @@ using Altinn.Authorization.Workers.BrReg.Services;
 var builder = Host.CreateApplicationBuilder(args);
 builder.Configuration.AddCommandLine(args).AddEnvironmentVariables().AddJsonFile("appsettings.json");
 
-builder.Services.Configure<IngestorConfig>(builder.Configuration.GetRequiredSection("IngestorConfig"));
-builder.Services.Configure<ImporterConfig>(builder.Configuration.GetRequiredSection("ImporterConfig"));
+builder.Services.Configure<BrRegConfig>(builder.Configuration.GetRequiredSection("BrRegConfig"));
 
 builder.AddDatabaseDefinitions();
 builder.AddDbAccessData();

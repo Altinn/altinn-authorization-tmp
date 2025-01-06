@@ -202,7 +202,7 @@ public class PostgresMigrationFactory : IDbMigrationFactory
         string migrationKey = $"CREATE VIEW {defaultSchema}.{name}";
         if (NeedMigration<T>(migrationKey))
         {
-            //await ExecuteQuery(query);
+            // await ExecuteQuery(query);
             await LogMigration<T>(migrationKey, query);
         }
     }

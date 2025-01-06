@@ -13,11 +13,11 @@ public static class DbAccessExtensions
     /// <param name="builder">IHostApplicationBuilder</param>
     /// <param name="configureOptions">BrRegIngestorConfig</param>
     /// <returns></returns>
-    public static IHostApplicationBuilder AddBrregIngestor(this IHostApplicationBuilder builder, Action<IngestorConfig>? configureOptions = null)
+    public static IHostApplicationBuilder AddBrregIngestor(this IHostApplicationBuilder builder, Action<BrRegConfig>? configureOptions = null)
     {
-        builder.Services.Configure<IngestorConfig>(config =>
+        builder.Services.Configure<BrRegConfig>(config =>
         {
-            builder.Configuration.GetSection("BrRegIngestorConfig").Bind(config);
+            builder.Configuration.GetSection("BrRegConfig").Bind(config);
             configureOptions?.Invoke(config);
         });
 
@@ -44,11 +44,11 @@ public static class DbAccessExtensions
     /// <param name="builder">IHostApplicationBuilder</param>
     /// <param name="configureOptions">BrRegIngestorConfig</param>
     /// <returns></returns>
-    public static IHostApplicationBuilder AddBrregImporter(this IHostApplicationBuilder builder, Action<ImporterConfig>? configureOptions = null)
+    public static IHostApplicationBuilder AddBrregImporter(this IHostApplicationBuilder builder, Action<BrRegConfig>? configureOptions = null)
     {
-        builder.Services.Configure<ImporterConfig>(config =>
+        builder.Services.Configure<BrRegConfig>(config =>
         {
-            builder.Configuration.GetSection("BrRegImporterConfig").Bind(config);
+            builder.Configuration.GetSection("BrRegConfig").Bind(config);
             configureOptions?.Invoke(config);
         });
 

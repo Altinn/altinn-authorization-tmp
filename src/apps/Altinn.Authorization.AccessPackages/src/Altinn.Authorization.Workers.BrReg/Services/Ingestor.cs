@@ -14,9 +14,9 @@ namespace Altinn.Authorization.Workers.BrReg.Services;
 /// <param name="entityTypeService">IEntityTypeService</param>
 /// <param name="entityVariantService">IEntityVariantService</param>
 /// <param name="roleService">IRoleService</param>
-public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityService, IAssignmentService assignmentService, IEntityTypeService entityTypeService, IEntityVariantService entityVariantService, IRoleService roleService)
+public class Ingestor(IOptions<BrRegConfig> config, IEntityService entityService, IAssignmentService assignmentService, IEntityTypeService entityTypeService, IEntityVariantService entityVariantService, IRoleService roleService)
 {
-    private IngestorConfig Config { get; } = config.Value;
+    private BrRegConfig Config { get; } = config.Value;
 
     private BrregApiWrapper BrregApi { get; set; } = new BrregApiWrapper();
 
@@ -39,27 +39,35 @@ public class Ingestor(IOptions<IngestorConfig> config, IEntityService entityServ
         ////using var a = MyTelemetry.Source.StartActivity("IngestAll");
         ////a?.AddEvent(new System.Diagnostics.ActivityEvent("Ingest starting!"));
 
-        await LoadCache();
-
-        if (EntityIdCache.Count == 0 || force)
-        {
-            await IngestUnits();
-            await LoadCache();
-            await IngestSubUnits();
-        }
-        else
-        {
-            Console.WriteLine("Entities in db. Abort ingest");
-        }
-
-        if (CacheRole.Count == 0 || force)
+        if (Config.IngestUnits)
         {
             await LoadCache();
-            await IngestRoles();
+            if (EntityIdCache.Count == 0 || force)
+            {
+                await IngestUnits();
+                if (Config.IngestSubUnits)
+                {
+                    await LoadCache();
+                    await IngestSubUnits();
+                }
+            }
+            else
+            {
+                Console.WriteLine("Entities in db. Abort ingest");
+            }
         }
-        else
+
+        if (Config.IngestRoles)
         {
-            Console.WriteLine("Roles in db. Abort ingest");
+            if (CacheRole.Count == 0 || force)
+            {
+                    await LoadCache();
+                    await IngestRoles();
+            }
+            else
+            {
+                Console.WriteLine("Roles in db. Abort ingest");
+            }
         }
     }
 
