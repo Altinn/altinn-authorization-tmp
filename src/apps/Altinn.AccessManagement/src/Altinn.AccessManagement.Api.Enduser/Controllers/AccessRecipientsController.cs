@@ -27,6 +27,7 @@ public class AccessRecipientsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult> GetAccessRecipients()
     {
-        return Ok();
+        _logger.LogInformation("Debug: Get access recipients triggered");
+        return await Task.FromResult(Ok());
     }
 }

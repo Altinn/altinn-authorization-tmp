@@ -21,6 +21,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.App
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api.Enduser", "src\Altinn.AccessManagement.Api.Enduser\Altinn.AccessManagement.Api.Enduser.csproj", "{4CD21ED8-6956-4F92-8D13-ED8DFFA43E6E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api.Metadata", "src\Altinn.AccessManagement.Api.Metadata\Altinn.AccessManagement.Api.Metadata.csproj", "{7E7B9B75-4EBD-4DE4-94D9-080AFDF275BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api.ServiceOwner", "src\Altinn.AccessManagement.Api.ServiceOwner\Altinn.AccessManagement.Api.ServiceOwner.csproj", "{31E20770-DF86-43A8-B53B-52351F94FD22}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +62,14 @@ Global
 		{4CD21ED8-6956-4F92-8D13-ED8DFFA43E6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CD21ED8-6956-4F92-8D13-ED8DFFA43E6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CD21ED8-6956-4F92-8D13-ED8DFFA43E6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E7B9B75-4EBD-4DE4-94D9-080AFDF275BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E7B9B75-4EBD-4DE4-94D9-080AFDF275BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E7B9B75-4EBD-4DE4-94D9-080AFDF275BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E7B9B75-4EBD-4DE4-94D9-080AFDF275BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31E20770-DF86-43A8-B53B-52351F94FD22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31E20770-DF86-43A8-B53B-52351F94FD22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31E20770-DF86-43A8-B53B-52351F94FD22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31E20770-DF86-43A8-B53B-52351F94FD22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A3F09A0C-0978-4F23-9F35-A7343DC76D03} = {960E20A2-19CD-4579-9E93-D2E7C02D3629}
@@ -67,5 +79,7 @@ Global
 		{8482BD82-0121-4B24-B7E9-4688E41584F8} = {960E20A2-19CD-4579-9E93-D2E7C02D3629}
 		{BE368289-7CE8-411C-8B0C-EE6F99FAC61E} = {960E20A2-19CD-4579-9E93-D2E7C02D3629}
 		{4CD21ED8-6956-4F92-8D13-ED8DFFA43E6E} = {960E20A2-19CD-4579-9E93-D2E7C02D3629}
+		{7E7B9B75-4EBD-4DE4-94D9-080AFDF275BB} = {960E20A2-19CD-4579-9E93-D2E7C02D3629}
+		{31E20770-DF86-43A8-B53B-52351F94FD22} = {960E20A2-19CD-4579-9E93-D2E7C02D3629}
 	EndGlobalSection
 EndGlobal

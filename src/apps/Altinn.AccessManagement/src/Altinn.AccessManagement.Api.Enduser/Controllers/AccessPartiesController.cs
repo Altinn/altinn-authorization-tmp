@@ -27,6 +27,7 @@ public class AccessPartiesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult> GetAccessParties()
     {
-        return Ok();
+        _logger.LogInformation("Debug: Get access parties triggered");
+        return await Task.FromResult(Ok());
     }
 }
