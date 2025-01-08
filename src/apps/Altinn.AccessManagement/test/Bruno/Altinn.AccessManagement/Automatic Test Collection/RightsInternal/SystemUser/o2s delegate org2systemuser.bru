@@ -27,12 +27,8 @@ body:json {
           {
               "resource": [
                   {
-                      "id": "urn:altinn:org",
-                      "value": "{{org}}"
-                  },
-                  {
-                      "id": "urn:altinn:app",
-                      "value": "{{app}}"
+                      "id": "urn:altinn:resource",
+                      "value": "{{resource}}"
                   }
               ],
               "action": "read"
@@ -56,15 +52,14 @@ vars:pre-request {
 script:pre-request {
   const testdata = require(`./Testdata/rights-delegations/${bru.getEnvVar("tokenEnv")}testdata.json`);
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
-  bru.setVar("party", testdata.org1.partyid);
-  bru.setVar("to_systemuser", testdata.system1.uuid);
-  bru.setVar("org", testdata.org);
-  bru.setVar("app", testdata.app);
+  bru.setVar("party", testdata.org_system.partyid);
+  bru.setVar("to_systemuser", testdata.org_system.systems[0]);
+  bru.setVar("resource", testdata.resource_system);
   
   var getTokenParameters = {
-    auth_userId: testdata.org1.dagl.userid,
-    auth_partyId: testdata.org1.dagl.partyid,
-    auth_ssn: testdata.org1.dagl.pid,
+    auth_userId: testdata.org_system.dagl.userid,
+    auth_partyId: testdata.org_system.dagl.partyid,
+    auth_ssn: testdata.org_system.dagl.pid,
     scope: sharedtestdata.scopes.read,
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.read
