@@ -1,6 +1,7 @@
 ﻿using Altinn.Authorization.AccessPackages.Models;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
 using Altinn.Authorization.Workers.BrReg.Models;
+using Microsoft.Extensions.Options;
 
 namespace Altinn.Authorization.Workers.BrReg.Services;
 
@@ -10,6 +11,8 @@ namespace Altinn.Authorization.Workers.BrReg.Services;
 public class Importer
 {
     #region Constructor
+    private BrRegConfig Config { get; }
+
     private BrregApiWrapper BrregApi { get; set; }
 
     private IEntityService EntityService { get; set; }
@@ -25,12 +28,14 @@ public class Importer
     /// <summary>
     /// Importer
     /// </summary>
+    /// <param name="config">BrRegConfig</param>
     /// <param name="entityService">IEntityService</param>
     /// <param name="entityTypeService">IEntityTypeService</param>
     /// <param name="entityVariantService">IEntityVariantService</param>
     /// <param name="assignmentService">IAssignmentService</param>
     /// <param name="roleService">IRoleService</param>
     public Importer(
+       IOptions<BrRegConfig> config,
        IEntityService entityService,
        IEntityTypeService entityTypeService,
        IEntityVariantService entityVariantService,
@@ -38,6 +43,7 @@ public class Importer
        IRoleService roleService
        )
     {
+        Config = config.Value;
         BrregApi = new BrregApiWrapper();
         EntityService = entityService;
         EntityTypeService = entityTypeService;
@@ -50,6 +56,22 @@ public class Importer
             { "underenhet", 19389083 },
             { "roller", 2961954 }
         };
+    }
+
+    /// <summary>
+    /// Check if any import is enabled in config
+    /// </summary>
+    public bool IsEnabled
+    {
+        get
+        {
+            if (Config.ImportUnits || Config.ImportSubUnits || Config.ImportRoles)
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
     #endregion
 
@@ -216,6 +238,12 @@ public class Importer
     /// <returns></returns>
     public async Task ImportUnit()
     {
+        if (!Config.ImportUnits)
+        {
+            Console.WriteLine("Unit import disabled. <ImporterConfig:ImportUnits>");
+            return;
+        }
+
         Console.WriteLine("Importing unit changes");
         await LoadCache();
         var changeId = GetChangeId("enhet");
@@ -261,6 +289,12 @@ public class Importer
     /// <returns></returns>
     public async Task ImportSubUnit()
     {
+        if (!Config.ImportSubUnits)
+        {
+            Console.WriteLine("SubUnit import disabled. <ImporterConfig:ImportSubUnits>");
+            return;
+        }
+
         var changeId = GetChangeId("underenhet");
 
         if (changeId == 0)
@@ -400,6 +434,12 @@ public class Importer
     /// <returns></returns>
     public async Task ImportRoles()
     {
+        if (!Config.ImportRoles)
+        {
+            Console.WriteLine("Role import disabled. <ImporterConfig:ImportRoles>");
+            return;
+        }
+
         var changeId = GetChangeId("roller");
         Console.WriteLine("Getting role changes");
 

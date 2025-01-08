@@ -289,7 +289,7 @@ public class JsonIngestFactory
 
         result.Add(await IngestData(areaGroupService, ragnhildResult.AreaGroupItems, areaGroupItems, cancellationToken));
         result.Add(await IngestData(areaService, ragnhildResult.AreaItems, areaItems, cancellationToken));
-        result.Add(await IngestData(packageService, ragnhildResult.PackageItems, packageItems, cancellationToken));
+        //// result.Add(await IngestData(packageService, ragnhildResult.PackageItems, packageItems, cancellationToken));
         return result;
     }
 

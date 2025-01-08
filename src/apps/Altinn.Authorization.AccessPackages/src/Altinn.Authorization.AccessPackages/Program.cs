@@ -24,23 +24,9 @@ app.UseHttpsRedirection();
 app.MapGet("/icon/{type}/{category}/{name}", (string type, string category, string name) =>
 {
     return Results.File(@$"resources/{type}/{category}/{name}.svg", contentType: "image/svg+xml");
-}).WithOpenApi().WithTags("Icon").WithSummary("Gets icons");
+}
+).WithOpenApi().WithTags("Icon").WithSummary("Gets icons");
 
 app.MapDbAccessEndpoints();
-
-/*
-app.MapDefaultsExt<IEntityService, Entity, ExtEntity>(mapIngest: true, mapSearch: true);
-app.MapDefaultsExt<IEntityTypeService, EntityType, ExtEntityType>();
-app.MapDefaultsExt<IEntityVariantService, EntityVariant, ExtEntityVariant>();
-app.MapCrossDefaults<EntityVariant, IEntityVariantRoleService, EntityVariantRole, Role>("variants", "roles");
-app.MapDefaultsExt<IPackageService, Package, ExtPackage>(mapSearch: true);
-app.MapCrossDefaults<Package, IPackageTagService, PackageTag, Tag>("packages", "tags");
-app.MapDefaults<IProviderService, Provider>();
-app.MapDefaults<IRoleService, Role>();
-app.MapDefaultsExt<IRolePackageService, RolePackage, ExtRolePackage>();
-app.MapDefaultsExt<IAssignmentService, Assignment, ExtAssignment>();
-app.MapDefaultsExt<ITagService, Tag, ExtTag>();
-app.MapDefaults<ITagGroupService, TagGroup>();
-*/
 
 app.Run();

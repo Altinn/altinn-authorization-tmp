@@ -25,40 +25,40 @@ public class DatabaseDefinitions
     /// </summary>
     public void SetDatabaseDefinitions()
     {
-        DbDefinitions.Add<Area, ExtArea>(Config);
-        DbDefinitions.Add<AreaGroup>(Config);
+        DbDefinitions.Add<Area, ExtArea>(Config, useTranslation: true, useHistory: true);
+        DbDefinitions.Add<AreaGroup>(Config, useTranslation: true, useHistory: true);
 
-        DbDefinitions.Add<Entity, ExtEntity>(Config);
-        DbDefinitions.Add<EntityType, ExtEntityType>(Config);
-        DbDefinitions.Add<EntityVariant, ExtEntityVariant>(Config);
-        DbDefinitions.Add<EntityVariantRole, ExtEntityVariantRole>(Config);
+        DbDefinitions.Add<Entity, ExtEntity>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<EntityType, ExtEntityType>(Config, useTranslation: true, useHistory: true);
+        DbDefinitions.Add<EntityVariant, ExtEntityVariant>(Config, useTranslation: true, useHistory: true);
+        DbDefinitions.Add<EntityVariantRole, ExtEntityVariantRole>(Config, useTranslation: false, useHistory: true);
 
-        DbDefinitions.Add<Package, ExtPackage>(Config);
-        DbDefinitions.Add<PackageDelegation, ExtPackageDelegation>(Config);
-        DbDefinitions.Add<PackageResource, ExtPackageResource>(Config);
-        DbDefinitions.Add<PackageTag, ExtPackageTag>(Config);
+        DbDefinitions.Add<Package, ExtPackage>(Config, useTranslation: true, useHistory: true);
+        DbDefinitions.Add<PackageDelegation, ExtPackageDelegation>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<PackageResource, ExtPackageResource>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<PackageTag, ExtPackageTag>(Config, useTranslation: false, useHistory: true);
 
-        DbDefinitions.Add<Provider>(Config);
+        DbDefinitions.Add<Provider>(Config, useTranslation: false, useHistory: true);
 
-        DbDefinitions.Add<Resource, ExtResource>(Config);
-        DbDefinitions.Add<ResourceGroup, ExtResourceGroup>(Config);
-        DbDefinitions.Add<ResourceType>(Config);
+        DbDefinitions.Add<Resource, ExtResource>(Config, useTranslation: true, useHistory: true);
+        DbDefinitions.Add<ResourceGroup, ExtResourceGroup>(Config, useTranslation: true, useHistory: true);
+        DbDefinitions.Add<ResourceType>(Config, useTranslation: true, useHistory: true);
 
-        DbDefinitions.Add<Role, ExtRole>(Config);
-        DbDefinitions.Add<RoleMap, ExtRoleMap>(Config);
-        DbDefinitions.Add<RolePackage, ExtRolePackage>(Config);
+        DbDefinitions.Add<Role, ExtRole>(Config, useTranslation: true, useHistory: true);
+        DbDefinitions.Add<RoleMap, ExtRoleMap>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<RolePackage, ExtRolePackage>(Config, useTranslation: false, useHistory: true);
 
-        DbDefinitions.Add<Tag, ExtTag>(Config);
-        DbDefinitions.Add<TagGroup>(Config);
+        DbDefinitions.Add<Tag, ExtTag>(Config, useTranslation: true, useHistory: true);
+        DbDefinitions.Add<TagGroup>(Config, useTranslation: true, useHistory: true);
 
-        DbDefinitions.Add<Assignment, ExtAssignment>(Config);
-        DbDefinitions.Add<EntityGroup, ExtEntityGroup>(Config);
-        DbDefinitions.Add<GroupMember, ExtGroupMember>(Config);
-        DbDefinitions.Add<GroupAdmin, ExtGroupAdmin>(Config);
+        DbDefinitions.Add<Assignment, ExtAssignment>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<EntityGroup, ExtEntityGroup>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<GroupMember, ExtGroupMember>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<GroupAdmin, ExtGroupAdmin>(Config, useTranslation: false, useHistory: true);
 
-        DbDefinitions.Add<Delegation, ExtDelegation>(Config);
-        DbDefinitions.Add<DelegationPackage, ExtDelegationPackage>(Config);
-        DbDefinitions.Add<DelegationGroup, ExtDelegationGroup>(Config);
-        DbDefinitions.Add<DelegationAssignment, ExtDelegationAssignment>(Config);
+        DbDefinitions.Add<Delegation, ExtDelegation>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<DelegationPackage, ExtDelegationPackage>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<DelegationGroup, ExtDelegationGroup>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<DelegationAssignment, ExtDelegationAssignment>(Config, useTranslation: false, useHistory: true);
     }
 }

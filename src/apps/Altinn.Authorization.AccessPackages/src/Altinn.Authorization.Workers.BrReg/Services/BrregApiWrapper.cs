@@ -40,8 +40,10 @@ public class BrregApiWrapper
 
             using var stream = await client.GetStreamAsync(url, cancellationToken);
             using var decompress = new GZipStream(stream, CompressionMode.Decompress);
+            
             var res = JsonSerializer.Deserialize<List<T>>(new StreamReader(decompress).BaseStream);
 
+            //// TODO: Fix FileCache for all types
             if (typeof(T) != typeof(RoleResult))
             {
                 try

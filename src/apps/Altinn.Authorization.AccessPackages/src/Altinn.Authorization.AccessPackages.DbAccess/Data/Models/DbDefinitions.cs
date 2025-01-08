@@ -12,11 +12,13 @@ public static class DbDefinitions
     /// </summary>
     /// <typeparam name="T">Type</typeparam>
     /// <param name="config">DbObjDefConfig</param>
-    public static void Add<T>(DbObjDefConfig config)
+    /// <param name="useTranslation">UseTranslation (default: false)</param>
+    /// <param name="useHistory">UseHistory (default: false)</param>
+    public static void Add<T>(DbObjDefConfig config, bool useTranslation = false, bool useHistory = false)
     {
         if (!DbObjects.ContainsKey(typeof(T)))
         {
-            DbObjects.Add(typeof(T), new ObjectDefinition(typeof(T), config));
+            DbObjects.Add(typeof(T), new ObjectDefinition(typeof(T), config, useTranslation, useHistory));
         }
     }
 
@@ -26,11 +28,13 @@ public static class DbDefinitions
     /// <typeparam name="T">Type</typeparam>
     /// <typeparam name="TExtended">ExtendedType</typeparam>
     /// <param name="config">DbObjDefConfig</param>
-    public static void Add<T, TExtended>(DbObjDefConfig config)
+    /// <param name="useTranslation">UseTranslation (default: false)</param>
+    /// <param name="useHistory">UseHistory (default: false)</param>
+    public static void Add<T, TExtended>(DbObjDefConfig config, bool useTranslation = false, bool useHistory = false)
     {
         if (!DbObjects.ContainsKey(typeof(T)))
         {
-            DbObjects.Add(typeof(T), new ObjectDefinition(typeof(T), typeof(TExtended), config));
+            DbObjects.Add(typeof(T), new ObjectDefinition(typeof(T), typeof(TExtended), config, useTranslation, useHistory));
         }
     }
 

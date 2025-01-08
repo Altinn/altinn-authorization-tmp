@@ -1,9 +1,9 @@
 ﻿namespace Altinn.Authorization.Workers.BrReg.Services;
 
 /// <summary>
-/// BrReg Ingestor Config
+/// BrReg Config
 /// </summary>
-public class IngestorConfig
+public class BrRegConfig
 {
     /// <summary>
     /// IngestUnits
@@ -19,4 +19,19 @@ public class IngestorConfig
     /// IngestRoles
     /// </summary>
     public bool IngestRoles { get; set; }
+
+    /// <summary>
+    /// ImportUnits
+    /// </summary>
+    public bool ImportUnits { get; set; }
+
+    /// <summary>
+    /// ImportSubUnits
+    /// </summary>
+    public bool ImportSubUnits { get; set; }
+
+    /// <summary>
+    /// ImportRoles
+    /// </summary>
+    public bool ImportRoles { get; set; }
 }

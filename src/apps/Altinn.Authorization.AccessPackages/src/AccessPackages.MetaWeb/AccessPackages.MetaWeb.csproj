@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Altinn.Authorization.AccessPackages.Common\Altinn.Authorization.AccessPackages.Common.csproj" />
-    <ProjectReference Include="..\src\Styx\Styx.csproj" />
+    <ProjectReference Include="..\Altinn.Authorization.AccessPackages.Common\Altinn.Authorization.AccessPackages.Common.csproj" />
+    <ProjectReference Include="..\Styx\Styx.csproj" />
   </ItemGroup>
-
+	
 </Project>

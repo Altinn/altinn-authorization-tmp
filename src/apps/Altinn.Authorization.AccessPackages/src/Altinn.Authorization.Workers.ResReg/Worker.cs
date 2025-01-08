@@ -1,26 +1,18 @@
 using Altinn.Authorization.AccessPackages.Repo.Data.Services;
 using Altinn.Authorization.Importers.ResReg.Services;
+using Altinn.Authorization.Workers.ResReg.Models;
+using Microsoft.Extensions.Options;
 
 namespace Altinn.Authorization.Importers.ResReg;
 
 /// <summary>
 /// Worker
 /// </summary>
-public class Worker : BackgroundService
+public class Worker(ILogger<Worker> logger, IOptions<ResourceRegisterImportConfig> options, Engine engine) : BackgroundService
 {
-    private readonly ILogger<Worker> _logger;
-    private readonly Engine engine;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Worker"/> class.
-    /// </summary>
-    /// <param name="logger">ILogger</param>
-    /// <param name="engine">Engine</param>
-    public Worker(ILogger<Worker> logger, Engine engine)
-    {
-        _logger = logger;
-        this.engine = engine;
-    }
+    private readonly ILogger<Worker> _logger = logger;
+    private readonly ResourceRegisterImportConfig config = options.Value;
+    private readonly Engine engine = engine;
 
     /// <summary>
     /// Execute
@@ -31,18 +23,24 @@ public class Worker : BackgroundService
     {
         var wrapper = new ResourceRegisterWrapper();
 
-        while (!stoppingToken.IsCancellationRequested)
+        while (!stoppingToken.IsCancellationRequested && config.IsEnabled)
         {
-            if (_logger.IsEnabled(LogLevel.Information))
-            {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            }
-
+            Info("Worker running at: {time}", DateTimeOffset.Now);
+            
             var res = await wrapper.GetResources();
-
             await engine.ImportResource(res);
+            await Task.Delay(config.Interval, stoppingToken);
+        }
 
-            await Task.Delay(100000, stoppingToken);
+        Info("Shutting down at: {time}", DateTimeOffset.Now);
+        return;
+    }
+
+    private void Info(string? message, params object?[] args)
+    {
+        if (_logger.IsEnabled(LogLevel.Information))
+        {
+            _logger.LogInformation(message, args);
         }
     }
 }

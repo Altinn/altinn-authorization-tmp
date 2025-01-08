@@ -1,4 +1,5 @@
-﻿using Altinn.Authorization.AccessPackages.CLI;
+﻿using System.Reflection;
+using Altinn.Authorization.AccessPackages.CLI;
 using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
 using Altinn.Authorization.AccessPackages.Repo.Extensions;
 using Microsoft.Extensions.Configuration;
@@ -7,6 +8,11 @@ using Microsoft.Extensions.Hosting;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder();
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+// User Secrets fix for Exe
+var assembly = Assembly.Load(new AssemblyName(builder.Environment.ApplicationName));
+builder.Configuration.AddUserSecrets(assembly);
+//// builder.Configuration.AddUserSecrets<UserSecretsIdAttribute>();
 
 var config = new CLIConfig()
 {

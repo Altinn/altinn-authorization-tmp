@@ -8,6 +8,7 @@
 @inject IDelegationService delegationService
 @inject IDelegationGroupService delegationGroupService
 @inject IDelegationAssignmentService delegationAssignmentService
+@inject IAssignmentService assignmentService
 
 @if(Entity != null)
 {
@@ -34,178 +35,231 @@
         <VerticalTableCell Title="RefId">@Entity.RefId</VerticalTableCell>
     </VerticalTable>
 
-    @if(FromAssignments != null && FromAssignments.Any())
-    {
-        <div>
-            <h4>Roller (for)</h4>
+    <Grid>
 
-            <table class="bf-table bfc-base-3-bg">
-                <thead>
-                    <tr>
-                        <th>From</th>
-                        <th>Role</th>
-                        <th>To</th>
-                        <th>Delegation</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var toId in FromAssignments.Select(t=>t.ToId).Distinct())
-                    {
-                        var assignment = FromAssignments.First(t => t.ToId == toId);
-                        <tr class="bf-table-row bf-table-row-compact">
-                            <td title="@assignment.From.RefId"><a href=@($"/entity/{assignment.From.Id}")><EntityTypeIcon Id="@assignment.From.TypeId" />@assignment.From.Name</a></td>
-                            <td>
-                                <div style="display:flex; gap:4px;">
-                                    @foreach (var assignmentRole in FromAssignments.Where(t=>t.ToId == toId).OrderBy(t=>t.Role.Name))
+        @if(FromAssignments != null && FromAssignments.Any())
+        {
+            <div>
+                <H3>Roller (Rettighetshavere)</H3>
+
+                <table class="bf-table bfc-base-3-bg">
+                    <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>Role</th>
+                            <th>To</th>
+                            <th>-</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var toId in FromAssignments.Select(t=>t.ToId).Distinct())
+                        {
+                            var assignment = FromAssignments.First(t => t.ToId == toId);
+                            <tr class="bf-table-row bf-table-row-compact">
+                                <td title="@assignment.From.RefId"><a href=@($"/entity/{assignment.From.Id}")><EntityTypeIcon Id="@assignment.From.TypeId" />@assignment.From.Name</a></td>
+                                <td>
+                                    <div style="display:flex; gap:4px;">
+                                        @foreach (var assignmentRole in FromAssignments.Where(t=>t.ToId == toId).OrderBy(t=>t.Role.Name))
+                                        {
+                                            <Badge Title="@assignmentRole.Role.Description">@assignmentRole.Role.Code</Badge>
+                                        }
+                                    </div>
+                                </td>
+                                <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
+                                <td>
+                                    <a href=@($"/assignment/{assignment.Id}")><Icon Name="arrow-up-right-from-square"></Icon></a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        }
+
+        @if (ToAssignments != null && ToAssignments.Any())
+        {
+            <div>
+                <H3>Roller (Avgivere)</H3>
+
+                <table class="bf-table bfc-base-3-bg">
+                    <thead>
+                        <tr>
+                            <th>Fra</th>
+                            <th>Rolle</th>
+                            <th>Til</th>
+                            <th>Delegert</th>
+                            <th>-</th>
+                        </tr>
+                    </thead>    
+                    <tbody>
+
+                        @foreach (var forId in ToAssignments.Select(t => t.FromId).Distinct())
+                        {
+                            var assignment = ToAssignments.First(t => t.FromId == forId);
+                            <tr class="bf-table-row bf-table-row-compact">
+                                <td title="@assignment.From.RefId"><a href=@($"/entity/{assignment.From.Id}")><EntityTypeIcon Id="@assignment.From.TypeId" />@assignment.From.Name</a></td>
+                                <td>
+                                    <div style="display:flex; gap:4px;">
+                                        @foreach (var assignmentRole in ToAssignments.Where(t => t.FromId == forId).OrderBy(t => t.Role.Name))
+                                        {
+                                            <Badge Title="@assignmentRole.Role.Description">@assignmentRole.Role.Code</Badge>
+                                        }
+                                    </div>
+                                </td>
+                                <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
+                                <td>
+                                    @if (Delegations.Count(t => t.AssignmentId == assignment.Id) > 0)
                                     {
-                                        <Badge Title="@assignmentRole.Role.Description">@assignmentRole.Role.Code</Badge>
+                                        <Icon Name="check"></Icon>
+
                                     }
-                                </div>
-                            </td>
-                            <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
-                            <td>
-                                @if (DelegationAssignments.Count(t => t.AssignmentId == assignment.Id) > 0)
-                                {
-                                    var delegationAss = DelegationAssignments.First(t => t.AssignmentId == assignment.Id);
-                                    var delegation = Delegations.First(t => t.Id == delegationAss.DelegationId);
-                                    var ass = ToAssignments.First(t => t.Id == delegation.AssignmentId);
-                                    @ass.From.Name
-                                    <Badge Title="@ass.Role.Description">@ass.Role.Code</Badge>
-                                }
-                                else
-                                {
-                                    <Icon Name="xmark"></Icon>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-
-        </div>
-    }
-
-    @if (ToAssignments != null && ToAssignments.Any())
-    {
-        <div>
-            <h4>Roller (to)</h4>
-
-            <table class="bf-table bfc-base-3-bg">
-                <thead>
-                    <tr>
-                        <th>From</th>
-                        <th>Role</th>
-                        <th>To</th>
-                        <th>Delegated</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>    
-                <tbody>
-
-                    @foreach (var forId in ToAssignments.Select(t => t.FromId).Distinct())
-                    {
-                        var assignment = ToAssignments.First(t => t.FromId == forId);
-                        <tr class="bf-table-row bf-table-row-compact">
-                            <td title="@assignment.From.RefId"><a href=@($"/entity/{assignment.From.Id}")><EntityTypeIcon Id="@assignment.From.TypeId" />@assignment.From.Name</a></td>
-                            <td>
-                                <div style="display:flex; gap:4px;">
-                                    @foreach (var assignmentRole in ToAssignments.Where(t => t.FromId == forId).OrderBy(t => t.Role.Name))
+                                    else
                                     {
-                                        <Badge Title="@assignmentRole.Role.Description">@assignmentRole.Role.Code</Badge>
+                                        <Icon Name="xmark"></Icon>
                                     }
-                                </div>
-                            </td>
-                            <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
-                            <td>
-                                @if (Delegations.Count(t => t.AssignmentId == assignment.Id) > 0)
-                                {
-                                    <Icon Name="check"></Icon>
+                                </td>
+                                <td>
+                                    <a href=@($"/assignment/{assignment.Id}")><Icon Name="arrow-up-right-from-square"></Icon></a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
 
-                                }
-                                else
-                                {
-                                    <Icon Name="xmark"></Icon>
-                                }
-                            </td>
-                            <td>
-                                <Button>Deleger</Button>
-                            </td>
+            </div>
+        }
+
+        @if (Groups != null && Groups.Any())
+        {
+            <div>
+                <H3>Grupper</H3>
+
+                <table class="bf-table bfc-base-3-bg">
+                    <thead>
+                        <tr>
+                            <th>Navn</th>
+                            <th>Delegering</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>    
+                    <tbody>
 
-        </div>
-    }
+                        @foreach (var group in Groups)
+                        {
+                            <tr class="bf-table-row bf-table-row-compact">
+                                <td><a href=@($"/group/{group.Id}")>@group.Name</a></td>
+                                <td>
+                                    @if (DelegationGroups.Count(t => t.GroupId == group.Id) > 0)
+                                    {
+                                        var delegationGroup = DelegationGroups.First(t => t.GroupId == group.Id);
+                                        var delegation = Delegations.First(t => t.Id == delegationGroup.DelegationId);
+                                        var ass = ToAssignments.First(t => t.Id == delegation.AssignmentId);
+                                        @ass.From.Name
+                                        <Badge Title="@ass.Role.Description">@ass.Role.Code</Badge>
+                                    }
+                                    else
+                                    {
+                                        <Icon Name="xmark"></Icon>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
 
-    @if (Groups != null && Groups.Any())
+            </div>
+        }
+
+        @if (GroupMemberships != null && GroupMemberships.Any())
+        {
+            <div>
+                <H3>Gruppemedlemskap</H3>
+
+                <table class="bf-table bfc-base-3-bg">
+                    <thead>
+                        <tr>
+                            <th>Navn</th>
+                            <th>Medlem</th>
+                            <th>Admin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @foreach (var grpMem in GroupMemberships)
+                        {
+                            <tr class="bf-table-row bf-table-row-compact">
+                                <td><a href=@($"/group/{grpMem.Group.Id}")>@grpMem.Group.Name</a></td>
+                                <td><Icon Name=@(grpMem.IsMember ? "check" : "xmark")></Icon></td>
+                                <td><Icon Name=@(grpMem.IsAdmin ? "check" : "xmark")></Icon></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        }
+
+        @if(Avgivere != null && Avgivere.Any())
     {
         <div>
-            <h4>Grupper</h4>
+            <H3>Avgivere</H3>
 
-            <table class="bf-table bfc-base-3-bg">
-                <thead>
-                    <tr>
+            <SimpleTable>
+                <Head>
+                    <SimpleTableRow>
                         <th>Navn</th>
-                        <th>Delegering</th>
-                    </tr>
-                </thead>    
-                <tbody>
-
-                    @foreach (var group in Groups)
+                        <th>Type</th>
+                        <th>Variant</th>
+                        <th>Ref</th>
+                    </SimpleTableRow>
+                </Head>
+                <Body>
+                    @foreach(var entity in Avgivere)
                     {
-                        <tr class="bf-table-row bf-table-row-compact">
-                            <td><a href=@($"/group/{group.Id}")>@group.Name</a></td>
-                            <td>
-                                @if (DelegationGroups.Count(t => t.GroupId == group.Id) > 0)
-                                {
-                                    var delegationGroup = DelegationGroups.First(t => t.GroupId == group.Id);
-                                    var delegation = Delegations.First(t => t.Id == delegationGroup.DelegationId);
-                                    var ass = ToAssignments.First(t => t.Id == delegation.AssignmentId);
-                                    @ass.From.Name
-                                    <Badge Title="@ass.Role.Description">@ass.Role.Code</Badge>
-                                }
-                                else
-                                {
-                                    <Icon Name="xmark"></Icon>
-                                }
-                            </td>
-                        </tr>
+                        <SimpleTableRow>
+                            <td>@entity.Name</td>
+                            <td>@entity.Type.Name</td>
+                            <td>@entity.Variant.Name</td>
+                            <td>@entity.RefId</td>
+                        </SimpleTableRow>
                     }
-                </tbody>
-            </table>
 
+                </Body>
+            </SimpleTable>
         </div>
     }
 
-    @if (GroupMemberships != null && GroupMemberships.Any())
-    {
-        <div>
-            <h4>Gruppe medlemskap</h4>
+        @if (RightHolders != null && RightHolders.Any())
+        {
+            <div>
+                <H3>Rettighetsholdere</H3>
 
-            <table class="bf-table bfc-base-3-bg">
-                <thead>
-                    <tr>
-                        <th>Navn</th>
-                        <th>Medlem</th>
-                        <th>Admin</th>
-                    </tr>
-                </thead>
-                <tbody>
+                <SimpleTable>
+                    <Head>
+                        <SimpleTableRow>
+                            <th>Navn</th>
+                            <th>Type</th>
+                            <th>Variant</th>
+                            <th>Ref</th>
+                        </SimpleTableRow>
+                    </Head>
+                    <Body>
+                        @foreach (var entity in RightHolders)
+                        {
+                            <SimpleTableRow>
+                                <td>@entity.Name</td>
+                                <td>@entity.Type.Name</td>
+                                <td>@entity.Variant.Name</td>
+                                <td>@entity.RefId</td>
+                            </SimpleTableRow>
+                        }
 
-                    @foreach (var grpMem in GroupMemberships)
-                    {
-                        <tr class="bf-table-row bf-table-row-compact">
-                            <td><a href=@($"/group/{grpMem.Group.Id}")>@grpMem.Group.Name</a></td>
-                            <td><Icon Name=@(grpMem.IsMember ? "check" : "xmark")></Icon></td>
-                            <td><Icon Name=@(grpMem.IsAdmin ? "check" : "xmark")></Icon></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                    </Body>
+                </SimpleTable>
+            </div>
+        }
 
-        </div>
-    }
+    </Grid>
 
     <Drawer Title="Ny gruppe" @bind-IsOpen=CreateGroupModalIsOpen >
         <Input Title="Navn" @bind-Value=CreateGroupName Description="Et unikt navn i din organisasjon"></Input>
@@ -275,6 +329,8 @@
             }
         }
 
+        await GetAvgivere();
+        await GetRightHolders();
     }
 
     public bool CreateGroupModalIsOpen { get; set; }
@@ -338,4 +394,87 @@
         public bool IsMember { get; set; }
         public bool IsAdmin { get; set; }
     }
+
+
+    public List<ExtEntity> Avgivere { get; set; }
+    public async Task GetAvgivere()
+    {
+        Avgivere = new List<ExtEntity>();
+        var self = await entityService.GetExtended(Entity.Id);
+        var delegations = new List<Delegation>();
+        var delegatedAssignments = new List<ExtAssignment>();
+
+        var assignments = await assignmentService.GetExtended(t => t.ToId, Entity.Id);
+        foreach (var ass in assignments)
+        {
+            delegations.AddRange(await delegationAssignmentService.GetA(ass.Id));
+        }
+
+        var groupMemberships = await groupMemberService.Get(t => t.MemberId, Entity.Id);
+        foreach (var grp in groupMemberships)
+        {
+            delegations.AddRange(await delegationGroupService.GetA(grp.GroupId));
+        }
+
+        foreach (var delegation in delegations)
+        {
+            delegatedAssignments.Add(await assignmentService.GetExtended(delegation.AssignmentId));
+        }
+
+
+        Avgivere.Add(self);
+        foreach (var ass in assignments)
+        {
+            if (!Avgivere.Exists(t => t.Id == ass.FromId))
+            {
+                Avgivere.Add(await entityService.GetExtended(ass.FromId));
+            }
+        }
+        foreach (var del in delegatedAssignments)
+        {
+            if (!Avgivere.Exists(t => t.Id == del.FromId))
+            {
+                Avgivere.Add(await entityService.GetExtended(del.FromId));
+            }
+        }
+    }
+
+    public List<ExtEntity> RightHolders { get; set; }
+    public async Task GetRightHolders()
+    {
+        RightHolders = new List<ExtEntity>();
+        var self = await entityService.GetExtended(Entity.Id);
+        var delegations = new List<Delegation>();
+        var delegatedAssignments = new List<ExtAssignment>();
+
+        var assignments = await assignmentService.GetExtended(t => t.FromId, Entity.Id);
+        foreach (var ass in assignments)
+        {
+            delegations.AddRange(await delegationAssignmentService.GetA(ass.Id));
+        }
+
+        foreach (var delegation in delegations)
+        {
+            delegatedAssignments.Add(await assignmentService.GetExtended(delegation.AssignmentId));
+        }
+
+
+        RightHolders.Add(self);
+        foreach (var ass in assignments)
+        {
+            if (!RightHolders.Exists(t => t.Id == ass.ToId))
+            {
+
+                RightHolders.Add(await entityService.GetExtended(ass.ToId));
+            }
+        }
+        foreach (var del in delegatedAssignments)
+        {
+            if (!RightHolders.Exists(t => t.Id == del.ToId))
+            {
+                RightHolders.Add(await entityService.GetExtended(del.ToId));
+            }
+        }
+    }
+
 }

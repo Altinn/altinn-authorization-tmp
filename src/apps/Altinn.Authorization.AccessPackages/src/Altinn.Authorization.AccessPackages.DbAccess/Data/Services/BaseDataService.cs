@@ -80,6 +80,13 @@ public class BaseDataService<T> : IDbBasicDataService<T>
         return await Repo.Get(filters.ToList(), options, cancellationToken: cancellationToken);
     }
 
+    /// <summary>
+    /// Extracts property
+    /// </summary>
+    /// <typeparam name="TLocal">Object</typeparam>
+    /// <typeparam name="TProperty">Property</typeparam>
+    /// <param name="expression">Expression</param>
+    /// <returns></returns>
     protected PropertyInfo ExtractPropertyInfo<TLocal, TProperty>(Expression<Func<TLocal, TProperty>> expression)
         {
             MemberExpression? memberExpression = expression.Body switch
