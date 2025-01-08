@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Data;
+using System.Text.Json;
 using System.Threading;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Contracts;
 using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
@@ -89,6 +90,9 @@ public class JsonIngestFactory
         using var a = DbAccess.DbAccessTelemetry.DbAccessSource.StartActivity("IngestAll");
 
         var result = new List<IngestResult>();
+
+        a?.AddEvent(new System.Diagnostics.ActivityEvent("RolePackagesIngestService"));
+        result.AddRange(await IngestRolePackages(string.Empty, cancellationToken));
 
         a?.AddEvent(new System.Diagnostics.ActivityEvent("areasAndPackagesIngestService"));
         result.AddRange(await IngestAreasAndPackages(cancellationToken));
@@ -208,6 +212,54 @@ public class JsonIngestFactory
         await IngestTranslation(service, languageJsonItems, cancellationToken);
 
         return new IngestResult(typeof(T)) { Success = true };
+    }
+
+    private async Task<List<IngestResult>> IngestRolePackages(string language = "", CancellationToken cancellationToken = default)
+    {
+        var result = new List<IngestResult>();
+        var jsonData = await ReadJsonData("NewRolePackages", language);
+        var metaRolePackages = JsonSerializer.Deserialize<List<MetaRolePackage>>(jsonData, options: new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        var allpackages = await packageService.Get();
+        var allroles = await roleService.Get();
+        var uniquePackages = new Dictionary<string, Guid>();
+        var uniqueRoles = new Dictionary<string, Guid>();
+        var rolePackages = new List<RolePackage>();
+
+        foreach (var rolePackage in metaRolePackages)
+        {
+            uniquePackages.TryAdd(rolePackage.Tilgangspakke, allpackages.First(x => x.Name == rolePackage.Tilgangspakke).Id);
+            foreach (var role in rolePackage.Enhetsregisterroller)
+            {
+                uniqueRoles.TryAdd(role, allroles.First(x => x.Name.ToLower() == role.ToLower()).Id);
+            }
+        }
+
+        foreach (var rolePackage in metaRolePackages)
+        {
+            foreach (var role in rolePackage.Enhetsregisterroller)
+            {
+                rolePackages.Add(new RolePackage
+                {
+                    Id = Guid.NewGuid(),
+                    PackageId = uniquePackages[rolePackage.Tilgangspakke],
+                    RoleId = uniqueRoles[role],
+                    HasAccess = rolePackage.HarTilgang,
+                    CanDelegate = rolePackage.Delegerbar,
+                });
+            }
+        }
+
+        var dbItems = await rolePackageService.Get();
+
+        foreach (var item in rolePackages)
+        {
+            var dbItem = dbItems.FirstOrDefault(x => x.RoleId.ToString() == item.RoleId.ToString() && x.PackageId.ToString() == item.PackageId.ToString());
+            item.Id = dbItem != null ? dbItem.Id : Guid.NewGuid();
+        }
+
+        result.Add(await IngestData(rolePackageService, rolePackages, new Dictionary<string, List<RolePackage>>(), cancellationToken));
+
+        return result;
     }
 
     private async Task<List<IngestResult>> IngestAreasAndPackages(CancellationToken cancellationToken = default) 

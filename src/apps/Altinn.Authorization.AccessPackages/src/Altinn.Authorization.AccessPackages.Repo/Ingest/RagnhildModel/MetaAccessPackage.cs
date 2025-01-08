@@ -128,4 +128,15 @@
         /// </summary>
         public string Area { get; set; }
     }
+
+    public class MetaRolePackage : MetaPackage
+    {
+        public string Tilgangspakke { get; set; }
+
+        public List<string> Enhetsregisterroller { get; set; }
+
+        public bool Delegerbar { get; set; }
+
+        public bool HarTilgang { get; set; }
+    } 
 }

@@ -1,0 +1,107 @@
+[
+  {
+    "Tilgangspakke": "Byggesøknad",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styrets leder",
+      "Innehaver",
+      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
+      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bostyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Plansak",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styrets leder",
+      "Innehaver",
+      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
+      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bostyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Motta nabo- og planvarsel",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styrets leder",
+      "Innehaver",
+      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
+      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bostyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Oppføring av bygg og anlegg",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styrets leder",
+      "Innehaver",
+      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
+      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bostyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Kjøp og salg av eiendom",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styrets leder",
+      "Innehaver",
+      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
+      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bostyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Utleie av eiendom",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styrets leder",
+      "Innehaver",
+      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
+      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bostyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Eiendomsmegler",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styrets leder",
+      "Innehaver",
+      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
+      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bostyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  }
+]
