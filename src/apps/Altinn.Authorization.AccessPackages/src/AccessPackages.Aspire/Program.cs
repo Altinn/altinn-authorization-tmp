@@ -13,4 +13,6 @@ var metaWeb = builder.AddProject<AccessPackages_MetaWeb>("accesspackages-metaweb
 var api = builder.AddProject<Altinn_Authorization_AccessPackages>("api").WaitForCompletion(cli);
 var web = builder.AddProject<Altinn_Authorization_FFB>("web").WaitForCompletion(cli);
 
+builder.AddProject<AccessPackages_API>("accesspackages-api").WaitForCompletion(cli);
+
 builder.Build().Run();

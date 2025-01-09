@@ -17,6 +17,7 @@
 	
 
   <ItemGroup>
+    <ProjectReference Include="..\AccessPackages.API\AccessPackages.API.csproj" />
     <ProjectReference Include="..\AccessPackages.MetaApi\AccessPackages.MetaApi.csproj" />
     <ProjectReference Include="..\AccessPackages.MetaWeb\AccessPackages.MetaWeb.csproj" />
     <ProjectReference Include="..\Altinn.Authorization.AccessPackages.CLI\Altinn.Authorization.AccessPackages.CLI.csproj" />

@@ -1,18 +1,20 @@
-using Altinn.Authorization.AccessPackages.Extensions;
 using Altinn.Authorization.AccessPackages.Repo.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
+// Add services to the container.
 builder.AddDatabaseDefinitions();
 builder.AddDbAccessData();
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 app.Services.UseDatabaseDefinitions();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -21,12 +23,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/icon/{type}/{category}/{name}", (string type, string category, string name) =>
-{
-    return Results.File(@$"resources/{type}/{category}/{name}.svg", contentType: "image/svg+xml");
-}
-).WithOpenApi().WithTags("Icon").WithSummary("Gets icons");
+app.UseAuthorization();
 
-app.MapDbAccessEndpoints();
+app.MapControllers();
 
 app.Run();
