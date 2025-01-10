@@ -236,10 +236,3 @@ resource "azurerm_storage_blob" "client_pfx_cert" {
   source_content = pkcs12_from_pem.client_certs[each.key].result
   for_each       = toset(var.client_certs)
 }
-
-# PGSQL
-# andreas
-# b0b95b54-5930-4d00-b660-9c495a622951
-# 10.202.20.68
-
-# curl 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https%3A%2F%2Fappconfaltinnauth001hub.azconfig.io%2F' -H Metadata:true -s
