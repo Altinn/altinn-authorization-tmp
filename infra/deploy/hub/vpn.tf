@@ -81,11 +81,6 @@ resource "azurerm_virtual_network_gateway" "vpn" {
       public_cert_data = data.azurerm_key_vault_certificate.vpn.certificate_data_base64
     }
 
-    # root_certificate {
-    #   name             = "root"
-    #   public_cert_data = "MIIDAzCCAeugAwIBAgIUGTioTsCrNFejYDXJryGbPhgRWNgwDQYJKoZIhvcNAQELBQAwETEPMA0GA1UEAwwGVlBOIENBMB4XDTI0MTIxMjEzMDAyOVoXDTM0MTIxMDEzMDAyOVowETEPMA0GA1UEAwwGVlBOIENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+itt8DOZjlJUC19VbcK0NHaws+Isupgf0UgFqzjZuUbRYUiRG3asKJt2ZI+uWd6rn1XqoI/SuLFbep5PiXZ4j5fhC4vEQX/XF8tZ3WWsk/LCrFKECmWraXNikiJnMFys5HXDXTMBHqb48G7i8VSiyFplrd+nCw+ThZg2rsr5Uq0UUdohYI+r4FSISvTl57+DRAVcrF9wAXQ3LbdSZI8JuYzP+nwioj+xATkxIMxrYOnboLL86ceir6JpnLZxhMtrWa7NDqlZ69oQnt7vqHWnGeXf3ig/LC/VSXkwtvM5YrVHFuSx++LtXoc/HWIjITYyfThCmNXTtry7qt2f5VLpKwIDAQABo1MwUTAdBgNVHQ4EFgQUb/Uz7p3jYDspCs7APjf1X3bckrAwHwYDVR0jBBgwFoAUb/Uz7p3jYDspCs7APjf1X3bckrAwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAaoDQz+NFdfQwfZ9MEZKQc93waFja1KK/DRtRKfrYDNtR8zhN+nRR6bAmeq6ZR1SeBBtmCZFIyH9xp0WH1s6zAJXW3K228djNnxrIHgGJrbTrAao1Vu9aLIcMou0Lknk3CxvMAsxeuqm/ObKv8WlpoWdgHTKp/ZN7wFfEFOFdkVXZJ0kDeg8dTE7cO3KFLNU8ofVH9OaQeJRyaIfsq0M1YdtyVjPLkItbPrxf1A8G5+IlaaiLhWBq8ahJS7VriXvL3AgAn0xUHrMU0CRUSrV8985V8TTpLPzSjd4qcDQlnWW+z9GevRjt34F7vg47YjdJpr3s2b6IjaYcYLa4M+wiQA=="
-    # }
-
     aad_tenant   = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}"
     aad_audience = azuread_application.vpn.client_id
     aad_issuer   = "https://sts.windows.net/${data.azurerm_client_config.current.tenant_id}/"
