@@ -43,4 +43,8 @@ resource "azurerm_firewall_policy" "firewall" {
   name                = "fwpolicy${local.suffix}"
   resource_group_name = azurerm_resource_group.hub.name
   location            = azurerm_resource_group.hub.location
+
+  identity {
+    type = "SystemAssigned"
+  }
 }

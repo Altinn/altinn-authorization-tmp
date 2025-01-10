@@ -1,5 +1,3 @@
-
-
 resource "azurerm_app_configuration" "app_configuration" {
   name                = "appconf${local.suffix}"
   resource_group_name = azurerm_resource_group.hub.name
@@ -8,6 +6,10 @@ resource "azurerm_app_configuration" "app_configuration" {
   local_auth_enabled    = false
   public_network_access = "Enabled"
   sku                   = "standard"
+
+  identity {
+    type = "SystemAssigned"
+  }
 }
 
 # Private DNS Zone for Key Vault

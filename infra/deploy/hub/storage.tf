@@ -6,6 +6,10 @@ resource "azurerm_storage_account" "storage" {
   account_replication_type      = "GRS"
   https_traffic_only_enabled    = true
   public_network_access_enabled = true
+
+  identity {
+    type = "SystemAssigned"
+  }
 }
 
 # Private DNS Zone for Key Vault
