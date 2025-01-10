@@ -41,6 +41,19 @@ public static class DbAccessExtensions
         return builder;
     }
 
+    //public static IHostApplicationBuilder AddDatabaseDefinitions(this IHostApplicationBuilder builder, Action<DbObjDefConfig>? configureOptions = null)
+    //{
+    //    builder.Services.Configure<DbObjDefConfig>(config =>
+    //    {
+    //        builder.Configuration.GetSection("DbObjDefConfig").Bind(config);
+    //        configureOptions?.Invoke(config);
+    //    });
+
+    //    builder.Services.AddSingleton<DatabaseDefinitions>();
+
+    //    return builder;
+    //}
+
     /// <summary>
     /// UseDatabaseDefinitions
     /// </summary>
@@ -126,8 +139,6 @@ public static class DbAccessExtensions
     /// <returns></returns>
     public async static Task<IServiceProvider> UseJsonIngests(this IServiceProvider services)
     {
-        var ss = services.GetRequiredService<JsonIngestMeters>();
-        ss.Test.Record(6);
         var dbIngest = services.GetRequiredService<JsonIngestFactory>();
         await dbIngest.IngestAll();
         return services;
