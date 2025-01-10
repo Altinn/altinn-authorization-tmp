@@ -10,6 +10,10 @@ variable "instance" {
   type = string
 }
 
+variable "single_stack_ipv4_address_space" {
+  type = string
+}
+
 variable "dual_stack_ipv4_address_space" {
   type = string
 }
