@@ -1,0 +1,17 @@
+﻿namespace Altinn.AccessMgmt.Worker.ER.Models;
+
+/// <summary>
+/// IChangeResult
+/// </summary>
+public interface IChangeResult
+{
+    /// <summary>
+    /// Links
+    /// </summary>
+    ResultLinks Links { get; set; }
+
+    /// <summary>
+    /// Page
+    /// </summary>
+    ResultPage Page { get; set; }
+}

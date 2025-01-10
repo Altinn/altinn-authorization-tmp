@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<NoWarn>CS8601;CS8602;CS8604;CS8618;CA1822;IDE0051</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Blazored.LocalStorage" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\libs\Altinn.AccessMgmt.Models\Altinn.AccessMgmt.Models.csproj" />
+		<ProjectReference Include="..\Altinn.AccessMgmt.AccessPackages.Repo\Altinn.AccessMgmt.AccessPackages.Repo.csproj" />
+		<ProjectReference Include="..\Styx\Styx.csproj" />
+	</ItemGroup>
+
+</Project>

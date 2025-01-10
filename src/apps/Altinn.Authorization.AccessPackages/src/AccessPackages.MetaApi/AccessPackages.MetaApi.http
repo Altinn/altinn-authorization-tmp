@@ -1,6 +1,0 @@
-@AccessPackages.MetaApi_HostAddress = http://localhost:5062
-
-GET {{AccessPackages.MetaApi_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
