@@ -47,14 +47,20 @@ public class Engine
         foreach (var authority in resources.Select(t => t.HasCompetentAuthority).DistinctBy(t => t.Organization))
         {
             //// Console.WriteLine($"{authority.Name} ({authority.Organization}) : {resources.Count(t => t.HasCompetentAuthority.Organization == authority.Organization)}");
-            cacheProviders.Add(authority.Organization ?? "N/A", await GetOrCreateProvider(authority.Name.ToString(), authority.Organization ?? "N/A"));
+            if (!string.IsNullOrEmpty(authority.Organization) && cacheProviders.ContainsKey(authority.Organization))
+            {
+                cacheProviders.Add(authority.Organization, await GetOrCreateProvider(authority.Name.ToString(), authority.Organization ?? "N/A"));
+            }
         }
 
         // Preload ResourceTypes
         foreach (var type in resources.Select(t => t.ResourceType).Distinct())
         {
             //// Console.WriteLine($"{type} : {resources.Count(t => t.ResourceType == type)}");
-            cacheResourceTypes.Add(type, await GetOrCreateResourceType(type));
+            if (!string.IsNullOrEmpty(type) && cacheProviders.ContainsKey(type))
+            {
+                cacheResourceTypes.Add(type, await GetOrCreateResourceType(type));
+            }
         }
 
         foreach (var rawResource in resources)

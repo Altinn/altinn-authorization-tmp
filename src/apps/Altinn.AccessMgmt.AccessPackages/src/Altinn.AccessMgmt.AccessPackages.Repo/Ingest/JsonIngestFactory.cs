@@ -91,18 +91,6 @@ public class JsonIngestFactory
 
         var result = new List<IngestResult>();
 
-        if (Config.Enabled.ContainsKey("RolePackagesIngestService") && Config.Enabled["RolePackagesIngestService"])
-        {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("RolePackagesIngestService"));
-            result.AddRange(await IngestRolePackages(string.Empty, cancellationToken));
-        }
-
-        if (Config.Enabled.ContainsKey("areasAndPackagesIngestService") && Config.Enabled["areasAndPackagesIngestService"])
-        {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("areasAndPackagesIngestService"));
-            result.AddRange(await IngestAreasAndPackages(cancellationToken));
-        }
-
         if (Config.Enabled.ContainsKey("providerIngestService") && Config.Enabled["providerIngestService"])
         {
             a?.AddEvent(new System.Diagnostics.ActivityEvent("providerIngestService"));
@@ -133,8 +121,20 @@ public class JsonIngestFactory
             result.Add(await IngestData<RoleMap, IRoleMapService>(roleMapService, cancellationToken));
         }
 
+        if (Config.Enabled.ContainsKey("areasAndPackagesIngestService") && Config.Enabled["areasAndPackagesIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("areasAndPackagesIngestService"));
+            result.AddRange(await IngestAreasAndPackages(cancellationToken));
+        }
+
         //a?.AddEvent(new System.Diagnostics.ActivityEvent("rolePackageIngestService"));
         //result.Add(await IngestData<RolePackage, IRolePackageService>(rolePackageService, cancellationToken));
+
+        if (Config.Enabled.ContainsKey("RolePackagesIngestService") && Config.Enabled["RolePackagesIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("RolePackagesIngestService"));
+            result.AddRange(await IngestRolePackages(string.Empty, cancellationToken));
+        }
 
         if (Config.Enabled.ContainsKey("tagGroupIngestService") && Config.Enabled["tagGroupIngestService"])
         {
@@ -319,7 +319,7 @@ public class JsonIngestFactory
 
         result.Add(await IngestData(areaGroupService, ragnhildResult.AreaGroupItems, areaGroupItems, cancellationToken));
         result.Add(await IngestData(areaService, ragnhildResult.AreaItems, areaItems, cancellationToken));
-        //// result.Add(await IngestData(packageService, ragnhildResult.PackageItems, packageItems, cancellationToken));
+        result.Add(await IngestData(packageService, ragnhildResult.PackageItems, packageItems, cancellationToken));
         return result;
     }
 

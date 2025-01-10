@@ -59,10 +59,12 @@ public class Ingestor(IOptions<BrRegConfig> config, IEntityService entityService
 
         if (Config.IngestRoles)
         {
+
             if (CacheRole.Count == 0 || force)
             {
                 await LoadCache();
                 await IngestRoles();
+                Console.WriteLine("Sjekker feil cache. Sjekk Assignments ikke Roles");
             }
             else
             {

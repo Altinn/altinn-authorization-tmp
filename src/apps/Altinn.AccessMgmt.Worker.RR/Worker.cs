@@ -28,6 +28,8 @@ public class Worker(ILogger<Worker> logger, IOptions<ResourceRegisterImportConfi
 
             var res = await wrapper.GetResources();
             await engine.ImportResource(res);
+
+            Info("Work is done, sleeping: {time}", DateTimeOffset.Now);
             await Task.Delay(config.Interval, stoppingToken);
         }
 

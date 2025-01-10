@@ -12,11 +12,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Altinn.Authorization.AccessPackages\src\Altinn.AccessMgmt.AccessPackages.Repo\Altinn.AccessMgmt.AccessPackages.Repo.csproj" />
+	  <Folder Include="temp\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="temp\" />
+	  <ProjectReference Include="..\Altinn.AccessMgmt.AccessPackages\src\Altinn.AccessMgmt.AccessPackages.Repo\Altinn.AccessMgmt.AccessPackages.Repo.csproj" />
 	</ItemGroup>
 	
 </Project>
