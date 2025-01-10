@@ -23,7 +23,28 @@ builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c=>
+{
+    var originalIdSelector = c.SchemaGeneratorOptions.SchemaIdSelector;
+    c.SchemaGeneratorOptions.SchemaIdSelector = (Type t) =>
+    {
+        if (!t.IsNested)
+        {
+            return originalIdSelector(t);
+        }
+
+        var chain = new List<string>();
+        do
+        {
+            chain.Add(originalIdSelector(t));
+            t = t.DeclaringType;
+        }
+        while (t != null);
+
+        chain.Reverse();
+        return string.Join(".", chain);
+    };
+});
 
 var app = builder.Build();
 
