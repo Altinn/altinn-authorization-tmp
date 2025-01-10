@@ -10,6 +10,8 @@ resource "azurerm_storage_account" "storage" {
   identity {
     type = "SystemAssigned"
   }
+
+  tags = merge({}, local.default_tags)
 }
 
 # Private DNS Zone for Key Vault
@@ -51,5 +53,5 @@ resource "azurerm_private_endpoint" "blob" {
     ]
   }
 
-  tags = local.default_tags
+  tags = merge({}, local.default_tags)
 }

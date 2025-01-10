@@ -10,6 +10,8 @@ resource "azurerm_app_configuration" "app_configuration" {
   identity {
     type = "SystemAssigned"
   }
+
+  tags = merge({}, local.default_tags)
 }
 
 # Private DNS Zone for Key Vault

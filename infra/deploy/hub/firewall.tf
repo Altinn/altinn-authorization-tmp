@@ -6,6 +6,8 @@ resource "azurerm_public_ip" "frontend_ipv4" {
   allocation_method   = "Static"
   ip_version          = "IPv4"
   public_ip_prefix_id = azurerm_public_ip_prefix.ipv4.id
+
+  tags = merge({}, local.default_tags)
 }
 
 resource "azurerm_public_ip" "management_ipv4" {
@@ -15,6 +17,8 @@ resource "azurerm_public_ip" "management_ipv4" {
   allocation_method   = "Static"
   ip_version          = "IPv4"
   public_ip_prefix_id = azurerm_public_ip_prefix.ipv4.id
+
+  tags = merge({}, local.default_tags)
 }
 
 resource "azurerm_firewall" "firewall" {
@@ -37,6 +41,8 @@ resource "azurerm_firewall" "firewall" {
     subnet_id            = azurerm_subnet.hub["AzureFirewallManagementSubnet"].id
     public_ip_address_id = azurerm_public_ip.management_ipv4.id
   }
+
+  tags = merge({}, local.default_tags)
 }
 
 resource "azurerm_firewall_policy" "firewall" {
@@ -47,4 +53,6 @@ resource "azurerm_firewall_policy" "firewall" {
   identity {
     type = "SystemAssigned"
   }
+
+  tags = merge({}, local.default_tags)
 }

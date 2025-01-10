@@ -9,7 +9,7 @@ resource "azurerm_key_vault" "key_vault" {
   enable_rbac_authorization     = true
   sku_name                      = "standard"
 
-  tags = local.default_tags
+  tags = merge({}, local.default_tags)
 }
 
 # Private DNS Zone for Key Vault
@@ -17,7 +17,7 @@ resource "azurerm_private_dns_zone" "key_vault" {
   name                = "privatelink.vaultcore.azure.net"
   resource_group_name = azurerm_resource_group.hub.name
 
-  tags = local.default_tags
+  tags = merge({}, local.default_tags)
 }
 
 # Link DNS Zone to Virtual Network
@@ -26,7 +26,8 @@ resource "azurerm_private_dns_zone_virtual_network_link" "key_vault" {
   resource_group_name   = azurerm_resource_group.hub.name
   private_dns_zone_name = azurerm_private_dns_zone.key_vault.name
   virtual_network_id    = azurerm_virtual_network.hub.id
-  tags                  = local.default_tags
+
+  tags = merge({}, local.default_tags)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment
@@ -56,5 +57,5 @@ resource "azurerm_private_endpoint" "key_vault" {
     subresource_names              = ["vault"]
   }
 
-  tags = local.default_tags
+  tags = merge({}, local.default_tags)
 }

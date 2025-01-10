@@ -105,17 +105,19 @@ resource "static_data" "static" {
 resource "azurerm_resource_group" "hub" {
   name     = "rg${local.suffix}"
   location = "norwayeast"
+
+  tags = merge({}, local.default_tags)
 }
 
 resource "azurerm_virtual_network" "hub" {
   name                = "vnet${local.suffix}"
   resource_group_name = azurerm_resource_group.hub.name
+  location = azurerm_resource_group.hub.location
   address_space = [
     var.dual_stack_ipv4_address_space,
     var.dual_stack_ipv6_address_space
   ]
 
-  location = azurerm_resource_group.hub.location
   tags     = merge({}, local.default_tags)
 }
 
@@ -182,6 +184,7 @@ resource "azurerm_public_ip_prefix" "ipv4" {
   ip_version          = "IPv4"
 
   prefix_length = 30 # 4 Public IPs
+  tags = merge({}, local.default_tags)
 }
 
 resource "azurerm_public_ip_prefix" "ipv6" {
@@ -192,4 +195,5 @@ resource "azurerm_public_ip_prefix" "ipv6" {
   ip_version          = "IPv6"
 
   prefix_length = 126 # 4 Public IPs
+  tags = merge({}, local.default_tags)
 }
