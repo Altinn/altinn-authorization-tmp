@@ -14,4 +14,9 @@ public class JsonIngestConfig
     /// List of used languagecodes
     /// </summary>
     public List<string> Languages { get; set; } = ["nno", "eng"];
+
+    /// <summary>
+    /// List of services to ingest
+    /// </summary>
+    public Dictionary<string, bool> Enabled { get; set; } = new Dictionary<string, bool>();
 }

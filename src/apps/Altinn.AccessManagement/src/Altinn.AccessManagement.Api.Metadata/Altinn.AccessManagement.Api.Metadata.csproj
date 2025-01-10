@@ -11,11 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Altinn.Authorization.AccessPackages\src\Altinn.Authorization.AccessPackages\Altinn.Authorization.AccessPackages.csproj" />
+    <ProjectReference Include="..\..\..\Altinn.Authorization.AccessPackages\src\Altinn.Authorization.AccessPackages.Repo\Altinn.Authorization.AccessPackages.Repo.csproj" />
   </ItemGroup>
 
 </Project>

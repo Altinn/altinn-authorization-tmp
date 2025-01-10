@@ -91,38 +91,68 @@ public class JsonIngestFactory
 
         var result = new List<IngestResult>();
 
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("RolePackagesIngestService"));
-        result.AddRange(await IngestRolePackages(string.Empty, cancellationToken));
+        if (Config.Enabled.ContainsKey("RolePackagesIngestService") && Config.Enabled["RolePackagesIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("RolePackagesIngestService"));
+            result.AddRange(await IngestRolePackages(string.Empty, cancellationToken));
+        }
 
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("areasAndPackagesIngestService"));
-        result.AddRange(await IngestAreasAndPackages(cancellationToken));
+        if (Config.Enabled.ContainsKey("areasAndPackagesIngestService") && Config.Enabled["areasAndPackagesIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("areasAndPackagesIngestService"));
+            result.AddRange(await IngestAreasAndPackages(cancellationToken));
+        }
 
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("providerIngestService"));
-        result.Add(await IngestData<Provider, IProviderService>(providerService, cancellationToken));
+        if (Config.Enabled.ContainsKey("providerIngestService") && Config.Enabled["providerIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("providerIngestService"));
+            result.Add(await IngestData<Provider, IProviderService>(providerService, cancellationToken));
+        }
 
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("entityTypeIngestService"));
-        result.Add(await IngestData<EntityType, IEntityTypeService>(entityTypeService, cancellationToken));
-        
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantIngestService"));
-        result.Add(await IngestData<EntityVariant, IEntityVariantService>(entityVariantService, cancellationToken));
+        if (Config.Enabled.ContainsKey("entityTypeIngestService") && Config.Enabled["entityTypeIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("entityTypeIngestService"));
+            result.Add(await IngestData<EntityType, IEntityTypeService>(entityTypeService, cancellationToken));
+        }
 
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("roleIngestService"));
-        result.Add(await IngestData<Role, IRoleService>(roleService, cancellationToken));
-        
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("roleMapIngestService"));
-        result.Add(await IngestData<RoleMap, IRoleMapService>(roleMapService, cancellationToken));
+        if (Config.Enabled.ContainsKey("entityVariantIngestService") && Config.Enabled["entityVariantIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantIngestService"));
+            result.Add(await IngestData<EntityVariant, IEntityVariantService>(entityVariantService, cancellationToken));
+        }
+
+        if (Config.Enabled.ContainsKey("roleIngestService") && Config.Enabled["roleIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("roleIngestService"));
+            result.Add(await IngestData<Role, IRoleService>(roleService, cancellationToken));
+        }
+
+        if (Config.Enabled.ContainsKey("roleMapIngestService") && Config.Enabled["roleMapIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("roleMapIngestService"));
+            result.Add(await IngestData<RoleMap, IRoleMapService>(roleMapService, cancellationToken));
+        }
 
         //a?.AddEvent(new System.Diagnostics.ActivityEvent("rolePackageIngestService"));
         //result.Add(await IngestData<RolePackage, IRolePackageService>(rolePackageService, cancellationToken));
 
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("tagGroupIngestService"));
-        result.Add(await IngestData<TagGroup, ITagGroupService>(tagGroupService, cancellationToken));
-        
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("tagIngestService"));
-        result.Add(await IngestData<Tag, ITagService>(tagService, cancellationToken));
-        
-        a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantRoleIngestService"));
-        result.Add(await IngestData<EntityVariantRole, IEntityVariantRoleService>(entityVariantRoleService, cancellationToken));
+        if (Config.Enabled.ContainsKey("tagGroupIngestService") && Config.Enabled["tagGroupIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("tagGroupIngestService"));
+            result.Add(await IngestData<TagGroup, ITagGroupService>(tagGroupService, cancellationToken));
+        }
+
+        if (Config.Enabled.ContainsKey("tagIngestService") && Config.Enabled["tagIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("tagIngestService"));
+            result.Add(await IngestData<Tag, ITagService>(tagService, cancellationToken));
+        }
+
+        if (Config.Enabled.ContainsKey("entityVariantRoleIngestService") && Config.Enabled["entityVariantRoleIngestService"])
+        {
+            a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantRoleIngestService"));
+            result.Add(await IngestData<EntityVariantRole, IEntityVariantRoleService>(entityVariantRoleService, cancellationToken));
+        }
 
         return result;
     }
