@@ -1,11 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
-using Altinn.Authorization.AccessPackages.DbAccess.Data.Models;
-using Altinn.Authorization.AccessPackages.Repo.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

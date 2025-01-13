@@ -33,6 +33,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\..\libs\Altinn.AccessMgmt.Models\Altinn.AccessMgmt.Models.csproj" />
+        <ProjectReference Include="..\..\..\Altinn.AccessMgmt.AccessPackages\src\Altinn.AccessMgmt.AccessPackages.Repo\Altinn.AccessMgmt.AccessPackages.Repo.csproj" />
         <ProjectReference Include="..\Altinn.AccessManagement.Api.Enduser\Altinn.AccessManagement.Api.Enduser.csproj" />
         <ProjectReference Include="..\Altinn.AccessManagement.Api.Metadata\Altinn.AccessManagement.Api.Metadata.csproj" />
         <ProjectReference Include="..\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj" />

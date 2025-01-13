@@ -11,6 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\libs\Altinn.AccessMgmt.Models\Altinn.AccessMgmt.Models.csproj" />
+    <ProjectReference Include="..\..\..\Altinn.AccessMgmt.AccessPackages\src\Altinn.AccessMgmt.AccessPackages.Repo\Altinn.AccessMgmt.AccessPackages.Repo.csproj" />
     <ProjectReference Include="..\..\..\Altinn.Authorization.AccessPackages\src\Altinn.Authorization.AccessPackages.Repo\Altinn.Authorization.AccessPackages.Repo.csproj" />
   </ItemGroup>
 

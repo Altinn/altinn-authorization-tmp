@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
+using Altinn.AccessMgmt.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Altinn.Authorization.AccessPackages.Repo.Data.Contracts;
-using Altinn.Authorization.AccessPackages.Models;
 
 namespace Altinn.AccessManagement.Api.Metadata.Controllers
 {
