@@ -41,19 +41,6 @@ public static class DbAccessExtensions
         return builder;
     }
 
-    //public static IHostApplicationBuilder AddDatabaseDefinitions(this IHostApplicationBuilder builder, Action<DbObjDefConfig>? configureOptions = null)
-    //{
-    //    builder.Services.Configure<DbObjDefConfig>(config =>
-    //    {
-    //        builder.Configuration.GetSection("DbObjDefConfig").Bind(config);
-    //        configureOptions?.Invoke(config);
-    //    });
-
-    //    builder.Services.AddSingleton<DatabaseDefinitions>();
-
-    //    return builder;
-    //}
-
     /// <summary>
     /// UseDatabaseDefinitions
     /// </summary>
@@ -186,6 +173,7 @@ public static class DbAccessExtensions
         builder.Services.AddSingleton<IResourceTypeService, ResourceTypeDataService>();
         builder.Services.AddSingleton<IAreaService, AreaDataService>();
         builder.Services.AddSingleton<IAreaGroupService, AreaGroupDataService>();
+        builder.Services.AddSingleton<IWorkerConfigService, WorkerConfigDataService>();
         builder.Services.AddSingleton<IEntityTypeService, EntityTypeDataService>();
         builder.Services.AddSingleton<IEntityVariantService, EntityVariantDataService>();
         builder.Services.AddSingleton<IPackageService, PackageDataService>();
@@ -214,6 +202,7 @@ public static class DbAccessExtensions
 
     private static void RegisterPostgresDataRepo(IServiceCollection services)
     {
+        services.AddSingleton<IDbBasicRepo<WorkerConfig>, PostgresBasicRepo<WorkerConfig>>();
         services.AddSingleton<IDbExtendedRepo<Area, ExtArea>, PostgresExtendedRepo<Area, ExtArea>>();
         services.AddSingleton<IDbBasicRepo<AreaGroup>, PostgresBasicRepo<AreaGroup>>();
         services.AddSingleton<IDbExtendedRepo<Assignment, ExtAssignment>, PostgresExtendedRepo<Assignment, ExtAssignment>>();
@@ -246,6 +235,7 @@ public static class DbAccessExtensions
 
     private static void RegisterSqlDataRepo(IServiceCollection services)
     {
+        services.AddSingleton<IDbBasicRepo<WorkerConfig>, SqlBasicRepo<WorkerConfig>>();
         services.AddSingleton<IDbExtendedRepo<Area, ExtArea>, SqlExtendedRepo<Area, ExtArea>>();
         services.AddSingleton<IDbBasicRepo<AreaGroup>, SqlBasicRepo<AreaGroup>>();
         services.AddSingleton<IDbExtendedRepo<Assignment, ExtAssignment>, SqlExtendedRepo<Assignment, ExtAssignment>>();

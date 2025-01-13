@@ -59,16 +59,14 @@ public class Ingestor(IOptions<BrRegConfig> config, IEntityService entityService
 
         if (Config.IngestRoles)
         {
-
-            if (CacheRole.Count == 0 || force)
+            if (CacheAssignment.Count == 0 || force)
             {
                 await LoadCache();
                 await IngestRoles();
-                Console.WriteLine("Sjekker feil cache. Sjekk Assignments ikke Roles");
             }
             else
             {
-                Console.WriteLine("Roles in db. Abort ingest");
+                Console.WriteLine("Assignments in db. Abort ingest");
             }
         }
     }
@@ -469,6 +467,9 @@ public class Ingestor(IOptions<BrRegConfig> config, IEntityService entityService
         CacheRole = [.. await RoleService.Repo.Get()];
         ////BrregIngestMetrics.RoleCacheCounter.Add(CacheRole.Count);
 
+        CacheAssignment = [.. await AssignmentService.Repo.Get()];
+        ////BrregIngestMetrics.AssignmentCacheCounter.Add(CacheAssignment.Count);
+
         var res = await EntityService.Repo.Get();
         EntityIdCache = res.ToDictionary(k => k.RefId, v => v.Id);
         ////BrregIngestMetrics.EntityIdCacheCounter.Add(EntityIdCache.Count);
@@ -476,6 +477,7 @@ public class Ingestor(IOptions<BrRegConfig> config, IEntityService entityService
         Console.WriteLine($"CacheEntityType:{CacheEntityType.Count}\t" +
             $"CacheEntityVariant:{CacheEntityVariant.Count}\t" +
             $"CacheRole:{CacheRole.Count}\t" +
+            $"CacheAssignment:{CacheAssignment.Count}\t" +
             $"EntityIdCache:{EntityIdCache.Count}\t");
     }
 
@@ -484,6 +486,8 @@ public class Ingestor(IOptions<BrRegConfig> config, IEntityService entityService
     private List<EntityVariant> CacheEntityVariant { get; set; } = [];
 
     private List<Role> CacheRole { get; set; } = [];
+
+    private List<Assignment> CacheAssignment { get; set; } = [];
 
     private Dictionary<string, Guid> EntityIdCache { get; set; } = [];
 

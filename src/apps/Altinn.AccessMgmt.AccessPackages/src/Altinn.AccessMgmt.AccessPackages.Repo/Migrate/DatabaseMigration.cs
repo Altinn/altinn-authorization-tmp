@@ -40,6 +40,8 @@ inner join dbo.rolemap as map on a.roleid = map.hasroleid;
         await _factory.Init();
         await CreateSchema();
 
+        await CreateWorkerConfig();
+
         await CreateProvider();
         await CreateArea();
         await CreateEntity();
@@ -52,6 +54,14 @@ inner join dbo.rolemap as map on a.roleid = map.hasroleid;
         await CreateGroups();
         await CreateDelegations();
 
+    }
+
+    private async Task CreateWorkerConfig()
+    {
+        await _factory.CreateTable<WorkerConfig>();
+        await _factory.CreateColumn<WorkerConfig>(t => t.Key, DataTypes.String());
+        await _factory.CreateColumn<WorkerConfig>(t => t.Value, DataTypes.StringMax);
+        await _factory.CreateUniqueConstraint<WorkerConfig>([t => t.Key]);
     }
 
     private async Task CreateAssignment()

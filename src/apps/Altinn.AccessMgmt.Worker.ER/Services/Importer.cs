@@ -2,6 +2,8 @@
 using Altinn.AccessMgmt.Models;
 using Altinn.AccessMgmt.Worker.ER.Models;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Altinn.AccessMgmt.Worker.ER.Services;
 
@@ -25,6 +27,8 @@ public class Importer
 
     private IRoleService RoleService { get; }
 
+    private IWorkerConfigService WorkerConfigService { get; }
+
     /// <summary>
     /// Importer
     /// </summary>
@@ -34,13 +38,15 @@ public class Importer
     /// <param name="entityVariantService">IEntityVariantService</param>
     /// <param name="assignmentService">IAssignmentService</param>
     /// <param name="roleService">IRoleService</param>
+    /// <param name="workerConfigService">IWorkerConfigService</param>
     public Importer(
        IOptions<BrRegConfig> config,
        IEntityService entityService,
        IEntityTypeService entityTypeService,
        IEntityVariantService entityVariantService,
        IAssignmentService assignmentService,
-       IRoleService roleService
+       IRoleService roleService,
+       IWorkerConfigService workerConfigService
        )
     {
         Config = config.Value;
@@ -50,12 +56,7 @@ public class Importer
         EntityVariantService = entityVariantService;
         AssignmentService = assignmentService;
         RoleService = roleService;
-        ChangeRef = new Dictionary<string, int>
-        {
-            { "enhet", 0 },
-            { "underenhet", 0 },
-            { "roller", 0 }
-        };
+        WorkerConfigService = workerConfigService;
     }
 
     /// <summary>
@@ -78,8 +79,77 @@ public class Importer
     #region ChangeRef
     private Dictionary<string, int> ChangeRef { get; set; }
 
+    public WorkerConfig RunningConfig { get; set; }
+
+    private async Task LoadRunningConfig()
+    {
+        /*
+        2025-01-11
+        { "enhet", 20065063 },
+        { "underenhet", 19512227 },
+        { "roller", 3027038 }
+         */
+
+        var res = await WorkerConfigService.Get(t => t.Key, "Importer");
+        if (res == null || !res.Any())
+        {
+            ChangeRef = new Dictionary<string, int>()
+            {
+                { "enhet" ,0 },
+                { "underenhet" ,0 },
+                { "roller" ,0 }
+            };
+            RunningConfig = new WorkerConfig()
+            {
+                Id = Guid.NewGuid(),
+                Key = "Importer",
+                Value = JsonSerializer.Serialize(ChangeRef)
+            };
+
+            var createRes = await WorkerConfigService.Create(RunningConfig);
+            
+            if (createRes != 1)
+            {
+                throw new Exception("Unable to write running config to db");
+            }
+        }
+        else
+        {
+            RunningConfig = res.First();
+            var jsonConf = RunningConfig.Value;
+            if (!string.IsNullOrEmpty(jsonConf))
+            {
+                var config = JsonSerializer.Deserialize<Dictionary<string, int>>(jsonConf);
+                if (config != null)
+                {
+                    ChangeRef = config;
+                }
+            }
+        }
+    }
+
+    private async Task SaveRunningConfig()
+    {
+        RunningConfig.Value = JsonSerializer.Serialize(ChangeRef);
+        await WorkerConfigService.Update(RunningConfig.Id, RunningConfig);
+    }
+
     private int GetChangeId(string type)
     {
+        if (ChangeRef == null || !ChangeRef.ContainsKey(type))
+        {
+            LoadRunningConfig().Wait();
+            if (ChangeRef == null)
+            {
+                throw new Exception("Failed to load changes");
+            }
+        }
+
+        if (!ChangeRef.ContainsKey(type))
+        {
+            ChangeRef.Add(type, 0);
+        }
+
         return ChangeRef[type];
     }
 
@@ -95,12 +165,17 @@ public class Importer
     /// <summary>
     /// Write ChangeIds to console
     /// </summary>
-    public void WriteChangeRefsToConsole()
+    public async Task WriteChangeRefsToConsole()
     {
+        Console.WriteLine("Running config:");
+
         foreach (var changeRef in ChangeRef)
         {
             Console.WriteLine($"{changeRef.Key}:{changeRef.Value}");
         }
+
+        await SaveRunningConfig();
+        Console.WriteLine("Running config saved to db");
     }
     #endregion
 
@@ -280,7 +355,8 @@ public class Importer
             }
         }
 
-        Console.WriteLine("Role import complete");
+        await SaveRunningConfig();
+        Console.WriteLine("Unit import complete");
     }
 
     /// <summary>
@@ -325,6 +401,9 @@ public class Importer
                 UpdateChangeId("underenhet", change.ChangeId);
             }
         }
+
+        await SaveRunningConfig();
+        Console.WriteLine("SubUnit import complete");
     }
 
     private async Task HandleUnitChange(UnitChange change, bool isSubUnit)
@@ -476,7 +555,8 @@ public class Importer
             }
         }
 
-        Console.WriteLine("Assignment - Done");
+        await SaveRunningConfig();
+        Console.WriteLine("Assignment import complete");
     }
 
     /// <summary>

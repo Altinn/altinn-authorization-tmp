@@ -108,7 +108,7 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
         using var writer = await conn.BeginBinaryImportAsync($"COPY {DbObjDef.BaseDbObject.GetPostgresDefinition(includeAlias: false)} ({string.Join(',', columns.Keys)}) FROM STDIN (FORMAT BINARY)", cancellationToken: cancellationToken);
         writer.Timeout = new TimeSpan(0, 10, 0);
         int batchCompleted = 0;
-        int batchSize = 1000;
+        int batchSize = 10000;
         int completed = 0;
         foreach (var d in data)
         {
@@ -139,11 +139,11 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
             {
                 batchCompleted++;
                 completed = 0;
-                Console.WriteLine($"Ingested {batchCompleted * batchSize + completed}");
+                Console.WriteLine($"Ingested {(batchCompleted * batchSize) + completed}");
             }
         }
 
-        Console.WriteLine($"Ingested {batchCompleted * batchSize + completed}");
+        Console.WriteLine($"Ingested {(batchCompleted * batchSize) + completed}");
         writer.Complete();
     }
 

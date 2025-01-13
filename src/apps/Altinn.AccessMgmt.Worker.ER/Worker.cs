@@ -37,10 +37,10 @@ public class Worker(Importer importer, Ingestor ingestor, ILogger<Worker> logger
                 Info("Starting role import at: {time}", DateTimeOffset.Now);
                 await importer.ImportRoles();
 
-                importer.WriteChangeRefsToConsole();
+                await importer.WriteChangeRefsToConsole();
 
-                Info("Worker sleeping until: {time}", DateTimeOffset.Now.AddMilliseconds(10000));
-                await Task.Delay(10000, stoppingToken);
+                Info("Worker sleeping until: {time}", DateTimeOffset.Now.AddMilliseconds(600000));
+                await Task.Delay(600000, stoppingToken); //// 10 min
             }
         }
 
