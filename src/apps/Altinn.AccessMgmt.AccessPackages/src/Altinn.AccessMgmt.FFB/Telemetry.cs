@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 
 namespace Altinn.AccessMgmt.FFB;
+
 public static class Telemetry
 {
     public static ActivitySource Source = new ActivitySource("Altinn.AccessMgmt.FFB");

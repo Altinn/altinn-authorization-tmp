@@ -56,4 +56,3 @@ public class Worker(Importer importer, Ingestor ingestor, ILogger<Worker> logger
         }
     }
 }
-

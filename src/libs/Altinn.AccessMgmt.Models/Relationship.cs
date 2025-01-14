@@ -2,6 +2,10 @@
 
 namespace Altinn.AccessMgmt.Models;
 
+/// <summary>
+/// Experimental
+/// VIEW
+/// </summary>
 public class Relationship
 {
     public Guid Id { get; set; }

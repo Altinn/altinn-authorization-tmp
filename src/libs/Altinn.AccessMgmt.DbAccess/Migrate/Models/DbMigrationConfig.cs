@@ -7,12 +7,14 @@ namespace Altinn.AccessMgmt.DbAccess.Migrate.Models;
 /// </summary>
 public class DbMigrationConfig
 {
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    public DbMigrationConfig() { }
 
-    public DbMigrationConfig()
-    {
-
-    }
-
+    /// <summary>
+    /// Constructor
+    /// </summary>
     public DbMigrationConfig(Action<DbMigrationConfig> configureOptions)
     {
         configureOptions?.Invoke(this);

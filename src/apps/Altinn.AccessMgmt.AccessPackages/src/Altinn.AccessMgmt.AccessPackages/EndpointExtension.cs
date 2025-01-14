@@ -110,6 +110,7 @@ public static class EndpointExtension
                 return service.Delete(id);
             }).WithOpenApi().WithTags(name).WithSummary("Delete " + name);
         }
+
         return app;
     }
 

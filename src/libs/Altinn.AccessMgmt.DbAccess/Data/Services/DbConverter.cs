@@ -96,6 +96,7 @@ public sealed class DbConverter
 
         return null;
     }
+
     private void SetPropertyValue(PropertyInfo property, object? target, object? value)
     {
         if (value != null)
@@ -298,6 +299,4 @@ public sealed class DbConverter
 
         return result;
     }
-
-
 }

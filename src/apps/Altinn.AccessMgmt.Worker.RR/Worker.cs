@@ -45,4 +45,3 @@ public class Worker(ILogger<Worker> logger, IOptions<ResourceRegisterImportConfi
         }
     }
 }
-

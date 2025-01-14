@@ -15,7 +15,6 @@ public static class Logs
     /// LoggerFactory
     /// </summary>
     public static ILoggerFactory LoggerFactory { get; set; } = new LoggerFactory();
-
 }
 
 /// <inheritdoc/>

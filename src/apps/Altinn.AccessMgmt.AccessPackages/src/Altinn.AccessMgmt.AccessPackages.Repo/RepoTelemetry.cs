@@ -67,7 +67,7 @@ public static class TelemetryResources
     /// <summary>
     /// RepoTelemetry DbAccessSource
     /// </summary>
-    public static ActivitySource Source = new ActivitySource("Altinn.Authorization.AccessPackages.CLI", "1.0.0");
+    public static readonly ActivitySource Source = new ActivitySource("Altinn.Authorization.AccessPackages.CLI", "1.0.0");
 }
 
 public class JsonIngestMetersTest

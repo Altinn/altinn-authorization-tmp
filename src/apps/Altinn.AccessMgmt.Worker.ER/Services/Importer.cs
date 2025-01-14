@@ -1,9 +1,8 @@
-﻿using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
+﻿using System.Text.Json;
+using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
 using Altinn.AccessMgmt.Models;
 using Altinn.AccessMgmt.Worker.ER.Models;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Altinn.AccessMgmt.Worker.ER.Services;
 
@@ -77,19 +76,15 @@ public class Importer
     #endregion
 
     #region ChangeRef
-    private Dictionary<string, int> ChangeRef { get; set; }
+    private Dictionary<string, int> ChangeRef { get; set; } = new Dictionary<string, int>();
 
-    public WorkerConfig RunningConfig { get; set; }
+    /// <summary>
+    /// Active configuration for the current worker
+    /// </summary>
+    public WorkerConfig RunningConfig { get; set; } = new WorkerConfig();
 
     private async Task LoadRunningConfig()
     {
-        /*
-        2025-01-11
-        { "enhet", 20065063 },
-        { "underenhet", 19512227 },
-        { "roller", 3027038 }
-         */
-
         var res = await WorkerConfigService.Get(t => t.Key, "Importer");
         if (res == null || !res.Any())
         {

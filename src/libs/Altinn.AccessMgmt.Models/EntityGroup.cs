@@ -43,5 +43,10 @@ public class ExtEntityGroup : EntityGroup
     /// List of members with valid information
     /// </summary>
     public List<GroupMember> Members { get; set; } // Based on GroupMember.GroupId
+
+    /// <summary>
+    /// Experimental
+    /// List of Administrators
+    /// </summary>
     public List<GroupAdmin> Administrators { get; set; } // Based on GroupAdmin.GroupId
 }

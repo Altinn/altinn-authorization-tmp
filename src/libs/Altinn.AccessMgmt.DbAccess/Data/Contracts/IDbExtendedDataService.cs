@@ -1,5 +1,5 @@
-﻿using Altinn.AccessMgmt.DbAccess.Data.Models;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Altinn.AccessMgmt.DbAccess.Data.Models;
 
 namespace Altinn.AccessMgmt.DbAccess.Data.Contracts;
 

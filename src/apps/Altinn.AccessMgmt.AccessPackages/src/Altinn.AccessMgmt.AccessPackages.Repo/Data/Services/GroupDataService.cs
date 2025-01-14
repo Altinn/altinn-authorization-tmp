@@ -2,7 +2,6 @@
 using Altinn.AccessMgmt.DbAccess.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess.Data.Services;
 using Altinn.AccessMgmt.Models;
-using System.Runtime.CompilerServices;
 
 namespace Altinn.AccessMgmt.AccessPackages.Repo.Data.Services;
 
