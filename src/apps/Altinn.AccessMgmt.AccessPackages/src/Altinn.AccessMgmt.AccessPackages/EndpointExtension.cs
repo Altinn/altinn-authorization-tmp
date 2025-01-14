@@ -3,6 +3,7 @@ using Altinn.AccessMgmt.DbAccess.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess.Data.Models;
 using Altinn.AccessMgmt.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Xml.Linq;
 
 namespace Altinn.AccessMgmt.AccessPackages.Extensions;
 
@@ -46,6 +47,8 @@ public static class EndpointExtension
         app.MapCrossDefaults<Delegation, IDelegationPackageService, DelegationPackage, Package>("delegations", "packages");
         app.MapCrossDefaults<Delegation, IDelegationGroupService, DelegationGroup, EntityGroup>("delegations", "groups");
         app.MapCrossDefaults<Delegation, IDelegationAssignmentService, DelegationAssignment, Assignment>("delegations", "assignments");
+        app.MapGet("/entity/{id}/assignments", (IAssignmentService service, Guid id) => { return service.GetExtended(t => t.ToId, id); }).WithOpenApi().WithTags("Entity").WithSummary("Get roles assigned to entity");
+
         return app;
     }
 
