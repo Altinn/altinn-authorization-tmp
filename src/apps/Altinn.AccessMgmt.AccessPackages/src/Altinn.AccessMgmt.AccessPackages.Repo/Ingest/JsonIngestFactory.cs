@@ -1,6 +1,4 @@
-﻿using System.Data;
-using System.Text.Json;
-using System.Threading;
+﻿using System.Text.Json;
 using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
 using Altinn.AccessMgmt.AccessPackages.Repo.Ingest.RagnhildModel;
 using Altinn.AccessMgmt.DbAccess.Data.Contracts;
@@ -127,13 +125,10 @@ public class JsonIngestFactory
             result.AddRange(await IngestAreasAndPackages(cancellationToken));
         }
 
-        //a?.AddEvent(new System.Diagnostics.ActivityEvent("rolePackageIngestService"));
-        //result.Add(await IngestData<RolePackage, IRolePackageService>(rolePackageService, cancellationToken));
-
         if (Config.Enabled.ContainsKey("RolePackagesIngestService") && Config.Enabled["RolePackagesIngestService"])
         {
             a?.AddEvent(new System.Diagnostics.ActivityEvent("RolePackagesIngestService"));
-            result.AddRange(await IngestRolePackages(string.Empty, cancellationToken));
+            result.AddRange(await IngestRolePackages(cancellationToken));
         }
 
         if (Config.Enabled.ContainsKey("tagGroupIngestService") && Config.Enabled["tagGroupIngestService"])
@@ -157,15 +152,7 @@ public class JsonIngestFactory
         return result;
     }
 
-    /// <summary>
-    /// Ingest single type
-    /// </summary>
-    /// <typeparam name="T">Type</typeparam>
-    /// <typeparam name="TService">Type Data Service</typeparam>
-    /// <param name="service">Service</param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns></returns>
-    public async Task<IngestResult> IngestData<T, TService>(TService service, CancellationToken cancellationToken)
+    private async Task<IngestResult> IngestData<T, TService>(TService service, CancellationToken cancellationToken)
         where TService : IDbBasicDataService<T>
     {
         var type = typeof(T);
@@ -204,7 +191,7 @@ public class JsonIngestFactory
         return await IngestData(service, jsonItems, translatedItems, cancellationToken);
     }
 
-    public async Task<IngestResult> IngestData<T, TService>(TService service, List<T> jsonItems, Dictionary<string, List<T>> languageJsonItems, CancellationToken cancellationToken)
+    private async Task<IngestResult> IngestData<T, TService>(TService service, List<T> jsonItems, Dictionary<string, List<T>> languageJsonItems, CancellationToken cancellationToken)
         where TService : IDbBasicDataService<T>
     {
         var dbItems = await service.Get();
@@ -244,7 +231,7 @@ public class JsonIngestFactory
         return new IngestResult(typeof(T)) { Success = true };
     }
 
-    private async Task<List<IngestResult>> IngestRolePackages(string language = "", CancellationToken cancellationToken = default)
+    private async Task<List<IngestResult>> IngestRolePackages(CancellationToken cancellationToken = default, string language = "")
     {
         var result = new List<IngestResult>();
         var jsonData = await ReadJsonData("NewRolePackages", language);
@@ -294,40 +281,113 @@ public class JsonIngestFactory
 
     private async Task<List<IngestResult>> IngestAreasAndPackages(CancellationToken cancellationToken = default)
     {
-        var result = new List<IngestResult>();
-        var ragnhildResult = await ReadAndSplitJson();
-        var ragnhildEngResult = await ReadAndSplitJson("eng");
-        var ragnhildNnoResult = await ReadAndSplitJson("nno");
+        var ingestResult = new List<IngestResult>();
+        var result = await ReadAndSplitAreasAndPackagesJson();
+        var resultEng = await ReadAndSplitAreasAndPackagesJson("eng");
+        var resultNno = await ReadAndSplitAreasAndPackagesJson("nno");
 
         var areaGroupItems = new Dictionary<string, List<AreaGroup>>
         {
-            { "nno", ragnhildNnoResult.AreaGroupItems },
-            { "eng", ragnhildEngResult.AreaGroupItems }
+            { "nno", resultNno.AreaGroupItems },
+            { "eng", resultEng.AreaGroupItems }
         };
 
         var areaItems = new Dictionary<string, List<Area>>
         {
-            { "nno", ragnhildNnoResult.AreaItems },
-            { "eng", ragnhildEngResult.AreaItems }
+            { "nno", resultNno.AreaItems },
+            { "eng", resultEng.AreaItems }
         };
 
         var packageItems = new Dictionary<string, List<Package>>
         {
-            { "nno", ragnhildNnoResult.PackageItems },
-            { "eng", ragnhildEngResult.PackageItems }
+            { "nno", resultNno.PackageItems },
+            { "eng", resultEng.PackageItems }
         };
 
-        result.Add(await IngestData(areaGroupService, ragnhildResult.AreaGroupItems, areaGroupItems, cancellationToken));
-        result.Add(await IngestData(areaService, ragnhildResult.AreaItems, areaItems, cancellationToken));
-        result.Add(await IngestData(packageService, ragnhildResult.PackageItems, packageItems, cancellationToken));
-        return result;
+        ingestResult.Add(await IngestData(areaGroupService, result.AreaGroupItems, areaGroupItems, cancellationToken));
+        ingestResult.Add(await IngestData(areaService, result.AreaItems, areaItems, cancellationToken));
+        ingestResult.Add(await IngestData(packageService, result.PackageItems, packageItems, cancellationToken));
+        return ingestResult;
     }
 
-    private async Task<(List<AreaGroup> AreaGroupItems, List<Area> AreaItems, List<Package> PackageItems)> ReadAndSplitJson(string language = "")
+    private async Task<(List<AreaGroup> AreaGroupItems, List<Area> AreaItems, List<Package> PackageItems)> ReadAndSplitAreasAndPackagesJson2(string language = "")
     {
-        Console.WriteLine("RagnhildFactory.Go!!");
+        List<AreaGroup> areaGroups = [];
+        List<Area> areas = [];
+        List<Package> packages = [];
+
+        // TODO: Check if this should be in json data
+        var entityType = (await entityTypeService.Get(t => t.Name, "Organisasjon")).First() ?? throw new Exception("Unable to fint 'Organisasjon' entityType");
+
+        // TODO: Check if this should be in json data
+        var provider = (await providerService.Get(t => t.Name, "Digdir")).First() ?? throw new Exception("Unable to fint 'Digdir' provider");
+
+        // TODO: Rename file to AreaAndPackages.json
         var jsonData = await ReadJsonData("All", language);
-        var metaAreaGroups = JsonSerializer.Deserialize<List<MetaAreaGroup>>(jsonData, options: new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        List<MetaAreaGroup> metaAreaGroups = [.. JsonSerializer.Deserialize<List<MetaAreaGroup>>(jsonData, options: new JsonSerializerOptions() { PropertyNameCaseInsensitive = true })];
+
+        foreach (var meta in metaAreaGroups)
+        {
+            areaGroups.Add(new AreaGroup()
+            {
+                Id = meta.Id,
+                Name = meta.Name,
+                Description = meta.Description,
+
+                // TODO: Extend model to store EntityTypeId with refrence to EntityType
+                // EntityTypeId = (await entityTypeService.Get(t => t.Name, meta.Type)).First(),
+
+                // TODO: If needed; extend model to store Urn
+                // Urn = meta.Urn,
+            });
+
+            if (meta.Areas != null)
+            {
+                foreach (var area in meta.Areas)
+                {
+                    areas.Add(new Area()
+                    {
+                        Id = area.Id,
+                        Name = area.Name,
+                        Description = area.Description,
+                        GroupId = meta.Id,
+                        IconName = area.Icon,
+
+                        // TODO: If needed; extend model to store Urn
+                        // Urn = area.Urn,
+                    });
+
+                    if (area.Packages != null)
+                    {
+                        foreach (var package in area.Packages)
+                        {
+                            packages.Add(new Package()
+                            {
+                                Id = package.Id,
+                                Name = package.Name,
+                                Description = package.Description,
+                                AreaId = area.Id,
+                                EntityTypeId = entityType.Id,
+                                ProviderId = provider.Id,
+                                IsDelegable = true,
+                                HasResources = true,
+
+                                // TODO: Extend model to store Urn
+                                // Urn = package.Urn,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        return (areaGroups, areas, packages);
+    }
+
+    private async Task<(List<AreaGroup> AreaGroupItems, List<Area> AreaItems, List<Package> PackageItems)> ReadAndSplitAreasAndPackagesJson(string language = "")
+    {
+        var jsonData = await ReadJsonData("All", language);
+        List<MetaAreaGroup> metaAreaGroups = [.. JsonSerializer.Deserialize<List<MetaAreaGroup>>(jsonData, options: new JsonSerializerOptions() { PropertyNameCaseInsensitive = true })];
         List<MetaAreaGroup> metaAreaGroupsList = new List<MetaAreaGroup>();
         List<MetaArea> metaAreaList = new List<MetaArea>();
         List<MetaPackage> metaPackagesList = new List<MetaPackage>();
@@ -400,7 +460,7 @@ public class JsonIngestFactory
                 GroupId = areaGroups.First(x => x.Name == area.AreaGroup).Id,
             });
         }
-
+        
         foreach (var package in metaPackagesList)
         {
             packages.Add(new Package
@@ -443,7 +503,7 @@ public class JsonIngestFactory
         foreach (var translatedItems in languageJsonItems)
         {
             var dbItems = await service.Get(options: new RequestOptions() { Language = translatedItems.Key });
-            //Console.WriteLine($"Ingest {lang} {type.Name} Json:{jsonItems.Count} Db:{dbItems.Count()}");
+            //// Console.WriteLine($"Ingest {lang} {type.Name} Json:{jsonItems.Count} Db:{dbItems.Count()}");
             foreach (var item in translatedItems.Value)
             {
                 try
