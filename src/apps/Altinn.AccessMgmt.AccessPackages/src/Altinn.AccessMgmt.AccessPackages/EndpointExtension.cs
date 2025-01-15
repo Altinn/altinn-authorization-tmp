@@ -3,7 +3,6 @@ using Altinn.AccessMgmt.DbAccess.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess.Data.Models;
 using Altinn.AccessMgmt.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Xml.Linq;
 
 namespace Altinn.AccessMgmt.AccessPackages.Extensions;
 
@@ -21,7 +20,7 @@ public static class EndpointExtension
     {
         app.MapDefaultsExt<IAreaService, Area, ExtArea>();
         app.MapDefaults<IAreaGroupService, AreaGroup>();
-        app.MapDefaultsExt<IAssignmentService, Assignment, ExtAssignment>();
+        app.MapDefaultsExt<IAssignmentService, Assignment, ExtAssignment>(mapGetAll: false);
         app.MapDefaultsExt<IEntityService, Entity, ExtEntity>(mapSearch: true);
         app.MapDefaultsExt<IEntityTypeService, EntityType, ExtEntityType>();
         app.MapDefaultsExt<IEntityVariantService, EntityVariant, ExtEntityVariant>();
@@ -47,7 +46,34 @@ public static class EndpointExtension
         app.MapCrossDefaults<Delegation, IDelegationPackageService, DelegationPackage, Package>("delegations", "packages");
         app.MapCrossDefaults<Delegation, IDelegationGroupService, DelegationGroup, EntityGroup>("delegations", "groups");
         app.MapCrossDefaults<Delegation, IDelegationAssignmentService, DelegationAssignment, Assignment>("delegations", "assignments");
-        app.MapGet("/entity/{id}/assignments", (IAssignmentService service, Guid id) => { return service.GetExtended(t => t.ToId, id); }).WithOpenApi().WithTags("Entity").WithSummary("Get roles assigned to entity");
+
+        app.MapGet("/assignment", async (IAssignmentService service, Guid? from, Guid? to, Guid? role) =>
+        {
+            if (!from.HasValue && !to.HasValue)
+            {
+                throw new Exception("Must specify one directional parameter (to/from)");
+            }
+
+            var filterBuilder = service.CreateFilterBuilder();
+
+            if (from.HasValue)
+            {
+                filterBuilder.Equal(t => t.FromId, from.Value);
+            }
+
+            if (to.HasValue)
+            {
+                filterBuilder.Equal(t => t.ToId, to.Value);
+            }
+
+            if (role.HasValue)
+            {
+                filterBuilder.Equal(t => t.RoleId, role.Value);
+            }
+
+
+            return await service.GetExtended(filterBuilder);
+        }).WithOpenApi().WithTags("Assignment").WithSummary("Get assignments");
 
         return app;
     }

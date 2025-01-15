@@ -32,6 +32,10 @@ public interface IDbExtendedDataService<T, TExtended> : IDbBasicDataService<T>
     /// <returns>T<see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<IEnumerable<TExtended>> GetExtended<TProperty>(Expression<Func<TExtended, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default);
 
+    GenericFilterBuilder<TExtended> CreateFilterBuilder();
+    Task<IEnumerable<TExtended>> GetExtended(IEnumerable<GenericFilter> filters, RequestOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<TExtended>> GetExtended(GenericFilterBuilder<TExtended> filterBuilder, RequestOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<TExtended>> GetExtended(Func<GenericFilterBuilder<TExtended>, GenericFilterBuilder<TExtended>> configureFilters, RequestOptions? options = null, CancellationToken cancellationToken = default);
     /// <summary>
     /// Get based on identifer
     /// </summary>

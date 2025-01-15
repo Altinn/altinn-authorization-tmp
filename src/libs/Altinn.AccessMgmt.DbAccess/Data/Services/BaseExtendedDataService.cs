@@ -34,6 +34,37 @@ public class BaseExtendedDataService<T, TExtended> : BaseDataService<T>, IDbExte
         throw new Exception("Not found");
     }
 
+    public async Task<IEnumerable<TExtended>> GetExtended(
+   IEnumerable<GenericFilter> filters,
+   RequestOptions? options = null,
+   CancellationToken cancellationToken = default)
+    {
+        using var a = DbAccessTelemetry.StartActivity<T>("GetExtended");
+        return await ExtendedRepo.GetExtended(filters.ToList(), options, cancellationToken: cancellationToken);
+    }
+
+    public GenericFilterBuilder<TExtended> CreateFilterBuilder() { return new GenericFilterBuilder<TExtended>(); }
+    public async Task<IEnumerable<TExtended>> GetExtended(GenericFilterBuilder<TExtended> filterBuilder, RequestOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        using var a = DbAccessTelemetry.StartActivity<T>("GetExtended");
+        return await ExtendedRepo.GetExtended(filterBuilder.ToList(), options, cancellationToken: cancellationToken);
+    }
+
+    public async Task<IEnumerable<TExtended>> GetExtended(
+    Func<GenericFilterBuilder<TExtended>, GenericFilterBuilder<TExtended>> configureFilters,
+    RequestOptions? options = null,
+    CancellationToken cancellationToken = default)
+    {
+        using var a = DbAccessTelemetry.StartActivity<T>("GetExtended");
+
+        var filterBuilder = CreateFilterBuilder();
+        var filters = configureFilters(filterBuilder).ToList();
+
+        return await ExtendedRepo.GetExtended(filters, options, cancellationToken: cancellationToken);
+    }
+
+
+
     /// <inheritdoc/>
     public async Task<IEnumerable<TExtended>> GetExtended<TProperty>(Expression<Func<TExtended, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
@@ -45,6 +76,23 @@ public class BaseExtendedDataService<T, TExtended> : BaseDataService<T>, IDbExte
         };
         return await ExtendedRepo.GetExtended(filters, options, cancellationToken: cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<TExtended>> GetExtended2<TProperty>(IEnumerable<Expression<Func<TExtended, TProperty>>> properties, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        using var a = DbAccessTelemetry.StartActivity<T>("GetExtended");
+        var filters = new List<GenericFilter>();
+
+        foreach (var property in properties)
+        {
+            string propertyName = ExtractPropertyInfo(property).Name;
+            new GenericFilter(propertyName, value, FilterComparer.Equals);
+        }
+        
+        return await ExtendedRepo.GetExtended(filters, options, cancellationToken: cancellationToken);
+    }
+
+
 
     /// <inheritdoc/>
     public async Task<IEnumerable<TExtended>> GetExtended(RequestOptions? options = null, CancellationToken cancellationToken = default)
