@@ -1,12 +1,1673 @@
 [
   {
+    "Tilgangspakke": "Regnskapsfører med signeringsrettighet",
+    "Enhetsregisterroller": [
+      "Regnskapsfører"
+    ],
+    "Delegerbar": false,
+    "HarTilgang": false
+  },
+  {
+    "Tilgangspakke": "Regnskapsfører uten signeringsrettighet",
+    "Enhetsregisterroller": [
+      "Regnskapsfører"
+    ],
+    "Delegerbar": false,
+    "HarTilgang": false
+  },
+  {
+    "Tilgangspakke": "Regnskapsfører lønn",
+    "Enhetsregisterroller": [
+      "Regnskapsfører"
+    ],
+    "Delegerbar": false,
+    "HarTilgang": false
+  },
+  {
+    "Tilgangspakke": "Konkursbo tilgangsstyring",
+    "Enhetsregisterroller": [
+      "Privatperson"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Konkursbo lesetilgang",
+    "Enhetsregisterroller": [
+      "Bobestyrer"
+    ],
+    "Delegerbar": false,
+    "HarTilgang": false
+  },
+  {
+    "Tilgangspakke": "Konkursbo skrivetilgang",
+    "Enhetsregisterroller": [
+      "Bobestyrer"
+    ],
+    "Delegerbar": false,
+    "HarTilgang": false
+  },
+  {
+    "Tilgangspakke": "Ordinær post til virksomheten",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Post til virksomheten med taushetsbelagt innhold",
+    "Enhetsregisterroller": [],
+    "Delegerbar": false,
+    "HarTilgang": false
+  },
+  {
+    "Tilgangspakke": "Veitransport",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Transport i rør",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Sjøfart",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Lufttransport",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Jernbanetransport",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Lagring og andre tjenester tilknyttet transport",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Skatt næring",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Skattegrunnlag",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Merverdiavgift",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Motorvognavgifter",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Særavgifter",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Krav, betalinger og utlegg",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Kreditt- og oppgjørsordninger",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Regnskap og økonomirapportering",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Revisorattesterer",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Toll",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Ansettelsesforhold",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      " Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Lønn",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      " Bestyrende reder",
+      "Bobestyrer",
+      "Kontaktperson NUF"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Pensjon",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      " Bestyrende reder"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Permisjon",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      " Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Sykefravær",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      " Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "A-ordningen",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      " Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Barnehageeier",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Barnehageleder",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Barnehagemyndighet",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Statsforvalter - barnehage",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Statsforvalter - skole og opplæring",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Skoleeier",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Skoleleder",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Opplæringskontorleder",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "PPT-leder",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "SFO-leder",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Høyere utdanning og høyere yrkesfaglig utdanning",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Godkjenning av personell",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Godkjenning av utdanningsvirksomhet",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Renovasjon",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Miljøryddung, miljørensing og lignende",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer",
+      "Kontaktperson NUF"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Bærekraft",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Sikkerhet og internkontroll",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Ulykke",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Yrkesskade",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Kunst og underholdning",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Biblioteker, museer, arkiver og annen kultur",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Lotteri og spill",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Sport og fritid",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Fornøyelser",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Politikk",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Jordbruk",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Dyrehold",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Reindrift",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Jakt og viltstell",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Skogbruk",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Fiske",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Akvakultur",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Programmeringsgrensesnitt - API",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Programmeringsgrensensnitt NUF - API",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Maskinlesbare hendelser",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Næringsmidler, drikkevarer og tobakk",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Tekstiler, klær og lærvarer",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Trelast, trevarer og papirvarer",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Trykkerier og reproduksjon av innspilte opptak",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Oljeraffinering, kjemisk og farmasøytisk industri",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Gummi, plast og ikke-metallholdige mineralprodukter",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Metallvarer og mineraler",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Verft og andre transportmidler",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Møbler og annen industri",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Reparasjon og installasjon av maskiner og utstyr",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Bergverk",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Kommuneoverlege",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Helsetjenester med personopplysninger av særlig kategori",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Helsetjenester",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Pleie- og omsorgstjenester i institusjon",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Sosiale omsorgstjenester uten botilbud, og flyktningemottak",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Barnevern",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Familievern",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Varehandel",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Overnatting",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Servering",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Generelle helfotjenester",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Helfotjenester med personopplysnigner av særlig kategori",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer",
+      "Kontaktperson NUF"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Starte, endre og avvikle virksomhet",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Aksjer og eierforhold",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Attester",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Dokumentbasert tilsyn",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer",
+      "Kontaktperson NUF"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Infrastrultur",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Patent, varemerke og design",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Tilskudd, støtte og erstatning",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Mine sider hos kommunen",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer",
+      "Kontaktperson NUF"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Politi og domstol",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Rapportering av statistikk",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Forskning",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Eksplisitt tjenestedelegering",
+    "Enhetsregisterroller": [],
+    "Delegerbar": false,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Elektrisitet - produsere, overføre og distribuere",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Damp- og varmtvann",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Vann - ta ut fra kilde, rense og distribuere",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Samle opp og behandle avløpsvann",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Avfall - samle inn, behandle, bruke og gjenvinne",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Miljørydding - rensing og lignende virksomhet",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Utvinning av råolje, naturgass og kull",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Post- og telekommunikasjon",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Informasjon og kommunikasjon",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer",
+      "Kontaktperson NUF"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Finansiering og forsikring",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Annen tjenesteyting",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Klientadministrasjon for regnskapsfører og revisor",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Tilgangsstyring",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer",
+      "Kontaktperson NUF"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Hovedadministrator",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Kundeadministrator",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "Styret leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
     "Tilgangspakke": "Byggesøknad",
     "Enhetsregisterroller": [
       "Daglig leder",
       "Styrets leder",
       "Innehaver",
-      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
-      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
       "Bostyrer"
@@ -20,8 +1681,8 @@
       "Daglig leder",
       "Styrets leder",
       "Innehaver",
-      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
-      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
       "Bostyrer"
@@ -35,8 +1696,8 @@
       "Daglig leder",
       "Styrets leder",
       "Innehaver",
-      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
-      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
       "Bostyrer"
@@ -50,8 +1711,8 @@
       "Daglig leder",
       "Styrets leder",
       "Innehaver",
-      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
-      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
       "Bostyrer"
@@ -65,8 +1726,8 @@
       "Daglig leder",
       "Styrets leder",
       "Innehaver",
-      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
-      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
       "Bostyrer"
@@ -80,8 +1741,8 @@
       "Daglig leder",
       "Styrets leder",
       "Innehaver",
-      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
-      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
       "Bostyrer"
@@ -95,8 +1756,8 @@
       "Daglig leder",
       "Styrets leder",
       "Innehaver",
-      "Deltaker med solidarisk ansvar (fullt ansvarlig)",
-      "Deltaker med proratarisk ansvar (delt ansvar)",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
       "Bostyrer"
