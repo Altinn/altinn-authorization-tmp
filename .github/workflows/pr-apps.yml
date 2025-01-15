@@ -67,6 +67,7 @@ jobs:
 
   build-and-test:
     name: Build and Test
+    needs: find-verticals
     strategy:
       matrix: ${{ fromJson(needs.find-verticals.outputs.matrix) }}
     if: ((github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) || github.event_name == 'push') && github.repository_owner == 'Altinn' && github.actor != 'dependabot[bot]'
@@ -93,6 +94,7 @@ jobs:
   analyze:
     if: ((github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) || github.event_name == 'push') && github.repository_owner == 'Altinn' && github.actor != 'dependabot[bot]'
     name: Analyze
+    needs: find-verticals
     strategy:
       matrix: ${{ fromJson(needs.find-verticals.outputs.matrix) }}
     runs-on: ubuntu-latest
