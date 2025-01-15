@@ -59,7 +59,7 @@ jobs:
         run: echo "TF_VARS_FILE=$(echo ${{ inputs.environment }} | tr '[:upper:]' '[:lower:]').tfvars" >> $GITHUB_ENV
 
       - name: Terraform Plan
-        uses: altinn/altinn-platform/actions/terraform/plan@main
+        uses: altinn/altinn-platform/actions/terraform/plan@chores/force-summary-template-gen
         with:
           working_directory: ${{ inputs.working_dir }}
           oidc_type: environment
