@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
-
+  workflow_dispatch:
 jobs:
   find-verticals:
     uses: ./.github/workflows/_find-verticals.yml
