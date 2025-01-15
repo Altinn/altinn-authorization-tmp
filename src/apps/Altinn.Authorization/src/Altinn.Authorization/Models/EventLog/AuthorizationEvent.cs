@@ -74,5 +74,10 @@ namespace Altinn.Platform.Authorization.Models.EventLog
         /// Decision for the authorization request
         /// </summary>
         public XacmlContextDecision? Decision { get; set; }
+
+        /// <summary>
+        /// The user identifier which can be either a GUID or a username
+        /// </summary>
+        public string? UserIdentifier { get; set; }
     }
 }
