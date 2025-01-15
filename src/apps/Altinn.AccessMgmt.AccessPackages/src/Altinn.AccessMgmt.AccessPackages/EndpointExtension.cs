@@ -73,7 +73,7 @@ public static class EndpointExtension
 
 
             return await service.GetExtended(filterBuilder);
-        }).WithOpenApi().WithTags("Assignment").WithSummary("Get roles assigned to entity");
+        }).WithOpenApi().WithTags("Assignment").WithSummary("Get assignments");
 
         return app;
     }
