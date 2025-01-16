@@ -1,9 +1,16 @@
+
+data "azurerm_private_dns_zone" "key_vault" {
+  name                = "privatelink.vaultcore.azure.net"
+  resource_group_name = "rg${local.hub_suffix}"
+  provider            = azurerm.hub
+}
+
 resource "azurerm_key_vault" "key_vault" {
   name                = "kv${local.suffix}"
   resource_group_name = azurerm_resource_group.hub.name
   location            = azurerm_resource_group.hub.location
 
-  public_network_access_enabled = true
+  public_network_access_enabled = false
   purge_protection_enabled      = false
   tenant_id                     = data.azurerm_client_config.current.tenant_id
   enable_rbac_authorization     = true
@@ -15,10 +22,8 @@ resource "azurerm_key_vault" "key_vault" {
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment
 resource "azurerm_role_assignment" "key_vault_administrator" {
   scope                = azurerm_key_vault.key_vault.id
-  principal_id         = each.value
+  principal_id         = azurerm_user_assigned_identity.admin.id
   role_definition_name = "Key Vault Administrator" # https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#security
-
-  for_each = toset(var.spoke_principals_ids)
 }
 
 # Private Endpoint for Key Vault
