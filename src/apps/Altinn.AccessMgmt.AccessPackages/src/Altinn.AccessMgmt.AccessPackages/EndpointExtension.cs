@@ -21,6 +21,7 @@ public static class EndpointExtension
         app.MapDefaultsExt<IAreaService, Area, ExtArea>();
         app.MapDefaults<IAreaGroupService, AreaGroup>();
         app.MapDefaultsExt<IAssignmentService, Assignment, ExtAssignment>(mapGetAll: false);
+        app.MapDefaultsExt<IAssignmentPackageService, AssignmentPackage, ExtAssignmentPackage>(mapGetAll: false);
         app.MapDefaultsExt<IEntityService, Entity, ExtEntity>(mapSearch: true);
         app.MapDefaultsExt<IEntityTypeService, EntityType, ExtEntityType>();
         app.MapDefaultsExt<IEntityVariantService, EntityVariant, ExtEntityVariant>();
@@ -70,7 +71,6 @@ public static class EndpointExtension
             {
                 filterBuilder.Equal(t => t.RoleId, role.Value);
             }
-
 
             return await service.GetExtended(filterBuilder);
         }).WithOpenApi().WithTags("Assignment").WithSummary("Get assignments");
