@@ -534,7 +534,7 @@
           {
             "id": "4d71e7b8-c6eb-4e33-9a64-1279a509a53b",
             "urn": "urn:altinn:accesspackage:pleieomsorgstjenesteriinstitusjon",
-            "name": "Pleie og omsorgstjeneter i institusjon",
+            "name": "Pleie- og omsorgstjenester i institusjon",
             "description": "Denne tilgangspakken gir fullmakter til tjenester knyttet til pleie og omsorgstilbud i institursjon. Dette er tjenester som tilbyr institusjonsopphold kombinert med sykepleie, tilsyn eller annen form for pleie alt etter hva som kreves av beboerne. Denne fullmakten kan gi bruker tilgang til helseopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir."
           },
           {
@@ -622,7 +622,7 @@
           {
             "id": "7e6d8dd4-35a3-49d6-a2c5-73cd35018646",
             "urn": "urn:altinn:accesspackage:statsforvalterbarnehage",
-            "name": "Statsforvalter- barnehage",
+            "name": "Statsforvalter - barnehage",
             "description": "Denne fullmakten gir tilgang til tjenester for statsforvalter knyttet til barnehagesektor."
           },
           {
@@ -864,7 +864,7 @@
           {
             "id": "a736c33b-c15a-43ac-85be-a684630e1e59",
             "urn": "urn:altinn:accesspackage:postogtelekommunikasjon",
-            "name": "Post og telekommunikasjon",
+            "name": "Post- og telekommunikasjon",
             "description": "Denne fullmakten gir tilgang til tjenester knyttet til post og telekommunikasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.  "
           },
           {

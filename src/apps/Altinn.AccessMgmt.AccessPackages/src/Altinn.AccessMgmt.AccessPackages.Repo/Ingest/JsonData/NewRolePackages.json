@@ -1,57 +1,9 @@
 [
   {
-    "Tilgangspakke": "Regnskapsfører med signeringsrettighet",
-    "Enhetsregisterroller": [
-      "Regnskapsfører"
-    ],
-    "Delegerbar": false,
-    "HarTilgang": false
-  },
-  {
-    "Tilgangspakke": "Regnskapsfører uten signeringsrettighet",
-    "Enhetsregisterroller": [
-      "Regnskapsfører"
-    ],
-    "Delegerbar": false,
-    "HarTilgang": false
-  },
-  {
-    "Tilgangspakke": "Regnskapsfører lønn",
-    "Enhetsregisterroller": [
-      "Regnskapsfører"
-    ],
-    "Delegerbar": false,
-    "HarTilgang": false
-  },
-  {
-    "Tilgangspakke": "Konkursbo tilgangsstyring",
-    "Enhetsregisterroller": [
-      "Privatperson"
-    ],
-    "Delegerbar": true,
-    "HarTilgang": true
-  },
-  {
-    "Tilgangspakke": "Konkursbo lesetilgang",
-    "Enhetsregisterroller": [
-      "Bobestyrer"
-    ],
-    "Delegerbar": false,
-    "HarTilgang": false
-  },
-  {
-    "Tilgangspakke": "Konkursbo skrivetilgang",
-    "Enhetsregisterroller": [
-      "Bobestyrer"
-    ],
-    "Delegerbar": false,
-    "HarTilgang": false
-  },
-  {
     "Tilgangspakke": "Ordinær post til virksomheten",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -72,7 +24,7 @@
     "Tilgangspakke": "Veitransport",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -88,7 +40,7 @@
     "Tilgangspakke": "Transport i rør",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -104,7 +56,7 @@
     "Tilgangspakke": "Sjøfart",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -120,7 +72,7 @@
     "Tilgangspakke": "Lufttransport",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -136,7 +88,7 @@
     "Tilgangspakke": "Jernbanetransport",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -152,7 +104,7 @@
     "Tilgangspakke": "Lagring og andre tjenester tilknyttet transport",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -168,7 +120,7 @@
     "Tilgangspakke": "Skatt næring",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -183,7 +135,7 @@
     "Tilgangspakke": "Skattegrunnlag",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -198,7 +150,7 @@
     "Tilgangspakke": "Merverdiavgift",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -213,7 +165,7 @@
     "Tilgangspakke": "Motorvognavgifter",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -228,7 +180,7 @@
     "Tilgangspakke": "Særavgifter",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -243,7 +195,7 @@
     "Tilgangspakke": "Krav, betalinger og utlegg",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -258,7 +210,7 @@
     "Tilgangspakke": "Kreditt- og oppgjørsordninger",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -273,7 +225,7 @@
     "Tilgangspakke": "Regnskap og økonomirapportering",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -288,7 +240,7 @@
     "Tilgangspakke": "Revisorattesterer",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -303,7 +255,7 @@
     "Tilgangspakke": "Toll",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -318,12 +270,12 @@
     "Tilgangspakke": "Ansettelsesforhold",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
-      " Bestyrende reder",
+      "Bestyrende reder",
       "Bobestyrer"
 
     ],
@@ -334,14 +286,13 @@
     "Tilgangspakke": "Lønn",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
-      " Bestyrende reder",
-      "Bobestyrer",
-      "Kontaktperson NUF"
+      "Bestyrende reder",
+      "Bobestyrer"
 
     ],
     "Delegerbar": true,
@@ -351,12 +302,12 @@
     "Tilgangspakke": "Pensjon",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
-      " Bestyrende reder"
+      "Bestyrende reder"
 
     ],
     "Delegerbar": true,
@@ -366,12 +317,12 @@
     "Tilgangspakke": "Permisjon",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
-      " Bestyrende reder",
+      "Bestyrende reder",
       "Bobestyrer"
 
     ],
@@ -382,12 +333,12 @@
     "Tilgangspakke": "Sykefravær",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
-      " Bestyrende reder",
+      "Bestyrende reder",
       "Bobestyrer"
 
     ],
@@ -398,12 +349,12 @@
     "Tilgangspakke": "A-ordningen",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
-      " Bestyrende reder",
+      "Bestyrende reder",
       "Bobestyrer"
 
     ],
@@ -414,7 +365,7 @@
     "Tilgangspakke": "Barnehageeier",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -428,7 +379,7 @@
     "Tilgangspakke": "Barnehageleder",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -442,7 +393,7 @@
     "Tilgangspakke": "Barnehagemyndighet",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -456,7 +407,7 @@
     "Tilgangspakke": "Statsforvalter - barnehage",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -470,7 +421,7 @@
     "Tilgangspakke": "Statsforvalter - skole og opplæring",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -484,7 +435,7 @@
     "Tilgangspakke": "Skoleeier",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -498,7 +449,7 @@
     "Tilgangspakke": "Skoleleder",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -512,7 +463,7 @@
     "Tilgangspakke": "Opplæringskontorleder",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -526,7 +477,7 @@
     "Tilgangspakke": "PPT-leder",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -540,7 +491,7 @@
     "Tilgangspakke": "SFO-leder",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -554,7 +505,7 @@
     "Tilgangspakke": "Høyere utdanning og høyere yrkesfaglig utdanning",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -568,7 +519,7 @@
     "Tilgangspakke": "Godkjenning av personell",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -582,7 +533,7 @@
     "Tilgangspakke": "Godkjenning av utdanningsvirksomhet",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -596,7 +547,7 @@
     "Tilgangspakke": "Renovasjon",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -609,17 +560,16 @@
     "HarTilgang": true
   },
   {
-    "Tilgangspakke": "Miljøryddung, miljørensing og lignende",
+    "Tilgangspakke": "Miljørydding, miljørensing og lignende",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bobestyrer",
-      "Kontaktperson NUF"
+      "Bobestyrer"
 
     ],
     "Delegerbar": true,
@@ -629,7 +579,7 @@
     "Tilgangspakke": "Bærekraft",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -644,7 +594,7 @@
     "Tilgangspakke": "Sikkerhet og internkontroll",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -660,7 +610,7 @@
     "Tilgangspakke": "Ulykke",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -676,7 +626,7 @@
     "Tilgangspakke": "Yrkesskade",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -691,7 +641,7 @@
     "Tilgangspakke": "Kunst og underholdning",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -706,7 +656,7 @@
     "Tilgangspakke": "Biblioteker, museer, arkiver og annen kultur",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -721,7 +671,7 @@
     "Tilgangspakke": "Lotteri og spill",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -736,7 +686,7 @@
     "Tilgangspakke": "Sport og fritid",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -751,7 +701,7 @@
     "Tilgangspakke": "Fornøyelser",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -766,7 +716,7 @@
     "Tilgangspakke": "Politikk",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -781,7 +731,7 @@
     "Tilgangspakke": "Jordbruk",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -796,7 +746,7 @@
     "Tilgangspakke": "Dyrehold",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -811,7 +761,7 @@
     "Tilgangspakke": "Reindrift",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -825,7 +775,7 @@
     "Tilgangspakke": "Jakt og viltstell",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -839,7 +789,7 @@
     "Tilgangspakke": "Skogbruk",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -854,7 +804,7 @@
     "Tilgangspakke": "Fiske",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -869,7 +819,7 @@
     "Tilgangspakke": "Akvakultur",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -880,10 +830,10 @@
     "HarTilgang": true
   },
   {
-    "Tilgangspakke": "Programmeringsgrensesnitt - API",
+    "Tilgangspakke": "Programmeringsgrensesnitt (API)",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -895,16 +845,9 @@
     "HarTilgang": true
   },
   {
-    "Tilgangspakke": "Programmeringsgrensensnitt NUF - API",
+    "Tilgangspakke": "Programmeringsgrensesnitt NUF (API)",
     "Enhetsregisterroller": [
-      "Daglig leder",
-      "Styret leder",
-      "Innehaver",
-      "Deltaker fullt ansvar",
-      "Deltaker delt ansvar",
-      "Komplementar",
-      "Bestyrende reder",
-      "Bobestyrer"
+      "Kontaktperson NUF"
     ],
     "Delegerbar": true,
     "HarTilgang": true
@@ -913,7 +856,7 @@
     "Tilgangspakke": "Maskinlesbare hendelser",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -928,7 +871,7 @@
     "Tilgangspakke": "Næringsmidler, drikkevarer og tobakk",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -943,7 +886,7 @@
     "Tilgangspakke": "Tekstiler, klær og lærvarer",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -958,7 +901,7 @@
     "Tilgangspakke": "Trelast, trevarer og papirvarer",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -973,7 +916,7 @@
     "Tilgangspakke": "Trykkerier og reproduksjon av innspilte opptak",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -988,7 +931,7 @@
     "Tilgangspakke": "Oljeraffinering, kjemisk og farmasøytisk industri",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1003,7 +946,7 @@
     "Tilgangspakke": "Gummi, plast og ikke-metallholdige mineralprodukter",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1015,10 +958,25 @@
     "HarTilgang": true
   },
   {
-    "Tilgangspakke": "Metallvarer og mineraler",
+    "Tilgangspakke": "Metallvarer elektrisk utstyr og maskiner",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Metaller og mineraler",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1033,7 +991,7 @@
     "Tilgangspakke": "Verft og andre transportmidler",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1048,7 +1006,7 @@
     "Tilgangspakke": "Møbler og annen industri",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1063,7 +1021,7 @@
     "Tilgangspakke": "Reparasjon og installasjon av maskiner og utstyr",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1078,7 +1036,7 @@
     "Tilgangspakke": "Bergverk",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1093,7 +1051,7 @@
     "Tilgangspakke": "Kommuneoverlege",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1107,7 +1065,7 @@
     "Tilgangspakke": "Helsetjenester med personopplysninger av særlig kategori",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1122,7 +1080,7 @@
     "Tilgangspakke": "Helsetjenester",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1137,7 +1095,7 @@
     "Tilgangspakke": "Pleie- og omsorgstjenester i institusjon",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1148,10 +1106,10 @@
     "HarTilgang": true
   },
   {
-    "Tilgangspakke": "Sosiale omsorgstjenester uten botilbud, og flyktningemottak",
+    "Tilgangspakke": "Sosiale omsorgstjenester uten botilbud og flyktningemottak",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1165,7 +1123,7 @@
     "Tilgangspakke": "Barnevern",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1179,7 +1137,7 @@
     "Tilgangspakke": "Familievern",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1193,7 +1151,7 @@
     "Tilgangspakke": "Varehandel",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1208,7 +1166,7 @@
     "Tilgangspakke": "Overnatting",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1223,7 +1181,7 @@
     "Tilgangspakke": "Servering",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1238,7 +1196,7 @@
     "Tilgangspakke": "Generelle helfotjenester",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1250,17 +1208,16 @@
     "HarTilgang": true
   },
   {
-    "Tilgangspakke": "Helfotjenester med personopplysnigner av særlig kategori",
+    "Tilgangspakke": "Helfotjenester med personopplysninger av særlig kategori",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bobestyrer",
-      "Kontaktperson NUF"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
@@ -1269,7 +1226,7 @@
     "Tilgangspakke": "Starte, endre og avvikle virksomhet",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1283,7 +1240,7 @@
     "Tilgangspakke": "Aksjer og eierforhold",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1298,7 +1255,7 @@
     "Tilgangspakke": "Attester",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1313,23 +1270,22 @@
     "Tilgangspakke": "Dokumentbasert tilsyn",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bobestyrer",
-      "Kontaktperson NUF"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
   },
   {
-    "Tilgangspakke": "Infrastrultur",
+    "Tilgangspakke": "Infrastruktur",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1343,7 +1299,7 @@
     "Tilgangspakke": "Patent, varemerke og design",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1358,7 +1314,7 @@
     "Tilgangspakke": "Tilskudd, støtte og erstatning",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1373,14 +1329,13 @@
     "Tilgangspakke": "Mine sider hos kommunen",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bobestyrer",
-      "Kontaktperson NUF"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
@@ -1389,7 +1344,7 @@
     "Tilgangspakke": "Politi og domstol",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1403,7 +1358,7 @@
     "Tilgangspakke": "Rapportering av statistikk",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1418,7 +1373,7 @@
     "Tilgangspakke": "Forskning",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1430,16 +1385,10 @@
     "HarTilgang": true
   },
   {
-    "Tilgangspakke": "Eksplisitt tjenestedelegering",
-    "Enhetsregisterroller": [],
-    "Delegerbar": false,
-    "HarTilgang": true
-  },
-  {
     "Tilgangspakke": "Elektrisitet - produsere, overføre og distribuere",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1454,7 +1403,7 @@
     "Tilgangspakke": "Damp- og varmtvann",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1469,7 +1418,7 @@
     "Tilgangspakke": "Vann - ta ut fra kilde, rense og distribuere",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1484,7 +1433,7 @@
     "Tilgangspakke": "Samle opp og behandle avløpsvann",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1499,7 +1448,7 @@
     "Tilgangspakke": "Avfall - samle inn, behandle, bruke og gjenvinne",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1514,7 +1463,7 @@
     "Tilgangspakke": "Miljørydding - rensing og lignende virksomhet",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1529,7 +1478,7 @@
     "Tilgangspakke": "Utvinning av råolje, naturgass og kull",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1544,7 +1493,7 @@
     "Tilgangspakke": "Post- og telekommunikasjon",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1559,14 +1508,13 @@
     "Tilgangspakke": "Informasjon og kommunikasjon",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bobestyrer",
-      "Kontaktperson NUF"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
@@ -1575,7 +1523,7 @@
     "Tilgangspakke": "Finansiering og forsikring",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1589,7 +1537,7 @@
     "Tilgangspakke": "Annen tjenesteyting",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1604,7 +1552,7 @@
     "Tilgangspakke": "Klientadministrasjon for regnskapsfører og revisor",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1619,14 +1567,13 @@
     "Tilgangspakke": "Tilgangsstyring",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bobestyrer",
-      "Kontaktperson NUF"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
@@ -1635,7 +1582,7 @@
     "Tilgangspakke": "Hovedadministrator",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1649,7 +1596,7 @@
     "Tilgangspakke": "Kundeadministrator",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styret leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
@@ -1664,13 +1611,13 @@
     "Tilgangspakke": "Byggesøknad",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styrets leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bostyrer"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
@@ -1679,13 +1626,13 @@
     "Tilgangspakke": "Plansak",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styrets leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bostyrer"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
@@ -1694,13 +1641,13 @@
     "Tilgangspakke": "Motta nabo- og planvarsel",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styrets leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bostyrer"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
@@ -1709,13 +1656,13 @@
     "Tilgangspakke": "Oppføring av bygg og anlegg",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styrets leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bostyrer"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
@@ -1724,13 +1671,13 @@
     "Tilgangspakke": "Kjøp og salg av eiendom",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styrets leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bostyrer"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
@@ -1739,13 +1686,13 @@
     "Tilgangspakke": "Utleie av eiendom",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styrets leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bostyrer"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
@@ -1754,13 +1701,13 @@
     "Tilgangspakke": "Eiendomsmegler",
     "Enhetsregisterroller": [
       "Daglig leder",
-      "Styrets leder",
+      "styrets leder",
       "Innehaver",
       "Deltaker fullt ansvar",
       "Deltaker delt ansvar",
       "Komplementar",
       "Bestyrende reder",
-      "Bostyrer"
+      "Bobestyrer"
     ],
     "Delegerbar": true,
     "HarTilgang": true
