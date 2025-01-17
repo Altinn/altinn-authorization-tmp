@@ -1,4 +1,4 @@
-<div align="center">
+<div>
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Altinn_altinn-authorization-tmp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Altinn_altinn-authorization-tmp)
 
