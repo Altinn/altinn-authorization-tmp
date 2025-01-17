@@ -241,12 +241,12 @@ resource "azurerm_management_lock" "delete" {
   notes      = "Terraform Managed Lock"
 
   for_each = { for lock in [
-    azurerm_public_ip_prefix.ipv4.id,
-    azurerm_public_ip_prefix.ipv6.id,
-    azurerm_virtual_network.hub.id,
-    azurerm_app_configuration.app_configuration.id,
-    azurerm_key_vault.key_vault.id,
-    azurerm_virtual_network_gateway.vpn.id,
-    azurerm_storage_account.storage.id
+    azurerm_public_ip_prefix.ipv4,
+    azurerm_public_ip_prefix.ipv6,
+    azurerm_virtual_network.hub,
+    azurerm_app_configuration.app_configuration,
+    azurerm_key_vault.key_vault,
+    azurerm_virtual_network_gateway.vpn,
+    azurerm_storage_account.storagd
   ] : lock.name => lock.id }
 }
