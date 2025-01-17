@@ -83,6 +83,9 @@ locals {
       name         = "DnsResolver"
       include_ipv6 = false # Does not support IPv6
       ipv4_bits    = 24 - local.ipv4_cidr_prefix
+      service_endpoint = [
+        "Microsoft.Storage"
+      ]
       delegations = {
         dns_resolver = {
           name = "Microsoft.Network/dnsResolvers"
