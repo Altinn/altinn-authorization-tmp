@@ -81,6 +81,13 @@ inner join dbo.rolemap as map on a.roleid = map.hasroleid;
         await _factory.CreateUniqueConstraint<Assignment>([t => t.RoleId, t => t.ToId, t => t.FromId]);
 
         await _factory.CreateView<Assignment>("assignmentmap", ExtAssignmentView);
+
+        await _factory.CreateTable<AssignmentPackage>(withHistory: UseHistory);
+        await _factory.CreateColumn<AssignmentPackage>(t => t.AssignmentId, DataTypes.Guid);
+        await _factory.CreateColumn<AssignmentPackage>(t => t.PackageId, DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<AssignmentPackage, Assignment>(t => t.AssignmentId, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<AssignmentPackage, Package>(t => t.PackageId, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<AssignmentPackage>([t => t.AssignmentId, t => t.PackageId]);
     }
 
     private async Task CreateGroups()
