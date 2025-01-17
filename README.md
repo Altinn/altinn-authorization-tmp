@@ -9,6 +9,7 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Altinn_altinn-authorization-tmp&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Altinn_altinn-authorization-tmp)
 
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Altinn_altinn-authorization-tmp&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Altinn_altinn-authorization-tmp)
+
 <div align="center">
 
 # Authorization
