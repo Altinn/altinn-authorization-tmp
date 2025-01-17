@@ -69,7 +69,7 @@ data "azurerm_subnet" "postgres" {
 }
 
 data "azurerm_user_assigned_identity" "admin" {
-  name                = "mipgsqladmin${local.suffix}"
+  name                = "mipgsqladmin${local.spoke_suffix}"
   resource_group_name = local.spoke_resource_group_name
 }
 

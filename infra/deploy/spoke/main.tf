@@ -337,9 +337,11 @@ resource "azurerm_management_lock" "delete" {
   lock_level = "CanNotDelete"
   notes      = "Terraform Managed Lock"
 
+  id = azurerm_virtual_network.single_stack.id
+
   for_each = toset([
-    azurerm_subnet.dual_stack.id,
-    azurerm_subnet.single_stack.id,
+    azurerm_virtual_network.dual_stack.id,
+    azurerm_virtual_network.single_stack.id,
     azurerm_servicebus_namespace.service_bus.id,
     azurerm_key_vault.key_vault.id,
     azurerm_log_analytics_workspace.telemetry.id,
