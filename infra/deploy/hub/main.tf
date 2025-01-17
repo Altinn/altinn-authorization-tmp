@@ -247,6 +247,6 @@ resource "azurerm_management_lock" "delete" {
     azurerm_app_configuration.app_configuration,
     azurerm_key_vault.key_vault,
     azurerm_virtual_network_gateway.vpn,
-    azurerm_storage_account.storagd
+    azurerm_storage_account.storage
   ] : lock.name => lock.id }
 }
