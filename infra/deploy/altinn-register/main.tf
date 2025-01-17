@@ -76,6 +76,10 @@ data "azurerm_user_assigned_identity" "admin" {
 resource "azurerm_resource_group" "register" {
   name     = "rgregister${local.suffix}"
   location = "norwayeast"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 module "postgres_server" {
@@ -100,3 +104,13 @@ module "postgres_server" {
   ]
 }
 
+resource "azurerm_management_lock" "delete" {
+  name       = "Terraform"
+  scope      = each.key
+  lock_level = "CanNotDelete"
+  notes      = "Terraform Managed Lock"
+
+  for_each = toset([
+    module.postgres_server.id
+  ])
+}
