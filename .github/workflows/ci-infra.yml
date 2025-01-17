@@ -42,7 +42,7 @@ jobs:
     with:
       environment: ${{ matrix.environment }}
       tf_state: register.tfstate
-      working_dir: infra/deploy/staging
+      working_dir: infra/deploy/altinn-register
 
   staging-spoke:
     name: Staging
@@ -68,7 +68,7 @@ jobs:
     with:
       environment: ${{ matrix.environment }}
       tf_state: register.tfstate
-      working_dir: infra/deploy/staging
+      working_dir: infra/deploy/altinn-register
 
   staging-prod:
     name: Prod
@@ -94,4 +94,4 @@ jobs:
     with:
       environment: ${{ matrix.environment }}
       tf_state: register.tfstate
-      working_dir: infra/deploy/register
+      working_dir: infra/deploy/altinn-register
