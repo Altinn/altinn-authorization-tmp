@@ -205,9 +205,6 @@ resource "azurerm_subnet" "single_stack" {
   }
 
   service_endpoints = try(each.value.service_endpoint, [])
-  lifecycle {
-    prevent_destroy = false
-  }
 
   for_each = { for subnet in local.single_stack_subnets : subnet.name => subnet if try(subnet.create, false) }
 
@@ -239,9 +236,6 @@ resource "azurerm_subnet" "dual_stack" {
   }
 
   service_endpoints = try(each.value.service_endpoint, [])
-  lifecycle {
-    prevent_destroy = false
-  }
 
   for_each = { for subnet in local.dual_stack_subnets : subnet.name => subnet if try(subnet.create, false) }
 
