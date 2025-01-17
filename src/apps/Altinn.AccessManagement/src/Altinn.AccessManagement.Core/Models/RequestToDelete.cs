@@ -20,6 +20,11 @@ namespace Altinn.AccessManagement.Core.Models
         public int DeletedByUserId { get; set; }
 
         /// <summary>
+        /// Gets or sets a list of identifiers for the user/party performing the delegation
+        /// </summary>
+        public List<AttributeMatch> PerformedBy { get; set; }
+
+        /// <summary>
         /// Gets or sets the policy to delete from
         /// </summary>
         [Required]
