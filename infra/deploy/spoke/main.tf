@@ -333,18 +333,16 @@ resource "azurerm_federated_identity_credential" "admin" {
 
 resource "azurerm_management_lock" "delete" {
   name       = "Terraform"
-  scope      = each.key
+  scope      = each.value
   lock_level = "CanNotDelete"
   notes      = "Terraform Managed Lock"
 
-  id = azurerm_virtual_network.single_stack.id
-
-  for_each = toset([
-    azurerm_virtual_network.dual_stack.id,
-    azurerm_virtual_network.single_stack.id,
-    azurerm_servicebus_namespace.service_bus.id,
-    azurerm_key_vault.key_vault.id,
-    azurerm_log_analytics_workspace.telemetry.id,
-    azurerm_application_insights.telemetry.id
-  ])
+  for_each = { for lock in [
+    azurerm_virtual_network.dual_stack,
+    azurerm_virtual_network.single_stack,
+    azurerm_servicebus_namespace.service_bus,
+    azurerm_key_vault.key_vault,
+    azurerm_log_analytics_workspace.telemetry,
+    azurerm_application_insights.telemetry,
+  ] : lock.name => lock.id }
 }

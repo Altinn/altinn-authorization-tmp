@@ -236,11 +236,11 @@ resource "azurerm_role_assignment" "reader" {
 
 resource "azurerm_management_lock" "delete" {
   name       = "Terraform"
-  scope      = each.key
+  scope      = each.value
   lock_level = "CanNotDelete"
   notes      = "Terraform Managed Lock"
 
-  for_each = toset([
+  for_each = { for lock in [
     azurerm_public_ip_prefix.ipv4.id,
     azurerm_public_ip_prefix.ipv6.id,
     azurerm_virtual_network.hub.id,
@@ -248,5 +248,5 @@ resource "azurerm_management_lock" "delete" {
     azurerm_key_vault.key_vault.id,
     azurerm_virtual_network_gateway.vpn.id,
     azurerm_storage_account.storage.id
-  ])
+  ] : lock.name => lock.id }
 }

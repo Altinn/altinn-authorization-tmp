@@ -110,7 +110,7 @@ resource "azurerm_management_lock" "delete" {
   lock_level = "CanNotDelete"
   notes      = "Terraform Managed Lock"
 
-  for_each = toset([
-    module.postgres_server.id
-  ])
+  for_each = { for lock in [
+    module.postgres_server
+  ] : lock.name => lock.id }
 }
