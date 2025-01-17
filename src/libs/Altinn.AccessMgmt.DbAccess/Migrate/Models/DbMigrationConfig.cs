@@ -49,4 +49,9 @@ public class DbMigrationConfig
     /// UseSqlServer
     /// </summary>
     public bool UseSqlServer { get; set; }
+
+    /// <summary>
+    /// Enables migration
+    /// </summary>
+    public bool Enable { get; set; }
 }

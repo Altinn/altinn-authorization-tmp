@@ -19,6 +19,11 @@ public interface IDbMigrationFactory
     bool UseHistory { get; set; }
 
     /// <summary>
+    /// Enable migration
+    /// </summary>
+    bool Enable { get; set; }
+
+    /// <summary>
     /// Initialize
     /// </summary>
     Task Init();

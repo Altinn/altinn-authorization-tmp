@@ -25,6 +25,8 @@ inner join dbo.rolemap as map on a.roleid = map.hasroleid;
 
     private bool UseTranslation { get { return _factory.UseTranslation; } }
 
+    private bool Enable { get { return _factory.Enable; } }
+
     /// <summary>
     /// Constructor
     /// </summary>
@@ -37,23 +39,25 @@ inner join dbo.rolemap as map on a.roleid = map.hasroleid;
     /// <inheritdoc/>
     public async Task Init()
     {
-        await _factory.Init();
-        await CreateSchema();
+        if (Enable)
+        {
+            await _factory.Init();
+            await CreateSchema();
 
-        await CreateWorkerConfig();
+            await CreateWorkerConfig();
 
-        await CreateProvider();
-        await CreateArea();
-        await CreateEntity();
-        await CreateTag();
-        await CreatePackage();
-        await CreateRole();
-        await CreateResource();
+            await CreateProvider();
+            await CreateArea();
+            await CreateEntity();
+            await CreateTag();
+            await CreatePackage();
+            await CreateRole();
+            await CreateResource();
 
-        await CreateAssignment();
-        await CreateGroups();
-        await CreateDelegations();
-
+            await CreateAssignment();
+            await CreateGroups();
+            await CreateDelegations();
+        }
     }
 
     private async Task CreateWorkerConfig()

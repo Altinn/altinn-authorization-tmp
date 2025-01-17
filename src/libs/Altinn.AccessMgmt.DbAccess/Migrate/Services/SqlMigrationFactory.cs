@@ -33,6 +33,9 @@ public class SqlMigrationFactory : IDbMigrationFactory
     private readonly string historyPrefix = "";
     private readonly string historySchema = "";
 
+    /// <inheritdoc/>
+    public bool Enable { get; set; }
+
     /// <summary>
     /// List of migrations executed
     /// </summary>
@@ -56,6 +59,8 @@ public class SqlMigrationFactory : IDbMigrationFactory
         {
             UseHistory = true;
         }
+
+        Enable = config.Enable;
 
         _connection = new SqlConnection(config.ConnectionString);
 

@@ -32,6 +32,9 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     private readonly string historyPrefix = "";
     private readonly string historySchema = "";
 
+    /// <inheritdoc/>
+    public bool Enable { get; set; }
+
     /// <summary>
     /// Migrations executed
     /// </summary>
@@ -58,6 +61,8 @@ public class PostgresMigrationFactory : IDbMigrationFactory
 
             // UseHistory = true;
         }
+
+        Enable = config.Enable;
 
         _connection = new NpgsqlConnection(config.ConnectionString);
 
