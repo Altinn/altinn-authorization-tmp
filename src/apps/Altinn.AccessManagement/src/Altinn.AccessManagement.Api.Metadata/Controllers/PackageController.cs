@@ -10,7 +10,7 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
     {
         private readonly IPackageService service = service;
 
-        [Route("api/[controller]")]
+        [Route("/accessmanagement/api/v1/metadata/[controller]")]
         [HttpGet]
         public async Task<ActionResult<Package>> GetAll()
         {
@@ -30,7 +30,7 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
             }
         }
 
-        [Route("api/[controller]/{id}")]
+        [Route("/accessmanagement/api/v1/metadata/[controller]/{id}")]
         [HttpGet]
         public async Task<ActionResult<ExtPackage>> Get(Guid id)
         {
@@ -49,7 +49,7 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
             }
         }
 
-        [Route("api/Area/{id}/Packages")]
+        [Route("/accessmanagement/api/v1/metadata/Area/{id}/Packages")]
         [HttpGet]
         public async Task<ActionResult<Package>> GetByGroup(Guid id)
         {
