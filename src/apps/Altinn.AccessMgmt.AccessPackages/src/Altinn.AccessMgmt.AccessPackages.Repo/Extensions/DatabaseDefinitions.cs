@@ -55,6 +55,7 @@ public class DatabaseDefinitions
 
         DbDefinitions.Add<Assignment, ExtAssignment>(Config, useTranslation: false, useHistory: true);
         DbDefinitions.Add<AssignmentPackage, ExtAssignmentPackage>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<AssignmentResource, ExtAssignmentResource>(Config, useTranslation: false, useHistory: true);
 
         DbDefinitions.Add<EntityGroup, ExtEntityGroup>(Config, useTranslation: false, useHistory: true);
         DbDefinitions.Add<GroupMember, ExtGroupMember>(Config, useTranslation: false, useHistory: true);

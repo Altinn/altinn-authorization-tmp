@@ -9,6 +9,7 @@
 @inject IDelegationGroupService delegationGroupService
 @inject IDelegationAssignmentService delegationAssignmentService
 @inject IAssignmentService assignmentService
+@inject IRoleService roleService
 
 @if(Entity != null)
 {
@@ -22,6 +23,7 @@
         <RightContent>
             <ButtonGroup>
                 <Button OnClick=@(() => CreateGroupModalIsOpen = !CreateGroupModalIsOpen)>Ny gruppe</Button>
+                <Button OnClick=@(() => CreateAssignmentModalIsOpen = !CreateAssignmentModalIsOpen)>Ny tildeling</Button>
                 @*<button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Resource</button>
                 <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Tags</button>
                 <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Translation</button> *@
@@ -34,14 +36,18 @@
         <VerticalTableCell Title="Variant"><a href=@($"/entityvariant/{Entity.Variant.Id}")>@Entity.Variant.Name</a></VerticalTableCell>
         <VerticalTableCell Title="RefId">@Entity.RefId</VerticalTableCell>
     </VerticalTable>
-
+    <br />
     <Grid>
 
         @if(FromAssignments != null && FromAssignments.Any())
         {
             <div>
-                <H3>Roller (Rettighetshavere)</H3>
-
+                <H3>
+                    Roller (Rettighetshavere)
+                    <div style="float:right;">
+                        <Switch @bind-Checked=GroupFromByTo >Grupper rolleinnehavere</Switch>
+                    </div>
+                </H3>
                 <table class="bf-table bfc-base-3-bg">
                     <thead>
                         <tr>
@@ -52,7 +58,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var toId in FromAssignments.Select(t=>t.ToId).Distinct())
+                        @if (GroupFromByTo)
+                        {
+                            @foreach (var toId in FromAssignments.Select(t=>t.ToId).Distinct())
                         {
                             var assignment = FromAssignments.First(t => t.ToId == toId);
                             <tr class="bf-table-row bf-table-row-compact">
@@ -71,6 +79,25 @@
                                 </td>
                             </tr>
                         }
+                        } 
+                        else
+                        {
+                            @foreach (var assignment in FromAssignments)
+                            {
+                                <tr class="bf-table-row bf-table-row-compact">
+                                    <td title="@assignment.From.RefId"><a href=@($"/entity/{assignment.From.Id}")><EntityTypeIcon Id="@assignment.From.TypeId" />@assignment.From.Name</a></td>
+                                    <td>
+                                        <div style="display:flex; gap:4px;">
+                                            <Badge Title="@assignment.Role.Description">@assignment.Role.Code</Badge>
+                                        </div>
+                                    </td>
+                                    <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
+                                    <td>
+                                        <a href=@($"/assignment/{assignment.Id}")><Icon Name="arrow-up-right-from-square"></Icon></a>
+                                    </td>
+                                </tr>
+                            }
+                        }
                     </tbody>
                 </table>
 
@@ -80,7 +107,12 @@
         @if (ToAssignments != null && ToAssignments.Any())
         {
             <div>
-                <H3>Roller (Avgivere)</H3>
+                <H3>
+                    Roller (Avgivere)
+                    <div style="float:right;">
+                        <Switch @bind-Checked=GroupToByFrom>Grupper avgivere</Switch>
+                    </div>
+                </H3>
 
                 <table class="bf-table bfc-base-3-bg">
                     <thead>
@@ -93,8 +125,9 @@
                         </tr>
                     </thead>    
                     <tbody>
-
-                        @foreach (var forId in ToAssignments.Select(t => t.FromId).Distinct())
+                        @if(GroupToByFrom)
+                        {
+                            @foreach (var forId in ToAssignments.Select(t => t.FromId).Distinct())
                         {
                             var assignment = ToAssignments.First(t => t.FromId == forId);
                             <tr class="bf-table-row bf-table-row-compact">
@@ -123,6 +156,36 @@
                                     <a href=@($"/assignment/{assignment.Id}")><Icon Name="arrow-up-right-from-square"></Icon></a>
                                 </td>
                             </tr>
+                        }
+                        }
+                        else
+                        {
+                            @foreach (var assignment in ToAssignments)
+                            {
+                                <tr class="bf-table-row bf-table-row-compact">
+                                    <td title="@assignment.From.RefId"><a href=@($"/entity/{assignment.From.Id}")><EntityTypeIcon Id="@assignment.From.TypeId" />@assignment.From.Name</a></td>
+                                    <td>
+                                        <div style="display:flex; gap:4px;">
+                                            <Badge Title="@assignment.Role.Description">@assignment.Role.Code</Badge>
+                                        </div>
+                                    </td>
+                                    <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
+                                    <td>
+                                        @if (Delegations.Count(t => t.AssignmentId == assignment.Id) > 0)
+                                        {
+                                            <Icon Name="check"></Icon>
+
+                                        }
+                                        else
+                                        {
+                                            <Icon Name="xmark"></Icon>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href=@($"/assignment/{assignment.Id}")><Icon Name="arrow-up-right-from-square"></Icon></a>
+                                    </td>
+                                </tr>
+                            }
                         }
                     </tbody>
                 </table>
@@ -200,34 +263,34 @@
         }
 
         @if(Avgivere != null && Avgivere.Any())
-    {
-        <div>
-            <H3>Avgivere</H3>
+        {
+            <div>
+                <H3>Avgivere</H3>
 
-            <SimpleTable>
-                <Head>
-                    <SimpleTableRow>
-                        <th>Navn</th>
-                        <th>Type</th>
-                        <th>Variant</th>
-                        <th>Ref</th>
-                    </SimpleTableRow>
-                </Head>
-                <Body>
-                    @foreach(var entity in Avgivere)
-                    {
+                <SimpleTable>
+                    <Head>
                         <SimpleTableRow>
-                            <td>@entity.Name</td>
-                            <td>@entity.Type.Name</td>
-                            <td>@entity.Variant.Name</td>
-                            <td>@entity.RefId</td>
+                            <th>Navn</th>
+                            <th>Type</th>
+                            <th>Variant</th>
+                            <th>Ref</th>
                         </SimpleTableRow>
-                    }
+                    </Head>
+                    <Body>
+                        @foreach(var entity in Avgivere)
+                        {
+                            <SimpleTableRow>
+                                <td><a href=@($"/entity/{entity.Id}")>@entity.Name</a></td>
+                                <td>@entity.Type.Name</td>
+                                <td>@entity.Variant.Name</td>
+                                <td>@entity.RefId</td>
+                            </SimpleTableRow>
+                        }
 
-                </Body>
-            </SimpleTable>
-        </div>
-    }
+                    </Body>
+                </SimpleTable>
+            </div>
+        }
 
         @if (RightHolders != null && RightHolders.Any())
         {
@@ -247,7 +310,7 @@
                         @foreach (var entity in RightHolders)
                         {
                             <SimpleTableRow>
-                                <td>@entity.Name</td>
+                                <td><a href=@($"/entity/{entity.Id}")>@entity.Name</a></td>
                                 <td>@entity.Type.Name</td>
                                 <td>@entity.Variant.Name</td>
                                 <td>@entity.RefId</td>
@@ -275,6 +338,41 @@
 
     </Drawer>
 
+    <Drawer Title="Ny tildeling" @bind-IsOpen=CreateAssignmentModalIsOpen>
+
+        <InputContainer Title="Roller" Description="Velg rolle(r) som skal tildeles">
+            <SwitchContainer>
+                @foreach (var role in Roles.Where(t=>t.Provider.Name == "Digdir"))
+                {
+                    <Switch FullWidth @bind-Checked=CreateAssignmentRoles[role.Id]>@role.Name</Switch>
+                }
+            </SwitchContainer>
+        </InputContainer>
+
+        <InputContainer Title="Velg personer" Description="Velg de personene som skal motta tildelingene">
+            <Input @bind-Value=CreateAssignmentName Placeholder="Navn"></Input>
+            <Input @bind-Value=CreateAssignmentRefNo Placeholder="Fødselsdato"></Input>
+            <Button OnClick="CreateAssignmentLookupPerson">Finn person</Button>
+            <SwitchContainer>
+                @foreach (var person in CreateAssignmentPersonLookupResult)
+                {
+                    <Switch FullWidth @bind-Checked=CreateAssignmentPerson[person.Id]>@person.Name</Switch>
+                }
+            </SwitchContainer>
+        </InputContainer>
+
+        <hr />
+        @if (!string.IsNullOrEmpty(CreateAssignmentMessage.msg))
+        {
+            <Message State=@(CreateAssignmentMessage.success ? Message.MsgState.Success : Message.MsgState.Alert)>
+                @CreateAssignmentMessage.msg
+            </Message>
+            <hr />
+        }
+        <Button Variant="Button.ButtonVariant.Filled" OnClick=@(() => CreateAssignment())>Opprett</Button>
+
+    </Drawer>
+
 }
 
 
@@ -284,6 +382,9 @@
     public ExtEntity Entity { get; set; }
     public List<ExtAssignment> FromAssignments { get; set; }
     public List<ExtAssignment> ToAssignments { get; set; }
+
+    public bool GroupFromByTo { get; set; } = true;
+    public bool GroupToByFrom { get; set; } = true;
 
     public List<EntityGroup> Groups { get; set; }
     private List<GroupMembership> GroupMemberships { get; set; }
@@ -297,7 +398,25 @@
         var opt = UserData.GetRequestOptions();
 
         Entity = await entityData.GetExtended(Id, options: opt);
-        if(Entity != null)
+
+        await LoadAssignments();
+
+        Roles = [.. await roleService.GetExtended(filter => filter.Equal(t => t.EntityTypeId, Entity.TypeId))];
+        CreateAssignmentRoles = new Dictionary<Guid, bool>();
+        foreach (var role in Roles)
+        {
+            CreateAssignmentRoles.Add(role.Id, false);
+        }
+
+        await GetAvgivere();
+        await GetRightHolders();
+    }
+
+    private async Task LoadAssignments()
+    {
+        var opt = UserData.GetRequestOptions();
+
+        if (Entity != null)
         {
             FromAssignments = [.. await assignmentData.GetExtended(t => t.FromId, Entity.Id, options: opt) ?? new List<ExtAssignment>()];
             ToAssignments = [.. await assignmentData.GetExtended(t => t.ToId, Entity.Id, options: opt) ?? new List<ExtAssignment>()];
@@ -320,17 +439,14 @@
             }
         }
 
-        if(Delegations != null && Delegations.Any())
+        if (Delegations != null && Delegations.Any())
         {
-            foreach(var delegation in Delegations)
+            foreach (var delegation in Delegations)
             {
                 DelegationGroups.AddRange(await delegationGroupService.Get(t => t.DelegationId, delegation.Id));
                 DelegationAssignments.AddRange(await delegationAssignmentService.Get(t => t.DelegationId, delegation.Id));
             }
         }
-
-        await GetAvgivere();
-        await GetRightHolders();
     }
 
     public bool CreateGroupModalIsOpen { get; set; }
@@ -371,7 +487,7 @@
                 var grp = await groupService.Get(member.GroupId);
                 if (grp == null) { continue; }
                 GroupMemberships.Add(new GroupMembership() { Group = grp, IsAdmin = true, IsMember = false });
-        }
+            }
         }
     }
     private async Task CreateGroup()
@@ -477,4 +593,58 @@
         }
     }
 
+
+    public bool CreateAssignmentModalIsOpen { get; set; }
+    public List<ExtRole> Roles { get; set; } = new List<ExtRole>();
+    public Dictionary<Guid, bool> CreateAssignmentRoles { get; set; } = new Dictionary<Guid, bool>();
+
+    public string CreateAssignmentName { get; set; }
+    public string CreateAssignmentRefNo { get; set; }
+    public List<ExtEntity> CreateAssignmentPersonLookupResult { get; set; } = new List<ExtEntity>();
+    public Dictionary<Guid, bool> CreateAssignmentPerson { get; set; } = new Dictionary<Guid, bool>();
+
+    private async Task CreateAssignmentLookupPerson()
+    {
+        CreateAssignmentPersonLookupResult = [.. await entityService.GetExtended(entityService.CreateFilterBuilder().Add(t => t.RefId, CreateAssignmentRefNo, FilterComparer.StartsWith).Add(t => t.Name, CreateAssignmentName, FilterComparer.Contains))];
+        CreateAssignmentPerson.Clear();
+        foreach (var person in CreateAssignmentPersonLookupResult)
+        {
+            CreateAssignmentPerson.Add(person.Id, false);
+        }
+    }
+
+    public (string msg, bool success) CreateAssignmentMessage { get; set; }
+    private async Task CreateAssignment()
+    {
+        if (CreateAssignmentRoles == null || CreateAssignmentRoles.Count(t=>t.Value) == 0)
+        {
+            CreateAssignmentMessage = ("No roles selected", false);
+            return;
+        }
+        if (CreateAssignmentPerson == null || CreateAssignmentPerson.Count(t => t.Value) == 0)
+        {
+            CreateAssignmentMessage = ("No people selected", false);
+            return;
+        }
+
+        int createCount = 0;
+
+        foreach (var role in CreateAssignmentRoles.Where(t => t.Value))
+        {
+            foreach(var to in CreateAssignmentPerson.Where(t => t.Value))
+            {
+                await assignmentService.Create(new Assignment() { Id = Guid.NewGuid(), FromId = Entity.Id, RoleId = role.Key, ToId = to.Key, IsDelegable = false });
+                createCount++;
+            }
+        }
+
+        CreateAssignmentMessage = ($"Created {createCount} assignments!", true);
+        CreateAssignmentName = "";
+        CreateAssignmentRefNo = "";
+        CreateAssignmentPerson.Clear();
+        CreateAssignmentPersonLookupResult.Clear();
+        await LoadAssignments();
+    }
+
 }
+

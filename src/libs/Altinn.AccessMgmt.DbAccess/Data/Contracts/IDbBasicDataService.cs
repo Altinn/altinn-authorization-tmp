@@ -130,7 +130,6 @@ public interface IDbBasicDataService<T>
     /// Delete entity
     /// </summary>
     /// <param name="id">Identity</param>
-    /// <param name="cascade">Cascading delete</param>
     /// <param name="cancellationToken">CancellationToken</param>
     Task<int> Delete(Guid id, CancellationToken cancellationToken = default);
 }

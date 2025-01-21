@@ -98,6 +98,14 @@ public class PostgresMigrationFactory : IDbMigrationFactory
         }
     }
 
+    private async Task CreateMigrationSchema()
+    {
+        var checkQuery = "CREATE SCHEMA IF NOT EXISTS dbo;";
+        _connection.Open();
+        await _connection.ExecuteAsync(checkQuery);
+        _connection.Close();
+    }
+
     private async Task InitMigration()
     {
         var checkQuery = "SELECT TABLE_NAME AS Name FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '_migration'";
@@ -112,6 +120,7 @@ public class PostgresMigrationFactory : IDbMigrationFactory
 
         try
         {
+            await CreateMigrationSchema();
             var query = "CREATE TABLE dbo._migration (" +
                 "ObjectName text NOT NULL," +
                 "Key text NOT NULL," +

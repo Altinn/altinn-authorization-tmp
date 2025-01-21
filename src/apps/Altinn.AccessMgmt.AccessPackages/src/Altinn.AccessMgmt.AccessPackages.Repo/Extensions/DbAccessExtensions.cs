@@ -167,6 +167,7 @@ public static class DbAccessExtensions
         }
 
         #region Register Services
+        
         builder.Services.AddSingleton<IPackageResourceService, PackageResourceDataService>();
         builder.Services.AddSingleton<IResourceService, ResourceDataService>();
         builder.Services.AddSingleton<IResourceGroupService, ResourceGroupDataService>();
@@ -187,6 +188,8 @@ public static class DbAccessExtensions
         builder.Services.AddSingleton<IEntityVariantRoleService, EntityVariantRoleDataService>();
         builder.Services.AddSingleton<IRoleMapService, RoleMapDataService>();
         builder.Services.AddSingleton<IAssignmentService, AssignmentDataService>();
+        builder.Services.AddSingleton<IAssignmentPackageService, AssignmentPackageDataService>();
+        builder.Services.AddSingleton<IAssignmentResourceService, AssignmentResourceDataService>();
         builder.Services.AddSingleton<IGroupService, GroupDataService>();
         builder.Services.AddSingleton<IGroupMemberService, GroupMemberDataService>();
         builder.Services.AddSingleton<IGroupAdminService, GroupAdminDataService>();
@@ -207,6 +210,7 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbBasicRepo<AreaGroup>, PostgresBasicRepo<AreaGroup>>();
         services.AddSingleton<IDbExtendedRepo<Assignment, ExtAssignment>, PostgresExtendedRepo<Assignment, ExtAssignment>>();
         services.AddSingleton<IDbExtendedRepo<AssignmentPackage, ExtAssignmentPackage>, PostgresExtendedRepo<AssignmentPackage, ExtAssignmentPackage>>();
+        services.AddSingleton<IDbExtendedRepo<AssignmentResource, ExtAssignmentResource>, PostgresExtendedRepo<AssignmentResource, ExtAssignmentResource>>();
         services.AddSingleton<IDbExtendedRepo<Entity, ExtEntity>, PostgresExtendedRepo<Entity, ExtEntity>>();
         services.AddSingleton<IDbExtendedRepo<EntityType, ExtEntityType>, PostgresExtendedRepo<EntityType, ExtEntityType>>();
         services.AddSingleton<IDbExtendedRepo<EntityVariant, ExtEntityVariant>, PostgresExtendedRepo<EntityVariant, ExtEntityVariant>>();
@@ -241,6 +245,7 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbBasicRepo<AreaGroup>, SqlBasicRepo<AreaGroup>>();
         services.AddSingleton<IDbExtendedRepo<Assignment, ExtAssignment>, SqlExtendedRepo<Assignment, ExtAssignment>>();
         services.AddSingleton<IDbExtendedRepo<AssignmentPackage, ExtAssignmentPackage>, SqlExtendedRepo<AssignmentPackage, ExtAssignmentPackage>>();
+        services.AddSingleton<IDbExtendedRepo<AssignmentResource, ExtAssignmentResource>, SqlExtendedRepo<AssignmentResource, ExtAssignmentResource>>();
         services.AddSingleton<IDbExtendedRepo<Entity, ExtEntity>, SqlExtendedRepo<Entity, ExtEntity>>();
         services.AddSingleton<IDbExtendedRepo<EntityType, ExtEntityType>, SqlExtendedRepo<EntityType, ExtEntityType>>();
         services.AddSingleton<IDbExtendedRepo<EntityVariant, ExtEntityVariant>, SqlExtendedRepo<EntityVariant, ExtEntityVariant>>();

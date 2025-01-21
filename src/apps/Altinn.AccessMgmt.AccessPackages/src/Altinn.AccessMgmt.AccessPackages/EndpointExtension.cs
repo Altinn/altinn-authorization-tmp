@@ -18,10 +18,11 @@ public static class EndpointExtension
     /// <returns></returns>
     public static WebApplication MapDbAccessEndpoints(this WebApplication app)
     {
-        app.MapDefaultsExt<IAreaService, Area, ExtArea>();
         app.MapDefaults<IAreaGroupService, AreaGroup>();
+        app.MapDefaultsExt<IAreaService, Area, ExtArea>();
         app.MapDefaultsExt<IAssignmentService, Assignment, ExtAssignment>(mapGetAll: false);
         app.MapDefaultsExt<IAssignmentPackageService, AssignmentPackage, ExtAssignmentPackage>(mapGetAll: false);
+        app.MapDefaultsExt<IAssignmentResourceService, AssignmentResource, ExtAssignmentResource>(mapGetAll: false);
         app.MapDefaultsExt<IEntityService, Entity, ExtEntity>(mapSearch: true);
         app.MapDefaultsExt<IEntityTypeService, EntityType, ExtEntityType>();
         app.MapDefaultsExt<IEntityVariantService, EntityVariant, ExtEntityVariant>();
@@ -70,7 +71,7 @@ public static class EndpointExtension
             if (role.HasValue)
             {
                 filterBuilder.Equal(t => t.RoleId, role.Value);
-            }
+            }  
 
             return await service.GetExtended(filterBuilder);
         }).WithOpenApi().WithTags("Assignment").WithSummary("Get assignments");
