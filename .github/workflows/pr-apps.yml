@@ -96,6 +96,7 @@ jobs:
       - name: Display working directory
         run: |
           echo "Working Directory: ${{ matrix.path }}"
+          echo "Shortname: ${{ matrix.shortName }}"
 
       - name: Restore dotnet workloads
         working-directory: ${{ matrix.path }}
