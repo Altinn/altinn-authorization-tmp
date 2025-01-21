@@ -47,4 +47,5 @@ jobs:
       - name: Display found verticals
         run: |
           echo "Found verticals: ${{ steps.list.outputs.verticals }}"
+          echo "Found matrix: ${{ steps.list.outputs.matrix }}"
 
