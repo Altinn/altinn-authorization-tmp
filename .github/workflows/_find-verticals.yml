@@ -43,3 +43,8 @@ jobs:
       - name: Find all ${{ inputs.type }}
         id: list
         run: tsx ./.github/scripts/list-verticals.mts --type ${{ inputs.type }}
+
+      - name: Display found verticals
+        run: |
+          echo "Found verticals: ${{ steps.list.outputs.verticals }}"
+
