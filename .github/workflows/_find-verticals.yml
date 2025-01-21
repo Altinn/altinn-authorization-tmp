@@ -40,7 +40,7 @@ jobs:
               args: [--frozen-lockfile]
             - args: [--global, tsx]
 
-      - name: Find all ${{ inputs.type }}
+      - name: Find all ${{ inputs.type }}s
         id: list
         run: tsx ./.github/scripts/list-verticals.mts --type ${{ inputs.type }}
 
