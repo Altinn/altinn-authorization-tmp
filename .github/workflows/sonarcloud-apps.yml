@@ -1,4 +1,4 @@
-name: Parallel SonarCloud Analysis with Code Coverage
+name: sonarcloud-apps
 
 on:
   push:
@@ -50,11 +50,11 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run SonarCloud Analysis for API
         run: |
-          cd ./apps/${{ matrix.api }}
+          cd ./src/apps/${{ matrix.api }}
 
           # Restore dependencies
           dotnet restore
