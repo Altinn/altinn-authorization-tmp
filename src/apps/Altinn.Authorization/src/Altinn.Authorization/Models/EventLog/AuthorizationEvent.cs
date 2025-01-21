@@ -76,8 +76,8 @@ namespace Altinn.Platform.Authorization.Models.EventLog
         public XacmlContextDecision? Decision { get; set; }
 
         /// <summary>
-        /// The user identifier which can be either a GUID or a username
+        /// The user identifier for subject
         /// </summary>
-        public string? UserIdentifier { get; set; }
+        public string? SubjectPartyUuid { get; set; }
     }
 }
