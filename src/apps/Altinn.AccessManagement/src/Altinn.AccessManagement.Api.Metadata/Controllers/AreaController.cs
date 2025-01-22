@@ -30,7 +30,7 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
             }
         }
 
-        [Route("api/[controller]/{id}")]
+        [Route("/accessmanagement/api/v1/metadata/AreaGroups/[controller]/{id}")]
         [HttpGet]
         public async Task<ActionResult<ExtArea>> Get(Guid id)
         {
