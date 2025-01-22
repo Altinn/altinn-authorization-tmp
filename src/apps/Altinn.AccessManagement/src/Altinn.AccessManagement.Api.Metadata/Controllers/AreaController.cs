@@ -10,7 +10,7 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
     {
         private readonly IAreaService service = service;
 
-        [Route("api/[controller]")]
+        [Route("/accessmanagement/api/v1/metadata/[controller]")]
         [HttpGet]
         public async Task<ActionResult<Area>> GetAll()
         {
@@ -30,7 +30,7 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
             }
         }
 
-        [Route("api/[controller]/{id}")]
+        [Route("/accessmanagement/api/v1/metadata/AreaGroups/[controller]/{id}")]
         [HttpGet]
         public async Task<ActionResult<ExtArea>> Get(Guid id)
         {
@@ -49,7 +49,7 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
             }
         }
 
-        [Route("api/AreaGroups/{id}/areas")]
+        [Route("/accessmanagement/api/v1/metadata/AreaGroups/{id}/areas")]
         [HttpGet]
         public async Task<ActionResult<Area>> GetByGroup(Guid id)
         {
