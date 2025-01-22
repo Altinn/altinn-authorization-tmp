@@ -76,9 +76,13 @@ internal sealed class BootstrapDatabasePipeline
             cancellationToken);
 
         var migratorUser = await context.RunTask(new CreateDatabaseRoleTask(secretClient, serverConn, $"{UserPrefix}_migrator", Resources.User), cancellationToken);
+
         var appUser = await context.RunTask(new CreateDatabaseRoleTask(secretClient, serverConn, $"{UserPrefix}_app", Resources.User), cancellationToken);
+
         await context.RunTask(new CreateDatabaseTask(serverConn, DatabaseName), cancellationToken);
+
         await context.RunTask(new GrantDatabasePrivilegesTask(serverConn, DatabaseName, migratorUser.RoleName, "CREATE, CONNECT"), cancellationToken);
+
         await context.RunTask(new GrantDatabasePrivilegesTask(serverConn, DatabaseName, appUser.RoleName, "CONNECT"), cancellationToken);
 
         connStringBuilder.Database = DatabaseName;
