@@ -1,6 +1,8 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using Altinn.AccessMgmt.DbAccess.Data.Models;
 using Altinn.AccessMgmt.DbAccess.Migrate.Contracts;
@@ -18,19 +20,8 @@ public class PostgresMigrationFactory : IDbMigrationFactory
 {
     private readonly NpgsqlConnection _connection;
 
-    private readonly string defaultSchema = "";
-
-    /// <inheritdoc/>
-    public bool UseTranslation { get; set; }
-
-    private readonly string translationPrefix = "";
-    private readonly string translationSchema = "";
-
-    /// <inheritdoc/>
-    public bool UseHistory { get; set; }
-
-    private readonly string historyPrefix = "";
-    private readonly string historySchema = "";
+    private readonly string defaultSchema = "dbo";
+    private readonly string translationSchema = "translation";
 
     /// <inheritdoc/>
     public bool Enable { get; set; }
@@ -50,25 +41,12 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     {
         var config = options.Value;
 
-        if (!string.IsNullOrEmpty(config.TranslationSchema))
-        {
-            UseTranslation = true;
-        }
-
-        if (!string.IsNullOrEmpty(config.HistorySchema))
-        {
-            Console.WriteLine("History not supported ...");
-
-            // UseHistory = true;
-        }
-
         Enable = config.Enable;
 
         _connection = new NpgsqlConnection(config.ConnectionString);
 
         defaultSchema = config.DefaultSchema ?? "dbo";
-        translationSchema = config.TranslationSchema ?? defaultSchema;
-        historySchema = config.HistorySchema ?? defaultSchema;
+        translationSchema = config.TranslationSchema ?? "translation";
 
         _migrationId = config.CollectionId;
         Migrations = new List<MigrationEntry>();
@@ -84,6 +62,11 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     /// </summary>
     public Dictionary<Type, bool> HasTranslation { get; set; } = new Dictionary<Type, bool>();
 
+    /// <summary>
+    /// Holds list of columns to be used for triggers
+    /// </summary>
+    public Dictionary<Type, Dictionary<string, CommonDataType>> Columns { get; set; } = new Dictionary<Type, Dictionary<string, CommonDataType>>();
+
     /// <inheritdoc/>
     public async Task Init()
     {
@@ -98,6 +81,7 @@ public class PostgresMigrationFactory : IDbMigrationFactory
         }
     }
 
+    #region Migrations
     private async Task CreateMigrationSchema()
     {
         var checkQuery = "CREATE SCHEMA IF NOT EXISTS dbo;";
@@ -198,6 +182,7 @@ public class PostgresMigrationFactory : IDbMigrationFactory
         await _connection.ExecuteAsync("INSERT INTO dbo._migration (ObjectName, Key, At, Status, Script, CollectionId) VALUES(@ObjectName, @Key, @At, @Status, @Script, @CollectionId)", migrationEntry);
         Migrations.Add(migrationEntry);
     }
+    #endregion
 
     /// <inheritdoc/>
     public async Task CreateFunction(string name, string query)
@@ -227,27 +212,38 @@ public class PostgresMigrationFactory : IDbMigrationFactory
         string migrationKey = $"CREATE SCHEMA {name}";
         if (NeedMigration(migrationKey, "Schema"))
         {
-            string query = $"CREATE SCHEMA {name}";
+            string query = $"CREATE SCHEMA IF NOT EXISTS {name}";
             await ExecuteQuery(query);
             await LogMigration(migrationKey, query, "Schema");
         }
     }
 
-    /// <inheritdoc/>
-    public async Task CreateTable<T>(bool withHistory = false, bool withTranslation = false, Dictionary<string, CommonDataType>? primaryKeyColumns = null)
+    private bool HasHistoryCheck<T>()
     {
-        if (withHistory)
+        if (HasHistory.ContainsKey(typeof(T)) && HasHistory[typeof(T)])
         {
-            withHistory = false;
-            LogWarning($"History is not supported on postgres for '{TableName<T>()}'");
+            return true;
         }
 
+        return false;
+    }
+
+    /// <inheritdoc/>
+    public async Task CreateTable<T>(bool useTranslation = false, Dictionary<string, CommonDataType>? primaryKeyColumns = null)
+    {
         string name = typeof(T).Name;
         string migrationKey = $"CREATE TABLE {TableName<T>()}";
-        HasHistory.Add(typeof(T), withHistory);
-        HasTranslation.Add(typeof(T), withTranslation);
 
-        primaryKeyColumns = primaryKeyColumns ?? new Dictionary<string, CommonDataType>() { { "Id", DataTypes.Guid } };
+        HasTranslation.Add(typeof(T), useTranslation);
+
+        Columns.Add(typeof(T), new Dictionary<string, CommonDataType>());
+
+        primaryKeyColumns ??= new Dictionary<string, CommonDataType>() { { "Id", DataTypes.Guid } };
+        foreach (var column in primaryKeyColumns)
+        {
+            Columns[typeof(T)].Add(column.Key, column.Value);
+        }
+
         var properties = typeof(T).GetProperties().ToList();
         foreach (var property in primaryKeyColumns)
         {
@@ -260,89 +256,132 @@ public class PostgresMigrationFactory : IDbMigrationFactory
         }
 
         string primaryKeyDefinition = string.Join(',', primaryKeyColumns.Select(t => $"{t.Key} {t.Value.Postgres} NOT NULL "));
-        string primaryKeyConstraint = $"CONSTRAINT PK_{name} PRIMARY KEY ({string.Join(',', primaryKeyColumns.Select(t => $"{t.Key}"))})";
 
         if (NeedMigration<T>(migrationKey))
         {
-            string query = $"CREATE TABLE {TableName<T>()} (" + primaryKeyDefinition + " , " + primaryKeyConstraint + ")";
+            var sb = new StringBuilder();
+            sb.AppendLine($"CREATE TABLE {TableName<T>()} (");
+            sb.AppendLine(primaryKeyDefinition);
+
+            if (HasHistoryCheck<T>())
+            {
+                sb.AppendLine(", validfrom timestamptz default now()");
+            }
+
+            sb.AppendLine($", CONSTRAINT PK_{name} PRIMARY KEY ({string.Join(',', primaryKeyColumns.Select(t => $"{t.Key}"))})");
+            sb.AppendLine(")");
+            string query = sb.ToString();
+
             await ExecuteQuery(query);
             await LogMigration<T>(migrationKey, query);
         }
 
-        if (withTranslation)
+        if (useTranslation)
         {
             string translationKey = $"CREATE TABLE {TranslationTableName<T>()}";
             if (NeedMigration<T>(translationKey))
             {
-                primaryKeyColumns.Add("Language", DataTypes.String(10));
-                primaryKeyConstraint = $"CONSTRAINT PK_{name} PRIMARY KEY ({string.Join(',', primaryKeyColumns.Select(t => $"{t.Key}"))})";
+                var sb = new StringBuilder();
+                sb.AppendLine($"CREATE TABLE {TranslationTableName<T>()} (");
+                sb.AppendLine(primaryKeyDefinition);
+                if (HasHistoryCheck<T>())
+                {
+                    sb.AppendLine(", validfrom timestamptz default now()");
+                }
 
-                string query = $"CREATE TABLE {TranslationTableName<T>()} (" + primaryKeyDefinition + " , " +
-                $"Language text NOT NULL," +
-                primaryKeyConstraint + ")";
+                sb.AppendLine($", Language text NOT NULL");
+                sb.AppendLine($", CONSTRAINT PK_{name} PRIMARY KEY ({string.Join(',', primaryKeyColumns.Select(t => $"{t.Key}"))}, Language)");
+                sb.AppendLine(")");
+                string query = sb.ToString();
+
                 await ExecuteQuery(query);
                 await LogMigration<T>(translationKey, query);
             }
         }
 
-        /*
-        if (withHistory)
+        if (HasHistoryCheck<T>())
         {
-            string query = $"CREATE TABLE {TableName<TSource>()}(" + primaryKeyDefinition + "," +
-            $"ValidFrom DATETIME2(7) GENERATED ALWAYS AS ROW START HIDDEN NOT NULL," +
-            $"ValidTo DATETIME2(7) GENERATED ALWAYS AS ROW END HIDDEN NOT NULL," +
-            $"PERIOD FOR SYSTEM_TIME(ValidFrom, ValidTo)," +
-            primaryKeyConstraint + ")" +
-            $"WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = {HistoryTableName<TSource>()}, DATA_CONSISTENCY_CHECK = ON))";
-            await ExecuteQuery(query);
-            await LogMigration<TSource>(migrationKey, query);
-            if (withTranslation)
+            string historyKey = $"CREATE TABLE {HistoryTableName<T>()}";
+            if (NeedMigration<T>(historyKey))
             {
-                primaryKeyColumns.Add("Language", DbType.String);
-                primaryKeyConstraint = $"CONSTRAINT PK_{name} PRIMARY KEY ({string.Join(',', primaryKeyColumns.Select(t => $"{t.Key}"))})";
-                query = $"CREATE TABLE {TranslationTableName<TSource>()}(" + primaryKeyDefinition + "," +
-                $"Language NVARCHAR(10) NOT NULL," +
-                $"ValidFrom DATETIME2(7) GENERATED ALWAYS AS ROW START HIDDEN NOT NULL," +
-                $"ValidTo DATETIME2(7) GENERATED ALWAYS AS ROW END HIDDEN NOT NULL," +
-                $"PERIOD FOR SYSTEM_TIME(ValidFrom, ValidTo)," +
-                primaryKeyConstraint + ")" +
-                $"WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = {HistoryTableName<TSource>("T_")}, DATA_CONSISTENCY_CHECK = ON))";
+                var sb = new StringBuilder();
+                sb.AppendLine($"CREATE TABLE {HistoryTableName<T>()}(");
+                sb.AppendLine(primaryKeyDefinition);
+                sb.AppendLine(", validfrom timestamptz default now()");
+                sb.AppendLine(", validto timestamptz default now()");
+                sb.AppendLine(")");
+                string query = sb.ToString();
+
                 await ExecuteQuery(query);
-                await LogMigration<TSource>(migrationKey, query);
+                await LogMigration<T>(historyKey, query);
+            }
+
+            if (useTranslation)
+            {
+                string historyTranslationKey = $"CREATE TABLE {HistoryTranslationTableName<T>()}";
+                if (NeedMigration<T>(historyTranslationKey))
+                {                     
+                    var sb = new StringBuilder();
+                    sb.AppendLine($"CREATE TABLE {HistoryTranslationTableName<T>()}(");
+                    sb.AppendLine(primaryKeyDefinition);
+                    sb.AppendLine(", validfrom timestamptz default now()");
+                    sb.AppendLine(", validto timestamptz default now()");
+                    sb.AppendLine(", Language text NOT NULL");
+                    sb.AppendLine(")");
+                    string query = sb.ToString();
+
+                    await ExecuteQuery(query);
+                    await LogMigration<T>(historyTranslationKey, query);
+                }
             }
         }
-        */
     }
 
     /// <inheritdoc/>
     public async Task CreateColumn<T>(Expression<Func<T, object?>> TProperty, CommonDataType dbType, bool nullable = false, string? defaultValue = null)
     {
         var name = ExtractPropertyInfo(TProperty as Expression<Func<T, object>>).Name;
+        await CreateColumn<T>(name: name, dbType: dbType, nullable: nullable, defaultValue: string.IsNullOrEmpty(defaultValue) ? null : $"'{defaultValue}'");
+    }
 
-        string dbTypeString = dbType.Postgres;
-        string migrationKey = $"ADD COLUMN {TableName<T>()}.{name}";
-        if (NeedMigration<T>(migrationKey))
-        {
-            if (nullable && string.IsNullOrEmpty(defaultValue))
-            {
-                LogWarning("A nullable column with no default value will fail if table is not empty.");
-            }
+    private async Task CreateColumn<T>(string name, CommonDataType dbType, bool nullable = false, string? defaultValue = null)
+    {
+        Columns[typeof(T)].Add(name, dbType);
 
-            // If default not text...
-            string query = $"ALTER TABLE {TableName<T>()} ADD {name} {dbTypeString} {(nullable ? "NULL" : "NOT NULL")} {(string.IsNullOrEmpty(defaultValue) ? "" : $"DEFAULT '{defaultValue}'")};";
-            await ExecuteQuery(query);
-            await LogMigration<T>(migrationKey, query);
-        }
-
+        await CreateColumn(typeof(T).Name, TableName<T>(), name, dbType, nullable: nullable, defaultValue: defaultValue);
+        
         if (HasTranslation[typeof(T)])
         {
-            string translationKey = $"ADD COLUMN {TranslationTableName<T>()}.{name}";
-            if (NeedMigration<T>(translationKey))
+            await CreateColumn(typeof(T).Name, TranslationTableName<T>(), name, dbType, nullable: true, defaultValue: defaultValue);
+        }
+
+        if (HasHistoryCheck<T>())
+        {
+            await CreateColumn(typeof(T).Name, HistoryTableName<T>(), name, dbType, nullable: true, defaultValue: defaultValue);
+            if (HasTranslation[typeof(T)])
             {
-                var query = $"ALTER TABLE {TranslationTableName<T>()} ADD {name} {dbTypeString} NULL {(string.IsNullOrEmpty(defaultValue) ? "" : $"DEFAULT '{defaultValue}'")};";
-                await ExecuteQuery(query);
-                await LogMigration<T>(translationKey, query);
+                await CreateColumn(typeof(T).Name, HistoryTranslationTableName<T>(), name, dbType, nullable: true, defaultValue: defaultValue);
             }
+        }
+    }
+   
+    private async Task CreateColumn(string objectName, string tableName, string columnName, CommonDataType dbType, bool nullable = false, string? defaultValue = null)
+    {
+        string key = $"ADD COLUMN {tableName}.{columnName}";
+        string dbTypeString = dbType.Postgres;
+
+        if (nullable && string.IsNullOrEmpty(defaultValue))
+        {
+            LogWarning("A nullable column with no default value will fail if table is not empty.");
+        }
+
+        if (NeedMigration(key, objectName))
+        {
+            var query = $"ALTER TABLE {tableName} ADD {columnName} {dbTypeString} {(nullable ? "NULL" : "NOT NULL")} {(string.IsNullOrEmpty(defaultValue) ? "" : $"DEFAULT {defaultValue}")};";
+            Console.WriteLine(query);
+
+            await ExecuteQuery(query);
+            await LogMigration(key, query, objectName);
         }
     }
 
@@ -353,6 +392,8 @@ public class PostgresMigrationFactory : IDbMigrationFactory
         {
             throw new ArgumentException("Not a valid column name", nameof(name));
         }
+
+        // Only remove if prev added
 
         string migrationKey = $"DROP COLUMN {TableName<T>()}.{name}";
         if (NeedMigration<T>(migrationKey))
@@ -370,6 +411,28 @@ public class PostgresMigrationFactory : IDbMigrationFactory
                 string query = $"ALTER TABLE {TranslationTableName<T>()} DROP COLUMN IF EXISTS {name};";
                 await ExecuteQuery(query);
                 await LogMigration<T>(translationKey, query);
+            }
+        }
+
+        if (HasHistoryCheck<T>())
+        {
+            string historyKey = $"DROP COLUMN {HistoryTableName<T>()}.{name}";
+            if (NeedMigration<T>(historyKey))
+            {
+                string query = $"ALTER TABLE {HistoryTableName<T>()} DROP COLUMN IF EXISTS {name};";
+                await ExecuteQuery(query);
+                await LogMigration<T>(historyKey, query);
+            }
+
+            if (HasTranslation[typeof(T)])
+            {
+                string translationKey = $"DROP COLUMN {HistoryTranslationTableName<T>()}.{name}";
+                if (NeedMigration<T>(translationKey))
+                {
+                    string query = $"ALTER TABLE {HistoryTranslationTableName<T>()} DROP COLUMN IF EXISTS {name};";
+                    await ExecuteQuery(query);
+                    await LogMigration<T>(translationKey, query);
+                }
             }
         }
     }
@@ -424,11 +487,108 @@ public class PostgresMigrationFactory : IDbMigrationFactory
         }
     }
 
+    private async Task CreateSharedHistoryFunction()
+    {
+        string key = "FUNCTION update_validfrom";
+        if (NeedMigration(key, "dbo"))
+        {
+            string query = """
+            CREATE OR REPLACE FUNCTION dbo.update_validfrom() RETURNS trigger AS
+            $$
+            BEGIN
+              NEW.validfrom := NOW();
+              RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+            """;
+            await ExecuteQuery(query);
+            await LogMigration(key, query, "dbo");
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task UseHistory<T>()
+    {
+        HasHistory.Add(typeof(T), true);
+    }
+
+    /// <inheritdoc/>
+    public async Task AddHistory<T>()
+    {
+        if (HasHistoryCheck<T>())
+        {
+            await CreateSharedHistoryFunction();
+            await AddHistory<T>(HistorySchema<T>(), TableName<T>(), HistoryTableName<T>(), HistoryViewName<T>());
+            if (HasTranslation[typeof(T)])
+            {
+                await AddHistory<T>(HistoryTranslationSchema<T>(), TranslationTableName<T>(), HistoryTranslationTableName<T>(), HistoryTranslationViewName<T>(), isTranslation: true);
+            }
+        }
+    }
+
+    private async Task AddHistory<T>(string schema, string tableName, string historyTableName, string historyViewName, bool isTranslation = false)
+    {
+        string functionName = $"{tableName}_copy_to_history()";
+
+        string columnDefinitions = string.Join(',', Columns[typeof(T)].Keys);
+        string columnOldDefinitions = string.Join(',', Columns[typeof(T)].Select(t => $"OLD.{t.Key}"));
+
+        string key = $"TRIGGER {typeof(T).Name}_update_validfrom ON {tableName}";
+        if (NeedMigration<T>(key))
+        {
+            string query = $"""
+            CREATE OR REPLACE TRIGGER {typeof(T).Name}_update_validfrom BEFORE UPDATE ON {tableName}
+            FOR EACH ROW EXECUTE FUNCTION dbo.update_validfrom();
+            """;
+            await ExecuteQuery(query);
+            await LogMigration<T>(key, query);
+        }
+
+        string functionKey = $"FUNCTION {functionName}";
+        if (NeedMigration<T>(functionKey))
+        {
+            string query = $"""
+            CREATE OR REPLACE FUNCTION {functionName} RETURNS TRIGGER AS $$ BEGIN
+            INSERT INTO {historyTableName} ({columnDefinitions}, {(isTranslation ? "language, " : "")}validfrom, validto) VALUES({columnOldDefinitions}, {(isTranslation ? "OLD.language, " : "")}OLD.validfrom, now());
+            RETURN NEW;
+            END; $$ LANGUAGE plpgsql;
+            CREATE OR REPLACE TRIGGER {typeof(T).Name}_History AFTER UPDATE ON {tableName}
+            FOR EACH ROW EXECUTE FUNCTION {functionName};
+            """;
+            await ExecuteQuery(query);
+            await LogMigration<T>(functionKey, query);
+        }
+
+        string viewKey = $"VIEW {historyViewName}";
+        if (NeedMigration<T>(viewKey))
+        {
+            string query = $"""
+            CREATE OR REPLACE VIEW {historyViewName} AS
+            SELECT {columnDefinitions}, {(isTranslation ? "language, " : "")} validfrom, validto
+            FROM  {historyTableName}
+            WHERE validfrom <= coalesce(current_setting('x.asof', true)::timestamptz, now())
+            AND validto > coalesce(current_setting('x.asof', true)::timestamptz, now())
+            UNION ALL
+            SELECT  {columnDefinitions}, {(isTranslation ? "language, " : "")}validfrom, now() AS validto
+            FROM {tableName}
+            where validfrom <= coalesce(current_setting('x.asof', true)::timestamptz, now());
+            """;
+            await ExecuteQuery(query);
+            await LogMigration<T>(viewKey, query);
+        }
+    }
+
     private string TableName<T>() => $"{defaultSchema}.{typeof(T).Name}";
+    private string TranslationTableName<T>() => $"{translationSchema}.{typeof(T).Name}";
+    private string TranslationViewName<T>() => $"{translationSchema}.{typeof(T).Name}";
 
-    private string TranslationTableName<T>() => $"{translationSchema}.{translationPrefix}{typeof(T).Name}";
+    private string HistorySchema<T>() => $"{defaultSchema}_history";
+    private string HistoryTableName<T>() => $"{defaultSchema}_history._{typeof(T).Name}";
+    private string HistoryViewName<T>() => $"{defaultSchema}_history.{typeof(T).Name}";
 
-    private string HistoryTableName<T>(string prefix = "") => $"{historySchema}.{historyPrefix}{prefix}{typeof(T).Name}";
+    private string HistoryTranslationSchema<T>() => $"{translationSchema}_history";
+    private string HistoryTranslationTableName<T>() => $"{translationSchema}_history._{typeof(T).Name}";
+    private string HistoryTranslationViewName<T>() => $"{translationSchema}_history.{typeof(T).Name}";
 
     private async Task ExecuteQuery(string query)
     {

@@ -9,16 +9,6 @@ namespace Altinn.AccessMgmt.DbAccess.Migrate.Contracts;
 public interface IDbMigrationFactory
 {
     /// <summary>
-    /// Enable translation
-    /// </summary>
-    bool UseTranslation { get; set; }
-
-    /// <summary>
-    /// Enable history
-    /// </summary>
-    bool UseHistory { get; set; }
-
-    /// <summary>
     /// Enable migration
     /// </summary>
     bool Enable { get; set; }
@@ -52,10 +42,9 @@ public interface IDbMigrationFactory
     /// Create table
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="withHistory">Create History table</param>
-    /// <param name="withTranslation">Create Translation table</param>
+    /// <param name="useTranslation">Create Translation table</param>
     /// <param name="primaryKeyColumns">PrimaryKeys</param>
-    Task CreateTable<T>(bool withHistory = false, bool withTranslation = false, Dictionary<string, CommonDataType>? primaryKeyColumns = null);
+    Task CreateTable<T>(bool useTranslation = false, Dictionary<string, CommonDataType>? primaryKeyColumns = null);
 
     /// <summary>
     /// Create column
@@ -91,4 +80,18 @@ public interface IDbMigrationFactory
     /// <param name="TTargetProperty">Target property)</param>
     /// <param name="cascadeDelete">Cascade delete</param>
     Task CreateForeignKeyConstraint<TSource, TTarget>(Expression<Func<TSource, object?>> TSourceProperty, Expression<Func<TTarget, object?>>? TTargetProperty = null, bool cascadeDelete = false);
+
+    /// <summary>
+    /// Adds History tables
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    Task AddHistory<T>();
+
+    /// <summary>
+    /// Adds History tables
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    Task UseHistory<T>();
 }

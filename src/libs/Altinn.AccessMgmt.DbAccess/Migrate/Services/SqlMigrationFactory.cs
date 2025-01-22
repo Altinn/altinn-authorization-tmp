@@ -22,16 +22,7 @@ public class SqlMigrationFactory : IDbMigrationFactory
     /// Default schema
     /// </summary>
     private readonly string defaultSchema = "";
-
-    /// <inheritdoc/>
-    public bool UseTranslation { get; set; }
-    private readonly string translationPrefix = "";
     private readonly string translationSchema = "";
-
-    /// <inheritdoc/>
-    public bool UseHistory { get; set; }
-    private readonly string historyPrefix = "";
-    private readonly string historySchema = "";
 
     /// <inheritdoc/>
     public bool Enable { get; set; }
@@ -50,23 +41,12 @@ public class SqlMigrationFactory : IDbMigrationFactory
     {
         var config = options.Value;
 
-        if (!string.IsNullOrEmpty(translationSchema))
-        {
-            UseTranslation = true;
-        }
-
-        if (!string.IsNullOrEmpty(historySchema))
-        {
-            UseHistory = true;
-        }
-
         Enable = config.Enable;
 
         _connection = new SqlConnection(config.ConnectionString);
 
         defaultSchema = config.DefaultSchema ?? "dbo";
-        translationSchema = config.TranslationSchema ?? defaultSchema;
-        historySchema = config.HistorySchema ?? defaultSchema;
+        translationSchema = config.TranslationSchema ?? "translation";
 
         _migrationId = config.CollectionId;
         Migrations = new List<MigrationEntry>();
@@ -211,12 +191,23 @@ public class SqlMigrationFactory : IDbMigrationFactory
         }
     }
 
+    private bool HasHistoryCheck<T>()
+    {
+        if (HasHistory.ContainsKey(typeof(T)) && HasHistory[typeof(T)])
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+
     /// <inheritdoc/>
-    public async Task CreateTable<T>(bool withHistory = false, bool withTranslation = false, Dictionary<string, CommonDataType>? primaryKeyColumns = null)
+    public async Task CreateTable<T>(bool withTranslation = false, Dictionary<string, CommonDataType>? primaryKeyColumns = null)
     {
         string name = typeof(T).Name;
         string migrationKey = $"CREATE TABLE {TableName<T>()}";
-        HasHistory.Add(typeof(T), withHistory);
+        
         HasTranslation.Add(typeof(T), withTranslation);
 
         if (NeedMigration<T>(migrationKey))
@@ -235,7 +226,7 @@ public class SqlMigrationFactory : IDbMigrationFactory
             string primaryKeyDefinition = string.Join(',', primaryKeyColumns.Select(t => $"[{t.Key}] [{t.Value.MsSql}] NOT NULL"));
             string primaryKeyConstraint = $"CONSTRAINT [PK_{name}] PRIMARY KEY ({string.Join(',', primaryKeyColumns.Select(t => $"[{t.Key}]"))})";
 
-            if (!withHistory)
+            if (!HasHistoryCheck<T>())
             {
                 string query = $"CREATE TABLE {TableName<T>()} (" + primaryKeyDefinition + " " + primaryKeyConstraint + ")";
                 await ExecuteQuery(query);
@@ -254,7 +245,7 @@ public class SqlMigrationFactory : IDbMigrationFactory
                 }
             }
 
-            if (withHistory)
+            if (HasHistoryCheck<T>())
             {
                 string query = $"CREATE TABLE {TableName<T>()}(" + primaryKeyDefinition + "," +
                 $"[ValidFrom] DATETIME2(7) GENERATED ALWAYS AS ROW START HIDDEN NOT NULL," +
@@ -390,8 +381,8 @@ public class SqlMigrationFactory : IDbMigrationFactory
     }
 
     private string TableName<T>() => $"[{defaultSchema}].[{typeof(T).Name}]";
-    private string TranslationTableName<T>() => $"[{translationSchema}].[{translationPrefix}{typeof(T).Name}]";
-    private string HistoryTableName<T>(string prefix = "") => $"[{historySchema}].[{historyPrefix}{prefix}{typeof(T).Name}]";
+    private string TranslationTableName<T>() => $"[{translationSchema}].[{typeof(T).Name}]";
+    private string HistoryTableName<T>(string prefix = "") => $"[history].[{prefix}{typeof(T).Name}]";
     private async Task ExecuteQuery(string query)
     {
         try
@@ -456,6 +447,21 @@ public class SqlMigrationFactory : IDbMigrationFactory
     }
 
     public Task CreateView<T>(string name, string query)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task AddHistory<T>()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task AddTranslationHistory<T>()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task UseHistory<T>()
     {
         throw new NotImplementedException();
     }
