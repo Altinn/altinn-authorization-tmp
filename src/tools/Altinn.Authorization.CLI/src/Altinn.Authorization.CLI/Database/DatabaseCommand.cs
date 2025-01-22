@@ -1,4 +1,6 @@
 using System.CommandLine;
+using System.IdentityModel.Tokens.Jwt;
+using Azure.Identity;
 using Spectre.Console;
 
 namespace Altinn.Authorization.CLI.Database;
@@ -18,7 +20,34 @@ public static class DatabaseCommand
     {
         var cmd = new Command("database", "For Managing Postgres Servers");
         cmd.AddCommand(SubCommandBootstrap(console));
+        cmd.AddCommand(SubCommandCredentials(console));
         return cmd;
+    }
+
+    /// <summary>
+    /// Defines a CLI subcommand that generates login credentials for a PostgreSQL server using the authenticated Entra ID (Azure AD) user.
+    /// </summary>
+    /// <remarks>
+    /// This command uses the <see cref="DefaultAzureCredential"/> to authenticate and retrieve an access token for PostgreSQL.
+    /// The token is then decoded to extract the username, which is displayed along with the generated password.
+    /// </remarks>
+    public static Command SubCommandCredentials(IAnsiConsole console)
+    {
+        var credentials = new Command("cred", "Generates login credentials for PostgreSQL server using your signed-in Entra ID user.");
+
+        credentials.SetHandler(async () =>
+        {
+            var token = new DefaultAzureCredential();
+            var cred = await token.GetTokenAsync(new(["https://ossrdbms-aad.database.windows.net/.default"]), CancellationToken.None);
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(cred.Token);
+            var username = jwtToken.Claims.First(claim => claim.Type == "unique_name");
+
+            console.WriteLine($"username: {username.Value}");
+            console.WriteLine($"password: {cred.Token}");
+        });
+
+        return credentials;
     }
 
     /// <summary>
@@ -28,7 +57,7 @@ public static class DatabaseCommand
     /// <returns>A Command object representing the "bootstrap" command.</returns>
     public static Command SubCommandBootstrap(IAnsiConsole console)
     {
-        var bootstrap = new Command("bootstrap", "creating basic roles and creates connection string writes them to key vault");
+        var bootstrap = new Command("bootstrap", "Creates essential database roles, generates connection strings for migration and app run-time use, and stores them securely in Azure Key Vault.");
         var serverResourceGroupOption = new Option<string>("--server-resource-group", "Postgres Flex server's resource group.")
         {
             IsRequired = true,
