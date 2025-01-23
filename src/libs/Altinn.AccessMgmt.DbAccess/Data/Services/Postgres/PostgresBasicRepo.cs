@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Text;
 using Altinn.AccessMgmt.DbAccess.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess.Data.Models;
-using Altinn.AccessMgmt.DbAccess.Data.Services;
 using Dapper;
 using Microsoft.Extensions.Options;
 using Npgsql;
@@ -228,6 +227,15 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
     {
         options ??= new RequestOptions();
         var sb = new StringBuilder();
+
+        if (options != null)
+        {
+            if (options.AsOf.HasValue)
+            {
+                // FORMAT : 2025-01-22 12:03:50.240333 +00:00
+                sb.AppendLine($"set session x.asof = '{options.AsOf.Value.ToUniversalTime()}';");
+            }
+        }
 
         sb.AppendLine("SELECT ");
         sb.AppendLine(GenerateColumns(options));
@@ -491,12 +499,9 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
     protected string GenerateSource(ObjectDefinition dbObjDef, RequestOptions options)
     {
         bool useTranslation = !string.IsNullOrEmpty(options.Language);
+        bool useHistory = options.AsOf.HasValue;
 
-        /*
-        // Not implemented
-        string AsOfCommand = options.AsOf.HasValue ? " FOR SYSTEM_TIME AS OF @_AsOf " : "";
-        */
-
+        // TODO: And Language not system default
         if (dbObjDef.TranslationDbObject == null)
         {
             useTranslation = false;
@@ -505,13 +510,13 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
         if (useTranslation && dbObjDef.UseTranslation)
         {
             return $"""
-            {dbObjDef.BaseDbObject.GetPostgresDefinition(useAsOf: options.AsOf.HasValue)}
-            LEFT JOIN LATERAL (select * from {dbObjDef.TranslationDbObject?.GetPostgresDefinition(includeAlias: false, useAsOf: options.AsOf.HasValue)} as t where t.Id = {dbObjDef.BaseDbObject.Alias}.Id AND t.Language = @Language) as {dbObjDef.TranslationDbObject?.Alias} on 1=1
+            {dbObjDef.BaseDbObject.GetPostgresDefinition(useHistory: useHistory)}
+            LEFT JOIN LATERAL (select * from {dbObjDef.TranslationDbObject?.GetPostgresDefinition(includeAlias: false, useHistory: useHistory)} as t where t.Id = {dbObjDef.BaseDbObject.Alias}.Id AND t.Language = @Language) as {dbObjDef.TranslationDbObject?.Alias} on 1=1
             """;
         }
         else
         {
-            return dbObjDef.BaseDbObject.GetPostgresDefinition(useAsOf: options.AsOf.HasValue);
+            return dbObjDef.HistoryDbObject.GetPostgresDefinition(useHistory: useHistory);
         }
     }
 

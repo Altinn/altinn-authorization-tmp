@@ -66,14 +66,18 @@ public class DbObject
     /// Gets Postgres definition
     /// </summary>
     /// <param name="includeAlias">Include alias (default: true)</param>
-    /// <param name="useAsOf">Use AsOf (default: false)</param>
+    /// <param name="useHistory">Use _History schema</param>
     /// <returns></returns>
-    public string GetPostgresDefinition(bool includeAlias = true, bool useAsOf = false)
+    public string GetPostgresDefinition(bool includeAlias = true, bool useHistory = false)
     {
-        var res = $"{Schema}.{Name}";
-        if (useAsOf)
+        string res = "";
+        if (useHistory)
         {
-            Console.WriteLine("AsOf feature is not available on postgres");
+            res = $"{Schema}_History.{Name}";
+        }
+        else
+        {
+            res = $"{Schema}.{Name}";
         }
 
         if (includeAlias)

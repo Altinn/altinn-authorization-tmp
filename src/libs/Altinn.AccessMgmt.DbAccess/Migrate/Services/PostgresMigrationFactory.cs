@@ -340,6 +340,11 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     /// <inheritdoc/>
     public async Task CreateColumn<T>(Expression<Func<T, object?>> TProperty, CommonDataType dbType, bool nullable = false, string? defaultValue = null)
     {
+        if (nullable && string.IsNullOrEmpty(defaultValue))
+        {
+            LogWarning("A nullable column with no default value will fail if table is not empty.");
+        }
+
         var name = ExtractPropertyInfo(TProperty as Expression<Func<T, object>>).Name;
         await CreateColumn<T>(name: name, dbType: dbType, nullable: nullable, defaultValue: string.IsNullOrEmpty(defaultValue) ? null : $"'{defaultValue}'");
     }
@@ -369,11 +374,6 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     {
         string key = $"ADD COLUMN {tableName}.{columnName}";
         string dbTypeString = dbType.Postgres;
-
-        if (nullable && string.IsNullOrEmpty(defaultValue))
-        {
-            LogWarning("A nullable column with no default value will fail if table is not empty.");
-        }
 
         if (NeedMigration(key, objectName))
         {
