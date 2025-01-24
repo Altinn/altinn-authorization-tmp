@@ -109,6 +109,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CB367458-4AC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Register", "src\apps\Altinn.Register\src\Altinn.Register\Altinn.Register.csproj", "{75EE6825-961D-41F1-9A57-AA168D0872FF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Configuration.MassTransit", "src\libs\Altinn.Authorization.Configuration\src\Altinn.Authorization.Configuration.MassTransit\Altinn.Authorization.Configuration.MassTransit.csproj", "{67201B93-0606-4C34-8B67-8F693006837F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -214,6 +216,10 @@ Global
 		{75EE6825-961D-41F1-9A57-AA168D0872FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75EE6825-961D-41F1-9A57-AA168D0872FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75EE6825-961D-41F1-9A57-AA168D0872FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67201B93-0606-4C34-8B67-8F693006837F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67201B93-0606-4C34-8B67-8F693006837F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67201B93-0606-4C34-8B67-8F693006837F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67201B93-0606-4C34-8B67-8F693006837F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E9D041A5-2AB6-45FD-8D24-EF552025539E} = {2891B160-9E46-42E5-95FF-08523A3192EF}
@@ -268,5 +274,6 @@ Global
 		{D86EBBC6-8803-40C6-BB66-FC1FDA8F49C4} = {E9D041A5-2AB6-45FD-8D24-EF552025539E}
 		{CB367458-4ACF-4D25-AD2D-8B74198AC576} = {D86EBBC6-8803-40C6-BB66-FC1FDA8F49C4}
 		{75EE6825-961D-41F1-9A57-AA168D0872FF} = {CB367458-4ACF-4D25-AD2D-8B74198AC576}
+		{67201B93-0606-4C34-8B67-8F693006837F} = {EF1C3A6D-0085-4BA9-BAED-B75938211F4E}
 	EndGlobalSection
 EndGlobal
