@@ -42,31 +42,6 @@ jobs:
       - name: Assert that no sln files have changed
         run: git diff --exit-code
 
-  build-and-test:
-    name: Build and Test
-    needs: find-verticals
-    strategy:
-      matrix: ${{ fromJson(needs.find-verticals.outputs.matrix) }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: |
-            8.0.x
-            9.0.x
-
-      - name: Restore dotnet workloads
-        working-directory: ${{ matrix.path }}
-        run: dotnet workload restore
-
-      - name: Build & Test
-        working-directory: ${{ matrix.path }}
-        run: |
-          dotnet build -v m
-          dotnet test --no-build -v m
-
   analyze:
     name: Analyze
     needs: find-verticals
