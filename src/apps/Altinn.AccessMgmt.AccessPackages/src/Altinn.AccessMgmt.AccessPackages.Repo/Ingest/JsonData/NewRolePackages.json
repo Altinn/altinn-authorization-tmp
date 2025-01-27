@@ -1711,5 +1711,20 @@
     ],
     "Delegerbar": true,
     "HarTilgang": true
+  },
+  {
+    "Tilgangspakke": "Folkeregister",
+    "Enhetsregisterroller": [
+      "Daglig leder",
+      "styrets leder",
+      "Innehaver",
+      "Deltaker fullt ansvar",
+      "Deltaker delt ansvar",
+      "Komplementar",
+      "Bestyrende reder",
+      "Bobestyrer"
+    ],
+    "Delegerbar": true,
+    "HarTilgang": true
   }
 ]
