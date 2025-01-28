@@ -8,6 +8,7 @@ using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
+using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.ServiceDefaults;
 using Altinn.Common.AccessToken;
 using Altinn.Common.AccessToken.Configuration;
@@ -54,8 +55,15 @@ internal static class AccessManagementHost
         builder.ConfigureInternals();
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
+        builder.ConfigureHostedServices();
 
         return builder.Build();
+    }
+
+    private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddHostedService<RegisterHostedService>();
+        return builder;
     }
 
     private static WebApplicationBuilder ConfigureAltinnPackages(this WebApplicationBuilder builder)
