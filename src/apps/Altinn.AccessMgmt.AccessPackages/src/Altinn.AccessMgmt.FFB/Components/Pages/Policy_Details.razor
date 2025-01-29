@@ -1,0 +1,76 @@
+﻿@page "/policy/{Id:guid}"
+@inject IPolicyService policyService
+@inject IPolicyComponentService policyComponentService
+@inject IComponentService componentService
+
+@if (Policy != null)
+{
+    <PageTitle>@Policy.Name</PageTitle>
+
+    <PageHeader>
+        <LeftContent>
+            <BreadcrumbContainer>
+                <BreadcrumbItem Url=@($"/resource/{Policy.Resource.Id}")>@Policy.Resource.Name</BreadcrumbItem>
+            </BreadcrumbContainer>
+            <H1>@Policy.Name</H1>
+            <p>@Policy.Description</p>
+        </LeftContent>
+        <RightContent>
+        </RightContent>
+    </PageHeader>
+
+    <Grid Medium="2">
+
+        @if (Components != null && Components.Any())
+        {
+            <GridSpan Columns="2">
+                <H2>Komponenter</H2>
+                <SimpleTable>
+                    <Head>
+                        <SimpleTableRow IsHeaderRow>
+                            <th>Element</th>
+                            <th>Navn</th>
+                            <th>Beskrivelse</th>
+                            <th>Urn</th>
+                        </SimpleTableRow>
+                    </Head>
+                    <Body>
+                        @foreach (var component in Components)
+                        {
+                            <SimpleTableRow>
+                                <td><a href=@($"/element/{component.Element.Id}")>@component.Element.Name</a></td>
+                                <td><a href=@($"/component/{component.Id}")>@component.Name</a></td>
+                                <td>@component.Description</td>
+                                <td>@component.Urn</td>
+                            </SimpleTableRow>
+                        }
+                    </Body>
+                </SimpleTable>
+            </GridSpan>
+        }
+
+    </Grid>
+}
+
+@code {
+
+    [Parameter] public Guid Id { get; set; }
+    public ExtPolicy Policy { get; set; }
+    public List<ExtComponent> Components { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var opt = UserData.GetRequestOptions();
+
+        Policy = await policyService.GetExtended(Id, options: opt);
+        if (Policy != null)
+        {
+            var basicComponents = await policyComponentService.GetB(Policy.Id, options: opt);
+            Components = new List<ExtComponent>();
+            foreach(var basicComp in basicComponents)
+            {
+                Components.Add(await componentService.GetExtended(basicComp.Id));
+            }
+        }
+    }
+}

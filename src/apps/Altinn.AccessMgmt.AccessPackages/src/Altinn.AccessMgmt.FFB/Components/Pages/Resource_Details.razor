@@ -2,24 +2,23 @@
 @inject IResourceService resourceData
 @inject IProviderService providerData
 @inject IPackageResourceService packageResourceService
+@inject IPolicyService policyService
+@inject IElementService elementService
 
 @if(Resource != null)
 {
-    <PageTitle>Package - @Resource.Name</PageTitle>
-
+    <PageTitle>Resource - @Resource.Name</PageTitle>
 
     <PageHeader>
         <LeftContent>
             <BreadcrumbContainer>
-                <BreadcrumbItem Url="/providers">Providers</BreadcrumbItem>
                 <BreadcrumbItem Url=@($"/provider/{Resource.Provider.Id}")>@Resource.Provider.Name</BreadcrumbItem>
+                <BreadcrumbItem Url=@($"/resourcegroup/{Resource.Group.Id}")>@Resource.Group.Name</BreadcrumbItem>
             </BreadcrumbContainer>
             <H1>@Resource.Name</H1>
             <p>@Resource.Description</p>
         </LeftContent>
         <RightContent>
-           @*  <button @onclick=@(() => Flyouts.ToggleFlyout("edit"))>Edit</button>
-            <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Add resource</button> *@
         </RightContent>
     </PageHeader>
 
@@ -36,7 +35,7 @@
                 </tr>
                 <tr class="bf-table-row bf-table-row-compact">
                     <th>Group</th>
-                    <td>@Resource.Group.Name</td>
+                    <td><a href=@($"/resourcegroup/{Resource.Group.Id}")>@Resource.Group.Name</a></td>
                 </tr>
                 <tr class="bf-table-row bf-table-row-compact">
                     <th>Type</th>
@@ -50,19 +49,83 @@
     </span>
 
     <Grid Medium="2">
-        <div>
-            <H2>Tilgangspakker</H2>
+        @if (ResourcePackages != null && ResourcePackages.Any())
+        {
+            <div>
+                <H2>Tilgangspakker</H2>
+                <SimpleTable>
+                    <Head>
+                        <SimpleTableRow IsHeaderRow>
+                            <th>Navn</th>
+                            <th>Les</th>
+                            <th>Skriv</th>
+                            <th>Signer</th>
+                        </SimpleTableRow>
+                    </Head>
+                    <Body>
+                        @foreach (var rp in ResourcePackages)
+                        {
+                            <SimpleTableRow>
+                                <td><a href=@($"/package/{rp.PackageId}")>@rp.Package.Name</a></td>
+                                <td>@rp.Read</td>
+                                <td>@rp.Write</td>
+                                <td>@rp.Sign</td>
+                            </SimpleTableRow>
+                        }
+                    </Body>
+                </SimpleTable>
+            </div>
+        }
 
-            @if (Resources != null)
-            {
-                <Accordion>
-                    @foreach (var r in Resources)
-                    {
-                        <ListItem Url=@($"/package/{r.PackageId}") Title="@r.Package.Name"></ListItem>
-                    }
-                </Accordion>
-            }
-        </div>
+        @if(Policies != null && Policies.Any())
+        {
+            <div>
+                <H2>Policyer</H2>
+                <SimpleTable>
+                    <Head>
+                        <SimpleTableRow IsHeaderRow>
+                            <th>Navn</th>
+                            <th>Beskrivelse</th>
+                        </SimpleTableRow>
+                    </Head>
+                    <Body>
+                        @foreach(var policy in Policies){
+                            <SimpleTableRow>
+                                <td><a href=@($"/policy/{policy.Id}")>@policy.Name</a></td>
+                                <td>@policy.Description</td>
+                            </SimpleTableRow>
+                        }
+                    </Body>
+                </SimpleTable>
+            </div>
+        }
+
+        @if(Elements != null && Elements.Any())
+        {
+            <div>
+                <H2>Elementer</H2>
+                <SimpleTable>
+                    <Head>
+                        <SimpleTableRow IsHeaderRow>
+                            <th>Navn</th>
+                            <th>Type</th>
+                            <th>Urn</th>
+                        </SimpleTableRow>
+                    </Head>
+                    <Body>
+                        @foreach (var element in Elements)
+                        {
+                            <SimpleTableRow>
+                                <td><a href=@($"/element/{element.Id}")>@element.Name</a></td>
+                                <td>@element.Type.Name</td>
+                                <td>@element.Urn</td>
+                            </SimpleTableRow>
+                        }
+                    </Body>
+                </SimpleTable>
+            </div>
+        }
+
     </Grid>
 }
 
@@ -71,7 +134,9 @@
     [Parameter] public Guid Id { get; set; }
     public ExtResource Resource { get; set; }
     public Provider Provider { get; set; }
-    public IEnumerable<ExtPackageResource> Resources { get; set; }
+    public IEnumerable<ExtPackageResource> ResourcePackages { get; set; }
+    public IEnumerable<ExtPolicy> Policies { get; set; }
+    public IEnumerable<ExtElement> Elements { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,7 +146,9 @@
         if(Resource != null)
         {
             Provider = await providerData.Get(Resource.Group.ProviderId, options: opt);
-            Resources = await packageResourceService.GetExtended(t => t.ResourceId, Resource.Id, options: opt);
+            ResourcePackages = await packageResourceService.GetExtended(t => t.ResourceId, Resource.Id, options: opt);
+            Policies = await policyService.GetExtended(t => t.ResourceId, Resource.Id, options: opt);
+            Elements = await elementService.GetExtended(t => t.ResourceId, Resource.Id, options: opt);
         }
     }
 }

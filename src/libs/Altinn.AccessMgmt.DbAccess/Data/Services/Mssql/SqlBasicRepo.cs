@@ -7,6 +7,7 @@ using Altinn.AccessMgmt.DbAccess.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess.Data.Models;
 using FastMember;
 using Microsoft.Extensions.Configuration;
+using Npgsql;
 
 namespace Altinn.AccessMgmt.DbAccess.Data.Services.Mssql;
 
@@ -208,6 +209,24 @@ public class SqlBasicRepo<T> : IDbBasicRepo<T>
         cmd.Parameters.AddRange([.. param.Values]);
         cmd.Parameters.Add(new SqlParameter("_id", id));
         cmd.CommandText = $"UPDATE {DbObjDef.BaseDbObject.GetSqlDefinition(includeAlias: false)} SET {UpdateSetStatement([.. param.Keys])} WHERE [Id] = @_id";
+        return await ExecuteCommand(cmd, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> Upsert(Guid id, T entity, CancellationToken cancellationToken = default)
+    {
+        var sb = new StringBuilder();
+        var param = GetEntityAsSqlParameter(entity);
+        sb.AppendLine($"UPDATE {DbObjDef.BaseDbObject.GetSqlDefinition(includeAlias: false)} SET {UpdateSetStatement([.. param.Keys])} WHERE Id = @_id");
+        sb.AppendLine("IF (@@ROWCOUNT = 0) BEGIN");
+        sb.AppendLine($"INSERT INTO {DbObjDef.BaseDbObject.GetSqlDefinition(includeAlias: false)} ({InsertColumns([.. param.Keys])}) VALUES({InsertValues([.. param.Keys])})");
+        sb.AppendLine("END");
+        param.Add("_id", new SqlParameter("_id", id));
+
+        using var cmd = connection.CreateCommand();
+        cmd.Parameters.AddRange([.. param.Values]);
+        cmd.Parameters.Add(new SqlParameter("_id", id));
+        cmd.CommandText =sb.ToString();
         return await ExecuteCommand(cmd, cancellationToken);
     }
 

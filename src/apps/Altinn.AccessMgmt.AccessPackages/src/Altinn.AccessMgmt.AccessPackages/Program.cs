@@ -1,7 +1,10 @@
 using Altinn.AccessMgmt.AccessPackages.Extensions;
 using Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
+using Altinn.AccessMgmt.AccessPackages.Repo.Mock;
 
 var builder = WebApplication.CreateBuilder(args);
+
+bool useMock = true;
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -12,11 +15,22 @@ builder.AddDbAccessData();
 builder.AddDbAccessMigrations();
 builder.AddJsonIngests();
 
+if (useMock)
+{
+    builder.Services.AddSingleton<Mockups>();
+}
+
 var app = builder.Build();
 
 app.Services.UseDatabaseDefinitions();
 await app.Services.UseDbAccessMigrations();
 await app.Services.UseJsonIngests();
+
+if (useMock)
+{
+    var mock = app.Services.GetRequiredService<Mockups>();
+    await mock.SystemResourcesMock();
+}
 
 if (app.Environment.IsDevelopment())
 {

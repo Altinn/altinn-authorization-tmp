@@ -92,10 +92,10 @@ public class PostgresCrossRepo<TA, T, TB> : PostgresBasicRepo<T>, IDbCrossRepo<T
         sb.Append("SELECT ");
         sb.AppendLine(GenerateColumns(objDef, options));
         sb.AppendLine($"FROM {GenerateSource(baseObjDef, options)}");
-        sb.AppendLine($"INNER JOIN {objDef.BaseDbObject.GetPostgresDefinition(includeAlias: false)} AS TResult ON X.{sourceColumn} = TResult.Id");
+        sb.AppendLine($"INNER JOIN {objDef.BaseDbObject.GetPostgresDefinition(includeAlias: false, useHistory: options.AsOf.HasValue)} AS TResult ON X.{sourceColumn} = TResult.Id");
         if (!string.IsNullOrEmpty(options.Language) && objDef.UseTranslation)
         {
-            sb.AppendLine($"LEFT JOIN LATERAL (select * from {objDef.TranslationDbObject?.GetPostgresDefinition(includeAlias: false, useAsOf: options.AsOf.HasValue)} as t where t.Id = {objDef.BaseDbObject.Alias}.Id AND t.Language = @Language) as {objDef.TranslationDbObject?.Alias} on 1=1");
+            sb.AppendLine($"LEFT JOIN LATERAL (select * from {objDef.TranslationDbObject?.GetPostgresDefinition(includeAlias: false, useHistory: options.AsOf.HasValue)} as t where t.Id = {objDef.BaseDbObject.Alias}.Id AND t.Language = @Language) as {objDef.TranslationDbObject?.Alias} on 1=1");
         }
 
         sb.AppendLine($"WHERE X.{filterColumn} = @Id");

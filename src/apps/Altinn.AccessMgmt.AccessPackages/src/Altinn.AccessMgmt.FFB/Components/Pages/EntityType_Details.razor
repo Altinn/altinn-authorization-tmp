@@ -17,10 +17,9 @@
             <H1>@EntityType.Name</H1>
         </LeftContent>
         <RightContent>
-            @*   <button @onclick=@(() => Flyouts.ToggleFlyout("edit"))>Edit</button>
-            <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Resource</button>
-            <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Tags</button>
-            <button @onclick=@(() => Flyouts.ToggleFlyout("newPackageResource"))>Translation</button> *@
+            <ButtonGroup>
+                <Button OnClick=@(() => CreateRoleIsOpen = !CreateRoleIsOpen)>Ny rolle</Button>
+            </ButtonGroup>
         </RightContent>
     </PageHeader>
 
@@ -84,6 +83,18 @@
 
     </Grid>
 
+    <Drawer @bind-IsOpen=CreateRoleIsOpen Title="Ny rolle">
+
+        <Input Title="Navn" Description="Unik navn for den nye rollen"></Input>
+        <Input Title="Kode" Description="Unik kode for den nye rollen"></Input>
+        <Input Title="Beskrivelse" Description="Kort beskrivelse av den nye rollen"></Input>
+        <Input Title="Eier" Description="Eier av rollen"></Input>
+
+        <br />
+
+        <Button>Opprett</Button>
+
+    </Drawer>
 }
 @code {
 
@@ -105,5 +116,7 @@
         }
     }
 
+
+    public bool CreateRoleIsOpen { get; set; }
 
 }

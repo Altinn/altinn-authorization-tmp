@@ -44,6 +44,14 @@ public interface IDbBasicRepo<T>
     Task<int> Update(Guid id, T entity, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Insert or update entity
+    /// </summary>
+    /// <param name="id">Identity</param>
+    /// <param name="entity">Entity to insert or update</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    Task<int> Upsert(Guid id, T entity, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Delete entity
     /// </summary>
     /// <param name="id">Identity</param>

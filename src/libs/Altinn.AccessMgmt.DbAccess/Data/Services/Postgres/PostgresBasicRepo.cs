@@ -101,6 +101,11 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
         var columns = new Dictionary<string, (NpgsqlDbType Type, PropertyInfo Property)>();
         foreach (DataColumn c in dt.Columns)
         {
+            if (c.ColumnName == "validfrom" || c.ColumnName == "validto")
+            {
+                continue;
+            }
+
             columns.Add(c.ColumnName, (PostgresDataTypeConverter.GetPostgresType(c.DataType), DbObjDef.Properties.Values.First(t => t.Name.Equals(c.ColumnName, StringComparison.CurrentCultureIgnoreCase))));
         }
 
@@ -190,6 +195,18 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
         string query = $"UPDATE {DbObjDef.BaseDbObject.GetPostgresDefinition(includeAlias: false)} SET {UpdateSetStatement([.. param.Keys])} WHERE Id = @_id";
         param.Add("_id", new NpgsqlParameter("_id", id));
         return await ExecuteCommand(query, [.. param.Values], cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> Upsert(Guid id, T entity, CancellationToken cancellationToken = default)
+    {
+        var sb = new StringBuilder();
+        var param = GetEntityAsSqlParameter(entity);
+        sb.AppendLine($"INSERT INTO {DbObjDef.BaseDbObject.GetPostgresDefinition(includeAlias: false)} ({InsertColumns([.. param.Keys])}) VALUES({InsertValues([.. param.Keys])})");
+        sb.AppendLine(" ON CONFLICT (id) DO ");
+        sb.AppendLine($"UPDATE {DbObjDef.BaseDbObject.GetPostgresDefinition(includeAlias: false)} SET {UpdateSetStatement([.. param.Keys])} WHERE Id = @_id");
+        param.Add("_id", new NpgsqlParameter("_id", id));
+        return await ExecuteCommand(sb.ToString(), [.. param.Values], cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -516,7 +533,7 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
         }
         else
         {
-            return dbObjDef.HistoryDbObject.GetPostgresDefinition(useHistory: useHistory);
+            return dbObjDef.BaseDbObject.GetPostgresDefinition(useHistory: useHistory);
         }
     }
 

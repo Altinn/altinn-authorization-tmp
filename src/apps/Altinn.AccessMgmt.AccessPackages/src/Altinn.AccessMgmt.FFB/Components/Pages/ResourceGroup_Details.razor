@@ -1,0 +1,68 @@
+﻿@page "/resourcegroup/{Id:guid}"
+@inject IResourceGroupService resourceGroupService
+@inject IResourceService resourceService
+
+@if (ResourceGroup != null)
+{
+    <PageTitle>@ResourceGroup.Name</PageTitle>
+
+    <PageHeader>
+        <LeftContent>
+            <BreadcrumbContainer>
+                <BreadcrumbItem Url=@($"/provider/{ResourceGroup.Provider.Id}")>@ResourceGroup.Provider.Name</BreadcrumbItem>
+            </BreadcrumbContainer>
+            <H1>@ResourceGroup.Name</H1>
+        </LeftContent>
+        <RightContent>
+        </RightContent>
+    </PageHeader>
+
+    <Grid Medium="2">
+        @if (Resources != null && Resources.Any())
+        {
+            <div>
+                <H2>Ressurser</H2>
+                <SimpleTable>
+                    <Head>
+                        <SimpleTableRow IsHeaderRow>
+                            <th>Navn</th>
+                            <th>Type</th>
+                            <th>Beskrivelse</th>
+                            <th>RefId</th>
+                        </SimpleTableRow>
+                    </Head>
+                    <Body>
+                        @foreach (var resource in Resources)
+                        {
+                            <SimpleTableRow>
+                                <td><a href=@($"/resource/{resource.Id}")>@resource.Name</a></td>
+                                <td>@resource.Type.Name</td>
+                                <td>@resource.Description</td>
+                                <td>@resource.RefId</td>
+                            </SimpleTableRow>
+                        }
+                    </Body>
+                </SimpleTable>
+            </div>
+        }
+    </Grid>
+
+}
+
+@code {
+
+    [Parameter] public Guid Id { get; set; }
+    public ExtResourceGroup ResourceGroup { get; set; }
+    public IEnumerable<ExtResource> Resources { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var opt = UserData.GetRequestOptions();
+
+        ResourceGroup = await resourceGroupService.GetExtended(Id, options: opt);
+        if (ResourceGroup != null)
+        {
+            Resources = await resourceService.GetExtended(t => t.GroupId, ResourceGroup.Id, options: opt);
+        }
+    }
+}

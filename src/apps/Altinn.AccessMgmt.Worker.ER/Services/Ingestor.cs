@@ -458,19 +458,19 @@ public class Ingestor(IOptions<BrRegConfig> config, IEntityService entityService
     {
         Console.WriteLine("Loading cache...");
 
-        CacheEntityType = [.. await EntityTypeService.Repo.Get()];
+        CacheEntityType = [.. await EntityTypeService.Get()];
         ////BrregIngestMetrics.EntityTypeCacheCounter.Add(CacheEntityType.Count);
 
-        CacheEntityVariant = [.. await EntityVariantService.Repo.Get()];
+        CacheEntityVariant = [.. await EntityVariantService.Get()];
         ////BrregIngestMetrics.EntityVariantCacheCounter.Add(CacheEntityVariant.Count);
 
-        CacheRole = [.. await RoleService.Repo.Get()];
+        CacheRole = [.. await RoleService.Get()];
         ////BrregIngestMetrics.RoleCacheCounter.Add(CacheRole.Count);
 
-        CacheAssignment = [.. await AssignmentService.Repo.Get()];
+        CacheAssignment = [.. await AssignmentService.Get()];
         ////BrregIngestMetrics.AssignmentCacheCounter.Add(CacheAssignment.Count);
 
-        var res = await EntityService.Repo.Get();
+        var res = await EntityService.Get();
         EntityIdCache = res.ToDictionary(k => k.RefId, v => v.Id);
         ////BrregIngestMetrics.EntityIdCacheCounter.Add(EntityIdCache.Count);
 

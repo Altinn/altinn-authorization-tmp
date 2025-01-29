@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
 using Altinn.AccessMgmt.AccessPackages.Repo.Ingest.RagnhildModel;
+using Altinn.AccessMgmt.AccessPackages.Repo.Mock;
 using Altinn.AccessMgmt.DbAccess.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess.Data.Models;
 using Altinn.AccessMgmt.Models;
@@ -149,7 +150,68 @@ public class JsonIngestFactory
             result.Add(await IngestData<EntityVariantRole, IEntityVariantRoleService>(entityVariantRoleService, cancellationToken));
         }
 
+        try
+        {
+            await TempRolePackageFix();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+
         return result;
+    }
+
+    private async Task TempRolePackageFix()
+    {
+        var allareas = await areaService.Get();
+        var allpackages = await packageService.Get();
+        var allroles = await roleService.Get();
+
+        var regnArea = allareas.First(t => t.Name == "Fullmakter for regnskapsfører");
+        var reviArea = allareas.First(t => t.Name == "Fullmakter for revisor");
+        var bobeArea = allareas.First(t => t.Name == "Fullmakter for konkursbo");
+
+        var regnRole = allroles.First(t => t.Code.ToLower() == "regn");
+        var reviRole = allroles.First(t => t.Code.ToLower() == "revi");
+        var bobeRole = allroles.First(t => t.Code.ToLower() == "bobe");
+
+        var regnPackages = allpackages.Where(t => t.AreaId == regnArea.Id);
+        var reviPackages = allpackages.Where(t => t.AreaId == reviArea.Id);
+        var bobePackages = allpackages.Where(t => t.AreaId == bobeArea.Id);
+
+        var rolePackCache = await rolePackageService.Get();
+
+        await MapPackagesToRole(regnRole, regnPackages);
+        await MapPackagesToRole(reviRole, reviPackages);
+        await MapPackagesToRole(bobeRole, bobePackages);
+
+        async Task MapPackagesToRole(Role role, IEnumerable<Package> packages)
+        {
+            foreach (var pck in packages)
+            {
+                if (rolePackCache.Count(t => t.PackageId == pck.Id && t.RoleId == regnRole.Id) > 0)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    await rolePackageService.Create(new RolePackage()
+                    {
+                        Id = Guid.NewGuid(),
+                        HasAccess = true,
+                        CanDelegate = true,
+                        PackageId = pck.Id,
+                        RoleId = role.Id,
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to map package to role. {pck.Name} => {role.Name}");
+                }
+            }
+        }
     }
 
     private async Task<IngestResult> IngestData<T, TService>(TService service, CancellationToken cancellationToken)
@@ -244,10 +306,18 @@ public class JsonIngestFactory
 
         foreach (var rolePackage in metaRolePackages)
         {
-            uniquePackages.TryAdd(rolePackage.Tilgangspakke, allpackages.First(x => x.Name == rolePackage.Tilgangspakke).Id);
-            foreach (var role in rolePackage.Enhetsregisterroller)
+            try
             {
-                uniqueRoles.TryAdd(role, allroles.First(x => x.Name.ToLower() == role.ToLower()).Id);
+                uniquePackages.TryAdd(rolePackage.Tilgangspakke, allpackages.First(x => x.Name == rolePackage.Tilgangspakke).Id);
+                foreach (var role in rolePackage.Enhetsregisterroller)
+                {
+                    uniqueRoles.TryAdd(role, allroles.First(x => x.Name.ToLower() == role.ToLower()).Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {rolePackage.Name}");
+                Console.WriteLine(ex.Message);
             }
         }
 
@@ -255,14 +325,22 @@ public class JsonIngestFactory
         {
             foreach (var role in rolePackage.Enhetsregisterroller)
             {
-                rolePackages.Add(new RolePackage
+                try
                 {
-                    Id = Guid.NewGuid(),
-                    PackageId = uniquePackages[rolePackage.Tilgangspakke],
-                    RoleId = uniqueRoles[role],
-                    HasAccess = rolePackage.HarTilgang,
-                    CanDelegate = rolePackage.Delegerbar,
-                });
+                    rolePackages.Add(new RolePackage
+                    {
+                        Id = Guid.NewGuid(),
+                        PackageId = uniquePackages[rolePackage.Tilgangspakke],
+                        RoleId = uniqueRoles[role],
+                        HasAccess = rolePackage.HarTilgang,
+                        CanDelegate = rolePackage.Delegerbar,
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {rolePackage.Name} - {role}");
+                    Console.WriteLine(ex.Message);
+                }
             }
         }
 
