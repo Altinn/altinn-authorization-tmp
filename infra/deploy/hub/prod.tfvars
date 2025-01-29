@@ -8,8 +8,7 @@ client_certs = [
   "andreasisnes",
   "github",
 ]
-
-spoke_principals_ids = [
+spoke_principal_ids = [
   "6eaed23e-df7f-4708-9c8e-a7f34deeadb4" # GitHub: altinn/altinn-authorization-tmp - Dev
 ]
 maintainers_principal_ids = [
