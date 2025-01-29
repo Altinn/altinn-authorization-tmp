@@ -10,13 +10,13 @@ client_certs = [
 ]
 
 spoke_principals_ids = [
-  "6eaed23e-df7f-4708-9c8e-a7f34deeadb4"  # GitHub: altinn/altinn-authorization-tmp - Dev
+  "6eaed23e-df7f-4708-9c8e-a7f34deeadb4" # GitHub: altinn/altinn-authorization-tmp - Dev
 ]
 maintainers_principal_ids = [
-  "3863fbc0-a24b-42bf-af3d-f45111814457" # Altinn Product Authorization: Admins Prod
+  "3863fbc0-a24b-42bf-af3d-f45111814457", # Altinn Product Authorization: Admins Prod
   "48587eaa-8f33-43ed-a0c3-108c3681e84b", # ai-prod
   "be1a510a-db1e-473c-a73a-558cdb68e353", # ai-dev
-  "a9585a64-20f0-4d18-aba6-9930f92b809c", # GitHub: altinn/altinn-authorization-tmp - Prod
+  "a9585a64-20f0-4d18-aba6-9930f92b809c"  # GitHub: altinn/altinn-authorization-tmp - Prod
 ]
 developer_dev_principal_ids = [
   "6d54df21-3547-41a2-8d0d-529fad054807" # Altinn Product Authorization: Developers Dev
