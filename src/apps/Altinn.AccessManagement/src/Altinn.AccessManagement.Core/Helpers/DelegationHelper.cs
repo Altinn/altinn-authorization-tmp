@@ -696,6 +696,11 @@ namespace Altinn.AccessManagement.Core.Helpers
             type = UuidType.NotSpecified;
             int counter = 0;
 
+            if (performer == null)
+            {
+                return false;
+            }   
+
             foreach (AttributeMatch match in performer)
             {
                 counter++;
