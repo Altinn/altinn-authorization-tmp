@@ -338,7 +338,7 @@ public class JsonIngestFactory
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: {rolePackage.Name} - {role}");
+                    Console.WriteLine($"Error: {rolePackage.Tilgangspakke} - {role}");
                     Console.WriteLine(ex.Message);
                 }
             }
@@ -360,9 +360,9 @@ public class JsonIngestFactory
     private async Task<List<IngestResult>> IngestAreasAndPackages(CancellationToken cancellationToken = default)
     {
         var ingestResult = new List<IngestResult>();
-        var result = await ReadAndSplitAreasAndPackagesJson();
-        var resultEng = await ReadAndSplitAreasAndPackagesJson("eng");
-        var resultNno = await ReadAndSplitAreasAndPackagesJson("nno");
+        var result = await ReadAndSplitAreasAndPackagesJson2();
+        var resultEng = await ReadAndSplitAreasAndPackagesJson2("eng");
+        var resultNno = await ReadAndSplitAreasAndPackagesJson2("nno");
 
         var areaGroupItems = new Dictionary<string, List<AreaGroup>>
         {
@@ -382,7 +382,7 @@ public class JsonIngestFactory
             { "eng", resultEng.PackageItems }
         };
 
-        ingestResult.Add(await IngestData(areaGroupService, result.AreaGroupItems, areaGroupItems, cancellationToken));
+     ingestResult.Add(await IngestData(areaGroupService, result.AreaGroupItems, areaGroupItems, cancellationToken));
         ingestResult.Add(await IngestData(areaService, result.AreaItems, areaItems, cancellationToken));
         ingestResult.Add(await IngestData(packageService, result.PackageItems, packageItems, cancellationToken));
         return ingestResult;
@@ -413,10 +413,10 @@ public class JsonIngestFactory
                 Description = meta.Description,
 
                 // TODO: Extend model to store EntityTypeId with refrence to EntityType
-                // EntityTypeId = (await entityTypeService.Get(t => t.Name, meta.Type)).First(),
+                EntityTypeId = (await entityTypeService.Get(t => t.Name, meta.Type)).First().Id,
 
                 // TODO: If needed; extend model to store Urn
-                // Urn = meta.Urn,
+                Urn = meta.Urn,
             });
 
             if (meta.Areas != null)
@@ -432,7 +432,7 @@ public class JsonIngestFactory
                         IconName = area.Icon,
 
                         // TODO: If needed; extend model to store Urn
-                        // Urn = area.Urn,
+                        Urn = area.Urn,
                     });
 
                     if (area.Packages != null)
@@ -451,7 +451,7 @@ public class JsonIngestFactory
                                 HasResources = true,
 
                                 // TODO: Extend model to store Urn
-                                // Urn = package.Urn,
+                                Urn = package.Urn,
                             });
                         }
                     }

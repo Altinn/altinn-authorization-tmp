@@ -29,6 +29,11 @@ public class Area
     /// GroupId
     /// </summary>
     public Guid GroupId { get; set; }
+
+    /// <summary>
+    /// Urn
+    /// </summary>
+    public string Urn { get; set; }
 }
 
 /// <summary>

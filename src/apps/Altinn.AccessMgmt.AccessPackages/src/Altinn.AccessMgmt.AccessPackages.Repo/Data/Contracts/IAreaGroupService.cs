@@ -4,4 +4,4 @@ using Altinn.AccessMgmt.Models;
 namespace Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
 
 /// <inheritdoc/>
-public interface IAreaGroupService : IDbBasicDataService<AreaGroup> { }
+public interface IAreaGroupService : IDbExtendedDataService<AreaGroup, ExtAreaGroup> { }

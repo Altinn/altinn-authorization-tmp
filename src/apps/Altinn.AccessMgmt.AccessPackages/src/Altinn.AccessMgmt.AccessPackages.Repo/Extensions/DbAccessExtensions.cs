@@ -212,7 +212,7 @@ public static class DbAccessExtensions
     {
         services.AddSingleton<IDbBasicRepo<WorkerConfig>, PostgresBasicRepo<WorkerConfig>>();
         services.AddSingleton<IDbExtendedRepo<Area, ExtArea>, PostgresExtendedRepo<Area, ExtArea>>();
-        services.AddSingleton<IDbBasicRepo<AreaGroup>, PostgresBasicRepo<AreaGroup>>();
+        services.AddSingleton<IDbExtendedRepo<AreaGroup, ExtAreaGroup>, PostgresExtendedRepo<AreaGroup, ExtAreaGroup>>();
         services.AddSingleton<IDbExtendedRepo<Assignment, ExtAssignment>, PostgresExtendedRepo<Assignment, ExtAssignment>>();
         services.AddSingleton<IDbExtendedRepo<AssignmentPackage, ExtAssignmentPackage>, PostgresExtendedRepo<AssignmentPackage, ExtAssignmentPackage>>();
         services.AddSingleton<IDbExtendedRepo<AssignmentResource, ExtAssignmentResource>, PostgresExtendedRepo<AssignmentResource, ExtAssignmentResource>>();
@@ -251,7 +251,7 @@ public static class DbAccessExtensions
     {
         services.AddSingleton<IDbBasicRepo<WorkerConfig>, SqlBasicRepo<WorkerConfig>>();
         services.AddSingleton<IDbExtendedRepo<Area, ExtArea>, SqlExtendedRepo<Area, ExtArea>>();
-        services.AddSingleton<IDbBasicRepo<AreaGroup>, SqlBasicRepo<AreaGroup>>();
+        services.AddSingleton<IDbExtendedRepo<AreaGroup, ExtAreaGroup>, SqlExtendedRepo<AreaGroup, ExtAreaGroup>>();
         services.AddSingleton<IDbExtendedRepo<Assignment, ExtAssignment>, SqlExtendedRepo<Assignment, ExtAssignment>>();
         services.AddSingleton<IDbExtendedRepo<AssignmentPackage, ExtAssignmentPackage>, SqlExtendedRepo<AssignmentPackage, ExtAssignmentPackage>>();
         services.AddSingleton<IDbExtendedRepo<AssignmentResource, ExtAssignmentResource>, SqlExtendedRepo<AssignmentResource, ExtAssignmentResource>>();

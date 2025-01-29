@@ -44,6 +44,11 @@ public class Package
     /// Has resources
     /// </summary>
     public bool HasResources { get; set; }
+
+    /// <summary>
+    /// Urn
+    /// </summary>
+    public string Urn { get; set; }
 }
 
 /// <summary>

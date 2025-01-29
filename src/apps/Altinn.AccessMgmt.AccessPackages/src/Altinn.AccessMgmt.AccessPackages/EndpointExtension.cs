@@ -18,7 +18,7 @@ public static class EndpointExtension
     /// <returns></returns>
     public static WebApplication MapDbAccessEndpoints(this WebApplication app)
     {
-        app.MapDefaults<IAreaGroupService, AreaGroup>();
+        app.MapDefaultsExt<IAreaGroupService, AreaGroup, ExtAreaGroup>();
         app.MapDefaultsExt<IAreaService, Area, ExtArea>();
         app.MapDefaultsExt<IAssignmentService, Assignment, ExtAssignment>(mapGetAll: false);
         app.MapDefaultsExt<IAssignmentPackageService, AssignmentPackage, ExtAssignmentPackage>(mapGetAll: false);

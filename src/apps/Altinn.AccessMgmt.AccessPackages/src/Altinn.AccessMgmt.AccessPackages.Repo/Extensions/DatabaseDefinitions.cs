@@ -28,7 +28,7 @@ public class DatabaseDefinitions
         DbDefinitions.Add<WorkerConfig>(Config, useTranslation: false, useHistory: false);
 
         DbDefinitions.Add<Area, ExtArea>(Config, useTranslation: true, useHistory: true);
-        DbDefinitions.Add<AreaGroup>(Config, useTranslation: true, useHistory: true);
+        DbDefinitions.Add<AreaGroup, ExtAreaGroup>(Config, useTranslation: true, useHistory: true);
 
         DbDefinitions.Add<Entity, ExtEntity>(Config, useTranslation: false, useHistory: true);
         DbDefinitions.Add<EntityType, ExtEntityType>(Config, useTranslation: true, useHistory: true);
