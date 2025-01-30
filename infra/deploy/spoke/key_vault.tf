@@ -31,24 +31,24 @@ resource "azurerm_role_assignment" "key_vault_administrator" {
 }
 
 # Private Endpoint for Key Vault
-# resource "azurerm_private_endpoint" "key_vault" {
-#   name                          = "pepkv${local.suffix}"
-#   resource_group_name           = azurerm_resource_group.spoke.name
-#   location                      = azurerm_resource_group.spoke.location
-#   subnet_id                     = azurerm_subnet.dual_stack["Default"].id
-#   custom_network_interface_name = "nickv${local.suffix}"
+resource "azurerm_private_endpoint" "key_vault" {
+  name                          = "pepkv${local.suffix}"
+  resource_group_name           = azurerm_resource_group.spoke.name
+  location                      = azurerm_resource_group.spoke.location
+  subnet_id                     = azurerm_subnet.dual_stack["Default"].id
+  custom_network_interface_name = "nickv${local.suffix}"
 
-#   private_dns_zone_group {
-#     name                 = "privatelink.vaultcore.azure.net"
-#     private_dns_zone_ids = [data.azurerm_private_dns_zone.key_vault.id]
-#   }
+  private_dns_zone_group {
+    name                 = "privatelink.vaultcore.azure.net"
+    private_dns_zone_ids = [data.azurerm_private_dns_zone.key_vault.id]
+  }
 
-#   private_service_connection {
-#     name                           = azurerm_key_vault.key_vault.name
-#     private_connection_resource_id = azurerm_key_vault.key_vault.id
-#     is_manual_connection           = false
-#     subresource_names              = ["vault"]
-#   }
+  private_service_connection {
+    name                           = azurerm_key_vault.key_vault.name
+    private_connection_resource_id = azurerm_key_vault.key_vault.id
+    is_manual_connection           = false
+    subresource_names              = ["vault"]
+  }
 
-#   tags = merge({}, local.default_tags)
-# }
+  tags = merge({}, local.default_tags)
+}
