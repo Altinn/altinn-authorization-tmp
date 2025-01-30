@@ -9,10 +9,6 @@ terraform {
       version = "0.1.0"
     }
   }
-
-  backend "azurerm" {
-    use_azuread_auth = true
-  }
 }
 
 provider "azurerm" {
@@ -34,9 +30,10 @@ locals {
   suffix     = lower("${var.organization}${var.product_name}${var.instance}${var.environment}")
   repo       = "altinn-authorization-tmp"
 
-  ipv4_cidr_prefix = tonumber(split("/", var.single_stack_ipv4_address_space)[1])
-  ipv6_cidr_prefix = tonumber(split("/", var.dual_stack_ipv6_address_space)[1])
-  ipv6_bits        = 64 - local.ipv6_cidr_prefix
+  ipv4_single_stack_prefix    = tonumber(split("/", var.single_stack_ipv4_address_space)[1])
+  ipv4_dual_stack_cidr_prefix = tonumber(split("/", var.dual_stack_ipv4_address_space)[1])
+  ipv6_cidr_prefix            = tonumber(split("/", var.dual_stack_ipv6_address_space)[1])
+  ipv6_bits                   = 64 - local.ipv6_cidr_prefix
 
   default_tags = {
     ProductName = var.product_name
@@ -49,24 +46,24 @@ locals {
     {
       name         = "Default"
       include_ipv6 = true
-      ipv4_bits    = 22 - local.ipv4_cidr_prefix
+      ipv4_bits    = 22 - local.ipv4_dual_stack_cidr_prefix
     },
     {
       name         = "Aks"
       include_ipv6 = true
-      ipv4_bits    = 22 - local.ipv4_cidr_prefix
+      ipv4_bits    = 22 - local.ipv4_dual_stack_cidr_prefix
     },
     {
       name         = "ServiceBus"
       include_ipv6 = true
-      ipv4_bits    = 25 - local.ipv4_cidr_prefix
+      ipv4_bits    = 25 - local.ipv4_dual_stack_cidr_prefix
     }
   ]
 
   single_stack_subnets = [
     {
       name      = "Postgres"
-      ipv4_bits = 22 - local.ipv4_cidr_prefix
+      ipv4_bits = 22 - local.ipv4_single_stack_prefix
       service_endpoint = [
         "Microsoft.Storage"
       ]
@@ -206,10 +203,6 @@ resource "azurerm_subnet" "single_stack" {
   service_endpoints = try(each.value.service_endpoint, [])
 
   for_each = { for subnet in local.single_stack_subnets : subnet.name => subnet }
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "azurerm_subnet" "dual_stack" {
@@ -237,10 +230,6 @@ resource "azurerm_subnet" "dual_stack" {
   service_endpoints = try(each.value.service_endpoint, [])
 
   for_each = { for subnet in local.dual_stack_subnets : subnet.name => subnet if try(subnet.create, false) }
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "azurerm_route_table" "forced_tunneling" {
