@@ -11,7 +11,7 @@ public static class WebApplicationBuilderExtensions
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="configureOptions"></param>
-    public static IHostApplicationBuilder UseAltinnRegister(this IHostApplicationBuilder builder, Action<AltinnRegisterOptions> configureOptions)
+    public static IHostApplicationBuilder AddAltinnRegister(this IHostApplicationBuilder builder, Action<AltinnRegisterOptions> configureOptions)
     {
         builder.Services.AddHttpClient(RegisterClient.HttpClientName, cfg =>
         {
@@ -19,6 +19,8 @@ public static class WebApplicationBuilderExtensions
             var options = new AltinnRegisterOptions(configureOptions);
             cfg.BaseAddress = new Uri(options.Endpoint);
         });
+
+        builder.Services.AddSingleton<IAltinnRegister, RegisterClient>();
 
         return builder;
     }

@@ -26,7 +26,7 @@ public static class AltinnLease
 
     private static Action ConfigureAltinnLease(IServiceCollection services, AltinnLeaseOptions options) => options.Type switch
     {
-        AltinnLeaseType.InMemory => () => ConfigureAltinnLeaseInMemory(services),
+        AltinnLeaseType.OptimisticLease => () => ConfigureAltinnOptimisticLease(services),
         AltinnLeaseType.AzureStorageAccount => () => ConfigureAltinnLeaseAzureStorageAccount(services, options),
         _ => throw new InvalidOperationException(""),
     };
@@ -35,7 +35,7 @@ public static class AltinnLease
     /// 
     /// </summary>
     /// <param name="services"></param>
-    public static void ConfigureAltinnLeaseInMemory(IServiceCollection services)
+    public static void ConfigureAltinnOptimisticLease(IServiceCollection services)
     {
         services.AddSingleton<IAltinnLease, OptimisticLease>();
     }

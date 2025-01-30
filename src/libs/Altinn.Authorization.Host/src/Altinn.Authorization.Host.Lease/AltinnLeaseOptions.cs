@@ -27,7 +27,7 @@ public enum AltinnLeaseType
     /// <summary>
     /// In memory transport. Only used for testing.
     /// </summary>
-    InMemory = default,
+    OptimisticLease = default,
 
     /// <summary>
     /// Azure Storage Account.

@@ -51,7 +51,7 @@ public partial class RegisterClient : IAltinnRegister
 
     private HttpRequestMessage NewStreamRequest(string nextPage, IEnumerable<string> fields)
     {
-        if (fields.Distinct().All(_availableFields.Contains))
+        if (!fields.Distinct().All(_availableFields.Contains))
         {
             throw new ArgumentException("Some or all provided fields is not retrievable from register", nameof(fields));
         }

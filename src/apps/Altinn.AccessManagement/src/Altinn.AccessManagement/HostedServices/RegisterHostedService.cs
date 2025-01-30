@@ -84,7 +84,7 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
 
         try
         {
-            await foreach (var page in await _register.Stream(lease.Data.NextPageLink, _registerFields, cancellationToken))
+            await foreach (var page in await _register.Stream(lease?.Data?.NextPageLink, _registerFields, cancellationToken))
             {
                 foreach (var item in page.Items)
                 {
