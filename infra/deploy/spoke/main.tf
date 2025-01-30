@@ -53,11 +53,6 @@ locals {
       ipv4_bits    = 22 - local.ipv4_dual_stack_cidr_prefix
     },
     {
-      name         = "Aks"
-      include_ipv6 = true
-      ipv4_bits    = 22 - local.ipv4_dual_stack_cidr_prefix
-    },
-    {
       name         = "ServiceBus"
       include_ipv6 = true
       ipv4_bits    = 25 - local.ipv4_dual_stack_cidr_prefix
@@ -122,11 +117,7 @@ resource "azurerm_virtual_network" "dual_stack" {
 
   dns_servers = [var.firewall_private_ipv4]
 
-  tags = merge(
-    { for subnet in local.dual_stack_subnets : "${subnet.name}IPv4" => module.subnet_ipv4_dual_stack.networks[index(module.subnet_ipv4_dual_stack.networks.*.name, subnet.name)].cidr_block },
-    { for subnet in local.dual_stack_subnets : "${subnet.name}IPv6" => module.subnet_ipv6_dual_stack.networks[index(module.subnet_ipv6_dual_stack.networks.*.name, subnet.name)].cidr_block if try(local.dual_stack_subnets[index(local.dual_stack_subnets.*.name, subnet.name)].include_ipv6, false) },
-    local.default_tags
-  )
+  tags = merge({}, local.default_tags)
 
   lifecycle {
     prevent_destroy = true
@@ -143,10 +134,7 @@ resource "azurerm_virtual_network" "single_stack" {
 
   dns_servers = [var.firewall_private_ipv4]
 
-  tags = merge(
-    { for subnet in local.single_stack_subnets : "${subnet.name}IPv4" => module.subnet_ipv4_single_stack.networks[index(module.subnet_ipv4_single_stack.networks.*.name, subnet.name)].cidr_block },
-    local.default_tags
-  )
+  tags = merge({}, local.default_tags)
 
   lifecycle {
     prevent_destroy = true
@@ -233,7 +221,7 @@ resource "azurerm_subnet" "dual_stack" {
 
   service_endpoints = try(each.value.service_endpoint, [])
 
-  for_each = { for subnet in local.dual_stack_subnets : subnet.name => subnet if try(subnet.create, false) }
+  for_each = { for subnet in local.dual_stack_subnets : subnet.name => subnet }
 }
 
 resource "azurerm_route_table" "forced_tunneling" {
