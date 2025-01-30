@@ -50,19 +50,16 @@ locals {
       name         = "Default"
       include_ipv6 = true
       ipv4_bits    = 22 - local.ipv4_cidr_prefix
-      create       = true
     },
     {
       name         = "Aks"
       include_ipv6 = true
       ipv4_bits    = 22 - local.ipv4_cidr_prefix
-      create       = false
     },
     {
       name         = "ServiceBus"
       include_ipv6 = true
       ipv4_bits    = 25 - local.ipv4_cidr_prefix
-      create       = true
     }
   ]
 
@@ -70,7 +67,6 @@ locals {
     {
       name      = "Postgres"
       ipv4_bits = 22 - local.ipv4_cidr_prefix
-      create    = true
       service_endpoint = [
         "Microsoft.Storage"
       ]
@@ -209,7 +205,7 @@ resource "azurerm_subnet" "single_stack" {
 
   service_endpoints = try(each.value.service_endpoint, [])
 
-  for_each = { for subnet in local.single_stack_subnets : subnet.name => subnet if try(subnet.create, false) }
+  for_each = { for subnet in local.single_stack_subnets : subnet.name => subnet }
 
   lifecycle {
     prevent_destroy = true
@@ -334,16 +330,16 @@ resource "azurerm_federated_identity_credential" "admin" {
   subject  = "repo:Altinn/${local.repo}:environment:${var.environment}"
 }
 
-resource "azurerm_management_lock" "delete" {
-  name       = "Terraform"
-  scope      = each.value
-  lock_level = "CanNotDelete"
-  notes      = "Terraform Managed Lock"
+# resource "azurerm_management_lock" "delete" {
+#   name       = "Terraform"
+#   scope      = each.value
+#   lock_level = "CanNotDelete"
+#   notes      = "Terraform Managed Lock"
 
-  for_each = { for lock in [
-    azurerm_servicebus_namespace.service_bus,
-    azurerm_key_vault.key_vault,
-    azurerm_log_analytics_workspace.telemetry,
-    azurerm_application_insights.telemetry,
-  ] : lock.name => lock.id }
-}
+#   for_each = { for lock in [
+#     azurerm_servicebus_namespace.service_bus,
+#     azurerm_key_vault.key_vault,
+#     azurerm_log_analytics_workspace.telemetry,
+#     azurerm_application_insights.telemetry,
+#   ] : lock.name => lock.id }
+# }
