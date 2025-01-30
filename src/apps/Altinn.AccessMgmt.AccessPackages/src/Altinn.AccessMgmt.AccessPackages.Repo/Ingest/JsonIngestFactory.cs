@@ -360,9 +360,9 @@ public class JsonIngestFactory
     private async Task<List<IngestResult>> IngestAreasAndPackages(CancellationToken cancellationToken = default)
     {
         var ingestResult = new List<IngestResult>();
-        var result = await ReadAndSplitAreasAndPackagesJson2();
-        var resultEng = await ReadAndSplitAreasAndPackagesJson2("eng");
-        var resultNno = await ReadAndSplitAreasAndPackagesJson2("nno");
+        var result = await ReadAndSplitAreasAndPackagesJson();
+        var resultEng = await ReadAndSplitAreasAndPackagesJson("eng");
+        var resultNno = await ReadAndSplitAreasAndPackagesJson("nno");
 
         var areaGroupItems = new Dictionary<string, List<AreaGroup>>
         {
@@ -388,20 +388,19 @@ public class JsonIngestFactory
         return ingestResult;
     }
 
-    private async Task<(List<AreaGroup> AreaGroupItems, List<Area> AreaItems, List<Package> PackageItems)> ReadAndSplitAreasAndPackagesJson2(string language = "")
+    private async Task<(List<AreaGroup> AreaGroupItems, List<Area> AreaItems, List<Package> PackageItems)> ReadAndSplitAreasAndPackagesJson(string language = "")
     {
         List<AreaGroup> areaGroups = [];
         List<Area> areas = [];
         List<Package> packages = [];
 
         // TODO: Check if this should be in json data
-        var entityType = (await entityTypeService.Get(t => t.Name, "Organisasjon")).First() ?? throw new Exception("Unable to fint 'Organisasjon' entityType");
+        var entityType = (await entityTypeService.Get(t => t.Name, "Organisasjon")).First() ?? throw new Exception("Unable to find 'Organisasjon' entityType");
 
         // TODO: Check if this should be in json data
-        var provider = (await providerService.Get(t => t.Name, "Digdir")).First() ?? throw new Exception("Unable to fint 'Digdir' provider");
+        var provider = (await providerService.Get(t => t.Name, "Digdir")).First() ?? throw new Exception("Unable to find 'Digdir' provider");
 
-        // TODO: Rename file to AreaAndPackages.json
-        var jsonData = await ReadJsonData("All", language);
+        var jsonData = await ReadJsonData("AreaAndPackages", language);
         List<MetaAreaGroup> metaAreaGroups = [.. JsonSerializer.Deserialize<List<MetaAreaGroup>>(jsonData, options: new JsonSerializerOptions() { PropertyNameCaseInsensitive = true })];
 
         foreach (var meta in metaAreaGroups)
@@ -411,11 +410,7 @@ public class JsonIngestFactory
                 Id = meta.Id,
                 Name = meta.Name,
                 Description = meta.Description,
-
-                // TODO: Extend model to store EntityTypeId with refrence to EntityType
                 EntityTypeId = (await entityTypeService.Get(t => t.Name, meta.Type)).First().Id,
-
-                // TODO: If needed; extend model to store Urn
                 Urn = meta.Urn,
             });
 
@@ -430,8 +425,6 @@ public class JsonIngestFactory
                         Description = area.Description,
                         GroupId = meta.Id,
                         IconName = area.Icon,
-
-                        // TODO: If needed; extend model to store Urn
                         Urn = area.Urn,
                     });
 
@@ -449,109 +442,12 @@ public class JsonIngestFactory
                                 ProviderId = provider.Id,
                                 IsDelegable = true,
                                 HasResources = true,
-
-                                // TODO: Extend model to store Urn
                                 Urn = package.Urn,
                             });
                         }
                     }
                 }
             }
-        }
-
-        return (areaGroups, areas, packages);
-    }
-
-    private async Task<(List<AreaGroup> AreaGroupItems, List<Area> AreaItems, List<Package> PackageItems)> ReadAndSplitAreasAndPackagesJson(string language = "")
-    {
-        var jsonData = await ReadJsonData("All", language);
-        List<MetaAreaGroup> metaAreaGroups = [.. JsonSerializer.Deserialize<List<MetaAreaGroup>>(jsonData, options: new JsonSerializerOptions() { PropertyNameCaseInsensitive = true })];
-        List<MetaAreaGroup> metaAreaGroupsList = new List<MetaAreaGroup>();
-        List<MetaArea> metaAreaList = new List<MetaArea>();
-        List<MetaPackage> metaPackagesList = new List<MetaPackage>();
-
-        foreach (var areaGroup in metaAreaGroups)
-        {
-            MetaAreaGroup newAreaGroup = new MetaAreaGroup
-            {
-                Id = areaGroup.Id,
-                Name = areaGroup.Name,
-                Description = areaGroup.Description,
-                Type = areaGroup.Type,
-                Urn = areaGroup.Urn,
-                Areas = areaGroup.Areas,
-            };
-
-            metaAreaGroupsList.Add(newAreaGroup);
-
-            foreach (var area in areaGroup.Areas)
-            {
-                MetaArea newArea = new MetaArea
-                {
-                    Id = area.Id,
-                    Name = area.Name,
-                    Description = area.Description,
-                    Icon = area.Icon,
-                    AreaGroup = area.AreaGroup,
-                    Packages = area.Packages,
-                };
-
-                metaAreaList.Add(newArea);
-
-                foreach (var package in area.Packages)
-                {
-                    MetaPackage newPackage = new MetaPackage
-                    {
-                        Id = package.Id,
-                        Urn = package.Urn,
-                        Name = package.Name,
-                        Description = package.Description,
-                        Area = area.Name,
-                    };
-                    metaPackagesList.Add(newPackage);
-                }
-            }
-        }
-
-        var areaGroups = new List<AreaGroup>();
-        var areas = new List<Area>();
-        var packages = new List<Package>();
-
-        foreach (var areaGroup in metaAreaGroupsList)
-        {
-            areaGroups.Add(new AreaGroup
-            {
-                Id = areaGroup.Id,
-                Name = areaGroup.Name,
-                Description = areaGroup.Description,
-            });
-        }
-
-        foreach (var area in metaAreaList)
-        {
-            areas.Add(new Area
-            {
-                Id = area.Id,
-                Name = area.Name,
-                Description = area.Description,
-                IconName = area.Icon,
-                GroupId = areaGroups.First(x => x.Name == area.AreaGroup).Id,
-            });
-        }
-        
-        foreach (var package in metaPackagesList)
-        {
-            packages.Add(new Package
-            {
-                Id = package.Id,
-                Name = package.Name,
-                Description = package.Description,
-                AreaId = areas.First(x => x.Name == package.Area).Id,
-                IsDelegable = true,
-                HasResources = true,
-                EntityTypeId = Guid.Parse("8c216e2f-afdd-4234-9ba2-691c727bb33d"),
-                ProviderId = Guid.Parse("73dfe32a-8f21-465c-9242-40d82e61f320"),
-            });
         }
 
         return (areaGroups, areas, packages);
