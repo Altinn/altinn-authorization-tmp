@@ -103,7 +103,6 @@ public partial class StorageAccountLease(IAzureClientFactory<BlobServiceClient> 
             catch (RequestFailedException ex) when (ex.ErrorCode == "LeaseLost" || ex.ErrorCode == "LeaseAlreadyPresent")
             {
                 Log.FailedToReleaseLease(Logger, ex);
-                return;
             }
         }
     }
@@ -133,19 +132,6 @@ public partial class StorageAccountLease(IAzureClientFactory<BlobServiceClient> 
         }
 
         return lease;
-    }
-
-    private static T Deserialize<T>(Stream content)
-        where T : class
-    {
-        try
-        {
-            return JsonSerializer.Deserialize<T>(content);
-        }
-        catch (JsonException)
-        {
-            return default;
-        }
     }
 
     private async Task CreateEmptyFileIfNotExists<T>(BlobClient client, CancellationToken cancellationToken)

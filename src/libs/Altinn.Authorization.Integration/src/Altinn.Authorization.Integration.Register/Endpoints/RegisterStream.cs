@@ -103,12 +103,12 @@ public partial class RegisterClient : IAltinnRegister
         /// <inheritdoc/>
         public async IAsyncEnumerator<Paginated<PartyModel>> GetAsyncEnumerator(CancellationToken cancellationToken = default)
         {
-            var response = Response;
+            var pageResponse = Response;
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (response.IsSuccessStatusCode)
+                if (pageResponse.IsSuccessStatusCode)
                 {
-                    var content = await response.Content.ReadFromJsonAsync<Paginated<PartyModel>>(cancellationToken);
+                    var content = await pageResponse.Content.ReadFromJsonAsync<Paginated<PartyModel>>(cancellationToken);
                     var nextPage = FetchNextPage(content, cancellationToken);
 
                     if (content.Items.Any())
@@ -116,9 +116,9 @@ public partial class RegisterClient : IAltinnRegister
                         yield return content;
                     }
 
-                    response.Dispose();
-                    response = await nextPage;
-                    if (response == null)
+                    pageResponse.Dispose();
+                    pageResponse = await nextPage;
+                    if (pageResponse == null)
                     {
                         yield break;
                     }

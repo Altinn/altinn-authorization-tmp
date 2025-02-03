@@ -22,37 +22,34 @@ public class InMemoryLease : IAltinnLease
     {
         var leaseLock = GetLock(lease.LeaseName);
         await leaseLock.WaitAsync(cancellationToken);
-        if (lease is InMemoryResult<T> castedLease)
+        try
         {
-            try
+            if (lease.HasLease)
             {
-                if (lease.HasLease)
-                {
-                    _state.AddOrUpdate(
-                        lease.LeaseName,
-                        key => new()
-                        {
-                            Data = data,
-                            AnyHasLease = true
-                        },
-                        (key, existing) =>
-                        {
-                            existing.Data = data;
-                            return existing;
-                        });
-                }
-                else
-                {
-                    throw new InvalidOperationException("Can't update as lease is taken");
-                }
+                _state.AddOrUpdate(
+                    lease.LeaseName,
+                    key => new()
+                    {
+                        Data = data,
+                        AnyHasLease = true
+                    },
+                    (key, existing) =>
+                    {
+                        existing.Data = data;
+                        return existing;
+                    });
+            }
+            else
+            {
+                throw new InvalidOperationException("Can't update as lease is taken");
+            }
 
-                lease.Data = data;
-                return lease;
-            }
-            finally
-            {
-                leaseLock.Release();
-            }
+            lease.Data = data;
+            return lease;
+        }
+        finally
+        {
+            leaseLock.Release();
         }
 
         throw new ArgumentException("invalid partent type of lease", nameof(lease));
@@ -124,10 +121,10 @@ public class InMemoryLease : IAltinnLease
         }
     }
 
-    private class InMemoryLeaseState<T>
+    private sealed class InMemoryLeaseState<T>
     {
         internal bool AnyHasLease { get; set; }
 
-        internal object Data { get; set; }
+        internal T Data { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 using Altinn.Authorization.Integration.Register.Extensions;
+using Altinn.Authorization.Integration.Register.Options;
 using Altinn.Common.AccessTokenClient.Services;
 using Microsoft.Extensions.Options;
 

@@ -82,15 +82,15 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     private async Task SyncRegister(CancellationToken cancellationToken)
     {
-        await using var lease = await _lease.TryAquireNonBlocking<LeaseContent>("access_management_register_sync", cancellationToken);
-        if (!lease.HasLease || cancellationToken.IsCancellationRequested)
+        await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("access_management_register_sync", cancellationToken);
+        if (!ls.HasLease || cancellationToken.IsCancellationRequested)
         {
             return;
         }
 
         try
         {
-            await foreach (var page in await _register.Stream(lease?.Data?.NextPageLink, _registerFields, cancellationToken))
+            await foreach (var page in await _register.Stream(ls.Data?.NextPageLink, _registerFields, cancellationToken))
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -106,14 +106,14 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
 
                 if (!string.IsNullOrEmpty(page.Links.Next))
                 {
-                    await _lease.Put(lease, new() { NextPageLink = page.Links.Next }, cancellationToken);
+                    await _lease.Put(ls, new() { NextPageLink = page.Links.Next }, cancellationToken);
                 }
                 else
                 {
                     return;
                 }
 
-                await _lease.RefreshLease(lease, cancellationToken);
+                await _lease.RefreshLease(ls, cancellationToken);
             }
         }
         catch (Exception ex)
@@ -164,6 +164,7 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     {
         if (disposing)
         {
+            _stop?.Dispose();
             _timer?.Dispose();
         }
     }
