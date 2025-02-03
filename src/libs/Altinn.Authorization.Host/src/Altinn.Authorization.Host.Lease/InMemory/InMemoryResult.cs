@@ -5,7 +5,7 @@ namespace Altinn.Authorization.Host.Lease.InMemory;
 /// This class ensures that leases are properly released when disposed.
 /// </summary>
 /// <typeparam name="T">The type of data being leased.</typeparam>
-public class InMemoryResult<T> : LeaseResult<T>
+internal class InMemoryResult<T> : LeaseResult<T>
     where T : class
 {
     private bool _disposed;
