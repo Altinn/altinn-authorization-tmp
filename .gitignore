@@ -37,10 +37,10 @@ terraform.rc
 
 # MSBuild binlogs
 *.binlog
+*.env
 
 # Visual Studio user specific solution launch file
 /Altinn.Authorization.slnLaunch.user
-src/apps/Altinn.Authorization.AccessPackages/src/Altinn.Authorization.Workers.BrReg/allsubunits
-src/apps/Altinn.Authorization.AccessPackages/src/Altinn.Authorization.Workers.BrReg/allunits
-src/apps/Altinn.AccessMgmt.Worker.ER/allunits
-src/apps/Altinn.AccessMgmt.Worker.ER/allsubunits
+
+# Notes
+*.private

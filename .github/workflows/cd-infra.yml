@@ -2,12 +2,6 @@ name: "CD: Infra"
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - infra/**
-      - .github/workflows/infra-*
 
 permissions:
   id-token: write
@@ -15,38 +9,95 @@ permissions:
   pull-requests: write
 
 jobs:
-  cert:
-    name: Cert
+  hub:
+    name: Hub
     secrets: inherit
-    uses: ./.github/workflows/_deploy-app-terraform.yml
-    strategy:
-      matrix:
-        environment: [at21, at22]
+    uses: ./.github/workflows/_cd-infra-template.yml
     with:
-      environment: ${{ matrix.environment }}
-      tf_state: cert.tfstate
-      working_dir: infra/deploy/cert
+      environment: prod
+      tf_state: hub.tfstate
+      working_dir: infra/deploy/hub
 
-  auth:
-    name: Auth
+  test-spoke:
+    name: Spoke Test
+    needs: hub
     secrets: inherit
-    uses: ./.github/workflows/_deploy-app-terraform.yml
+    uses: ./.github/workflows/_cd-infra-template.yml
     strategy:
+      fail-fast: false
       matrix:
-        environment: [at21, at22]
+        environment: [at22, at23, at24, yt01]
     with:
       environment: ${{ matrix.environment }}
-      tf_state: auth.tfstate
-      working_dir: infra/deploy/auth
+      tf_state: spokes.tfstate
+      working_dir: infra/deploy/spoke
 
-  register:
-    name: Altinn Register
+  test-register:
+    name: Register Test
+    needs: test-spoke
     secrets: inherit
-    uses: ./.github/workflows/_deploy-app-terraform.yml
+    uses: ./.github/workflows/_cd-infra-template.yml
     strategy:
+      fail-fast: false
       matrix:
-        environment: [at21, at22]
+        environment: [at22, at23, at24, yt01]
     with:
       environment: ${{ matrix.environment }}
-      tf_state: Altinn.Register.tfstate
+      tf_state: register.tfstate
+      working_dir: infra/deploy/altinn-register
+
+  staging-spoke:
+    name: Spoke Staging
+    needs: test-spoke
+    secrets: inherit
+    uses: ./.github/workflows/_cd-infra-template.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [tt02]
+    with:
+      environment: ${{ matrix.environment }}
+      tf_state: spokes.tfstate
+      working_dir: infra/deploy/spoke
+
+  staging-register:
+    name: Register Staging
+    needs: staging-spoke
+    secrets: inherit
+    uses: ./.github/workflows/_cd-infra-template.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [tt02]
+    with:
+      environment: ${{ matrix.environment }}
+      tf_state: register.tfstate
+      working_dir: infra/deploy/altinn-register
+
+  prod-spoke:
+    name: Spoke Prod
+    needs: staging-spoke
+    secrets: inherit
+    uses: ./.github/workflows/_cd-infra-template.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [prod]
+    with:
+      environment: ${{ matrix.environment }}
+      tf_state: spokes.tfstate
+      working_dir: infra/deploy/spoke
+
+  prod-register:
+    name: Register Prod
+    needs: prod-spoke
+    secrets: inherit
+    uses: ./.github/workflows/_cd-infra-template.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [prod]
+    with:
+      environment: ${{ matrix.environment }}
+      tf_state: register.tfstate
       working_dir: infra/deploy/altinn-register
