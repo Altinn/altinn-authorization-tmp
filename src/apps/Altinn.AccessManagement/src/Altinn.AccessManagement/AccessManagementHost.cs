@@ -60,7 +60,6 @@ internal static class AccessManagementHost
         builder.ConfigureAuthorization();
 
         // builder.ConfigureHostedServices();
-
         return builder.Build();
     }
 
