@@ -58,7 +58,8 @@ internal static class AccessManagementHost
         builder.ConfigureInternals();
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
-        builder.ConfigureHostedServices();
+
+        // builder.ConfigureHostedServices();
 
         return builder.Build();
     }
