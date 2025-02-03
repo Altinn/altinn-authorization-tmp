@@ -1,11 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
-
         <PackageReference Include="Azure.Identity" />
         <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" />
         <PackageReference Include="Microsoft.Extensions.Options" />
+        <PackageReference Include="Altinn.Authorization.ServiceDefaults" />
+        <PackageReference Include="Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql" />
     </ItemGroup>
 
 </Project>
