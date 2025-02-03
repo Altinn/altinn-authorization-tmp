@@ -47,7 +47,8 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     /// </summary>
     public override void Dispose()
     {
-        Dispose(true);
+        ReleaseLease(true);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -56,14 +57,15 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
     public override async ValueTask DisposeAsync()
     {
-        await DisposeAsyncCore();
+        await ReleaseLeaseAsync();
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
     /// Synchronous disposal logic to release the lease.
     /// </summary>
     /// <param name="disposing">Indicates whether the method was called directly or by the garbage collector.</param>
-    protected virtual void Dispose(bool disposing)
+    protected virtual void ReleaseLease(bool disposing)
     {
         if (_disposed)
         {
@@ -81,7 +83,7 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     /// <summary>
     /// Asynchronous disposal logic to release the lease.
     /// </summary>
-    protected virtual async ValueTask DisposeAsyncCore()
+    protected virtual async ValueTask ReleaseLeaseAsync()
     {
         if (!_disposed)
         {
