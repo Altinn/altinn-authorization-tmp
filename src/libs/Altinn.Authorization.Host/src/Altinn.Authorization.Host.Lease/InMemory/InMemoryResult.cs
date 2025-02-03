@@ -31,7 +31,6 @@ public class InMemoryResult<T> : LeaseResult<T>
     public override void Dispose()
     {
         Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -41,8 +40,6 @@ public class InMemoryResult<T> : LeaseResult<T>
     public override async ValueTask DisposeAsync()
     {
         await DisposeAsyncCore();
-        Dispose(false);
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>

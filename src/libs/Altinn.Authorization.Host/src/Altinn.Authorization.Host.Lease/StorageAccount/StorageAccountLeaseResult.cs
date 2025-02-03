@@ -48,7 +48,6 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     public override void Dispose()
     {
         Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -58,8 +57,6 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     public override async ValueTask DisposeAsync()
     {
         await DisposeAsyncCore();
-        Dispose(false);
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>
