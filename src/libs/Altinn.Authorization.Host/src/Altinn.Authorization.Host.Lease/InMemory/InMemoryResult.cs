@@ -30,32 +30,7 @@ public class InMemoryResult<T> : LeaseResult<T>
     /// </summary>
     public override void Dispose()
     {
-        ReleaseLease(true);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Releases the lease asynchronously when the object is disposed.
-    /// </summary>
-    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
-    public override async ValueTask DisposeAsync()
-    {
-        await ReleaseLeaseAsync();
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Synchronous disposal logic to release the lease.
-    /// </summary>
-    /// <param name="disposing">Indicates whether the method was called directly or by the garbage collector.</param>
-    protected virtual void ReleaseLease(bool disposing)
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        if (disposing)
+        if (!_disposed)
         {
             Implementation.Release(this, default).GetAwaiter().GetResult();
         }
@@ -64,14 +39,16 @@ public class InMemoryResult<T> : LeaseResult<T>
     }
 
     /// <summary>
-    /// Asynchronous disposal logic to release the lease.
+    /// Releases the lease asynchronously when the object is disposed.
     /// </summary>
-    protected virtual async ValueTask ReleaseLeaseAsync()
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    public override async ValueTask DisposeAsync()
     {
         if (!_disposed)
         {
             await Implementation.Release(this, default);
-            _disposed = true;
         }
+
+        _disposed = true;
     }
 }
