@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Lease", "src\Altinn.Authorization.Host.Lease\Altinn.Authorization.Host.Lease.csproj", "{D2DC5CA6-EEA6-47CB-B2FB-FFD1D988C046}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{17369E41-3096-4088-80E2-2EA00C6C2515}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Lease.Tests", "test\Altinn.Authorization.Host.Lease.Tests\Altinn.Authorization.Host.Lease.Tests.csproj", "{D8D50452-74FA-483C-8921-795C11A90881}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,10 +36,15 @@ Global
 		{D2DC5CA6-EEA6-47CB-B2FB-FFD1D988C046}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2DC5CA6-EEA6-47CB-B2FB-FFD1D988C046}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2DC5CA6-EEA6-47CB-B2FB-FFD1D988C046}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8D50452-74FA-483C-8921-795C11A90881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8D50452-74FA-483C-8921-795C11A90881}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8D50452-74FA-483C-8921-795C11A90881}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8D50452-74FA-483C-8921-795C11A90881}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{219C23AC-F260-4E9E-91E8-02964D7670DD} = {FD5ED1A1-71F2-479A-9D19-AEAEB3282AB1}
 		{43633F3A-CF1C-4F24-9D78-BD713177E2E1} = {FD5ED1A1-71F2-479A-9D19-AEAEB3282AB1}
 		{D2DC5CA6-EEA6-47CB-B2FB-FFD1D988C046} = {FD5ED1A1-71F2-479A-9D19-AEAEB3282AB1}
+		{D8D50452-74FA-483C-8921-795C11A90881} = {17369E41-3096-4088-80E2-2EA00C6C2515}
 	EndGlobalSection
 EndGlobal

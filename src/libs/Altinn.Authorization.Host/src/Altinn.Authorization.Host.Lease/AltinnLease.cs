@@ -1,21 +1,25 @@
-using Altinn.Authorization.Host.Lease.Memory;
+using Altinn.Authorization.Host.Lease.InMemory;
 using Altinn.Authorization.Host.Lease.StorageAccount;
-using Altinn.Authorization.ServiceDefaults;
 using Azure.Core;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Npgsql;
 
 namespace Altinn.Authorization.Host.Lease;
 
+/// <summary>
+/// Provides extension methods for registering and configuring the Altinn lease functionality in a .NET application.
+/// This includes configuring either an in-memory lease provider or an Azure Storage Account-based lease provider.
+/// </summary>
 public static class AltinnLease
 {
     /// <summary>
-    /// 
+    /// Adds the Altinn Lease functionality to the application, allowing the configuration of lease storage type.
+    /// You can configure whether leases are stored in-memory or in an Azure Storage Account.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name=""></param>
+    /// <param name="builder">The host application builder to add the lease functionality to.</param>
+    /// <param name="configureOptions">Optional action to configure the lease options (e.g., type of lease storage, Azure storage settings).</param>
+    /// <returns>The updated <see cref="IHostApplicationBuilder"/> with the lease configuration applied.</returns>
     public static IHostApplicationBuilder AddAltinnLease(this IHostApplicationBuilder builder, Action<AltinnLeaseOptions> configureOptions = null)
     {
         var options = new AltinnLeaseOptions();
@@ -24,28 +28,35 @@ public static class AltinnLease
         return builder;
     }
 
+    /// <summary>
+    /// Determines which configuration method to use based on the lease type and configures the services accordingly.
+    /// </summary>
+    /// <param name="services">The service collection to register the lease-related services.</param>
+    /// <param name="options">The lease options that contain the lease type configuration.</param>
+    /// <returns>An action that performs the configuration of services.</returns>
     private static Action ConfigureAltinnLease(IServiceCollection services, AltinnLeaseOptions options) => options.Type switch
     {
-        AltinnLeaseType.OptimisticLease => () => ConfigureAltinnOptimisticLease(services),
+        AltinnLeaseType.InMemory => () => ConfigureAltinnInMemoryLease(services),
         AltinnLeaseType.AzureStorageAccount => () => ConfigureAltinnLeaseAzureStorageAccount(services, options),
-        _ => throw new InvalidOperationException(""),
+        _ => throw new InvalidOperationException("Unsupported lease type."),
     };
 
     /// <summary>
-    /// 
+    /// Configures services for the in-memory lease provider.
+    /// This is suitable for testing or scenarios where persistence of leases is not required.
     /// </summary>
-    /// <param name="services"></param>
-    public static void ConfigureAltinnOptimisticLease(IServiceCollection services)
+    /// <param name="services">The service collection to add the lease services to.</param>
+    public static void ConfigureAltinnInMemoryLease(IServiceCollection services)
     {
-        services.AddSingleton<IAltinnLease, OptimisticLease>();
+        services.AddSingleton<IAltinnLease, InMemoryLease>();
     }
 
     /// <summary>
-    /// 
+    /// Configures services for using an Azure Storage Account to store leases.
+    /// This option enables persistence of leases across application restarts.
     /// </summary>
-    /// <param name="services">services</param>
-    /// <param name="options">options</param>
-    /// <param name="descriptor">descriptor</param>
+    /// <param name="services">The service collection to add the lease services to.</param>
+    /// <param name="options">The lease configuration options, including the Azure Storage Account settings.</param>
     public static void ConfigureAltinnLeaseAzureStorageAccount(IServiceCollection services, AltinnLeaseOptions options)
     {
         services.AddAzureClients(builder =>

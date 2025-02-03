@@ -111,6 +111,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Lease", "src\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host.Lease\Altinn.Authorization.Host.Lease.csproj", "{DA0ECA50-BCE0-4067-8946-71B6A654BC8C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{DC82C1C6-C706-4785-80D0-4D5D4F6BA620}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Lease.Tests", "src\libs\Altinn.Authorization.Host\test\Altinn.Authorization.Host.Lease.Tests\Altinn.Authorization.Host.Lease.Tests.csproj", "{6D460AF5-06D5-41BD-A612-FCC7209C989F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -224,6 +228,10 @@ Global
 		{DA0ECA50-BCE0-4067-8946-71B6A654BC8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA0ECA50-BCE0-4067-8946-71B6A654BC8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA0ECA50-BCE0-4067-8946-71B6A654BC8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D460AF5-06D5-41BD-A612-FCC7209C989F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D460AF5-06D5-41BD-A612-FCC7209C989F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D460AF5-06D5-41BD-A612-FCC7209C989F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D460AF5-06D5-41BD-A612-FCC7209C989F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E9D041A5-2AB6-45FD-8D24-EF552025539E} = {2891B160-9E46-42E5-95FF-08523A3192EF}
@@ -279,5 +287,7 @@ Global
 		{613F1E18-2B99-4466-B23E-240C1853A144} = {FE84C40C-0A57-497A-9E9D-7E446B730239}
 		{639E2D8F-7F89-4E39-A1E9-7C420A9C1174} = {FE84C40C-0A57-497A-9E9D-7E446B730239}
 		{DA0ECA50-BCE0-4067-8946-71B6A654BC8C} = {FE84C40C-0A57-497A-9E9D-7E446B730239}
+		{DC82C1C6-C706-4785-80D0-4D5D4F6BA620} = {70F3B88D-68BD-4B7A-8A19-D8F796522595}
+		{6D460AF5-06D5-41BD-A612-FCC7209C989F} = {DC82C1C6-C706-4785-80D0-4D5D4F6BA620}
 	EndGlobalSection
 EndGlobal

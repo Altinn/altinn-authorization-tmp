@@ -4,7 +4,6 @@ using Microsoft.Extensions.Hosting;
 namespace Altinn.Authorization.Integration.Register.Extensions;
 
 public static class WebApplicationBuilderExtensions
-
 {
     /// <summary>
     /// 
@@ -13,11 +12,12 @@ public static class WebApplicationBuilderExtensions
     /// <param name="configureOptions"></param>
     public static IHostApplicationBuilder AddAltinnRegister(this IHostApplicationBuilder builder, Action<AltinnRegisterOptions> configureOptions)
     {
-        builder.Services.AddHttpClient(RegisterClient.HttpClientName, cfg =>
+        builder.Services.AddOptions<AltinnRegisterOptions>()
+            .Validate(opts => opts.Endpoint != null)
+            .Configure(configureOptions);
+
+        builder.Services.AddHttpClient(RegisterClient.HttpClientName, (serviceProvider, httpClient) =>
         {
-            builder.Services.Configure(configureOptions);
-            var options = new AltinnRegisterOptions(configureOptions);
-            cfg.BaseAddress = new Uri(options.Endpoint);
         });
 
         builder.Services.AddSingleton<IAltinnRegister, RegisterClient>();

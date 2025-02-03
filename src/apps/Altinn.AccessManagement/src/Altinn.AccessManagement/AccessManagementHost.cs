@@ -69,12 +69,13 @@ internal static class AccessManagementHost
         builder.AddAppSettingDefaults();
         builder.AddAltinnLease(cgf =>
         {
-            cgf.Type = AltinnLeaseType.OptimisticLease;
+            cgf.Type = AltinnLeaseType.AzureStorageAccount;
+            cgf.StorageAccount.Endpoint = new Uri("https://{blob_storage_name}.blob.core.windows.net/");
         });
 
         builder.AddAltinnRegister(opts =>
         {
-            opts.Endpoint = "http://localhost:5020";
+            opts.Endpoint = new Uri("http://localhost:5020");
         });
 
         return builder;

@@ -21,5 +21,5 @@ public class AltinnRegisterOptions
         configureOptions(this);
     }
 
-    public string Endpoint { get; set; }
+    public Uri Endpoint { get; set; }
 }
