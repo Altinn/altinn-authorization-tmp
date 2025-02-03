@@ -4,4 +4,4 @@ using Altinn.AccessMgmt.Models;
 namespace Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
 
 /// <inheritdoc/>
-public interface IDelegationGroupService : IDbCrossDataService<Delegation, DelegationGroup, EntityGroup> { }
+public interface IDelegationPackageResourceService : IDbCrossDataService<Delegation, DelegationPackageResource, PackageResource> { }

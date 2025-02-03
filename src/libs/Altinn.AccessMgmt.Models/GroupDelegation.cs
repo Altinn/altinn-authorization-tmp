@@ -1,9 +1,9 @@
 ﻿namespace Altinn.AccessMgmt.Models;
 
 /// <summary>
-/// Delegation between two assignments
+/// Delegate assignment to group
 /// </summary>
-public class Delegation
+public class GroupDelegation
 {
     /// <summary>
     /// Identity
@@ -16,7 +16,7 @@ public class Delegation
     public Guid FromId { get; set; }
 
     /// <summary>
-    /// Assignment to delegate to
+    /// Group to delegate to
     /// </summary>
     public Guid ToId { get; set; }
 
@@ -32,19 +32,19 @@ public class Delegation
 }
 
 /// <summary>
-/// Extended delegation
+/// Extended Group delegation
 /// </summary>
-public class ExtDelegation : Delegation
+public class ExtGroupDelegation : GroupDelegation
 {
     /// <summary>
-    /// Assignment to delegate from
+    /// Assignment
     /// </summary>
     public Assignment From { get; set; }
 
     /// <summary>
-    /// Assignment to delegate to
+    /// Group
     /// </summary>
-    public Assignment To { get; set; }
+    public EntityGroup To { get; set; }
 
     /// <summary>
     /// Entity between from and to

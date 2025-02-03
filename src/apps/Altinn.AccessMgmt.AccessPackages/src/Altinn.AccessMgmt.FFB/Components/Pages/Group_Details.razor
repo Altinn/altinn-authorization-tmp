@@ -1,7 +1,6 @@
 ﻿@page "/group/{id}"
 @inject Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts.IGroupService groupService
 @inject IEntityService entityService
-@inject IDelegationGroupService delegationGroupService
 @inject IDelegationService delegationService
 @inject IAssignmentService assignmentService
 @inject IGroupMemberService groupMemberService
@@ -216,13 +215,6 @@
         foreach (var gm in Group.Administrators)
         {
             Entities.Add(await entityService.GetExtended(gm.MemberId));
-        }
-
-        Delegations = [.. await delegationGroupService.GetA(Group.Id)];
-
-        foreach (var delegation in Delegations)
-        {
-            DelegatedAssignments.Add(await assignmentService.GetExtended(delegation.AssignmentId));
         }
     }
 

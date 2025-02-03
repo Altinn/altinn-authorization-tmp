@@ -2,10 +2,8 @@
 @inject IEntityService entityService
 
 @inject IAssignmentService assignmentService
-@inject IDelegationAssignmentService delegationAssignmentService
 
 @inject IGroupMemberService groupMemberService
-@inject IDelegationGroupService delegationGroupService
 
 @inject IDelegationService delegationService
 
@@ -86,32 +84,13 @@
         var delegations = new List<Delegation>();
         var delegatedAssignments = new List<ExtAssignment>();
 
-        var assignments = await assignmentService.GetExtended(t => t.ToId, id);
-        foreach(var ass in assignments)
-        {
-            delegations.AddRange(await delegationAssignmentService.GetA(ass.Id));
-        }
-
-        var groupMemberships = await groupMemberService.Get(t => t.MemberId, id);
-        foreach(var grp in groupMemberships)
-        {
-            delegations.AddRange(await delegationGroupService.GetA(grp.GroupId));
-        }
-
         foreach(var delegation in delegations)
         {
-            delegatedAssignments.Add(await assignmentService.GetExtended(delegation.AssignmentId));
+            delegatedAssignments.Add(await assignmentService.GetExtended(delegation.FromId));
         }
 
 
         Avgivere.Add(self);
-        foreach(var ass in assignments)
-        {
-            if(!Avgivere.Exists(t => t.Id == ass.FromId))
-            {
-                Avgivere.Add(ass.From);
-            }
-        }
         foreach(var del in delegatedAssignments)
         {
             if (!Avgivere.Exists(t => t.Id == del.FromId))
@@ -147,10 +126,6 @@
         var delegatedAssignments = new List<ExtAssignment>();
 
         var assignments = await assignmentService.GetExtended(t => t.FromId, id);
-        foreach (var ass in assignments)
-        {
-            delegations.AddRange(await delegationAssignmentService.GetA(ass.Id));
-        }
 
         // var groupMemberships = await groupMemberService.Get(t => t.MemberId, id);
         // foreach (var grp in groupMemberships)
@@ -160,7 +135,7 @@
 
         foreach (var delegation in delegations)
         {
-            delegatedAssignments.Add(await assignmentService.GetExtended(delegation.AssignmentId));
+            delegatedAssignments.Add(await assignmentService.GetExtended(delegation.FromId));
         }
 
 

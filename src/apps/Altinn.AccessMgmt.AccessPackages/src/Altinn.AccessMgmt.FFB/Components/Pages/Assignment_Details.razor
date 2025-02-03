@@ -11,9 +11,7 @@
 @inject IAssignmentResourceService assignmentResourceService
 
 @inject IDelegationService delegationService
-@inject IDelegationPackageService delegationPackageService
-@inject IDelegationGroupService delegationGroupService
-@inject IDelegationAssignmentService delegationAssignmentService
+@inject IDelegationPackageResourceService delegationPackageService
 
 @if (Assignment != null)
 {
@@ -424,26 +422,18 @@
 
             /* --- */
 
-            Delegations = [.. await delegationService.Get(t => t.AssignmentId, Assignment.Id)];
-            if (Delegations != null && Delegations.Any())
-            {
-                DelegatedPackages = new Dictionary<Guid, IEnumerable<Package>>();
-                DelegatedGroups = new Dictionary<Guid, IEnumerable<EntityGroup>>();
-                DelegatedAssignments = new Dictionary<Guid, IEnumerable<ExtAssignment>>();
+            // Delegations = [.. await delegationService.Get(t => t.FromId, Assignment.Id)];
+            // if (Delegations != null && Delegations.Any())
+            // {
+            //     DelegatedPackages = new Dictionary<Guid, IEnumerable<Package>>();
+            //     DelegatedGroups = new Dictionary<Guid, IEnumerable<EntityGroup>>();
+            //     DelegatedAssignments = new Dictionary<Guid, IEnumerable<ExtAssignment>>();
 
-                foreach (var delegation in Delegations)
-                {
-                    DelegatedPackages.Add(delegation.Id, await delegationPackageService.GetB(delegation.Id));
-                    DelegatedGroups.Add(delegation.Id, await delegationGroupService.GetB(delegation.Id));
-                    var res = await delegationAssignmentService.GetB(delegation.Id);
-                    var extRes = new List<ExtAssignment>();
-                    foreach(var r in res)
-                    {
-                        extRes.Add(await assignmentService.GetExtended(r.Id));
-                    }
-                    DelegatedAssignments.Add(delegation.Id, extRes);
-                }
-            }
+            //     foreach (var delegation in Delegations)
+            //     {
+            //         DelegatedPackages.Add(delegation.Id, await delegationPackageService.GetB(delegation.Id));
+            //     }
+            // }
         }
     }
 
@@ -471,40 +461,21 @@
             var delegation = new Delegation()
                 {
                     Id = Guid.NewGuid(),
-                    AssignmentId = Assignment.Id
+                    FromId = Assignment.Id
                 };
 
             await delegationService.Create(delegation);
 
-            foreach (var pack in NewDelegationPackages.Where(y => y.Value))
-            {
-                await delegationPackageService.Create(new DelegationPackage()
-                {
-                    Id = Guid.NewGuid(),
-                    DelegationId = delegation.Id,
-                    PackageId = pack.Key
-                });
-            }
+            // foreach (var pack in NewDelegationPackages.Where(y => y.Value))
+            // {
+            //     await delegationPackageService.Create(new DelegationPackageResource()
+            //     {
+            //         Id = Guid.NewGuid(),
+            //         DelegationId = delegation.Id,
+            //         PackageResourceId = pack.Key
+            //     });
+            // }
 
-            foreach (var group in CreateDelegationGroupSelected.Where(y => y.Value))
-            {
-                await delegationGroupService.Create(new DelegationGroup()
-                    {
-                        Id = Guid.NewGuid(),
-                        DelegationId = delegation.Id,
-                        GroupId = group.Key
-                    });
-            }
-
-            foreach (var ass in CreateDelegationAssignmentSelected.Where(y => y.Value))
-            {
-                await delegationAssignmentService.Create(new DelegationAssignment()
-                    {
-                        Id = Guid.NewGuid(),
-                        DelegationId = delegation.Id,
-                        AssignmentId = ass.Key
-                    });
-            }
             await Load();
             CreateDelegationMessage = ($"Created administrator!", true);
         } 

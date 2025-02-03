@@ -6,16 +6,13 @@ using Altinn.AccessMgmt.Models;
 namespace Altinn.AccessMgmt.AccessPackages.Repo.Data.Services;
 
 /// <summary>
-/// Data service for DelegationGroup
+/// Data service for DelegationPackageResource
 /// </summary>
-public class DelegationGroupDataService : BaseCrossDataService<Delegation, DelegationGroup, EntityGroup>, IDelegationGroupService
+public class DelegationResourceDataService : BaseCrossDataService<Delegation, DelegationResource, Resource>, IDelegationResourceService
 {
     /// <summary>
     /// Data service for Delegation
     /// </summary>
     /// <param name="repo">Cross repo</param>
-    public DelegationGroupDataService(IDbCrossRepo<Delegation, DelegationGroup, EntityGroup> repo) : base(repo)
-    {
-        CrossRepo.SetCrossColumns("delegationid", "groupid");
-    }
+    public DelegationResourceDataService(IDbCrossRepo<Delegation, DelegationResource, Resource> repo) : base(repo) { }
 }

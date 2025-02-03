@@ -164,6 +164,9 @@ public class JsonIngestFactory
 
     private async Task TempRolePackageFix()
     {
+        /*
+         TODO: Ivar: Flytt dette inn i json data (RolePackages)
+         */
         var allareas = await areaService.Get();
         var allpackages = await packageService.Get();
         var allroles = await roleService.Get();
@@ -382,7 +385,7 @@ public class JsonIngestFactory
             { "eng", resultEng.PackageItems }
         };
 
-     ingestResult.Add(await IngestData(areaGroupService, result.AreaGroupItems, areaGroupItems, cancellationToken));
+        ingestResult.Add(await IngestData(areaGroupService, result.AreaGroupItems, areaGroupItems, cancellationToken));
         ingestResult.Add(await IngestData(areaService, result.AreaItems, areaItems, cancellationToken));
         ingestResult.Add(await IngestData(packageService, result.PackageItems, packageItems, cancellationToken));
         return ingestResult;

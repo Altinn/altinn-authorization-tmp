@@ -6,13 +6,13 @@ using Altinn.AccessMgmt.Models;
 namespace Altinn.AccessMgmt.AccessPackages.Repo.Data.Services;
 
 /// <summary>
-/// Data service for DelegationPackage
+/// Data service for DelegationPackageResource
 /// </summary>
-public class DelegationPackageDataService : BaseCrossDataService<Delegation, DelegationPackage, Package>, IDelegationPackageService
+public class DelegationPackageResourceDataService : BaseCrossDataService<Delegation, DelegationPackageResource, PackageResource>, IDelegationPackageResourceService
 {
     /// <summary>
     /// Data service for Delegation
     /// </summary>
     /// <param name="repo">Cross repo</param>
-    public DelegationPackageDataService(IDbCrossRepo<Delegation, DelegationPackage, Package> repo) : base(repo) { }
+    public DelegationPackageResourceDataService(IDbCrossRepo<Delegation, DelegationPackageResource, PackageResource> repo) : base(repo) { }
 }

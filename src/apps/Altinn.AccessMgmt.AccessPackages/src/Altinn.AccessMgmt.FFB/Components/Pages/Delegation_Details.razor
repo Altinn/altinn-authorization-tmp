@@ -1,9 +1,7 @@
 ﻿@page "/delegation/{id}"
 @inject IDelegationService delegationService
 @inject IAssignmentService assignmentService
-@inject IDelegationPackageService delegationPackageService
-@inject IDelegationGroupService delegationGroupService
-@inject IDelegationAssignmentService delegationAssignmentService
+@inject IDelegationPackageResourceService delegationPackageService
 
 @if(Delegation != null && Assignment != null)
 {
@@ -147,16 +145,9 @@
         Delegation = await delegationService.Get(Guid.Parse(id));
         if(Delegation != null)
         {
-            Assignment = await assignmentService.GetExtended(Delegation.AssignmentId);
-
-            Packages = [.. await delegationPackageService.GetB(Delegation.Id)];
-            Groups = [.. await delegationGroupService.GetB(Delegation.Id)];
-            var res = await delegationAssignmentService.GetB(Delegation.Id);
-            Assignments = new List<ExtAssignment>();
-            foreach (var r in res)
-            {
-                Assignments.Add(await assignmentService.GetExtended(r.Id));
-            }
+            Assignment = await assignmentService.GetExtended(Delegation.FromId);
+            //var pkgRes = [.. await delegationPackageService.GetB(Delegation.Id)];
+            //Packages = pkgRes.Select(t => t.Package);
         }
     }
 

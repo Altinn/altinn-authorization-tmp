@@ -2,7 +2,9 @@
 using Altinn.AccessMgmt.DbAccess.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess.Data.Models;
 using Altinn.AccessMgmt.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Altinn.AccessMgmt.AccessPackages.Extensions;
 
@@ -52,9 +54,20 @@ public static class EndpointExtension
         app.MapDefaults<ITagGroupService, TagGroup>();
 
         app.MapDefaultsExt<IDelegationService, Delegation, ExtDelegation>();
-        app.MapCrossDefaults<Delegation, IDelegationPackageService, DelegationPackage, Package>("delegations", "packages");
-        app.MapCrossDefaults<Delegation, IDelegationGroupService, DelegationGroup, EntityGroup>("delegations", "groups");
-        app.MapCrossDefaults<Delegation, IDelegationAssignmentService, DelegationAssignment, Assignment>("delegations", "assignments");
+        app.MapCrossDefaults<Delegation, IDelegationPackageResourceService, DelegationPackageResource, PackageResource>("delegations", "packages");
+
+        app.MapGet("/entity/lookup/{key}/{value}", async (HttpRequest request, IEntityLookupService service, string key, string value) =>
+        {
+            var filterBuilder = service.CreateFilterBuilder();
+            filterBuilder.Add(t => t.Key, key, FilterComparer.Equals);
+            filterBuilder.Add(t => t.Value, value, FilterComparer.Equals);
+            var res = await service.GetExtended(filterBuilder, options: GenerateRequestOptions(request));
+            if (res != null && res.Count() == 1)
+            {
+                return res.First().Entity;
+            }
+            return null;
+        });
 
         app.MapGet("/assignment", async (IAssignmentService service, Guid? from, Guid? to, Guid? role) =>
         {

@@ -6,18 +6,18 @@ using Altinn.AccessMgmt.Models;
 namespace Altinn.AccessMgmt.AccessPackages.Repo.Data.Services;
 
 /// <summary>
-/// Data service for Delegation
+/// Data service for GroupDelegation
 /// </summary>
-public class DelegationDataService : BaseExtendedDataService<Delegation, ExtDelegation>, IDelegationService
+public class GroupDelegationDataService : BaseExtendedDataService<GroupDelegation, ExtGroupDelegation>, IGroupDelegationService
 {
     /// <summary>
-    /// Data service for Delegation
+    /// Data service for GroupDelegation
     /// </summary>
     /// <param name="repo">Extended repo</param>
-    public DelegationDataService(IDbExtendedRepo<Delegation, ExtDelegation> repo) : base(repo)
+    public GroupDelegationDataService(IDbExtendedRepo<GroupDelegation, ExtGroupDelegation> repo) : base(repo)
     {
         ExtendedRepo.Join<Assignment>(t => t.FromId, t => t.Id, t => t.From);
-        ExtendedRepo.Join<Assignment>(t => t.ToId, t => t.Id, t => t.To);
+        ExtendedRepo.Join<EntityGroup>(t => t.ToId, t => t.Id, t => t.To);
         ExtendedRepo.Join<Assignment>(t => t.SourceId, t => t.Id, t => t.Source);
         ExtendedRepo.Join<Assignment>(t => t.ViaId, t => t.Id, t => t.Via);
     }

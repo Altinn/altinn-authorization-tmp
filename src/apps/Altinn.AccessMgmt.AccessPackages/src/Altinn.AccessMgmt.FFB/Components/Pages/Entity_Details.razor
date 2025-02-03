@@ -6,8 +6,6 @@
 @inject IGroupMemberService groupMemberService
 @inject IGroupAdminService groupAdminService
 @inject IDelegationService delegationService
-@inject IDelegationGroupService delegationGroupService
-@inject IDelegationAssignmentService delegationAssignmentService
 @inject IAssignmentService assignmentService
 @inject IRoleService roleService
 
@@ -142,7 +140,7 @@
                                 </td>
                                 <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
                                 <td>
-                                    @if (Delegations.Count(t => t.AssignmentId == assignment.Id) > 0)
+                                    @if (Delegations.Count(t => t.FromId == assignment.Id) > 0)
                                     {
                                         <Icon Name="check"></Icon>
 
@@ -171,7 +169,7 @@
                                     </td>
                                     <td title="@assignment.To.RefId"><a href=@($"/entity/{assignment.To.Id}")><EntityTypeIcon Id="@assignment.To.TypeId" />@assignment.To.Name</a></td>
                                     <td>
-                                        @if (Delegations.Count(t => t.AssignmentId == assignment.Id) > 0)
+                                        @if (Delegations.Count(t => t.FromId == assignment.Id) > 0)
                                         {
                                             <Icon Name="check"></Icon>
 
@@ -212,18 +210,7 @@
                             <tr class="bf-table-row bf-table-row-compact">
                                 <td><a href=@($"/group/{group.Id}")>@group.Name</a></td>
                                 <td>
-                                    @if (DelegationGroups.Count(t => t.GroupId == group.Id) > 0)
-                                    {
-                                        var delegationGroup = DelegationGroups.First(t => t.GroupId == group.Id);
-                                        var delegation = Delegations.First(t => t.Id == delegationGroup.DelegationId);
-                                        var ass = ToAssignments.First(t => t.Id == delegation.AssignmentId);
-                                        @ass.From.Name
-                                        <Badge Title="@ass.Role.Description">@ass.Role.Code</Badge>
-                                    }
-                                    else
-                                    {
-                                        <Icon Name="xmark"></Icon>
-                                    }
+                                    <Icon Name="xmark"></Icon>
                                 </td>
                             </tr>
                         }
@@ -390,8 +377,6 @@
     private List<GroupMembership> GroupMemberships { get; set; }
 
     public List<Delegation> Delegations { get; set; } = new List<Delegation>();
-    public List<DelegationGroup> DelegationGroups { get; set; } = new List<DelegationGroup>();
-    public List<DelegationAssignment> DelegationAssignments { get; set; } = new List<DelegationAssignment>(); 
 
     protected async override Task OnParametersSetAsync()
     {
@@ -435,18 +420,11 @@
         {
             foreach (var ass in ToAssignments)
             {
-                Delegations.AddRange(await delegationService.Get(t => t.AssignmentId, value: ass.Id));
+                Delegations.AddRange(await delegationService.Get(t => t.FromId, value: ass.Id));
             }
         }
 
-        if (Delegations != null && Delegations.Any())
-        {
-            foreach (var delegation in Delegations)
-            {
-                DelegationGroups.AddRange(await delegationGroupService.Get(t => t.DelegationId, delegation.Id));
-                DelegationAssignments.AddRange(await delegationAssignmentService.Get(t => t.DelegationId, delegation.Id));
-            }
-        }
+       
     }
 
     public bool CreateGroupModalIsOpen { get; set; }
@@ -520,32 +498,14 @@
         var delegations = new List<Delegation>();
         var delegatedAssignments = new List<ExtAssignment>();
 
-        var assignments = await assignmentService.GetExtended(t => t.ToId, Entity.Id);
-        foreach (var ass in assignments)
-        {
-            delegations.AddRange(await delegationAssignmentService.GetA(ass.Id));
-        }
-
-        var groupMemberships = await groupMemberService.Get(t => t.MemberId, Entity.Id);
-        foreach (var grp in groupMemberships)
-        {
-            delegations.AddRange(await delegationGroupService.GetA(grp.GroupId));
-        }
 
         foreach (var delegation in delegations)
         {
-            delegatedAssignments.Add(await assignmentService.GetExtended(delegation.AssignmentId));
+            delegatedAssignments.Add(await assignmentService.GetExtended(delegation.FromId));
         }
 
 
         Avgivere.Add(self);
-        foreach (var ass in assignments)
-        {
-            if (!Avgivere.Exists(t => t.Id == ass.FromId))
-            {
-                Avgivere.Add(await entityService.GetExtended(ass.FromId));
-            }
-        }
         foreach (var del in delegatedAssignments)
         {
             if (!Avgivere.Exists(t => t.Id == del.FromId))
@@ -564,14 +524,10 @@
         var delegatedAssignments = new List<ExtAssignment>();
 
         var assignments = await assignmentService.GetExtended(t => t.FromId, Entity.Id);
-        foreach (var ass in assignments)
-        {
-            delegations.AddRange(await delegationAssignmentService.GetA(ass.Id));
-        }
 
         foreach (var delegation in delegations)
         {
-            delegatedAssignments.Add(await assignmentService.GetExtended(delegation.AssignmentId));
+            delegatedAssignments.Add(await assignmentService.GetExtended(delegation.FromId));
         }
 
 

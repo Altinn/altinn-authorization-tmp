@@ -3,7 +3,7 @@
 /// <summary>
 /// Delegation packages
 /// </summary>
-public class DelegationPackage
+public class DelegationPackageResource
 {
     /// <summary>
     /// Identity
@@ -18,13 +18,13 @@ public class DelegationPackage
     /// <summary>
     /// Package identity
     /// </summary>
-    public Guid PackageId { get; set; }
+    public Guid PackageResourceId { get; set; }
 }
 
 /// <summary>
-/// Extended DelegationPackage
+/// Extended DelegationPackageResource
 /// </summary>
-public class ExtDelegationPackage : DelegationPackage
+public class ExtDelegationPackageResource : DelegationPackageResource
 {
     /// <summary>
     /// Delegation
@@ -34,5 +34,5 @@ public class ExtDelegationPackage : DelegationPackage
     /// <summary>
     /// Package
     /// </summary>
-    public Package Package { get; set; }
+    public PackageResource Package { get; set; }
 }
