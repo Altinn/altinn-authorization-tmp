@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 
 namespace Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
 
-public static class NewExtensions
+public static class DbAccessHostExtensions
 {
     public static IHostApplicationBuilder ConfigureDb(this IHostApplicationBuilder builder, Action<DbAccessConfig>? configureOptions = null)
     {
