@@ -55,9 +55,9 @@ public class ObjectDefinition
     /// <param name="config">DbObjDefConfig</param>
     /// <param name="useTranslation">UseTranslation (default: false)</param>
     /// <param name="useHistory">UseHistory (default: false)</param>
-    public ObjectDefinition(Type type, DbObjDefConfig config, bool useTranslation = false, bool useHistory = false)
+    public ObjectDefinition(Type type, bool useTranslation = false, bool useHistory = false)
     {
-        SetBasic(type, config, useTranslation, useHistory);
+        SetBasic(type, useTranslation, useHistory);
     }
 
     /// <summary>
@@ -68,9 +68,9 @@ public class ObjectDefinition
     /// <param name="config">DbObjDefConfig</param>
     /// <param name="useTranslation">UseTranslation (default: false)</param>
     /// <param name="useHistory">UseHistory (default: false)</param>
-    public ObjectDefinition(Type type, Type extendedType, DbObjDefConfig config, bool useTranslation = false, bool useHistory = false)
+    public ObjectDefinition(Type type, Type extendedType, bool useTranslation = false, bool useHistory = false)
     {
-        SetBasic(type, config, useTranslation, useHistory);
+        SetBasic(type, useTranslation, useHistory);
         SetExtended(extendedType);
     }
 
@@ -87,7 +87,7 @@ public class ObjectDefinition
         }
     }
 
-    private void SetBasic(Type type, DbObjDefConfig config, bool useTranslation, bool useHistory)
+    private void SetBasic(Type type, bool useTranslation, bool useHistory)
     {
         var name = type.Name;
         Properties = new Dictionary<string, PropertyInfo>();
@@ -96,9 +96,9 @@ public class ObjectDefinition
             Properties.Add(property.Name, property);
         }
 
-        BaseDbObject = new DbObject(type, name, config.BaseSchema, name);
-        TranslationDbObject = new DbObject(type, name, config.TranslationSchema, "Translation" + name);
-        HistoryDbObject = new DbObject(type, name, config.HistorySchema, "History" + name);
+        BaseDbObject = new DbObject(type, name, "dbo", name);
+        TranslationDbObject = new DbObject(type, name, "Translation", "Translation" + name);
+        HistoryDbObject = new DbObject(type, name, "History", "History" + name);
         UseTranslation = useTranslation;
         UseHistory = useHistory;
     }

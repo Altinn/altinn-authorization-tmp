@@ -11,8 +11,8 @@ builder.Configuration.AddUserSecrets(assembly);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
-builder.AddDatabaseDefinitions();
-builder.AddDbAccessData();
+builder.ConfigureDb();
+builder.AddDb();
 
 //// builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddBlazoredLocalStorage();
@@ -20,7 +20,7 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 
 var app = builder.Build();
 
-app.Services.UseDatabaseDefinitions();
+await app.UseDb();
 
 if (!app.Environment.IsDevelopment())
 {

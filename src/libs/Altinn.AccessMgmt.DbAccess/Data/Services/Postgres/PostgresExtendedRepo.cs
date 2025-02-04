@@ -23,7 +23,7 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     /// </summary>
     /// <param name="config">IConfiguration</param>
     /// <param name="dataMapper">DbConverter</param>
-    public PostgresExtendedRepo(IOptions<DbAccessDataConfig> config, DbConverter dataMapper) : base(config, dataMapper) { }
+    public PostgresExtendedRepo(IOptions<DbAccessConfig> config, DbConverter dataMapper) : base(config, dataMapper) { }
 
     /// <inheritdoc/>
     public async Task<(IEnumerable<TExtended> Data, PagedResult PageInfo)> SearchExtended(string term, RequestOptions? options = null, bool startsWith = false, CancellationToken cancellationToken = default)
@@ -81,7 +81,7 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     /// <inheritdoc/>
     public async Task<IEnumerable<TExtended>> GetExtended(List<GenericFilter>? filters = null, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var a = DbAccessTelemetry.StartActivity<T>("GetExtended");
+        //// using var a = DbAccessTelemetry.StartActivity<T>("GetExtended");
         options ??= new RequestOptions();
         filters ??= [];
         var cmd = GetCommand(options, filters);
@@ -93,10 +93,10 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
     #region Internal
     private async Task<IEnumerable<TExtended>> ExecuteExtended(string query, Dictionary<string, object>? parameters = null, CancellationToken cancellationToken = default)
     {
-        using var a = DbAccessTelemetry.StartActivity<T>("ExecuteExtended");
+        //// using var a = DbAccessTelemetry.StartActivity<T>("ExecuteExtended");
         try
         {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("Start"));
+            //// a?.AddEvent(new System.Diagnostics.ActivityEvent("Start"));
             using var connection = new NpgsqlConnection(ConnectionString);
             CommandDefinition cmd = new CommandDefinition(query, parameters, cancellationToken: cancellationToken);
             Console.WriteLine(query);
@@ -104,15 +104,15 @@ public class PostgresExtendedRepo<T, TExtended> : PostgresBasicRepo<T>, IDbExten
         }
         catch (Exception ex)
         {
-            a?.SetStatus(System.Diagnostics.ActivityStatusCode.Error);
+            //// a?.SetStatus(System.Diagnostics.ActivityStatusCode.Error);
             Console.WriteLine(ex.Message);
             Console.WriteLine(query);
             throw;
         }
         finally
         {
-            a?.SetStatus(System.Diagnostics.ActivityStatusCode.Ok);
-            a?.Stop();
+            //// a?.SetStatus(System.Diagnostics.ActivityStatusCode.Ok);
+            //// a?.Stop();
         }
     }
 

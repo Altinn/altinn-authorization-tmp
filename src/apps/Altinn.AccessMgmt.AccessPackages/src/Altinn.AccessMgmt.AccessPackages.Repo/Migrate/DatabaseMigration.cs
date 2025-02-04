@@ -7,7 +7,7 @@ namespace Altinn.AccessMgmt.AccessPackages.Repo.Migrate;
 /// <summary>
 /// Access Package Migration
 /// </summary>
-public class DatabaseMigration : IDatabaseMigration
+public class DatabaseMigration
 {
     private const string ExtAssignmentView = """
 CREATE VIEW dbo.extassignment AS

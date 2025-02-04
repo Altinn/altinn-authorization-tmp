@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Altinn.AccessMgmt.DbAccess;
+
+public class DbAccessConfig
+{
+    public string ConnectionStringAdmin { get; set; }
+    public string ConnectionString { get; set; }
+    public string BaseSchema { get; set; } = "dbo";
+    public bool MigrationEnabled { get; set; }
+    public bool UseSqlServer { get; set; }
+    public string MigrationKey { get; set; }
+    public List<string> JsonIngestLanguages { get; set; }
+    public string JsonBasePath { get; set; } = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "Ingest/JsonData/");
+    public Dictionary<string, bool> JsonIngestEnabled { get; set; }
+}

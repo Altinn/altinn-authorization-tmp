@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -37,18 +36,18 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     /// Initializes a new instance of the <see cref="PostgresMigrationFactory"/> class.
     /// </summary>
     /// <param name="options">DbMigrationConfig</param>
-    public PostgresMigrationFactory(IOptions<DbMigrationConfig> options)
+    public PostgresMigrationFactory(IOptions<DbAccessConfig> options)
     {
         var config = options.Value;
 
-        Enable = config.Enable;
+        Enable = config.MigrationEnabled;
 
         _connection = new NpgsqlConnection(config.ConnectionString);
 
-        defaultSchema = config.DefaultSchema ?? "dbo";
-        translationSchema = config.TranslationSchema ?? "translation";
+        defaultSchema = "dbo";
+        translationSchema = "translation";
 
-        _migrationId = config.CollectionId;
+        _migrationId = config.MigrationKey;
         Migrations = new List<MigrationEntry>();
     }
 
@@ -156,7 +155,7 @@ public class PostgresMigrationFactory : IDbMigrationFactory
 
     private bool NeedMigration(string key, string objectName)
     {
-        if (Migrations == null || Migrations.Count == 0)
+        if (Migrations == null)
         {
             throw new Exception("No migrations to check");
         }

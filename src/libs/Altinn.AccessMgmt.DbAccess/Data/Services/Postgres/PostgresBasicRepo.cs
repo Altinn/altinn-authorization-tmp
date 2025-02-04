@@ -37,7 +37,7 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
     /// </summary>
     /// <param name="config">Configuration</param>
     /// <param name="dbConverter">DbConverter</param>
-    public PostgresBasicRepo(IOptions<DbAccessDataConfig> config, DbConverter dbConverter)
+    public PostgresBasicRepo(IOptions<DbAccessConfig> config, DbConverter dbConverter)
     {
         DefaultTypeMap.MatchNamesWithUnderscores = true;
         var configuration = config.Value;

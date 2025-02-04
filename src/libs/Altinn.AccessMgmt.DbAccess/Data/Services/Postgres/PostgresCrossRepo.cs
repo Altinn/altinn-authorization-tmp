@@ -23,7 +23,7 @@ public class PostgresCrossRepo<TA, T, TB> : PostgresBasicRepo<T>, IDbCrossRepo<T
     /// </summary>
     /// <param name="config">IConfiguration</param>
     /// <param name="dataMapper">DbConverter</param>
-    public PostgresCrossRepo(IOptions<DbAccessDataConfig> config, DbConverter dataMapper) : base(config, dataMapper)
+    public PostgresCrossRepo(IOptions<DbAccessConfig> config, DbConverter dataMapper) : base(config, dataMapper)
     {
         XAColumn = typeof(TA).Name + "Id";
         XBColumn = typeof(TB).Name + "Id";

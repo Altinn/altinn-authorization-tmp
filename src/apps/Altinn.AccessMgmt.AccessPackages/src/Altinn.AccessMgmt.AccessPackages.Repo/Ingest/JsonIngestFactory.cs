@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
 using Altinn.AccessMgmt.AccessPackages.Repo.Ingest.RagnhildModel;
 using Altinn.AccessMgmt.AccessPackages.Repo.Mock;
+using Altinn.AccessMgmt.DbAccess;
 using Altinn.AccessMgmt.DbAccess.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess.Data.Models;
 using Altinn.AccessMgmt.Models;
@@ -17,7 +18,7 @@ public class JsonIngestFactory
     /// <summary>
     /// Configuration
     /// </summary>
-    public JsonIngestConfig Config { get; set; }
+    public DbAccessConfig Config { get; set; }
 
     private readonly IProviderService providerService;
     private readonly IAreaService areaService;
@@ -35,7 +36,7 @@ public class JsonIngestFactory
     /// <summary>
     /// JsonIngestFactory
     /// </summary>
-    /// <param name="config">JsonIngestConfig</param>
+    /// <param name="config">DbAccessConfig</param>
     /// <param name="providerService">IProviderService</param>
     /// <param name="areaService">IAreaService</param>
     /// <param name="areaGroupService">IAreaGroupService</param>
@@ -49,7 +50,7 @@ public class JsonIngestFactory
     /// <param name="tagGroupService">ITagGroupService</param>
     /// <param name="tagService">ITagService</param>
     public JsonIngestFactory(
-        IOptions<JsonIngestConfig> config,
+        IOptions<DbAccessConfig> config,
         IProviderService providerService,
         IAreaService areaService,
         IAreaGroupService areaGroupService,
@@ -86,67 +87,67 @@ public class JsonIngestFactory
     /// <returns></returns>
     public async Task<List<IngestResult>> IngestAll(CancellationToken cancellationToken = default)
     {
-        using var a = DbAccess.DbAccessTelemetry.DbAccessSource.StartActivity("IngestAll");
+        //using var a = DbAccess.DbAccessTelemetry.DbAccessSource.StartActivity("IngestAll");
 
         var result = new List<IngestResult>();
 
-        if (Config.Enabled.ContainsKey("providerIngestService") && Config.Enabled["providerIngestService"])
+        if (Config.JsonIngestEnabled.ContainsKey("providerIngestService") && Config.JsonIngestEnabled["providerIngestService"])
         {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("providerIngestService"));
+            //a?.AddEvent(new System.Diagnostics.ActivityEvent("providerIngestService"));
             result.Add(await IngestData<Provider, IProviderService>(providerService, cancellationToken));
         }
 
-        if (Config.Enabled.ContainsKey("entityTypeIngestService") && Config.Enabled["entityTypeIngestService"])
+        if (Config.JsonIngestEnabled.ContainsKey("entityTypeIngestService") && Config.JsonIngestEnabled["entityTypeIngestService"])
         {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("entityTypeIngestService"));
+            //a?.AddEvent(new System.Diagnostics.ActivityEvent("entityTypeIngestService"));
             result.Add(await IngestData<EntityType, IEntityTypeService>(entityTypeService, cancellationToken));
         }
 
-        if (Config.Enabled.ContainsKey("entityVariantIngestService") && Config.Enabled["entityVariantIngestService"])
+        if (Config.JsonIngestEnabled.ContainsKey("entityVariantIngestService") && Config.JsonIngestEnabled["entityVariantIngestService"])
         {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantIngestService"));
+            //a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantIngestService"));
             result.Add(await IngestData<EntityVariant, IEntityVariantService>(entityVariantService, cancellationToken));
         }
 
-        if (Config.Enabled.ContainsKey("roleIngestService") && Config.Enabled["roleIngestService"])
+        if (Config.JsonIngestEnabled.ContainsKey("roleIngestService") && Config.JsonIngestEnabled["roleIngestService"])
         {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("roleIngestService"));
+            //a?.AddEvent(new System.Diagnostics.ActivityEvent("roleIngestService"));
             result.Add(await IngestData<Role, IRoleService>(roleService, cancellationToken));
         }
 
-        if (Config.Enabled.ContainsKey("roleMapIngestService") && Config.Enabled["roleMapIngestService"])
+        if (Config.JsonIngestEnabled.ContainsKey("roleMapIngestService") && Config.JsonIngestEnabled["roleMapIngestService"])
         {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("roleMapIngestService"));
+            //a?.AddEvent(new System.Diagnostics.ActivityEvent("roleMapIngestService"));
             result.Add(await IngestData<RoleMap, IRoleMapService>(roleMapService, cancellationToken));
         }
 
-        if (Config.Enabled.ContainsKey("areasAndPackagesIngestService") && Config.Enabled["areasAndPackagesIngestService"])
+        if (Config.JsonIngestEnabled.ContainsKey("areasAndPackagesIngestService") && Config.JsonIngestEnabled["areasAndPackagesIngestService"])
         {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("areasAndPackagesIngestService"));
+            //a?.AddEvent(new System.Diagnostics.ActivityEvent("areasAndPackagesIngestService"));
             result.AddRange(await IngestAreasAndPackages(cancellationToken));
         }
 
-        if (Config.Enabled.ContainsKey("RolePackagesIngestService") && Config.Enabled["RolePackagesIngestService"])
+        if (Config.JsonIngestEnabled.ContainsKey("RolePackagesIngestService") && Config.JsonIngestEnabled["RolePackagesIngestService"])
         {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("RolePackagesIngestService"));
+            //a?.AddEvent(new System.Diagnostics.ActivityEvent("RolePackagesIngestService"));
             result.AddRange(await IngestRolePackages(cancellationToken));
         }
 
-        if (Config.Enabled.ContainsKey("tagGroupIngestService") && Config.Enabled["tagGroupIngestService"])
+        if (Config.JsonIngestEnabled.ContainsKey("tagGroupIngestService") && Config.JsonIngestEnabled["tagGroupIngestService"])
         {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("tagGroupIngestService"));
+            //a?.AddEvent(new System.Diagnostics.ActivityEvent("tagGroupIngestService"));
             result.Add(await IngestData<TagGroup, ITagGroupService>(tagGroupService, cancellationToken));
         }
 
-        if (Config.Enabled.ContainsKey("tagIngestService") && Config.Enabled["tagIngestService"])
+        if (Config.JsonIngestEnabled.ContainsKey("tagIngestService") && Config.JsonIngestEnabled["tagIngestService"])
         {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("tagIngestService"));
+            //a?.AddEvent(new System.Diagnostics.ActivityEvent("tagIngestService"));
             result.Add(await IngestData<Tag, ITagService>(tagService, cancellationToken));
         }
 
-        if (Config.Enabled.ContainsKey("entityVariantRoleIngestService") && Config.Enabled["entityVariantRoleIngestService"])
+        if (Config.JsonIngestEnabled.ContainsKey("entityVariantRoleIngestService") && Config.JsonIngestEnabled["entityVariantRoleIngestService"])
         {
-            a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantRoleIngestService"));
+            //a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantRoleIngestService"));
             result.Add(await IngestData<EntityVariantRole, IEntityVariantRoleService>(entityVariantRoleService, cancellationToken));
         }
 
@@ -223,7 +224,7 @@ public class JsonIngestFactory
         var type = typeof(T);
         var translatedItems = new Dictionary<string, List<T>>();
 
-        foreach (var lang in Config.Languages.Distinct())
+        foreach (var lang in Config.JsonIngestLanguages.Distinct())
         {
             var translatedJsonData = await ReadJsonData<T>(lang, cancellationToken: cancellationToken);
             if (translatedJsonData == "[]")
@@ -464,7 +465,7 @@ public class JsonIngestFactory
     private async Task<string> ReadJsonData(string baseName, string? language = null, CancellationToken cancellationToken = default)
     {
 
-        string fileName = $"{Config.BasePath}{Path.DirectorySeparatorChar}{baseName}{(string.IsNullOrEmpty(language) ? string.Empty : "_" + language)}.json";
+        string fileName = $"{Config.JsonBasePath}{Path.DirectorySeparatorChar}{baseName}{(string.IsNullOrEmpty(language) ? string.Empty : "_" + language)}.json";
         if (File.Exists(fileName))
         {
             return await File.ReadAllTextAsync(fileName, cancellationToken);

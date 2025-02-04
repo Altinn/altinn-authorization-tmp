@@ -37,18 +37,18 @@ public class SqlMigrationFactory : IDbMigrationFactory
     /// Initializes a new instance of the <see cref="SqlMigrationFactory"/> class.
     /// </summary>
     /// <param name="options">DbMigrationConfig</param>
-    public SqlMigrationFactory(IOptions<DbMigrationConfig> options)
+    public SqlMigrationFactory(IOptions<DbAccessConfig> options)
     {
         var config = options.Value;
 
-        Enable = config.Enable;
+        Enable = config.MigrationEnabled;
 
         _connection = new SqlConnection(config.ConnectionString);
 
-        defaultSchema = config.DefaultSchema ?? "dbo";
-        translationSchema = config.TranslationSchema ?? "translation";
+        defaultSchema = "dbo";
+        translationSchema = "translation";
 
-        _migrationId = config.CollectionId;
+        _migrationId = config.MigrationKey;
         Migrations = new List<MigrationEntry>();
     }
 

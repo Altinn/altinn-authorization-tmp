@@ -12,13 +12,14 @@ builder.Configuration.AddUserSecrets(assembly);
 
 builder.Services.Configure<ResourceRegisterImportConfig>(builder.Configuration.GetRequiredSection("ResRegConfig"));
 
-builder.AddDatabaseDefinitions();
-builder.AddDbAccessData();
+builder.ConfigureDb();
+builder.AddDb();
 
 builder.Services.AddSingleton<Engine>();
 builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();
-host.Services.UseDatabaseDefinitions();
+
+await host.UseDb();
 
 host.Run();

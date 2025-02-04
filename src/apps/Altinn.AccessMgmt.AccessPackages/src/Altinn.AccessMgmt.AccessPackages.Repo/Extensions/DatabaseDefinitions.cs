@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.DbAccess.Data.Models;
+﻿using Altinn.AccessMgmt.DbAccess;
+using Altinn.AccessMgmt.DbAccess.Data.Models;
 using Altinn.AccessMgmt.Models;
 using Microsoft.Extensions.Options;
 
@@ -9,13 +10,13 @@ namespace Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
 /// </summary>
 public class DatabaseDefinitions
 {
-    private DbObjDefConfig Config { get; set; }
+    private DbAccessConfig Config { get; set; }
 
     /// <summary>
     /// Database Cache
     /// </summary>
     /// <param name="options">DbObjDefConfig</param>
-    public DatabaseDefinitions(IOptions<DbObjDefConfig> options)
+    public DatabaseDefinitions(IOptions<DbAccessConfig> options)
     {
         Config = options.Value;
     }

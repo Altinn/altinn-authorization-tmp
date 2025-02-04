@@ -11,8 +11,8 @@ builder.Configuration.AddUserSecrets(assembly);
 
 builder.Services.Configure<BrRegConfig>(builder.Configuration.GetRequiredSection("BrRegConfig"));
 
-builder.AddDatabaseDefinitions();
-builder.AddDbAccessData();
+builder.ConfigureDb();
+builder.AddDb();
 
 builder.Services.AddSingleton<Ingestor>();
 builder.Services.AddSingleton<Importer>();
@@ -21,6 +21,6 @@ builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();
 
-host.Services.UseDatabaseDefinitions();
+await host.UseDb();
 
 host.Run();

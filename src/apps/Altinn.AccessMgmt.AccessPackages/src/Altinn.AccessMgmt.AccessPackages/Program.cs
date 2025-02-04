@@ -9,11 +9,8 @@ bool useMock = true;
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.AddDatabaseDefinitions();
-builder.AddDbAccessData();
-
-builder.AddDbAccessMigrations();
-builder.AddJsonIngests();
+builder.ConfigureDb();
+builder.AddDb();
 
 if (useMock)
 {
@@ -22,15 +19,13 @@ if (useMock)
 
 var app = builder.Build();
 
-app.Services.UseDatabaseDefinitions();
-await app.Services.UseDbAccessMigrations();
-await app.Services.UseJsonIngests();
+await app.UseDb();
 
 if (useMock)
 {
     var mock = app.Services.GetRequiredService<Mockups>();
     await mock.SystemResourcesMock();
-    //// await mock.BasicMock();
+    await mock.BasicMock();
 }
 
 if (app.Environment.IsDevelopment())
