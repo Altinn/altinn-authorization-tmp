@@ -98,9 +98,9 @@ resource "azurerm_federated_identity_credential" "aks_federation" {
 module "rbac" {
   source              = "../../../../infra/modules/rbac"
   principal_id        = azurerm_user_assigned_identity.access_management.principal_id
-  hub_suffix          = local.hub_suffix
   hub_subscription_id = var.hub_subscription_id
-  spoke_suffix        = local.suffix
+  hub_suffix          = local.hub_suffix
+  spoke_suffix        = local.spoke_suffix
 
   use_app_configuration = true
   use_lease             = true

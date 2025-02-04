@@ -29,9 +29,11 @@ provider "azurerm" {
 }
 
 locals {
-  hub_suffix   = lower("${var.organization}${var.product_name}${var.instance}hub")
-  spoke_suffix = lower("${var.organization}${var.product_name}${var.instance}${var.environment}")
-  suffix       = lower("${var.organization}${var.product_name}${var.name}${var.instance}${var.environment}")
+  hub_suffix                = lower("${var.organization}${var.product_name}${var.instance}hub")
+  hub_resource_group_name   = lower("rg${local.hub_suffix}")
+  spoke_suffix              = lower("${var.organization}${var.product_name}${var.instance}${var.environment}")
+  spoke_resource_group_name = lower("rg${local.spoke_suffix}")
+  suffix                    = lower("${var.organization}${var.product_name}${var.name}${var.instance}${var.environment}")
 
   default_tags = {
     ProductName = var.product_name
@@ -50,11 +52,6 @@ resource "static_data" "static" {
   lifecycle {
     ignore_changes = [data]
   }
-}
-
-data "azurerm_resource_group" "hub" {
-  name     = "rg${local.hub_suffix}"
-  provider = azurerm.hub
 }
 
 resource "azurerm_resource_group" "access_management" {
