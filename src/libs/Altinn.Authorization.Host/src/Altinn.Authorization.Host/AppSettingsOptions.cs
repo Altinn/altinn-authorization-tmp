@@ -5,7 +5,6 @@ namespace Altinn.Authorization.Host;
 /// </summary>
 public class AppSettingsOptions
 {
-
     /// <summary>
     /// Gets or sets the labels used for app configuration.
     /// These labels help in fetching specific configuration settings.

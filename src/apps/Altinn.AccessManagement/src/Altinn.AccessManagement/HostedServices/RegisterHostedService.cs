@@ -12,6 +12,7 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="lease">Lease provider for distributed locking.</param>
 /// <param name="register">Register integration service.</param>
 /// <param name="logger">Logger for logging service activities.</param>
+/// <param name="featureManager">for reading feature flags</param>
 public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister register, ILogger<RegisterHostedService> logger, IFeatureManager featureManager) : IHostedService, IDisposable
 {
     private readonly IAltinnLease _lease = lease;
