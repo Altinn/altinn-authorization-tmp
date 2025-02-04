@@ -795,6 +795,8 @@ namespace Altinn.AccessManagement.Core.Services
                         CoveredByPartyId = coveredByPartyId,
                         CoveredByUserId = coveredByUserId,
                         PerformedByUserId = deleteRequest.DeletedByUserId,
+                        PerformedByUuid = deleteRequest.DeletedByUserPartyUuid.ToString(),
+                        PerformedByUuidType = deleteRequest.DeletedByUserPartyUuidType,
                         BlobStoragePolicyPath = policyPath,
                         BlobStorageVersionId = response.Value.VersionId
                     };
@@ -913,6 +915,8 @@ namespace Altinn.AccessManagement.Core.Services
                     FromUuid = policyToDelete.PolicyMatch.FromUuid,
                     FromUuidType = policyToDelete.PolicyMatch.FromUuidType,
                     PerformedByUserId = policyToDelete.DeletedByUserId,
+                    PerformedByUuid = policyToDelete.DeletedByUserPartyUuid.ToString(),
+                    PerformedByUuidType = policyToDelete.DeletedByUserPartyUuidType,
                     BlobStoragePolicyPath = policyPath,
                     BlobStorageVersionId = response.Value.VersionId
                 };

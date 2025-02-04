@@ -49,6 +49,13 @@ namespace Altinn.AccessManagement.Enums
         /// </summary>
         [EnumMember(Value = "urn:altinn:resource")]
         [PgName("urn:altinn:resource")]
-        Resource
+        Resource,
+
+        /// <summary>
+        /// Defining a party this could be any type from Person, Organization, SystemUser"
+        /// </summary>
+        [EnumMember(Value = "urn:altinn:party:uuid")]
+        [PgName("urn:altinn:party:uuid")]
+        Party
     }
 }

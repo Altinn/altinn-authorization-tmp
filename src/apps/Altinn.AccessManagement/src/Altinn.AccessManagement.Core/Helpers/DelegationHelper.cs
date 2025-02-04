@@ -820,13 +820,15 @@ namespace Altinn.AccessManagement.Core.Helpers
         /// <summary>
         /// Builds a RequestToDelete request model for revoking all delegated rules for the resource if delegated between the from and to parties
         /// </summary>
-        public static List<RequestToDelete> GetRequestToDeleteResource(int authenticatedUserId, IEnumerable<AttributeMatch> resource, int fromPartyId, IEnumerable<AttributeMatch> to, UuidType fromType, Guid from)
+        public static List<RequestToDelete> GetRequestToDeleteResource(int authenticatedUserId, Guid authenticatedUserPartyUuid, IEnumerable<AttributeMatch> resource, int fromPartyId, IEnumerable<AttributeMatch> to, UuidType fromType, Guid from)
         {
             return new List<RequestToDelete>
             {
                 new RequestToDelete
                 {
                     DeletedByUserId = authenticatedUserId,
+                    DeletedByUserPartyUuid = authenticatedUserPartyUuid,
+                    DeletedByUserPartyUuidType = UuidType.Party,
                     PolicyMatch = new PolicyMatch
                     {
                         OfferedByPartyId = fromPartyId,

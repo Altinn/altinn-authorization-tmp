@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Altinn.AccessManagement.Core.Helpers;
+using Altinn.AccessManagement.Enums;
 
 namespace Altinn.AccessManagement.Core.Models
 {
@@ -18,6 +19,18 @@ namespace Altinn.AccessManagement.Core.Models
         /// </summary>
         [Required]
         public int DeletedByUserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user party uuid of the user who performed the deletion.
+        /// </summary>
+        [Required]
+        public Guid DeletedByUserPartyUuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user party uuid type of the user who performed the deletion.
+        /// </summary>
+        [Required]
+        public UuidType DeletedByUserPartyUuidType { get; set; }
 
         /// <summary>
         /// Gets or sets the policy to delete from

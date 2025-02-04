@@ -301,12 +301,13 @@ namespace Altinn.AccessManagement.Controllers
             try
             {
                 int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
+                Guid authenticatedUserPartyUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(input.Party, HttpContext);
                 var delegation = _mapper.Map<DelegationLookup>(body);
 
                 delegation.To = reportee.SingleToList();
 
-                var result = await _rights.RevokeRightsDelegation(authenticatedUserId, delegation, cancellationToken);
+                var result = await _rights.RevokeRightsDelegation(authenticatedUserId, authenticatedUserPartyUuid, delegation, cancellationToken);
                 if (result != null)
                 {
                     foreach (var error in result.Errors)
@@ -358,11 +359,12 @@ namespace Altinn.AccessManagement.Controllers
             try
             {
                 int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
+                Guid authenticatedUserPartyUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(input.Party, HttpContext);
                 var delegation = _mapper.Map<DelegationLookup>(body);
 
                 delegation.From = reportee.SingleToList();
-                var result = await _rights.RevokeRightsDelegation(authenticatedUserId, delegation, cancellationToken);
+                var result = await _rights.RevokeRightsDelegation(authenticatedUserId, authenticatedUserPartyUuid, delegation, cancellationToken);
                 if (result != null)
                 {
                     foreach (var error in result.Errors)
