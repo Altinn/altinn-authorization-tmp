@@ -203,6 +203,12 @@ public static class DbAccessExtensions
         builder.Services.AddSingleton<IGroupAdminService, GroupAdminDataService>();
         builder.Services.AddSingleton<IGroupDelegationService, GroupDelegationDataService>();
         builder.Services.AddSingleton<IDelegationService, DelegationDataService>();
+        builder.Services.AddSingleton<IDelegationAssignmentPackageResourceService, DelegationAssignmentPackageResourceDataService>();
+        builder.Services.AddSingleton<IDelegationAssignmentResourceService, DelegationAssignmentResourceDataService>();
+        builder.Services.AddSingleton<IDelegationAssignmentPackageService, DelegationAssignmentPackageDataService>();
+        builder.Services.AddSingleton<IDelegationRolePackageResourceService, DelegationRolePackageResourceDataService>();
+        builder.Services.AddSingleton<IDelegationRoleResourceService, DelegationRoleResourceDataService>();
+        builder.Services.AddSingleton<IDelegationRolePackageService, DelegationRolePackageDataService>();
         #endregion
 
         return builder;
@@ -244,6 +250,12 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<Tag, ExtTag>, PostgresExtendedRepo<Tag, ExtTag>>();
         services.AddSingleton<IDbBasicRepo<TagGroup>, PostgresBasicRepo<TagGroup>>();
         services.AddSingleton<IDbExtendedRepo<Delegation, ExtDelegation>, PostgresExtendedRepo<Delegation, ExtDelegation>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationAssignmentPackageResource, ExtDelegationAssignmentPackageResource>, PostgresExtendedRepo<DelegationAssignmentPackageResource, ExtDelegationAssignmentPackageResource>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationAssignmentResource, ExtDelegationAssignmentResource>, PostgresExtendedRepo<DelegationAssignmentResource, ExtDelegationAssignmentResource>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationAssignmentPackage, ExtDelegationAssignmentPackage>, PostgresExtendedRepo<DelegationAssignmentPackage, ExtDelegationAssignmentPackage>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationRolePackageResource, ExtDelegationRolePackageResource>, PostgresExtendedRepo<DelegationRolePackageResource, ExtDelegationRolePackageResource>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationRoleResource, ExtDelegationRoleResource>, PostgresExtendedRepo<DelegationRoleResource, ExtDelegationRoleResource>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationRolePackage, ExtDelegationRolePackage>, PostgresExtendedRepo<DelegationRolePackage, ExtDelegationRolePackage>>();
     }
 
     private static void RegisterSqlDataRepo(IServiceCollection services)
@@ -282,5 +294,11 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<Tag, ExtTag>, SqlExtendedRepo<Tag, ExtTag>>();
         services.AddSingleton<IDbBasicRepo<TagGroup>, SqlBasicRepo<TagGroup>>();
         services.AddSingleton<IDbExtendedRepo<Delegation, ExtDelegation>, SqlExtendedRepo<Delegation, ExtDelegation>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationAssignmentPackageResource, ExtDelegationAssignmentPackageResource>, SqlExtendedRepo<DelegationAssignmentPackageResource, ExtDelegationAssignmentPackageResource>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationAssignmentResource, ExtDelegationAssignmentResource>, SqlExtendedRepo<DelegationAssignmentResource, ExtDelegationAssignmentResource>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationAssignmentPackage, ExtDelegationAssignmentPackage>, SqlExtendedRepo<DelegationAssignmentPackage, ExtDelegationAssignmentPackage>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationRolePackageResource, ExtDelegationRolePackageResource>, SqlExtendedRepo<DelegationRolePackageResource, ExtDelegationRolePackageResource>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationRoleResource, ExtDelegationRoleResource>, SqlExtendedRepo<DelegationRoleResource, ExtDelegationRoleResource>>();
+        services.AddSingleton<IDbExtendedRepo<DelegationRolePackage, ExtDelegationRolePackage>, SqlExtendedRepo<DelegationRolePackage, ExtDelegationRolePackage>>();
     }
 }

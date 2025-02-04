@@ -69,5 +69,12 @@ public class DatabaseDefinitions
         DbDefinitions.Add<GroupDelegation, ExtGroupDelegation>(Config, useTranslation: false, useHistory: true);
 
         DbDefinitions.Add<Delegation, ExtDelegation>(Config, useTranslation: false, useHistory: true);
+
+        DbDefinitions.Add<DelegationAssignmentPackageResource, ExtDelegationAssignmentPackageResource>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<DelegationAssignmentResource, ExtDelegationAssignmentResource>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<DelegationAssignmentPackage, ExtDelegationAssignmentPackage>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<DelegationRolePackageResource, ExtDelegationRolePackageResource>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<DelegationRoleResource, ExtDelegationRoleResource>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<DelegationRolePackage, ExtDelegationRolePackage>(Config, useTranslation: false, useHistory: true);
     }
 }

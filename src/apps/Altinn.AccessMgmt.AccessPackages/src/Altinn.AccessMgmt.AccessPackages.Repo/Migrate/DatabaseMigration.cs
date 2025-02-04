@@ -158,29 +158,65 @@ inner join dbo.rolemap as map on a.roleid = map.hasroleid;
         await _factory.CreateForeignKeyConstraint<Delegation, Assignment>(t => t.ToId, t => t.Id, cascadeDelete: true);
         await _factory.CreateForeignKeyConstraint<Delegation, Entity>(t => t.SourceId, t => t.Id);
         await _factory.CreateForeignKeyConstraint<Delegation, Entity>(t => t.ViaId, t => t.Id);
-        //// await _factory.CreateUniqueConstraint<Delegation>([t => t.FromId, t => t.ToId]);
         await _factory.AddHistory<Delegation>();
 
-        //await _factory.UseHistory<DelegationPackage>();
-        //await _factory.CreateTable<DelegationPackage>();
-        //await _factory.CreateColumn<DelegationPackage>(t => t.DelegationId, dbType: DataTypes.Guid);
-        //await _factory.CreateColumn<DelegationPackage>(t => t.PackageResourceId, dbType: DataTypes.Guid);
-        //await _factory.CreateForeignKeyConstraint<DelegationPackage, Delegation>(t => t.DelegationId, t => t.Id, cascadeDelete: true);
-        //await _factory.CreateForeignKeyConstraint<DelegationPackage, PackageResource>(t => t.PackageResourceId, t => t.Id, cascadeDelete: true);
-        //await _factory.CreateUniqueConstraint<DelegationPackage>([t => t.DelegationId, t => t.PackageResourceId]);
-        //await _factory.AddHistory<DelegationPackage>();
+        await _factory.UseHistory<DelegationAssignmentPackageResource>();
+        await _factory.CreateTable<DelegationAssignmentPackageResource>();
+        await _factory.CreateColumn<DelegationAssignmentPackageResource>(t => t.DelegationId, dbType: DataTypes.Guid);
+        await _factory.CreateColumn<DelegationAssignmentPackageResource>(t => t.AssignmentPackageId, dbType: DataTypes.Guid);
+        await _factory.CreateColumn<DelegationAssignmentPackageResource>(t => t.PackageResourceId, dbType: DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<DelegationAssignmentPackageResource, Delegation>(t => t.DelegationId, t => t.Id);
+        await _factory.CreateForeignKeyConstraint<DelegationAssignmentPackageResource, AssignmentPackage>(t => t.AssignmentPackageId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<DelegationAssignmentPackageResource, PackageResource>(t => t.PackageResourceId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<DelegationAssignmentPackageResource>([t => t.DelegationId, t => t.AssignmentPackageId, t => t.PackageResourceId]);
+        await _factory.AddHistory<DelegationAssignmentPackageResource>();
 
+        await _factory.UseHistory<DelegationAssignmentResource>();
+        await _factory.CreateTable<DelegationAssignmentResource>();
+        await _factory.CreateColumn<DelegationAssignmentResource>(t => t.DelegationId, dbType: DataTypes.Guid);
+        await _factory.CreateColumn<DelegationAssignmentResource>(t => t.AssignmentResourceId, dbType: DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<DelegationAssignmentResource, Delegation>(t => t.DelegationId, t => t.Id);
+        await _factory.CreateForeignKeyConstraint<DelegationAssignmentResource, AssignmentResource>(t => t.AssignmentResourceId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<DelegationAssignmentResource>([t => t.DelegationId, t => t.AssignmentResourceId]);
+        await _factory.AddHistory<DelegationAssignmentResource>();
 
-        //await _factory.UseHistory<DelegationResource>();
-        //await _factory.CreateTable<DelegationResource>();
-        //await _factory.CreateColumn<DelegationResource>(t => t.DelegationId, dbType: DataTypes.Guid);
-        //await _factory.CreateColumn<DelegationResource>(t => t.AssignmentResourceId, dbType: DataTypes.Guid, nullable: true);
-        //await _factory.CreateColumn<DelegationResource>(t => t.RoleResourceId, dbType: DataTypes.Guid, nullable: true);
-        //await _factory.CreateForeignKeyConstraint<DelegationResource, Delegation>(t => t.DelegationId, t => t.Id, cascadeDelete: true);
-        //await _factory.CreateForeignKeyConstraint<DelegationResource, Resource>(t => t.AssignmentResourceId, t => t.Id, cascadeDelete: false);
-        //await _factory.CreateForeignKeyConstraint<DelegationResource, Resource>(t => t.RoleResourceId, t => t.Id, cascadeDelete: false);
-        //await _factory.CreateUniqueConstraint<DelegationResource>([t => t.DelegationId, t => t.AssignmentResourceId, t => t.RoleResourceId]);
-        //await _factory.AddHistory<DelegationResource>();
+        await _factory.UseHistory<DelegationAssignmentPackage>();
+        await _factory.CreateTable<DelegationAssignmentPackage>();
+        await _factory.CreateColumn<DelegationAssignmentPackage>(t => t.DelegationId, dbType: DataTypes.Guid);
+        await _factory.CreateColumn<DelegationAssignmentPackage>(t => t.AssignmentPackageId, dbType: DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<DelegationAssignmentPackage, Delegation>(t => t.DelegationId, t => t.Id);
+        await _factory.CreateForeignKeyConstraint<DelegationAssignmentPackage, AssignmentPackage>(t => t.AssignmentPackageId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<DelegationAssignmentPackage>([t => t.DelegationId, t => t.AssignmentPackageId]);
+        await _factory.AddHistory<DelegationAssignmentPackage>();
+
+        await _factory.UseHistory<DelegationRolePackageResource>();
+        await _factory.CreateTable<DelegationRolePackageResource>();
+        await _factory.CreateColumn<DelegationRolePackageResource>(t => t.DelegationId, dbType: DataTypes.Guid);
+        await _factory.CreateColumn<DelegationRolePackageResource>(t => t.RolePackageId, dbType: DataTypes.Guid);
+        await _factory.CreateColumn<DelegationRolePackageResource>(t => t.PackageResourceId, dbType: DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<DelegationRolePackageResource, Delegation>(t => t.DelegationId, t => t.Id);
+        await _factory.CreateForeignKeyConstraint<DelegationRolePackageResource, RolePackage>(t => t.RolePackageId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<DelegationRolePackageResource, PackageResource>(t => t.PackageResourceId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<DelegationRolePackageResource>([t => t.DelegationId, t => t.RolePackageId, t => t.PackageResourceId]);
+        await _factory.AddHistory<DelegationRolePackageResource>();
+
+        await _factory.UseHistory<DelegationRoleResource>();
+        await _factory.CreateTable<DelegationRoleResource>();
+        await _factory.CreateColumn<DelegationRoleResource>(t => t.DelegationId, dbType: DataTypes.Guid);
+        await _factory.CreateColumn<DelegationRoleResource>(t => t.RoleResourceId, dbType: DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<DelegationRoleResource, Delegation>(t => t.DelegationId, t => t.Id);
+        await _factory.CreateForeignKeyConstraint<DelegationRoleResource, RoleResource>(t => t.RoleResourceId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<DelegationRoleResource>([t => t.DelegationId, t => t.RoleResourceId]);
+        await _factory.AddHistory<DelegationRoleResource>();
+
+        await _factory.UseHistory<DelegationRolePackage>();
+        await _factory.CreateTable<DelegationRolePackage>();
+        await _factory.CreateColumn<DelegationRolePackage>(t => t.DelegationId, dbType: DataTypes.Guid);
+        await _factory.CreateColumn<DelegationRolePackage>(t => t.RolePackageId, dbType: DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<DelegationRolePackage, Delegation>(t => t.DelegationId, t => t.Id);
+        await _factory.CreateForeignKeyConstraint<DelegationRolePackage, RolePackage>(t => t.RolePackageId, t => t.Id, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<DelegationRolePackage>([t => t.DelegationId, t => t.RolePackageId]);
+        await _factory.AddHistory<DelegationRolePackage>();
     }
 
     private async Task CreateSchema()
