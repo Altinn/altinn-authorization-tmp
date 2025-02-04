@@ -1,0 +1,8 @@
+{
+  "image": {},
+  "infra": {
+    "terraform": {
+      "stateFile": "Altinn.AccessManagement.tfstate"
+    }
+  }
+}
