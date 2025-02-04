@@ -367,9 +367,18 @@ public class Mockups
         }
     }
 
-    private async Task<Assignment> GetOrCreateAssignment(Assignment obj)
+    private async Task<Assignment> GetOrCreateAssignment(Assignment obj, bool verifyOnId = false)
     {
-        var res = Assignments.FirstOrDefault(t => t.FromId == obj.FromId && t.ToId == obj.ToId && t.RoleId == obj.RoleId) ?? null;
+        Assignment? res;
+        if (verifyOnId)
+        {
+            res = Assignments.FirstOrDefault(t => t.Id == obj.Id);
+        }
+        else
+        {
+            res = Assignments.FirstOrDefault(t => t.FromId == obj.FromId && t.ToId == obj.ToId && t.RoleId == obj.RoleId) ?? null;
+        }
+
         if (res == null)
         {
             await assignmentService.Create(obj);
@@ -1647,12 +1656,26 @@ public class Mockups
 
     public async Task BasicMock()
     {
+        await LoadCache();
+
+        
+
         var dagl = GetRole("DAGL");
         var lede = GetRole("LEDE");
         var medl = GetRole("MEDL");
         var regn = GetRole("REGN");
         var revi = GetRole("REVI");
         var ansatt = await GetOrCreateRole(new Role() { Id = Guid.Parse("98f99fcb-21af-4155-a84a-9493c14144ac"), Code = "ANSATT", Name = "Ansatt", Description = "Ansatt i firma", Urn = "digdir:entity:ansatt", EntityTypeId = GetEntityType("Organisasjon").Id, ProviderId = GetProvider("Digdir").Id });
+
+        var randomRoleMap = new Dictionary<int, Guid>()
+            {
+                { 7, dagl.Id },
+                { 12, lede.Id }
+            };
+        foreach (var pkg in Packages)
+        {
+            await GeneratePackageResources(pkg, randomRoleMap);
+        }
 
         int stdAntall = 10;
         int stdPeople = 15;
@@ -1721,42 +1744,42 @@ public class Mockups
                 for (int k = 0; k < spec.ansatte; k++)
                 {
                     var personKey = $"{orgKey}:person:{k}";
-                    var e = await GetOrCreateEntity(GeneratePersonEntity(GenerateFakeGuid(personKey)));
+                    var e = await GetOrCreateEntity(GeneratePersonEntity(GenerateFakeGuid(personKey)), true);
 
                     people.Add(e);
 
-                    await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:ansatt" + k), FromId = comp.Id, ToId = e.Id, RoleId = ansatt.Id });
+                    await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:ansatt" + k), FromId = comp.Id, ToId = e.Id, RoleId = ansatt.Id }, true);
 
                     if (employeeCount <= 10)
                     {
                         if (k==0)
                         {
-                            await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:dagl" + k), FromId = comp.Id, ToId = e.Id, RoleId = dagl.Id });
-                            await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:lede" + k), FromId = comp.Id, ToId = e.Id, RoleId = lede.Id });
+                            await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:dagl" + k), FromId = comp.Id, ToId = e.Id, RoleId = dagl.Id }, true);
+                            await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:lede" + k), FromId = comp.Id, ToId = e.Id, RoleId = lede.Id }, true);
                         }
                     }
                     else
                     {
                         if (k==0)
                         {
-                            await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:dagl" + k), FromId = comp.Id, ToId = e.Id, RoleId = dagl.Id });
+                            await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:dagl" + k), FromId = comp.Id, ToId = e.Id, RoleId = dagl.Id }, true);
                         }
                         if (k==1)
                         {
-                            await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:lede" + k), FromId = comp.Id, ToId = e.Id, RoleId = lede.Id });
+                            await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:lede" + k), FromId = comp.Id, ToId = e.Id, RoleId = lede.Id }, true);
                         }
                     }
 
                     if (k < medlCount)
                     {
-                        await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:medl" + k), FromId = comp.Id, ToId = e.Id, RoleId = medl.Id });
+                        await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{personKey}:assign:medl" + k), FromId = comp.Id, ToId = e.Id, RoleId = medl.Id }, true);
                     }
                 }
             }
             i++;
         }
 
-        var pck1 = Packages.FirstOrDefault(t => t.Name == "Skatt for næring");
+        var pck1 = Packages.FirstOrDefault(t => t.Name == "Skatt næring");
         var pck2 = Packages.FirstOrDefault(t => t.Name == "Skattegrunnlag");
         var pck3 = Packages.FirstOrDefault(t => t.Name == "Merverdiavgift");
         var pck4 = Packages.FirstOrDefault(t => t.Name == "Regnskap og økonomirapportering");
@@ -1784,7 +1807,7 @@ public class Mockups
                 if (size > 10)
                 {
                     var revisor = GetRandomItem(orgs.First(t => t.Key == "Revisjon").Value.Where(t => t.Id != entity.Id));
-                    var reviAss = await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{entity.Id}:assign:revi" + a), FromId = entity.Id, ToId = revisor.Id, RoleId = revi.Id });
+                    var reviAss = await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{entity.Id}:assign:revi:" + a), FromId = entity.Id, ToId = revisor.Id, RoleId = revi.Id }, true);
                     assignments.Add(reviAss);
 
                     if (oddEvenName)
@@ -1811,7 +1834,7 @@ public class Mockups
                 }
 
                 var regnskap = GetRandomItem(orgs.First(t => t.Key == "Regnskap").Value.Where(t => t.Id != entity.Id));
-                var regnAss = await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{entity.Id}:assign:regn" + a), FromId = entity.Id, ToId = regnskap.Id, RoleId = regn.Id });
+                var regnAss = await GetOrCreateAssignment(new Assignment() { Id = GenerateFakeGuid($"{entity.Id}:assign:regn:" + a), FromId = entity.Id, ToId = regnskap.Id, RoleId = regn.Id }, true);
                 assignments.Add(regnAss);
 
                 if (oddEvenName)
@@ -1861,6 +1884,16 @@ public class Mockups
 
                 for (int ra = 0; ra < 1 + diff; ra++)
                 {
+                    if (assignments.Count(t => t.FromId == assignment.ToId && t.RoleId == ansatt.Id) == 0)
+                    {
+                        // TODO: Never ?? 
+                        Console.WriteLine($"Employee not found for assignment.ToId:'{assignment.ToId}'");
+                        continue;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Employee found for assignment.ToId:'{assignment.ToId}'!");
+                    }
                     var entityAnsatt = GetRandomItem(assignments.Where(t => t.FromId == assignment.ToId && t.RoleId == ansatt.Id));
                     var delegation = new Delegation() { Id = GenerateFakeGuid($"delegation:{assignment.Id}:{entityAnsatt.Id}"), FromId = assignment.Id, ToId = entityAnsatt.Id, SourceId = assignment.FromId, ViaId = assignment.ToId };
                     GetOrCreateDelegation(delegation);
