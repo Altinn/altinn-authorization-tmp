@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-
+	  <ImplicitUsings>enable</ImplicitUsings>
 	  <NoWarn>SA1122;SA1516;8618;CA1860;CS8618;BL0007</NoWarn>
+	  <WarningLevel>0</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>
