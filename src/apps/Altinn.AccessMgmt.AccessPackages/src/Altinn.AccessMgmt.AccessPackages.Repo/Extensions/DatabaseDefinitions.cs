@@ -37,7 +37,6 @@ public class DatabaseDefinitions
         DbDefinitions.Add<EntityVariantRole, ExtEntityVariantRole>(Config, useTranslation: false, useHistory: true);
 
         DbDefinitions.Add<Package, ExtPackage>(Config, useTranslation: true, useHistory: true);
-        DbDefinitions.Add<PackageDelegation, ExtPackageDelegation>(Config, useTranslation: false, useHistory: true);
         DbDefinitions.Add<PackageResource, ExtPackageResource>(Config, useTranslation: false, useHistory: true);
         DbDefinitions.Add<PackageTag, ExtPackageTag>(Config, useTranslation: false, useHistory: true);
 
@@ -70,7 +69,5 @@ public class DatabaseDefinitions
         DbDefinitions.Add<GroupDelegation, ExtGroupDelegation>(Config, useTranslation: false, useHistory: true);
 
         DbDefinitions.Add<Delegation, ExtDelegation>(Config, useTranslation: false, useHistory: true);
-        DbDefinitions.Add<DelegationPackageResource, ExtDelegationPackageResource>(Config, useTranslation: false, useHistory: true);
-        DbDefinitions.Add<DelegationResource, ExtDelegationResource>(Config, useTranslation: false, useHistory: true);
     }
 }

@@ -1,11 +1,11 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.DbAccess.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess.Data.Models;
 using FastMember;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 

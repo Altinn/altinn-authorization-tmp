@@ -45,7 +45,8 @@ public partial class RegisterClient
     /// <param name="request">The HTTP request message.</param>
     private void AddAuthorization(HttpRequestMessage request)
     {
-        var token = _accessTokenGenerator.GenerateAccessToken("platform", "access-management");
+        //// var token = _accessTokenGenerator.GenerateAccessToken("platform", "access-management");
+        var token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IkJCQjA2MkM5ODI4NEZBRTYxOUNCMjlGRkYyQ0FBMDFGNUE3QzU2RjIiLCJ0eXAiOiJKV1QiLCJ4NWMiOiJCQkIwNjJDOTgyODRGQUU2MTlDQjI5RkZGMkNBQTAxRjVBN0M1NkYyIn0.eyJ1cm46YWx0aW5uOmFwcCI6ImFjY2Vzcy1tYW5hZ2VtZW50IiwiZXhwIjoxNzM4NTkxNjA3LCJpYXQiOjE3Mzg1ODgwMDcsImlzcyI6InBsYXRmb3JtIiwiYWN0dWFsX2lzcyI6ImFsdGlubi10ZXN0LXRvb2xzIiwibmJmIjoxNzM4NTg4MDA3fQ.gliNjnheFqnoKzMzdyYyApKhYSwKFLS1fXQXBvx0R3RQ7ONog--E2Pmb1jq_YcCT4vJTcArPPP4jcP2dYyjg8LQX0zbyG9VRUQndOCf0ZnRwrsZdYm5j4nG-eSSHF3xQWjVZBh63FipXJHowzV3JgNcm4A4woxtq_OIc2TFyggmvcXE77kjYo982zoUlTYSmhP0v-LexDFJbI7ItzBDWYPjt3Unaok_rIrC9eFoPIwgcomPGb827WoiN8LAu-bniiJl5dBVvuy8BmxmsLUxg0LYZ1QoC7tZGPM9WKJr8OTOglaZgUieHhPAnE9lrOSS7kPgLHQRZy-AKW6i35BEduw";
         if (!string.IsNullOrEmpty(token))
         {
             request.Headers.Add("PlatformAccessToken", token);

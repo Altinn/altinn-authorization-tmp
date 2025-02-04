@@ -4,50 +4,49 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
 
-var builder = WebApplication.CreateBuilder(args);
+//var builder = WebApplication.CreateBuilder(args);
 
-//Add services to the container.
-builder.AddDatabaseDefinitions();
-builder.AddDbAccessData();
+////Add services to the container.
+//builder.AddDatabaseDefinitions();
+//builder.AddDbAccessData();
 
-builder.AddDbAccessMigrations();
-builder.AddJsonIngests();
+//builder.AddDbAccessMigrations();
+//builder.AddJsonIngests();
 
-builder.Services.AddAuthentication();
-builder.Services.AddAuthorization();
-builder.Services.AddHealthChecks();
+//builder.Services.AddAuthentication();
+//builder.Services.AddAuthorization();
+//builder.Services.AddHealthChecks();
 
-builder.Services.AddControllers();
+//builder.Services.AddControllers();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c=>
-{
-    var originalIdSelector = c.SchemaGeneratorOptions.SchemaIdSelector;
-    c.SchemaGeneratorOptions.SchemaIdSelector = (Type t) =>
-    {
-        if (!t.IsNested)
-        {
-            return originalIdSelector(t);
-        }
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen(c=>
+//{
+//    var originalIdSelector = c.SchemaGeneratorOptions.SchemaIdSelector;
+//    c.SchemaGeneratorOptions.SchemaIdSelector = (Type t) =>
+//    {
+//        if (!t.IsNested)
+//        {
+//            return originalIdSelector(t);
+//        }
 
-        var chain = new List<string>();
-        do
-        {
-            chain.Add(originalIdSelector(t));
-            t = t.DeclaringType;
-        }
-        while (t != null);
+//        var chain = new List<string>();
+//        do
+//        {
+//            chain.Add(originalIdSelector(t));
+//            t = t.DeclaringType;
+//        }
+//        while (t != null);
 
-        chain.Reverse();
-        return string.Join(".", chain);
-    };
-});
+//        chain.Reverse();
+//        return string.Join(".", chain);
+//    };
+//});
 
-var app = builder.Build();
+//var app = builder.Build();
 
-//WebApplication app = AccessManagementHost.Create(args);
+WebApplication app = AccessManagementHost.Create(args);
 
 app.AddDefaultAltinnMiddleware(errorHandlingPath: "/accessmanagement/api/v1/error");
 

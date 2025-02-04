@@ -32,6 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\Altinn.AccessMgmt.AccessPackages\src\Altinn.AccessMgmt.AccessPackages.Repo\Altinn.AccessMgmt.AccessPackages.Repo.csproj" />
         <ProjectReference Include="..\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj" />
         <ProjectReference Include="..\Altinn.AccessManagement.Integration\Altinn.AccessManagement.Integration.csproj" />
         <ProjectReference Include="..\Altinn.AccessManagement.Persistence\Altinn.AccessManagement.Persistence.csproj" />

@@ -33,7 +33,6 @@ public static class EndpointExtension
         app.MapDefaultsExt<IGroupAdminService, GroupAdmin, ExtGroupAdmin>();
         app.MapDefaultsExt<IGroupMemberService, GroupMember, ExtGroupMember>();
         app.MapDefaultsExt<IPackageService, Package, ExtPackage>(mapSearch: true);
-        app.MapDefaultsExt<IPackageDelegationService, PackageDelegation, ExtPackageDelegation>();
         app.MapDefaultsExt<IPackageResourceService, PackageResource, ExtPackageResource>();
         app.MapCrossDefaults<Package, IPackageTagService, PackageTag, Tag>("packages", "tags");
         app.MapDefaults<IProviderService, Provider>();
@@ -54,7 +53,6 @@ public static class EndpointExtension
         app.MapDefaults<ITagGroupService, TagGroup>();
 
         app.MapDefaultsExt<IDelegationService, Delegation, ExtDelegation>();
-        app.MapCrossDefaults<Delegation, IDelegationPackageResourceService, DelegationPackageResource, PackageResource>("delegations", "packages");
 
         app.MapGet("/entity/lookup/{key}/{value}", async (HttpRequest request, IEntityLookupService service, string key, string value) =>
         {

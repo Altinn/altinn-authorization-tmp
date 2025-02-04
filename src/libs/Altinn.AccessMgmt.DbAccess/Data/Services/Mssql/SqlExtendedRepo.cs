@@ -1,12 +1,10 @@
-﻿using System.Data.SqlClient;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessMgmt.DbAccess.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess.Data.Models;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.DbAccess.Data.Services.Mssql;
 

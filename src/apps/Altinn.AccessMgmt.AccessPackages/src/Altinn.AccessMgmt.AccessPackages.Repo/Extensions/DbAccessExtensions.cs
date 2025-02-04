@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+
 namespace Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
 
 /// <summary>
@@ -201,10 +202,7 @@ public static class DbAccessExtensions
         builder.Services.AddSingleton<IGroupMemberService, GroupMemberDataService>();
         builder.Services.AddSingleton<IGroupAdminService, GroupAdminDataService>();
         builder.Services.AddSingleton<IGroupDelegationService, GroupDelegationDataService>();
-        builder.Services.AddSingleton<IPackageDelegationService, PackageDelegationDataService>();
         builder.Services.AddSingleton<IDelegationService, DelegationDataService>();
-        builder.Services.AddSingleton<IDelegationResourceService, DelegationResourceDataService>();
-        builder.Services.AddSingleton<IDelegationPackageResourceService, DelegationPackageResourceDataService>();
         #endregion
 
         return builder;
@@ -228,7 +226,6 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<GroupMember, ExtGroupMember>, PostgresExtendedRepo<GroupMember, ExtGroupMember>>();
         services.AddSingleton<IDbExtendedRepo<GroupDelegation, ExtGroupDelegation>, PostgresExtendedRepo<GroupDelegation, ExtGroupDelegation>>();
         services.AddSingleton<IDbExtendedRepo<Package, ExtPackage>, PostgresExtendedRepo<Package, ExtPackage>>();
-        services.AddSingleton<IDbExtendedRepo<PackageDelegation, ExtPackageDelegation>, PostgresExtendedRepo<PackageDelegation, ExtPackageDelegation>>();
         services.AddSingleton<IDbExtendedRepo<PackageResource, ExtPackageResource>, PostgresExtendedRepo<PackageResource, ExtPackageResource>>();
         services.AddSingleton<IDbCrossRepo<Package, PackageTag, Tag>, PostgresCrossRepo<Package, PackageTag, Tag>>();
         services.AddSingleton<IDbBasicRepo<Provider>, PostgresBasicRepo<Provider>>();
@@ -247,8 +244,6 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<Tag, ExtTag>, PostgresExtendedRepo<Tag, ExtTag>>();
         services.AddSingleton<IDbBasicRepo<TagGroup>, PostgresBasicRepo<TagGroup>>();
         services.AddSingleton<IDbExtendedRepo<Delegation, ExtDelegation>, PostgresExtendedRepo<Delegation, ExtDelegation>>();
-        services.AddSingleton<IDbCrossRepo<Delegation, DelegationResource, Resource>, PostgresCrossRepo<Delegation, DelegationResource, Resource>>();
-        services.AddSingleton<IDbCrossRepo<Delegation, DelegationPackageResource, PackageResource>, PostgresCrossRepo<Delegation, DelegationPackageResource, PackageResource>>();
     }
 
     private static void RegisterSqlDataRepo(IServiceCollection services)
@@ -269,7 +264,6 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<GroupMember, ExtGroupMember>, SqlExtendedRepo<GroupMember, ExtGroupMember>>();
         services.AddSingleton<IDbExtendedRepo<GroupDelegation, ExtGroupDelegation>, SqlExtendedRepo<GroupDelegation, ExtGroupDelegation>>();
         services.AddSingleton<IDbExtendedRepo<Package, ExtPackage>, SqlExtendedRepo<Package, ExtPackage>>();
-        services.AddSingleton<IDbExtendedRepo<PackageDelegation, ExtPackageDelegation>, SqlExtendedRepo<PackageDelegation, ExtPackageDelegation>>();
         services.AddSingleton<IDbExtendedRepo<PackageResource, ExtPackageResource>, SqlExtendedRepo<PackageResource, ExtPackageResource>>();
         services.AddSingleton<IDbCrossRepo<Package, PackageTag, Tag>, SqlCrossRepo<Package, PackageTag, Tag>>();
         services.AddSingleton<IDbBasicRepo<Provider>, SqlBasicRepo<Provider>>();
@@ -288,7 +282,5 @@ public static class DbAccessExtensions
         services.AddSingleton<IDbExtendedRepo<Tag, ExtTag>, SqlExtendedRepo<Tag, ExtTag>>();
         services.AddSingleton<IDbBasicRepo<TagGroup>, SqlBasicRepo<TagGroup>>();
         services.AddSingleton<IDbExtendedRepo<Delegation, ExtDelegation>, SqlExtendedRepo<Delegation, ExtDelegation>>();
-        services.AddSingleton<IDbCrossRepo<Delegation, DelegationResource, Resource>, SqlCrossRepo<Delegation, DelegationResource, Resource>>();
-        services.AddSingleton<IDbCrossRepo<Delegation, DelegationPackageResource, PackageResource>, SqlCrossRepo<Delegation, DelegationPackageResource, PackageResource>>();
     }
 }

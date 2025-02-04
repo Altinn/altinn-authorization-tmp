@@ -38,37 +38,37 @@ public static class WebApp
 
         if (localSettings?.AppConfiguration?.Endpoint != null)
         {
-            builder.Configuration.AddAzureAppConfiguration(cfg =>
-            {
-                cfg.Connect(localSettings.AppConfiguration.Endpoint, DefaultTokenCredential.Instance);
-                cfg.ConfigureStartupOptions(startup =>
-                {
-                    startup.Timeout = TimeSpan.FromSeconds(3);
-                });
+            //builder.Configuration.AddAzureAppConfiguration(cfg =>
+            //{
+            //    cfg.Connect(localSettings.AppConfiguration.Endpoint, DefaultTokenCredential.Instance);
+            //    cfg.ConfigureStartupOptions(startup =>
+            //    {
+            //        startup.Timeout = TimeSpan.FromSeconds(3);
+            //    });
 
-                cfg.ConfigureKeyVault(kv =>
-                {
-                    kv.SetCredential(DefaultTokenCredential.Instance);
-                });
+            //    cfg.ConfigureKeyVault(kv =>
+            //    {
+            //        kv.SetCredential(DefaultTokenCredential.Instance);
+            //    });
 
-                cfg.ConfigureRefresh(refresh =>
-                {
-                    refresh.Register("Sentinel", refreshAll: true);
-                });
+            //    cfg.ConfigureRefresh(refresh =>
+            //    {
+            //        refresh.Register("Sentinel", refreshAll: true);
+            //    });
 
-                foreach (var label in options.AppConfigurationLabels)
-                {
-                    cfg.Select("*", label);
-                }
+            //    foreach (var label in options.AppConfigurationLabels)
+            //    {
+            //        cfg.Select("*", label);
+            //    }
 
-                cfg.UseFeatureFlags(flags =>
-                {
-                    foreach (var label in options.AppConfigurationLabels)
-                    {
-                        flags.Select("*", label);
-                    }
-                });
-            });
+            //    cfg.UseFeatureFlags(flags =>
+            //    {
+            //        foreach (var label in options.AppConfigurationLabels)
+            //        {
+            //            flags.Select("*", label);
+            //        }
+            //    });
+            //});
         }
 
         return builder;

@@ -30,7 +30,7 @@ if (useMock)
 {
     var mock = app.Services.GetRequiredService<Mockups>();
     await mock.SystemResourcesMock();
-    await mock.BasicMock();
+    //// await mock.BasicMock();
 }
 
 if (app.Environment.IsDevelopment())

@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -7,6 +6,7 @@ using Altinn.AccessMgmt.DbAccess.Data.Models;
 using Altinn.AccessMgmt.DbAccess.Migrate.Contracts;
 using Altinn.AccessMgmt.DbAccess.Migrate.Models;
 using Dapper;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.DbAccess.Migrate.Services;
