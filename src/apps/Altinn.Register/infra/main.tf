@@ -20,7 +20,6 @@ provider "azurerm" {
   }
 }
 
-
 provider "azurerm" {
   alias           = "hub"
   subscription_id = var.hub_subscription_id
@@ -29,9 +28,11 @@ provider "azurerm" {
 }
 
 locals {
-  hub_suffix   = lower("${var.organization}${var.product_name}${var.instance}hub")
-  spoke_suffix = lower("${var.organization}${var.product_name}${var.instance}${var.environment}")
-  suffix       = lower("${var.organization}${var.product_name}${var.name}${var.instance}${var.environment}")
+  hub_suffix                = lower("${var.organization}${var.product_name}${var.instance}hub")
+  hub_resource_group_name   = lower("rg${local.hub_suffix}")
+  spoke_suffix              = lower("${var.organization}${var.product_name}${var.instance}${var.environment}")
+  spoke_resource_group_name = lower("rg${local.spoke_suffix}")
+  suffix                    = lower("${var.organization}${var.product_name}${var.name}${var.instance}${var.environment}")
 
   default_tags = {
     ProductName = var.product_name
@@ -52,9 +53,21 @@ resource "static_data" "static" {
   }
 }
 
-data "azurerm_resource_group" "hub" {
-  name     = "rg${local.hub_suffix}"
-  provider = azurerm.hub
+data "azurerm_private_dns_zone" "postgres" {
+  name                = "privatelink.postgres.database.azure.com"
+  resource_group_name = "rg${local.hub_suffix}"
+  provider            = azurerm.hub
+}
+
+data "azurerm_subnet" "postgres" {
+  name                 = "Postgres"
+  virtual_network_name = "vnetss${local.spoke_suffix}"
+  resource_group_name  = local.spoke_resource_group_name
+}
+
+data "azurerm_user_assigned_identity" "admin" {
+  name                = "mipgsqladmin${local.spoke_suffix}"
+  resource_group_name = local.spoke_resource_group_name
 }
 
 resource "azurerm_resource_group" "access_management" {
@@ -85,9 +98,9 @@ resource "azurerm_federated_identity_credential" "aks_federation" {
 module "rbac" {
   source              = "../../../../infra/modules/rbac"
   principal_id        = azurerm_user_assigned_identity.access_management.principal_id
-  hub_subscription_id = var.hub_subscription_id
   hub_suffix          = local.hub_suffix
-  spoke_suffix        = local.spoke_suffix
+  hub_subscription_id = var.hub_subscription_id
+  spoke_suffix        = local.suffix
 
   use_app_configuration = true
   use_lease             = true
@@ -98,12 +111,29 @@ module "appsettings" {
   source              = "../../../../infra/modules/appsettings"
   hub_subscription_id = var.hub_subscription_id
   hub_suffix          = local.hub_suffix
+}
 
-  feature_flags = [
+module "postgres_server" {
+  source              = "../../../../infra/modules/postgres"
+  suffix              = local.suffix
+  resource_group_name = azurerm_resource_group.register.name
+  location            = "norwayeast"
+
+  subnet_id           = data.azurerm_subnet.postgres.id
+  private_dns_zone_id = data.azurerm_private_dns_zone.postgres.id
+  postgres_version    = "17"
+  configurations = {
+    "azure.extensions" : "HSTORE"
+  }
+
+  compute_tier = "Burstable"
+  compute_size = "Standard_B1ms"
+
+  entraid_admins = [
     {
-      name        = "AccessManagement.SyncRegister"
-      description = "Specifies if the register data should streamed from register service to access management database"
-      label       = "${lower(var.environment)}_accessmanagement"
+      principal_id   = data.azurerm_user_assigned_identity.admin.principal_id
+      principal_name = data.azurerm_user_assigned_identity.admin.name
+      principal_type = "ServicePrincipal"
     }
   ]
 }
