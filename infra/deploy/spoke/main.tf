@@ -107,29 +107,14 @@ resource "azurerm_resource_group" "spoke" {
   }
 }
 
-# module "app_configuration" {
-#   source     = "../../modules/appsettings"
-#   hub_suffix = local.hub_suffix
-#   providers = {
-#     azurerm.hub = azurerm.hub
-#   }
-# }
-
-# data "azurerm_app_configuration" "appconf" {
-#   name                = "appconfaltinnauth001hub"
-#   resource_group_name = "rgaltinnauth001hub"
-#   provider            = azurerm.hub
-# }
-
-resource "azurerm_app_configuration_key" "kake" {
-  configuration_store_id = "/subscriptions/01de49cb-48ef-4494-bc9d-b9e19a90bcd5/resourceGroups/rgaltinnauth001hub/providers/Microsoft.AppConfiguration/configurationStores/appconfaltinnauth001hub"
-  key                    = "kake"
-  value                  = "test"
-  label                  = var.environment
-  type                   = "kv"
-  # provider               = azurerm.hub
+module "app_configuration" {
+  source              = "../../modules/appsettings"
+  hub_subscription_id = var.hub_subscription_id
+  hub_suffix          = local.hub_suffix
+  providers = {
+    azurerm.hub = azurerm.hub
+  }
 }
-
 
 resource "azurerm_virtual_network" "dual_stack" {
   name                = "vnetds${local.suffix}"
