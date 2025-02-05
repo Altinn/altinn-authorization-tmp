@@ -107,7 +107,7 @@ resource "azurerm_resource_group" "spoke" {
 }
 
 module "app_configuration" {
-  source     = "../../modules/app_configuration"
+  source     = "../../modules/appsettings"
   hub_suffix = local.hub_suffix
   providers = {
     azurerm.hub = azurerm.hub
