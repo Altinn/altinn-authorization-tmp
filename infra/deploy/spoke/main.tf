@@ -106,13 +106,13 @@ resource "azurerm_resource_group" "spoke" {
   }
 }
 
-module "app_configuration" {
-  source     = "../../modules/appsettings"
-  hub_suffix = local.hub_suffix
-  providers = {
-    azurerm.hub = azurerm.hub
-  }
-}
+# module "app_configuration" {
+#   source     = "../../modules/appsettings"
+#   hub_suffix = local.hub_suffix
+#   providers = {
+#     azurerm.hub = azurerm.hub
+#   }
+# }
 
 data "azurerm_app_configuration" "appconf" {
   name                = "appconf${local.hub_suffix}"
