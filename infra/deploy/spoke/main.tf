@@ -111,9 +111,6 @@ module "app_configuration" {
   source              = "../../modules/appsettings"
   hub_subscription_id = var.hub_subscription_id
   hub_suffix          = local.hub_suffix
-  providers = {
-    azurerm.hub = azurerm.hub
-  }
 }
 
 resource "azurerm_virtual_network" "dual_stack" {
