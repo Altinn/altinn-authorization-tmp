@@ -6,13 +6,13 @@ using Altinn.AccessMgmt.Models;
 namespace Altinn.AccessMgmt.AccessPackages.Repo.Data.Services;
 
 /// <summary>
-/// Data service for PolicyComponent
+/// Data service for PolicyElement
 /// </summary>
-public class PolicyComponentDataService : BaseCrossDataService<Policy, PolicyComponent, Component>, IPolicyComponentService
+public class PolicyElementDataService : BaseCrossDataService<Policy, PolicyElement, Element>, IPolicyElementService
 {
     /// <summary>
-    /// Data service for PolicyComponent
+    /// Data service for PolicyElement
     /// </summary>
     /// <param name="repo">Extended repo</param>
-    public PolicyComponentDataService(IDbCrossRepo<Policy, PolicyComponent, Component> repo) : base(repo) { }
+    public PolicyElementDataService(IDbCrossRepo<Policy, PolicyElement, Element> repo) : base(repo) { }
 }

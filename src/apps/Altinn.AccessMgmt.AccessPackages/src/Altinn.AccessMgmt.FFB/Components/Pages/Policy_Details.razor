@@ -1,7 +1,6 @@
 ﻿@page "/policy/{Id:guid}"
 @inject IPolicyService policyService
-@inject IPolicyComponentService policyComponentService
-@inject IComponentService componentService
+@inject IPolicyElementService policyElementService
 
 @if (Policy != null)
 {
@@ -21,27 +20,25 @@
 
     <Grid Medium="2">
 
-        @if (Components != null && Components.Any())
+        @if (Elements != null && Elements.Any())
         {
             <GridSpan Columns="2">
-                <H2>Komponenter</H2>
+                <H2>Elementer</H2>
                 <SimpleTable>
                     <Head>
                         <SimpleTableRow IsHeaderRow>
-                            <th>Element</th>
                             <th>Navn</th>
-                            <th>Beskrivelse</th>
+                            <th>Type</th>
                             <th>Urn</th>
                         </SimpleTableRow>
                     </Head>
                     <Body>
-                        @foreach (var component in Components)
+                        @foreach (var element in Elements)
                         {
                             <SimpleTableRow>
-                                <td><a href=@($"/element/{component.Element.Id}")>@component.Element.Name</a></td>
-                                <td><a href=@($"/component/{component.Id}")>@component.Name</a></td>
-                                <td>@component.Description</td>
-                                <td>@component.Urn</td>
+                                <td><a href=@($"/element/{element.Id}")>@element.Name</a></td>
+                                <td>&nbsp;</td>
+                                <td>@element.Urn</td>
                             </SimpleTableRow>
                         }
                     </Body>
@@ -56,7 +53,7 @@
 
     [Parameter] public Guid Id { get; set; }
     public ExtPolicy Policy { get; set; }
-    public List<ExtComponent> Components { get; set; }
+    public List<Element> Elements { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,12 +62,7 @@
         Policy = await policyService.GetExtended(Id, options: opt);
         if (Policy != null)
         {
-            var basicComponents = await policyComponentService.GetB(Policy.Id, options: opt);
-            Components = new List<ExtComponent>();
-            foreach(var basicComp in basicComponents)
-            {
-                Components.Add(await componentService.GetExtended(basicComp.Id));
-            }
+            Elements = [.. await policyElementService.GetB(Policy.Id, options: opt)];
         }
     }
 }

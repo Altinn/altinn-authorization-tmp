@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.AccessPackages.Repo.Data.Services;
 using Altinn.AccessMgmt.AccessPackages.Repo.Ingest;
 using Altinn.AccessMgmt.AccessPackages.Repo.Migrate;
+using Altinn.AccessMgmt.AccessPackages.Repo.Mock;
 using Altinn.AccessMgmt.DbAccess;
 using Altinn.AccessMgmt.DbAccess.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess.Data.Models;
@@ -28,18 +29,20 @@ public static class DbAccessHostExtensions
 {
     public static IHostApplicationBuilder ConfigureDb(this IHostApplicationBuilder builder, Action<DbAccessConfig>? configureOptions = null)
     {
-        var config = builder.Configuration.Get<DbAccessConfig>();
-        
-        if (string.IsNullOrEmpty(config.ConnectionString))
-        {
-            throw new Exception("ConnectionString not set");
-        }
+        //var config = builder.Configuration.Get<DbAccessConfig>();
 
-        builder.Services.Configure<DbAccessConfig>(config =>
-        {
-            builder.Configuration.GetRequiredSection("DbAccessConfig").Bind(config);
-            configureOptions?.Invoke(config);
-        });
+        //if (string.IsNullOrEmpty(config.ConnectionString))
+        //{
+        //    throw new Exception("ConnectionString not set");
+        //}
+
+        builder.Services.Configure<DbAccessConfig>(builder.Configuration.GetRequiredSection("DbAccessConfig"));
+
+        //builder.Services.Configure<DbAccessConfig>(config =>
+        //{
+        //    builder.Configuration.GetRequiredSection("DbAccessConfig").Bind(config);
+        //    configureOptions?.Invoke(config);
+        //});
 
         return builder;
     }
@@ -50,19 +53,16 @@ public static class DbAccessHostExtensions
 
         builder.Services.AddSingleton<DatabaseDefinitions>();
         builder.Services.AddSingleton<DatabaseMigration>();
-        builder.Services.AddSingleton<JsonIngestFactory>();
         builder.Services.AddSingleton<DbConverter>();
+        
+        builder.Services.AddSingleton<JsonIngestFactory>();
+        builder.Services.AddSingleton<Mockups>();
+        
+        builder.Services.AddSingleton<IDbMigrationFactory, PostgresMigrationFactory>();
+        RegisterPostgresDataRepo(builder.Services);
 
-        if (config.UseSqlServer)
-        {
-            builder.Services.AddSingleton<IDbMigrationFactory, SqlMigrationFactory>();
-            RegisterSqlDataRepo(builder.Services);
-        }
-        else
-        {
-            builder.Services.AddSingleton<IDbMigrationFactory, PostgresMigrationFactory>();
-            RegisterPostgresDataRepo(builder.Services);
-        }
+        //// builder.Services.AddSingleton<IDbMigrationFactory, SqlMigrationFactory>();
+        //// RegisterSqlDataRepo(builder.Services);
 
         RegisterDbServices(builder.Services);
 
@@ -80,6 +80,13 @@ public static class DbAccessHostExtensions
         var dbIngest = host.Services.GetRequiredService<JsonIngestFactory>();
         await dbIngest.IngestAll();
 
+        var mockService = host.Services.GetService<Mockups>();
+        if (mockService != null)
+        {
+            await mockService.Run();
+            
+        }
+
         return host;
     }
 
@@ -92,9 +99,8 @@ public static class DbAccessHostExtensions
         services.AddSingleton<IResourceTypeService, ResourceTypeDataService>();
         services.AddSingleton<IElementTypeService, ElementTypeDataService>();
         services.AddSingleton<IElementService, ElementDataService>();
-        services.AddSingleton<IComponentService, ComponentDataService>();
         services.AddSingleton<IPolicyService, PolicyDataService>();
-        services.AddSingleton<IPolicyComponentService, PolicyComponentDataService>();
+        services.AddSingleton<IPolicyElementService, PolicyElementDataService>();
         services.AddSingleton<IAreaService, AreaDataService>();
         services.AddSingleton<IAreaGroupService, AreaGroupDataService>();
         services.AddSingleton<IWorkerConfigService, WorkerConfigDataService>();
@@ -148,10 +154,9 @@ public static class DbAccessHostExtensions
         services.AddSingleton<IDbExtendedRepo<ResourceGroup, ExtResourceGroup>, PostgresExtendedRepo<ResourceGroup, ExtResourceGroup>>();
         services.AddSingleton<IDbBasicRepo<ResourceType>, PostgresBasicRepo<ResourceType>>();
         services.AddSingleton<IDbBasicRepo<ElementType>, PostgresBasicRepo<ElementType>>();
-        services.AddSingleton<IDbExtendedRepo<Component, ExtComponent>, PostgresExtendedRepo<Component, ExtComponent>>();
         services.AddSingleton<IDbExtendedRepo<Element, ExtElement>, PostgresExtendedRepo<Element, ExtElement>>();
         services.AddSingleton<IDbExtendedRepo<Policy, ExtPolicy>, PostgresExtendedRepo<Policy, ExtPolicy>>();
-        services.AddSingleton<IDbCrossRepo<Policy, PolicyComponent, Component>, PostgresCrossRepo<Policy, PolicyComponent, Component>>();
+        services.AddSingleton<IDbCrossRepo<Policy, PolicyElement, Element>, PostgresCrossRepo<Policy, PolicyElement, Element>>();
         services.AddSingleton<IDbExtendedRepo<Role, ExtRole>, PostgresExtendedRepo<Role, ExtRole>>();
         services.AddSingleton<IDbExtendedRepo<RoleMap, ExtRoleMap>, PostgresExtendedRepo<RoleMap, ExtRoleMap>>();
         services.AddSingleton<IDbExtendedRepo<RolePackage, ExtRolePackage>, PostgresExtendedRepo<RolePackage, ExtRolePackage>>();
@@ -186,10 +191,9 @@ public static class DbAccessHostExtensions
         services.AddSingleton<IDbExtendedRepo<ResourceGroup, ExtResourceGroup>, SqlExtendedRepo<ResourceGroup, ExtResourceGroup>>();
         services.AddSingleton<IDbBasicRepo<ResourceType>, SqlBasicRepo<ResourceType>>();
         services.AddSingleton<IDbBasicRepo<ElementType>, SqlBasicRepo<ElementType>>();
-        services.AddSingleton<IDbExtendedRepo<Component, ExtComponent>, SqlExtendedRepo<Component, ExtComponent>>();
         services.AddSingleton<IDbExtendedRepo<Element, ExtElement>, SqlExtendedRepo<Element, ExtElement>>();
         services.AddSingleton<IDbExtendedRepo<Policy, ExtPolicy>, SqlExtendedRepo<Policy, ExtPolicy>>();
-        services.AddSingleton<IDbCrossRepo<Policy, PolicyComponent, Component>, SqlCrossRepo<Policy, PolicyComponent, Component>>();
+        services.AddSingleton<IDbCrossRepo<Policy, PolicyElement, Element>, SqlCrossRepo<Policy, PolicyElement, Element>>();
         services.AddSingleton<IDbExtendedRepo<Role, ExtRole>, SqlExtendedRepo<Role, ExtRole>>();
         services.AddSingleton<IDbExtendedRepo<RoleMap, ExtRoleMap>, SqlExtendedRepo<RoleMap, ExtRoleMap>>();
         services.AddSingleton<IDbExtendedRepo<RolePackage, ExtRolePackage>, SqlExtendedRepo<RolePackage, ExtRolePackage>>();

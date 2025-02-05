@@ -1,6 +1,5 @@
 ﻿@page "/element/{Id:guid}"
 @inject IElementService elementService
-@inject IComponentService componentService
 
 @if (Element != null)
 {
@@ -16,52 +15,16 @@
         <RightContent>
         </RightContent>
     </PageHeader>
-
-    <Grid Medium="2">
-
-        @if (Components != null && Components.Any())
-        {
-            <div>
-                <H2>Komponenter</H2>
-                <SimpleTable>
-                    <Head>
-                        <SimpleTableRow IsHeaderRow>
-                            <th>Navn</th>
-                            <th>Beskrivelse</th>
-                            <th>Urn</th>
-                        </SimpleTableRow>
-                    </Head>
-                    <Body>
-                        @foreach (var component in Components)
-                        {
-                            <SimpleTableRow>
-                                <td><a href=@($"/component/{component.Id}")>@component.Name</a></td>
-                                <td>@component.Description</td>
-                                <td>@component.Urn</td>
-                            </SimpleTableRow>
-                        }
-                    </Body>
-                </SimpleTable>
-            </div>
-        }
-
-    </Grid>
 }
 
 @code {
 
     [Parameter] public Guid Id { get; set; }
     public ExtElement Element { get; set; }
-    public IEnumerable<ExtComponent> Components { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         var opt = UserData.GetRequestOptions();
-
         Element = await elementService.GetExtended(Id, options: opt);
-        if (Element != null)
-        {
-            Components = await componentService.GetExtended(t => t.ElementId, Element.Id, options: opt);
-        }
     }
 }

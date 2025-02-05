@@ -4,4 +4,4 @@ using Altinn.AccessMgmt.Models;
 namespace Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
 
 /// <inheritdoc/>
-public interface IPolicyComponentService : IDbCrossDataService<Policy, PolicyComponent, Component> { }
+public interface IPolicyElementService : IDbCrossDataService<Policy, PolicyElement, Element> { }

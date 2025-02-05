@@ -3,7 +3,7 @@
 /// <summary>
 /// Policy action connection
 /// </summary>
-public class PolicyComponent
+public class PolicyElement
 {
     /// <summary>
     /// Identity
@@ -16,15 +16,15 @@ public class PolicyComponent
     public Guid PolicyId { get; set; }
 
     /// <summary>
-    /// Component identity
+    /// Element identity
     /// </summary>
-    public Guid ComponentId { get; set; }
+    public Guid ElementId { get; set; }
 }
 
 /// <summary>
 /// Extended policy action
 /// </summary>
-public class ExtPolicyAction : PolicyComponent
+public class ExtPolicyElement : PolicyElement
 {
     /// <summary>
     /// Resource policy
@@ -34,5 +34,5 @@ public class ExtPolicyAction : PolicyComponent
     /// <summary>
     /// Element action
     /// </summary>
-    public Component Component { get; set; }
+    public Element Element { get; set; }
 }

@@ -48,9 +48,8 @@ public class DatabaseDefinitions
         DbDefinitions.Add<ResourceType>(Config, useTranslation: true, useHistory: true);
         DbDefinitions.Add<ElementType>(Config, useTranslation: true, useHistory: true);
         DbDefinitions.Add<Element>(Config, useTranslation: true, useHistory: true);
-        DbDefinitions.Add<Component>(Config, useTranslation: true, useHistory: true);
         DbDefinitions.Add<Policy>(Config, useTranslation: true, useHistory: true);
-        DbDefinitions.Add<PolicyComponent>(Config, useTranslation: false, useHistory: true);
+        DbDefinitions.Add<PolicyElement>(Config, useTranslation: false, useHistory: true);
 
         DbDefinitions.Add<Role, ExtRole>(Config, useTranslation: true, useHistory: true);
         DbDefinitions.Add<RoleMap, ExtRoleMap>(Config, useTranslation: false, useHistory: true);

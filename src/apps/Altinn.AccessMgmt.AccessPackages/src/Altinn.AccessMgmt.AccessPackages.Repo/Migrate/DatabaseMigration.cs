@@ -429,6 +429,7 @@ inner join dbo.rolemap as map on a.roleid = map.hasroleid;
         await _factory.UseHistory<ResourceGroup>();
         await _factory.CreateTable<ResourceGroup>(useTranslation: true);
         await _factory.CreateColumn<ResourceGroup>(t => t.Name, DataTypes.String(50));
+        await _factory.CreateColumn<ResourceGroup>(t => t.Description, DataTypes.String(500), nullable: true);
         await _factory.CreateColumn<ResourceGroup>(t => t.ProviderId, DataTypes.Guid);
         await _factory.CreateForeignKeyConstraint<ResourceGroup, Provider>(t => t.ProviderId, cascadeDelete: false);
         await _factory.CreateUniqueConstraint<ResourceGroup>([t => t.ProviderId, t => t.Name]);
@@ -465,16 +466,6 @@ inner join dbo.rolemap as map on a.roleid = map.hasroleid;
         await _factory.CreateUniqueConstraint<Element>([t => t.ResourceId, t => t.Name]);
         await _factory.AddHistory<Element>();
 
-        await _factory.UseHistory<Component>();
-        await _factory.CreateTable<Component>();
-        await _factory.CreateColumn<Component>(t => t.Name, DataTypes.String(150));
-        await _factory.CreateColumn<Component>(t => t.Description, DataTypes.String(500));
-        await _factory.CreateColumn<Component>(t => t.Urn, DataTypes.String(1000));
-        await _factory.CreateColumn<Component>(t => t.ElementId, DataTypes.Guid);
-        await _factory.CreateForeignKeyConstraint<Component, Element>(t => t.ElementId, cascadeDelete: true);
-        await _factory.CreateUniqueConstraint<Component>([t => t.ElementId, t => t.Name]);
-        await _factory.AddHistory<Component>();
-
         await _factory.UseHistory<Policy>();
         await _factory.CreateTable<Policy>();
         await _factory.CreateColumn<Policy>(t => t.Name, DataTypes.String(150));
@@ -483,13 +474,13 @@ inner join dbo.rolemap as map on a.roleid = map.hasroleid;
         await _factory.CreateUniqueConstraint<Policy>([t => t.ResourceId, t => t.Name]);
         await _factory.AddHistory<Policy>();
 
-        await _factory.UseHistory<PolicyComponent>();
-        await _factory.CreateTable<PolicyComponent>();
-        await _factory.CreateColumn<PolicyComponent>(t => t.PolicyId, DataTypes.Guid);
-        await _factory.CreateColumn<PolicyComponent>(t => t.ComponentId, DataTypes.Guid);
-        await _factory.CreateForeignKeyConstraint<PolicyComponent, Policy>(t => t.PolicyId, cascadeDelete: true);
-        await _factory.CreateForeignKeyConstraint<PolicyComponent, Component>(t => t.ComponentId, cascadeDelete: true);
-        await _factory.CreateUniqueConstraint<PolicyComponent>([t => t.PolicyId, t => t.ComponentId]);
-        await _factory.AddHistory<PolicyComponent>();
+        await _factory.UseHistory<PolicyElement>();
+        await _factory.CreateTable<PolicyElement>();
+        await _factory.CreateColumn<PolicyElement>(t => t.PolicyId, DataTypes.Guid);
+        await _factory.CreateColumn<PolicyElement>(t => t.ElementId, DataTypes.Guid);
+        await _factory.CreateForeignKeyConstraint<PolicyElement, Policy>(t => t.PolicyId, cascadeDelete: true);
+        await _factory.CreateForeignKeyConstraint<PolicyElement, Element>(t => t.ElementId, cascadeDelete: true);
+        await _factory.CreateUniqueConstraint<PolicyElement>([t => t.PolicyId, t => t.ElementId]);
+        await _factory.AddHistory<PolicyElement>();
     }
 }

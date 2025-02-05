@@ -1,6 +1,8 @@
 ﻿using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
+using Altinn.AccessMgmt.DbAccess;
 using Altinn.AccessMgmt.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,6 +19,7 @@ public class Mockups
 {
     #region Constructor
     private readonly ILogger<Mockups> logger;
+    private readonly DbAccessConfig config;
     private readonly IEntityTypeService entityTypeService;
     private readonly IEntityVariantService entityVariantService;
     private readonly IEntityService entityService;
@@ -32,10 +35,9 @@ public class Mockups
     private readonly IRoleResourceService roleResourceService;
     private readonly IRolePackageService rolePackageService;
     private readonly IPolicyService policyService;
-    private readonly IPolicyComponentService policyComponentService;
+    private readonly IPolicyElementService policyElementService;
     private readonly IElementTypeService elementTypeService;
     private readonly IElementService elementService;
-    private readonly IComponentService componentService;
     private readonly IRoleService roleService;
     private readonly IAssignmentService assignmentService;
     private readonly IGroupService groupService;
@@ -62,10 +64,9 @@ public class Mockups
     /// <param name="roleResourceService">IRoleResourceService</param>
     /// <param name="rolePackageService">IRolePackageService</param>
     /// <param name="policyService">IPolicyService</param>
-    /// <param name="policyComponentService">IPolicyComponentService</param>
+    /// <param name="policyElementService">IPolicyElementService</param>
     /// <param name="elementTypeService">IElementTypeService</param>
     /// <param name="elementService">IElementService</param>
-    /// <param name="componentService">IComponentService</param>
     /// <param name="roleService">IRoleService</param>
     /// <param name="assignmentService">IAssignmentService</param>
     /// <param name="groupService">IGroupService</param>
@@ -76,6 +77,7 @@ public class Mockups
     /// <param name="delegationResourceService"></param>
     public Mockups(
         ILogger<Mockups> logger,
+        IOptions<DbAccessConfig> configOptions,
         IEntityTypeService entityTypeService,
         IEntityVariantService entityVariantService,
         IEntityService entityService,
@@ -91,10 +93,9 @@ public class Mockups
         IRoleResourceService roleResourceService,
         IRolePackageService rolePackageService,
         IPolicyService policyService,
-        IPolicyComponentService policyComponentService,
+        IPolicyElementService policyElementService,
         IElementTypeService elementTypeService,
         IElementService elementService,
-        IComponentService componentService,
         IRoleService roleService,
         IAssignmentService assignmentService,
         IGroupService groupService,
@@ -104,6 +105,8 @@ public class Mockups
         )
     {
         this.logger = logger;
+        this.config = configOptions.Value;
+
         this.entityTypeService = entityTypeService;
         this.entityVariantService = entityVariantService;
         this.entityService = entityService;
@@ -119,10 +122,9 @@ public class Mockups
         this.roleResourceService = roleResourceService;
         this.rolePackageService = rolePackageService;
         this.policyService = policyService;
-        this.policyComponentService = policyComponentService;
+        this.policyElementService = policyElementService;
         this.elementTypeService = elementTypeService;
         this.elementService = elementService;
-        this.componentService = componentService;
         this.roleService = roleService;
         this.assignmentService = assignmentService;
         this.groupService = groupService;
@@ -146,13 +148,11 @@ public class Mockups
 
     private List<Policy> Policies { get; set; }
 
-    private List<PolicyComponent> PolicyComponents { get; set; }
+    private List<PolicyElement> PolicyElements { get; set; }
 
     private List<ElementType> ElementTypes { get; set; }
 
     private List<Element> Elements { get; set; }
-
-    private List<Component> Components { get; set; }
 
     private List<ResourceType> ResourceTypes { get; set; }
 
@@ -213,10 +213,9 @@ public class Mockups
         AssignmentPackages = [.. await assignmentPackageService.Get()];
 
         Policies = [.. await policyService.Get()];
-        PolicyComponents = [.. await policyComponentService.Get()];
+        PolicyElements = [.. await policyElementService.Get()];
         ElementTypes = [.. await elementTypeService.Get()];
         Elements = [.. await elementService.Get()];
-        Components = [.. await componentService.Get()];
 
         Roles = [.. await roleService.Get()];
 
@@ -446,6 +445,20 @@ public class Mockups
             return res;
         }
     }
+    private async Task<ResourceGroup> GetOrCreateResourceGroup(ResourceGroup obj)
+    {
+        var res = ResourceGroups.FirstOrDefault(t => t.Name == obj.Name && t.ProviderId == obj.ProviderId) ?? null;
+        if (res == null)
+        {
+            await resourceGroupService.Create(obj);
+            ResourceGroups.Add(obj);
+            return obj;
+        }
+        else
+        {
+            return res;
+        }
+    }
 
     private async Task<Resource> GetOrCreateResource(Resource obj)
     {
@@ -477,13 +490,13 @@ public class Mockups
         }
     }
 
-    private async Task<PolicyComponent> GetOrCreatePolicyComponent(PolicyComponent obj)
+    private async Task<PolicyElement> GetOrCreatePolicyElement(PolicyElement obj)
     {
-        var res = PolicyComponents.FirstOrDefault(t => t.PolicyId == obj.PolicyId && t.ComponentId == obj.ComponentId) ?? null;
+        var res = PolicyElements.FirstOrDefault(t => t.PolicyId == obj.PolicyId && t.ElementId == obj.ElementId) ?? null;
         if (res == null)
         {
-            await policyComponentService.Create(obj);
-            PolicyComponents.Add(obj);
+            await policyElementService.Create(obj);
+            PolicyElements.Add(obj);
             return obj;
         }
         else
@@ -514,21 +527,6 @@ public class Mockups
         {
             await elementService.Create(obj);
             Elements.Add(obj);
-            return obj;
-        }
-        else
-        {
-            return res;
-        }
-    }
-
-    private async Task<Component> GetOrCreateComponent(Component obj)
-    {
-        var res = Components.FirstOrDefault(t => t.Name == obj.Name && t.ElementId == obj.ElementId && t.Urn == obj.Urn) ?? null;
-        if (res == null)
-        {
-            await componentService.Create(obj);
-            Components.Add(obj);
             return obj;
         }
         else
@@ -602,11 +600,34 @@ public class Mockups
     }
     #endregion
 
+    private bool CheckRunConfig(string key)
+    {
+        return config.MockRun.ContainsKey(key) && config.MockRun[key];
+    }
+    public async Task Run()
+    {
+        if (config.MockEnabled)
+        {
+            if (CheckRunConfig("KlientDelegering"))
+            {
+                await KlientDelegeringMock();
+            }
+            if (CheckRunConfig("SystemResources"))
+            {
+                await SystemResources();
+            }
+        }
+    }
+
+
+
+
+
     /// <summary>
     /// Add data for Klientdelegering mock
     /// </summary>
     /// <returns></returns>
-    public async Task KlientDelegeringMock()
+    private async Task KlientDelegeringMock()
     {
         logger.LogInformation("Mock - KlientDelegering");
         await LoadCache();
@@ -732,7 +753,7 @@ public class Mockups
     /// En person vil dele en ressurs med en annen person
     /// </summary>
     /// <returns></returns>
-    public async Task PersonToPersonDirectAssignment()
+    private async Task PersonToPersonDirectAssignment()
     {
         // Først trenger vi to personer
         var personEntityType = GetEntityType("Person");
@@ -756,7 +777,7 @@ public class Mockups
     /// En person vil dele en ressurs med en annen person
     /// </summary>
     /// <returns></returns>
-    public async Task PersonToOrganizationDirectAssignment()
+    private async Task PersonToOrganizationDirectAssignment()
     {
         // Først trenger vi to personer
         var personEntityType = GetEntityType("Person");
@@ -803,9 +824,9 @@ public class Mockups
     /// Mock for SystemResources - A3 Rights
     /// </summary>
     /// <returns></returns>
-    public async Task SystemResourcesMock()
+    private async Task SystemResources()
     {
-        logger.LogInformation("Mock - SystemResourcesMock");
+        logger.LogInformation("Mock - SystemResources");
         await LoadCache(ignoreEntity: true, ignoreAssignment: true);
 
         /*
@@ -830,7 +851,7 @@ public class Mockups
          */
 
         var digdir = GetProvider("Digdir");
-        var rt = await GetOrCreateResourceType("Web");
+        var rt = await GetOrCreateResourceType("System");
         var a3Rg = await GetOrCreateResourceGroup("Altinn 3", digdir.Id);
 
         var elementType = await GetOrCreateElementType(new ElementType()
@@ -839,210 +860,231 @@ public class Mockups
             Name = "SubResource"
         });
 
-        // RESOURCE
-        var accessmgmt = await GetOrCreateResource(new Resource()
+        // ResourceGroup
+        var accessmgmt = await GetOrCreateResourceGroup(new ResourceGroup()
         {
             Id = Guid.Parse("06CB9503-D35B-4731-8152-14FA87811B64"),
             ProviderId = digdir.Id,
-            GroupId = a3Rg.Id,
-            TypeId = rt.Id,
-            RefId = "digdir:a3:accessmgmt",
             Name = "AccessMgmt",
             Description = "Tilgangsstyring i Altinn 3"
         });
 
         #region Group Mgmt
-        var groupElement = await GetOrCreateElement(new Element()
+        var groupResource = await GetOrCreateResource(new Resource()
         {
             Id = Guid.Parse("D0B49E00-D938-4219-8BB4-15DAB9D5055A"),
             Name = "Group Management",
-            Urn = "digdir:a3:accessmgmt:groups",
-            ResourceId = accessmgmt.Id,
-            TypeId = elementType.Id
+            Description = "",
+            RefId = "digdir:a3:accessmgmt:groups",
+            GroupId = accessmgmt.Id,
+            TypeId = rt.Id,
+            ProviderId = digdir.Id
         });
 
-        var grpCreate = await GetOrCreateComponent(new Component()
+        var grpCreate = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("6B689317-0D7A-4176-B6BD-17188CDBDEBF"),
             Name = "Opprett gruppe",
-            Description = "Gir muligheten til å opprette grupper",
+            //Description = "Gir muligheten til å opprette grupper",
             Urn = "digdir:a3:accessmgmt:groups:create",
-            ElementId = groupElement.Id,
+            ResourceId = groupResource.Id,
+            TypeId = elementType.Id
         });
 
-        var grpDelete = await GetOrCreateComponent(new Component()
+        var grpDelete = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("4C6464C7-BF74-4877-9DBD-1866B8A48F17"),
             Name = "Slett gruppe",
-            Description = "Gir muligheten til å slette grupper",
+            //Description = "Gir muligheten til å slette grupper",
             Urn = "digdir:a3:accessmgmt:groups:delete",
-            ElementId = groupElement.Id,
+            ResourceId = groupResource.Id,
+            TypeId = elementType.Id
         });
 
-        var grpAddAdmin = await GetOrCreateComponent(new Component()
+        var grpAddAdmin = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("DD124895-522E-45BF-8E87-195709C60EA1"),
             Name = "Legg til gruppe administrator",
-            Description = "Gir muligheten til å legge til administratorer i en gruppe",
+            //Description = "Gir muligheten til å legge til administratorer i en gruppe",
             Urn = "digdir:a3:accessmgmt:groups:add-user",
-            ElementId = groupElement.Id,
+            ResourceId = groupResource.Id,
+            TypeId = elementType.Id
         });
 
-        var grpRemoveAdmin = await GetOrCreateComponent(new Component()
+        var grpRemoveAdmin = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("3DB6D752-F262-4987-B3A0-1C75AE29E3EA"),
             Name = "Fjern gruppe administrator",
-            Description = "Gir muligheten til å fjerne administratorer i en gruppe",
+            //Description = "Gir muligheten til å fjerne administratorer i en gruppe",
             Urn = "digdir:a3:accessmgmt:groups:remove-user",
-            ElementId = groupElement.Id,
+            ResourceId = groupResource.Id,
+            TypeId = elementType.Id
         });
 
-        var grpAddUser = await GetOrCreateComponent(new Component()
+        var grpAddUser = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("338709E9-102C-40AE-BA20-1F9E245851D9"),
             Name = "Legg til bruker",
-            Description = "Gir muligheten til å legge til brukere i en gruppe",
+            //Description = "Gir muligheten til å legge til brukere i en gruppe",
             Urn = "digdir:a3:accessmgmt:groups:add-user",
-            ElementId = groupElement.Id,
+            ResourceId = groupResource.Id,
+            TypeId = elementType.Id
         });
 
-        var grpRemoveUser = await GetOrCreateComponent(new Component()
+        var grpRemoveUser = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("A893D35A-4BE5-48F6-A82A-1FFE2A5C3291"),
             Name = "Fjern bruker",
-            Description = "Gir muligheten til å fjerne brukere i en gruppe",
+            //Description = "Gir muligheten til å fjerne brukere i en gruppe",
             Urn = "digdir:a3:accessmgmt:groups:remove-user",
-            ElementId = groupElement.Id,
+            ResourceId = groupResource.Id,
+            TypeId = elementType.Id
         });
         #endregion
 
         #region Assignment Mgmt
-        var assignmentElement = await GetOrCreateElement(new Element()
+        var assignmentResource = await GetOrCreateResource(new Resource()
         {
             Id = Guid.Parse("E45A571C-144F-4B98-BAE5-21873FB6F310"),
-            ResourceId = accessmgmt.Id,
             Name = "Assignment Mgmt",
-            Urn = "digdir:a3:accessmgmt:assignment",
-            TypeId = elementType.Id
+            Description = "",
+            GroupId = accessmgmt.Id,
+            ProviderId = digdir.Id,
+            RefId = "digdir:a3:accessmgmt:assignment",
+            TypeId = rt.Id
         });
 
-        var compAssCreateAny = await GetOrCreateComponent(new Component()
+        var compAssCreateAny = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("8CA328C5-4F69-43ED-851B-2246945EEEE0"),
-            ElementId = assignmentElement.Id,
+            ResourceId = assignmentResource.Id,
             Name = "Opprett tildeling",
-            Description = "Gir tilgang til å opprette tildelinger",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å opprette tildelinger",
             Urn = "digdir:a3:accessmgmt:assignment:"
         });
 
-        var compAssDeleteAny = await GetOrCreateComponent(new Component()
+        var compAssDeleteAny = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("365C851C-9FCC-4952-8CE8-22AA6757F7C2"),
-            ElementId = assignmentElement.Id,
+            ResourceId = assignmentResource.Id,
             Name = "Fjern tildeling",
-            Description = "Gir tilgang til å fjerne tildelinger",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å fjerne tildelinger",
             Urn = "digdir:a3:accessmgmt:assignment:"
         });
 
-        var compDelegatePack = await GetOrCreateComponent(new Component()
+        var compDelegatePack = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("20C83E97-FE3D-4531-A17B-258603DD5839"),
-            ElementId = assignmentElement.Id,
+            ResourceId = assignmentResource.Id,
             Name = "Gi pakke til tildeling",
-            Description = "Gir tilgang til å gi pakker på tildelinger",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å gi pakker på tildelinger",
             Urn = "digdir:a3:accessmgmt:assignment:delgate-package"
         });
 
-        var compRevokePack = await GetOrCreateComponent(new Component()
+        var compRevokePack = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("91508C64-494B-462E-8774-25CFCDEAA40E"),
-            ElementId = assignmentElement.Id,
+            ResourceId = assignmentResource.Id,
             Name = "Fjern pakke til tildeling",
-            Description = "Gir tilgang til å fjerne pakker på tildelinger",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å fjerne pakker på tildelinger",
             Urn = "digdir:a3:accessmgmt:assignment:revoke-package"
         });
 
-        var compDelegateResource = await GetOrCreateComponent(new Component()
+        var compDelegateResource = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("7D4DEF93-706E-4A76-A487-260B272F275C"),
-            ElementId = assignmentElement.Id,
+            ResourceId = assignmentResource.Id,
             Name = "Gi ressurs til tildeling",
-            Description = "Gir tilgang til å gi tjenester på tildelinger",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å gi tjenester på tildelinger",
             Urn = "digdir:a3:accessmgmt:assignment:delgate-resource"
         });
 
-        var compRevokeresource = await GetOrCreateComponent(new Component()
+        var compRevokeresource = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("8E751971-69E9-4766-B42A-2710EDB1480B"),
-            ElementId = assignmentElement.Id,
+            ResourceId = assignmentResource.Id,
             Name = "Fjern ressurs til tildeling",
-            Description = "Gir tilgang til å fjerne tjenester på tildelinger",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å fjerne tjenester på tildelinger",
             Urn = "digdir:a3:accessmgmt:assignment:revoke-resource"
         });
 
         #endregion
 
         #region Delegation Mgmt
-        var delegationElement = await GetOrCreateElement(new Element()
+        var delegationResource = await GetOrCreateResource(new Resource()
         {
             Id = Guid.Parse("F4716E33-C740-40CD-8C4D-29786A4E609A"),
-            ResourceId = accessmgmt.Id,
+            GroupId = accessmgmt.Id,
+            Description = "",
+            ProviderId = digdir.Id,
             Name = "Delegation Mgmt",
-            Urn = "digdir:a3:accessmgmt:delegation",
-            TypeId = elementType.Id
+            RefId = "digdir:a3:accessmgmt:delegation",
+            TypeId = rt.Id
         });
 
-        var compDelegCreateAny = await GetOrCreateComponent(new Component()
+        var compDelegCreateAny = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("10624B1F-1021-4ED4-96D4-2C11C2CBA398"),
-            ElementId = delegationElement.Id,
+            ResourceId = delegationResource.Id,
             Name = "Opprett delegering",
-            Description = "Gir tilgang til å opprette delegeringer",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å opprette delegeringer",
             Urn = "digdir:a3:accessmgmt:delegation:create"
         });
 
-        var compDelegDeleteAny = await GetOrCreateComponent(new Component()
+        var compDelegDeleteAny = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("E8BC5401-38C0-4CA8-BF8A-31BFEA56265E"),
-            ElementId = delegationElement.Id,
+            ResourceId = delegationResource.Id,
             Name = "Fjern delegering",
-            Description = "Gir tilgang til å fjerne delegeringer",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å fjerne delegeringer",
             Urn = "digdir:a3:accessmgmt:delegation:delete"
         });
 
-        var compDelegPackAdd = await GetOrCreateComponent(new Component()
+        var compDelegPackAdd = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("187C7524-4D45-4194-9135-3208B9E6E5EA"),
-            ElementId = delegationElement.Id,
+            ResourceId = delegationResource.Id,
             Name = "Gi pakke til delegering",
-            Description = "Gir tilgang til å gi pakker på delegering",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å gi pakker på delegering",
             Urn = "digdir:a3:accessmgmt:delegation:delgate-package"
         });
 
-        var compDelegPackRemove = await GetOrCreateComponent(new Component()
+        var compDelegPackRemove = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("169D2D6F-9AC8-4B70-BD8E-371DF6AB6B56"),
-            ElementId = delegationElement.Id,
+            ResourceId = delegationResource.Id,
             Name = "Fjern pakke fra delegering",
-            Description = "Gir tilgang til å fjerne pakker på delegering",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å fjerne pakker på delegering",
             Urn = "digdir:a3:accessmgmt:delegation:revoke-package"
         });
 
-        var compDelegResourceAdd = await GetOrCreateComponent(new Component()
+        var compDelegResourceAdd = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("9D0C7368-7348-492F-856B-3811217D1F54"),
-            ElementId = delegationElement.Id,
+            ResourceId = delegationResource.Id,
             Name = "Gi ressurs til delegering",
-            Description = "Gir tilgang til å gi tjenester på delegering",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å gi tjenester på delegering",
             Urn = "digdir:a3:accessmgmt:delegation:delgate-resource"
         });
 
-        var compDelegResourceRemove = await GetOrCreateComponent(new Component()
+        var compDelegResourceRemove = await GetOrCreateElement(new Element()
         {
             Id = Guid.Parse("27F84AD1-7438-4BC4-B016-3939622097D3"),
-            ElementId = delegationElement.Id,
+            ResourceId = delegationResource.Id,
             Name = "Fjern ressurs fra delegering",
-            Description = "Gir tilgang til å fjerne tjenester på delegering",
+            TypeId = elementType.Id,
+            //Description = "Gir tilgang til å fjerne tjenester på delegering",
             Urn = "digdir:a3:accessmgmt:delegation:revoke-resource"
         });
 
@@ -1058,134 +1100,134 @@ public class Mockups
         });
 
         #region Policy - Group Mgmt
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("A506763C-175B-43B8-AC60-3D918BAA4A00"),
             PolicyId = adminPolicy.Id,
-            ComponentId = grpCreate.Id
+            ElementId = grpCreate.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("C641CD4D-ADAB-4B1F-B40F-48001150B38C"),
             PolicyId = adminPolicy.Id,
-            ComponentId = grpDelete.Id
+            ElementId = grpDelete.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("4E53BBBB-F62E-4EEE-B371-4BC6AE59A923"),
             PolicyId = adminPolicy.Id,
-            ComponentId = grpAddAdmin.Id
+            ElementId = grpAddAdmin.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("EE7E229D-C0AB-4FCB-B8A9-4D5AEC04599C"),
             PolicyId = adminPolicy.Id,
-            ComponentId = grpRemoveAdmin.Id
+            ElementId = grpRemoveAdmin.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("23698B11-53B4-41CB-9D43-5104953042B6"),
             PolicyId = adminPolicy.Id,
-            ComponentId = grpAddUser.Id
+            ElementId = grpAddUser.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("4AC74DEE-51E6-4ACC-AF42-517DEF59AEAF"),
             PolicyId = adminPolicy.Id,
-            ComponentId = grpRemoveUser.Id
+            ElementId = grpRemoveUser.Id
         });
         #endregion
 
         #region Policy - Assignment
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("A9CC1667-9E74-419B-9AE9-51C7A4E0985F"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compAssCreateAny.Id
+            ElementId = compAssCreateAny.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("3A006E6A-D1E1-4941-B27C-56FB099E71AB"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compAssDeleteAny.Id
+            ElementId = compAssDeleteAny.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("CECB498B-F448-4896-B701-58E0CFC0919E"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compDelegatePack.Id
+            ElementId = compDelegatePack.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("5999F9F2-B5E2-4061-A4E6-5CACB776C0B7"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compRevokePack.Id
+            ElementId = compRevokePack.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("C406F4D9-9CA6-4167-9809-5E0306625AFB"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compDelegateResource.Id
+            ElementId = compDelegateResource.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("1BA43739-506E-4253-9B6C-5FDBAC077419"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compRevokeresource.Id
+            ElementId = compRevokeresource.Id
         });
         #endregion
 
         #region Policy - Delegation
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("31ADC81A-723E-4CDD-9E4D-60BEBCF2A81D"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compDelegCreateAny.Id
+            ElementId = compDelegCreateAny.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("F823F0CD-54D9-4A52-81B0-60D9F5156E69"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compDelegDeleteAny.Id
+            ElementId = compDelegDeleteAny.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("94CBD1E8-4865-468C-9A4A-61387E5419A0"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compDelegPackAdd.Id
+            ElementId = compDelegPackAdd.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("8A5079A1-838D-4B30-9E20-62727F70D37E"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compDelegPackRemove.Id
+            ElementId = compDelegPackRemove.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("B2E41362-6A81-45F3-8425-6350DFEF054A"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compDelegResourceAdd.Id
+            ElementId = compDelegResourceAdd.Id
         });
 
-        await GetOrCreatePolicyComponent(new PolicyComponent()
+        await GetOrCreatePolicyElement(new PolicyElement()
         {
             Id = Guid.Parse("A19AA11F-2389-4913-9C43-64A59B7A506E"),
             PolicyId = adminPolicy.Id,
-            ComponentId = compDelegResourceRemove.Id
+            ElementId = compDelegResourceRemove.Id
         });
         #endregion
     }
@@ -1630,7 +1672,7 @@ public class Mockups
             return new Guid(hash);
         }
     }
-    static T GetRandomItem<T>(List<T> list)
+    private static T GetRandomItem<T>(List<T> list)
     {
         if (list == null || list.Count == 0)
         {
@@ -1640,7 +1682,7 @@ public class Mockups
         int index = MockTools.Rnd.Next(list.Count);
         return list[index];
     }
-    static T GetRandomItem<T>(IEnumerable<T> collection)
+    private static T GetRandomItem<T>(IEnumerable<T> collection)
     {
         if (collection == null)
             throw new ArgumentNullException(nameof(collection));
@@ -1654,7 +1696,7 @@ public class Mockups
     }
 
 
-    public async Task BasicMock()
+    private async Task BasicMock()
     {
         await LoadCache();
 

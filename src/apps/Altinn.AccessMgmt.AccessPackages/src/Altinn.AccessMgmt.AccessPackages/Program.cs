@@ -1,6 +1,7 @@
 using Altinn.AccessMgmt.AccessPackages.Extensions;
 using Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
 using Altinn.AccessMgmt.AccessPackages.Repo.Mock;
+using Altinn.AccessMgmt.DbAccess;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,21 +13,10 @@ builder.Services.AddSwaggerGen();
 builder.ConfigureDb();
 builder.AddDb();
 
-if (useMock)
-{
-    builder.Services.AddSingleton<Mockups>();
-}
-
 var app = builder.Build();
+var config = app.Configuration.Get<DbAccessConfig>();
 
 await app.UseDb();
-
-if (useMock)
-{
-    var mock = app.Services.GetRequiredService<Mockups>();
-    await mock.SystemResourcesMock();
-    await mock.BasicMock();
-}
 
 if (app.Environment.IsDevelopment())
 {

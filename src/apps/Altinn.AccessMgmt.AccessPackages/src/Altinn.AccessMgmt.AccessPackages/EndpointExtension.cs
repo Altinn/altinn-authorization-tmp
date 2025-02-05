@@ -42,9 +42,8 @@ public static class EndpointExtension
 
         app.MapDefaults<IElementTypeService, ElementType>();
         app.MapDefaultsExt<IElementService, Element, ExtElement>();
-        app.MapDefaultsExt<IComponentService, Component, ExtComponent>();
         app.MapDefaultsExt<IPolicyService, Policy, ExtPolicy>();
-        app.MapCrossDefaults<Policy, IPolicyComponentService, PolicyComponent, Component>("policies", "components");
+        app.MapCrossDefaults<Policy, IPolicyElementService, PolicyElement, Element>("policies", "elements");
 
         app.MapDefaultsExt<IRoleService, Role, ExtRole>();
         app.MapDefaultsExt<IRoleMapService, RoleMap, ExtRoleMap>();
