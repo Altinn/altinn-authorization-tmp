@@ -1,11 +1,8 @@
 using Altinn.AccessMgmt.AccessPackages.Extensions;
 using Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
-using Altinn.AccessMgmt.AccessPackages.Repo.Mock;
 using Altinn.AccessMgmt.DbAccess;
 
 var builder = WebApplication.CreateBuilder(args);
-
-bool useMock = true;
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

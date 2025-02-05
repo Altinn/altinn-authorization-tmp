@@ -18,6 +18,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\..\libs\Altinn.AccessMgmt.DbAccess\Altinn.AccessMgmt.DbAccess.csproj" />
 		<ProjectReference Include="..\..\..\..\libs\Altinn.AccessMgmt.Models\Altinn.AccessMgmt.Models.csproj" />
+		<ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host.Lease\Altinn.Authorization.Host.Lease.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

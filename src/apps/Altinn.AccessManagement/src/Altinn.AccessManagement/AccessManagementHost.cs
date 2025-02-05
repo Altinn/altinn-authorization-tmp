@@ -1,28 +1,12 @@
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
-using Altinn.AccessManagement.Core.Services.Implementation;
-using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Health;
 using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
-using Altinn.AccessMgmt.AccessPackages.Repo;
-using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
-using Altinn.AccessMgmt.AccessPackages.Repo.Data.Services;
 using Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
-using Altinn.AccessMgmt.AccessPackages.Repo.Ingest;
-using Altinn.AccessMgmt.AccessPackages.Repo.Migrate;
-using Altinn.AccessMgmt.DbAccess.Data.Contracts;
-using Altinn.AccessMgmt.DbAccess.Data.Models;
-using Altinn.AccessMgmt.DbAccess.Data.Services;
-using Altinn.AccessMgmt.DbAccess.Data.Services.Mssql;
-using Altinn.AccessMgmt.DbAccess.Data.Services.Postgres;
-using Altinn.AccessMgmt.DbAccess.Migrate.Contracts;
-using Altinn.AccessMgmt.DbAccess.Migrate.Models;
-using Altinn.AccessMgmt.DbAccess.Migrate.Services;
-using Altinn.AccessMgmt.Models;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Lease;
@@ -39,7 +23,6 @@ using Altinn.Common.PEP.Implementation;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -82,21 +65,15 @@ internal static class AccessManagementHost
         return builder.Build();
     }
 
-    #region AccessPackages
-
-
-
-    #endregion
-
     private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddHostedService<RegisterHostedService>();
         builder.AddAppSettingDefaults();
         builder.AddAltinnLease(cgf =>
         {
-            //// cgf.Type = AltinnLeaseType.InMemory;
-            cgf.Type = AltinnLeaseType.AzureStorageAccount;
-            cgf.StorageAccount.Endpoint = new Uri("https://standreastest.blob.core.windows.net/");
+            cgf.Type = AltinnLeaseType.InMemory;
+            //cgf.Type = AltinnLeaseType.AzureStorageAccount;
+            //cgf.StorageAccount.Endpoint = new Uri("https://standreastest.blob.core.windows.net/");
         });
 
         builder.AddAltinnRegister(opts =>

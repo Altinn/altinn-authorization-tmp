@@ -13,6 +13,7 @@ using Altinn.AccessMgmt.DbAccess.Migrate.Contracts;
 using Altinn.AccessMgmt.DbAccess.Migrate.Models;
 using Altinn.AccessMgmt.DbAccess.Migrate.Services;
 using Altinn.AccessMgmt.Models;
+using Altinn.Authorization.Host.Lease;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,22 +28,16 @@ namespace Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
 
 public static class DbAccessHostExtensions
 {
-    public static IHostApplicationBuilder ConfigureDb(this IHostApplicationBuilder builder, Action<DbAccessConfig>? configureOptions = null)
+    public static IHostApplicationBuilder ConfigureDb(this IHostApplicationBuilder builder)
     {
-        //var config = builder.Configuration.Get<DbAccessConfig>();
-
-        //if (string.IsNullOrEmpty(config.ConnectionString))
-        //{
-        //    throw new Exception("ConnectionString not set");
-        //}
-
         builder.Services.Configure<DbAccessConfig>(builder.Configuration.GetRequiredSection("DbAccessConfig"));
 
-        //builder.Services.Configure<DbAccessConfig>(config =>
-        //{
-        //    builder.Configuration.GetRequiredSection("DbAccessConfig").Bind(config);
-        //    configureOptions?.Invoke(config);
-        //});
+        builder.AddAltinnLease(opt =>
+        {
+            opt.Type = AltinnLeaseType.InMemory;
+            //opt.Type = AltinnLeaseType.AzureStorageAccount;
+            //opt.StorageAccount.Endpoint = new Uri("https://standreastest.blob.core.windows.net/");
+        });
 
         return builder;
     }
@@ -57,7 +52,11 @@ public static class DbAccessHostExtensions
         
         builder.Services.AddSingleton<JsonIngestFactory>();
         builder.Services.AddSingleton<Mockups>();
-        
+
+        /*
+        TODO: Implement Enum for Postgres/Mssql switch. See AltinnLease.ConfigureAltinnLease
+        */
+
         builder.Services.AddSingleton<IDbMigrationFactory, PostgresMigrationFactory>();
         RegisterPostgresDataRepo(builder.Services);
 

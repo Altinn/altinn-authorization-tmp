@@ -1,12 +1,15 @@
 ﻿using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
 using Altinn.AccessMgmt.DbAccess;
 using Altinn.AccessMgmt.Models;
+using Altinn.Authorization.Host.Lease;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Xml.Linq;
+using static Altinn.AccessMgmt.AccessPackages.Repo.Migrate.DatabaseMigration;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -19,6 +22,7 @@ public class Mockups
 {
     #region Constructor
     private readonly ILogger<Mockups> logger;
+    private readonly IAltinnLease lease;
     private readonly DbAccessConfig config;
     private readonly IEntityTypeService entityTypeService;
     private readonly IEntityVariantService entityVariantService;
@@ -78,6 +82,7 @@ public class Mockups
     public Mockups(
         ILogger<Mockups> logger,
         IOptions<DbAccessConfig> configOptions,
+        IAltinnLease lease,
         IEntityTypeService entityTypeService,
         IEntityVariantService entityVariantService,
         IEntityService entityService,
@@ -105,6 +110,7 @@ public class Mockups
         )
     {
         this.logger = logger;
+        this.lease = lease;
         this.config = configOptions.Value;
 
         this.entityTypeService = entityTypeService;
@@ -604,10 +610,16 @@ public class Mockups
     {
         return config.MockRun.ContainsKey(key) && config.MockRun[key];
     }
-    public async Task Run()
+    public async Task Run(CancellationToken cancellationToken = default)
     {
         if (config.MockEnabled)
         {
+            await using var ls = await lease.TryAquireNonBlocking<LeaseContent>("access_management_db_mock", cancellationToken);
+            if (!ls.HasLease || cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             if (CheckRunConfig("KlientDelegering"))
             {
                 await KlientDelegeringMock();

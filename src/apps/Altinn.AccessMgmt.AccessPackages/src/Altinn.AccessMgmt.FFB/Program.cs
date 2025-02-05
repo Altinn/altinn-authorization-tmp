@@ -2,6 +2,7 @@ using System.Reflection;
 using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
 using Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
 using Altinn.AccessMgmt.FFB.Components;
+using Altinn.Authorization.Host.Lease;
 using Blazored.LocalStorage;
 
 var builder = WebApplication.CreateBuilder(args);

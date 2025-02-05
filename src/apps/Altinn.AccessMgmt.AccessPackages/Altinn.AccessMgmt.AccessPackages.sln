@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.Worker.RR
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.AppHost", "src\Altinn.AccessMgmt.AppHost\Altinn.AccessMgmt.AppHost.csproj", "{945C4254-099C-4CB0-8F7D-84B835963FDA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Lease", "..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host.Lease\Altinn.Authorization.Host.Lease.csproj", "{E9CC1F02-E299-43C1-966E-F19AF4379763}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +67,10 @@ Global
 		{945C4254-099C-4CB0-8F7D-84B835963FDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{945C4254-099C-4CB0-8F7D-84B835963FDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{945C4254-099C-4CB0-8F7D-84B835963FDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9CC1F02-E299-43C1-966E-F19AF4379763}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9CC1F02-E299-43C1-966E-F19AF4379763}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9CC1F02-E299-43C1-966E-F19AF4379763}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9CC1F02-E299-43C1-966E-F19AF4379763}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,6 +85,7 @@ Global
 		{A4D83540-DBA8-460B-9B09-D927F48E28D6} = {9287E06E-BAF1-4F4B-B795-0B53B745DA50}
 		{D5FE3D53-E84F-4779-800C-BD7DC84E4A86} = {9287E06E-BAF1-4F4B-B795-0B53B745DA50}
 		{945C4254-099C-4CB0-8F7D-84B835963FDA} = {9287E06E-BAF1-4F4B-B795-0B53B745DA50}
+		{E9CC1F02-E299-43C1-966E-F19AF4379763} = {9287E06E-BAF1-4F4B-B795-0B53B745DA50}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5EBE6D29-F6B8-4EE6-9C6C-A70E98E65748}
