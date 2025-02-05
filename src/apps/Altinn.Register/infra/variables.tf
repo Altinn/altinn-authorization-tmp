@@ -10,7 +10,7 @@ variable "product_name" {
 
 variable "name" {
   type    = string
-  default = "accessmgmt"
+  default = "register"
 }
 
 variable "instance" {
