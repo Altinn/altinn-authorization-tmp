@@ -116,9 +116,8 @@ resource "azurerm_resource_group" "spoke" {
 # }
 
 data "azurerm_app_configuration" "appconf" {
-  name                = "appconf${local.hub_suffix}"
-  resource_group_name = "rg${local.hub_suffix}"
-  provider            = azurerm.hub
+  name                = "appconfaltinnauth001hub"
+  resource_group_name = "rgaltinnauth001hub"
 }
 
 resource "azurerm_virtual_network" "dual_stack" {
