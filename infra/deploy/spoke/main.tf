@@ -114,6 +114,11 @@ module "app_configuration" {
   }
 }
 
+data "azurerm_app_configuration" "appconf" {
+  name                = "appconf${local.hub_suffix}"
+  resource_group_name = "rg${local.hub_suffix}"
+  provider            = azurerm.hub
+}
 
 resource "azurerm_virtual_network" "dual_stack" {
   name                = "vnetds${local.suffix}"
