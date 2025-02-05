@@ -106,6 +106,15 @@ resource "azurerm_resource_group" "spoke" {
   }
 }
 
+module "app_configuration" {
+  source     = "../../modules/app_configuration"
+  hub_suffix = local.hub_suffix
+  providers = {
+    azurerm.hub = azurerm.hub
+  }
+}
+
+
 resource "azurerm_virtual_network" "dual_stack" {
   name                = "vnetds${local.suffix}"
   resource_group_name = azurerm_resource_group.spoke.name
