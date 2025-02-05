@@ -1,4 +1,5 @@
 using Altinn.AccessManagement;
+using Altinn.AccessMgmt.AccessPackages.Repo.Extensions;
 using Microsoft.IdentityModel.Logging;
 
 WebApplication app = AccessManagementHost.Create(args);

@@ -204,7 +204,7 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
         var param = GetEntityAsSqlParameter(entity);
         sb.AppendLine($"INSERT INTO {DbObjDef.BaseDbObject.GetPostgresDefinition(includeAlias: false)} ({InsertColumns([.. param.Keys])}) VALUES({InsertValues([.. param.Keys])})");
         sb.AppendLine(" ON CONFLICT (id) DO ");
-        sb.AppendLine($"UPDATE {DbObjDef.BaseDbObject.GetPostgresDefinition(includeAlias: false)} SET {UpdateSetStatement([.. param.Keys])} WHERE Id = @_id");
+        sb.AppendLine($"UPDATE SET {UpdateSetStatement([.. param.Keys])}");
         param.Add("_id", new NpgsqlParameter("_id", id));
         return await ExecuteCommand(sb.ToString(), [.. param.Values], cancellationToken: cancellationToken);
     }

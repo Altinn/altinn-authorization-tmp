@@ -15,6 +15,7 @@ using Altinn.AccessMgmt.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,14 +28,18 @@ public static class DbAccessHostExtensions
 {
     public static IHostApplicationBuilder ConfigureDb(this IHostApplicationBuilder builder, Action<DbAccessConfig>? configureOptions = null)
     {
-        var c = builder.Configuration.GetRequiredSection("DbAccessConfig").Get<DbAccessConfig>();
-        builder.Services.Configure<DbAccessConfig>(builder.Configuration.GetRequiredSection("DbAccessConfig"));
+        var config = builder.Configuration.Get<DbAccessConfig>();
+        
+        if (string.IsNullOrEmpty(config.ConnectionString))
+        {
+            throw new Exception("ConnectionString not set");
+        }
 
-        //builder.Services.Configure<DbAccessConfig>(config =>
-        //{
-        //    builder.Configuration.GetSection("DbAccessConfig").Bind(config);
-        //    configureOptions?.Invoke(config);
-        //});
+        builder.Services.Configure<DbAccessConfig>(config =>
+        {
+            builder.Configuration.GetRequiredSection("DbAccessConfig").Bind(config);
+            configureOptions?.Invoke(config);
+        });
 
         return builder;
     }
@@ -42,11 +47,6 @@ public static class DbAccessHostExtensions
     public static IHostApplicationBuilder AddDb(this IHostApplicationBuilder builder)
     {
         var config = builder.Configuration.Get<DbAccessConfig>();
-
-        //if (string.IsNullOrEmpty(config.ConnectionString))
-        //{
-        //    throw new Exception("ConnectionString not set");
-        //}
 
         builder.Services.AddSingleton<DatabaseDefinitions>();
         builder.Services.AddSingleton<DatabaseMigration>();

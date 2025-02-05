@@ -14,7 +14,6 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.ConfigureDb();
 builder.AddDb();
 
-//// builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 

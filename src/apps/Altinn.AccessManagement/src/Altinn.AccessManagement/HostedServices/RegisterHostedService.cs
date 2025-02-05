@@ -1,3 +1,4 @@
+using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Register;
 using Altinn.Authorization.Integration.Register.Models;
@@ -9,11 +10,26 @@ namespace Altinn.Authorization.AccessManagement;
 /// </summary>
 /// <param name="lease">Lease provider for distributed locking.</param>
 /// <param name="register">Register integration service.</param>
+/// <param name="entityService"></param>
+/// <param name="entityTypeService"></param>
+/// <param name="entityVariantService"></param>
+/// <param name="entityLookupService"></param>
 /// <param name="logger">Logger for logging service activities.</param>
-public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister register, ILogger<RegisterHostedService> logger) : IHostedService, IDisposable
+public partial class RegisterHostedService(
+    IAltinnLease lease, 
+    IAltinnRegister register, 
+    IEntityService entityService,
+    IEntityTypeService entityTypeService,
+    IEntityVariantService entityVariantService,
+    IEntityLookupService entityLookupService,
+    ILogger<RegisterHostedService> logger) : IHostedService, IDisposable
 {
     private readonly IAltinnLease _lease = lease;
     private readonly IAltinnRegister _register = register;
+    private readonly IEntityService entityService = entityService;
+    private readonly IEntityTypeService entityTypeService = entityTypeService;
+    private readonly IEntityVariantService entityVariantService = entityVariantService;
+    private readonly IEntityLookupService entityLookupService = entityLookupService;
     private readonly ILogger<RegisterHostedService> _logger = logger;
     private int _executionCount = 0;
     private Timer _timer = null;
@@ -88,6 +104,9 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
             return;
         }
 
+        var types = await entityTypeService.Get();
+        var variants = await entityVariantService.Get();
+
         try
         {
             await foreach (var page in await _register.Stream(ls.Data?.NextPageLink, _registerFields, cancellationToken))
@@ -101,6 +120,16 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
                 {
                     Interlocked.Increment(ref _executionCount);
                     Log.Party(_logger, item.PartyUuid, _executionCount);
+
+                    await entityService.ExtendedRepo.Upsert(Guid.Parse(item.PartyUuid), new AccessMgmt.Models.Entity()
+                    {
+                        Id = Guid.Parse(item.PartyUuid),
+                        Name = item.Name,
+                        RefId = item.PersonIdentifier ?? item.OrganizationIdentifier,
+                        TypeId = types.First(t => t.Name.Equals("Organisasjon")).Id,
+                        VariantId = variants.First(t => t.Name.Equals("AS")).Id
+                    });
+
                     await WriteToDb(item);
                 }
 
