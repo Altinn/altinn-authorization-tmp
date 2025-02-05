@@ -21,8 +21,9 @@ provider "azurerm" {
 }
 
 provider "azurerm" {
-  alias           = "hub"
-  subscription_id = var.hub_subscription_id
+  alias               = "hub"
+  subscription_id     = var.hub_subscription_id
+  storage_use_azuread = true
   features {
   }
 }
