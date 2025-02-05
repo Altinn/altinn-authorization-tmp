@@ -10,6 +10,10 @@ resource "azurerm_key_vault" "key_vault" {
   sku_name                      = "standard"
 
   tags = merge({}, local.default_tags)
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment
@@ -18,7 +22,7 @@ resource "azurerm_role_assignment" "key_vault_administrator" {
   principal_id         = each.value
   role_definition_name = "Key Vault Administrator" # https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#security
 
-  for_each = toset(var.spoke_principals_ids)
+  for_each = toset(var.maintainers_principal_ids)
 }
 
 # Private Endpoint for Key Vault
@@ -30,7 +34,7 @@ resource "azurerm_private_endpoint" "key_vault" {
   custom_network_interface_name = "nickv${local.suffix}"
 
   private_dns_zone_group {
-    name                 = "key-vault"
+    name                 = "privatelink.vaultcore.azure.net"
     private_dns_zone_ids = [azurerm_private_dns_zone.dns["privatelink.vaultcore.azure.net"].id]
   }
 

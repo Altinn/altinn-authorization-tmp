@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.13.0"
+      version = "4.16.0"
     }
     static = {
       source  = "tiwood/static"
@@ -31,11 +31,13 @@ data "azurerm_client_config" "current" {}
 
 locals {
   hub_suffix = lower("${var.organization}${var.product_name}${var.instance}hub")
-  suffix     = "${var.organization}${var.product_name}${var.instance}${var.environment}"
+  suffix     = lower("${var.organization}${var.product_name}${var.instance}${var.environment}")
+  repo       = "altinn-authorization-tmp"
 
-  ipv4_cidr_prefix = tonumber(split("/", var.single_stack_ipv4_address_space)[1])
-  ipv6_cidr_prefix = tonumber(split("/", var.dual_stack_ipv6_address_space)[1])
-  ipv6_bits        = 64 - local.ipv6_cidr_prefix
+  ipv4_single_stack_prefix    = tonumber(split("/", var.single_stack_ipv4_address_space)[1])
+  ipv4_dual_stack_cidr_prefix = tonumber(split("/", var.dual_stack_ipv4_address_space)[1])
+  ipv6_cidr_prefix            = tonumber(split("/", var.dual_stack_ipv6_address_space)[1])
+  ipv6_bits                   = 64 - local.ipv6_cidr_prefix
 
   default_tags = {
     ProductName = var.product_name
@@ -48,28 +50,30 @@ locals {
     {
       name         = "Default"
       include_ipv6 = true
-      ipv4_bits    = 22 - local.ipv4_cidr_prefix
-      create       = true
-    },
-    {
-      name         = "Aks"
-      include_ipv6 = true
-      ipv4_bits    = 22 - local.ipv4_cidr_prefix
-      create       = false
+      ipv4_bits    = 22 - local.ipv4_dual_stack_cidr_prefix
     },
     {
       name         = "ServiceBus"
       include_ipv6 = true
-      ipv4_bits    = 25 - local.ipv4_cidr_prefix
-      create       = true
+      ipv4_bits    = 25 - local.ipv4_dual_stack_cidr_prefix
     }
   ]
 
   single_stack_subnets = [
     {
       name      = "Postgres"
-      ipv4_bits = 22 - local.ipv4_cidr_prefix
-      create    = true
+      ipv4_bits = 22 - local.ipv4_single_stack_prefix
+      service_endpoint = [
+        "Microsoft.Storage"
+      ]
+      delegations = {
+        fs = {
+          name = "Microsoft.DBforPostgreSQL/flexibleServers"
+          actions = [
+            "Microsoft.Network/virtualNetworks/subnets/join/action"
+          ]
+        }
+      }
     }
   ]
 }
@@ -77,7 +81,7 @@ locals {
 resource "static_data" "static" {
   data = {
     api_id     = uuid()
-    created_at = timestamp()
+    created_at = formatdate("EEEE, DD-MMM-YY hh:mm:ss ZZZ", "2018-01-02T23:12:01Z")
   }
 
   lifecycle {
@@ -96,6 +100,10 @@ resource "azurerm_resource_group" "spoke" {
   location = "norwayeast"
 
   tags = merge({}, local.default_tags)
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_virtual_network" "dual_stack" {
@@ -109,11 +117,11 @@ resource "azurerm_virtual_network" "dual_stack" {
 
   dns_servers = [var.firewall_private_ipv4]
 
-  tags = merge(
-    { for subnet in local.dual_stack_subnets : "${subnet.name}IPv4" => module.subnet_ipv4_dual_stack.networks[index(module.subnet_ipv4_dual_stack.networks.*.name, subnet.name)].cidr_block },
-    { for subnet in local.dual_stack_subnets : "${subnet.name}IPv6" => module.subnet_ipv6_dual_stack.networks[index(module.subnet_ipv6_dual_stack.networks.*.name, subnet.name)].cidr_block if try(local.dual_stack_subnets[index(local.dual_stack_subnets.*.name, subnet.name)].include_ipv6, false) },
-    local.default_tags
-  )
+  tags = merge({}, local.default_tags)
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_virtual_network" "single_stack" {
@@ -126,10 +134,11 @@ resource "azurerm_virtual_network" "single_stack" {
 
   dns_servers = [var.firewall_private_ipv4]
 
-  tags = merge(
-    { for subnet in local.single_stack_subnets : "${subnet.name}IPv4" => module.subnet_ipv4_single_stack.networks[index(module.subnet_ipv4_single_stack.networks.*.name, subnet.name)].cidr_block },
-    local.default_tags
-  )
+  tags = merge({}, local.default_tags)
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 module "subnet_ipv4_single_stack" {
@@ -184,11 +193,8 @@ resource "azurerm_subnet" "single_stack" {
   }
 
   service_endpoints = try(each.value.service_endpoint, [])
-  lifecycle {
-    prevent_destroy = false
-  }
 
-  for_each = { for subnet in local.single_stack_subnets : subnet.name => subnet if try(subnet.create, false) }
+  for_each = { for subnet in local.single_stack_subnets : subnet.name => subnet }
 }
 
 resource "azurerm_subnet" "dual_stack" {
@@ -214,11 +220,8 @@ resource "azurerm_subnet" "dual_stack" {
   }
 
   service_endpoints = try(each.value.service_endpoint, [])
-  lifecycle {
-    prevent_destroy = false
-  }
 
-  for_each = { for subnet in local.dual_stack_subnets : subnet.name => subnet if try(subnet.create, false) }
+  for_each = { for subnet in local.dual_stack_subnets : subnet.name => subnet }
 }
 
 resource "azurerm_route_table" "forced_tunneling" {
@@ -290,3 +293,34 @@ resource "azurerm_virtual_network_peering" "spoke_to_hub_dual_stack" {
   allow_gateway_transit        = false
   use_remote_gateways          = true
 }
+
+resource "azurerm_user_assigned_identity" "admin" {
+  name                = "mipgsqladmin${local.suffix}"
+  resource_group_name = azurerm_resource_group.spoke.name
+  location            = azurerm_resource_group.spoke.location
+  tags                = merge({}, local.default_tags)
+}
+
+resource "azurerm_federated_identity_credential" "admin" {
+  parent_id           = azurerm_user_assigned_identity.admin.id
+  resource_group_name = azurerm_resource_group.spoke.name
+
+  name     = "GitHubAction"
+  audience = ["api://AzureADTokenExchange"]
+  issuer   = "https://token.actions.githubusercontent.com"
+  subject  = "repo:Altinn/${local.repo}:environment:${var.environment}"
+}
+
+# resource "azurerm_management_lock" "delete" {
+#   name       = "Terraform"
+#   scope      = each.value
+#   lock_level = "CanNotDelete"
+#   notes      = "Terraform Managed Lock"
+
+#   for_each = { for lock in [
+#     azurerm_servicebus_namespace.service_bus,
+#     azurerm_key_vault.key_vault,
+#     azurerm_log_analytics_workspace.telemetry,
+#     azurerm_application_insights.telemetry,
+#   ] : lock.name => lock.id }
+# }

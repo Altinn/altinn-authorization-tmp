@@ -26,7 +26,22 @@ variable "client_certs" {
   type = list(string)
 }
 
-variable "spoke_principals_ids" {
+variable "maintainers_principal_ids" {
   type = list(string)
 }
 
+variable "spoke_principal_ids" {
+  type = list(string)
+}
+
+variable "developer_prod_principal_ids" {
+  type = list(string)
+}
+
+variable "developer_dev_principal_ids" {
+  type = list(string)
+}
+
+variable "vpn_owners_principal_ids" {
+  type = list(string)
+}

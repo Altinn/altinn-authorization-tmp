@@ -109,6 +109,13 @@ namespace Altinn.AccessManagement.Core.Helpers
                 return Guid.TryParse(currentAttributeMatch.Value, out uuid) && uuid != Guid.Empty;
             }
 
+            currentAttributeMatch = match.Find(m => m.Id == AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute);
+            if (currentAttributeMatch != null)
+            {
+                type = UuidType.Party;
+                return Guid.TryParse(currentAttributeMatch.Value, out uuid) && uuid != Guid.Empty;
+            }
+
             return false;
         }
 
@@ -691,7 +698,7 @@ namespace Altinn.AccessManagement.Core.Helpers
         /// <returns>true if a valid type and id was extracted else false</returns>
         public static bool TryGetPerformerFromAttributeMatches(IEnumerable<AttributeMatch> performer, out string id, out UuidType type)
         {
-            string org = null, app = null, person = null, organization = null, enterpriseUser = null, systemUser = null, user = null, party = null;
+            string org = null, app = null, person = null, organization = null, enterpriseUser = null, systemUser = null, user = null, party = null, partyuuid = null;
             id = null;
             type = UuidType.NotSpecified;
             int counter = 0;
@@ -729,6 +736,9 @@ namespace Altinn.AccessManagement.Core.Helpers
                         break;
                     case AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute:
                         party = match.Value;
+                        break;
+                    case AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute:
+                        partyuuid = match.Value;
                         break;
                 }
             }
@@ -779,6 +789,13 @@ namespace Altinn.AccessManagement.Core.Helpers
             {
                 id = systemUser;
                 type = UuidType.SystemUser;
+                return true;
+            }
+
+            if (org == null && app == null && person == null && organization == null && enterpriseUser == null && systemUser == null && partyuuid != null && counter == 1)
+            {
+                id = partyuuid;
+                type = UuidType.Party;
                 return true;
             }
 
@@ -854,13 +871,14 @@ namespace Altinn.AccessManagement.Core.Helpers
         /// <summary>
         /// Builds a RequestToDelete request model for revoking all delegated rules for the resource if delegated between the from and to parties
         /// </summary>
-        public static List<RequestToDelete> GetRequestToDeleteResource(int authenticatedUserId, IEnumerable<AttributeMatch> resource, int fromPartyId, IEnumerable<AttributeMatch> to, UuidType fromType, Guid from)
+        public static List<RequestToDelete> GetRequestToDeleteResource(int authenticatedUserId, Guid authenticatedUserPartyUuid, IEnumerable<AttributeMatch> resource, int fromPartyId, IEnumerable<AttributeMatch> to, UuidType fromType, Guid from)
         {
             return new List<RequestToDelete>
             {
                 new RequestToDelete
                 {
                     DeletedByUserId = authenticatedUserId,
+                    PerformedBy = new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute, Value = authenticatedUserPartyUuid.ToString() }.SingleToList(),
                     PolicyMatch = new PolicyMatch
                     {
                         OfferedByPartyId = fromPartyId,
