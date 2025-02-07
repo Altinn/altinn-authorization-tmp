@@ -32,6 +32,7 @@ locals {
   spoke_suffix              = lower("${var.organization}${var.product_name}${var.instance}${var.environment}")
   spoke_resource_group_name = lower("rg${local.spoke_suffix}")
   suffix                    = lower("${var.organization}${var.product_name}${var.name}${var.instance}${var.environment}")
+  conf_json                 = jsondecode(file("${path.module}/../conf.json"))
 
   default_tags = {
     ProductName = var.product_name
@@ -135,13 +136,13 @@ module "key_vault" {
 
 data "azurerm_key_vault_secret" "postgres_migration" {
   key_vault_id = module.key_vault.id
-  name         = "kake"
+  name         = "db-${module.postgres_server.name}-${local.conf_json.database.prefix}-migrator"
   depends_on   = [null_resource.bootstrap_database]
 }
 
 data "azurerm_key_vault_secret" "postgres_app" {
   key_vault_id = module.key_vault.id
-  name         = "kake"
+  name         = "db-${module.postgres_server.name}-${local.conf_json.database.prefix}-app"
   depends_on   = [null_resource.bootstrap_database]
 }
 
