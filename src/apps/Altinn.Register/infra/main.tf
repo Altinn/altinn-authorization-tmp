@@ -9,7 +9,6 @@ terraform {
       version = "0.1.0"
     }
   }
-
   backend "azurerm" {
     use_azuread_auth = true
   }
@@ -43,6 +42,8 @@ locals {
   }
 }
 
+data "azurerm_client_config" "current" {}
+
 resource "static_data" "static" {
   data = {
     created_at = formatdate("EEEE, DD-MMM-YY hh:mm:ss ZZZ", "2018-01-02T23:12:01Z")
@@ -62,6 +63,12 @@ data "azurerm_private_dns_zone" "postgres" {
 data "azurerm_subnet" "postgres" {
   name                 = "Postgres"
   virtual_network_name = "vnetss${local.spoke_suffix}"
+  resource_group_name  = local.spoke_resource_group_name
+}
+
+data "azurerm_subnet" "default" {
+  name                 = "Default"
+  virtual_network_name = "vnetds${local.spoke_suffix}"
   resource_group_name  = local.spoke_resource_group_name
 }
 
@@ -87,30 +94,74 @@ resource "azurerm_federated_identity_credential" "aks_federation" {
   name                = "Aks"
   resource_group_name = azurerm_resource_group.register.name
   parent_id           = azurerm_user_assigned_identity.register.id
-
-  audience = ["api://AzureADTokenExchange"]
-  subject  = "system:serviceaccount:${each.value.namespace}:${each.value.service_account}"
-  issuer   = each.value.issuer_url
-
-  for_each = { for federation in var.aks_federation : federation.issuer_url => federation }
+  audience            = ["api://AzureADTokenExchange"]
+  subject             = "system:serviceaccount:${each.value.namespace}:${each.value.service_account}"
+  issuer              = each.value.issuer_url
+  for_each            = { for federation in var.aks_federation : federation.issuer_url => federation }
 }
 
 module "rbac" {
-  source              = "../../../../infra/modules/rbac"
-  principal_id        = azurerm_user_assigned_identity.register.principal_id
-  hub_subscription_id = var.hub_subscription_id
-  hub_suffix          = local.hub_suffix
-  spoke_suffix        = local.spoke_suffix
-
+  source                = "../../../../infra/modules/rbac"
+  principal_id          = azurerm_user_assigned_identity.register.principal_id
+  hub_subscription_id   = var.hub_subscription_id
+  hub_suffix            = local.hub_suffix
+  spoke_suffix          = local.spoke_suffix
   use_app_configuration = true
   use_lease             = true
   use_masstransit       = true
+}
+
+module "key_vault" {
+  source              = "../../../../infra/modules/key_vault"
+  name                = "reg"
+  hub_suffix          = local.hub_suffix
+  hub_subscription_id = var.hub_subscription_id
+  resource_group_name = azurerm_resource_group.register.name
+  suffix              = local.spoke_suffix
+  subnet_id           = data.azurerm_subnet.default.id
+  key_vault_roles = [
+    {
+      operation_id         = "grant_register_app_reader"
+      principal_id         = azurerm_user_assigned_identity.register.principal_id
+      role_definition_name = "Key Vault Reader"
+    },
+    {
+      operation_id         = "grant_pgsqlrv_app_contributor"
+      principal_id         = data.azurerm_user_assigned_identity.admin.principal_id
+      role_definition_name = "Key Vault Contributor"
+    }
+  ]
+}
+
+data "azurerm_key_vault_secret" "postgres_migration" {
+  key_vault_id = module.key_vault.id
+  name         = "kake"
+  depends_on   = [null_resource.bootstrap_database]
+}
+
+data "azurerm_key_vault_secret" "postgres_app" {
+  key_vault_id = module.key_vault.id
+  name         = "kake"
+  depends_on   = [null_resource.bootstrap_database]
 }
 
 module "appsettings" {
   source              = "../../../../infra/modules/appsettings"
   hub_suffix          = local.hub_suffix
   hub_subscription_id = var.hub_subscription_id
+  key_vault_reference = [
+    {
+      key                 = "Postgres:AppConnectionString"
+      key_vault_secret_id = data.azurerm_key_vault_secret.postgres_app.versionless_id
+      label               = "${var.environment}_register"
+    },
+    {
+      key                 = "Postgres:MigrationConnectionString"
+      key_vault_secret_id = data.azurerm_key_vault_secret.postgres_migration.versionless_id
+      label               = "${var.environment}_register"
+    }
+
+  ]
 }
 
 module "postgres_server" {
@@ -136,4 +187,29 @@ module "postgres_server" {
       principal_type = "ServicePrincipal"
     }
   ]
+}
+
+resource "null_resource" "bootstrap_database" {
+  triggers = {
+    server_resource_group = azurerm_resource_group.register.name
+    server_subscription   = data.azurerm_client_config.current.subscription_id
+    server_name           = module.postgres_server.name
+    kv_resource_group     = azurerm_resource_group.register.name
+    kv_subscription       = data.azurerm_client_config.current.subscription_id
+    kv_name               = module.key_vault.name
+  }
+
+  provisioner "local-exec" {
+    working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
+    command     = <<EOT
+      dotnet run -- database bootstrap \
+      --server-resource-group=${azurerm_resource_group.register.name} \
+      --server-subscription=${data.azurerm_client_config.current.subscription_id} \
+      --server-name=${module.postgres_server.name} \
+      --kv-resource-group=${azurerm_resource_group.register.name} \
+      --kv-subscription=${data.azurerm_client_config.current.subscription_id} \
+      --kv-name=${module.key_vault.name} \
+      --config-file=../../../../apps/Altinn.Register/conf.json
+    EOT
+  }
 }
