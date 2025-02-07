@@ -37,6 +37,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.AccessPac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.DbAccess", "..\..\libs\Altinn.AccessMgmt.DbAccess\Altinn.AccessMgmt.DbAccess.csproj", "{E8C46ACE-4B17-46A5-B862-AD0AAD50DD8C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.Models", "..\..\libs\Altinn.AccessMgmt.Models\Altinn.AccessMgmt.Models.csproj", "{62CC02FC-6A26-4C40-A336-B704A5BFED1B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.Worker.RR", "..\Altinn.AccessMgmt.Worker.RR\Altinn.AccessMgmt.Worker.RR.csproj", "{BA222450-3654-4C39-A4ED-0861D201E140}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +107,14 @@ Global
 		{E8C46ACE-4B17-46A5-B862-AD0AAD50DD8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8C46ACE-4B17-46A5-B862-AD0AAD50DD8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8C46ACE-4B17-46A5-B862-AD0AAD50DD8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62CC02FC-6A26-4C40-A336-B704A5BFED1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62CC02FC-6A26-4C40-A336-B704A5BFED1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62CC02FC-6A26-4C40-A336-B704A5BFED1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62CC02FC-6A26-4C40-A336-B704A5BFED1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA222450-3654-4C39-A4ED-0861D201E140}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA222450-3654-4C39-A4ED-0861D201E140}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA222450-3654-4C39-A4ED-0861D201E140}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA222450-3654-4C39-A4ED-0861D201E140}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -119,5 +131,7 @@ Global
 		{31E20770-DF86-43A8-B53B-52351F94FD22} = {960E20A2-19CD-4579-9E93-D2E7C02D3629}
 		{BF92AAFF-212C-498B-B243-4D570859BB5B} = {960E20A2-19CD-4579-9E93-D2E7C02D3629}
 		{E8C46ACE-4B17-46A5-B862-AD0AAD50DD8C} = {960E20A2-19CD-4579-9E93-D2E7C02D3629}
+		{62CC02FC-6A26-4C40-A336-B704A5BFED1B} = {960E20A2-19CD-4579-9E93-D2E7C02D3629}
+		{BA222450-3654-4C39-A4ED-0861D201E140} = {960E20A2-19CD-4579-9E93-D2E7C02D3629}
 	EndGlobalSection
 EndGlobal

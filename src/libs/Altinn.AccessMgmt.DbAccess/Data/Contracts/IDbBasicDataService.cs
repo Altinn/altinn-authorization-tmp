@@ -15,6 +15,13 @@ public interface IDbBasicDataService<T>
     IDbBasicRepo<T> Repo { get; }
 
     /// <summary>
+    /// Filterbuilder
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    GenericFilterBuilder<T> CreateFilterBuilder<T>();
+
+    /// <summary>
     /// Get all entities
     /// </summary>
     /// <param name="options">RequestOptions</param>

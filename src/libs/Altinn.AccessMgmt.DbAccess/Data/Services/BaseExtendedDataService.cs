@@ -43,7 +43,9 @@ public class BaseExtendedDataService<T, TExtended> : BaseDataService<T>, IDbExte
         return await ExtendedRepo.GetExtended(filters.ToList(), options, cancellationToken: cancellationToken);
     }
 
-    public GenericFilterBuilder<TExtended> CreateFilterBuilder() { return new GenericFilterBuilder<TExtended>(); }
+    /// <inheritdoc/>
+    public GenericFilterBuilder<TExtended> CreateFilterBuilder<TExtended>() { return new GenericFilterBuilder<TExtended>(); }
+
     public async Task<IEnumerable<TExtended>> GetExtended(GenericFilterBuilder<TExtended> filterBuilder, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
         //// using var a = DbAccessTelemetry.StartActivity<T>("GetExtended");
@@ -57,13 +59,11 @@ public class BaseExtendedDataService<T, TExtended> : BaseDataService<T>, IDbExte
     {
         //// using var a = DbAccessTelemetry.StartActivity<T>("GetExtended");
 
-        var filterBuilder = CreateFilterBuilder();
+        var filterBuilder = CreateFilterBuilder<TExtended>();
         var filters = configureFilters(filterBuilder).ToList();
 
         return await ExtendedRepo.GetExtended(filters, options, cancellationToken: cancellationToken);
     }
-
-
 
     /// <inheritdoc/>
     public async Task<IEnumerable<TExtended>> GetExtended<TProperty>(Expression<Func<TExtended, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default)

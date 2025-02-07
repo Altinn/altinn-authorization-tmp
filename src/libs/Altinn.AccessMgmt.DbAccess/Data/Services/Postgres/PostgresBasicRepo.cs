@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Data.Common;
 using System.Reflection;
 using System.Text;
 using Altinn.AccessMgmt.DbAccess.Data.Contracts;
@@ -399,8 +400,8 @@ public class PostgresBasicRepo<T> : IDbBasicRepo<T>
         {
             using var c = new NpgsqlConnection(ConnectionString);
             var cmd = new CommandDefinition(query, parameters, cancellationToken: cancellationToken);
-            //// Console.WriteLine(query);
-            return DbConverter.ConvertToObjects<T>(await c.ExecuteReaderAsync(cmd));
+            await using var reader = await c.ExecuteReaderAsync(cmd);
+            return DbConverter.ConvertToObjects<T>(reader);
         }
         catch (Exception ex)
         {

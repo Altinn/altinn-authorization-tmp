@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -7,6 +8,7 @@ using Altinn.AccessMgmt.DbAccess.Data.Models;
 using Altinn.AccessMgmt.DbAccess.Migrate.Contracts;
 using Altinn.AccessMgmt.DbAccess.Migrate.Models;
 using Dapper;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
@@ -18,6 +20,8 @@ namespace Altinn.AccessMgmt.DbAccess.Migrate.Services;
 public class PostgresMigrationFactory : IDbMigrationFactory
 {
     private readonly NpgsqlConnection _connection;
+
+    private readonly ILogger<PostgresMigrationFactory> _logger;
 
     private readonly string defaultSchema = "dbo";
     private readonly string translationSchema = "translation";
@@ -35,10 +39,12 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresMigrationFactory"/> class.
     /// </summary>
+    /// <param name="logger">ILogger</param>
     /// <param name="options">DbMigrationConfig</param>
-    public PostgresMigrationFactory(IOptions<DbAccessConfig> options)
+    public PostgresMigrationFactory(ILogger<PostgresMigrationFactory> logger, IOptions<DbAccessConfig> options)
     {
         var config = options.Value;
+        _logger = logger;
 
         Enable = config.MigrationEnabled;
 
@@ -231,10 +237,8 @@ public class PostgresMigrationFactory : IDbMigrationFactory
     public async Task CreateTable<T>(bool useTranslation = false, Dictionary<string, CommonDataType>? primaryKeyColumns = null)
     {
         string name = typeof(T).Name;
-        string migrationKey = $"CREATE TABLE {TableName<T>()}";
 
         HasTranslation.Add(typeof(T), useTranslation);
-
         Columns.Add(typeof(T), new Dictionary<string, CommonDataType>());
 
         primaryKeyColumns ??= new Dictionary<string, CommonDataType>() { { "Id", DataTypes.Guid } };
@@ -256,23 +260,40 @@ public class PostgresMigrationFactory : IDbMigrationFactory
 
         string primaryKeyDefinition = string.Join(',', primaryKeyColumns.Select(t => $"{t.Key} {t.Value.Postgres} NOT NULL "));
 
+        string migrationKey = $"CREATE TABLE {TableName<T>()}";
         if (NeedMigration<T>(migrationKey))
         {
-            var sb = new StringBuilder();
-            sb.AppendLine($"CREATE TABLE {TableName<T>()} (");
-            sb.AppendLine(primaryKeyDefinition);
-
-            if (HasHistoryCheck<T>())
+            using var activity = Telemetry.StartActivity(migrationKey);
+            try
             {
-                sb.AppendLine(", validfrom timestamptz default now()");
+                var sb = new StringBuilder();
+                sb.AppendLine($"CREATE TABLE {TableName<T>()} (");
+                sb.AppendLine(primaryKeyDefinition);
+
+                if (HasHistoryCheck<T>())
+                {
+                    sb.AppendLine(", validfrom timestamptz default now()");
+                }
+
+                sb.AppendLine($", CONSTRAINT PK_{name} PRIMARY KEY ({string.Join(',', primaryKeyColumns.Select(t => $"{t.Key}"))})");
+                sb.AppendLine(")");
+                string query = sb.ToString();
+
+                await ExecuteQuery(query);
+                await LogMigration<T>(migrationKey, query);
             }
+            catch (Exception ex)
+            {
+                if (activity != null)
+                {
+                    activity.AddException(ex);
+                    activity.SetStatus(ActivityStatusCode.Error, ex.Message);
+                }
 
-            sb.AppendLine($", CONSTRAINT PK_{name} PRIMARY KEY ({string.Join(',', primaryKeyColumns.Select(t => $"{t.Key}"))})");
-            sb.AppendLine(")");
-            string query = sb.ToString();
+                _logger.LogError(ex, "{migrationKey}", migrationKey);
 
-            await ExecuteQuery(query);
-            await LogMigration<T>(migrationKey, query);
+                throw;
+            }
         }
 
         if (useTranslation)
@@ -280,21 +301,37 @@ public class PostgresMigrationFactory : IDbMigrationFactory
             string translationKey = $"CREATE TABLE {TranslationTableName<T>()}";
             if (NeedMigration<T>(translationKey))
             {
-                var sb = new StringBuilder();
-                sb.AppendLine($"CREATE TABLE {TranslationTableName<T>()} (");
-                sb.AppendLine(primaryKeyDefinition);
-                if (HasHistoryCheck<T>())
+                using var activity = Telemetry.StartActivity(translationKey);
+                try
                 {
-                    sb.AppendLine(", validfrom timestamptz default now()");
+                    var sb = new StringBuilder();
+                    sb.AppendLine($"CREATE TABLE {TranslationTableName<T>()} (");
+                    sb.AppendLine(primaryKeyDefinition);
+                    if (HasHistoryCheck<T>())
+                    {
+                        sb.AppendLine(", validfrom timestamptz default now()");
+                    }
+
+                    sb.AppendLine($", Language text NOT NULL");
+                    sb.AppendLine($", CONSTRAINT PK_{name} PRIMARY KEY ({string.Join(',', primaryKeyColumns.Select(t => $"{t.Key}"))}, Language)");
+                    sb.AppendLine(")");
+                    string query = sb.ToString();
+
+                    await ExecuteQuery(query);
+                    await LogMigration<T>(translationKey, query);
                 }
+                catch (Exception ex)
+                {
+                    if (activity != null)
+                    {
+                        activity.AddException(ex);
+                        activity.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    }
 
-                sb.AppendLine($", Language text NOT NULL");
-                sb.AppendLine($", CONSTRAINT PK_{name} PRIMARY KEY ({string.Join(',', primaryKeyColumns.Select(t => $"{t.Key}"))}, Language)");
-                sb.AppendLine(")");
-                string query = sb.ToString();
+                    _logger.LogError(ex, "{translationKey}", translationKey);
 
-                await ExecuteQuery(query);
-                await LogMigration<T>(translationKey, query);
+                    throw;
+                }
             }
         }
 
@@ -303,34 +340,66 @@ public class PostgresMigrationFactory : IDbMigrationFactory
             string historyKey = $"CREATE TABLE {HistoryTableName<T>()}";
             if (NeedMigration<T>(historyKey))
             {
-                var sb = new StringBuilder();
-                sb.AppendLine($"CREATE TABLE {HistoryTableName<T>()}(");
-                sb.AppendLine(primaryKeyDefinition);
-                sb.AppendLine(", validfrom timestamptz default now()");
-                sb.AppendLine(", validto timestamptz default now()");
-                sb.AppendLine(")");
-                string query = sb.ToString();
+                using var activity = Telemetry.StartActivity(historyKey);
+                try
+                {
+                    var sb = new StringBuilder();
+                    sb.AppendLine($"CREATE TABLE {HistoryTableName<T>()}(");
+                    sb.AppendLine(primaryKeyDefinition);
+                    sb.AppendLine(", validfrom timestamptz default now()");
+                    sb.AppendLine(", validto timestamptz default now()");
+                    sb.AppendLine(")");
+                    string query = sb.ToString();
 
-                await ExecuteQuery(query);
-                await LogMigration<T>(historyKey, query);
+                    await ExecuteQuery(query);
+                    await LogMigration<T>(historyKey, query);
+                }
+                catch (Exception ex)
+                {
+                    if (activity != null)
+                    {
+                        activity.AddException(ex);
+                        activity.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    }
+
+                    _logger.LogError(ex, "{historyKey}", historyKey);
+
+                    throw;
+                }
             }
 
             if (useTranslation)
             {
                 string historyTranslationKey = $"CREATE TABLE {HistoryTranslationTableName<T>()}";
                 if (NeedMigration<T>(historyTranslationKey))
-                {                     
-                    var sb = new StringBuilder();
-                    sb.AppendLine($"CREATE TABLE {HistoryTranslationTableName<T>()}(");
-                    sb.AppendLine(primaryKeyDefinition);
-                    sb.AppendLine(", validfrom timestamptz default now()");
-                    sb.AppendLine(", validto timestamptz default now()");
-                    sb.AppendLine(", Language text NOT NULL");
-                    sb.AppendLine(")");
-                    string query = sb.ToString();
+                {
+                    using var activity = Telemetry.StartActivity(historyTranslationKey);
+                    try
+                    {
+                        var sb = new StringBuilder();
+                        sb.AppendLine($"CREATE TABLE {HistoryTranslationTableName<T>()}(");
+                        sb.AppendLine(primaryKeyDefinition);
+                        sb.AppendLine(", validfrom timestamptz default now()");
+                        sb.AppendLine(", validto timestamptz default now()");
+                        sb.AppendLine(", Language text NOT NULL");
+                        sb.AppendLine(")");
+                        string query = sb.ToString();
 
-                    await ExecuteQuery(query);
-                    await LogMigration<T>(historyTranslationKey, query);
+                        await ExecuteQuery(query);
+                        await LogMigration<T>(historyTranslationKey, query);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (activity != null)
+                        {
+                            activity.AddException(ex);
+                            activity.SetStatus(ActivityStatusCode.Error, ex.Message);
+                        }
+
+                        _logger.LogError(ex, "{historyTranslationKey}", historyTranslationKey);
+
+                        throw;
+                    }
                 }
             }
         }

@@ -41,6 +41,9 @@ public class BaseDataService<T> : IDbBasicDataService<T>
     }
 
     /// <inheritdoc/>
+    public GenericFilterBuilder<T> CreateFilterBuilder<T>() { return new GenericFilterBuilder<T>(); }
+
+    /// <inheritdoc/>
     public async Task<IEnumerable<T>> Get(RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await Repo.Get(filters: new List<GenericFilter>(), options, cancellationToken: cancellationToken);

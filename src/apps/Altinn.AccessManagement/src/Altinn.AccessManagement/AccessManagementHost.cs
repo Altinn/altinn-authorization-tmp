@@ -68,6 +68,8 @@ internal static class AccessManagementHost
     private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddHostedService<RegisterHostedService>();
+        builder.Services.AddHostedService<ResourceRegisterHostedService>();
+
         builder.AddAppSettingDefaults();
         builder.AddAltinnLease(cgf =>
         {
