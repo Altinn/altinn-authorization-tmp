@@ -104,8 +104,8 @@ public partial class RegisterHostedService(
             return;
         }
 
-        var types = await entityTypeService.Get();
-        var variants = await entityVariantService.Get();
+        var types = await entityTypeService.Get(cancellationToken: cancellationToken);
+        var variants = await entityVariantService.Get(cancellationToken: cancellationToken);
 
         try
         {
@@ -121,17 +121,21 @@ public partial class RegisterHostedService(
                     Interlocked.Increment(ref _executionCount);
                     Log.Party(_logger, item.PartyUuid, _executionCount);
 
-                    await entityService.ExtendedRepo.Upsert(Guid.Parse(item.PartyUuid), new AccessMgmt.Models.Entity()
-                    {
-                        Id = Guid.Parse(item.PartyUuid),
-                        Name = item.Name,
-                        RefId = item.PersonIdentifier ?? item.OrganizationIdentifier,
-                        TypeId = types.First(t => t.Name.Equals("Organisasjon")).Id,
-                        VariantId = variants.First(t => t.Name.Equals("AS")).Id
-                    });
-
-                    await WriteToDb(item);
+                    await entityService.ExtendedRepo.Upsert(
+                        Guid.Parse(item.PartyUuid),
+                        new AccessMgmt.Models.Entity()
+                        {
+                            Id = Guid.Parse(item.PartyUuid),
+                            Name = item.Name,
+                            RefId = item.PersonIdentifier ?? item.OrganizationIdentifier,
+                            TypeId = types.First(t => t.Name.Equals("Organisasjon")).Id, //// item.PartyType // Sjekk med Aleks
+                            VariantId = variants.First(t => t.Name.Equals("AS")).Id //// item.UnitType // Sjekk med Aleks
+                        },
+                        cancellationToken: cancellationToken);
                 }
+
+                //// entityService.Repo.Ingest(); // Ved behov
+                //// LookupService.Upsert()
 
                 if (!string.IsNullOrEmpty(page.Links.Next))
                 {
@@ -150,16 +154,6 @@ public partial class RegisterHostedService(
             Log.SyncError(_logger, ex);
             return;
         }
-    }
-
-    /// <summary>
-    /// Writes the synchronized register data to the database.
-    /// </summary>
-    /// <param name="model">Party model containing register data.</param>
-    /// <returns>A completed task.</returns>
-    public Task WriteToDb(PartyModel model)
-    {
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>

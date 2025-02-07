@@ -200,10 +200,10 @@ public partial class ResourceRegisterHostedService(
         using var activity = _activitySource.StartActivity("Sync");
         activity?.SetTag("LeaseAcquired", true);
 
-        await LoadCache(cancellationToken);
-
         try
         {
+            await LoadCache(cancellationToken);
+
             var url = string.IsNullOrEmpty(ls.Data.NextPageLink)
                 ? $"{_config.BaseUrl}/resourceregistry/api/v1/resource/updated"
                 : ls.Data.NextPageLink;
