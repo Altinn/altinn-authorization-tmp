@@ -1,11 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
 using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
 using Altinn.AccessMgmt.Models;
 using Altinn.Authorization.Host.Lease;
-using MassTransit.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.Authorization.AccessManagement;
@@ -70,7 +68,7 @@ public partial class ResourceRegisterHostedService(
         _logger.LogInformation("Starting register sync process");
         activity?.SetTag("Status", "Starting");
 
-        var timerInterval = TimeSpan.FromMinutes(_config.TimerIntervalMinutes));
+        var timerInterval = TimeSpan.FromMinutes(_config.TimerIntervalMinutes);
 
         _timer = new Timer(SyncDispatcher, _stop.Token, TimeSpan.Zero, timerInterval);
 
@@ -113,6 +111,11 @@ public partial class ResourceRegisterHostedService(
         }
     }
 
+    /// <summary>
+    /// Load cache from database
+    /// </summary>
+    /// <param name="cancellationToken">Token to monitor for cancellation requests</param>
+    /// <returns></returns>
     private async Task LoadCache(CancellationToken cancellationToken)
     {
         using var activity = _activitySource.StartActivity("LoadCache");
@@ -206,7 +209,7 @@ public partial class ResourceRegisterHostedService(
                 : ls.Data.NextPageLink;
 
             _logger.LogInformation("Fetching updated resources from: {Url}", url);
-            var updates = await _client.GetFromJsonAsync<StreamResult>(url, cancellationToken);
+            var updates = await _client.GetFromJsonAsync<ResourceUpdateResult>(url, cancellationToken);
             activity?.SetTag("UpdatesCount", updates.Data.Count);
 
             foreach (var update in updates.Data)
@@ -241,7 +244,7 @@ public partial class ResourceRegisterHostedService(
             if (updates.Links.ContainsKey("next") && !string.IsNullOrEmpty(updates.Links["next"]))
             {
                 _logger.LogInformation("Next page link found, updating lease with next page: {NextPageLink}", updates.Links["next"]);
-                await _lease.Put(ls, new() { NextPageLink = updates.Links["next"] }, cancellationToken);
+                await _lease.Put(ls, new() { NextPageLink = updates.Links["next"], LastRun = DateTimeOffset.Now }, cancellationToken);
             }
             else
             {
@@ -601,27 +604,95 @@ public partial class ResourceRegisterHostedService(
         /// The URL of the next update of Data.
         /// </summary>
         public string NextPageLink { get; set; }
+
+        /// <summary>
+        /// Timestamp for when job finished
+        /// </summary>
+        public DateTimeOffset LastRun { get; set; }
     }
 
-    public class StreamResult
+    /// <summary>
+    /// Result from resource/updated
+    /// </summary>
+    internal class ResourceUpdateResult
     {
+        /// <summary>
+        /// Link to next page of updates
+        /// </summary>
         [JsonPropertyName("links")]
         public Dictionary<string, string> Links { get; set; }
 
+        /// <summary>
+        /// List of resources to update
+        /// </summary>
         [JsonPropertyName("data")]
         public List<ResourceUpdate> Data { get; set; }
     }
 
-    public class ResourceUpdate
+    /// <summary>
+    /// Resource update refrence
+    /// </summary>
+    internal class ResourceUpdate
     {
+        /// <summary>
+        /// Subject
+        /// </summary>
         [JsonPropertyName("subjectUrn")]
         public string SubjectUrn { get; set; }
+
+        /// <summary>
+        /// Resource
+        /// </summary>
         [JsonPropertyName("resourceUrn")]
         public string ResourceUrn { get; set; }
+
+        /// <summary>
+        /// Timestamp for update
+        /// </summary>
         [JsonPropertyName("updatedAt")]
         public DateTimeOffset UpdatedAt { get; set; }
+
+        /// <summary>
+        /// Deleted
+        /// </summary>
         [JsonPropertyName("deleted")]
         public bool IsDeleted { get; set; }
+    }
+    
+    /// <summary>
+    /// Result model for Subject query
+    /// </summary>
+    internal class SubjectResult
+    {
+        /// <summary>
+        /// Data content
+        /// </summary>
+        [JsonPropertyName("data")]
+        public List<Subject> Data { get; set; }
+    }
+
+    /// <summary>
+    /// Result from Subject query
+    /// </summary>
+    internal class Subject
+    {
+        /// <summary>
+        /// Urn Type
+        /// </summary>
+        [JsonPropertyName("type")]
+        public string Type { get; set; }
+
+        /// <summary>
+        /// Subject Value
+        /// </summary>
+        [JsonPropertyName("value")]
+        public string Value { get; set; }
+
+        /// <summary>
+        /// Complete Urn Type+Value
+        /// </summary>
+        [JsonPropertyName("urn")]
+        public string Urn { get; set; }
     }
 }
 
@@ -644,59 +715,6 @@ public class ResourceRegisterImportConfig
     /// If importer uses /updates (stream) or /all
     /// </summary>
     public bool UseStream { get; set; } = false;
-}
-
-/// <summary>
-/// Result model for Subject query
-/// </summary>
-internal class ResourceUpdateResult
-{
-    /// <summary>
-    /// Data content
-    /// </summary>
-    [JsonPropertyName("data")]
-    public List<Subject> Data { get; set; }
-    /// <summary>
-    /// Data content
-    /// </summary>
-    [JsonPropertyName("data")]
-    public List<Subject> Data { get; set; }
-}
-
-/// <summary>
-/// Result model for Subject query
-/// </summary>
-internal class SubjectResult
-{
-    /// <summary>
-    /// Data content
-    /// </summary>
-    [JsonPropertyName("data")]
-    public List<Subject> Data { get; set; }
-}
-
-/// <summary>
-/// Result from Subject query
-/// </summary>
-internal class Subject
-{
-    /// <summary>
-    /// Urn Type
-    /// </summary>
-    [JsonPropertyName("type")]
-    public string Type { get; set; }
-
-    /// <summary>
-    /// Subject Value
-    /// </summary>
-    [JsonPropertyName("value")]
-    public string Value { get; set; }
-
-    /// <summary>
-    /// Complete Urn Type+Value
-    /// </summary>
-    [JsonPropertyName("urn")]
-    public string Urn { get; set; }
 }
 
 /// <summary>
@@ -726,7 +744,7 @@ internal class LanguageText
     /// <returns></returns>
     public override string ToString()
     {
-        return Nb ?? En ?? Nn ?? "";
+        return Nb ?? En ?? Nn ?? string.Empty;
     }
 
 }
