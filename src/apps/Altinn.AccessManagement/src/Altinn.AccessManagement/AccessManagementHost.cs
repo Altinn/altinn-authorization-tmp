@@ -7,9 +7,8 @@ using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.Authorization.AccessManagement;
-using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Lease;
-using Altinn.Authorization.Integration.Register.Extensions;
+using Altinn.Authorization.Integration.Platform.Extensions;
 using Altinn.Authorization.ServiceDefaults;
 using Altinn.Common.AccessToken;
 using Altinn.Common.AccessToken.Configuration;
@@ -56,6 +55,7 @@ internal static class AccessManagementHost
         builder.ConfigureInternals();
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
+        builder.ConfigureHostedServices();
 
         // builder.ConfigureHostedServices();
         return builder.Build();
@@ -64,20 +64,22 @@ internal static class AccessManagementHost
     private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddHostedService<RegisterHostedService>();
-        builder.AddAppSettingDefaults(opts =>
-        {
-            opts.AzureAppConfiguration = new()
-            {
-                AppFeatureFlagLabels = ["at22"]
-            };
-        });
+
+        // builder.AddAppSettingDefaults(opts =>
+        // {
+        //     opts.AzureAppConfiguration = new()
+        //     {
+        //         AppFeatureFlagLabels = ["at22"]
+        //     };
+        // });
         builder.AddAltinnLease(cgf =>
         {
-            cgf.Type = AltinnLeaseType.AzureStorageAccount;
-            cgf.StorageAccount.Endpoint = new Uri("https://{storage_name}.blob.core.windows.net/");
+            cgf.Type = AltinnLeaseType.InMemory;
+
+            // cgf.StorageAccount.Endpoint = new Uri("https://{storage_name}.blob.core.windows.net/");
         });
 
-        builder.AddAltinnRegister(opts =>
+        builder.AddAltinnRegisterIntegration(opts =>
         {
             opts.Endpoint = new Uri("http://localhost:5020");
         });
