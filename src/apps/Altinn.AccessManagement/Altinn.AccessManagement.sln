@@ -27,8 +27,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Configuration.MassTransit", "..\..\libs\Altinn.Authorization.Configuration\src\Altinn.Authorization.Configuration.MassTransit\Altinn.Authorization.Configuration.MassTransit.csproj", "{BB297F22-213D-44E9-998F-3718AF8889A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Integration.Register", "..\..\libs\Altinn.Authorization.Integration\src\Altinn.Authorization.Integration.Register\Altinn.Authorization.Integration.Register.csproj", "{C8FF1C97-ACBC-4899-A496-A75DC8AAFDA4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Hosting", "..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host\Altinn.Authorization.Hosting.csproj", "{5203E0D3-B4AC-47BA-A89E-277859498945}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Lease", "..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host.Lease\Altinn.Authorization.Host.Lease.csproj", "{1D15022B-CDD7-4039-A59F-56D55DD56C62}"
@@ -84,10 +82,6 @@ Global
 		{BB297F22-213D-44E9-998F-3718AF8889A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB297F22-213D-44E9-998F-3718AF8889A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB297F22-213D-44E9-998F-3718AF8889A9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C8FF1C97-ACBC-4899-A496-A75DC8AAFDA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C8FF1C97-ACBC-4899-A496-A75DC8AAFDA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C8FF1C97-ACBC-4899-A496-A75DC8AAFDA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C8FF1C97-ACBC-4899-A496-A75DC8AAFDA4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5203E0D3-B4AC-47BA-A89E-277859498945}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5203E0D3-B4AC-47BA-A89E-277859498945}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5203E0D3-B4AC-47BA-A89E-277859498945}.Release|Any CPU.ActiveCfg = Release|Any CPU
