@@ -10,7 +10,7 @@ variable "product_name" {
 
 variable "name" {
   type    = string
-  default = "accessmgmt"
+  default = "register"
 }
 
 variable "instance" {
@@ -25,6 +25,10 @@ variable "environment" {
 variable "hub_subscription_id" {
   type    = string
   default = "01de49cb-48ef-4494-bc9d-b9e19a90bcd5"
+}
+
+variable "deploy_app_principal_id" {
+  type = string
 }
 
 variable "aks_federation" {

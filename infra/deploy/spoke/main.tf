@@ -21,8 +21,9 @@ provider "azurerm" {
 }
 
 provider "azurerm" {
-  alias           = "hub"
-  subscription_id = var.hub_subscription_id
+  alias               = "hub"
+  subscription_id     = var.hub_subscription_id
+  storage_use_azuread = true
   features {
   }
 }
@@ -104,6 +105,12 @@ resource "azurerm_resource_group" "spoke" {
   lifecycle {
     prevent_destroy = true
   }
+}
+
+module "app_configuration" {
+  source              = "../../modules/appsettings"
+  hub_subscription_id = var.hub_subscription_id
+  hub_suffix          = local.hub_suffix
 }
 
 resource "azurerm_virtual_network" "dual_stack" {
@@ -299,6 +306,12 @@ resource "azurerm_user_assigned_identity" "admin" {
   resource_group_name = azurerm_resource_group.spoke.name
   location            = azurerm_resource_group.spoke.location
   tags                = merge({}, local.default_tags)
+}
+
+resource "azurerm_role_assignment" "admin_reader" {
+  principal_id         = azurerm_user_assigned_identity.admin.principal_id
+  scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
+  role_definition_name = "Reader"
 }
 
 resource "azurerm_federated_identity_credential" "admin" {

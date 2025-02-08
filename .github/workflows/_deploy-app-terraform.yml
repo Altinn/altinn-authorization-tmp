@@ -23,30 +23,13 @@ on:
         description: Additional TF args
         required: false
 
-      databaseBootstrap:
-        type: boolean
-        description: Bootstrap Database
-        default: false
-
-      databaseName:
-        type: string
-        description: Name of database
-        required: false
-
-      databaseRoleprefix:
-        type: string
-        description: Name of database role prefix
-        required: false
-
-      databaseSchema:
-        type: string
-        description: Name of database schema
-        required: false
-
 permissions:
   id-token: write
   contents: read
   pull-requests: write
+
+env:
+  TF_VERSION: 1.10.2
 
 jobs:
   plan:
@@ -66,22 +49,53 @@ jobs:
           working_directory: ${{ inputs.working_dir }}
           oidc_type: environment
           oidc_value: ${{ inputs.environment }}
-
           arm_client_id: ${{ vars.ARM_CLIENT_ID }}
           arm_subscription_id: ${{ vars.ARM_SUBSCRIPTION_ID }}
-
+          tf_version: ${{ env.TF_VERSION }}
           tf_state_name: ${{ inputs.tf_state }}
           tf_args: -var-file=${{ env.TF_VARS_FILE }} ${{ inputs.tf_args }}
           gh_token: ${{ secrets.GITHUB_TOKEN }}
 
   apply:
     name: Deploy
+    environment: ${{ inputs.environment }}
     needs: plan
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Install .NET # For Running CLI
+        uses: actions/setup-dotnet@v4
+
+      - name: Azure CLI Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.ARM_PGSQLSRV_CLIENT_ID }}
+          tenant-id: ${{ vars.ARM_TENANT_ID }}
+          subscription-id: ${{ vars.ARM_SUBSCRIPTION_ID }}
+
+      - name: Install OpenVPN
+        run: |
+          sudo apt update
+          sudo apt install -y openvpn openvpn-systemd-resolved dnsutils
+
+      - name: Dump OpenVPN Config
+        run: |
+          cat << EOF > .github/openvpn.config
+          ${{ secrets.OVPN_CONFIG }}
+          EOF
+
+      - name: Connect to VPN
+        uses: kota65535/github-openvpn-connect-action@v3.1.0
+        with:
+          echo_config: false
+          config_file: .github/openvpn.config
+
+      - name: Update DNS
+        run: |
+          sudo resolvectl dns tun0 ${{ secrets.OVPN_NAMESERVER }}
+          sudo resolvectl flush-caches
 
       - name: Terraform Apply
         uses: altinn/altinn-platform/actions/terraform/apply@main
@@ -90,26 +104,12 @@ jobs:
           working_directory: ${{ inputs.working_dir }}
           oidc_type: environment
           oidc_value: ${{ inputs.environment }}
-
           arm_client_id: ${{ vars.ARM_CLIENT_ID }}
           arm_subscription_id: ${{ vars.ARM_SUBSCRIPTION_ID }}
+          tf_version: ${{ env.TF_VERSION }}
           tf_state_name: ${{ inputs.tf_state }}
 
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 9
-          run_install: |
-            - cwd: .github/scripts
-              args: [--frozen-lockfile]
-            - args: [--global, tsx]
-
-      - name: Bootstrap Database ${{ inputs.name }}
-        if: inputs.databaseBootstrap
-        id: bootstrap
+      - name: Cleanup
+        if: always()
         run: |
-          tsx ./.github/scripts/bootstrap-db.mts \
-            --deploy-api ${{ vars.GATEWAY_API_URL }} \
-            --database ${{ inputs.databaseName }} \
-            --role-prefix ${{ inputs.databaseRoleprefix }} \
-            --schema ${{ inputs.databaseSchema }} \
-            --tf-outfile ${{ inputs.working_dir }}/tf_output.json
+          shred -u .github/openvpn.config || true

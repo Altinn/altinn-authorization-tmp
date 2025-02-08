@@ -34,17 +34,17 @@ public static class WebApp
         var options = new AppSettingsOptions();
         configureOptions?.Invoke(options);
         builder.Services.Configure<AltinnAppSettings>(builder.Configuration);
-        var localSettings = new AltinnAppSettings(builder.Configuration);
+        var appsettings = new AltinnAppSettings(builder.Configuration);
 
-        if (localSettings?.AppConfiguration?.Endpoint != null)
+        if (appsettings?.AppConfiguration?.Endpoint != null)
         {
-            //builder.Configuration.AddAzureAppConfiguration(cfg =>
-            //{
-            //    cfg.Connect(localSettings.AppConfiguration.Endpoint, DefaultTokenCredential.Instance);
-            //    cfg.ConfigureStartupOptions(startup =>
-            //    {
-            //        startup.Timeout = TimeSpan.FromSeconds(3);
-            //    });
+            builder.Configuration.AddAzureAppConfiguration(cfg =>
+            {
+                cfg.Connect(appsettings.AppConfiguration.Endpoint, DefaultTokenCredential.Instance);
+                cfg.ConfigureStartupOptions(startup =>
+                {
+                    startup.Timeout = TimeSpan.FromSeconds(3);
+                });
 
             //    cfg.ConfigureKeyVault(kv =>
             //    {
@@ -56,19 +56,19 @@ public static class WebApp
             //        refresh.Register("Sentinel", refreshAll: true);
             //    });
 
-            //    foreach (var label in options.AppConfigurationLabels)
-            //    {
-            //        cfg.Select("*", label);
-            //    }
+                foreach (var label in options.AzureAppConfiguration.AppKeyValueLabels)
+                {
+                    cfg.Select("*", label);
+                }
 
-            //    cfg.UseFeatureFlags(flags =>
-            //    {
-            //        foreach (var label in options.AppConfigurationLabels)
-            //        {
-            //            flags.Select("*", label);
-            //        }
-            //    });
-            //});
+                cfg.UseFeatureFlags(flags =>
+                {
+                    foreach (var label in options.AzureAppConfiguration.AppFeatureFlagLabels)
+                    {
+                        flags.Select("*", label);
+                    }
+                });
+            });
         }
 
         return builder;

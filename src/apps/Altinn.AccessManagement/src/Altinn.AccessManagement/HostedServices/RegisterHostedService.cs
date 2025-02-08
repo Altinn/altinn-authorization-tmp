@@ -1,7 +1,8 @@
-using Altinn.AccessMgmt.AccessPackages.Repo.Data.Contracts;
+using Altinn.AccessManagement;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Register;
 using Altinn.Authorization.Integration.Register.Models;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.Authorization.AccessManagement;
 
@@ -15,14 +16,8 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="entityVariantService"></param>
 /// <param name="entityLookupService"></param>
 /// <param name="logger">Logger for logging service activities.</param>
-public partial class RegisterHostedService(
-    IAltinnLease lease, 
-    IAltinnRegister register, 
-    IEntityService entityService,
-    IEntityTypeService entityTypeService,
-    IEntityVariantService entityVariantService,
-    IEntityLookupService entityLookupService,
-    ILogger<RegisterHostedService> logger) : IHostedService, IDisposable
+/// <param name="featureManager">for reading feature flags</param>
+public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister register, ILogger<RegisterHostedService> logger, IFeatureManager featureManager) : IHostedService, IDisposable
 {
     private readonly IAltinnLease _lease = lease;
     private readonly IAltinnRegister _register = register;
@@ -31,6 +26,7 @@ public partial class RegisterHostedService(
     private readonly IEntityVariantService entityVariantService = entityVariantService;
     private readonly IEntityLookupService entityLookupService = entityLookupService;
     private readonly ILogger<RegisterHostedService> _logger = logger;
+    private readonly IFeatureManager _featureManager = featureManager;
     private int _executionCount = 0;
     private Timer _timer = null;
     private readonly CancellationTokenSource _stop = new();
@@ -87,8 +83,11 @@ public partial class RegisterHostedService(
     /// <param name="state">Cancellation token for stopping execution.</param>
     private void SyncRegisterDispatcher(object state)
     {
-        var cancellationToken = (CancellationToken)state;
-        SyncRegister(cancellationToken).Wait();
+        if (_featureManager.IsEnabledAsync(AccessManagementFeatureFlags.SyncRegister).GetAwaiter().GetResult())
+        {
+            var cancellationToken = (CancellationToken)state;
+            SyncRegister(cancellationToken).GetAwaiter().GetResult();
+        }
     }
 
     /// <summary>
@@ -154,6 +153,20 @@ public partial class RegisterHostedService(
             Log.SyncError(_logger, ex);
             return;
         }
+        finally
+        {
+            await _lease.Release(ls, default);
+        }
+    }
+
+    /// <summary>
+    /// Writes the synchronized register data to the database.
+    /// </summary>
+    /// <param name="model">Party model containing register data.</param>
+    /// <returns>A completed task.</returns>
+    public Task WriteToDb(PartyModel model)
+    {
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
