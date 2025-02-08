@@ -1,5 +1,6 @@
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
+using Altinn.Authorization.Integration.Platform.ResourceRegister;
 using Microsoft.FeatureManagement;
 
 namespace Altinn.Authorization.AccessManagement;
@@ -74,9 +75,9 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     private void SyncRegisterDispatcher(object state)
     {
         var cancellationToken = (CancellationToken)state;
-        SyncRegister(cancellationToken).GetAwaiter().GetResult();
         // if (_featureManager.IsEnabledAsync(AccessManagementFeatureFlags.SyncRegister).GetAwaiter().GetResult())
         // {
+        SyncRegister(cancellationToken).GetAwaiter().GetResult();
         // }
     }
 
@@ -191,6 +192,7 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
 
     private static partial class Log
     {
+
         [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Processing party with uuid {partyUuid} from register. Count {count}")]
         internal static partial void Party(ILogger logger, string partyUuid, int count);
 

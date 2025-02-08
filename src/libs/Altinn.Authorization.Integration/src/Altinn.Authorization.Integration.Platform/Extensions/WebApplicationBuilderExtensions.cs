@@ -61,14 +61,14 @@ public static class WebApplicationBuilderExtensions
 
         builder.Services.AddHttpClient(ResourceRegisterClient.HttpClientName, (serviceProvider, httpClient) => { });
         builder.Services.AddSingleton<IAltinnResourceRegister, ResourceRegisterClient>();
-        builder.Services.Add(Register.ServiceDescriptor);
+        builder.Services.Add(ResourceRegister.ServiceDescriptor);
 
         return builder;
     }
 
     private sealed class Register
     {
-        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<RegisterClient, RegisterClient>();
+        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Register, Register>();
     }
 
     private sealed class ResourceRegister

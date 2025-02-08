@@ -79,6 +79,11 @@ internal static class AccessManagementHost
             // cgf.StorageAccount.Endpoint = new Uri("https://{storage_name}.blob.core.windows.net/");
         });
 
+        builder.AddAltinnResourceRegisterIntegration(opts =>
+        {
+            opts.Endpoint = new Uri("https://platform.altinn.no");
+        });
+
         builder.AddAltinnRegisterIntegration(opts =>
         {
             opts.Endpoint = new Uri("http://localhost:5020");
