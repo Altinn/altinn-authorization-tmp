@@ -99,11 +99,13 @@ public static class RequestCompositor
     /// <returns>An action to modify the request URI.</returns>
     public static Action<HttpRequestMessage> WithAppendQueryParam<T>(string param, T value) => request =>
     {
-        var query = HttpUtility.ParseQueryString(request?.RequestUri?.Query ?? string.Empty);
+        if (request == null || string.IsNullOrEmpty(param) || value == null)
         {
-            query[param] = value.ToString();
+            return;
         }
 
+        var query = HttpUtility.ParseQueryString(request?.RequestUri?.Query ?? string.Empty);
+        query[param] = value.ToString();
         request.RequestUri = new UriBuilder(request.RequestUri)
         {
             Query = query.ToString()
