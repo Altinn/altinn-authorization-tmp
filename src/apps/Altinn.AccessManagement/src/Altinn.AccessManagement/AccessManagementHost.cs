@@ -7,6 +7,7 @@ using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.Authorization.AccessManagement;
+using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Extensions;
 using Altinn.Authorization.ServiceDefaults;
@@ -55,30 +56,14 @@ internal static class AccessManagementHost
         builder.ConfigureInternals();
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
-        builder.ConfigureHostedServices();
 
-        // builder.ConfigureHostedServices();
+        // builder.ConfigurePlatformIntegrations();
+        // builder.ConfigureAltinnHost();
         return builder.Build();
     }
 
-    private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
+    private static WebApplicationBuilder ConfigurePlatformIntegrations(this WebApplicationBuilder builder)
     {
-        builder.Services.AddHostedService<RegisterHostedService>();
-
-        // builder.AddAppSettingDefaults(opts =>
-        // {
-        //     opts.AzureAppConfiguration = new()
-        //     {
-        //         AppFeatureFlagLabels = ["at22"]
-        //     };
-        // });
-        builder.AddAltinnLease(cgf =>
-        {
-            cgf.Type = AltinnLeaseType.InMemory;
-
-            // cgf.StorageAccount.Endpoint = new Uri("https://{storage_name}.blob.core.windows.net/");
-        });
-
         builder.AddAltinnResourceRegisterIntegration(opts =>
         {
             opts.Endpoint = new Uri("https://platform.altinn.no");
@@ -87,6 +72,25 @@ internal static class AccessManagementHost
         builder.AddAltinnRegisterIntegration(opts =>
         {
             opts.Endpoint = new Uri("http://localhost:5020");
+        });
+
+        return builder;
+    }
+
+    private static WebApplicationBuilder ConfigureAltinnHost(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddHostedService<RegisterHostedService>();
+
+        // builder.AddAppSettingDefaults(opts =>
+        // {
+        //     opts.AzureAppConfiguration.AppFeatureFlagLabels = [];
+        //     opts.AzureAppConfiguration.AppKeyValueLabels = [];
+        // });
+        builder.AddAltinnLease(cgf =>
+        {
+            cgf.Type = AltinnLeaseType.InMemory;
+
+            // cgf.StorageAccount.Endpoint = new Uri("https://{storage_name}.blob.core.windows.net/");
         });
 
         return builder;

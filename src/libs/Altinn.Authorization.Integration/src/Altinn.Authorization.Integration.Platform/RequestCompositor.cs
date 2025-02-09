@@ -38,7 +38,7 @@ public static class RequestCompositor
     /// Sets the URI of the request.
     /// </summary>
     /// <remarks>
-    /// ignores uri if empty.
+    /// ignores uri if empty string or null.
     /// </remarks>
     /// <param name="uri">The URI to set.</param>
     /// <returns>An action to configure the request URI.</returns>
@@ -54,7 +54,7 @@ public static class RequestCompositor
     /// Sets the URI of the request with additional segments.
     /// </summary>
     /// <remarks>
-    /// ignores uri if empty.
+    /// ignores uri if null.
     /// </remarks>
     /// <param name="uri">The base URI.</param>
     /// <param name="segments">Additional path segments to append.</param>

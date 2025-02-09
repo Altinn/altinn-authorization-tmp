@@ -48,7 +48,7 @@ public partial class RegisterClient
     /// <inheritdoc/>
     public async Task<IAsyncEnumerable<Paginated<PartyModel>>> StreamParties(IEnumerable<string> fields, string nextPage = null, CancellationToken cancellationToken = default)
     {
-        List<Action<HttpRequestMessage>> request = [
+        IEnumerable<Action<HttpRequestMessage>> request = [
             RequestCompositor.WithHttpVerb(HttpMethod.Get),
             RequestCompositor.WithSetUri(Options.Value.Endpoint, "register/api/v2/parties/stream"),
             RequestCompositor.WithSetUri(nextPage),
