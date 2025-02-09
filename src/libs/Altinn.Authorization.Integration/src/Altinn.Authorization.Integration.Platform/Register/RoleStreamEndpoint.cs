@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 
 namespace Altinn.Authorization.Integration.Platform.Register;
 
