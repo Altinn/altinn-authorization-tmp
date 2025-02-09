@@ -77,12 +77,13 @@ public static class RequestCompositor
     public static Action<HttpRequestMessage> WithAppendQueryParam<T>(string param, IEnumerable<T> values) => request =>
     {
         values ??= [];
-        var query = HttpUtility.ParseQueryString(request?.RequestUri?.Query ?? string.Empty);
-        if (values.Any())
+        if (request == null || string.IsNullOrEmpty(param) || !values.Any())
         {
-            query[param] = string.Join(",", values);
+            return;
         }
 
+        var query = HttpUtility.ParseQueryString(request.RequestUri?.Query ?? string.Empty);
+        query[param] = string.Join(",", values);
         request.RequestUri = new UriBuilder(request.RequestUri)
         {
             Query = query.ToString()
