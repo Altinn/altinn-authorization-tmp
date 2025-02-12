@@ -53,15 +53,5 @@ namespace Altinn.AccessManagement.Core.Utilities
         {
             return SSN.IsMatch(ssn);
         }
-
-        /// <summary>
-        /// Check if scope is valid
-        /// </summary>
-        /// <param name="scope">The scope to be validated</param>
-        /// <returns>A bool indicating if the scope is well formatted</returns>
-        public static bool IsValidMaskinportenScope(string scope)
-        {
-            return MaskinportenScopes.IsMatch(scope);
-        }
     }
 }

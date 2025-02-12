@@ -232,11 +232,6 @@ namespace Altinn.AccessManagement.Core.Services
                 supplierPartyId = supplierParty.PartyId;
             }
 
-            if (!RegexUtil.IsValidMaskinportenScope(scope))
-            {
-                throw new ArgumentException($"Is not well formatted: {scope}", nameof(scope));
-            }
-
             return await GetAllMaskinportenSchemaDelegations(supplierPartyId, consumerPartyId, scope, cancellationToken);
         }
 
