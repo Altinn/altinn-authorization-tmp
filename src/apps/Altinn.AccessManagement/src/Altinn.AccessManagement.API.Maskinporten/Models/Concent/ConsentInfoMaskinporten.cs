@@ -5,18 +5,34 @@
     /// </summary>
     public class ConsentInfoMaskinporten
     {
-        Guid Id { get; set; }
+        /// <summary>
+        /// The unique identifier for the consent. Same ID as concent request.
+        /// </summary>
+        public Guid Id { get; set; }
 
-
-        ConsentPartyUrn From { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public ConsentPartyUrn From { get; set; }
 
         /// <summary>
         /// Defines the party requesting consent.
         /// </summary>
-        ConsentPartyUrn To { get; set; }
+        public ConsentPartyUrn To { get; set; }
 
-        DateTimeOffset Concented { get; set; }
+        /// <summary>
+        /// Defines when the consent was given.
+        /// </summary>
+        public DateTimeOffset Concented { get; set; }
 
-        DateTimeOffset ValidTo { get; set; }
+        /// <summary>
+        /// Defines how long the concent is valid
+        /// </summary>
+        public DateTimeOffset ValidTo { get; set; }
+
+        /// <summary>
+        /// The consented rights.
+        /// </summary>
+        public required List<ConsentRightExternal> ConcentRights { get; set; }
     }
 }

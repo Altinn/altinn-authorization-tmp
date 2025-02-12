@@ -5,11 +5,14 @@
     /// </summary>
     public class ConsentResourceAttributeExternal
     {
+        /// <summary>
+        /// The type of resource attribute. is a urn
+        /// </summary>
+        public required string Type { get; set; }
 
-        public string Id { get; set; }
-
-        public string Value { get; set; }
-
-        public List<ConsentRightExternal> ConcentRights { get; set; }
+        /// <summary>
+        /// The value of the resource attribute
+        /// </summary>
+        public required string Value { get; set; }
     }
 }
