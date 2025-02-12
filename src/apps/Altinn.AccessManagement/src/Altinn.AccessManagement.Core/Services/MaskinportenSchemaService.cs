@@ -6,7 +6,6 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessManagement.Core.Utilities;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Microsoft.Extensions.Logging;
