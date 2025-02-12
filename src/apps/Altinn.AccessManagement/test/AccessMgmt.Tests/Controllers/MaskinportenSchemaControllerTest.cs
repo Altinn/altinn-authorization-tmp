@@ -640,7 +640,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
             int supplierOrg = 810418672;
             int consumerOrg = 810418192;
             string scope = "altinn:maskinporten:urn:scope:test";
-            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/admin/delegations/maskinportenschema/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}");
+            HttpResponseMessage response = await _client.GetAsync($"accessmanagement/api/v1/maskinporten/delegations/?supplierorg={supplierOrg}&consumerorg={consumerOrg}&scope={scope}");
             string responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
