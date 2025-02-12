@@ -22,26 +22,6 @@ on:
         description: Path to the terraform state file
         type: string
 
-      databaseBootstrap:
-        type: boolean
-        description: Bootstrap Database
-        default: false
-
-      databaseName:
-        type: string
-        description: Name of database
-        required: false
-
-      databaseRolePrefix:
-        type: string
-        description: Name of database role prefix
-        required: false
-
-      databaseSchema:
-        type: string
-        description: Name of database schema
-        required: false
-
 jobs:
   build-push:
     name: Build and Push
@@ -89,27 +69,53 @@ jobs:
           echo "Image: ${IMAGE}"
           echo "Tag: ${TAG}"
 
-  # deploy-terraform:
-  #   name: Run terraform deployment
+  deploy-terraform-test:
+    name: Terraform
+    if: inputs.terraform
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [at22, at23, at24, yt01]
+    needs:
+      - build-push
 
-  #   if: inputs.terraform
+    uses: ./.github/workflows/_deploy-app-terraform.yml
+    with:
+      environment: ${{ matrix.environment }}
+      working_dir: ${{ inputs.path }}/infra
+      tf_state: ${{ inputs.terraformStateFile }}
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       environment: [at21, at22]
+  deploy-terraform-staging:
+    name: Terraform
+    if: inputs.terraform
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [tt02]
+    needs:
+      - deploy-terraform-test
 
-  #   needs:
-  #     - build-push
+    uses: ./.github/workflows/_deploy-app-terraform.yml
+    with:
+      environment: ${{ matrix.environment }}
+      working_dir: ${{ inputs.path }}/infra
+      tf_state: ${{ inputs.terraformStateFile }}
 
-  #   uses: ./.github/workflows/_deploy-app-terraform.yml
-  #   with:
-  #     environment: ${{ matrix.environment }}
-  #     working_dir: ${{ inputs.path }}/deploy
-  #     tf_state: ${{ inputs.terraformStateFile }}
-  #     tf_args: "-var image=${{ needs.build-push.outputs.image }}"
+  deploy-terraform-prod:
+    name: Terraform
+    if: inputs.terraform
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [prod]
+    needs:
+      - deploy-terraform-staging
 
-  #     databaseBootstrap: ${{ inputs.databaseBootstrap }}
-  #     databaseName: ${{ inputs.databaseName }}
-  #     databaseRoleprefix: ${{ inputs.databaseRoleprefix }}
-  #     databaseSchema: ${{ inputs.databaseSchema }}
+    uses: ./.github/workflows/_deploy-app-terraform.yml
+    with:
+      environment: ${{ matrix.environment }}
+      working_dir: ${{ inputs.path }}/infra
+      tf_state: ${{ inputs.terraformStateFile }}

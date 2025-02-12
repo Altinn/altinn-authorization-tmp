@@ -10,7 +10,7 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.13.0"
+      version = "4.16.0"
     }
     static = {
       source  = "tiwood/static"
@@ -18,10 +18,9 @@ terraform {
     }
     azuread = {
       source  = "hashicorp/azuread"
-      version = "3.0.2"
+      version = "3.1.0"
     }
   }
-
 
   backend "azurerm" {
     use_azuread_auth = true
@@ -223,7 +222,7 @@ resource "azurerm_role_assignment" "network_contributor" {
   principal_id         = each.value
   role_definition_name = "Network Contributor" # https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#security
 
-  for_each = toset(var.spoke_principals_ids)
+  for_each = toset(var.spoke_principal_ids)
 }
 
 resource "azurerm_role_assignment" "reader" {
@@ -231,7 +230,7 @@ resource "azurerm_role_assignment" "reader" {
   principal_id         = each.value
   role_definition_name = "Reader" # https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#security
 
-  for_each = toset(var.spoke_principals_ids)
+  for_each = toset(var.spoke_principal_ids)
 }
 
 resource "azurerm_management_lock" "delete" {
@@ -243,8 +242,6 @@ resource "azurerm_management_lock" "delete" {
   for_each = { for lock in [
     azurerm_public_ip_prefix.ipv4,
     azurerm_public_ip_prefix.ipv6,
-    azurerm_app_configuration.app_configuration,
-    azurerm_key_vault.key_vault,
     azurerm_virtual_network_gateway.vpn,
     azurerm_storage_account.storage
   ] : lock.name => lock.id }

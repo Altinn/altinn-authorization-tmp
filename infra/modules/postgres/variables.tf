@@ -34,6 +34,11 @@ variable "tier" {
   default = "P4"
 }
 
+variable "configurations" {
+  type    = map(string)
+  default = {}
+}
+
 variable "compute_tier" {
   type = string
   validation {

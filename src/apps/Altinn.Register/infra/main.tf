@@ -1,0 +1,225 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "4.13.0"
+    }
+    static = {
+      source  = "tiwood/static"
+      version = "0.1.0"
+    }
+  }
+  backend "azurerm" {
+    use_azuread_auth = true
+  }
+}
+
+provider "azurerm" {
+  features {
+  }
+}
+
+provider "azurerm" {
+  alias           = "hub"
+  subscription_id = var.hub_subscription_id
+  features {
+  }
+}
+
+locals {
+  hub_suffix                = lower("${var.organization}${var.product_name}${var.instance}hub")
+  hub_resource_group_name   = lower("rg${local.hub_suffix}")
+  spoke_suffix              = lower("${var.organization}${var.product_name}${var.instance}${var.environment}")
+  spoke_resource_group_name = lower("rg${local.spoke_suffix}")
+  suffix                    = lower("${var.organization}${var.product_name}${var.name}${var.instance}${var.environment}")
+  conf_json                 = jsondecode(file(local.conf_json_path))
+  conf_json_path            = "${path.module}/../conf.json"
+
+  default_tags = {
+    ProductName = var.product_name
+    Environment = var.environment
+    Instance    = "001"
+    Name        = var.name
+    CreatedAt   = try(static_data.static.output.created_at, timestamp())
+  }
+}
+
+data "azurerm_client_config" "current" {}
+
+resource "static_data" "static" {
+  data = {
+    created_at = formatdate("EEEE, DD-MMM-YY hh:mm:ss ZZZ", "2018-01-02T23:12:01Z")
+  }
+
+  lifecycle {
+    ignore_changes = [data]
+  }
+}
+
+data "azurerm_private_dns_zone" "postgres" {
+  name                = "privatelink.postgres.database.azure.com"
+  resource_group_name = "rg${local.hub_suffix}"
+  provider            = azurerm.hub
+}
+
+data "azurerm_subnet" "postgres" {
+  name                 = "Postgres"
+  virtual_network_name = "vnetss${local.spoke_suffix}"
+  resource_group_name  = local.spoke_resource_group_name
+}
+
+data "azurerm_subnet" "default" {
+  name                 = "Default"
+  virtual_network_name = "vnetds${local.spoke_suffix}"
+  resource_group_name  = local.spoke_resource_group_name
+}
+
+data "azurerm_user_assigned_identity" "admin" {
+  name                = "mipgsqladmin${local.spoke_suffix}"
+  resource_group_name = local.spoke_resource_group_name
+}
+
+resource "azurerm_resource_group" "register" {
+  name     = "rg${local.suffix}"
+  location = "norwayeast"
+  tags     = merge({}, local.default_tags)
+}
+
+resource "azurerm_user_assigned_identity" "register" {
+  name                = "mi${local.suffix}"
+  location            = azurerm_resource_group.register.location
+  resource_group_name = azurerm_resource_group.register.name
+  tags                = merge({}, local.default_tags)
+}
+
+resource "azurerm_federated_identity_credential" "aks_federation" {
+  name                = "Aks"
+  resource_group_name = azurerm_resource_group.register.name
+  parent_id           = azurerm_user_assigned_identity.register.id
+  audience            = ["api://AzureADTokenExchange"]
+  subject             = "system:serviceaccount:${each.value.namespace}:${each.value.service_account}"
+  issuer              = each.value.issuer_url
+  for_each            = { for federation in var.aks_federation : federation.issuer_url => federation }
+}
+
+module "rbac" {
+  source                = "../../../../infra/modules/rbac"
+  principal_id          = azurerm_user_assigned_identity.register.principal_id
+  hub_subscription_id   = var.hub_subscription_id
+  hub_suffix            = local.hub_suffix
+  spoke_suffix          = local.spoke_suffix
+  use_app_configuration = true
+  use_lease             = true
+  use_masstransit       = true
+}
+
+module "key_vault" {
+  source              = "../../../../infra/modules/key_vault"
+  name                = "reg"
+  hub_suffix          = local.hub_suffix
+  hub_subscription_id = var.hub_subscription_id
+  resource_group_name = azurerm_resource_group.register.name
+  suffix              = local.spoke_suffix
+  subnet_id           = data.azurerm_subnet.default.id
+  key_vault_roles = [
+    {
+      operation_id         = "grant_register_app_secret_user"
+      principal_id         = azurerm_user_assigned_identity.register.principal_id
+      role_definition_name = "Key Vault Secrets User"
+    },
+    {
+      operation_id         = "grant_pgsqlrv_administrator"
+      principal_id         = data.azurerm_user_assigned_identity.admin.principal_id
+      role_definition_name = "Key Vault Administrator"
+    },
+    {
+      operation_id         = "grant_deploy_app_administrator"
+      principal_id         = var.deploy_app_principal_id
+      role_definition_name = "Key Vault Administrator"
+    }
+  ]
+}
+
+data "azurerm_key_vault_secret" "postgres_migration" {
+  key_vault_id = module.key_vault.id
+  name         = "db-${module.postgres_server.name}-${local.conf_json.database.prefix}-migrator"
+  depends_on   = [null_resource.bootstrap_database]
+}
+
+data "azurerm_key_vault_secret" "postgres_app" {
+  key_vault_id = module.key_vault.id
+  name         = "db-${module.postgres_server.name}-${local.conf_json.database.prefix}-app"
+  depends_on   = [null_resource.bootstrap_database]
+}
+
+module "appsettings" {
+  source              = "../../../../infra/modules/appsettings"
+  hub_suffix          = local.hub_suffix
+  hub_subscription_id = var.hub_subscription_id
+  key_vault_reference = [
+    {
+      key                 = "Postgres:AppConnectionString"
+      key_vault_secret_id = data.azurerm_key_vault_secret.postgres_app.versionless_id
+      label               = "${var.environment}_register"
+    },
+    {
+      key                 = "Postgres:MigrationConnectionString"
+      key_vault_secret_id = data.azurerm_key_vault_secret.postgres_migration.versionless_id
+      label               = "${var.environment}_register"
+    }
+  ]
+}
+
+module "postgres_server" {
+  source              = "../../../../infra/modules/postgres"
+  suffix              = local.suffix
+  resource_group_name = azurerm_resource_group.register.name
+  location            = "norwayeast"
+
+  subnet_id           = data.azurerm_subnet.postgres.id
+  private_dns_zone_id = data.azurerm_private_dns_zone.postgres.id
+  postgres_version    = "16"
+  configurations = {
+    "azure.extensions" : "HSTORE"
+  }
+
+  compute_tier = "Burstable"
+  compute_size = "Standard_B1ms"
+
+  entraid_admins = [
+    {
+      principal_id   = data.azurerm_user_assigned_identity.admin.principal_id
+      principal_name = data.azurerm_user_assigned_identity.admin.name
+      principal_type = "ServicePrincipal"
+    }
+  ]
+}
+
+resource "null_resource" "bootstrap_database" {
+  triggers = {
+    server_resource_group = azurerm_resource_group.register.name
+    server_subscription   = data.azurerm_client_config.current.subscription_id
+    server_name           = module.postgres_server.name
+    kv_resource_group     = azurerm_resource_group.register.name
+    kv_subscription       = data.azurerm_client_config.current.subscription_id
+    kv_name               = module.key_vault.name
+    conf                  = local.conf_json.database
+  }
+
+  depends_on = [module.key_vault]
+
+  provisioner "local-exec" {
+    working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
+    command     = <<EOT
+      dotnet run -- db bootstrap ${local.conf_json_path} \
+        --tenant-id=${data.azurerm_client_config.current.tenant_id} \
+        --principal-name=${data.azurerm_user_assigned_identity.admin.name} \
+        --server-resource-group=${azurerm_resource_group.register.name} \
+        --server-subscription=${data.azurerm_client_config.current.subscription_id} \
+        --server-name=${module.postgres_server.name} \
+        --kv-resource-group=${azurerm_resource_group.register.name} \
+        --kv-subscription=${data.azurerm_client_config.current.subscription_id} \
+        --kv-name=${module.key_vault.name}
+  EOT
+  }
+}
