@@ -18,8 +18,6 @@ namespace Altinn.AccessManagement.Core.Utilities
 
         private static readonly Regex Username = new Regex(@"(?!^\d+$)^[a-zA-Z0-9._@\-]{6,64}$");
 
-        private static readonly Regex MaskinportenScopes = new Regex(@"^([a-z0-9]+:)([a-z0-9]+\/?)+[a-z0-9]+(\.[a-z0-9]+)?$");
-
         /// <summary>
         /// Check for Orgnumber
         /// Should be 9 numbers
