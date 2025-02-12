@@ -1,7 +1,7 @@
 meta {
-  name: digdir-am-k6-read
+  name: Maskinporten_DigDir_UrnScope_OkEmpty
   type: http
-  seq: 1
+  seq: 2
 }
 
 get {
@@ -20,43 +20,31 @@ headers {
   Accept: application/json
 }
 
-vars:pre-request {
-  supplierOrg: 
-  consumerOrg: 
-  scope: test:am/k6.read
-  auth_tokenType: Enterprise
-  auth_partyId: 
-  auth_org: digdir
-  auth_orgNo: 991825827
-  auth_scopes: altinn:maskinporten/delegations.admin
-  bearerToken: 
-}
-
 script:pre-request {
   const testdata = require(`./Testdata/maskinportenschema/${bru.getEnvVar("tokenEnv")}testdata.json`);
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
-  bru.setVar("party", testdata.org1.partyid);
-  bru.setVar("to_orgno", testdata.org2.orgno);
-  bru.setVar("org", testdata.org);
-  bru.setVar("app", testdata.app);
-  bru.setVar("scope", sharedtestdata.scopes.k6Read);
+  bru.setVar("supplierOrg", testdata.org1.orgno);
+  bru.setVar("consumerOrg", testdata.org2.orgno);
+  bru.setVar("scope", "urn:altinn:maskinporten:testscope");
   
   var getTokenParameters = {
     auth_org: testdata.digdir.partyid,
     auth_orgNo: testdata.digdir.orgno,
-    scope: sharedtestdata.scopes.k6Read,
     auth_tokenType: sharedtestdata.authTokenType.enterprise,
     auth_scopes: sharedtestdata.auth_scopes.maskinportenAdmin
   }
-    const token = await testTokenGenerator.getToken(getTokenParameters);
   
+  const token = await testTokenGenerator.getToken(getTokenParameters);
   bru.setVar("bearerToken",  token);
 }
 
 tests {
-  test("getMaskinportenDelegations", function() {
-    var body = res.getBody();  
+  // Should be the same as the .bru request file. Used as prefix in test name which also shows in test result in pipeline.
+  const requestName = "Maskinporten_DigDir_UrnScope_OkEmpty";
+  const body = res.getBody();
+  
+  test(requestName + "|HttpStatus.OK and Body.Data empty", function() {
     expect(res.status).to.equal(200);
-    expect(body[0]).to.have.property('resourceid', 'ttd-am-k6');
+    assert.isEmpty(body, `Expected data in body to be empty.`);
   });
 }
