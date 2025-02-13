@@ -1,4 +1,14 @@
-﻿namespace Altinn.AccessMgmt.Repo.Ingest.Models
+﻿using Altinn;
+using Altinn.AccessMgmt;
+using Altinn.AccessMgmt.AccessPackages;
+using Altinn.AccessMgmt.Repo;
+using Altinn.AccessMgmt.Repo.Ingest;
+using Altinn.AccessMgmt.Repo.Ingest.RagnhildModel;
+using Altinn.AccessMgmt.Repo;
+using Altinn.AccessMgmt.Repo.Ingest;
+using Altinn.AccessMgmt.Repo.Ingest.Models;
+
+namespace Altinn.AccessMgmt.Repo.Ingest.Models
 {
     /// <summary>
     /// Access Packages

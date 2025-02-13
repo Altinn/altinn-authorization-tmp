@@ -1,15 +1,27 @@
-﻿namespace Altinn.AccessMgmt.Repo.Mock
+﻿using Altinn;
+using Altinn.AccessMgmt;
+using Altinn.AccessMgmt.AccessPackages;
+using Altinn.AccessMgmt.Repo;
+using Altinn.AccessMgmt.Repo.Mock;
+using Altinn.AccessMgmt.Repo;
+using Altinn.AccessMgmt.Repo.Mock;
+using Altinn.AccessMgmt.Repo.temp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Altinn.AccessMgmt.Repo.Mock
 {
     public class MiniSpec
     {
         public Dictionary<string, OrganizationSpec> IndustryOrganizationCount { get; set; }
 
     }
-
     public class OrganizationSpec
     {
         public int AmountPercent { get; set; }
-
         public AssignmentSpec AssignmentSpec { get; set; }
 
         public OrganizationSpec(int size)
@@ -23,19 +35,19 @@
             int styrePercent = 1;
             if (size < 10)
             {
-                //// small
+                //small
             }
             if (size >= 10 && size < 50)
             {
-                //// medium
+                //medium
             }
             if (size >= 50 && size < 100)
             {
-                //// large
+                //large
             }
             if (size >= 100)
             {
-                //// huge
+                //huge
             }
 
             AssignmentSpec = new AssignmentSpec()
@@ -54,27 +66,20 @@
             };
         }
     }
-
     public class AssignmentSpec
     {
         public Dictionary<string, int> Roles { get; set; }
-
         public bool RegnIsOrg { get; set; }
-
         public bool ReviIsOrg { get; set; }
     }
-
     public class DistributedRange(int size)
     {
         public List<Range> Ranges { get; set; }
     }
-
     public class Range
     {
         public int From { get; set; }
-
         public int To { get; set; }
-
         public int Value { get; set; }
     }
 
@@ -91,14 +96,12 @@
     public class OldRange(int min, int max)
     {
         public int Min { get; set; } = min;
-
         public int Max { get; set; } = max;
     }
 
     public class ExtBool
     {
         public bool Har { get; set; }
-
         public bool Internal { get; set; }
     }
 
