@@ -1,21 +1,16 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
+#region Role
 
-/// <inheritdoc/>
-public class RoleResourceDefinition : BaseDbDefinition<RoleResource>, IDbDefinition
+public class RoleResourceDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public RoleResourceDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
-    /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<RoleResource>(def =>
+        DefinitionStore.Define<RoleResource>(def =>
         {
             def.EnableHistory();
             def.EnableTranslation();
@@ -25,12 +20,12 @@ public class RoleResourceDefinition : BaseDbDefinition<RoleResource>, IDbDefinit
             def.RegisterProperty(t => t.RoleId);
             def.RegisterProperty(t => t.ResourceId);
 
-            def.RegisterAsCrossReferenceExtended<ExtRoleResource, Role, Resource>(
-               defineA: (t => t.RoleId, t => t.Id, t => t.Role, CascadeDelete: true),
-               defineB: (t => t.ResourceId, t => t.Id, t => t.Resource, CascadeDelete: true)
-            );
+            def.RegisterExtendedProperty<ExtRoleResource, Role>(t => t.RoleId, t => t.Id, t => t.Role, cascadeDelete: true);
+            def.RegisterExtendedProperty<ExtRoleResource, Resource>(t => t.ResourceId, t => t.Id, t => t.Resource, cascadeDelete: false);
 
             def.RegisterUniqueConstraint([t => t.RoleId, t => t.ResourceId]);
         });
     }
 }
+
+#endregion

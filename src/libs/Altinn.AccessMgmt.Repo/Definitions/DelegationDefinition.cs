@@ -1,21 +1,16 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
+#region Delegation
 
-/// <inheritdoc/>
-public class DelegationDefinition : BaseDbDefinition<Delegation>, IDbDefinition
+public class DelegationDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public DelegationDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
-    /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<Delegation>(def =>
+        DefinitionStore.Define<Delegation>(def =>
         {
             def.EnableHistory();
             def.RegisterPrimaryKey([t => t.Id]);
@@ -31,7 +26,9 @@ public class DelegationDefinition : BaseDbDefinition<Delegation>, IDbDefinition
             def.RegisterExtendedProperty<ExtDelegation, Entity>(t => t.SourceId, t => t.Id, t => t.Source, cascadeDelete: true);
             def.RegisterExtendedProperty<ExtDelegation, Entity>(t => t.ViaId, t => t.Id, t => t.Via, cascadeDelete: true);
 
-            // def.RegisterUniqueConstraint([t => t.FromId, t => t.ToId]);
+            //def.RegisterUniqueConstraint([t => t.FromId, t => t.ToId]);
         });
     }
 }
+
+#endregion

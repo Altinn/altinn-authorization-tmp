@@ -1,21 +1,15 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
 
-/// <inheritdoc/>
-public class ProviderDefinition : BaseDbDefinition<Provider>, IDbDefinition
+public class ProviderDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public ProviderDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
-    /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<Provider>(def =>
+        DefinitionStore.Define<Provider>(def =>
         {
             def.EnableHistory();
             def.RegisterPrimaryKey([t => t.Id]);
@@ -26,3 +20,5 @@ public class ProviderDefinition : BaseDbDefinition<Provider>, IDbDefinition
         });
     }
 }
+
+#endregion

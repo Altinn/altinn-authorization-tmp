@@ -1,21 +1,16 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
+#region Tag
 
-/// <inheritdoc/>
-public class TagDefinition : BaseDbDefinition<Tag>, IDbDefinition
+public class TagDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public TagDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
-    /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<Tag>(def =>
+        DefinitionStore.Define<Tag>(def =>
         {
             def.EnableHistory();
             def.EnableTranslation();
@@ -23,12 +18,14 @@ public class TagDefinition : BaseDbDefinition<Tag>, IDbDefinition
             def.RegisterProperty(t => t.Id);
 
             def.RegisterProperty(t => t.Name);
-            def.RegisterProperty(t => t.GroupId!, nullable: true);
-            def.RegisterProperty(t => t.ParentId!, nullable: true);
+            def.RegisterProperty(t => t.GroupId, nullable: true);
+            def.RegisterProperty(t => t.ParentId, nullable: true);
 
-            def.RegisterExtendedProperty<ExtTag, TagGroup>(t => t.GroupId!, t => t.Id, t => t.Group!, optional: true, cascadeDelete: true);
-            def.RegisterExtendedProperty<ExtTag, Tag>(t => t.ParentId!, t => t.Id, t => t.Parent!, optional: true, cascadeDelete: true);
-            def.RegisterUniqueConstraint([t => t.GroupId!, t => t.Name]);
+            def.RegisterExtendedProperty<ExtTag, TagGroup>(t => t.GroupId, t => t.Id, t => t.Group, cascadeDelete: true);
+            def.RegisterExtendedProperty<ExtTag, Tag>(t => t.ParentId, t => t.Id, t => t.Parent, cascadeDelete: true);
+            def.RegisterUniqueConstraint([t => t.GroupId, t => t.Name]);
         });
     }
 }
+
+#endregion

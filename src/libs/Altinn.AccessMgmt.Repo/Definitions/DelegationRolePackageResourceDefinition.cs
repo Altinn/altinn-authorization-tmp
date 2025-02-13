@@ -1,21 +1,16 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
+#region Delegation
 
-/// <inheritdoc/>
-public class DelegationRolePackageResourceDefinition : BaseDbDefinition<DelegationRolePackageResource>, IDbDefinition
+public class DelegationRolePackageResourceDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public DelegationRolePackageResourceDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
-    /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<DelegationRolePackageResource>(def =>
+        DefinitionStore.Define<DelegationRolePackageResource>(def =>
         {
             def.EnableHistory();
             def.RegisterPrimaryKey([t => t.Id]);
@@ -33,3 +28,5 @@ public class DelegationRolePackageResourceDefinition : BaseDbDefinition<Delegati
         });
     }
 }
+
+#endregion

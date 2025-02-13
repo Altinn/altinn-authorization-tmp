@@ -1,11 +1,8 @@
 ﻿using Altinn;
 using Altinn.AccessMgmt;
-using Altinn.AccessMgmt.AccessPackages;
 using Altinn.AccessMgmt.Repo;
 using Altinn.AccessMgmt.Repo.Ingest;
-using Altinn.AccessMgmt.Repo;
-using Altinn.AccessMgmt.Repo.Ingest;
-using Altinn.AccessMgmt.Repo.temp;
+
 
 namespace Altinn.AccessMgmt.Repo.Ingest;
 

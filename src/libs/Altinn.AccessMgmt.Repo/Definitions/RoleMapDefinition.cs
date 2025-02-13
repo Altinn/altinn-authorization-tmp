@@ -1,21 +1,16 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
+#region Role
 
-/// <inheritdoc/>
-public class RoleMapDefinition : BaseDbDefinition<RoleMap>, IDbDefinition
+public class RoleMapDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public RoleMapDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
-    /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<RoleMap>(def =>
+        DefinitionStore.Define<RoleMap>(def =>
         {
             def.EnableHistory();
             def.EnableTranslation();
@@ -32,3 +27,5 @@ public class RoleMapDefinition : BaseDbDefinition<RoleMap>, IDbDefinition
         });
     }
 }
+
+#endregion

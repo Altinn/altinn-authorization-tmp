@@ -1,21 +1,17 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
+#endregion
 
-/// <inheritdoc/>
-public class EntityTypeDefinition : BaseDbDefinition<EntityType>, IDbDefinition
+#region Entity
+public class EntityTypeDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public EntityTypeDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
-    /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<EntityType>(def =>
+        DefinitionStore.Define<EntityType>(def =>
         {
             def.EnableHistory();
             def.EnableTranslation();
@@ -30,3 +26,5 @@ public class EntityTypeDefinition : BaseDbDefinition<EntityType>, IDbDefinition
         });
     }
 }
+
+#endregion

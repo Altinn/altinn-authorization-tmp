@@ -1,21 +1,15 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
-
-/// <inheritdoc/>
-public class WorkerConfigDefinition : BaseDbDefinition<WorkerConfig>, IDbDefinition
+#region Misc
+public class WorkerConfigDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public WorkerConfigDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
-    /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<WorkerConfig>(def =>
+        DefinitionStore.Define<WorkerConfig>(def =>
         {
             def.EnableHistory();
             def.RegisterPrimaryKey([t => t.Id]);
@@ -28,3 +22,5 @@ public class WorkerConfigDefinition : BaseDbDefinition<WorkerConfig>, IDbDefinit
         });
     }
 }
+
+#endregion

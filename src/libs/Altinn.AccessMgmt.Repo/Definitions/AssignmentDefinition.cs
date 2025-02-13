@@ -1,21 +1,16 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
+#region Assignment
 
-/// <inheritdoc/>
-public class AssignmentDefinition : BaseDbDefinition<Assignment>, IDbDefinition
+public class AssignmentDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public AssignmentDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
-    /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<Assignment>(def =>
+        DefinitionStore.Define<Assignment>(def =>
         {
             def.EnableHistory();
             def.RegisterPrimaryKey([t => t.Id]);
@@ -34,3 +29,5 @@ public class AssignmentDefinition : BaseDbDefinition<Assignment>, IDbDefinition
         });
     }
 }
+
+#endregion

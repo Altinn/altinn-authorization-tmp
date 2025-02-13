@@ -1,21 +1,17 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
+#endregion
+#region Entity
 
-/// <inheritdoc/>
-public class EntityDefinition : BaseDbDefinition<Entity>, IDbDefinition
+public class EntityDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public EntityDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
-    /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<Entity>(def =>
+        DefinitionStore.Define<Entity>(def =>
         {
             def.EnableHistory();
             def.EnableTranslation();
@@ -27,9 +23,11 @@ public class EntityDefinition : BaseDbDefinition<Entity>, IDbDefinition
             def.RegisterProperty(t => t.TypeId);
             def.RegisterProperty(t => t.VariantId);
 
-            def.RegisterExtendedProperty<ExtEntity, EntityType>(t => t.TypeId, t => t.Id, t => t.Type, cascadeDelete: false);
-            def.RegisterExtendedProperty<ExtEntity, EntityVariant>(t => t.TypeId, t => t.Id, t => t.Type, cascadeDelete: false);
+            def.RegisterExtendedProperty<ExtEntityVariant, EntityType>(t => t.TypeId, t => t.Id, t => t.Type, cascadeDelete: false);
+            def.RegisterExtendedProperty<ExtEntityVariant, EntityVariant>(t => t.TypeId, t => t.Id, t => t.Type, cascadeDelete: false);
             def.RegisterUniqueConstraint([t => t.Name, t => t.TypeId, t => t.RefId]);
         });
     }
 }
+
+#endregion

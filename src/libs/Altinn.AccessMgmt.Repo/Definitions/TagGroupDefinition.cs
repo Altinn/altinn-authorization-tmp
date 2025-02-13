@@ -1,21 +1,18 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
+#region Area
+#endregion
 
-/// <inheritdoc/>
-public class TagGroupDefinition : BaseDbDefinition<TagGroup>, IDbDefinition
+#region Tag
+public class TagGroupDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public TagGroupDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
-    /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<TagGroup>(def =>
+        DefinitionStore.Define<TagGroup>(def =>
         {
             def.EnableHistory();
             def.EnableTranslation();
@@ -26,3 +23,5 @@ public class TagGroupDefinition : BaseDbDefinition<TagGroup>, IDbDefinition
         });
     }
 }
+
+#endregion
