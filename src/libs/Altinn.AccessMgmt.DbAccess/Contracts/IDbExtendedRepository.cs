@@ -1,7 +1,7 @@
-﻿using Altinn.AccessMgmt.Persistence.Core.Helpers;
-using Altinn.AccessMgmt.Persistence.Core.Models;
+﻿using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.DbAccess.Models;
 
-namespace Altinn.AccessMgmt.Persistence.Core.Contracts;
+namespace Altinn.AccessMgmt.DbAccess.Contracts;
 
 /// <summary>
 /// Represents an extended repository that provides additional data access operations

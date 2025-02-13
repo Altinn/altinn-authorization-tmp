@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Altinn.AccessMgmt.Persistence.Core.Helpers;
+namespace Altinn.AccessMgmt.DbAccess.Helpers;
 
 /// <summary>
 /// Provides a fluent API for constructing a collection of <see cref="GenericFilter"/> objects based on expressions for the entity type <typeparamref name="T"/>.
@@ -22,7 +22,7 @@ public class GenericFilterBuilder<T> : IEnumerable<GenericFilter>
     public GenericFilterBuilder<T> Add<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, FilterComparer comparer = FilterComparer.Equals)
     {
         var propertyInfo = ExtractPropertyInfo(property);
-        _filters.Add(new GenericFilter(propertyInfo.Name, value!, comparer));
+        _filters.Add(new GenericFilter(propertyInfo.Name, value, comparer));
         return this;
     }
 
@@ -41,11 +41,12 @@ public class GenericFilterBuilder<T> : IEnumerable<GenericFilter>
     /// <summary>
     /// Extracts the <see cref="PropertyInfo"/> from the specified property expression.
     /// </summary>
+    /// <typeparam name="TLocal">The type parameter of the expression.</typeparam>
     /// <typeparam name="TProperty">The type of the property.</typeparam>
-    /// <param name="expression">An expression selecting a property of <typeparamref name="T"/>.</param>
+    /// <param name="expression">An expression selecting a property of <typeparamref name="TLocal"/>.</param>
     /// <returns>The <see cref="PropertyInfo"/> representing the property in the expression.</returns>
     /// <exception cref="ArgumentException">Thrown if the expression does not refer to a valid property.</exception>
-    private PropertyInfo ExtractPropertyInfo<TProperty>(Expression<Func<T, TProperty>> expression)
+    private PropertyInfo ExtractPropertyInfo<T, TProperty>(Expression<Func<T, TProperty>> expression)
     {
         MemberExpression? memberExpression = expression.Body switch
         {
@@ -74,4 +75,89 @@ public class GenericFilterBuilder<T> : IEnumerable<GenericFilter>
     {
         return GetEnumerator();
     }
+}
+
+/// <summary>
+/// Generic Filter
+/// </summary>
+public class GenericFilter
+{
+    /// <summary>
+    /// PropertyName
+    /// </summary>
+    public string PropertyName { get; set; }
+
+    /// <summary>
+    /// Value
+    /// </summary>
+    public object Value { get; set; }
+
+    /// <summary>
+    /// FilterComparer
+    /// </summary>
+    public FilterComparer Comparer { get; set; }
+
+    /// <summary>
+    /// GenericFilter
+    /// </summary>
+    /// <param name="propertyName">propertyName</param>
+    /// <param name="value">value</param>
+    /// <param name="comparer">comparer</param>
+    public GenericFilter(string propertyName, object value, FilterComparer comparer = FilterComparer.Equals)
+    {
+        PropertyName = propertyName;
+        Value = value;
+        Comparer = comparer;
+    }
+}
+
+/// <summary>
+/// Specifies the type of comparison to use in a filter.
+/// </summary>
+public enum FilterComparer
+{
+    /// <summary>
+    /// Check if the property is equal to the value.
+    /// </summary>
+    Equals,
+
+    /// <summary>
+    /// Check if the property starts with the value.
+    /// </summary>
+    StartsWith,
+
+    /// <summary>
+    /// Check if the property ends with the value.
+    /// </summary>
+    EndsWith,
+
+    /// <summary>
+    /// Check if the property contains the value.
+    /// </summary>
+    Contains,
+
+    /// <summary>
+    /// Check if the property is greater than the value.
+    /// </summary>
+    GreaterThan,
+
+    /// <summary>
+    /// Check if the property is greater than or equal to the value.
+    /// </summary>
+    GreaterThanOrEqual,
+
+    /// <summary>
+    /// Check if the property is less than the value.
+    /// </summary>
+    LessThan,
+
+    /// <summary>
+    /// Check if the property is less than or equal to the value.
+    /// </summary>
+    LessThanOrEqual,
+
+    /// <summary>
+    /// Check if the property is not equal to the value.
+    /// </summary>
+    NotEqual
 }

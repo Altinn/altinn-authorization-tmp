@@ -1,23 +1,20 @@
-﻿using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
-using Altinn.AccessMgmt.Persistence.Core.Executors;
-using Altinn.AccessMgmt.Persistence.Core.Helpers;
-using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.DbAccess.Models;
 using Microsoft.Extensions.Options;
+using Npgsql;
+using System.Data;
 
-namespace Altinn.AccessMgmt.Persistence.Core.Services;
+namespace Altinn.AccessMgmt.DbAccess.Services;
 
 /// <inheritdoc/>
 public abstract class ExtendedRepository<T, TExtended> : BasicRepository<T>, IDbExtendedRepository<T, TExtended>
     where T : class, new()
     where TExtended : class, new()
 {
-    /// <inheritdoc/>
-    protected ExtendedRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
-    {
-    }
+    protected ExtendedRepository(IOptions<DbAccessConfig> options, NpgsqlDataSource connection, IDbConverter dbConverter) : base(options, connection, dbConverter) { }
 
+    #region Read
     /// <inheritdoc/>
     public async Task<TExtended?> GetExtended(Guid id, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
@@ -43,10 +40,35 @@ public abstract class ExtendedRepository<T, TExtended> : BasicRepository<T>, IDb
         options ??= new RequestOptions();
         filters ??= new List<GenericFilter>();
 
-        var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
+        var queryBuilder = new SqlQueryBuilder(Definition);
         var query = queryBuilder.BuildExtendedSelectQuery(options, filters);
-        var param = BuildFilterParameters(filters, options);
 
-        return await executor.ExecuteQuery<TExtended>(query, param, cancellationToken);
+        var parameterBuilder = new ParameterBuilder();
+        var param = parameterBuilder.BuildFilterParameters(filters, options);
+
+        return await ExecuteExtended(query, param);
     }
+    #endregion
+
+    #region Execute
+    private async Task<IEnumerable<TExtended>> ExecuteExtended(string query, List<NpgsqlParameter> parameters, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await using var cmd = connection.CreateCommand(query);
+            cmd.Parameters.AddRange(parameters.ToArray());
+            return dbConverter.ConvertToObjects<TExtended>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Console.WriteLine(query);
+            foreach (var param in parameters)
+            {
+                Console.WriteLine($"{param.ParameterName}:{param.Value}");
+            }
+            throw;
+        }
+    }
+    #endregion
 }

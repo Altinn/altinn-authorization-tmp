@@ -1,4 +1,4 @@
-﻿namespace Altinn.AccessMgmt.Persistence.Core.Contracts;
+﻿namespace Altinn.AccessMgmt.DbAccess.Contracts;
 
 /// <summary>
 /// Defines a contract for database definition classes.

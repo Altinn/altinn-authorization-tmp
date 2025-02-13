@@ -1,4 +1,4 @@
-﻿namespace Altinn.AccessMgmt.Persistence.Core.Models;
+﻿namespace Altinn.AccessMgmt.DbAccess.Models;
 
 /// <summary>
 /// RequestOptions

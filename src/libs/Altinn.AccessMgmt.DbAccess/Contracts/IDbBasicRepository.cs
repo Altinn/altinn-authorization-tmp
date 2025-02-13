@@ -1,8 +1,7 @@
-﻿using System.Linq.Expressions;
-using Altinn.AccessMgmt.Persistence.Core.Helpers;
-using Altinn.AccessMgmt.Persistence.Core.Models;
+﻿using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.DbAccess.Models;
 
-namespace Altinn.AccessMgmt.Persistence.Core.Contracts;
+namespace Altinn.AccessMgmt.DbAccess.Contracts;
 
 /// <summary>
 /// Represents a basic repository that provides data access operations for entities of type <typeparamref name="T"/>
@@ -28,16 +27,6 @@ public interface IDbBasicRepository<T>
     /// A task that represents the asynchronous operation. The task result contains the entity if found; otherwise, null.
     /// </returns>
     Task<T?> Get(Guid id, RequestOptions? options = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get Entities based on property and value
-    /// </summary>
-    /// <param name="property">Filter property</param>
-    /// <param name="value">Filter value</param>
-    /// <param name="options">RequestOptions</param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns>T<see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a collection of entities that match the criteria specified by a <see cref="GenericFilterBuilder{T}"/>.
