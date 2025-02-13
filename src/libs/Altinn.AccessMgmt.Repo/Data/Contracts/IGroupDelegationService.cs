@@ -1,7 +1,7 @@
-﻿using Altinn.AccessMgmt.DbAccess.Data.Contracts;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
 using Altinn.AccessMgmt.Models;
 
 namespace Altinn.AccessMgmt.Repo.Data.Contracts;
 
 /// <inheritdoc/>
-public interface IGroupDelegationService : IDbExtendedDataService<GroupDelegation, ExtGroupDelegation> { }
+public interface IGroupDelegationService : IDbExtendedRepository<GroupDelegation, ExtGroupDelegation> { }

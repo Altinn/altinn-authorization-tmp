@@ -1,7 +1,7 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Models;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
+using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Models;
 
 namespace Altinn.AccessMgmt.DbAccess.Helpers;
 

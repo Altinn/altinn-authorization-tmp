@@ -1,0 +1,31 @@
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
+using System.Text.RegularExpressions;
+
+namespace Altinn.AccessMgmt.Repo.Definitions;
+#region Tag
+
+public class TagDefinition : IDbDefinition
+{
+    public void Define()
+    {
+        DefinitionStore.Define<Tag>(def =>
+        {
+            def.EnableHistory();
+            def.EnableTranslation();
+            def.RegisterPrimaryKey([t => t.Id]);
+            def.RegisterProperty(t => t.Id);
+
+            def.RegisterProperty(t => t.Name);
+            def.RegisterProperty(t => t.GroupId, nullable: true);
+            def.RegisterProperty(t => t.ParentId, nullable: true);
+
+            def.RegisterExtendedProperty<ExtTag, TagGroup>(t => t.GroupId, t => t.Id, t => t.Group, cascadeDelete: true);
+            def.RegisterExtendedProperty<ExtTag, Tag>(t => t.ParentId, t => t.Id, t => t.Parent, cascadeDelete: true);
+            def.RegisterUniqueConstraint([t => t.GroupId, t => t.Name]);
+        });
+    }
+}
+
+#endregion

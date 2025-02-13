@@ -32,7 +32,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         /// </summary>
         /// <param name="value">If set to <c>true</c>, translations are enabled; otherwise, they are disabled.</param>
         /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        public DefinitionBuilder<T> SetTranslation(bool value = true)
+        public DefinitionBuilder<T> EnableTranslation(bool value = true)
         {
             dbDefinition.HasTranslation = value;
             return this;
@@ -43,7 +43,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         /// </summary>
         /// <param name="value">If set to <c>true</c>, history is enabled; otherwise, it is disabled.</param>
         /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        public DefinitionBuilder<T> SetHistory(bool value = true)
+        public DefinitionBuilder<T> EnableHistory(bool value = true)
         {
             dbDefinition.HasHistory = value;
             return this;
