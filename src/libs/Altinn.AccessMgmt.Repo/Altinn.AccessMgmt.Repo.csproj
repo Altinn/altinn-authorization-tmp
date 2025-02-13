@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<WarningLevel>0</WarningLevel>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Options" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" />
+		<PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+		<PackageReference Include="OpenTelemetry.Exporter.Console" />
+		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\libs\Altinn.AccessMgmt.DbAccess\Altinn.AccessMgmt.DbAccess.csproj" />
+		<ProjectReference Include="..\..\..\..\libs\Altinn.AccessMgmt.Models\Altinn.AccessMgmt.Models.csproj" />
+		<ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host.Lease\Altinn.Authorization.Host.Lease.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Ingest\JsonData\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+</Project>
