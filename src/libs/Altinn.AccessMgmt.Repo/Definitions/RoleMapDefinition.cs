@@ -1,13 +1,13 @@
 ﻿using Altinn.AccessMgmt.DbAccess.Contracts;
 using Altinn.AccessMgmt.DbAccess.Helpers;
 using Altinn.AccessMgmt.Models;
-using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
-#region Role
 
+/// <inheritdoc/>
 public class RoleMapDefinition : IDbDefinition
 {
+    /// <inheritdoc/>
     public void Define()
     {
         DefinitionStore.Define<RoleMap>(def =>
@@ -27,5 +27,3 @@ public class RoleMapDefinition : IDbDefinition
         });
     }
 }
-
-#endregion
