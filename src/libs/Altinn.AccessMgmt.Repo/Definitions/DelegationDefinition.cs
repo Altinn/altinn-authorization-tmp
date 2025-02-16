@@ -1,13 +1,13 @@
 ﻿using Altinn.AccessMgmt.DbAccess.Contracts;
 using Altinn.AccessMgmt.DbAccess.Helpers;
 using Altinn.AccessMgmt.Models;
-using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
-#region Delegation
 
+/// <inheritdoc/>
 public class DelegationDefinition : IDbDefinition
 {
+    /// <inheritdoc/>
     public void Define()
     {
         DefinitionStore.Define<Delegation>(def =>
@@ -30,5 +30,3 @@ public class DelegationDefinition : IDbDefinition
         });
     }
 }
-
-#endregion
