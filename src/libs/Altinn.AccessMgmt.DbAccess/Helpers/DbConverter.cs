@@ -14,10 +14,12 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers;
 public sealed class DbConverter : IDbConverter
 {
     private static readonly Lazy<DbConverter> _instance = new Lazy<DbConverter>(() => new DbConverter());
+
     public static DbConverter Instance => _instance.Value;
 
     // Cache for TypeAccessor instances to avoid repeated reflection overhead.
     private static readonly ConcurrentDictionary<Type, TypeAccessor> AccessorCache = new ConcurrentDictionary<Type, TypeAccessor>();
+
     // Cache for property metadata per type. Keys are lower-cased property names.
     private static readonly ConcurrentDictionary<Type, Dictionary<string, (Member Member, Type? ElementType)>> PropertyCache = new ConcurrentDictionary<Type, Dictionary<string, (Member, Type?)>>();
 
@@ -49,9 +51,15 @@ public sealed class DbConverter : IDbConverter
     private static Type? GetListOrEnumerableElementType(Type type)
     {
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+        {
             return type.GetGenericArguments()[0];
+        }
+
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+        {
             return type.GetGenericArguments()[0];
+        }
+
         return null;
     }
 
@@ -62,7 +70,8 @@ public sealed class DbConverter : IDbConverter
     /// <summary>
     /// Converts the data from the provided IDataReader into a list of objects of type T.
     /// </summary>
-    public List<T> ConvertToObjects<T>(IDataReader reader) where T : new()
+    public List<T> ConvertToObjects<T>(IDataReader reader) 
+        where T : new()
     {
         var results = new List<T>();
 
@@ -77,11 +86,13 @@ public sealed class DbConverter : IDbConverter
     /// <summary>
     /// Processes a single row from the reader and maps it to an object of type T.
     /// </summary>
-    private static T ProcessRow<T>(IDataReader reader) where T : new()
+    private static T ProcessRow<T>(IDataReader reader) 
+        where T : new()
     {
         T instance = new T();
         var accessor = GetAccessor(typeof(T));
         var properties = GetProperties(typeof(T));
+
         // Cache for already created sub-objects (for nested properties)
         var subObjectCache = new Dictionary<string, object>();
 
@@ -91,11 +102,15 @@ public sealed class DbConverter : IDbConverter
 
             // Skip if the column does not map to any property.
             if (!properties.TryGetValue(columnName, out var prop))
+            {
                 continue;
+            }
 
             object? value = reader.IsDBNull(i) ? null : reader.GetValue(i);
             if (value == null)
+            {
                 continue;
+            }
 
             if (prop.ElementType != null)
             {
@@ -113,6 +128,7 @@ public sealed class DbConverter : IDbConverter
                 MapSimpleProperty(instance, accessor, prop, value);
             }
         }
+
         return instance;
     }
 
@@ -151,6 +167,7 @@ public sealed class DbConverter : IDbConverter
 
         // Use the actual property type (e.g., List<SomeType> or IEnumerable<SomeType>).
         var propertyType = prop.Member.Type;
+
         // Deserialize the JSON string into the list, using Web defaults.
         object? listValue = JsonSerializer.Deserialize(
             value?.ToString() ?? "[]",
@@ -160,8 +177,6 @@ public sealed class DbConverter : IDbConverter
 
         // Assign the deserialized list to the property.
         accessor[instance, prop.Member.Name] = listValue;
-
-        Console.WriteLine($"Assigned deserialized list to property '{prop.Member.Name}'");
     }
 
     /// <summary>
@@ -212,6 +227,7 @@ public sealed class DbConverter : IDbConverter
                 }
             }
         }
+
         // Assign the fully mapped sub-object.
         accessor[instance, prop.Member.Name] = subObject;
     }

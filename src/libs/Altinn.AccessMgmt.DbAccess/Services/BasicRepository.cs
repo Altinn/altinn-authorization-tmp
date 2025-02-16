@@ -1,4 +1,6 @@
 ﻿using System.Data;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using Altinn.AccessMgmt.DbAccess.Contracts;
 using Altinn.AccessMgmt.DbAccess.Helpers;
@@ -32,11 +34,23 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     public GenericFilterBuilder<T> CreateFilterBuilder() { return new GenericFilterBuilder<T>(); }
 
     #region Read
+
     /// <inheritdoc/>
     public async Task<T?> Get(Guid id, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
         var res = await Get(new List<GenericFilter>() { new GenericFilter("id", id) }, options, cancellationToken: cancellationToken);
         return res.FirstOrDefault();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        string propertyName = ExtractPropertyInfo(property).Name;
+        var filters = new List<GenericFilter>
+        {
+            new GenericFilter(propertyName, value, FilterComparer.Equals)
+        };
+        return await Get(filters, options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -66,9 +80,22 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         var dbExec = new DbExecutor(connection, dbConverter);
         return await dbExec.ExecuteQuery<T>(query, param, cancellationToken: cancellationToken);
     }
+
+    private PropertyInfo ExtractPropertyInfo<TLocal, TProperty>(Expression<Func<TLocal, TProperty>> expression)
+    {
+        MemberExpression? memberExpression = expression.Body switch
+        {
+            MemberExpression member => member,
+            UnaryExpression { Operand: MemberExpression member } => member,
+            _ => null
+        };
+
+        return memberExpression?.Member as PropertyInfo ?? throw new ArgumentException($"Expression '{expression}' does not refer to a valid property.");
+    }
     #endregion
 
     #region Write
+
     /// <inheritdoc/>
     public async Task<int> Ingest(List<T> data, CancellationToken cancellationToken = default)
     {

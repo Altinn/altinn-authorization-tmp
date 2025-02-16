@@ -1,11 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Specialized;
 using System.Data;
-using System.Reflection;
 using System.Text;
 using Altinn.AccessMgmt.DbAccess.Models;
+using Altinn.AccessMgmt.DbAccess.Services;
 using Npgsql;
-using NpgsqlTypes;
 
 namespace Altinn.AccessMgmt.DbAccess.Helpers;
 
@@ -360,84 +359,70 @@ public class SqlQueryBuilder(DbDefinition definition)
     #endregion
 
     #region Schema
-    public OrderedDictionary GetMigrationScripts()
-    {
-        OrderedDictionary scripts = new OrderedDictionary();
 
-        var table = CreateTable();
-        foreach (DictionaryEntry t in table)
-        {
-            scripts.Add(t.Key, t.Value);
-        }
+    /// <summary>
+    /// Generates mirgration scripts for the definition
+    /// </summary>
+    /// <returns></returns>
+    public MigrationScriptCollection GetMigrationScripts()
+    {
+        var scriptCollection = new MigrationScriptCollection(_definition.BaseType);
+
+        scriptCollection.AddScripts(CreateTable());
 
         foreach (var column in _definition.Columns)
         {
-            if (_definition.PrimaryKey.SimpleProperties.ContainsKey(column.Name))
+            if (_definition.PrimaryKey.Properties.ContainsKey(column.Name))
             {
                 continue;
             }
 
-            var r = CreateColumn(column);
-            foreach (DictionaryEntry s in r)
-            {
-                scripts.Add(s.Key, s.Value);
-            }
+            scriptCollection.AddScripts(CreateColumn(column));
         }
 
         foreach (var fk in _definition.ForeignKeys)
         {
-            var r = CreateForeignKeyConstraint(fk);
-            scripts.Add(r.key, r.query);
+            scriptCollection.AddScripts(CreateForeignKeyConstraint(fk));
+            scriptCollection.AddDependency(fk.Ref);
         }
 
         foreach (var uc in _definition.UniqueConstraints)
         {
-            var r = CreateUniqueConstraint(uc);
-            scripts.Add(r.key, r.query);
+            scriptCollection.AddScripts(CreateUniqueConstraint(uc));
         }
 
         if (_definition.HasHistory)
         {
-            var fScript = CreateSharedHistoryFunction();
-            scripts.Add(fScript.key, fScript.query);
-
-            var tvScripts = CreateHistoryTriggersAndView(false);
-            foreach (DictionaryEntry script in tvScripts)
-            {
-                scripts.Add(script.Key, script.Value);
-            }
-
+            scriptCollection.AddScripts(CreateSharedHistoryFunction());
+            scriptCollection.AddScripts(CreateHistoryTriggersAndView(false));
+            
             if (_definition.HasTranslation)
             {
-                var htvScripts = CreateHistoryTriggersAndView(true);
-                foreach (DictionaryEntry script in htvScripts)
-                {
-                    scripts.Add(script.Key, script.Value);
-                }
+                scriptCollection.AddScripts(CreateHistoryTriggersAndView(true));
             }
         }
 
-        return scripts;
+        return scriptCollection;
     }
 
-    private OrderedDictionary CreateTable()
+    private OrderedDictionary<string, string> CreateTable()
     {
-        OrderedDictionary scripts = new OrderedDictionary();
+        var scripts = new OrderedDictionary<string, string>();
 
-        _definition.PrimaryKey.SimpleProperties ??= new Dictionary<string, Type>();
-        if (_definition.PrimaryKey.SimpleProperties.Count == 0)
+        _definition.PrimaryKey.Properties ??= new Dictionary<string, Type>();
+        if (_definition.PrimaryKey.Properties.Count == 0)
         {
-            _definition.PrimaryKey.SimpleProperties.Add("Id", typeof(Guid));
+            _definition.PrimaryKey.Properties.Add("Id", typeof(Guid));
         }
         var properties = _definition.BaseType.GetProperties().ToList();
-        foreach (var property in _definition.PrimaryKey.SimpleProperties)
+        foreach (var property in _definition.PrimaryKey.Properties)
         {
             if (!properties.Exists(t => t.Name == property.Key))
             {
                 throw new Exception($"PK: {_definition.BaseType.Name} does not contain the property '{property.Key}'");
             }
         }
-        string primaryKeyDefinition = string.Join(',', _definition.PrimaryKey.SimpleProperties.Select(t => $"{t.Key} {Helpers.GetPostgresType(t.Value)} NOT NULL "));
+        string primaryKeyDefinition = string.Join(',', _definition.PrimaryKey.Properties.Select(t => $"{t.Key} {Helpers.GetPostgresType(t.Value)} NOT NULL "));
 
         string basicKey = $"CREATE TABLE {GetPostgresDefinition(includeAlias: false)}";
         var basicTable = new StringBuilder();
@@ -447,7 +432,7 @@ public class SqlQueryBuilder(DbDefinition definition)
         {
             basicTable.AppendLine(", validfrom timestamptz default now()");
         }
-        basicTable.AppendLine($", CONSTRAINT PK_{_definition.BaseType.Name} PRIMARY KEY ({string.Join(',', _definition.PrimaryKey.SimpleProperties.Select(t => $"{t.Key}"))})");
+        basicTable.AppendLine($", CONSTRAINT PK_{_definition.BaseType.Name} PRIMARY KEY ({string.Join(',', _definition.PrimaryKey.Properties.Select(t => $"{t.Key}"))})");
         basicTable.AppendLine(");");
 
         scripts.Add(basicKey, basicTable.ToString());
@@ -463,7 +448,7 @@ public class SqlQueryBuilder(DbDefinition definition)
                 translationTable.AppendLine(", validfrom timestamptz default now()");
             }
             translationTable.AppendLine($", Language text NOT NULL");
-            translationTable.AppendLine($", CONSTRAINT PK_{_definition.BaseType.Name} PRIMARY KEY ({string.Join(',', _definition.PrimaryKey.SimpleProperties.Select(t => $"{t.Key}"))}, Language)");
+            translationTable.AppendLine($", CONSTRAINT PK_{_definition.BaseType.Name} PRIMARY KEY ({string.Join(',', _definition.PrimaryKey.Properties.Select(t => $"{t.Key}"))}, Language)");
             translationTable.AppendLine(");");
 
             scripts.Add(translationKey, translationTable.ToString());
@@ -499,9 +484,9 @@ public class SqlQueryBuilder(DbDefinition definition)
         return scripts;
     }
 
-    private OrderedDictionary CreateColumn(ColumnDefinition column)
+    private OrderedDictionary<string, string> CreateColumn(ColumnDefinition column)
     {
-        OrderedDictionary scripts = new OrderedDictionary();
+        var scripts = new OrderedDictionary<string, string>();
 
         var basic = CreateColumn(GetPostgresDefinition(includeAlias: false), column.Name, Helpers.GetPostgresType(column.Property).ToString(), column.IsNullable, column.DefaultValue);
         scripts.Add(basic.Key, basic.Query);
@@ -526,6 +511,7 @@ public class SqlQueryBuilder(DbDefinition definition)
 
         return scripts;
     }
+    
     private (string Key, string Query) CreateColumn(string tableName, string columnName, string columnDataType, bool isNullable, string? defaultValue = null)
     {
         var key = $"ADD COLUMN {tableName}.{columnName}";
@@ -552,7 +538,7 @@ public class SqlQueryBuilder(DbDefinition definition)
         return (key, query);
     }
 
-    private (string key, string query) CreateForeignKeyConstraint(ForeignKeyDefinition foreignKey)
+    private (string Key, string Query) CreateForeignKeyConstraint(ForeignKeyDefinition foreignKey)
     {
         if (!_definition.BaseType.GetProperties().ToList().Exists(t => t.Name.Equals(foreignKey.BaseProperty, StringComparison.OrdinalIgnoreCase)))
         {
@@ -569,6 +555,7 @@ public class SqlQueryBuilder(DbDefinition definition)
         {
             throw new Exception("Type not found");
         }
+
         string name = string.IsNullOrEmpty(foreignKey.Name) ? $"{_definition.BaseType.Name}_{foreignKey.BaseProperty}" : foreignKey.Name;
 
         var key = $"ADD CONSTRAINT {GetPostgresDefinition(includeAlias: false)}.FK_{name}";
@@ -577,8 +564,10 @@ public class SqlQueryBuilder(DbDefinition definition)
         return (key, query);
     }
 
-    private (string key, string query) CreateSharedHistoryFunction()
+    private OrderedDictionary<string, string> CreateSharedHistoryFunction()
     {
+        var res = new OrderedDictionary<string, string>();
+        
         string key = "FUNCTION update_validfrom";
         string query = """
         CREATE OR REPLACE FUNCTION dbo.update_validfrom() RETURNS trigger AS
@@ -589,12 +578,14 @@ public class SqlQueryBuilder(DbDefinition definition)
         END;
         $$ LANGUAGE plpgsql;
         """;
-        return (key, query);
+
+        res.Add(key, query);
+        return res;
     }
 
-    private OrderedDictionary CreateHistoryTriggersAndView(bool forTranslationTable)
+    private OrderedDictionary<string,string> CreateHistoryTriggersAndView(bool forTranslationTable)
     {
-        OrderedDictionary scripts = new OrderedDictionary();
+        var scripts = new OrderedDictionary<string, string>();
 
         /*
         var shared = CreateSharedHistoryFunction();
@@ -647,48 +638,4 @@ public class SqlQueryBuilder(DbDefinition definition)
     #region Data?
     /*JSON Import*/
     #endregion
-}
-
-public static class Helpers
-{
-    public static NpgsqlDbType GetPostgresType(PropertyInfo property)
-    {
-        return GetPostgresType(property.PropertyType);
-    }
-    public static NpgsqlDbType GetPostgresType(Type type)
-    {
-        // Håndter nullable typer: få den underliggende typen hvis den er Nullable<>
-        if (Nullable.GetUnderlyingType(type) is Type underlyingType)
-        {
-            type = underlyingType;
-        }
-
-        // Mapp .NET-typen til NpgsqlDbType ved hjelp av en switch eller if-setninger
-        if (type == typeof(string))
-            return NpgsqlDbType.Text;
-        if (type == typeof(int))
-            return NpgsqlDbType.Integer;
-        if (type == typeof(long))
-            return NpgsqlDbType.Bigint;
-        if (type == typeof(short))
-            return NpgsqlDbType.Smallint;
-        if (type == typeof(Guid))
-            return NpgsqlDbType.Uuid;
-        if (type == typeof(bool))
-            return NpgsqlDbType.Boolean;
-        if (type == typeof(DateTime))
-            return NpgsqlDbType.Timestamp;
-        if (type == typeof(DateTimeOffset))
-            return NpgsqlDbType.TimestampTz;
-        if (type == typeof(float))
-            return NpgsqlDbType.Real;
-        if (type == typeof(double))
-            return NpgsqlDbType.Double;
-        if (type == typeof(decimal))
-            return NpgsqlDbType.Numeric;
-
-        // Legg til andre typer etter behov
-
-        throw new NotSupportedException($"Type '{type.Name}' is not supported for PostgreSQL mapping.");
-    }
 }
