@@ -8,26 +8,38 @@ using Altinn.AccessMgmt.Repo.Mock;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-//// using Altinn.Authorization.Host.Lease;
-
 namespace Altinn.AccessMgmt.Repo.Extensions;
 
+/// <summary>
+/// Extensions for setting up DbAccess services
+/// </summary>
 public static class DbAccessHostExtensions
 {
+    /// <summary>
+    /// Configure DbAccess services
+    /// </summary>
+    /// <param name="builder">IHostApplicationBuilder</param>
+    /// <returns></returns>
     public static IHostApplicationBuilder ConfigureDb(this IHostApplicationBuilder builder)
     {
-        //builder.Services.Configure<DbAccessConfig>(builder.Configuration.GetRequiredSection("DbAccessConfig"));
-
-        //builder.AddAltinnLease(opt =>
-        //{
-        //    opt.Type = AltinnLeaseType.InMemory;
-        //    //opt.Type = AltinnLeaseType.AzureStorageAccount;
-        //    //opt.StorageAccount.Endpoint = new Uri("https://standreastest.blob.core.windows.net/");
-        //});
+        /*
+        builder.Services.Configure<DbAccessConfig>(builder.Configuration.GetRequiredSection("DbAccessConfig"));
+        builder.AddAltinnLease(opt =>
+        {
+            opt.Type = AltinnLeaseType.InMemory;
+            //opt.Type = AltinnLeaseType.AzureStorageAccount;
+            //opt.StorageAccount.Endpoint = new Uri("https://standreastest.blob.core.windows.net/");
+        });
+        */
 
         return builder;
     }
 
+    /// <summary>
+    /// Add DbAccess services
+    /// </summary>
+    /// <param name="builder">IHostApplicationBuilder</param>
+    /// <returns></returns>
     public static IHostApplicationBuilder AddDb(this IHostApplicationBuilder builder)
     {
         DefinitionStore.RegisterAllDefinitions("Altinn.AccessMgmt.Repo");
@@ -41,6 +53,11 @@ public static class DbAccessHostExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Use DbAccess services
+    /// </summary>
+    /// <param name="host">IHost</param>
+    /// <returns></returns>
     public static async Task<IHost> UseDb(this IHost host)
     {
         var migration = host.Services.GetRequiredService<MigrationService>();
@@ -100,5 +117,4 @@ public static class DbAccessHostExtensions
         services.AddSingleton<IDelegationService, DelegationDataService>();
         #endregion
     }
-
 }

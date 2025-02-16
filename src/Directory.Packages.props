@@ -72,7 +72,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Telemetry.Abstractions" Version="9.1.0" />
     <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.0.0" />
     <PackageVersion Include="Microsoft.IdentityModel.Logging" Version="8.4.0" />

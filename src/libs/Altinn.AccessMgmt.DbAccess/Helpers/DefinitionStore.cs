@@ -5,6 +5,8 @@ using Altinn.AccessMgmt.DbAccess.Models;
 
 namespace Altinn.AccessMgmt.DbAccess.Helpers;
 
+//TODO: Convert to singleton?
+
 /// <summary>
 /// Provides a centralized store for database definitions (<see cref="DbDefinition"/>) keyed by the CLR type.
 /// This class allows registering, retrieving, and automatically loading definitions via reflection.

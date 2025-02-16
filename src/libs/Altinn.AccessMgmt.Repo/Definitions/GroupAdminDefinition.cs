@@ -19,8 +19,8 @@ public class GroupAdminDefinition : IDbDefinition
 
             def.RegisterProperty(t => t.GroupId);
             def.RegisterProperty(t => t.MemberId);
-            def.RegisterProperty(t => t.ActiveFrom, nullable: true);
-            def.RegisterProperty(t => t.ActiveTo, nullable: true);
+            def.RegisterProperty(t => t.ActiveFrom!, nullable: true);
+            def.RegisterProperty(t => t.ActiveTo!, nullable: true);
 
             def.RegisterExtendedProperty<ExtGroupMember, EntityGroup>(t => t.GroupId, t => t.Id, t => t.Group, cascadeDelete: true);
             def.RegisterExtendedProperty<ExtGroupMember, Entity>(t => t.MemberId, t => t.Id, t => t.Member, cascadeDelete: true);

@@ -1,10 +1,4 @@
-﻿using Altinn;
-using Altinn.AccessMgmt;
-using Altinn.AccessMgmt.Repo;
-using Altinn.AccessMgmt.Repo.Ingest;
-
-
-namespace Altinn.AccessMgmt.Repo.Ingest;
+﻿namespace Altinn.AccessMgmt.Repo.Ingest;
 
 /// <summary>
 /// Result generated from an ingest action

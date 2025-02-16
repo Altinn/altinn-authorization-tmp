@@ -6,14 +6,30 @@ using Npgsql;
 
 namespace Altinn.AccessMgmt.DbAccess.Services;
 
+/// <summary>
+/// Holds migration scripts for a type
+/// </summary>
 public class MigrationScriptCollection
 {
+    /// <summary>
+    /// Type of the migration script collection
+    /// </summary>
     public Type Type { get; set; }
 
+    /// <summary>
+    /// Migration scripts
+    /// </summary>
     public OrderedDictionary<string, string> Scripts { get; set; }
 
+    /// <summary>
+    /// Dependencies for the migration script collection
+    /// </summary>
     public Dictionary<Type, int> Dependencies { get; set; }
 
+    /// <summary>
+    /// Default constructor for MigrationScriptCollection
+    /// </summary>
+    /// <param name="type">Type</param>
     public MigrationScriptCollection(Type type)
     {
         Type = type;
@@ -21,7 +37,10 @@ public class MigrationScriptCollection
         Dependencies = new Dictionary<Type, int>();
     }
 
-
+    /// <summary>
+    /// Add scripts to collection
+    /// </summary>
+    /// <param name="scripts">Migration keys and queries</param>
     public void AddScripts(OrderedDictionary<string, string> scripts)
     {
         foreach (var script in scripts)
@@ -29,15 +48,30 @@ public class MigrationScriptCollection
             Scripts.Add(script.Key, script.Value);
         }
     }
-    public void AddScripts((string key, string query) keyValueSet)
+
+    /// <summary>
+    /// Add script to collection
+    /// </summary>
+    /// <param name="keyValueSet">Migration key and query</param>
+    public void AddScripts((string Key, string Query) keyValueSet)
     {
-        Scripts.Add(keyValueSet.key, keyValueSet.query);
+        Scripts.Add(keyValueSet.Key, keyValueSet.Query);
     }
+
+    /// <summary>
+    /// Add script to collection
+    /// </summary>
+    /// <param name="key">Migration key</param>
+    /// <param name="query">Script</param>
     public void AddScripts(string key, string query)
     {
         Scripts.Add(key, query);
     }
 
+    /// <summary>
+    /// Add dependency to collection
+    /// </summary>
+    /// <param name="type">Type</param>
     public void AddDependency(Type type)
     {
         if (Dependencies.ContainsKey(type))
@@ -49,12 +83,32 @@ public class MigrationScriptCollection
     }
 }
 
+/// <summary>
+/// Service for handling migrations
+/// </summary>
 public class MigrationService
 {
+    /// <summary>
+    /// Configuration
+    /// </summary>
     protected readonly DbAccessConfig config;
+
+    /// <summary>
+    /// Connection
+    /// </summary>
     protected readonly NpgsqlDataSource connection;
+
+    /// <summary>
+    /// Database converter
+    /// </summary>
     protected readonly IDbConverter dbConverter;
 
+    /// <summary>
+    /// Migration Services
+    /// </summary>
+    /// <param name="options">DbAccessConfig</param>
+    /// <param name="connection">NpgsqlDataSource</param>
+    /// <param name="dbConverter">IDbConverter</param>
     public MigrationService(IOptions<DbAccessConfig> options, NpgsqlDataSource connection, IDbConverter dbConverter)
     {
         config = options.Value;
@@ -135,6 +189,11 @@ public class MigrationService
     }
 
     #region Generate
+
+    /// <summary>
+    /// Generate migration scripts for all types in a namespace
+    /// </summary>
+    /// <param name="definitionNamespace">Namespace</param>
     public void Generate(string definitionNamespace) 
     {
         List<Type> types = [.. AppDomain.CurrentDomain.GetAssemblies()
@@ -146,12 +205,20 @@ public class MigrationService
             Generate(type);
         }
     }
-    
+
+    /// <summary>
+    /// Generate migration scripts for a type
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public void Generate<T>() 
     {
         Generate(typeof(T));
     }
-    
+
+    /// <summary>
+    /// Generate migration scripts for a type
+    /// </summary>
+    /// <param name="type">Type</param>
     public void Generate(Type type) 
     {
         if (!HasInitialized)
@@ -174,14 +241,14 @@ public class MigrationService
         {
             foreach (var script in Scripts)
             {
-                if(script.Value.Dependencies.Count == 0)
+                if (script.Value.Dependencies.Count == 0)
                 {
                     await ExecuteMigration(script.Key, script.Value);
                 }
                 else
                 {
                     bool ready = true;
-                    foreach(var dep in script.Value.Dependencies)
+                    foreach (var dep in script.Value.Dependencies)
                     {
                         if (!TypesMigrated.ContainsKey(dep.Key))
                         {
@@ -189,6 +256,7 @@ public class MigrationService
                             break;
                         }
                     }
+
                     if (ready)
                     {
                         try
@@ -207,6 +275,7 @@ public class MigrationService
                     }
                 }
             }
+
             retryAttempts++;
         }
     }
@@ -224,7 +293,7 @@ public class MigrationService
                     await executor.ExecuteCommand(script.Value, new List<NpgsqlParameter>());
                     await LogMigration(type, script.Key, script.Value);
                 }
-                catch (Exception ex)
+                catch
                 {
                     Console.WriteLine($"Migration '{script.Key}' failed");
                     Console.WriteLine(script.Value);

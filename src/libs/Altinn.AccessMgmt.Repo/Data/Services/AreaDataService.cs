@@ -1,9 +1,9 @@
-﻿using Altinn.AccessMgmt.Repo.Data.Contracts;
-using Altinn.AccessMgmt.DbAccess.Contracts;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Models;
 using Altinn.AccessMgmt.DbAccess.Services;
 using Altinn.AccessMgmt.Models;
+using Altinn.AccessMgmt.Repo.Data.Contracts;
 using Microsoft.Extensions.Options;
-using Altinn.AccessMgmt.DbAccess.Models;
 using Npgsql;
 
 namespace Altinn.AccessMgmt.Repo.Data.Services;
@@ -13,16 +13,7 @@ namespace Altinn.AccessMgmt.Repo.Data.Services;
 /// </summary>
 public class AreaDataService : ExtendedRepository<Area, ExtArea>, IAreaService
 {
-    /// <summary>
-    /// Data service for Area
-    /// </summary>
-    /// <param name="repo">Extended repo</param>
-    //public AreaDataService(IDbExtendedRepo<Area, ExtArea> repo) : base(repo)
-    //{
-    //    Join<AreaGroup>(t => t.GroupId, t => t.Id, t => t.Group);
-    //    Join<Package>(t => t.Id, t => t.AreaId, t => t.Packages, isList: true);
-    //}
-
+    /// <inheritdoc/>
     public AreaDataService(IOptions<DbAccessConfig> options, NpgsqlDataSource connection, IDbConverter dbConverter) : base(options, connection, dbConverter)
     {
     }
