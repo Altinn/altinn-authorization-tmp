@@ -1,16 +1,4 @@
-﻿using Altinn;
-using Altinn.AccessMgmt;
-using Altinn.AccessMgmt.Repo;
-using Altinn.AccessMgmt.Repo.Mock;
-using Altinn.AccessMgmt.Repo;
-using Altinn.AccessMgmt.Repo.Mock;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Altinn.AccessMgmt.Repo.Mock;
+﻿namespace Altinn.AccessMgmt.Repo.Mock;
 
 static class MockTools
 {

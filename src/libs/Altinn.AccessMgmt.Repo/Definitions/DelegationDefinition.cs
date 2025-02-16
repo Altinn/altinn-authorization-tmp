@@ -26,7 +26,7 @@ public class DelegationDefinition : IDbDefinition
             def.RegisterExtendedProperty<ExtDelegation, Entity>(t => t.SourceId, t => t.Id, t => t.Source, cascadeDelete: true);
             def.RegisterExtendedProperty<ExtDelegation, Entity>(t => t.ViaId, t => t.Id, t => t.Via, cascadeDelete: true);
 
-            //def.RegisterUniqueConstraint([t => t.FromId, t => t.ToId]);
+            // def.RegisterUniqueConstraint([t => t.FromId, t => t.ToId]);
         });
     }
 }
