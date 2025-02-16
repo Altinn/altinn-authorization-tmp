@@ -65,8 +65,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
                 Name = propertyInfo.Name,
                 Property = propertyInfo,
                 DefaultValue = defaultValue,
-                IsNullable = nullable,
-                Length = length
+                IsNullable = nullable
             };
             dbDefinition.Columns.Add(columnDef);
 
