@@ -41,12 +41,11 @@ public class GenericFilterBuilder<T> : IEnumerable<GenericFilter>
     /// <summary>
     /// Extracts the <see cref="PropertyInfo"/> from the specified property expression.
     /// </summary>
-    /// <typeparam name="TLocal">The type parameter of the expression.</typeparam>
     /// <typeparam name="TProperty">The type of the property.</typeparam>
-    /// <param name="expression">An expression selecting a property of <typeparamref name="TLocal"/>.</param>
+    /// <param name="expression">An expression selecting a property of <typeparamref name="T"/>.</param>
     /// <returns>The <see cref="PropertyInfo"/> representing the property in the expression.</returns>
     /// <exception cref="ArgumentException">Thrown if the expression does not refer to a valid property.</exception>
-    private PropertyInfo ExtractPropertyInfo<T, TProperty>(Expression<Func<T, TProperty>> expression)
+    private PropertyInfo ExtractPropertyInfo<TProperty>(Expression<Func<T, TProperty>> expression)
     {
         MemberExpression? memberExpression = expression.Body switch
         {
