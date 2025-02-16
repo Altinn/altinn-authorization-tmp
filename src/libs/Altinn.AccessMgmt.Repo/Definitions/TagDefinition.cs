@@ -18,11 +18,11 @@ public class TagDefinition : IDbDefinition
             def.RegisterProperty(t => t.Id);
 
             def.RegisterProperty(t => t.Name);
-            def.RegisterProperty(t => t.GroupId, nullable: true);
-            def.RegisterProperty(t => t.ParentId, nullable: true);
+            def.RegisterProperty(t => t.GroupId!, nullable: true);
+            def.RegisterProperty(t => t.ParentId!, nullable: true);
 
-            def.RegisterExtendedProperty<ExtTag, TagGroup>(t => t.GroupId, t => t.Id, t => t.Group, cascadeDelete: true);
-            def.RegisterExtendedProperty<ExtTag, Tag>(t => t.ParentId, t => t.Id, t => t.Parent, cascadeDelete: true);
+            def.RegisterExtendedProperty<ExtTag, TagGroup>(t => t.GroupId!, t => t.Id, t => t.Group!, optional: true, cascadeDelete: true);
+            def.RegisterExtendedProperty<ExtTag, Tag>(t => t.ParentId!, t => t.Id, t => t.Parent!, optional: true, cascadeDelete: true);
             def.RegisterUniqueConstraint([t => t.GroupId, t => t.Name]);
         });
     }

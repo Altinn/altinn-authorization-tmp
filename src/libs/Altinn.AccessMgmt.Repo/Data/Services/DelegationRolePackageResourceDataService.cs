@@ -1,10 +1,10 @@
-﻿using Altinn.AccessMgmt.Repo.Data.Contracts;
-using Altinn.AccessMgmt.Models;
-using Altinn.AccessMgmt.DbAccess.Services;
-using Microsoft.Extensions.Options;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
 using Altinn.AccessMgmt.DbAccess.Models;
+using Altinn.AccessMgmt.DbAccess.Services;
+using Altinn.AccessMgmt.Models;
+using Altinn.AccessMgmt.Repo.Data.Contracts;
+using Microsoft.Extensions.Options;
 using Npgsql;
-using Altinn.AccessMgmt.DbAccess.Contracts;
 
 namespace Altinn.AccessMgmt.Repo.Data.Services;
 
@@ -13,16 +13,7 @@ namespace Altinn.AccessMgmt.Repo.Data.Services;
 /// </summary>
 public class DelegationRolePackageResourceDataService : ExtendedRepository<DelegationRolePackageResource, ExtDelegationRolePackageResource>, IDelegationRolePackageResourceService
 {
-    /// <summary>
-    /// Data service for DelegationRolePackageResource
-    /// </summary>
-    /// <param name="repo">Extended repo</param>
-    //public DelegationRolePackageResourceDataService(IDbExtendedRepo<DelegationRolePackageResource, ExtDelegationRolePackageResource> repo) : base(repo)
-    //{
-    //    Join<Delegation>(t => t.DelegationId, t => t.Id, t => t.Delegation);
-    //    Join<RolePackage>(t => t.RolePackageId, t => t.Id, t => t.PackageResource);
-    //    Join<PackageResource>(t => t.PackageResourceId, t => t.Id, t => t.PackageResource);
-    //}
+    /// <inheritdoc/>
     public DelegationRolePackageResourceDataService(IOptions<DbAccessConfig> options, NpgsqlDataSource connection, IDbConverter dbConverter) : base(options, connection, dbConverter)
     {
     }

@@ -5,7 +5,7 @@ using Altinn.AccessMgmt.DbAccess.Models;
 namespace Altinn.AccessMgmt.DbAccess.Helpers
 {
     /// <summary>
-    /// Provides a fluent API for building a <see cref="DbDefinition"/> for the entity type <typeparamref name="T"/>.
+    /// Provides a fluent API for building a <see cref="Models.DbDefinition"/> for the entity type <typeparamref name="T"/>.
     /// This builder allows configuration of basic, extended, and cross-reference properties for the database definition.
     /// </summary>
     /// <typeparam name="T">The entity type for which the definition is being built.</typeparam>
@@ -14,15 +14,15 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         /// <summary>
         /// The underlying database definition that is being constructed.
         /// </summary>
-        private DbDefinition dbDefinition { get; set; } = new(typeof(T));
+        private DbDefinition DbDefinition { get; set; } = new(typeof(T));
 
         /// <summary>
-        /// Returns the built <see cref="DbDefinition"/> after configuration.
+        /// Returns the built <see cref="Models.DbDefinition"/> after configuration.
         /// </summary>
-        /// <returns>The configured <see cref="DbDefinition"/>.</returns>
+        /// <returns>The configured <see cref="Models.DbDefinition"/>.</returns>
         public DbDefinition Build()
         {
-            return dbDefinition;
+            return DbDefinition;
         }
 
         #region Basic
@@ -34,7 +34,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         public DefinitionBuilder<T> EnableTranslation(bool value = true)
         {
-            dbDefinition.HasTranslation = value;
+            DbDefinition.HasTranslation = value;
             return this;
         }
 
@@ -45,7 +45,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         public DefinitionBuilder<T> EnableHistory(bool value = true)
         {
-            dbDefinition.HasHistory = value;
+            DbDefinition.HasHistory = value;
             return this;
         }
 
@@ -67,7 +67,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
                 DefaultValue = defaultValue,
                 IsNullable = nullable
             };
-            dbDefinition.Columns.Add(columnDef);
+            DbDefinition.Columns.Add(columnDef);
 
             return this;
         }
@@ -95,7 +95,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
 
             var name = $"PK_{typeof(T).Name}";
 
-            dbDefinition.UniqueConstraints.Add(new ConstraintDefinition()
+            DbDefinition.UniqueConstraints.Add(new ConstraintDefinition()
             {
                 Name = name,
                 Type = typeof(T),
@@ -129,7 +129,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
 
             var name = $"UC_{typeof(T).Name}_{string.Join("_", propertyNames)}";
 
-            dbDefinition.UniqueConstraints.Add(new ConstraintDefinition()
+            DbDefinition.UniqueConstraints.Add(new ConstraintDefinition()
             {
                 Name = name,
                 Type = typeof(T),
@@ -180,7 +180,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
                 IsList = isList,
                 UseCascadeDelete = cascadeDelete
             };
-            dbDefinition.ForeignKeys.Add(join);
+            DbDefinition.ForeignKeys.Add(join);
 
             return this;
         }
@@ -211,7 +211,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
                 RefProperty = refProperty,
                 ExtendedProperty = extendedProperty
             };
-            dbDefinition.Relations.Add(relation);
+            DbDefinition.Relations.Add(relation);
 
             return this;
         }
@@ -254,8 +254,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         /// A tuple containing expressions for the primary source property, join property, and extended property for the second related entity.
         /// </param>
         /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        public DefinitionBuilder<T> RegisterAsCrossReferenceExtended<TExtended, TA, TB>
-        (
+        public DefinitionBuilder<T> RegisterAsCrossReferenceExtended<TExtended, TA, TB>(
             (Expression<Func<T, object>> Source, Expression<Func<TA, object>> Join, Expression<Func<TExtended, object>> Extended) defineA,
             (Expression<Func<T, object>> Source, Expression<Func<TB, object>> Join, Expression<Func<TExtended, object>> Extended) defineB
         )
