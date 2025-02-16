@@ -1,6 +1,5 @@
 ﻿using Altinn;
 using Altinn.AccessMgmt;
-using Altinn.AccessMgmt.AccessPackages;
 using Altinn.AccessMgmt.Repo;
 using Altinn.AccessMgmt.Repo.Data.Contracts;
 using Altinn.AccessMgmt.Repo.Mock;
@@ -9,8 +8,7 @@ using Altinn.AccessMgmt.Models;
 using Altinn.AccessMgmt.Repo;
 using Altinn.AccessMgmt.Repo.Migrate;
 using Altinn.AccessMgmt.Repo.Mock;
-using Altinn.AccessMgmt.Repo.temp;
-using Altinn.Authorization.Host.Lease;
+//using Altinn.Authorization.Host.Lease;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Data;
@@ -18,20 +16,20 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Xml.Linq;
-using static Altinn.AccessMgmt.Repo.Migrate.DatabaseMigration;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Altinn.AccessMgmt.DbAccess.Models;
 
 namespace Altinn.AccessMgmt.Repo.Mock;
 
 /// <summary>
 /// Generate mockup data
 /// </summary>
-public class Mockups
+public class MockupService
 {
     #region Constructor
-    private readonly ILogger<Mockups> logger;
-    private readonly IAltinnLease lease;
+    private readonly ILogger<MockupService> logger;
+    //private readonly IAltinnLease lease;
     private readonly DbAccessConfig config;
     private readonly IEntityTypeService entityTypeService;
     private readonly IEntityVariantService entityVariantService;
@@ -59,7 +57,7 @@ public class Mockups
     private readonly IDelegationService delegationService;
 
     /// <summary>
-    /// Mockups
+    /// MockupService
     /// </summary>
     /// <param name="logger">ILogger</param>
     /// <param name="entityTypeService">IEntityTypeService</param>
@@ -88,10 +86,10 @@ public class Mockups
     /// <param name="delegationService">IDelegationService</param>
     /// <param name="delegationPackageResourceService">IDelegationPackageService</param>
     /// <param name="delegationResourceService"></param>
-    public Mockups(
-        ILogger<Mockups> logger,
+    public MockupService(
+        ILogger<MockupService> logger,
         IOptions<DbAccessConfig> configOptions,
-        IAltinnLease lease,
+        //IAltinnLease lease,
         IEntityTypeService entityTypeService,
         IEntityVariantService entityVariantService,
         IEntityService entityService,
@@ -119,7 +117,7 @@ public class Mockups
         )
     {
         this.logger = logger;
-        this.lease = lease;
+        //this.lease = lease;
         config = configOptions.Value;
 
         this.entityTypeService = entityTypeService;
@@ -623,11 +621,11 @@ public class Mockups
     {
         if (config.MockEnabled)
         {
-            await using var ls = await lease.TryAquireNonBlocking<LeaseContent>("access_management_db_mock", cancellationToken);
-            if (!ls.HasLease || cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
+            //await using var ls = await lease.TryAquireNonBlocking<LeaseContent>("access_management_db_mock", cancellationToken);
+            //if (!ls.HasLease || cancellationToken.IsCancellationRequested)
+            //{
+            //    return;
+            //}
 
             if (CheckRunConfig("KlientDelegering"))
             {

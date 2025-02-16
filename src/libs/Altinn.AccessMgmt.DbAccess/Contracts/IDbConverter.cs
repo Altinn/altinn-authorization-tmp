@@ -17,5 +17,6 @@ public interface IDbConverter
     /// <returns>
     /// A list of objects of type <typeparamref name="T"/> constructed from the data read.
     /// </returns>
-    List<T> ConvertToObjects<T>(IDataReader reader) where T : new();
+    List<T> ConvertToObjects<T>(IDataReader reader) 
+        where T : new();
 }

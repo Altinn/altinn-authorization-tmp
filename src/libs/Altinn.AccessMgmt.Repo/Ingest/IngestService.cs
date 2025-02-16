@@ -1,34 +1,25 @@
 ﻿using System.Text.Json;
-using Altinn;
-using Altinn.AccessMgmt;
-using Altinn.AccessMgmt.Repo;
-using Altinn.AccessMgmt.Repo.Data.Contracts;
-using Altinn.AccessMgmt.Repo.Ingest;
-using Altinn.AccessMgmt.Repo.Ingest.RagnhildModel;
-using Altinn.AccessMgmt.Repo.Mock;
-using Altinn.AccessMgmt.DbAccess;
+using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Models;
 using Altinn.AccessMgmt.Models;
-using Altinn.AccessMgmt.Repo;
-using Altinn.AccessMgmt.Repo.Ingest;
+using Altinn.AccessMgmt.Repo.Data.Contracts;
 using Altinn.AccessMgmt.Repo.Ingest.Models;
-using Altinn.AccessMgmt.Repo.Migrate;
-using Altinn.Authorization.Host.Lease;
 using Microsoft.Extensions.Options;
-using static Altinn.AccessMgmt.Repo.Migrate.DatabaseMigration;
+
+//// using Altinn.AccessMgmt.Repo.Ingest.RagnhildModel;
 
 namespace Altinn.AccessMgmt.Repo.Ingest;
 
 /// <summary>
 /// Json Ingest Factory
 /// </summary>
-public class JsonIngestFactory
+public class IngestService
 {
     /// <summary>
     /// Configuration
     /// </summary>
     public DbAccessConfig Config { get; set; }
 
-    private readonly IAltinnLease lease;
     private readonly IProviderService providerService;
     private readonly IAreaService areaService;
     private readonly IAreaGroupService areaGroupService;
@@ -43,7 +34,7 @@ public class JsonIngestFactory
     private readonly ITagService tagService;
 
     /// <summary>
-    /// JsonIngestFactory
+    /// IngestService
     /// </summary>
     /// <param name="config">DbAccessConfig</param>
     /// <param name="providerService">IProviderService</param>
@@ -58,8 +49,7 @@ public class JsonIngestFactory
     /// <param name="rolePackageService">IRolePackageService</param>
     /// <param name="tagGroupService">ITagGroupService</param>
     /// <param name="tagService">ITagService</param>
-    public JsonIngestFactory(
-        IAltinnLease lease,
+    public IngestService(
         IOptions<DbAccessConfig> config,
         IProviderService providerService,
         IAreaService areaService,
@@ -76,7 +66,6 @@ public class JsonIngestFactory
         )
     {
         Config = config.Value;
-        this.lease = lease;
         this.providerService = providerService;
         this.areaService = areaService;
         this.areaGroupService = areaGroupService;
@@ -98,11 +87,12 @@ public class JsonIngestFactory
     /// <returns></returns>
     public async Task<List<IngestResult>> IngestAll(CancellationToken cancellationToken = default)
     {
-        await using var ls = await lease.TryAquireNonBlocking<LeaseContent>("access_management_db_ingest", cancellationToken);
-        if (!ls.HasLease || cancellationToken.IsCancellationRequested)
-        {
-            return default;
-        }
+        // MOVE TO Hosting ... 
+        //await using var ls = await lease.TryAquireNonBlocking<LeaseContent>("access_management_db_ingest", cancellationToken);
+        //if (!ls.HasLease || cancellationToken.IsCancellationRequested)
+        //{
+        //    return default;
+        //}
 
         //using var a = DbAccess.DbAccessTelemetry.DbAccessSource.StartActivity("IngestAll");
         var result = new List<IngestResult>();
@@ -111,70 +101,70 @@ public class JsonIngestFactory
         {
             //a?.AddEvent(new System.Diagnostics.ActivityEvent("providerIngestService"));
             result.Add(await IngestData<Provider, IProviderService>(providerService, cancellationToken));
-            await lease.RefreshLease(ls, cancellationToken);
+            //await lease.RefreshLease(ls, cancellationToken);
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("entityTypeIngestService") && Config.JsonIngestEnabled["entityTypeIngestService"])
         {
             //a?.AddEvent(new System.Diagnostics.ActivityEvent("entityTypeIngestService"));
             result.Add(await IngestData<EntityType, IEntityTypeService>(entityTypeService, cancellationToken));
-            await lease.RefreshLease(ls, cancellationToken);
+            //await lease.RefreshLease(ls, cancellationToken);
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("entityVariantIngestService") && Config.JsonIngestEnabled["entityVariantIngestService"])
         {
             //a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantIngestService"));
             result.Add(await IngestData<EntityVariant, IEntityVariantService>(entityVariantService, cancellationToken));
-            await lease.RefreshLease(ls, cancellationToken);
+            //await lease.RefreshLease(ls, cancellationToken);
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("roleIngestService") && Config.JsonIngestEnabled["roleIngestService"])
         {
             //a?.AddEvent(new System.Diagnostics.ActivityEvent("roleIngestService"));
             result.Add(await IngestData<Role, IRoleService>(roleService, cancellationToken));
-            await lease.RefreshLease(ls, cancellationToken);
+            //await lease.RefreshLease(ls, cancellationToken);
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("roleMapIngestService") && Config.JsonIngestEnabled["roleMapIngestService"])
         {
             //a?.AddEvent(new System.Diagnostics.ActivityEvent("roleMapIngestService"));
             result.Add(await IngestData<RoleMap, IRoleMapService>(roleMapService, cancellationToken));
-            await lease.RefreshLease(ls, cancellationToken);
+            //await lease.RefreshLease(ls, cancellationToken);
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("areasAndPackagesIngestService") && Config.JsonIngestEnabled["areasAndPackagesIngestService"])
         {
             //a?.AddEvent(new System.Diagnostics.ActivityEvent("areasAndPackagesIngestService"));
             result.AddRange(await IngestAreasAndPackages(cancellationToken));
-            await lease.RefreshLease(ls, cancellationToken);
+            //await lease.RefreshLease(ls, cancellationToken);
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("RolePackagesIngestService") && Config.JsonIngestEnabled["RolePackagesIngestService"])
         {
             //a?.AddEvent(new System.Diagnostics.ActivityEvent("RolePackagesIngestService"));
             result.AddRange(await IngestRolePackages(cancellationToken));
-            await lease.RefreshLease(ls, cancellationToken);
+            //await lease.RefreshLease(ls, cancellationToken);
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("tagGroupIngestService") && Config.JsonIngestEnabled["tagGroupIngestService"])
         {
             //a?.AddEvent(new System.Diagnostics.ActivityEvent("tagGroupIngestService"));
             result.Add(await IngestData<TagGroup, ITagGroupService>(tagGroupService, cancellationToken));
-            await lease.RefreshLease(ls, cancellationToken);
+            //await lease.RefreshLease(ls, cancellationToken);
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("tagIngestService") && Config.JsonIngestEnabled["tagIngestService"])
         {
             //a?.AddEvent(new System.Diagnostics.ActivityEvent("tagIngestService"));
             result.Add(await IngestData<Tag, ITagService>(tagService, cancellationToken));
-            await lease.RefreshLease(ls, cancellationToken);
+            //await lease.RefreshLease(ls, cancellationToken);
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("entityVariantRoleIngestService") && Config.JsonIngestEnabled["entityVariantRoleIngestService"])
         {
             //a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantRoleIngestService"));
             result.Add(await IngestData<EntityVariantRole, IEntityVariantRoleService>(entityVariantRoleService, cancellationToken));
-            await lease.RefreshLease(ls, cancellationToken);
+            //await lease.RefreshLease(ls, cancellationToken);
         }
 
         try
@@ -245,7 +235,7 @@ public class JsonIngestFactory
     }
 
     private async Task<IngestResult> IngestData<T, TService>(TService service, CancellationToken cancellationToken)
-        where TService : IDbBasicDataService<T>
+        where TService : IDbBasicRepository<T>
     {
         var type = typeof(T);
         var translatedItems = new Dictionary<string, List<T>>();
@@ -284,7 +274,7 @@ public class JsonIngestFactory
     }
 
     private async Task<IngestResult> IngestData<T, TService>(TService service, List<T> jsonItems, Dictionary<string, List<T>> languageJsonItems, CancellationToken cancellationToken)
-        where TService : IDbBasicDataService<T>
+        where TService : IDbBasicRepository<T>
     {
         var dbItems = await service.Get();
 
@@ -501,7 +491,7 @@ public class JsonIngestFactory
     }
 
     private async Task IngestTranslation<T, TService>(TService service, Dictionary<string, List<T>> languageJsonItems, CancellationToken cancellationToken)
-         where TService : IDbBasicDataService<T>
+         where TService : IDbBasicRepository<T>
     {
         var type = typeof(T);
         foreach (var translatedItems in languageJsonItems)
