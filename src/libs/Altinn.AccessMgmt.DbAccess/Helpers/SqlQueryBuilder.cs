@@ -82,8 +82,8 @@ public class SqlQueryBuilder(DbDefinition definition)
     /// <summary>
     /// Builds a INSERT viewQuery
     /// </summary>
-    /// <param name="parameters"></param>
-    /// <param name="forTranslation"></param>
+    /// <param name="parameters">Parameters</param>
+    /// <param name="forTranslation">Is this for a translation table</param>
     /// <returns></returns>
     public string BuildInsertQuery(List<NpgsqlParameter> parameters, bool forTranslation = false)
     {
@@ -93,8 +93,8 @@ public class SqlQueryBuilder(DbDefinition definition)
     /// <summary>
     /// Builds a UPDATE viewQuery
     /// </summary>
-    /// <param name="parameters"></param>
-    /// <param name="forTranslation"></param>
+    /// <param name="parameters">Parameters</param>
+    /// <param name="forTranslation">Is this for a translation table</param>
     /// <returns></returns>
     public string BuildUpdateQuery(List<NpgsqlParameter> parameters, bool forTranslation = false)
     {
@@ -104,7 +104,7 @@ public class SqlQueryBuilder(DbDefinition definition)
     /// <summary>
     /// Builds a UPSERT viewQuery
     /// </summary>
-    /// <param name="parameters"></param>
+    /// <param name="parameters">Parameters</param>
     /// <returns></returns>
     public string BuildUpsertQuery(List<NpgsqlParameter> parameters)
     {
@@ -131,6 +131,7 @@ public class SqlQueryBuilder(DbDefinition definition)
     {
         return GetPostgresDefinition(_definition, includeAlias, useHistory, useTranslation, useHistoryView);
     }
+
     private string GetPostgresDefinition(DbDefinition dbDefinition, bool includeAlias = true, bool useHistory = false, bool useTranslation = false, bool useHistoryView = false)
     {
         // If Definition.Plantform == "Mssql" => Qualify names [..]
@@ -194,6 +195,7 @@ public class SqlQueryBuilder(DbDefinition definition)
 
         return string.Join(',', columns);
     }
+
     private string GenerateSource(RequestOptions options)
     {
         bool useTranslation = !string.IsNullOrEmpty(options.Language) && _definition.HasTranslation;
@@ -213,6 +215,7 @@ public class SqlQueryBuilder(DbDefinition definition)
             return GetPostgresDefinition(useHistory: useHistory);
         }
     }
+
     private string GenerateFilterStatement(string tableAlias, IEnumerable<GenericFilter>? filters)
     {
         if (filters == null || !filters.Any())
@@ -243,6 +246,7 @@ public class SqlQueryBuilder(DbDefinition definition)
 
         return conditions.Count > 0 ? "WHERE " + string.Join(" AND ", conditions) : string.Empty;
     }
+
     private string AddPagingToQuery(string query, RequestOptions options)
     {
         if (!options.UsePaging)
@@ -281,6 +285,7 @@ public class SqlQueryBuilder(DbDefinition definition)
 
         return sb.ToString();
     }
+
     private string GenerateJoinPostgresColumns(ForeignKeyDefinition join, RequestOptions options)
     {
         var joinDef = DefinitionStore.TryGetDefinition(join.Ref);
@@ -298,7 +303,6 @@ public class SqlQueryBuilder(DbDefinition definition)
                 if (joinDef.HasTranslation && useTranslation && p.PropertyType == typeof(string))
                 {
                     columns.Add($"coalesce(T_{join.ExtendedProperty}.{p.Name}, _{join.ExtendedProperty}.{p.Name}) AS {join.ExtendedProperty}_{p.Name}");
-                    //columns.Add($"coalesce({join.Alias}{join.JoinObj.TranslationDbObject.Alias}.{p.Name},_{join.Alias}.{p.Name}) AS {join.Alias}_{p.Name}");
                 }
                 else
                 {
@@ -313,6 +317,7 @@ public class SqlQueryBuilder(DbDefinition definition)
             return $"COALESCE((SELECT JSON_AGG(ROW_TO_JSON({join.ExtendedProperty})) FROM {GetPostgresDefinition(joinDef, includeAlias: false)} AS {join.ExtendedProperty} WHERE {join.ExtendedProperty}.{join.RefProperty} = {join.Base.Name}.{join.BaseProperty}), '[]') AS {join.ExtendedProperty}";
         }
     }
+
     private string GetJoinPostgresFilterString(ForeignKeyDefinition join)
     {
         if (join.Filters == null || join.Filters.Count == 0)
@@ -335,22 +340,27 @@ public class SqlQueryBuilder(DbDefinition definition)
     {
         return UpdateSetStatement(parameters.Select(t => t.ParameterName).ToList());
     }
+
     private string UpdateSetStatement(List<string> values)
     {
         return string.Join(',', values.OrderBy(t => t).Select(t => $"{t} = @{t}").ToList());
     }
+
     private string InsertColumns(List<NpgsqlParameter> values)
     {
         return InsertColumns(values.Select(t => t.ParameterName));
     }
+
     private string InsertColumns(IEnumerable<string> values)
     {
         return string.Join(',', values.OrderBy(t => t).Select(t => $"{t}").ToList());
     }
+
     private string InsertValues(List<NpgsqlParameter> values)
     {
         return InsertValues(values.Select(t => t.ParameterName));
     }
+
     private string InsertValues(IEnumerable<string> values)
     {
         return string.Join(',', values.OrderBy(t => t).Select(t => $"@{t}").ToList());
@@ -414,6 +424,7 @@ public class SqlQueryBuilder(DbDefinition definition)
         {
             _definition.PrimaryKey.Properties.Add("Id", typeof(Guid));
         }
+
         var properties = _definition.BaseType.GetProperties().ToList();
         foreach (var property in _definition.PrimaryKey.Properties)
         {
@@ -422,6 +433,7 @@ public class SqlQueryBuilder(DbDefinition definition)
                 throw new Exception($"PK: {_definition.BaseType.Name} does not contain the property '{property.Key}'");
             }
         }
+
         string primaryKeyDefinition = string.Join(',', _definition.PrimaryKey.Properties.Select(t => $"{t.Key} {Helpers.GetPostgresType(t.Value)} NOT NULL "));
 
         string basicKey = $"CREATE TABLE {GetPostgresDefinition(includeAlias: false)}";
@@ -432,6 +444,7 @@ public class SqlQueryBuilder(DbDefinition definition)
         {
             basicTable.AppendLine(", validfrom timestamptz default now()");
         }
+
         basicTable.AppendLine($", CONSTRAINT PK_{_definition.BaseType.Name} PRIMARY KEY ({string.Join(',', _definition.PrimaryKey.Properties.Select(t => $"{t.Key}"))})");
         basicTable.AppendLine(");");
 
@@ -447,6 +460,7 @@ public class SqlQueryBuilder(DbDefinition definition)
             {
                 translationTable.AppendLine(", validfrom timestamptz default now()");
             }
+
             translationTable.AppendLine($", Language text NOT NULL");
             translationTable.AppendLine($", CONSTRAINT PK_{_definition.BaseType.Name} PRIMARY KEY ({string.Join(',', _definition.PrimaryKey.Properties.Select(t => $"{t.Key}"))}, Language)");
             translationTable.AppendLine(");");
@@ -520,7 +534,7 @@ public class SqlQueryBuilder(DbDefinition definition)
         return (key, query);
     }
 
-    private (string key, string query) CreateUniqueConstraint(ConstraintDefinition constraint)
+    private (string Key, string Query) CreateUniqueConstraint(ConstraintDefinition constraint)
     {
         string name = string.IsNullOrEmpty(constraint.Name) ? _definition.BaseType.Name : constraint.Name;
 
@@ -605,15 +619,15 @@ public class SqlQueryBuilder(DbDefinition definition)
 
         scripts.Add(keyTriggerUpdateValidFrom, queryTriggerUpdateValidFrom);
 
-        string CopyToHistoryFuncName = $"{tableName}_copy_to_history()";
-        string keyCopyToHistory = $"FUNCTION {CopyToHistoryFuncName}";
+        string copyToHistoryFuncName = $"{tableName}_copy_to_history()";
+        string keyCopyToHistory = $"FUNCTION {copyToHistoryFuncName}";
         string queryCopyToHistory = $"""
-        CREATE OR REPLACE FUNCTION {CopyToHistoryFuncName} RETURNS TRIGGER AS $$ BEGIN
+        CREATE OR REPLACE FUNCTION {copyToHistoryFuncName} RETURNS TRIGGER AS $$ BEGIN
         INSERT INTO {GetPostgresDefinition(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : "")}validfrom, validto) VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : "")}OLD.validfrom, now());
         RETURN NEW;
         END; $$ LANGUAGE plpgsql;
         CREATE OR REPLACE TRIGGER {_definition.BaseType.Name}_History AFTER UPDATE ON {tableName}
-        FOR EACH ROW EXECUTE FUNCTION {CopyToHistoryFuncName};
+        FOR EACH ROW EXECUTE FUNCTION {copyToHistoryFuncName};
         """;
         scripts.Add(keyCopyToHistory, queryCopyToHistory);
 

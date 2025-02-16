@@ -15,6 +15,9 @@ public sealed class DbConverter : IDbConverter
 {
     private static readonly Lazy<DbConverter> _instance = new Lazy<DbConverter>(() => new DbConverter());
 
+    /// <summary>
+    /// Gets the singleton instance of DbConverter.
+    /// </summary>
     public static DbConverter Instance => _instance.Value;
 
     // Cache for TypeAccessor instances to avoid repeated reflection overhead.
@@ -80,6 +83,7 @@ public sealed class DbConverter : IDbConverter
             T instance = ProcessRow<T>(reader);
             results.Add(instance);
         }
+
         return results;
     }
 
