@@ -1,13 +1,13 @@
 ﻿using Altinn.AccessMgmt.DbAccess.Contracts;
 using Altinn.AccessMgmt.DbAccess.Helpers;
 using Altinn.AccessMgmt.Models;
-using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
-#region Package
 
+/// <inheritdoc/>
 public class PackageTagDefinition : IDbDefinition
 {
+    /// <inheritdoc/>
     public void Define()
     {
         DefinitionStore.Define<PackageTag>(def =>
@@ -27,5 +27,3 @@ public class PackageTagDefinition : IDbDefinition
         });
     }
 }
-
-#endregion

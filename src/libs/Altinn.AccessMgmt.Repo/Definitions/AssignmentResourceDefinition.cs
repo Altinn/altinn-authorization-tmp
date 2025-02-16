@@ -1,13 +1,13 @@
 ﻿using Altinn.AccessMgmt.DbAccess.Contracts;
 using Altinn.AccessMgmt.DbAccess.Helpers;
 using Altinn.AccessMgmt.Models;
-using System.Text.RegularExpressions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
-#region Assignment
 
+/// <inheritdoc/>
 public class AssignmentResourceDefinition : IDbDefinition
 {
+    /// <inheritdoc/>
     public void Define()
     {
         DefinitionStore.Define<AssignmentResource>(def =>
@@ -26,5 +26,3 @@ public class AssignmentResourceDefinition : IDbDefinition
         });
     }
 }
-
-#endregion
