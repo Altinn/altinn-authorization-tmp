@@ -34,7 +34,7 @@ namespace Altinn.AccessManagement.Core.Services
             Consent consent = new Consent
             {
                 Id = id,
-                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01014922047 ")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01014922047")),
                 To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("910194143")),
                 ConcentRights = new List<ConsentRight>
                 {

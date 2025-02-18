@@ -27,7 +27,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
         /// Returns a specific consent
         /// </summary>
         [HttpGet]
-        [Route("concent/lookup")]
+        [Route("consent/lookup")]
         public async Task<ActionResult<ConsentInfoMaskinporten>> GetConcent(Guid id, string from, string to)
         {
             Consent consent = await _consentService.GetConcent(id, from, to);

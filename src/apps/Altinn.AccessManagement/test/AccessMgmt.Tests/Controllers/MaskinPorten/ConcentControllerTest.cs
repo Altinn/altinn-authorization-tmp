@@ -18,14 +18,14 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
     /// <summary>
     /// Tests for maskinporten controller for consent
     /// </summary>
-    public class ConcentControllerTest : IClassFixture<CustomWebApplicationFactory<ConsentController>>
+    public class ConcentControllerTest : IClassFixture<CustomWebApplicationFactory<DelegationsController>>
     {
-        private readonly CustomWebApplicationFactory<ConsentController> _factory;
+        private readonly CustomWebApplicationFactory<DelegationsController> _factory;
 
         /// <summary>
         /// Concent controller test
         /// </summary>
-        public ConcentControllerTest(CustomWebApplicationFactory<ConsentController> factory)
+        public ConcentControllerTest(CustomWebApplicationFactory<DelegationsController> factory)
         {
             _factory = factory;
         }
@@ -34,10 +34,10 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
         public async Task GetConcent()
         {
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagment/api/maskinporten/concent/lookup/?id={Guid.NewGuid()}&from=01017512345&to=12312432545";
+            string url = $"/accessmanagment/api/maskinporten/consent/lookup/?id={Guid.NewGuid()}&from=01017512345&to=12312432545";
             HttpResponseMessage response = await client.GetAsync(url);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             string responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(responseContent);
             Assert.Contains("concent", responseContent);
         }
