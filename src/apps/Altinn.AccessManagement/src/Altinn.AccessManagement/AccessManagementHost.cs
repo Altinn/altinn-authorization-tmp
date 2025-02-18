@@ -45,6 +45,7 @@ internal static class AccessManagementHost
 
         builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.AddControllers();
+        ConfigureControllers(builder);
         builder.Services.AddFeatureManagement();
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddHealthChecks()
@@ -239,5 +240,11 @@ internal static class AccessManagementHost
                 KeyValuePair.Create($"ConnectionStrings:{serviceDescriptor.Name}_db_migrate", adminConnectionString.ToString()),
                 KeyValuePair.Create($"Altinn:Npgsql:{serviceDescriptor.Name}:Migrate:Enabled", runMigrations ? "true" : "false"),
             ]);
+    }
+
+    private static void ConfigureControllers(this WebApplicationBuilder builder)
+    {
+        var assembly = typeof(Altinn.AccessManagement.Api.Maskinporten.Controllers.ConsentController).Assembly;
+        builder.Services.AddControllers().AddApplicationPart(assembly);
     }
 }
