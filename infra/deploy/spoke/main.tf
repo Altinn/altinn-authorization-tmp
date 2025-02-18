@@ -40,7 +40,7 @@ locals {
   ipv6_cidr_prefix            = tonumber(split("/", var.dual_stack_ipv6_address_space)[1])
   ipv6_bits                   = 64 - local.ipv6_cidr_prefix
 
-  app_settings = concat(var.appsettings_key_value, map(string({
+  app_settings = merge(var.appsettings_key_value, map(string({
     "Lease:StorageAccount:BlobEndpoint" : azurerm_storage_account.storage.primary_blob_endpoint
   })))
 
@@ -115,7 +115,7 @@ module "app_configuration" {
   source     = "../../modules/appsettings"
   hub_suffix = local.hub_suffix
 
-  key_value = [for key, value in var.appsettings_key_value :
+  key_value = [for key, value in local.app_settings :
     {
       key   = key
       value = value
