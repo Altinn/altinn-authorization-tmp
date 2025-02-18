@@ -108,9 +108,18 @@ resource "azurerm_resource_group" "spoke" {
 }
 
 module "app_configuration" {
-  source              = "../../modules/appsettings"
-  hub_subscription_id = var.hub_subscription_id
-  hub_suffix          = local.hub_suffix
+  source     = "../../modules/appsettings"
+  hub_suffix = local.hub_suffix
+
+  key_value = [for key, value in var.appsettings_key_value :
+    {
+      key   = key
+      value = value
+      label = lower(var.environment)
+  }]
+  providers = {
+    azurerm.hub = azurerm.hub
+  }
 }
 
 resource "azurerm_virtual_network" "dual_stack" {
