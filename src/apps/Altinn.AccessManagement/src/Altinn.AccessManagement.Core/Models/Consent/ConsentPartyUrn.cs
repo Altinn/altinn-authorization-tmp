@@ -4,14 +4,14 @@ using Altinn.Register.Core.Parties;
 using Altinn.Urn;
 using static Altinn.AccessManagement.Core.Models.Register.PartyUrn;
 
-namespace Altinn.AccessManagement.Api.Maskinporten.Models.Concent
+namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// A unique reference to a party in the form of an URN.
     /// </summary>
     [KeyValueUrn]
     public abstract partial record ConsentPartyUrn
-        {
+    {
         /// <summary>
         /// Try to get the urn as a party id.
         /// </summary>
@@ -49,8 +49,8 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Models.Concent
         public partial bool IsPersonId(out PersonIdentifier personIdentifier);
 
         // Manually overridden to disallow negative party ids
-        private static bool TryParsePartyId(ReadOnlySpan<char> segment, IFormatProvider? provider, out int value)
+        private static bool TryParsePartyId(ReadOnlySpan<char> segment, IFormatProvider provider, out int value)
             => int.TryParse(segment, NumberStyles.None, provider, out value);
-    
-}
+
+    }
 }

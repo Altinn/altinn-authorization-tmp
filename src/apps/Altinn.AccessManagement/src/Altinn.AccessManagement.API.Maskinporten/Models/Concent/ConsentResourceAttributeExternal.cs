@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessManagement.Api.Maskinporten.Models.Concent
+﻿using Altinn.AccessManagement.Core.Models.Consent;
+
+namespace Altinn.AccessManagement.Api.Maskinporten.Models.Concent
 {
     /// <summary>
     /// A resurce attribute identifying part or whole resource
@@ -14,5 +16,17 @@
         /// The value of the resource attribute
         /// </summary>
         public required string Value { get; set; }
+
+        /// <summary>
+        /// Map from internal consent resource attribute to external consent resource attribute
+        /// </summary>
+        public static ConsentResourceAttributeExternal FromCore(ConsentResourceAttribute core)
+        {
+            return new ConsentResourceAttributeExternal
+            {
+                Type = core.Type,
+                Value = core.Value
+            };
+        }
     }
 }

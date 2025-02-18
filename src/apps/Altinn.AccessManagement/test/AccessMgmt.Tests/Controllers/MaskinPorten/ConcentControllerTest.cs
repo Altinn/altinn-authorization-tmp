@@ -18,14 +18,14 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
     /// <summary>
     /// Tests for maskinporten controller for consent
     /// </summary>
-    public class ConcentControllerTest : IClassFixture<CustomWebApplicationFactory<ConcentController>>
+    public class ConcentControllerTest : IClassFixture<CustomWebApplicationFactory<ConsentController>>
     {
-        private readonly CustomWebApplicationFactory<ConcentController> _factory;
+        private readonly CustomWebApplicationFactory<ConsentController> _factory;
 
         /// <summary>
         /// Concent controller test
         /// </summary>
-        public ConcentControllerTest(CustomWebApplicationFactory<ConcentController> factory)
+        public ConcentControllerTest(CustomWebApplicationFactory<ConsentController> factory)
         {
             _factory = factory;
         }
