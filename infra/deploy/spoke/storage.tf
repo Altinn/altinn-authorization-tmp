@@ -11,7 +11,7 @@ resource "azurerm_storage_account" "storage" {
   account_tier                    = "Premium"
   access_tier                     = "Premium"
   account_kind                    = "StorageV2"
-  account_replication_type        = "GRS"
+  account_replication_type        = "LRS"
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = false
   shared_access_key_enabled       = false
@@ -30,7 +30,7 @@ resource "azurerm_storage_account" "storage" {
   tags = merge({}, local.default_tags)
 
   lifecycle {
-    # prevent_destroy = false
+    prevent_destroy = true
   }
 }
 
