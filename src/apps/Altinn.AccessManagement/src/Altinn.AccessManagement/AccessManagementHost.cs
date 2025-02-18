@@ -73,7 +73,7 @@ internal static partial class AccessManagementHost
         builder.AddAltinnResourceRegisterIntegration(opts =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings?.Platform?.ResourceRegisterEndpoint == null)
+            if (appsettings.Platform?.ResourceRegisterEndpoint == null)
             {
                 Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.ResourceRegisterEndpoint));
                 opts.Endpoint = default;
@@ -87,7 +87,7 @@ internal static partial class AccessManagementHost
         builder.AddAltinnRegisterIntegration(opts =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings?.Platform?.RegisterEndpoint == null)
+            if (appsettings.Platform?.RegisterEndpoint == null)
             {
                 Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.RegisterEndpoint));
                 opts.Endpoint = default;
@@ -115,7 +115,7 @@ internal static partial class AccessManagementHost
         builder.AddAltinnLease(opts =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings?.Lease?.StorageAccount?.BlobEndpoint == null)
+            if (appsettings.Lease?.StorageAccount?.BlobEndpoint == null)
             {
                 opts.Type = AltinnLeaseType.InMemory;
             }
