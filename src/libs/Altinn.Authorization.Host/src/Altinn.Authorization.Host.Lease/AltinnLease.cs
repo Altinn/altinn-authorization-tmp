@@ -70,7 +70,7 @@ public static partial class AltinnLease
         services.AddAzureClients(builder =>
         {
             builder.UseCredential(AzureToken.Default);
-            builder.AddBlobServiceClient(options.StorageAccount.Endpoint)
+            builder.AddBlobServiceClient(options.StorageAccount.BlobEndpoint)
                 .WithName(AltinnLeaseOptions.StorageAccountLease.Name)
                 .ConfigureOptions(options =>
                 {

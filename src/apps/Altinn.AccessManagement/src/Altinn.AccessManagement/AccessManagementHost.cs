@@ -115,13 +115,13 @@ internal static partial class AccessManagementHost
         builder.AddAltinnLease(opts =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings?.Lease?.StorageAccount == null)
+            if (appsettings?.Lease?.StorageAccount?.BlobEndpoint == null)
             {
                 opts.Type = AltinnLeaseType.InMemory;
             }
             else
             {
-                opts.StorageAccount.Endpoint = appsettings.Lease.StorageAccount;
+                opts.StorageAccount.BlobEndpoint = appsettings.Lease.StorageAccount.BlobEndpoint;
                 opts.Type = AltinnLeaseType.AzureStorageAccount;
             }
         });

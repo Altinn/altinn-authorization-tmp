@@ -1,15 +1,26 @@
 namespace Altinn.Authorization.Host.Lease.Appsettings;
 
 /// <summary>
-/// Represents the application settings for the Altinn authorization.
-/// This class encapsulates configuration settings required for different default applications,
-/// such as settings for Azure App Configuration, Entra ID, Service Bus, PostgreSQL,
-/// Application Insights, and other relevant configurations.
+/// Represents the lease settings used for distributed locking in Altinn authorization.
+/// This class includes configuration settings for external storage used in lease management,
+/// such as Azure Blob Storage.
 /// </summary>
 public class LeaseSettings
 {
     /// <summary>
-    /// Appsettings
+    /// Gets or sets the storage account settings used for lease management.
     /// </summary>
-    public Uri StorageAccount { get; set; }
+    public StorageAccountSettings StorageAccount { get; set; }
+
+    /// <summary>
+    /// Represents storage account configuration for lease management.
+    /// </summary>
+    public class StorageAccountSettings
+    {
+        /// <summary>
+        /// Gets or sets the Azure Blob Storage endpoint URI.
+        /// This is used for distributed lease storage.
+        /// </summary>
+        public Uri BlobEndpoint { get; set; }
+    }
 }
