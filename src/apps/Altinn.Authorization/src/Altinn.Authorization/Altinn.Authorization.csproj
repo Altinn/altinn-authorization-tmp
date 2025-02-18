@@ -3,8 +3,6 @@
     <PropertyGroup>
         <IsAppProject>true</IsAppProject>
         <ContainerName>altinn-authorization</ContainerName>
-        <!-- SonarCloud needs this -->
-        <ProjectGuid>{d9c0433e-738c-4e07-9f88-d71d7df04e3f}</ProjectGuid>
     </PropertyGroup>
 
     <ItemGroup>
@@ -40,6 +38,10 @@
         <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
         <PackageReference Include="Yuniql.AspNetCore" />
         <PackageReference Include="Yuniql.PostgreSql" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host\Altinn.Authorization.Host.csproj" />
     </ItemGroup>
 
 </Project>
