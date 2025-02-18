@@ -40,8 +40,4 @@
         <PackageReference Include="Yuniql.PostgreSql" />
     </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host\Altinn.Authorization.Host.csproj" />
-    </ItemGroup>
-
 </Project>
