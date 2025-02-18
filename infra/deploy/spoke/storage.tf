@@ -9,8 +9,7 @@ resource "azurerm_storage_account" "storage" {
   resource_group_name             = azurerm_resource_group.spoke.name
   location                        = azurerm_resource_group.spoke.location
   account_tier                    = "Premium"
-  access_tier                     = "Premium"
-  account_kind                    = "StorageV2"
+  account_kind                    = "BlockBlobStorage"
   account_replication_type        = "LRS"
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = false
