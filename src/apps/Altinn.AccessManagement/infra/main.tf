@@ -115,19 +115,8 @@ module "appsettings" {
     {
       name        = "AccessManagement.HostedServices.RegisterSync"
       description = "Specifies if the register data should streamed from register service to access management database"
-<<<<<<< HEAD
-      label       = "${lower(var.environment)}_accessmanagement"
-      value       = false
-    },
-    {
-      name        = "AccessManagement.Controller.AuthorizedParties"
-      description = "Specifies if the controller AuthorizedParties should be enabled"
-      label       = "${lower(var.environment)}_accessmanagement"
-      value       = true
-=======
       label       = "${lower(var.environment)}-access-management"
       value       = false
->>>>>>> c6f06951 (update access mgmt sln files. add platform workload identities to TF. use basic startup logger in host.)
     }
   ]
   providers = {
