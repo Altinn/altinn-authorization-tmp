@@ -4,8 +4,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Altinn.AccessManagement.Api.Maskinporten.Controllers;
+using Altinn.AccessManagement.Api.Maskinporten.Models.Concent;
 using Altinn.AccessManagement.Controllers;
 using Altinn.AccessManagement.Tests;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -21,6 +23,10 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
     public class ConcentControllerTest : IClassFixture<CustomWebApplicationFactory<DelegationsController>>
     {
         private readonly CustomWebApplicationFactory<DelegationsController> _factory;
+        private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
 
         /// <summary>
         /// Concent controller test
@@ -30,18 +36,22 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             _factory = factory;
         }
 
+        /// <summary>
+        /// Test get consent. Expect a consent in response
+        /// </summary>
+        /// <returns></returns>
         [Fact]
         public async Task GetConcent()
         {
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagment/api/maskinporten/consent/lookup/?id={Guid.NewGuid()}&from=01017512345&to=12312432545";
+            string url = $"/accessmanagment/api/v1/maskinporten/consent/lookup/?id={Guid.NewGuid()}&from=01017512345&to=12312432545";
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(responseContent);
-            Assert.Contains("concent", responseContent);
+            ConsentInfoMaskinporten consentInfo = JsonSerializer.Deserialize<ConsentInfoMaskinporten>(responseContent, _jsonOptions);
+            Assert.Single(consentInfo.ConsentRights);
         }
-
 
         private HttpClient GetTestClient()
         {

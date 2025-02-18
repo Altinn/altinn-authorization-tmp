@@ -9,7 +9,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
     /// <summary>
     /// Comcent controller for Maskinporten
     /// </summary>
-    [Route("accessmanagment/api/maskinporten/")]
+    [Route("accessmanagment/api/v1/maskinporten/")]
     [ApiController]
     public class ConsentController : ControllerBase
     {

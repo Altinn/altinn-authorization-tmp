@@ -12,12 +12,12 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Models.Concent
         /// <summary>
         /// The unique identifier for the consent. Same ID as concent request.
         /// </summary>
-        public Guid Id { get; set; }
+        public required Guid Id { get; set; }
 
         /// <summary>
-        /// 
+        /// Defines who is gives consent 
         /// </summary>
-        public required ConsentPartyUrnExternal From { get; set; }
+        public required ConsentPartyUrnExternal? From { get; set; }
 
         /// <summary>
         /// Defines the party requesting consent.
@@ -27,17 +27,17 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Models.Concent
         /// <summary>
         /// Defines when the consent was given.
         /// </summary>
-        public DateTimeOffset Concented { get; set; }
+        public required DateTimeOffset Consented { get; set; }
 
         /// <summary>
         /// Defines how long the concent is valid
         /// </summary>
-        public DateTimeOffset ValidTo { get; set; }
+        public required DateTimeOffset ValidTo { get; set; }
 
         /// <summary>
         /// The consented rights.
         /// </summary>
-        public required List<ConsentRightExternal> ConcentRights { get; set; }
+        public required List<ConsentRightExternal> ConsentRights { get; set; }
 
         /// <summary>
         /// Maps from internal consent to external consent
@@ -58,9 +58,9 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Models.Concent
                 Id = consent.Id,
                 From = from,
                 To = to,
-                Concented = consent.Concented,
+                Consented = consent.Concented,
                 ValidTo = consent.ValidTo,
-                ConcentRights = consent.ConcentRights.Select(ConsentRightExternal.FromCore).ToList()
+                ConsentRights = consent.ConcentRights.Select(ConsentRightExternal.FromCore).ToList()
             };
         }
     }
