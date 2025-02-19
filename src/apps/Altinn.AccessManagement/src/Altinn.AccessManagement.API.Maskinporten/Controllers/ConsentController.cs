@@ -9,7 +9,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
     /// <summary>
     /// Comcent controller for Maskinporten
     /// </summary>
-    [Route("accessmanagment/api/v1/maskinporten/")]
+    [Route("accessmanagment/api/v1/maskinporten/consent/")]
     [ApiController]
     public class ConsentController : ControllerBase
     {
@@ -27,7 +27,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
         /// Returns a specific consent
         /// </summary>
         [HttpGet]
-        [Route("consent/lookup")]
+        [Route("lookup")]
         public async Task<ActionResult<ConsentInfoMaskinporten>> GetConcent(Guid id, string from, string to)
         {
             Consent consent = await _consentService.GetConcent(id, from, to);

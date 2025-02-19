@@ -20,9 +20,9 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
     /// <summary>
     /// Tests for maskinporten controller for consent
     /// </summary>
-    public class ConcentControllerTest : IClassFixture<CustomWebApplicationFactory<DelegationsController>>
+    public class ConcentControllerTest : IClassFixture<CustomWebApplicationFactory<Program>>
     {
-        private readonly CustomWebApplicationFactory<DelegationsController> _factory;
+        private readonly CustomWebApplicationFactory<Program> _factory;
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -31,7 +31,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
         /// <summary>
         /// Concent controller test
         /// </summary>
-        public ConcentControllerTest(CustomWebApplicationFactory<DelegationsController> factory)
+        public ConcentControllerTest(CustomWebApplicationFactory<Program> factory)
         {
             _factory = factory;
         }
