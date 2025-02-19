@@ -66,7 +66,7 @@ resource "azurerm_storage_account" "storage_dwh" {
       days = 30
     }
     delete_retention_policy {
-      days                     = 720
+      days                     = 90
       permanent_delete_enabled = true
     }
   }
@@ -74,7 +74,7 @@ resource "azurerm_storage_account" "storage_dwh" {
   immutability_policy {
     state                         = "Unlocked"
     allow_protected_append_writes = true
-    period_since_creation_in_days = 720
+    period_since_creation_in_days = 90
   }
 
   nfsv3_enabled                   = false # Must be turned off
