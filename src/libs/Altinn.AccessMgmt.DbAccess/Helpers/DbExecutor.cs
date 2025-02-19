@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using Altinn.AccessMgmt.DbAccess.Contracts;
 using Npgsql;
 
@@ -8,16 +7,10 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers;
 /// <summary>
 /// Responsible for executing SQL commands and queries.
 /// </summary>
-public class DbExecutor
+public class DbExecutor(NpgsqlDataSource connection, IDbConverter dbConverter)
 {
-    private readonly NpgsqlDataSource _connection;
-    private readonly IDbConverter _dbConverter;
-
-    public DbExecutor(NpgsqlDataSource connection, IDbConverter dbConverter)
-    {
-        _connection = connection;
-        _dbConverter = dbConverter;
-    }
+    private readonly NpgsqlDataSource _connection = connection;
+    private readonly IDbConverter _dbConverter = dbConverter;
 
     /// <summary>
     /// Executes a non-query command (INSERT, UPDATE, DELETE) and returns the number of affected rows.

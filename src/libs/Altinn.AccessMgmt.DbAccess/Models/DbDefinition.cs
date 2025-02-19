@@ -15,32 +15,27 @@ public class DbDefinition(Type type)
     /// <summary>
     /// Gets or sets the CLR type that this database definition represents.
     /// </summary>
-    public Type BaseType { get; set; } = type;
-
-    /// <summary>
-    /// Gets or sets the collection of unique constraint definitions for the entity.
-    /// </summary>
-    public PKDefinition PrimaryKey { get; set; } = new();
+    public Type ModelType { get; set; } = type;
 
     /// <summary>
     /// Gets or sets the collection of column definitions for the entity.
     /// </summary>
-    public List<ColumnDefinition> Columns { get; set; } = new();
+    public List<PropertyDefinition> Properties { get; set; } = new(); // Rename to Properties and PropertyDefinition.
 
     /// <summary>
     /// Gets or sets the collection of foreign key definitions representing relationships to other tables.
     /// </summary>
-    public List<ForeignKeyDefinition> ForeignKeys { get; set; } = new();
+    public List<RelationDefinition> Relations { get; set; } = new(); // Rename to Relations and RelationDefinition.
 
     /// <summary>
     /// Gets or sets the collection of unique constraint definitions for the entity.
     /// </summary>
-    public List<ConstraintDefinition> UniqueConstraints { get; set; } = new();
+    public List<ConstraintDefinition> Constraints { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets the collection of relation definitions that define additional relationships between entities.
+    /// Gets or sets the collection of cross-relation definitions for the entity.
     /// </summary>
-    public List<RelationDefinition> Relations { get; set; } = new();
+    public CrossRelationDefinition CrossRelation { get; set; }
 
     /// <summary>
     /// Indicates whether the entity supports translations.

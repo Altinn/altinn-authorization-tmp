@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Metadata;
 using Altinn.AccessMgmt.DbAccess.Models;
 
 namespace Altinn.AccessMgmt.DbAccess.Helpers
@@ -60,85 +61,78 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         public DefinitionBuilder<T> RegisterProperty(Expression<Func<T, object>> column, bool nullable = false, string? defaultValue = null, int? length = null)
         {
             var propertyInfo = ExtractPropertyInfo(column);
-            var columnDef = new ColumnDefinition()
+            var columnDef = new Models.PropertyDefinition()
             {
                 Name = propertyInfo.Name,
                 Property = propertyInfo,
                 DefaultValue = defaultValue,
                 IsNullable = nullable
             };
-            DbDefinition.Columns.Add(columnDef);
+            DbDefinition.Properties.Add(columnDef);
 
             return this;
         }
 
         /// <summary>
-        /// Registers one or more properties as the primary key for the entity.
+        /// Registers a constraint for the specified properties, either as a primary key or a unique constraint.
         /// </summary>
-        /// <param name="properties">A collection of expressions identifying the properties that form the primary key.</param>
+        /// <param name="properties">A collection of expressions identifying the properties.</param>
+        /// <param name="isPrimaryKey">Specifies whether this is a primary key constraint.</param>
         /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        /// <exception cref="Exception">Thrown if any of the specified properties does not exist on the entity type.</exception>
-        public DefinitionBuilder<T> RegisterPrimaryKey(IEnumerable<Expression<Func<T, object?>>> properties)
+        /// <exception cref="Exception">Thrown if any of the specified properties does not exist on the model type.</exception>
+        private DefinitionBuilder<T> RegisterConstraint(IEnumerable<Expression<Func<T, object?>>> properties, bool isPrimaryKey)
         {
-            var propertyNames = new List<string>();
-            var propertyInfos = typeof(T).GetProperties().ToList();
+            var propertyDefinitions = new Dictionary<string, Type>();
+            var propertyInfos = typeof(T).GetProperties().ToDictionary(p => p.Name, p => p.PropertyType);
+
             foreach (var property in properties)
             {
-                var propertyName = ExtractPropertyInfo(property as Expression<Func<T, object>>).Name;
-                propertyNames.Add(propertyName);
+                var propertyInfo = ExtractPropertyInfo(property);
 
-                if (!propertyInfos.Exists(t => t.Name == propertyName))
+                if (!propertyInfos.ContainsKey(propertyInfo.Name))
                 {
-                    throw new Exception($"{typeof(T).Name} does not contain the property '{propertyName}'");
+                    throw new Exception($"{typeof(T).Name} does not contain the property '{propertyInfo.Name}'");
                 }
+
+                propertyDefinitions[propertyInfo.Name] = propertyInfo.PropertyType;
             }
 
-            var name = $"PK_{typeof(T).Name}";
-
-            DbDefinition.UniqueConstraints.Add(new ConstraintDefinition()
+            var constraint = new ConstraintDefinition()
             {
-                Name = name,
-                Type = typeof(T),
-                Columns = propertyNames,
-                IsUnique = true,
-            });
+                Properties = propertyDefinitions,
+                IsPrimaryKey = isPrimaryKey
+            };
+
+            if (isPrimaryKey)
+            {
+                constraint.Name = $"PK_{typeof(T).Name}";
+                DbDefinition.Constraints.Add(constraint);
+            }
+            else
+            {
+                constraint.Name = $"UC_{typeof(T).Name}_{string.Join("_", propertyDefinitions.Keys)}";
+                DbDefinition.Constraints.Add(constraint);
+            }
 
             return this;
         }
+
+        /// <summary>
+        /// Registers one or more properties as the primary key for the model.
+        /// </summary>
+        /// <param name="properties">A collection of expressions identifying the properties that form the primary key.</param>
+        /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
+        public DefinitionBuilder<T> RegisterPrimaryKey(IEnumerable<Expression<Func<T, object?>>> properties)
+            => RegisterConstraint(properties, isPrimaryKey: true);
 
         /// <summary>
         /// Registers a unique constraint for the specified properties.
         /// </summary>
         /// <param name="properties">A collection of expressions identifying the properties that should have a unique constraint.</param>
         /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        /// <exception cref="Exception">Thrown if any of the specified properties does not exist on the entity type.</exception>
         public DefinitionBuilder<T> RegisterUniqueConstraint(IEnumerable<Expression<Func<T, object?>>> properties)
-        {
-            var propertyNames = new List<string>();
-            var propertyInfos = typeof(T).GetProperties().ToList();
-            foreach (var property in properties)
-            {
-                var propertyName = ExtractPropertyInfo(property as Expression<Func<T, object>>).Name;
-                propertyNames.Add(propertyName);
+            => RegisterConstraint(properties, isPrimaryKey: false);
 
-                if (!propertyInfos.Exists(t => t.Name == propertyName))
-                {
-                    throw new Exception($"{typeof(T).Name} does not contain the property '{propertyName}'");
-                }
-            }
-
-            var name = $"UC_{typeof(T).Name}_{string.Join("_", propertyNames)}";
-
-            DbDefinition.UniqueConstraints.Add(new ConstraintDefinition()
-            {
-                Name = name,
-                Type = typeof(T),
-                Columns = propertyNames,
-                IsUnique = true,
-            });
-
-            return this;
-        }
 
         #endregion
 
@@ -168,7 +162,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
             string refProperty = ExtractPropertyInfo(TJoinProperty).Name;
             string extendedProperty = ExtractPropertyInfo(TExtendedProperty).Name;
 
-            var join = new ForeignKeyDefinition()
+            var join = new RelationDefinition()
             {
                 Name = $"FK_{typeof(T).Name}_{extendedProperty}_{typeof(TJoin).Name}",
                 Base = typeof(T),
@@ -180,63 +174,43 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
                 IsList = isList,
                 UseCascadeDelete = cascadeDelete
             };
-            DbDefinition.ForeignKeys.Add(join);
+            DbDefinition.Relations.Add(join);
 
             return this;
         }
-
-        /// <summary>
-        /// Registers a relation between the primary entity and a join entity, defining how they are connected.
-        /// </summary>
-        /// <typeparam name="TExtended">The type of the extended entity that represents additional data.</typeparam>
-        /// <typeparam name="TJoin">The type of the join entity used to establish the relation.</typeparam>
-        /// <param name="TProperty">An expression selecting the property on the primary entity.</param>
-        /// <param name="TJoinProperty">An expression selecting the property on the join entity.</param>
-        /// <param name="TExtendedProperty">An expression selecting the property on the extended entity.</param>
-        /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        public DefinitionBuilder<T> RegisterRelation<TExtended, TJoin>(
-            Expression<Func<T, object>> TProperty,
-            Expression<Func<TJoin, object>> TJoinProperty,
-            Expression<Func<TExtended, object>> TExtendedProperty)
-        {
-            string baseProperty = ExtractPropertyInfo(TProperty).Name;
-            string refProperty = ExtractPropertyInfo(TJoinProperty).Name;
-            string extendedProperty = ExtractPropertyInfo(TExtendedProperty).Name;
-
-            var relation = new RelationDefinition()
-            {
-                Base = typeof(T),
-                Ref = typeof(TJoin),
-                BaseProperty = baseProperty,
-                RefProperty = refProperty,
-                ExtendedProperty = extendedProperty
-            };
-            DbDefinition.Relations.Add(relation);
-
-            return this;
-        }
-
         #endregion
 
         #region Cross
 
         /// <summary>
-        /// Registers a cross-reference between two sets of related entities.
+        /// Defines a cross-reference relationship between two entities through a junction table.
+        /// This allows filtering in both directions without duplication.
         /// </summary>
-        /// <typeparam name="TA">The type of the first related entity.</typeparam>
-        /// <typeparam name="TB">The type of the second related entity.</typeparam>
-        /// <param name="TASourceProperty">An expression selecting the source property for the first related entity.</param>
-        /// <param name="TAJoinProperty">An expression selecting the join property on the first related entity.</param>
-        /// <param name="TBSourceProperty">An expression selecting the source property for the second related entity.</param>
-        /// <param name="TBJoinProperty">An expression selecting the join property on the second related entity.</param>
-        /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        public DefinitionBuilder<T> RegisterAsCrossReference<TA, TB>(
-            Expression<Func<T, object>> TASourceProperty,
-            Expression<Func<TA, object>> TAJoinProperty,
-            Expression<Func<T, object>> TBSourceProperty,
-            Expression<Func<TB, object>> TBJoinProperty)
+        /// <typeparam name="TA">The first entity type in the relationship.</typeparam>
+        /// <typeparam name="TB">The second entity type in the relationship.</typeparam>
+        /// <param name="AIdentityProperty">The identity (primary key) property of entity A in its main table.</param>
+        /// <param name="AReferenceProperty">The property in the junction table that references entity A.</param>
+        /// <param name="BIdentityProperty">The identity (primary key) property of entity B in its main table.</param>
+        /// <param name="BReferenceProperty">The property in the junction table that references entity B.</param>
+        /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance.</returns>
+        public DefinitionBuilder<T> DefineCrossRelation<TA, TB>(
+            Expression<Func<T, object>> AIdentityProperty,
+            Expression<Func<TA, object>> AReferenceProperty,
+            Expression<Func<T, object>> BIdentityProperty,
+            Expression<Func<TB, object>> BReferenceProperty)
         {
-            // TODO: Implement cross-reference registration logic.
+            var crossRef = new CrossRelationDefinition(
+                crossType: typeof(T),
+                AType: typeof(TA),
+                AIdentityProperty: ExtractPropertyInfo(AIdentityProperty).Name,
+                AReferenceProperty: ExtractPropertyInfo(AReferenceProperty).Name,
+                BType: typeof(TB),
+                BIdentityProperty: ExtractPropertyInfo(BIdentityProperty).Name,
+                BReferenceProperty: ExtractPropertyInfo(BReferenceProperty).Name
+            );
+
+            DbDefinition.CrossRelation = crossRef;
+
             return this;
         }
 
@@ -261,7 +235,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         {
             RegisterExtendedProperty(defineA.Source, defineA.Join, defineA.Extended);
             RegisterExtendedProperty(defineB.Source, defineB.Join, defineB.Extended);
-            RegisterAsCrossReference(defineA.Source, defineA.Join, defineB.Source, defineB.Join);
+            DefineCrossRelation(defineA.Source, defineA.Join, defineB.Source, defineB.Join);
 
             return this;
         }

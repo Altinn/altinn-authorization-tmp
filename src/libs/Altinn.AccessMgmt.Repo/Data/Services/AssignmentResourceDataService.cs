@@ -11,7 +11,7 @@ namespace Altinn.AccessMgmt.Repo.Data.Services;
 /// <summary>
 /// Data service for AssignmentResource
 /// </summary>
-public class AssignmentResourceDataService : ExtendedRepository<AssignmentResource, ExtAssignmentResource>, IAssignmentResourceService
+public class AssignmentResourceDataService : CrossRepository<AssignmentResource, ExtAssignmentResource, Assignment, Resource>, IAssignmentResourceService
 {
     /// <inheritdoc/>
     public AssignmentResourceDataService(IOptions<DbAccessConfig> options, NpgsqlDataSource connection, IDbConverter dbConverter) : base(options, connection, dbConverter)
