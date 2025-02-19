@@ -67,7 +67,7 @@ resource "azurerm_storage_account" "storage_dwh" {
     }
     delete_retention_policy {
       days                     = 90
-      permanent_delete_enabled = true
+      permanent_delete_enabled = false
     }
   }
 
