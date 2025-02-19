@@ -41,14 +41,22 @@ resource "azurerm_log_analytics_workspace" "log_dwh" {
   retention_in_days   = 30
 }
 
-# resource "azurerm_log_analytics_data_export_rule" "log_dwh" {
-#   name                    = "StorageAccountDwh"
-#   resource_group_name     = azurerm_resource_group.spoke.name
-#   workspace_resource_id   = azurerm_log_analytics_workspace.log_dwh.workspace_id
-#   destination_resource_id = azurerm_storage_account.storage_dwh.id
-#   enabled                 = true
-#   table_names             = []
-# }
+resource "azurerm_log_analytics_data_export_rule" "log_dwh" {
+  name                    = "StorageAccountDwh"
+  resource_group_name     = azurerm_resource_group.spoke.name
+  workspace_resource_id   = azurerm_log_analytics_workspace.log_dwh.workspace_id
+  destination_resource_id = azurerm_storage_account.storage_dwh.id
+  enabled                 = true
+  table_names             = ["AzureDiagnostics", "AzureActivity"]
+}
+
+resource "azurerm_log_analytics_linked_storage_account" "log_dwh" {
+  data_source_type      = each.key
+  resource_group_name   = azurerm_resource_group.spoke.name
+  workspace_resource_id = azurerm_log_analytics_workspace.log_dwh.id
+  storage_account_ids   = [azurerm_storage_account.storage_dwh.id]
+  for_each              = toset(["CustomLogs", "Query", "Alerts"])
+}
 
 resource "azurerm_storage_account" "storage_dwh" {
   name                     = "stdwh${local.suffix}"

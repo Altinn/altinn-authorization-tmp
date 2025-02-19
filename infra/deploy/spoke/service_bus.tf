@@ -82,9 +82,16 @@ resource "azurerm_monitor_diagnostic_setting" "log_export" {
     category_group = "audit"
   }
 
+  dynamic "enabled_log" {
+    content {
+      category = enabled_log.key
+    }
+
+    for_each = toset(["ResourceHealth", "Autoscale", "Policy", "Recommendation", "Alert", "ServiceHealth", "Security", "Administrative"])
+  }
+
   metric {
     category = "AllMetrics"
     enabled  = true
   }
 }
-
