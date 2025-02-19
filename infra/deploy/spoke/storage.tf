@@ -59,22 +59,8 @@ resource "azurerm_storage_account" "storage_dwh" {
   min_tls_version          = "TLS1_2"
 
   blob_properties {
-    versioning_enabled       = true
-    last_access_time_enabled = true
-    change_feed_enabled      = true
-    restore_policy {
-      days = 30
-    }
-    delete_retention_policy {
-      days                     = 90
-      permanent_delete_enabled = false
-    }
-  }
-
-  immutability_policy {
-    state                         = "Unlocked"
-    allow_protected_append_writes = true
-    period_since_creation_in_days = 90
+    versioning_enabled  = true
+    change_feed_enabled = true
   }
 
   nfsv3_enabled                   = false # Must be turned off
