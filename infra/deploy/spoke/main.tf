@@ -25,8 +25,7 @@ provider "azurerm" {
   alias               = "hub"
   subscription_id     = var.hub_subscription_id
   storage_use_azuread = true
-  features {
-  }
+  features {}
 }
 
 data "azurerm_client_config" "current" {}

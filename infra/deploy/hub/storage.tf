@@ -8,8 +8,9 @@ resource "azurerm_storage_account" "storage" {
   public_network_access_enabled = true
 
   allow_nested_items_to_be_public = false
-  shared_access_key_enabled       = false
 
+  # Must be enabled otherwise certs can't be managed in blob storage
+  shared_access_key_enabled = true
   identity {
     type = "SystemAssigned"
   }

@@ -18,7 +18,7 @@ resource "azurerm_storage_account" "storage" {
   }
 
   allow_nested_items_to_be_public = false
-  shared_access_key_enabled       = true
+  shared_access_key_enabled       = false
   https_traffic_only_enabled      = true
   public_network_access_enabled   = true
 
@@ -74,7 +74,7 @@ resource "azurerm_storage_account" "storage_dwh" {
   nfsv3_enabled                   = false # Must be turned off
   sftp_enabled                    = false # Must be turned off
   allow_nested_items_to_be_public = false
-  shared_access_key_enabled       = true
+  shared_access_key_enabled       = false
   https_traffic_only_enabled      = true
   public_network_access_enabled   = true
 
