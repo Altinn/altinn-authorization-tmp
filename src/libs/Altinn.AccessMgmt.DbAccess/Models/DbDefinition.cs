@@ -20,12 +20,12 @@ public class DbDefinition(Type type)
     /// <summary>
     /// Gets or sets the collection of column definitions for the entity.
     /// </summary>
-    public List<PropertyDefinition> Properties { get; set; } = new(); // Rename to Properties and PropertyDefinition.
+    public List<PropertyDefinition> Properties { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the collection of foreign key definitions representing relationships to other tables.
     /// </summary>
-    public List<RelationDefinition> Relations { get; set; } = new(); // Rename to Relations and RelationDefinition.
+    public List<RelationDefinition> Relations { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the collection of unique constraint definitions for the entity.
