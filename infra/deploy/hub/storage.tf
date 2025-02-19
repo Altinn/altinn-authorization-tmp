@@ -23,7 +23,7 @@ resource "azurerm_storage_account" "storage" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment
 resource "azurerm_role_assignment" "storage_account_contributor" {
-  scope                = azurerm_storage_account.storage.id
+  scope                = "/subscriptions/${data.azurerm_client_config.current.subscription_id}"
   principal_id         = each.value
   role_definition_name = "Storage Account Contributor" # https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#security
 
