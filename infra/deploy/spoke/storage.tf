@@ -18,7 +18,7 @@ resource "azurerm_storage_account" "storage" {
   }
 
   allow_nested_items_to_be_public = false
-  shared_access_key_enabled       = false
+  shared_access_key_enabled       = true
   https_traffic_only_enabled      = true
   public_network_access_enabled   = true
 
@@ -74,7 +74,7 @@ resource "azurerm_storage_account" "storage_dwh" {
   nfsv3_enabled                   = false # Must be turned off
   sftp_enabled                    = false # Must be turned off
   allow_nested_items_to_be_public = false
-  shared_access_key_enabled       = false
+  shared_access_key_enabled       = true
   https_traffic_only_enabled      = true
   public_network_access_enabled   = true
 
@@ -138,4 +138,22 @@ resource "azurerm_private_endpoint" "blob" {
   }
 
   tags = merge({}, local.default_tags)
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment
+resource "azurerm_role_assignment" "storage_account_contributor" {
+  scope                = azurerm_storage_account.storage.id
+  principal_id         = each.value
+  role_definition_name = "Storage Account Contributor" # https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#security
+
+  for_each = toset(var.spoke_principal_ids)
+}
+
+
+resource "azurerm_role_assignment" "storage_account_contributor_dwh" {
+  scope                = azurerm_storage_account.storage_dwh.id
+  principal_id         = each.value
+  role_definition_name = "Storage Account Contributor" # https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#security
+
+  for_each = toset(var.spoke_principal_ids)
 }
