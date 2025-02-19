@@ -69,7 +69,7 @@ resource "azurerm_private_endpoint" "service_bus_private_endpoint" {
   }
 }
 
-resource "azurerm_monitor_diagnostic_setting" "log_export" {
+resource "azurerm_monitor_diagnostic_setting" "service_bus_diagnostics" {
   name                       = azurerm_log_analytics_workspace.log_dwh.name
   target_resource_id         = azurerm_servicebus_namespace.service_bus.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.log_dwh.id
@@ -82,16 +82,22 @@ resource "azurerm_monitor_diagnostic_setting" "log_export" {
     category_group = "audit"
   }
 
+  metric {
+    category = "AllMetrics"
+    enabled  = true
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "service_bus_activity_log" {
+  name                       = azurerm_log_analytics_workspace.log_dwh.name
+  target_resource_id         = azurerm_servicebus_namespace.service_bus.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.log_dwh.id
+
   dynamic "enabled_log" {
     content {
       category = enabled_log.key
     }
 
     for_each = toset(["ResourceHealth", "Autoscale", "Policy", "Recommendation", "Alert", "ServiceHealth", "Security", "Administrative"])
-  }
-
-  metric {
-    category = "AllMetrics"
-    enabled  = true
   }
 }
