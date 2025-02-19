@@ -127,7 +127,7 @@ resource "azurerm_private_endpoint" "blob" {
 
   private_dns_zone_group {
     name                 = azurerm_storage_account.storage.name
-    private_dns_zone_ids = [data.storage.blob_storage.id]
+    private_dns_zone_ids = [data.azurerm_private_dns_zone.blob_storage.id]
   }
 
   private_service_connection {
