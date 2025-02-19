@@ -46,7 +46,9 @@ public static class DbAccessHostExtensions
         builder.Services.AddSingleton<IDbConverter, DbConverter>();
 
         RegisterDbServices(builder.Services);
+        
         builder.Services.AddSingleton<MigrationService>();
+
         builder.Services.AddSingleton<IngestService>();
         builder.Services.AddSingleton<MockupService>();
 
@@ -61,7 +63,7 @@ public static class DbAccessHostExtensions
     public static async Task<IHost> UseDb(this IHost host)
     {
         var migration = host.Services.GetRequiredService<MigrationService>();
-        migration.Generate("Altinn.AccessMgmt.Models");
+        migration.Generate("Altinn.AccessMgmt.Models"); //Altinn.AccessMgmt.Repo.Definitions (?)
         await migration.Migrate();
 
         var dbIngest = host.Services.GetRequiredService<IngestService>();

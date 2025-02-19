@@ -80,6 +80,51 @@ public class IngestService
         this.tagService = tagService;
     }
 
+
+    public async Task IngestProvider()
+    {
+        var providers = new List<Provider>();
+        providers.Add(new Provider() { Id = Guid.NewGuid(), Name = "Digdir", RefId = "00000000" });
+        providers.Add(new Provider() { Id = Guid.NewGuid(), Name = "Digdir", RefId = "00000000" });
+        providers.Add(new Provider() { Id = Guid.NewGuid(), Name = "Digdir", RefId = "00000000" });
+
+        // Løsning 1:
+        var translations = new Dictionary<Guid, Dictionary<string, Dictionary<string, string>>>
+        {
+            {
+                providers[0].Id, new Dictionary<string, Dictionary<string, string>>
+                {
+                    {
+                        "Name", new Dictionary<string, string>
+                        {
+                            { "nob", "Digdir" },
+                            { "eng", "Digdir" }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Løsning 2
+        var translated = new Dictionary<string, List<Provider>>
+        {
+            {
+                "eng",
+                new List<Provider>() {
+                    new Provider() { Id = Guid.NewGuid(), Name = "Digdir", RefId = "00000000" },
+                    new Provider() { Id = Guid.NewGuid(), Name = "Digdir", RefId = "00000000" },
+                    new Provider() { Id = Guid.NewGuid(), Name = "Digdir", RefId = "00000000" }
+                }
+            }
+        };
+
+
+        foreach (var item in providers)
+        {
+            await providerService.Upsert(item);
+        }
+    }
+
     /// <summary>
     /// Ingest all
     /// </summary>

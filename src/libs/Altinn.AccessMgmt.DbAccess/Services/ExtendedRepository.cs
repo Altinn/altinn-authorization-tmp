@@ -15,6 +15,7 @@ public abstract class ExtendedRepository<T, TExtended> : BasicRepository<T>, IDb
     protected ExtendedRepository(IOptions<DbAccessConfig> options, NpgsqlDataSource connection, IDbConverter dbConverter) : base(options, connection, dbConverter) { }
 
     #region Read
+
     /// <inheritdoc/>
     public async Task<TExtended?> GetExtended(Guid id, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
@@ -45,6 +46,9 @@ public abstract class ExtendedRepository<T, TExtended> : BasicRepository<T>, IDb
 
         var parameterBuilder = new ParameterBuilder();
         var param = parameterBuilder.BuildFilterParameters(filters, options);
+
+        //var executor = new DbExecutor(connection, dbConverter);
+        //return await executor.ExecuteQuery<TExtended>(query, param, cancellationToken);
 
         return await ExecuteExtended(query, param);
     }

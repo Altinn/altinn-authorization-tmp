@@ -4,6 +4,4 @@ using Altinn.AccessMgmt.Models;
 namespace Altinn.AccessMgmt.Repo.Data.Contracts;
 
 /// <inheritdoc/>
-public interface IAssignmentPackageService : IDbExtendedRepository<AssignmentPackage, ExtAssignmentPackage> { }
-
-// TODO : Cross
+public interface IAssignmentPackageService : IDbCrossRepository<AssignmentPackage, ExtAssignmentPackage, Assignment, Package> { }
