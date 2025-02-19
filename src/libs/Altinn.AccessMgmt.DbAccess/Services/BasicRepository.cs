@@ -1,7 +1,6 @@
 ﻿using System.Data;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using Altinn.AccessMgmt.DbAccess.Contracts;
 using Altinn.AccessMgmt.DbAccess.Helpers;
 using Altinn.AccessMgmt.DbAccess.Models;
@@ -119,7 +118,6 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     /// <inheritdoc/>
     public async Task<int> Upsert(T entity, CancellationToken cancellationToken = default)
     {
-        var sb = new StringBuilder();
         var parameterBuilder = new ParameterBuilder();
         var param = parameterBuilder.BuildParameters(entity);
 
@@ -127,7 +125,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         string query = queryBuilder.BuildUpsertQuery(param);
 
         var dbExec = new DbExecutor(connection, dbConverter);
-        return await dbExec.ExecuteCommand(sb.ToString(), param, cancellationToken: cancellationToken);
+        return await dbExec.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>

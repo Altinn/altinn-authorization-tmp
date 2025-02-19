@@ -1,7 +1,7 @@
 ﻿namespace Altinn.AccessMgmt.DbAccess.Models;
 
 /// <summary>
-/// Represents a constraint definition in a database table
+/// Defines a constraint rule for a model, such as a primary key or unique constraint.
 /// </summary>
 public class ConstraintDefinition
 {
@@ -11,17 +11,24 @@ public class ConstraintDefinition
     public string Name { get; set; }
 
     /// <summary>
-    /// The type the constraint is base on
+    /// Gets or sets the properties that are part of this constraint along with their types.
     /// </summary>
-    public Type Type { get; set; }
+    public Dictionary<string, Type> Properties { get; set; } = new();
 
     /// <summary>
-    /// The columns that the constraint is based on
+    /// Indicates whether this constraint represents the primary key of the model.
     /// </summary>
-    public List<string> Columns { get; set; }
+    public bool IsPrimaryKey { get; set; } = false;
 
-    /// <summary>
-    /// Is the constraint unique
-    /// </summary>
-    public bool IsUnique { get; set; }
+    public ConstraintDefinition() { }
+
+    public ConstraintDefinition(string name, string propertyName, Type propertyType, bool isPrimaryKey = false)
+    {
+        Name = name;
+        Properties = new Dictionary<string, Type>
+        {
+            { propertyName, propertyType }
+        };
+        IsPrimaryKey = isPrimaryKey;
+    }
 }

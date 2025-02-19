@@ -5,7 +5,7 @@ namespace Altinn.AccessMgmt.DbAccess.Models;
 /// <summary>
 /// Represents a column definition in a database table
 /// </summary>
-public class ColumnDefinition
+public class PropertyDefinition
 {
     /// <summary>
     /// The property that this column definition is based on

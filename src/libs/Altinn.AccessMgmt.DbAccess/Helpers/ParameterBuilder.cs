@@ -19,6 +19,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
             {
                 parameters.Add(new NpgsqlParameter(property.Name, property.GetValue(obj) ?? DBNull.Value));
             }
+
             return parameters;
         }
 
@@ -35,6 +36,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
                     parameters.Add(new NpgsqlParameter(property.Name, property.GetValue(obj) ?? DBNull.Value));
                 }
             }
+
             return parameters;
         }
 

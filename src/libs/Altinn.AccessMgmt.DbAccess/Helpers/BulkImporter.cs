@@ -9,7 +9,8 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
     /// <summary>
     /// Handles bulk importing of data using PostgreSQL's binary COPY.
     /// </summary>
-    public class BulkImporter<T> where T : class, new()
+    public class BulkImporter<T> 
+        where T : class, new()
     {
         private readonly NpgsqlDataSource _connection;
         private readonly DbDefinition _definition;
@@ -24,6 +25,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         {
             using var conn = await _connection.OpenConnectionAsync();
             var dt = new DataTable();
+            
             // Use a simple query to get a sample structure.
             var dataAdapter = new NpgsqlDataAdapter($"SELECT * FROM {GetPostgresDefinition(includeAlias: false)} LIMIT 10", conn);
             dataAdapter.Fill(dt);
@@ -33,15 +35,12 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
 
             foreach (DataColumn c in dt.Columns)
             {
-                if (!_definition.Columns.Exists(t => t.Name.Equals(c.ColumnName, StringComparison.CurrentCultureIgnoreCase)))
+                if (!_definition.Properties.Exists(t => t.Name.Equals(c.ColumnName, StringComparison.CurrentCultureIgnoreCase)))
                 {
                     continue;
                 }
 
-                columns.Add(c.ColumnName, (
-                    GetPostgresType(c.DataType),
-                    _definition.Columns.First(t => t.Name.Equals(c.ColumnName, StringComparison.CurrentCultureIgnoreCase)).Property
-                ));
+                columns.Add(c.ColumnName, (GetPostgresType(c.DataType), _definition.Properties.First(t => t.Name.Equals(c.ColumnName, StringComparison.CurrentCultureIgnoreCase)).Property));
             }
 
             using var writer = await conn.BeginBinaryImportAsync(
@@ -63,14 +62,14 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
                     catch (Exception ex)
                     {
                         // Replace with proper logging.
-                        Console.WriteLine($"Failed to write data in column '{c.Key}' for '{_definition.BaseType.Name}'. Trying to write null. " + ex.Message);
+                        Console.WriteLine($"Failed to write data in column '{c.Key}' for '{_definition.ModelType.Name}'. Trying to write null. " + ex.Message);
                         try
                         {
                             writer.WriteNull();
                         }
                         catch
                         {
-                            Console.WriteLine($"Failed to write null in column '{c.Key}' for '{_definition.BaseType.Name}'.");
+                            Console.WriteLine($"Failed to write null in column '{c.Key}' for '{_definition.ModelType.Name}'.");
                             throw;
                         }
                     }
@@ -97,19 +96,19 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
             if (useHistory)
             {
                 res = useTranslation
-                    ? $"{_definition.TranslationHistorySchema}.{_definition.BaseType.Name}"
-                    : $"{_definition.BaseHistorySchema}.{_definition.BaseType.Name}";
+                    ? $"{_definition.TranslationHistorySchema}.{_definition.ModelType.Name}"
+                    : $"{_definition.BaseHistorySchema}.{_definition.ModelType.Name}";
             }
             else
             {
                 res = useTranslation
-                    ? $"{_definition.TranslationSchema}.{_definition.BaseType.Name}"
-                    : $"{_definition.BaseSchema}.{_definition.BaseType.Name}";
+                    ? $"{_definition.TranslationSchema}.{_definition.ModelType.Name}"
+                    : $"{_definition.BaseSchema}.{_definition.ModelType.Name}";
             }
 
             if (includeAlias)
             {
-                res += $" AS {_definition.BaseType.Name}";
+                res += $" AS {_definition.ModelType.Name}";
             }
             return res;
         }
@@ -117,15 +116,29 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         private NpgsqlDbType GetPostgresType(Type type)
         {
             if (type == typeof(string))
+            {
                 return NpgsqlDbType.Text;
+            }
+
             if (type == typeof(int))
+            {
                 return NpgsqlDbType.Integer;
+            }
+
             if (type == typeof(DateTimeOffset))
+            {
                 return NpgsqlDbType.TimestampTz;
+            }
+
             if (type == typeof(Guid))
+            {
                 return NpgsqlDbType.Uuid;
+            }
+
             if (type == typeof(bool))
+            {
                 return NpgsqlDbType.Boolean;
+            }
 
             Console.WriteLine($"Type converter not found for '{type.Name}'");
             return NpgsqlDbType.Text;

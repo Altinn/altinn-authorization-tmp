@@ -5,7 +5,7 @@ using Altinn.AccessMgmt.DbAccess.Models;
 
 namespace Altinn.AccessMgmt.DbAccess.Helpers;
 
-//TODO: Convert to singleton?
+// TODO: Convert to singleton?
 
 /// <summary>
 /// Provides a centralized store for database definitions (<see cref="DbDefinition"/>) keyed by the CLR type.
@@ -71,6 +71,11 @@ public static class DefinitionStore
     public static DbDefinition Definition<T>()
     {
         return Store.GetOrAdd(typeof(T), _ => new DefinitionBuilder<T>().Build());
+    }
+
+    public static DbDefinition? TryGetBaseDefinition<T>()
+    {
+        return Store.Where(t => t.Value.ModelType == typeof(T)).FirstOrDefault().Value;
     }
 
     /// <summary>

@@ -22,7 +22,7 @@ public class GenericFilterBuilder<T> : IEnumerable<GenericFilter>
     public GenericFilterBuilder<T> Add<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, FilterComparer comparer = FilterComparer.Equals)
     {
         var propertyInfo = ExtractPropertyInfo(property);
-        _filters.Add(new GenericFilter(propertyInfo.Name, value, comparer));
+        _filters.Add(new GenericFilter(propertyInfo.Name, value!, comparer));
         return this;
     }
 
