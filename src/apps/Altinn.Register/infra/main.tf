@@ -34,7 +34,7 @@ locals {
   spoke_resource_group_name = lower("rg${local.spoke_suffix}")
   suffix                    = lower("${var.organization}${var.product_name}${var.name}${var.instance}${var.environment}")
   conf_json                 = jsondecode(file(local.conf_json_path))
-  conf_json_path            = "${path.module}/../conf.json"
+  conf_json_path            = abspath("${path.module}/../conf.json")
 
   default_tags = {
     ProductName = var.product_name
