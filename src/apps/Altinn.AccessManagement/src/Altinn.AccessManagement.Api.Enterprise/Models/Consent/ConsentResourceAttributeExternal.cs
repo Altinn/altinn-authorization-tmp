@@ -28,5 +28,17 @@ namespace Altinn.AccessManagement.Api.Enterprise.Models.Consent
                 Value = core.Value
             };
         }
+
+        /// <summary>
+        /// Map from external consent resource attribute to internal consent resource attribute
+        /// </summary>
+        public static ConsentResourceAttribute ToCore(ConsentResourceAttributeExternal external)
+        {
+            return new ConsentResourceAttribute
+            {
+                Type = external.Type,
+                Value = external.Value
+            };
+        }
     }
 }

@@ -37,5 +37,18 @@ namespace Altinn.AccessManagement.Api.Enterprise.Models.Consent
                 MetaData = core.MetaData
             };
         }
+
+        /// <summary>
+        /// Maps from external consent right to internal consent right
+        /// </summary>
+        public static ConsentRight ToCore(ConsentRightExternal external)
+        {
+            return new ConsentRight
+            {
+                Action = external.Action,
+                Resource = external.Resource.Select(ConsentResourceAttributeExternal.ToCore).ToList(),
+                MetaData = external.MetaData
+            };
+        }
     }
 }

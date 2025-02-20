@@ -1,9 +1,11 @@
-﻿namespace Altinn.AccessManagement.Core.Models.Consent
+﻿using Altinn.AccessManagement.Core.Enums.Consent;
+
+namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// Represents a consent request.
     /// </summary>
-    public class ConsentRequest
+    public class ConsentRequestDetails
     {
         /// <summary>
         /// Defines the ID for the consent request.Created by Altinn
@@ -35,5 +37,14 @@
         /// </summary>
         public Dictionary<string, string> Requestmessage { get; set; }
 
+        /// <summary>
+        /// The status of the consent request
+        /// </summary>
+        public ConsentRequestStatusType ConsentRequestStatus { get; set; }
+
+        /// <summary>
+        /// Defines when the consent was given.
+        /// </summary>
+        public DateTimeOffset? Consented { get; set; }
     }
 }

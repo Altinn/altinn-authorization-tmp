@@ -14,9 +14,9 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<Consent> GetConcent(Guid id, string from, string to);
 
         /// <summary>
-        /// Creates a concent requests
+        /// Creates a concent requests and return info about the created one.
         /// </summary>
-        Task CreateRequest(ConsentRequest consentRequest);
+        Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest);
 
         /// <summary>
         /// Deletes a concent request

@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Core.Models.Consent;
+﻿using Altinn.AccessManagement.Core.Enums.Consent;
+using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Register.Core.Parties;
@@ -17,9 +18,20 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public Task CreateRequest(ConsentRequest consentRequest)
+        public Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest)
         {
-            throw new NotImplementedException();
+            ConsentRequestDetails details = new ConsentRequestDetails()
+            {
+                ConsentRequestStatus = ConsentRequestStatusType.Created,
+                ConsentRights = consentRequest.ConsentRights,
+                From = consentRequest.From,
+                Id = Guid.NewGuid(),
+                Requestmessage = consentRequest.Requestmessage,
+                To = consentRequest.To,
+                ValidTo = consentRequest.ValidTo
+            };
+
+            return Task.FromResult(details);
         }
 
         /// <inheritdoc/>
