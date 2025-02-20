@@ -227,16 +227,10 @@ module "postgres_server" {
 
 resource "null_resource" "bootstrap_database" {
   triggers = {
-    server_resource_group = azurerm_resource_group.register.name
-    server_subscription   = data.azurerm_client_config.current.subscription_id
-    server_name           = module.postgres_server.name
-    kv_resource_group     = azurerm_resource_group.register.name
-    kv_subscription       = data.azurerm_client_config.current.subscription_id
-    kv_name               = module.key_vault.name
+    ts = timestamp()
   }
 
   depends_on = [module.key_vault]
-
   provisioner "local-exec" {
     working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
     command     = <<EOT
