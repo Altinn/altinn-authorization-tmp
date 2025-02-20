@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessManagement.Core.Models.Consent;
+using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Core.Services.Interfaces
 {
@@ -16,7 +17,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <summary>
         /// Creates a concent requests and return info about the created one.
         /// </summary>
-        Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest);
+        Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest);
 
         /// <summary>
         /// Deletes a concent request

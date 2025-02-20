@@ -2,6 +2,7 @@
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.Authorization.ProblemDetails;
 using Altinn.Register.Core.Parties;
 
 namespace Altinn.AccessManagement.Core.Services
@@ -18,7 +19,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest)
+        public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest)
         {
             ConsentRequestDetails details = new ConsentRequestDetails()
             {
@@ -31,7 +32,7 @@ namespace Altinn.AccessManagement.Core.Services
                 ValidTo = consentRequest.ValidTo
             };
 
-            return Task.FromResult(details);
+            return details;
         }
 
         /// <inheritdoc/>
