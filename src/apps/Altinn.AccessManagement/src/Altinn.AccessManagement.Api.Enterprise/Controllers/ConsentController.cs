@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Altinn.AccessManagement.Api.Enterprise.Controllers
 {
 
-    [Route("accessmanagment/api/v1/enterprise/consent/")]
+    [Route("accessmanagement/api/v1/enterprise/consent/")]
     [ApiController]
     public class ConsentController : ControllerBase
     {
@@ -33,7 +33,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 return consentRequestStatus.Problem.ToActionResult(); // This line will now work with the extension method
             }
 
-            return Created($"/accessmanagment/api/v1/enterprice/concent/request/{consentRequestStatus.Value.Id}", consentRequestStatus.Value);
+            return Created($"/accessmanagement/api/v1/enterprice/concent/request/{consentRequestStatus.Value.Id}", consentRequestStatus.Value);
         }
     }
 }

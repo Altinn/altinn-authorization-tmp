@@ -44,7 +44,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
         public async Task GetConcent()
         {
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagment/api/v1/maskinporten/consent/lookup/?id={Guid.NewGuid()}&from=01017512345&to=12312432545";
+            string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/?id={Guid.NewGuid()}&from=01017512345&to=12312432545";
             HttpResponseMessage response = await client.GetAsync(url);
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

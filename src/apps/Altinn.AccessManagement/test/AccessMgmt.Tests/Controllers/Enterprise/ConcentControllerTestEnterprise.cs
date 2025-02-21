@@ -63,7 +63,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagment/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
