@@ -13,12 +13,12 @@ namespace Altinn.AccessManagement.Api.Enterprise.Models.Consent
         /// <summary>
         /// Defines the party to request consent from.
         /// </summary>
-        public required ConsentPartyUrnExternal From { get; set; }
+        public required ConsentPartyUrnExternal2 From { get; set; }
 
         /// <summary>
         /// Defines the party requesting consent.
         /// </summary>
-        public required ConsentPartyUrnExternal To { get; set; }
+        public required ConsentPartyUrnExternal2 To { get; set; }
 
         /// <summary>
         /// Defines how long the concent is valid
@@ -28,7 +28,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Models.Consent
         /// <summary>
         /// The consented rights.
         /// </summary>
-        public required List<ConsentRightExternal> ConsentRights { get; set; }
+        public required List<ConsentRightExternal2> ConsentRights { get; set; }
 
         /// <summary>
         /// The request message
@@ -71,7 +71,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Models.Consent
                 From = fromInternal,
                 To = toInternal,
                 ValidTo = ValidTo,
-                ConsentRights = ConsentRights.Select(ConsentRightExternal.ToCore).ToList(),
+                ConsentRights = ConsentRights.Select(ConsentRightExternal2.ToCore).ToList(),
                 Requestmessage = Requestmessage
             };
         }

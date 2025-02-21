@@ -23,7 +23,8 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         }
 
         // Existing code...
-        [HttpPost("request/", Name = "CreateRequest")]        [Consumes(MediaTypeNames.Application.Json)]        [Produces(MediaTypeNames.Application.Json)]        [ProducesResponseType(typeof(ConsentRequestStatusExternal), StatusCodes.Status200OK)]        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]        public async Task<ActionResult> CreateRequest([FromBody] ConsentRequestExternal consentRequest)
+        [HttpPost]
+        [Route("request")]        [Consumes(MediaTypeNames.Application.Json)]        [Produces(MediaTypeNames.Application.Json)]        [ProducesResponseType(typeof(ConsentRequestStatusExternal), StatusCodes.Status200OK)]        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]        public async Task<ActionResult> CreateRequest([FromBody] ConsentRequestExternal consentRequest)
         {
             Result<ConsentRequestDetails> consentRequestStatus = await _consentService.CreateRequest(consentRequest.ToCore());
 
@@ -32,7 +33,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 return consentRequestStatus.Problem.ToActionResult(); // This line will now work with the extension method
             }
 
-            return Created($"/accessmanagment/api/v1/enerprice/concent/request/{consentRequestStatus.Value.Id}", consentRequestStatus);
+            return Created($"/accessmanagment/api/v1/enterprice/concent/request/{consentRequestStatus.Value.Id}", consentRequestStatus.Value);
         }
     }
 }

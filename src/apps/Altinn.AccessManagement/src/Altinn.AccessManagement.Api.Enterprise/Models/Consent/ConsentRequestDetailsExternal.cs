@@ -17,12 +17,12 @@ namespace Altinn.AccessManagement.Api.Enterprise.Models.Consent
         /// <summary>
         /// Defines the party to request consent from.
         /// </summary>
-        public required ConsentPartyUrnExternal From { get; set; }
+        public required ConsentPartyUrnExternal2 From { get; set; }
 
         /// <summary>
         /// Defines the party requesting consent.
         /// </summary>
-        public required ConsentPartyUrnExternal To { get; set; }
+        public required ConsentPartyUrnExternal2 To { get; set; }
 
         /// <summary>
         /// Defines how long the concent is valid
@@ -32,7 +32,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Models.Consent
         /// <summary>
         /// The consented rights.
         /// </summary>
-        public required List<ConsentRightExternal> ConsentRights { get; set; }
+        public required List<ConsentRightExternal2> ConsentRights { get; set; }
 
         /// <summary>
         /// The request message
@@ -46,12 +46,12 @@ namespace Altinn.AccessManagement.Api.Enterprise.Models.Consent
 
         public static ConsentRequestDetailsExternal FromCore(ConsentRequestDetails core)
         {
-            ConsentPartyUrnExternal to = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(core.To.ValueSpan));
+            ConsentPartyUrnExternal2 to = ConsentPartyUrnExternal2.OrganizationId.Create(OrganizationNumber.Parse(core.To.ValueSpan));
 
-            ConsentPartyUrnExternal from = core.From switch
+            ConsentPartyUrnExternal2 from = core.From switch
             {
-                ConsentPartyUrn.PersonId => ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse(core.From.ValueSpan)),
-                ConsentPartyUrn.OrganizationId => ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(core.From.ValueSpan)),
+                ConsentPartyUrn.PersonId => ConsentPartyUrnExternal2.PersonId.Create(PersonIdentifier.Parse(core.From.ValueSpan)),
+                ConsentPartyUrn.OrganizationId => ConsentPartyUrnExternal2.OrganizationId.Create(OrganizationNumber.Parse(core.From.ValueSpan)),
                 _ => throw new ArgumentException("Unknown consent party urn")
             };
 
@@ -62,7 +62,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Models.Consent
                 To = to,
                 Consented = core.Consented,
                 ValidTo = core.ValidTo,
-                ConsentRights = core.ConsentRights.Select(ConsentRightExternal.FromCore).ToList()
+                ConsentRights = core.ConsentRights.Select(ConsentRightExternal2.FromCore).ToList()
             };
         }
 
