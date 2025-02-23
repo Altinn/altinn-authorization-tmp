@@ -1,21 +1,16 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
+﻿using Altinn.AccessMgmt.DbAccess.Contracts;
+using Altinn.AccessMgmt.DbAccess.Helpers;
+using Altinn.AccessMgmt.Models;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
 
 /// <inheritdoc/>
-public class InheritedAssignmentDefinition : BaseDbDefinition<InheritedAssignment>, IDbDefinition
+public class InheritedAssignmentDefinition : IDbDefinition
 {
-    /// <inheritdoc/>
-    public InheritedAssignmentDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
-    {
-    }
-
     /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<InheritedAssignment>(def =>
+        DefinitionStore.Define<InheritedAssignment>(def =>
         {
             def.IsView();
             //// def.EnableHistory();

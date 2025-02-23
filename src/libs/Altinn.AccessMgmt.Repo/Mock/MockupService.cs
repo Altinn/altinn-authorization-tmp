@@ -3,7 +3,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Altinn.AccessMgmt.DbAccess.Models;
 using Altinn.AccessMgmt.Models;
-using Altinn.AccessMgmt.Repo.Data.Contracts;
+using Altinn.AccessMgmt.Repo.Contracts;
+
 //// using Altinn.Authorization.Host.Lease;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -39,9 +40,6 @@ public class MockupService
     private readonly IElementService elementService;
     private readonly IRoleService roleService;
     private readonly IAssignmentService assignmentService;
-    private readonly IGroupService groupService;
-    private readonly IGroupAdminService groupAdminService;
-    private readonly IGroupMemberService groupMemberService;
     private readonly IDelegationService delegationService;
 
     /// <summary>
@@ -69,9 +67,6 @@ public class MockupService
     /// <param name="elementService">IElementService</param>
     /// <param name="roleService">IRoleService</param>
     /// <param name="assignmentService">IAssignmentService</param>
-    /// <param name="groupService">IGroupService</param>
-    /// <param name="groupAdminService">IGroupAdminService</param>
-    /// <param name="groupMemberService">IGroupMemberService</param>
     /// <param name="delegationService">IDelegationService</param>
     public MockupService(
         ILogger<MockupService> logger,
@@ -97,9 +92,6 @@ public class MockupService
         IElementService elementService,
         IRoleService roleService,
         IAssignmentService assignmentService,
-        IGroupService groupService,
-        IGroupAdminService groupAdminService,
-        IGroupMemberService groupMemberService,
         IDelegationService delegationService
         )
     {
@@ -127,9 +119,6 @@ public class MockupService
         this.elementService = elementService;
         this.roleService = roleService;
         this.assignmentService = assignmentService;
-        this.groupService = groupService;
-        this.groupAdminService = groupAdminService;
-        this.groupMemberService = groupMemberService;
         this.delegationService = delegationService;
     }
     #endregion
@@ -176,12 +165,6 @@ public class MockupService
 
     private List<Assignment> Assignments { get; set; }
 
-    private List<EntityGroup> Groups { get; set; }
-
-    private List<GroupAdmin> GroupAdmins { get; set; }
-
-    private List<GroupMember> GroupMembers { get; set; }
-
     private List<Delegation> Delegations { get; set; }
 
     /// <summary>
@@ -223,10 +206,6 @@ public class MockupService
         {
             Assignments = [.. await assignmentService.Get()];
         }
-
-        Groups = [.. await groupService.Get()];
-        GroupAdmins = [.. await groupAdminService.Get()];
-        GroupMembers = [.. await groupMemberService.Get()];
 
         Delegations = [.. await delegationService.Get()];
 
@@ -313,51 +292,6 @@ public class MockupService
         {
             await roleService.Create(obj);
             Roles.Add(obj);
-            return obj;
-        }
-        else
-        {
-            return res;
-        }
-    }
-
-    private async Task<EntityGroup> GetOrCreateGroup(EntityGroup obj)
-    {
-        var res = Groups.FirstOrDefault(t => t.OwnerId == obj.OwnerId && t.Name == obj.Name) ?? null;
-        if (res == null)
-        {
-            await groupService.Create(obj);
-            Groups.Add(obj);
-            return obj;
-        }
-        else
-        {
-            return res;
-        }
-    }
-
-    private async Task<GroupMember> GetOrCreateGroupMember(GroupMember obj)
-    {
-        var res = GroupMembers.FirstOrDefault(t => t.GroupId == obj.GroupId && t.MemberId == obj.MemberId) ?? null;
-        if (res == null)
-        {
-            await groupMemberService.Create(obj);
-            GroupMembers.Add(obj);
-            return obj;
-        }
-        else
-        {
-            return res;
-        }
-    }
-
-    private async Task<GroupAdmin> GetOrCreateGroupAdmin(GroupAdmin obj)
-    {
-        var res = GroupAdmins.FirstOrDefault(t => t.GroupId == obj.GroupId && t.MemberId == obj.MemberId) ?? null;
-        if (res == null)
-        {
-            await groupAdminService.Create(obj);
-            GroupAdmins.Add(obj);
             return obj;
         }
         else
@@ -1415,11 +1349,11 @@ public class MockupService
             i++;
         }
 
-        var pck1 = Packages.FirstOrDefault(t => t.Name == "Skatt næring");
-        var pck2 = Packages.FirstOrDefault(t => t.Name == "Skattegrunnlag");
-        var pck3 = Packages.FirstOrDefault(t => t.Name == "Merverdiavgift");
-        var pck4 = Packages.FirstOrDefault(t => t.Name == "Regnskap og økonomirapportering");
-        var pck5 = Packages.FirstOrDefault(t => t.Name == "Revisorattesterer");
+        var pck1 = Packages.First(t => t.Name == "Skatt næring") ?? throw new Exception("Missing package 'Skatt næring'");
+        var pck2 = Packages.First(t => t.Name == "Skattegrunnlag") ?? throw new Exception("Missing package 'Skattegrunnlag'");
+        var pck3 = Packages.First(t => t.Name == "Merverdiavgift") ?? throw new Exception("Missing package 'Merverdiavgift'");
+        var pck4 = Packages.First(t => t.Name == "Regnskap og økonomirapportering") ?? throw new Exception("Missing package 'Regnskap og økonomirapportering'");
+        var pck5 = Packages.First(t => t.Name == "Revisorattesterer") ?? throw new Exception("Missing package 'Revisorattesterer'");
 
         #region Regn+Revi Assignments
         /*Regn+Revi Assignment*/

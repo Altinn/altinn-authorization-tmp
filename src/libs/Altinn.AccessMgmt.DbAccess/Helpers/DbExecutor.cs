@@ -23,10 +23,11 @@ public class DbExecutor(NpgsqlDataSource connection, IDbConverter dbConverter)
             cmd.Parameters.AddRange(parameters.ToArray());
             return await cmd.ExecuteNonQueryAsync(cancellationToken: cancellationToken);
         }
-        catch
+        catch (Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(query);
+            Console.WriteLine(ex.Message);
             Console.ForegroundColor = ConsoleColor.White;
             throw;
         }
@@ -35,7 +36,8 @@ public class DbExecutor(NpgsqlDataSource connection, IDbConverter dbConverter)
     /// <summary>
     /// Executes a query and maps the result to objects of type T.
     /// </summary>
-    public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, Dictionary<string, object> parameters, CancellationToken cancellationToken = default) where T : new()
+    public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, Dictionary<string, object> parameters, CancellationToken cancellationToken = default) 
+        where T : new()
     {
         await using var cmd = _connection.CreateCommand(query);
         var param = new List<NpgsqlParameter>();
@@ -54,11 +56,11 @@ public class DbExecutor(NpgsqlDataSource connection, IDbConverter dbConverter)
     /// <summary>
     /// Executes a query and maps the result to objects of type T.
     /// </summary>
-    public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, List<NpgsqlParameter> parameters, CancellationToken cancellationToken = default) where T : new()
+    public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, List<NpgsqlParameter> parameters, CancellationToken cancellationToken = default) 
+        where T : new()
     {
         await using var cmd = _connection.CreateCommand(query);
         cmd.Parameters.AddRange(parameters.ToArray());
         return _dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
     }
 }
-
