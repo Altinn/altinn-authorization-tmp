@@ -73,6 +73,20 @@ public static class DefinitionStore
         return Store.GetOrAdd(typeof(T), _ => new DefinitionBuilder<T>().Build());
     }
 
+    /// <summary>
+    /// Retrieves all registered database definitions
+    /// </summary>
+    /// <returns></returns>
+    public static IEnumerable<DbDefinition> GetAllDefinitions()
+    {
+        return Store.Values;
+    }
+
+    /// <summary>
+    /// Attempts to retrieve the base database definition for the specified type.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     public static DbDefinition? TryGetBaseDefinition<T>()
     {
         return Store.Where(t => t.Value.ModelType == typeof(T)).FirstOrDefault().Value;
@@ -123,8 +137,8 @@ public static class DefinitionStore
                 .Where(t => typeof(IDbDefinition).IsAssignableFrom(t)
                     && !t.IsInterface
                     && !t.IsAbstract
-                // Uncomment and adjust the following line if namespace filtering is needed:
-                // && t.Namespace?.StartsWith("MyProject.Definitions") == true
+                //// Uncomment and adjust the following line if namespace filtering is needed:
+                //// && t.Namespace?.StartsWith("MyProject.Definitions") == true
                 )
                 .Select(t => (IDbDefinition)Activator.CreateInstance(t)!)
                 .ToList();

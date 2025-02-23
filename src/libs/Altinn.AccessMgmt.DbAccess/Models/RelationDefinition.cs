@@ -23,6 +23,11 @@ public class RelationDefinition
     public Type Ref { get; set; }
 
     /// <summary>
+    /// The reference type of the foreign key
+    /// </summary>
+    public Type ExtendedType { get; set; }
+
+    /// <summary>
     /// The base property for the foreign key
     /// </summary>
     public string BaseProperty { get; set; }

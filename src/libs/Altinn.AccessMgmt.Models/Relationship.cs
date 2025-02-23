@@ -8,11 +8,34 @@ namespace Altinn.AccessMgmt.Models;
 /// </summary>
 public class Relationship
 {
+    /// <summary>
+    /// Identity
+    /// </summary>
     public Guid Id { get; set; }
+    
+    /// <summary>
+    /// From
+    /// </summary>
     public Guid FromId { get; set; }
+    
+    /// <summary>
+    /// Role
+    /// </summary>
     public Guid RoleId { get; set; }
+    
+    /// <summary>
+    /// To
+    /// </summary>
     public Guid ToId { get; set; }
+    
+    /// <summary>
+    /// Via
+    /// </summary>
     public Guid ViaId { get; set; }
+
+    /// <summary>
+    /// Type
+    /// </summary>
     public string Type { get; set; }
 }
 

@@ -15,12 +15,23 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         private readonly NpgsqlDataSource _connection;
         private readonly DbDefinition _definition;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BulkImporter{T}"/> class.
+        /// </summary>
+        /// <param name="connection">NpgsqlDataSource</param>
+        /// <param name="definition">DbDefinition</param>
         public BulkImporter(NpgsqlDataSource connection, DbDefinition definition)
         {
             _connection = connection;
             _definition = definition;
         }
 
+        /// <summary>
+        /// Ingests a list of data into the database using PostgreSQL's binary COPY.
+        /// </summary>
+        /// <param name="data">Data</param>
+        /// <param name="cancellationToken">CancellationToken</param>
+        /// <returns></returns>
         public async Task<int> Ingest(List<T> data, CancellationToken cancellationToken = default)
         {
             using var conn = await _connection.OpenConnectionAsync();
@@ -80,14 +91,14 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
                 {
                     batchCompleted++;
                     completed = 0;
-                    Console.WriteLine($"Ingested {batchCompleted * batchSize + completed}");
+                    Console.WriteLine($"Ingested {(batchCompleted * batchSize) + completed}");
                 }
             }
 
-            Console.WriteLine($"Ingested {batchCompleted * batchSize + completed}");
+            Console.WriteLine($"Ingested {(batchCompleted * batchSize) + completed}");
             writer.Complete();
 
-            return batchCompleted * batchSize + completed;
+            return (batchCompleted * batchSize) + completed;
         }
 
         private string GetPostgresDefinition(bool includeAlias = true, bool useHistory = false, bool useTranslation = false)
@@ -110,6 +121,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
             {
                 res += $" AS {_definition.ModelType.Name}";
             }
+
             return res;
         }
 
