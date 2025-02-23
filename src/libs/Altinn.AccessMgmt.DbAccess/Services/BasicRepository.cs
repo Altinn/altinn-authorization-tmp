@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using Altinn.AccessMgmt.DbAccess.Contracts;
@@ -13,14 +14,34 @@ namespace Altinn.AccessMgmt.DbAccess.Services;
 public abstract class BasicRepository<T> : IDbBasicRepository<T>
     where T : class, new()
 {
+    /// <summary>
+    /// DbAccessConfig
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Reviewed")]
     protected readonly DbAccessConfig config;
-    protected readonly NpgsqlDataSource connection;
+
+    /// <summary>
+    /// NpgsqlDataSource
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Reviewed")]
+    protected NpgsqlDataSource connection;
+
+    /// <summary>
+    /// DbConverter
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Reviewed")]
     protected readonly IDbConverter dbConverter;
 
+    /// <summary>
+    /// BasicRepository
+    /// </summary>
+    /// <param name="options">DbAccessConfig</param>
+    /// <param name="connection">NpgsqlDataSource</param>
+    /// <param name="dbConverter">IDbConverter</param>
     public BasicRepository(IOptions<DbAccessConfig> options, NpgsqlDataSource connection, IDbConverter dbConverter)
     {
         config = options.Value;
-        this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
+        this.connection = connection;
         this.dbConverter = dbConverter;
     }
 
@@ -44,6 +65,11 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
         string propertyName = ExtractPropertyInfo(property).Name;
         var filters = new List<GenericFilter>
         {

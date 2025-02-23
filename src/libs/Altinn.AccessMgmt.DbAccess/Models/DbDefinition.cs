@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessMgmt.DbAccess.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Altinn.AccessMgmt.DbAccess.Models;
 
 /// <summary>
 /// Represents the database definition for an entity, including its mapping details,
@@ -38,14 +40,29 @@ public class DbDefinition(Type type)
     public CrossRelationDefinition CrossRelation { get; set; }
 
     /// <summary>
+    /// Indicates whether the entity is a view.
+    /// </summary>
+    public bool IsView { get; set; }
+
+    /// <summary>
+    /// The SQL query used in the view.
+    /// </summary>
+    public string ViewQuery { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of types that this entity depends on in views.
+    /// </summary>
+    public List<Type> ViewDependencies { get; set; } = new();
+
+    /// <summary>
     /// Indicates whether the entity supports translations.
     /// </summary>
-    public bool HasTranslation = false;
+    public bool HasTranslation { get; set; } = false;
 
     /// <summary>
     /// Indicates whether the entity supports history tracking.
     /// </summary>
-    public bool HasHistory = false;
+    public bool HasHistory { get; set; } = false;
 
     /// <summary>
     /// Gets or sets the default language code for translations (e.g., "nob").

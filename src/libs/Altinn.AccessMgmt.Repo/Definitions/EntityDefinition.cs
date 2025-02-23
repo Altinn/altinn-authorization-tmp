@@ -22,8 +22,8 @@ public class EntityDefinition : IDbDefinition
             def.RegisterProperty(t => t.TypeId);
             def.RegisterProperty(t => t.VariantId);
 
-            def.RegisterExtendedProperty<ExtEntityVariant, EntityType>(t => t.TypeId, t => t.Id, t => t.Type, cascadeDelete: false);
-            def.RegisterExtendedProperty<ExtEntityVariant, EntityVariant>(t => t.TypeId, t => t.Id, t => t.Type, cascadeDelete: false);
+            def.RegisterExtendedProperty<ExtEntity, EntityType>(t => t.TypeId, t => t.Id, t => t.Type, cascadeDelete: false);
+            def.RegisterExtendedProperty<ExtEntity, EntityVariant>(t => t.TypeId, t => t.Id, t => t.Type, cascadeDelete: false);
             def.RegisterUniqueConstraint([t => t.Name, t => t.TypeId, t => t.RefId]);
         });
     }

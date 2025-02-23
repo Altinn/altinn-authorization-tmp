@@ -27,7 +27,7 @@ public class RolePackageDefinition : IDbDefinition
             def.RegisterExtendedProperty<ExtRolePackage, Package>(t => t.PackageId, t => t.Id, t => t.Package, cascadeDelete: true);
             def.RegisterExtendedProperty<ExtRolePackage, EntityVariant>(t => t.EntityVariantId!, t => t.Id, t => t.EntityVariant!, cascadeDelete: false, optional: true);
 
-            def.RegisterUniqueConstraint([t => t.RoleId, t => t.PackageId, t => t.EntityVariantId]);
+            def.RegisterUniqueConstraint([t => t.RoleId, t => t.PackageId, t => t.EntityVariantId!]);
         });
     }
 }

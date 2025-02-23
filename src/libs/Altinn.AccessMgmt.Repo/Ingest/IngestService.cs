@@ -2,7 +2,7 @@
 using Altinn.AccessMgmt.DbAccess.Contracts;
 using Altinn.AccessMgmt.DbAccess.Models;
 using Altinn.AccessMgmt.Models;
-using Altinn.AccessMgmt.Repo.Data.Contracts;
+using Altinn.AccessMgmt.Repo.Contracts;
 using Altinn.AccessMgmt.Repo.Ingest.Models;
 using Microsoft.Extensions.Options;
 

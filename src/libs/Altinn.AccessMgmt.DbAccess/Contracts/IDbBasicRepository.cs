@@ -1,6 +1,6 @@
-﻿using Altinn.AccessMgmt.DbAccess.Helpers;
+﻿using System.Linq.Expressions;
+using Altinn.AccessMgmt.DbAccess.Helpers;
 using Altinn.AccessMgmt.DbAccess.Models;
-using System.Linq.Expressions;
 
 namespace Altinn.AccessMgmt.DbAccess.Contracts;
 
@@ -38,7 +38,6 @@ public interface IDbBasicRepository<T>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>T<see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
     Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Retrieves a collection of entities that match the criteria specified by a <see cref="GenericFilterBuilder{T}"/>.

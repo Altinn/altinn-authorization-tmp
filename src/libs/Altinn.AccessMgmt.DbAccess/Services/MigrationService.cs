@@ -14,17 +14,17 @@ public class MigrationService
     /// <summary>
     /// Configuration
     /// </summary>
-    protected readonly DbAccessConfig config;
+    private readonly DbAccessConfig config;
 
     /// <summary>
     /// Connection
     /// </summary>
-    protected readonly NpgsqlDataSource connection;
+    private readonly NpgsqlDataSource connection;
 
     /// <summary>
     /// Database converter
     /// </summary>
-    protected readonly IDbConverter dbConverter;
+    private readonly IDbConverter dbConverter;
 
     /// <summary>
     /// Migration Services
@@ -56,8 +56,6 @@ public class MigrationService
     //private void ExportScripts() { }
 
     */
-
-    private Dictionary<Type, bool> TypesMigrated { get; set; } = [];
 
     private Dictionary<Type, MigrationScriptCollection> Scripts { get; set; } = [];
 
@@ -109,7 +107,6 @@ public class MigrationService
         }
 
         await Init();
-
         await ExecuteMigration();
     }
 
@@ -123,10 +120,11 @@ public class MigrationService
     {
         List<Type> types = [.. AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(assembly => assembly.GetTypes())
-            .Where(type => type.Namespace == definitionNamespace)];
+            .Where(type => type.Namespace == definitionNamespace && type.BaseType == typeof(object))];
 
         foreach (var type in types)
         {
+            Console.WriteLine(type.FullName);
             Generate(type);
         }
     }
@@ -146,63 +144,145 @@ public class MigrationService
     /// <param name="type">Type</param>
     public void Generate(Type type) 
     {
-        if (!HasInitialized)
+        var dbDefinition = DefinitionStore.TryGetDefinition(type); // ?? throw new Exception($"Definition for '{type.Name}' not found.");
+        if (dbDefinition == null)
         {
-            throw new Exception("MigrationService not initialized");
+            Console.WriteLine($"Definition for '{type.Name}' not found.");
+            return;
         }
 
-        var dbDefinition = DefinitionStore.TryGetDefinition(type) ?? throw new Exception($"Definition for '{type.Name}' not found.");
         SqlQueryBuilder queryBuilder = new SqlQueryBuilder(dbDefinition);
         Scripts.Add(type, queryBuilder.GetMigrationScripts());
     }
     #endregion
 
-    private async Task ExecuteMigration(int maxRetry = 3)
+    private async Task ExecuteMigration(int maxRetry = 10, CancellationToken cancellationToken = default)
     {
-        bool needRetry = false;
-        int retryAttempts = 0;
-        
-        while (needRetry && retryAttempts < maxRetry)
+        var status = new Dictionary<Type, bool>();
+        var retry = new Dictionary<Type, int>(); // Add reson ... For log
+        var failed = new Dictionary<Type, string>();
+
+        foreach (var key in Scripts.Keys)
         {
+            status[key] = false;
+            retry[key] = 0;
+        }
+
+        while (status.Values.Contains(false) && !failed.Any() && !cancellationToken.IsCancellationRequested)
+        {
+            Console.WriteLine("============LOOP==============");
             foreach (var script in Scripts)
             {
-                if (script.Value.Dependencies.Count == 0)
+                if (status[script.Key])
                 {
-                    await ExecuteMigration(script.Key, script.Value);
+                    continue;
                 }
-                else
+
+                if (retry[script.Key] > maxRetry)
                 {
-                    bool ready = true;
+                    failed[script.Key] = "Max retry reached";
+                    continue;
+                }
+
+                if (!script.Value.Dependencies.Any())
+                {
+                    try
+                    {
+                        await ExecuteMigration(script.Key, script.Value);
+                        status[script.Key] = true;
+                        retry[script.Key] = 0;
+                        continue;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Migration '{script.Key.Name}' failed");
+                        Console.WriteLine(ex.Message);
+                        retry[script.Key]++;
+                        continue;
+                    }
+                }
+
+                bool needMigration = script.Value.Scripts.Keys.Any(a => NeedMigration(script.Key, a));
+
+                if (!needMigration)
+                {
+                    status[script.Key] = true;
+                    retry[script.Key] = 0;
+                    continue;
+                }
+
+                // Check if all dependencies are migrated
+                bool ready = script.Value.Dependencies.All(dep => status.ContainsKey(dep.Key) && status[dep.Key]);
+
+                if (!ready)
+                {
+                    Console.WriteLine($"Migration '{script.Key.Name}' not ready");
+
                     foreach (var dep in script.Value.Dependencies)
                     {
-                        if (!TypesMigrated.ContainsKey(dep.Key))
-                        {
-                            ready = false;
-                            break;
-                        }
+                        Console.WriteLine("Dep:" + dep.Key.Name);
                     }
 
-                    if (ready)
-                    {
-                        try
-                        {
-                            await ExecuteMigration(script.Key, script.Value);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Migration '{script.Key.Name}' failed (adding to retry): {ex.Message}");
-                            needRetry = true;
-                        }
-                    }
-                    else
-                    {
-                        needRetry = true;
-                    }
+                    retry[script.Key]++;
+                    continue;
+                }
+
+                try
+                {
+                    await ExecuteMigration(script.Key, script.Value);
+                    status[script.Key] = true;
+                    retry[script.Key] = 0;
+                    continue;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Migration '{script.Key.Name}' failed: {ex.Message}");
+                    retry[script.Key]++;
+                    continue;
                 }
             }
 
-            retryAttempts++;
+            Console.WriteLine("Migrationstatus:");
+            foreach (var key in status.Keys)
+            {
+                if (status[key])
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                }
+
+                Console.WriteLine($"Migration '{key.Name}' status: {status[key]}");
+            }
+
+            Console.ForegroundColor = ConsoleColor.White;
         }
+
+        Console.WriteLine("============FINAL==============");
+        Console.WriteLine("Migrationstatus:");
+        foreach (var key in status.Keys)
+        {
+            if (status[key])
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+
+            Console.WriteLine($"Migration '{key.Name}' status: {status[key]}");
+        }
+
+        foreach (var f in failed)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"Migration '{f.Key.Name}' error: {f.Value}");
+        }
+
+        Console.ForegroundColor = ConsoleColor.White;
     }
 
     private async Task ExecuteMigration(Type type, MigrationScriptCollection collection)

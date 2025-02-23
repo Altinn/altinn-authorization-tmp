@@ -258,7 +258,6 @@ public class SqlQueryBuilder(DbDefinition definition)
         AND X.{filterColumn} = @X_{filterColumn}";
     }
 
-
     private string GenerateFilterStatement(string tableAlias, IEnumerable<GenericFilter>? filters)
     {
         if (filters == null || !filters.Any())
@@ -421,6 +420,17 @@ public class SqlQueryBuilder(DbDefinition definition)
     {
         var scriptCollection = new MigrationScriptCollection(_definition.ModelType);
 
+        if (_definition.IsView)
+        {
+            scriptCollection.AddScripts(CreateView());
+            foreach (var dep in _definition.ViewDependencies)
+            {
+                scriptCollection.AddDependency(dep);
+            }
+
+            return scriptCollection;
+        }
+
         scriptCollection.AddScripts(CreateTable());
         
         var pk = _definition.Constraints.FirstOrDefault(t => t.IsPrimaryKey);
@@ -457,6 +467,20 @@ public class SqlQueryBuilder(DbDefinition definition)
         }
 
         return scriptCollection;
+    }
+
+    private OrderedDictionary<string, string> CreateView()
+    {
+        var scripts = new OrderedDictionary<string, string>();
+
+        var query = $"""
+        CREATE OR REPLACE VIEW {GetTableName(includeAlias: false)} AS
+        {_definition.ViewQuery}
+        """;    
+
+        scripts.Add($"CREATE VIEW {GetTableName(includeAlias: false)}", query);
+
+        return scripts;
     }
 
     private OrderedDictionary<string, string> CreateTable()
@@ -582,16 +606,18 @@ public class SqlQueryBuilder(DbDefinition definition)
     {
         string name = string.IsNullOrEmpty(constraint.Name) ? _definition.ModelType.Name : constraint.Name;
 
+        var props = _definition.ModelType.GetProperties();
+
         foreach (var property in constraint.Properties)
         {
-            if (_definition.ModelType.GetProperties().Count(t => t.Name.Equals(property)) == 0)
+            if (_definition.ModelType.GetProperties().Count(t => t.Name.Equals(property.Key)) == 0)
             {
-                throw new Exception($"Property {property} not found on {_definition.ModelType.Name}");
+                throw new Exception($"Property {property.Key} not found on {_definition.ModelType.Name}");
             }
         }
 
         string key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.UC_{name}";
-        string query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT UC_{name} UNIQUE ({string.Join(',', constraint.Properties)});";
+        string query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT UC_{name} UNIQUE ({string.Join(',', constraint.Properties.Keys)});";
 
         return (key, query);
     }

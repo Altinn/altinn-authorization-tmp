@@ -1,10 +1,10 @@
 ﻿using Altinn.AccessMgmt.DbAccess.Contracts;
 using Altinn.AccessMgmt.DbAccess.Helpers;
 using Altinn.AccessMgmt.DbAccess.Services;
-using Altinn.AccessMgmt.Repo.Data.Contracts;
-using Altinn.AccessMgmt.Repo.Data.Services;
+using Altinn.AccessMgmt.Repo.Contracts;
 using Altinn.AccessMgmt.Repo.Ingest;
 using Altinn.AccessMgmt.Repo.Mock;
+using Altinn.AccessMgmt.Repo.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -63,9 +63,10 @@ public static class DbAccessHostExtensions
     public static async Task<IHost> UseDb(this IHost host)
     {
         var migration = host.Services.GetRequiredService<MigrationService>();
-        migration.Generate("Altinn.AccessMgmt.Models"); //Altinn.AccessMgmt.Repo.Definitions (?)
+        migration.Generate("Altinn.AccessMgmt.Models");
         await migration.Migrate();
 
+        /*
         var dbIngest = host.Services.GetRequiredService<IngestService>();
         if (dbIngest != null)
         {
@@ -77,6 +78,7 @@ public static class DbAccessHostExtensions
         {
             await mockService.Run();
         }
+        */
 
         return host;
     }
@@ -112,11 +114,8 @@ public static class DbAccessHostExtensions
         services.AddSingleton<IAssignmentService, AssignmentDataService>();
         services.AddSingleton<IAssignmentPackageService, AssignmentPackageDataService>();
         services.AddSingleton<IAssignmentResourceService, AssignmentResourceDataService>();
-        services.AddSingleton<IGroupService, GroupDataService>();
-        services.AddSingleton<IGroupMemberService, GroupMemberDataService>();
-        services.AddSingleton<IGroupAdminService, GroupAdminDataService>();
-        services.AddSingleton<IGroupDelegationService, GroupDelegationDataService>();
         services.AddSingleton<IDelegationService, DelegationDataService>();
+        services.AddSingleton<IInheritedAssignmentService, InheritedAssignmentDataService>();
         #endregion
     }
 }
