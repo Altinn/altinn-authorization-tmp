@@ -29,6 +29,41 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         #region Basic
 
         /// <summary>
+        /// Sets whether the entity is a view.
+        /// </summary>
+        /// <param name="value">Default: true</param>
+        /// <returns></returns>
+        public DefinitionBuilder<T> IsView(bool value = true)
+        {
+            // Add view script??
+            DbDefinition.IsView = value;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets whether the entity is a view.
+        /// </summary>
+        /// <param name="query">Sql Query</param>
+        /// <returns></returns>
+        public DefinitionBuilder<T> SetViewQuery(string query)
+        {
+            // Add view script??
+            DbDefinition.ViewQuery = query;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets whether the entity is a view.
+        /// </summary>
+        /// <param name="query">Sql Query</param>
+        /// <returns></returns>
+        public DefinitionBuilder<T> AddViewDependency<TDep>()
+        {
+            DbDefinition.ViewDependencies.Add(typeof(TDep));
+            return this;
+        }
+
+        /// <summary>
         /// Sets whether the entity supports translation.
         /// </summary>
         /// <param name="value">If set to <c>true</c>, translations are enabled; otherwise, they are disabled.</param>
@@ -58,19 +93,65 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         /// <param name="defaultValue">The default value for the column, if any.</param>
         /// <param name="length">The maximum length of the column (if applicable).</param>
         /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        public DefinitionBuilder<T> RegisterProperty(Expression<Func<T, object>> column, bool nullable = false, string? defaultValue = null, int? length = null)
+        public DefinitionBuilder<T> RegisterProperty(
+    Expression<Func<T, object>> column,
+    bool nullable = false,
+    string? defaultValue = null,
+    int? length = null)
         {
             var propertyInfo = ExtractPropertyInfo(column);
-            var columnDef = new Models.PropertyDefinition()
+            var propertyType = propertyInfo.PropertyType;
+
+            // Hvis typen er en kompleks type, send den til `RegisterComplexProperty`
+            if (propertyType.Namespace != null && propertyType.Namespace == typeof(T).Namespace
+                && !propertyType.IsPrimitive && propertyType != typeof(string))
             {
-                Name = propertyInfo.Name,
-                Property = propertyInfo,
-                DefaultValue = defaultValue,
-                IsNullable = nullable
-            };
-            DbDefinition.Properties.Add(columnDef);
+                RegisterComplexProperty(propertyType, propertyInfo.Name, nullable);
+            }
+            else
+            {
+                // Registrer normal (ikke-kompleks) egenskap
+                var columnDef = new Models.PropertyDefinition()
+                {
+                    Name = propertyInfo.Name,
+                    Property = propertyInfo,
+                    DefaultValue = defaultValue,
+                    IsNullable = nullable
+                };
+
+                DbDefinition.Properties.Add(columnDef);
+            }
 
             return this;
+        }
+
+        private void RegisterComplexProperty(Type complexType, string parentPrefix, bool nullable)
+        {
+            foreach (var subProperty in complexType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                string prefix = $"{parentPrefix}_{subProperty.Name}";
+
+                if (subProperty.PropertyType.Namespace != null &&
+                    subProperty.PropertyType.Namespace == typeof(T).Namespace &&
+                    !subProperty.PropertyType.IsPrimitive &&
+                    subProperty.PropertyType != typeof(string))
+                {
+                    // Rekursivt kall for nested objekter
+                    RegisterComplexProperty(subProperty.PropertyType, prefix, nullable);
+                }
+                else
+                {
+                    // Registrer primitiv egenskap med korrekt prefiks
+                    var columnDef = new Models.PropertyDefinition()
+                    {
+                        Name = prefix,
+                        Property = subProperty,
+                        IsNullable = nullable
+                    };
+
+                    DbDefinition.Properties.Add(columnDef);
+                }
+            }
         }
 
         /// <summary>
@@ -80,14 +161,14 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         /// <param name="isPrimaryKey">Specifies whether this is a primary key constraint.</param>
         /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         /// <exception cref="Exception">Thrown if any of the specified properties does not exist on the model type.</exception>
-        private DefinitionBuilder<T> RegisterConstraint(IEnumerable<Expression<Func<T, object?>>> properties, bool isPrimaryKey)
+        private DefinitionBuilder<T> RegisterConstraint(IEnumerable<Expression<Func<T, object>>> properties, bool isPrimaryKey)
         {
             var propertyDefinitions = new Dictionary<string, Type>();
             var propertyInfos = typeof(T).GetProperties().ToDictionary(p => p.Name, p => p.PropertyType);
 
             foreach (var property in properties)
             {
-                var propertyInfo = ExtractPropertyInfo(property);
+                var propertyInfo = ExtractPropertyInfo<T>(property);
 
                 if (!propertyInfos.ContainsKey(propertyInfo.Name))
                 {
@@ -122,7 +203,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         /// </summary>
         /// <param name="properties">A collection of expressions identifying the properties that form the primary key.</param>
         /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        public DefinitionBuilder<T> RegisterPrimaryKey(IEnumerable<Expression<Func<T, object?>>> properties)
+        public DefinitionBuilder<T> RegisterPrimaryKey(IEnumerable<Expression<Func<T, object>>> properties)
             => RegisterConstraint(properties, isPrimaryKey: true);
 
         /// <summary>
@@ -130,9 +211,8 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
         /// </summary>
         /// <param name="properties">A collection of expressions identifying the properties that should have a unique constraint.</param>
         /// <returns>The current <see cref="DefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        public DefinitionBuilder<T> RegisterUniqueConstraint(IEnumerable<Expression<Func<T, object?>>> properties)
+        public DefinitionBuilder<T> RegisterUniqueConstraint(IEnumerable<Expression<Func<T, object>>> properties)
             => RegisterConstraint(properties, isPrimaryKey: false);
-
 
         #endregion
 
@@ -167,6 +247,7 @@ namespace Altinn.AccessMgmt.DbAccess.Helpers
                 Name = $"FK_{typeof(T).Name}_{extendedProperty}_{typeof(TJoin).Name}",
                 Base = typeof(T),
                 Ref = typeof(TJoin),
+                ExtendedType = typeof(TExtended),
                 BaseProperty = baseProperty,
                 RefProperty = refProperty,
                 ExtendedProperty = extendedProperty,

@@ -71,27 +71,3 @@ public class ExtPackage : Package
     /// </summary>
     public Area Area { get; set; }
 }
-
-public class Meta
-{
-    public Guid Id { get; set; }
-    public string Title { get; set; }
-    public string Ingress { get; set; }
-    public string Body { get; set; }
-}
-
-public class MetaSection
-{
-    public Guid Id { get; set; }
-    public Guid MetaId { get; set; }
-    public string Title { get; set; }
-    public string Body { get; set; }
-}
-
-public class MetaLink
-{
-    public Guid Id { get; set; }
-    public Guid MetaId { get; set; }
-    public string Title { get; set; }
-    public string Body { get; set; }
-}

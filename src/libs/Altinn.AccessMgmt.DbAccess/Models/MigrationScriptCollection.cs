@@ -68,11 +68,16 @@ public class MigrationScriptCollection
     /// <param name="type">Type</param>
     public void AddDependency(Type type)
     {
-        if (Dependencies.ContainsKey(type))
+        if (type.Equals(Type))
         {
-            Dependencies[type]++;
+            return;
         }
 
-        Dependencies.Add(type, 1);
+        if (!Dependencies.ContainsKey(type))
+        {
+            Dependencies.Add(type, 0);
+        }
+
+        Dependencies[type]++;
     }
 }

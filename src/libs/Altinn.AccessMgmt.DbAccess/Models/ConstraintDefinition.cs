@@ -19,16 +19,4 @@ public class ConstraintDefinition
     /// Indicates whether this constraint represents the primary key of the model.
     /// </summary>
     public bool IsPrimaryKey { get; set; } = false;
-
-    public ConstraintDefinition() { }
-
-    public ConstraintDefinition(string name, string propertyName, Type propertyType, bool isPrimaryKey = false)
-    {
-        Name = name;
-        Properties = new Dictionary<string, Type>
-        {
-            { propertyName, propertyType }
-        };
-        IsPrimaryKey = isPrimaryKey;
-    }
 }
