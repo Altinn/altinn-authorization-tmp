@@ -24,8 +24,4 @@
     <EmbeddedResource Include="Migration/**/*.sql" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Consent\" />
-  </ItemGroup>
-
 </Project>
