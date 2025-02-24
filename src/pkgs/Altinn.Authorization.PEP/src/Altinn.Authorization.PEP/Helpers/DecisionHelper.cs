@@ -423,7 +423,8 @@ namespace Altinn.Common.PEP.Helpers
         {
             if (claim.Type.Equals("authorization_details"))
             {
-                userClaim = JsonSerializer.Deserialize<SystemUserClaim>(claim.Value);
+                JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web);
+                userClaim = JsonSerializer.Deserialize<SystemUserClaim>(claim.Value, jsonOptions);
                 if (userClaim?.Systemuser_id != null && userClaim.Systemuser_id.Count > 0)
                 {
                     return true;
