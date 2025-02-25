@@ -1,9 +1,10 @@
 ﻿using System.Data;
 using System.Security.Cryptography;
 using System.Text;
-using Altinn.AccessMgmt.DbAccess.Models;
-using Altinn.AccessMgmt.Models;
-using Altinn.AccessMgmt.Repo.Contracts;
+using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+
 
 //// using Altinn.Authorization.Host.Lease;
 using Microsoft.Extensions.Logging;
@@ -20,79 +21,79 @@ public class MockupService
     private readonly ILogger<MockupService> logger;
     //// private readonly IAltinnLease lease;
     private readonly DbAccessConfig config;
-    private readonly IEntityTypeService entityTypeService;
-    private readonly IEntityVariantService entityVariantService;
-    private readonly IEntityService entityService;
-    private readonly IProviderService providerService;
-    private readonly IResourceTypeService resourceTypeService;
-    private readonly IResourceGroupService resourceGroupService;
-    private readonly IPackageService packageService;
-    private readonly IAreaService areaService;
-    private readonly IPackageResourceService packageResourceService;
-    private readonly IAssignmentResourceService assignmentResourceService;
-    private readonly IAssignmentPackageService assignmentPackageService;
-    private readonly IResourceService resourceService;
-    private readonly IRoleResourceService roleResourceService;
-    private readonly IRolePackageService rolePackageService;
-    private readonly IPolicyService policyService;
-    private readonly IPolicyElementService policyElementService;
-    private readonly IElementTypeService elementTypeService;
-    private readonly IElementService elementService;
-    private readonly IRoleService roleService;
-    private readonly IAssignmentService assignmentService;
-    private readonly IDelegationService delegationService;
+    private readonly IEntityTypeRepository entityTypeService;
+    private readonly IEntityVariantRepository entityVariantService;
+    private readonly IEntityRepository entityService;
+    private readonly IProviderRepository providerService;
+    private readonly IResourceTypeRepository resourceTypeService;
+    private readonly IResourceGroupRepository resourceGroupService;
+    private readonly IPackageRepository packageService;
+    private readonly IAreaRepository areaService;
+    private readonly IPackageResourceRepository packageResourceService;
+    private readonly IAssignmentResourceRepository assignmentResourceService;
+    private readonly IAssignmentPackageRepository assignmentPackageService;
+    private readonly IResourceRepository resourceService;
+    private readonly IRoleResourceRepository roleResourceService;
+    private readonly IRolePackageRepository rolePackageService;
+    private readonly IPolicyRepository policyService;
+    private readonly IPolicyElementRepository policyElementService;
+    private readonly IElementTypeRepository elementTypeService;
+    private readonly IElementRepository elementService;
+    private readonly IRoleRepository roleService;
+    private readonly IAssignmentRepository assignmentService;
+    private readonly IDelegationRepository delegationService;
 
     /// <summary>
     /// MockupService
     /// </summary>
     /// <param name="logger">ILogger</param>
     /// <param name="configOptions">DbAccessConfig</param>
-    /// <param name="entityTypeService">IEntityTypeService</param>
-    /// <param name="entityVariantService">IEntityVariantService</param>
-    /// <param name="entityService">IEntityService</param>
-    /// <param name="providerService">IProviderService</param>
-    /// <param name="resourceTypeService">IResourceTypeService</param>
-    /// <param name="resourceGroupService">IResourceGroupService</param>
-    /// <param name="packageService">IPackageService</param>
-    /// <param name="areaService">IAreaService</param>
-    /// <param name="packageResourceService">IPackageResourceService</param>
-    /// <param name="assignmentResourceService">IAssignmentResourceService</param>
-    /// <param name="assignmentPackageService">IAssignmentPackageService</param>
-    /// <param name="resourceService">IResourceService</param>
-    /// <param name="roleResourceService">IRoleResourceService</param>
-    /// <param name="rolePackageService">IRolePackageService</param>
-    /// <param name="policyService">IPolicyService</param>
-    /// <param name="policyElementService">IPolicyElementService</param>
-    /// <param name="elementTypeService">IElementTypeService</param>
-    /// <param name="elementService">IElementService</param>
-    /// <param name="roleService">IRoleService</param>
-    /// <param name="assignmentService">IAssignmentService</param>
-    /// <param name="delegationService">IDelegationService</param>
+    /// <param name="entityTypeService">IEntityTypeRepository</param>
+    /// <param name="entityVariantService">IEntityVariantRepository</param>
+    /// <param name="entityService">IEntityRepository</param>
+    /// <param name="providerService">IProviderRepository</param>
+    /// <param name="resourceTypeService">IResourceTypeRepository</param>
+    /// <param name="resourceGroupService">IResourceGroupRepository</param>
+    /// <param name="packageService">IPackageRepository</param>
+    /// <param name="areaService">IAreaRepository</param>
+    /// <param name="packageResourceService">IPackageResourceRepository</param>
+    /// <param name="assignmentResourceService">IAssignmentResourceRepository</param>
+    /// <param name="assignmentPackageService">IAssignmentPackageRepository</param>
+    /// <param name="resourceService">IResourceRepository</param>
+    /// <param name="roleResourceService">IRoleResourceRepository</param>
+    /// <param name="rolePackageService">IRolePackageRepository</param>
+    /// <param name="policyService">IPolicyRepository</param>
+    /// <param name="policyElementService">IPolicyElementRepository</param>
+    /// <param name="elementTypeService">IElementTypeRepository</param>
+    /// <param name="elementService">IElementRepository</param>
+    /// <param name="roleService">IRoleRepository</param>
+    /// <param name="assignmentService">IAssignmentRepository</param>
+    /// <param name="delegationService">IDelegationRepository</param>
     public MockupService(
         ILogger<MockupService> logger,
         IOptions<DbAccessConfig> configOptions,
         //// IAltinnLease lease,
-        IEntityTypeService entityTypeService,
-        IEntityVariantService entityVariantService,
-        IEntityService entityService,
-        IProviderService providerService,
-        IResourceTypeService resourceTypeService,
-        IResourceGroupService resourceGroupService,
-        IPackageService packageService,
-        IAreaService areaService,
-        IPackageResourceService packageResourceService,
-        IAssignmentResourceService assignmentResourceService,
-        IAssignmentPackageService assignmentPackageService,
-        IResourceService resourceService,
-        IRoleResourceService roleResourceService,
-        IRolePackageService rolePackageService,
-        IPolicyService policyService,
-        IPolicyElementService policyElementService,
-        IElementTypeService elementTypeService,
-        IElementService elementService,
-        IRoleService roleService,
-        IAssignmentService assignmentService,
-        IDelegationService delegationService
+        IEntityTypeRepository entityTypeService,
+        IEntityVariantRepository entityVariantService,
+        IEntityRepository entityService,
+        IProviderRepository providerService,
+        IResourceTypeRepository resourceTypeService,
+        IResourceGroupRepository resourceGroupService,
+        IPackageRepository packageService,
+        IAreaRepository areaService,
+        IPackageResourceRepository packageResourceService,
+        IAssignmentResourceRepository assignmentResourceService,
+        IAssignmentPackageRepository assignmentPackageService,
+        IResourceRepository resourceService,
+        IRoleResourceRepository roleResourceService,
+        IRolePackageRepository rolePackageService,
+        IPolicyRepository policyService,
+        IPolicyElementRepository policyElementService,
+        IElementTypeRepository elementTypeService,
+        IElementRepository elementService,
+        IRoleRepository roleService,
+        IAssignmentRepository assignmentService,
+        IDelegationRepository delegationService
         )
     {
         this.logger = logger;

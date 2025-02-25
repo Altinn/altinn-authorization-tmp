@@ -1,10 +1,13 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.DbAccess.Models;
+﻿using Altinn.AccessMgmt.Persistence.Core.Definitions;
+using Altinn.AccessMgmt.Persistence.Core.Executors;
+using Altinn.AccessMgmt.Persistence.Core.Helpers;
+using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
+using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
-namespace Altinn.AccessMgmt.DbAccess.Services;
+namespace Altinn.AccessMgmt.Persistence.Core.Services;
 
 /// <summary>
 /// Service for handling migrations
@@ -16,10 +19,9 @@ public class MigrationService
     /// </summary>
     private readonly DbAccessConfig config;
 
-    /// <summary>
-    /// Connection
-    /// </summary>
-    private readonly NpgsqlDataSource connection;
+    private readonly DbDefinitionRegistry definitionRegistry;
+
+    private readonly IDbExecutor executor;
 
     /// <summary>
     /// Database converter
@@ -30,14 +32,16 @@ public class MigrationService
     /// Migration Services
     /// </summary>
     /// <param name="options">DbAccessConfig</param>
-    /// <param name="connection">NpgsqlDataSource</param>
+    /// <param name="definitionRegistry">DbDefinitionRegistry</param>
+    /// <param name="executor">IDbExecutor</param>
     /// <param name="dbConverter">IDbConverter</param>
-    public MigrationService(IOptions<DbAccessConfig> options, NpgsqlDataSource connection, IDbConverter dbConverter)
+    public MigrationService(IOptions<DbAccessConfig> options, DbDefinitionRegistry definitionRegistry, IDbExecutor executor, IDbConverter dbConverter)
     {
         config = options.Value;
-        this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
+        this.definitionRegistry = definitionRegistry;
+        this.executor=executor;
         this.dbConverter = dbConverter;
-        Migrations = new List<MigrationEntry>();
+        Migrations = new List<DbMigrationEntry>();
     }
 
     /*
@@ -57,7 +61,7 @@ public class MigrationService
 
     */
 
-    private Dictionary<Type, MigrationScriptCollection> Scripts { get; set; } = [];
+    private Dictionary<Type, DbMigrationScriptCollection> Scripts { get; set; } = [];
 
     private bool HasInitialized { get; set; } = false;
 
@@ -68,14 +72,12 @@ public class MigrationService
             return;
         }
 
-        var executor = new DbExecutor(connection, dbConverter);
-
         var defaultDefinition = new DbDefinition(typeof(string));
 
-        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.BaseSchema};", new List<NpgsqlParameter>(), cancellationToken);
-        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.TranslationSchema};", new List<NpgsqlParameter>(), cancellationToken);
-        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.BaseHistorySchema};", new List<NpgsqlParameter>(), cancellationToken);
-        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.TranslationHistorySchema};", new List<NpgsqlParameter>(), cancellationToken);
+        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.BaseSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
 
         var migrationTable = """
         CREATE TABLE IF NOT EXISTS dbo._migration (
@@ -88,9 +90,9 @@ public class MigrationService
         );
         """;
 
-        await executor.ExecuteCommand(migrationTable, new List<NpgsqlParameter>(), cancellationToken);
+        await executor.ExecuteCommand(migrationTable, new List<GenericParameter>(), cancellationToken);
 
-        Migrations = [.. await executor.ExecuteQuery<MigrationEntry>("SELECT * FROM dbo._migration", new Dictionary<string, object>())];
+        Migrations = [.. await executor.ExecuteQuery<DbMigrationEntry>("SELECT * FROM dbo._migration")];
 
         HasInitialized = true;
     }
@@ -101,12 +103,16 @@ public class MigrationService
     /// <returns></returns>
     public async Task Migrate()
     {
+        if (!HasInitialized)
+        {
+            await Init();
+        }
+
         if (Scripts.Count == 0)
         {
             throw new Exception("Nothing to migrate. Remember to generate first.");
         }
-
-        await Init();
+        
         await ExecuteMigration();
     }
 
@@ -115,45 +121,25 @@ public class MigrationService
     /// <summary>
     /// Generate migration scripts for all types in a namespace
     /// </summary>
-    /// <param name="definitionNamespace">Namespace</param>
-    public void Generate(string definitionNamespace) 
+    public void GenerateAll()
     {
-        List<Type> types = [.. AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(assembly => assembly.GetTypes())
-            .Where(type => type.Namespace == definitionNamespace && type.BaseType == typeof(object))];
+        var types = definitionRegistry.GetAllDefinitions().Select(t => t.ModelType).ToList();
 
         foreach (var type in types)
         {
-            Console.WriteLine(type.FullName);
-            Generate(type);
+            var q = definitionRegistry.GetQueryBuilder(type);
+            Scripts.Add(type, q.GetMigrationScripts());
         }
     }
 
     /// <summary>
     /// Generate migration scripts for a type
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public void Generate<T>() 
+    public void Generate(Type type, IDbQueryBuilder dbQueryBuilder)
     {
-        Generate(typeof(T));
+        Scripts.Add(type, dbQueryBuilder.GetMigrationScripts());
     }
 
-    /// <summary>
-    /// Generate migration scripts for a type
-    /// </summary>
-    /// <param name="type">Type</param>
-    public void Generate(Type type) 
-    {
-        var dbDefinition = DefinitionStore.TryGetDefinition(type); // ?? throw new Exception($"Definition for '{type.Name}' not found.");
-        if (dbDefinition == null)
-        {
-            Console.WriteLine($"Definition for '{type.Name}' not found.");
-            return;
-        }
-
-        SqlQueryBuilder queryBuilder = new SqlQueryBuilder(dbDefinition);
-        Scripts.Add(type, queryBuilder.GetMigrationScripts());
-    }
     #endregion
 
     private async Task ExecuteMigration(int maxRetry = 10, CancellationToken cancellationToken = default)
@@ -170,7 +156,6 @@ public class MigrationService
 
         while (status.Values.Contains(false) && !failed.Any() && !cancellationToken.IsCancellationRequested)
         {
-            Console.WriteLine("============LOOP==============");
             foreach (var script in Scripts)
             {
                 if (status[script.Key])
@@ -285,17 +270,16 @@ public class MigrationService
         Console.ForegroundColor = ConsoleColor.White;
     }
 
-    private async Task ExecuteMigration(Type type, MigrationScriptCollection collection)
+    private async Task ExecuteMigration(Type type, DbMigrationScriptCollection collection)
     {
-        var dbDefinition = DefinitionStore.TryGetDefinition(type) ?? throw new Exception($"Definition for '{type.Name}' not found.");
-        var executor = new DbExecutor(connection, dbConverter);
+        var dbDefinition = definitionRegistry.TryGetDefinition(type) ?? throw new Exception($"GetOrAddDefinition for '{type.Name}' not found.");
         foreach (var script in collection.Scripts)
         {
             if (NeedMigration(type, script.Key))
             {
                 try
                 {
-                    await executor.ExecuteCommand(script.Value, new List<NpgsqlParameter>());
+                    await executor.ExecuteCommand(script.Value, new List<GenericParameter>());
                     await LogMigration(type, script.Key, script.Value);
                 }
                 catch
@@ -308,7 +292,7 @@ public class MigrationService
         }
     }
 
-    private List<MigrationEntry> Migrations { get; set; } = [];
+    private List<DbMigrationEntry> Migrations { get; set; } = [];
 
     private Dictionary<Type, List<KeyValuePair<string,string>>> RetryQueue { get; set; } = [];
 
@@ -344,7 +328,7 @@ public class MigrationService
 
     private async Task LogMigration(string key, string script, string objectName, CancellationToken cancellationToken = default)
     {
-        var migrationEntry = new MigrationEntry
+        var migrationEntry = new DbMigrationEntry
         {
             Key = key,
             At = DateTimeOffset.UtcNow,
@@ -354,18 +338,17 @@ public class MigrationService
             CollectionId = "v1"
         };
 
-        var parameters = new List<NpgsqlParameter>
+        var parameters = new List<GenericParameter>
         {
-            new NpgsqlParameter("Key", key),
-            new NpgsqlParameter("At", DateTimeOffset.UtcNow),
-            new NpgsqlParameter("Status", "Executed"),
-            new NpgsqlParameter("ObjectName", objectName),
-            new NpgsqlParameter("Script", script),
-            new NpgsqlParameter("CollectionId", "v1")
+            new GenericParameter("Key", key),
+            new GenericParameter("At", DateTimeOffset.UtcNow),
+            new GenericParameter("Status", "Executed"),
+            new GenericParameter("ObjectName", objectName),
+            new GenericParameter("Script", script),
+            new GenericParameter("CollectionId", "v1")
         };
 
-        var dbExec = new DbExecutor(connection, dbConverter);
-        await dbExec.ExecuteCommand("INSERT INTO dbo._migration (ObjectName, Key, At, Status, Script, CollectionId) VALUES(@ObjectName, @Key, @At, @Status, @Script, @CollectionId)", parameters, cancellationToken);
+        await executor.ExecuteCommand("INSERT INTO dbo._migration (ObjectName, Key, At, Status, Script, CollectionId) VALUES(@ObjectName, @Key, @At, @Status, @Script, @CollectionId)", parameters, cancellationToken);
         Migrations.Add(migrationEntry);
         Console.WriteLine(key);
     }

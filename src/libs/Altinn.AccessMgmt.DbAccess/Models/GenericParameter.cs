@@ -1,4 +1,4 @@
-﻿namespace Altinn.AccessMgmt.DbAccess.Models;
+﻿namespace Altinn.AccessMgmt.Persistence.Core.Models;
 
 /// <summary>
 /// Generic Parameter

@@ -1,10 +1,13 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.DbAccess.Models;
+﻿using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
+using Altinn.AccessMgmt.Persistence.Core.Executors;
+using Altinn.AccessMgmt.Persistence.Core.Helpers;
+using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
-namespace Altinn.AccessMgmt.DbAccess.Services;
+namespace Altinn.AccessMgmt.Persistence.Core.Services;
 
 /// <inheritdoc/>
 public abstract class CrossRepository<T, TExtended, TA, TB> : ExtendedRepository<T, TExtended>, IDbCrossRepository<T, TExtended, TA, TB>
@@ -13,9 +16,27 @@ public abstract class CrossRepository<T, TExtended, TA, TB> : ExtendedRepository
     where TA : class, new()
     where TB : class, new()
 {
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CrossRepository{T, TExtended, TA, TB}"/> class.
+    /// </summary>
+    /// <param name="options">DbAccessConfig</param>
+    /// <param name="dbDefinitionRegistry">DbDefinitionRegistry</param>
+    /// <param name="executor">IDbExecutor</param>
+    protected CrossRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    { }
+
     /// <inheritdoc/>
-    protected CrossRepository(IOptions<DbAccessConfig> options, NpgsqlDataSource connection, IDbConverter dbConverter)
-        : base(options, connection, dbConverter) { }
+    public async Task<int> CreateCross(Guid AIdentity, Guid BIdentity, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> DeleteCross(Guid AIdentity, Guid BIdentity, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<TA>> GetA(Guid id, RequestOptions options, List<GenericFilter>? filters = null, CancellationToken cancellationToken = default)
@@ -39,27 +60,30 @@ public abstract class CrossRepository<T, TExtended, TA, TB> : ExtendedRepository
         where TEntity : class, new()
     {
         // Get the definition for the entity type
-        var def = DefinitionStore.TryGetDefinition<TEntity>() ?? DefinitionStore.TryGetBaseDefinition<TEntity>();
+        var def = definitionRegistry.TryGetDefinition<TEntity>() ?? definitionRegistry.TryGetBaseDefinition<TEntity>();
 
         if (def == null)
         {
-            throw new Exception($"Definition not found for {typeof(TEntity).Name}");
+            throw new Exception($"GetOrAddDefinition not found for {typeof(TEntity).Name}");
         }
 
-        bool isExtended = def != DefinitionStore.TryGetDefinition<TEntity>();
+        bool isExtended = def != definitionRegistry.TryGetDefinition<TEntity>();
 
         options ??= new RequestOptions();
         filters ??= new List<GenericFilter>();
 
-        var queryBuilder = new SqlQueryBuilder(def);
-        string query = isExtended
+        var queryBuilder = definitionRegistry.GetQueryBuilder<TEntity>();
+        string query = query = isExtended
             ? queryBuilder.BuildExtendedSelectQuery(options, filters, Definition.CrossRelation)
             : queryBuilder.BuildBasicSelectQuery(options, filters, Definition.CrossRelation);
 
-        var parameterBuilder = new ParameterBuilder();
-        var param = parameterBuilder.BuildFilterParameters(filters, options);
+        if (string.IsNullOrEmpty(query))
+        {
+            throw new Exception($"Query not found for {typeof(TEntity).Name}");
+        }
 
-        var dbExec = new DbExecutor(connection, dbConverter);
-        return await dbExec.ExecuteQuery<TEntity>(query, param, cancellationToken);
+        var param = BuildFilterParameters(filters, options);
+
+        return await executor.ExecuteQuery<TEntity>(query, param, cancellationToken);
     }
 }
