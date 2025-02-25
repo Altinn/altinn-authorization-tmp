@@ -1,23 +1,22 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.DbAccess.Models;
+﻿using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
+using Altinn.AccessMgmt.Persistence.Core.Executors;
+using Altinn.AccessMgmt.Persistence.Core.Helpers;
+using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
 using Microsoft.Extensions.Options;
-using Npgsql;
 
-namespace Altinn.AccessMgmt.DbAccess.Services;
+namespace Altinn.AccessMgmt.Persistence.Core.Services;
 
 /// <inheritdoc/>
 public abstract class ExtendedRepository<T, TExtended> : BasicRepository<T>, IDbExtendedRepository<T, TExtended>
     where T : class, new()
     where TExtended : class, new()
 {
-    /// <summary>
-    /// ExtendedRepository
-    /// </summary>
-    /// <param name="options">DbAccessConfig</param>
-    /// <param name="connection">NpgsqlDataSource</param>
-    /// <param name="dbConverter">DbConverter</param>
-    protected ExtendedRepository(IOptions<DbAccessConfig> options, NpgsqlDataSource connection, IDbConverter dbConverter) : base(options, connection, dbConverter) { }
+    /// <inheritdoc/>
+    protected ExtendedRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    {
+    }
 
     /// <inheritdoc/>
     public async Task<TExtended?> GetExtended(Guid id, RequestOptions? options = null, CancellationToken cancellationToken = default)
@@ -44,13 +43,10 @@ public abstract class ExtendedRepository<T, TExtended> : BasicRepository<T>, IDb
         options ??= new RequestOptions();
         filters ??= new List<GenericFilter>();
 
-        var queryBuilder = new SqlQueryBuilder(Definition);
+        var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
         var query = queryBuilder.BuildExtendedSelectQuery(options, filters);
+        var param = BuildFilterParameters(filters, options);
 
-        var parameterBuilder = new ParameterBuilder();
-        var param = parameterBuilder.BuildFilterParameters(filters, options);
-
-        var executor = new DbExecutor(connection, dbConverter);
         return await executor.ExecuteQuery<TExtended>(query, param, cancellationToken);
     }
 }

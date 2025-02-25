@@ -1,16 +1,21 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.Models;
+﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
 
 /// <inheritdoc/>
-public class EntityVariantRoleDefinition : IDbDefinition
+public class EntityVariantRoleDefinition : BaseDbDefinition<EntityVariantRole>, IDbDefinition
 {
+    /// <inheritdoc/>
+    public EntityVariantRoleDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
+    {
+    }
+
     /// <inheritdoc/>
     public void Define()
     {
-        DefinitionStore.Define<EntityVariantRole>(def =>
+        definitionRegistry.Define<EntityVariantRole>(def =>
         {
             def.EnableHistory();
             def.EnableTranslation();
@@ -20,8 +25,10 @@ public class EntityVariantRoleDefinition : IDbDefinition
             def.RegisterProperty(t => t.VariantId);
             def.RegisterProperty(t => t.RoleId);
 
-            def.RegisterExtendedProperty<ExtEntityVariantRole, EntityVariant>(t => t.VariantId, t => t.Id, t => t.Variant, cascadeDelete: false);
-            def.RegisterExtendedProperty<ExtEntityVariantRole, Role>(t => t.RoleId, t => t.Id, t => t.Role, cascadeDelete: true);
+            def.RegisterAsCrossReferenceExtended<ExtEntityVariantRole, EntityVariant, Role>(
+                defineA: (t => t.VariantId, t => t.Id, t => t.Variant, CascadeDelete: false),
+                defineB: (t => t.RoleId, t => t.Id, t => t.Role, CascadeDelete: true)
+            );
 
             def.RegisterUniqueConstraint([t => t.VariantId, t => t.RoleId]);
         });

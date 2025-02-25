@@ -57,6 +57,7 @@
     <PackageVersion Include="Microsoft.Azure.DocumentDB.Core" Version="2.22.0" />
     <PackageVersion Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.2" />
     <PackageVersion Include="Microsoft.Build.Artifacts" Version="6.1.48" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.10.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.24" />

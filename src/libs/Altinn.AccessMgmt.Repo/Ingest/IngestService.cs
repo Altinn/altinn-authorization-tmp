@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
-using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Models;
-using Altinn.AccessMgmt.Models;
-using Altinn.AccessMgmt.Repo.Contracts;
+using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Repo.Ingest.Models;
 using Microsoft.Extensions.Options;
 
@@ -20,49 +20,49 @@ public class IngestService
     /// </summary>
     public DbAccessConfig Config { get; set; }
 
-    private readonly IProviderService providerService;
-    private readonly IAreaService areaService;
-    private readonly IAreaGroupService areaGroupService;
-    private readonly IEntityTypeService entityTypeService;
-    private readonly IEntityVariantService entityVariantService;
-    private readonly IEntityVariantRoleService entityVariantRoleService;
-    private readonly IPackageService packageService;
-    private readonly IRoleService roleService;
-    private readonly IRoleMapService roleMapService;
-    private readonly IRolePackageService rolePackageService;
-    private readonly ITagGroupService tagGroupService;
-    private readonly ITagService tagService;
+    private readonly IProviderRepository providerService;
+    private readonly IAreaRepository areaService;
+    private readonly IAreaGroupRepository areaGroupService;
+    private readonly IEntityTypeRepository entityTypeService;
+    private readonly IEntityVariantRepository entityVariantService;
+    private readonly IEntityVariantRoleRepository entityVariantRoleService;
+    private readonly IPackageRepository packageService;
+    private readonly IRoleRepository roleService;
+    private readonly IRoleMapRepository roleMapService;
+    private readonly IRolePackageRepository rolePackageService;
+    private readonly ITagGroupRepository tagGroupService;
+    private readonly ITagRepository tagService;
 
     /// <summary>
     /// IngestService
     /// </summary>
     /// <param name="config">DbAccessConfig</param>
-    /// <param name="providerService">IProviderService</param>
-    /// <param name="areaService">IAreaService</param>
-    /// <param name="areaGroupService">IAreaGroupService</param>
-    /// <param name="entityTypeService">IEntityTypeService</param>
-    /// <param name="entityVariantService">IEntityVariantService</param>
-    /// <param name="entityVariantRoleService">IEntityVariantRoleService</param>
-    /// <param name="packageService">IPackageService</param>
-    /// <param name="roleService">IRoleService</param>
-    /// <param name="roleMapService">IRoleMapService</param>
-    /// <param name="rolePackageService">IRolePackageService</param>
-    /// <param name="tagGroupService">ITagGroupService</param>
-    /// <param name="tagService">ITagService</param>
+    /// <param name="providerService">IProviderRepository</param>
+    /// <param name="areaService">IAreaRepository</param>
+    /// <param name="areaGroupService">IAreaGroupRepository</param>
+    /// <param name="entityTypeService">IEntityTypeRepository</param>
+    /// <param name="entityVariantService">IEntityVariantRepository</param>
+    /// <param name="entityVariantRoleService">IEntityVariantRoleRepository</param>
+    /// <param name="packageService">IPackageRepository</param>
+    /// <param name="roleService">IRoleRepository</param>
+    /// <param name="roleMapService">IRoleMapRepository</param>
+    /// <param name="rolePackageService">IRolePackageRepository</param>
+    /// <param name="tagGroupService">ITagGroupRepository</param>
+    /// <param name="tagService">ITagRepository</param>
     public IngestService(
         IOptions<DbAccessConfig> config,
-        IProviderService providerService,
-        IAreaService areaService,
-        IAreaGroupService areaGroupService,
-        IEntityTypeService entityTypeService,
-        IEntityVariantService entityVariantService,
-        IEntityVariantRoleService entityVariantRoleService,
-        IPackageService packageService,
-        IRoleService roleService,
-        IRoleMapService roleMapService,
-        IRolePackageService rolePackageService,
-        ITagGroupService tagGroupService,
-        ITagService tagService
+        IProviderRepository providerService,
+        IAreaRepository areaService,
+        IAreaGroupRepository areaGroupService,
+        IEntityTypeRepository entityTypeService,
+        IEntityVariantRepository entityVariantService,
+        IEntityVariantRoleRepository entityVariantRoleService,
+        IPackageRepository packageService,
+        IRoleRepository roleService,
+        IRoleMapRepository roleMapService,
+        IRolePackageRepository rolePackageService,
+        ITagGroupRepository tagGroupService,
+        ITagRepository tagService
         )
     {
         Config = config.Value;
@@ -514,31 +514,31 @@ public class IngestService
         if (Config.JsonIngestEnabled.ContainsKey("providerIngestService") && Config.JsonIngestEnabled["providerIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("providerIngestService"));
-            result.Add(await IngestData<Provider, IProviderService>(providerService, cancellationToken));
+            result.Add(await IngestData<Provider, IProviderRepository>(providerService, cancellationToken));
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("entityTypeIngestService") && Config.JsonIngestEnabled["entityTypeIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("entityTypeIngestService"));
-            result.Add(await IngestData<EntityType, IEntityTypeService>(entityTypeService, cancellationToken));
+            result.Add(await IngestData<EntityType, IEntityTypeRepository>(entityTypeService, cancellationToken));
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("entityVariantIngestService") && Config.JsonIngestEnabled["entityVariantIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantIngestService"));
-            result.Add(await IngestData<EntityVariant, IEntityVariantService>(entityVariantService, cancellationToken));
+            result.Add(await IngestData<EntityVariant, IEntityVariantRepository>(entityVariantService, cancellationToken));
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("roleIngestService") && Config.JsonIngestEnabled["roleIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("roleIngestService"));
-            result.Add(await IngestData<Role, IRoleService>(roleService, cancellationToken));
+            result.Add(await IngestData<Role, IRoleRepository>(roleService, cancellationToken));
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("roleMapIngestService") && Config.JsonIngestEnabled["roleMapIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("roleMapIngestService"));
-            result.Add(await IngestData<RoleMap, IRoleMapService>(roleMapService, cancellationToken));
+            result.Add(await IngestData<RoleMap, IRoleMapRepository>(roleMapService, cancellationToken));
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("areasAndPackagesIngestService") && Config.JsonIngestEnabled["areasAndPackagesIngestService"])
@@ -556,19 +556,19 @@ public class IngestService
         if (Config.JsonIngestEnabled.ContainsKey("tagGroupIngestService") && Config.JsonIngestEnabled["tagGroupIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("tagGroupIngestService"));
-            result.Add(await IngestData<TagGroup, ITagGroupService>(tagGroupService, cancellationToken));
+            result.Add(await IngestData<TagGroup, ITagGroupRepository>(tagGroupService, cancellationToken));
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("tagIngestService") && Config.JsonIngestEnabled["tagIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("tagIngestService"));
-            result.Add(await IngestData<Tag, ITagService>(tagService, cancellationToken));
+            result.Add(await IngestData<Tag, ITagRepository>(tagService, cancellationToken));
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("entityVariantRoleIngestService") && Config.JsonIngestEnabled["entityVariantRoleIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantRoleIngestService"));
-            result.Add(await IngestData<EntityVariantRole, IEntityVariantRoleService>(entityVariantRoleService, cancellationToken));
+            result.Add(await IngestData<EntityVariantRole, IEntityVariantRoleRepository>(entityVariantRoleService, cancellationToken));
         }
 
         try

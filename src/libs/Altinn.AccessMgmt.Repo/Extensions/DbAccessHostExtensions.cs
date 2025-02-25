@@ -1,10 +1,13 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.DbAccess.Services;
-using Altinn.AccessMgmt.Repo.Contracts;
+﻿using System;
+using System.Reflection;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
+using Altinn.AccessMgmt.Persistence.Core.Executors;
+
+using Altinn.AccessMgmt.Persistence.Core.Services;
+using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Altinn.AccessMgmt.Repo.Ingest;
 using Altinn.AccessMgmt.Repo.Mock;
-using Altinn.AccessMgmt.Repo.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -42,13 +45,40 @@ public static class DbAccessHostExtensions
     /// <returns></returns>
     public static IHostApplicationBuilder AddDb(this IHostApplicationBuilder builder)
     {
-        DefinitionStore.RegisterAllDefinitions("Altinn.AccessMgmt.Repo");
-        builder.Services.AddSingleton<IDbConverter, DbConverter>();
+        var dbType = "Postgres"; // TODO: Get from config
+        builder.Services.AddSingleton<DbDefinitionRegistry>();
 
-        RegisterDbServices(builder.Services);
-        
+        if (dbType == "Postgres")
+        {
+            builder.Services.AddSingleton<IDbConverter, DbConverter>();
+            builder.Services.AddSingleton<IDbExecutor, PostgresDbExecutor>();
+        }
+        else if (dbType == "MSSQL")
+        {
+            builder.Services.AddSingleton<IDbConverter, DbConverter>(); // TODO: Add MSSQL converter
+            builder.Services.AddSingleton<IDbExecutor, MssqlDbExecutor>();
+        }
+        else
+        {
+            throw new Exception($"Unknown databasetype: {dbType}");
+        }
+
+        /*Add Repository*/
+        var assembly = Assembly.GetExecutingAssembly();
+        var repositoryTypes = assembly.GetTypes()
+            .Where(t => t.IsClass && !t.IsAbstract && t.Name.EndsWith("Repository"))
+            .ToList();
+
+        foreach (var repoType in repositoryTypes)
+        {
+            var interfaceType = repoType.GetInterfaces().FirstOrDefault(i => i.Name == "I" + repoType.Name);
+            if (interfaceType != null)
+            {
+                builder.Services.AddSingleton(interfaceType, repoType);
+            }
+        }
+
         builder.Services.AddSingleton<MigrationService>();
-
         builder.Services.AddSingleton<IngestService>();
         builder.Services.AddSingleton<MockupService>();
 
@@ -62,9 +92,13 @@ public static class DbAccessHostExtensions
     /// <returns></returns>
     public static async Task<IHost> UseDb(this IHost host)
     {
+        /*Add Definitions to DbDefinitionRegistry*/
+        DefineAllModels(host.Services);
+
         var migration = host.Services.GetRequiredService<MigrationService>();
-        migration.Generate("Altinn.AccessMgmt.Models");
+        migration.GenerateAll();
         await migration.Migrate();
+
 
         /*
         var dbIngest = host.Services.GetRequiredService<IngestService>();
@@ -83,39 +117,18 @@ public static class DbAccessHostExtensions
         return host;
     }
 
-    private static void RegisterDbServices(IServiceCollection services)
+    private static void DefineAllModels(IServiceProvider serviceProvider, string? definitionNamespace = null)
     {
-        #region Register Services
-        services.AddSingleton<IPackageResourceService, PackageResourceDataService>();
-        services.AddSingleton<IResourceService, ResourceDataService>();
-        services.AddSingleton<IResourceGroupService, ResourceGroupDataService>();
-        services.AddSingleton<IResourceTypeService, ResourceTypeDataService>();
-        services.AddSingleton<IElementTypeService, ElementTypeDataService>();
-        services.AddSingleton<IElementService, ElementDataService>();
-        services.AddSingleton<IPolicyService, PolicyDataService>();
-        services.AddSingleton<IPolicyElementService, PolicyElementDataService>();
-        services.AddSingleton<IAreaService, AreaDataService>();
-        services.AddSingleton<IAreaGroupService, AreaGroupDataService>();
-        services.AddSingleton<IWorkerConfigService, WorkerConfigDataService>();
-        services.AddSingleton<IEntityTypeService, EntityTypeDataService>();
-        services.AddSingleton<IEntityVariantService, EntityVariantDataService>();
-        services.AddSingleton<IPackageService, PackageDataService>();
-        services.AddSingleton<IProviderService, ProviderDataService>();
-        services.AddSingleton<IRoleService, RoleDataService>();
-        services.AddSingleton<IRolePackageService, RolePackageDataService>();
-        services.AddSingleton<IRoleResourceService, RoleResourceDataService>();
-        services.AddSingleton<ITagGroupService, TagGroupDataService>();
-        services.AddSingleton<IPackageTagService, PackageTagDataService>();
-        services.AddSingleton<ITagService, TagDataService>();
-        services.AddSingleton<IEntityService, EntityDataService>();
-        services.AddSingleton<IEntityLookupService, EntityLookupDataService>();
-        services.AddSingleton<IEntityVariantRoleService, EntityVariantRoleDataService>();
-        services.AddSingleton<IRoleMapService, RoleMapDataService>();
-        services.AddSingleton<IAssignmentService, AssignmentDataService>();
-        services.AddSingleton<IAssignmentPackageService, AssignmentPackageDataService>();
-        services.AddSingleton<IAssignmentResourceService, AssignmentResourceDataService>();
-        services.AddSingleton<IDelegationService, DelegationDataService>();
-        services.AddSingleton<IInheritedAssignmentService, InheritedAssignmentDataService>();
-        #endregion
+        var assemblies = string.IsNullOrEmpty(definitionNamespace)
+     ? AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GetName().Name!.StartsWith(Assembly.GetExecutingAssembly().GetName().Name!))
+     : new[] { Assembly.Load(definitionNamespace) };
+
+        var definitions = assemblies
+            .SelectMany(a => a.GetTypes())
+            .Where(t => typeof(IDbDefinition).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+            .Select(t => (IDbDefinition)ActivatorUtilities.CreateInstance(serviceProvider, t)!)
+            .ToList();
+
+        definitions.ForEach(def => def.Define());
     }
 }

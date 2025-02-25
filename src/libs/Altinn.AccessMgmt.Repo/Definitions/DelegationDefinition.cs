@@ -1,16 +1,21 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.Models;
+﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
 
 /// <inheritdoc/>
-public class DelegationDefinition : IDbDefinition
+public class DelegationDefinition : BaseDbDefinition<Delegation>, IDbDefinition
 {
+    /// <inheritdoc/>
+    public DelegationDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
+    {
+    }
+
     /// <inheritdoc/>
     public void Define()
     {
-        DefinitionStore.Define<Delegation>(def =>
+        definitionRegistry.Define<Delegation>(def =>
         {
             def.EnableHistory();
             def.RegisterPrimaryKey([t => t.Id]);

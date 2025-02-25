@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Runtime.CompilerServices;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Npgsql;
@@ -22,11 +21,7 @@ public class PostgresDbExecutor(NpgsqlDataSource connection, IDbConverter dbConv
         try
         {
             await using var cmd = _connection.CreateCommand(query);
-            foreach (var parameter in parameters)
-            {
-                cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
-            }
-
+            cmd.Parameters.AddRange(parameters.ToArray());
             return await cmd.ExecuteNonQueryAsync(cancellationToken: cancellationToken);
         }
         catch (Exception ex)
@@ -66,10 +61,7 @@ public class PostgresDbExecutor(NpgsqlDataSource connection, IDbConverter dbConv
         where T : new()
     {
         await using var cmd = _connection.CreateCommand(query);
-        foreach (var parameter in parameters)
-        {
-            cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
-        }
+        cmd.Parameters.AddRange(parameters.ToArray());
         return _dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
     }
 
