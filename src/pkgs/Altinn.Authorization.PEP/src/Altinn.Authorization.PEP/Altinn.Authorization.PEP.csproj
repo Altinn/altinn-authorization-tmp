@@ -12,6 +12,7 @@
             See our repository for the full documentation.
         </Description>
         <Authors>Altinn Platform Contributors</Authors>
+        <TargetFramework></TargetFramework>
         <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     </PropertyGroup>
 
