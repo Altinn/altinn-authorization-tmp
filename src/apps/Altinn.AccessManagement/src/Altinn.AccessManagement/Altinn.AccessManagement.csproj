@@ -39,6 +39,7 @@
         <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host.Lease\Altinn.Authorization.Host.Lease.csproj" />
         <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host\Altinn.Authorization.Host.csproj" />
         <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Integration\src\Altinn.Authorization.Integration.Platform\Altinn.Authorization.Integration.Platform.csproj" />
+        <ProjectReference Include="..\Altinn.AccessMgmt.Repo\Altinn.AccessMgmt.Persistence.csproj" />
     </ItemGroup>
 
     <ItemGroup>
