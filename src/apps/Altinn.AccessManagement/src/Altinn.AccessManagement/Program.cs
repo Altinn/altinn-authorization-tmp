@@ -1,11 +1,14 @@
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
+using Altinn.AccessMgmt.Persistence.Extensions;
 using Microsoft.IdentityModel.Logging;
 
 AppDomain domain = AppDomain.CurrentDomain;
 domain.SetData("REGEX_DEFAULT_MATCH_TIMEOUT", TimeSpan.FromSeconds(2));
 
 WebApplication app = AccessManagementHost.Create(args);
+
+await app.UseDb();
 
 app.AddDefaultAltinnMiddleware(errorHandlingPath: "/accessmanagement/api/v1/error");
 
