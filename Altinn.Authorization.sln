@@ -103,7 +103,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Cli", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.Core", "src\apps\Altinn.AccessManagement\src\Altinn.AccessMgmt.Core\Altinn.AccessMgmt.Core.csproj", "{95FB8C34-47A8-468A-ACE8-A904A8AF6B49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.Persistence.Core", "src\apps\Altinn.AccessManagement\src\Altinn.AccessMgmt.Persistance.Core\Altinn.AccessMgmt.Persistence.Core.csproj", "{762274CD-610C-4A0F-BAFD-6F28301D27FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.Persistence.Core", "src\apps\Altinn.AccessManagement\src\Altinn.AccessMgmt.Persistence.Core\Altinn.AccessMgmt.Persistence.Core.csproj", "{762274CD-610C-4A0F-BAFD-6F28301D27FE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.Persistence", "src\apps\Altinn.AccessManagement\src\Altinn.AccessMgmt.Persistence\Altinn.AccessMgmt.Persistence.csproj", "{A291AE8A-D443-423F-B456-5C25DC7A0573}"
 EndProject
