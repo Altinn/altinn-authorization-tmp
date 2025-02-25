@@ -50,13 +50,13 @@ public static class DbAccessHostExtensions
 
         if (dbType == "Postgres")
         {
-            builder.Services.AddSingleton<IDbConverter, DbConverter>();
-            builder.Services.AddSingleton<IDbExecutor, PostgresDbExecutor>();
+            builder.Services.AddScoped<IDbConverter, DbConverter>();
+            builder.Services.AddScoped<IDbExecutor, PostgresDbExecutor>();
         }
         else if (dbType == "MSSQL")
         {
-            builder.Services.AddSingleton<IDbConverter, DbConverter>(); // TODO: Add MSSQL converter
-            builder.Services.AddSingleton<IDbExecutor, MssqlDbExecutor>();
+            builder.Services.AddScoped<IDbConverter, DbConverter>(); // TODO: Add MSSQL converter
+            builder.Services.AddScoped<IDbExecutor, MssqlDbExecutor>();
         }
         else
         {
@@ -74,13 +74,13 @@ public static class DbAccessHostExtensions
             var interfaceType = repoType.GetInterfaces().FirstOrDefault(i => i.Name == "I" + repoType.Name);
             if (interfaceType != null)
             {
-                builder.Services.AddSingleton(interfaceType, repoType);
+                builder.Services.AddScoped(interfaceType, repoType);
             }
         }
 
-        builder.Services.AddSingleton<MigrationService>();
-        builder.Services.AddSingleton<IngestService>();
-        builder.Services.AddSingleton<MockupService>();
+        builder.Services.AddScoped<MigrationService>();
+        builder.Services.AddScoped<IngestService>();
+        builder.Services.AddScoped<MockupService>();
 
         return builder;
     }
@@ -95,24 +95,19 @@ public static class DbAccessHostExtensions
         /*Add Definitions to DbDefinitionRegistry*/
         DefineAllModels(host.Services);
 
-        var migration = host.Services.GetRequiredService<MigrationService>();
-        migration.GenerateAll();
-        await migration.Migrate();
-
-
-        /*
-        var dbIngest = host.Services.GetRequiredService<IngestService>();
-        if (dbIngest != null)
+        using (var scope = host.Services.CreateScope())
         {
-            await dbIngest.IngestAll();
-        }
+            var migration = scope.ServiceProvider.GetRequiredService<MigrationService>();
+            migration.GenerateAll();
+            await migration.Migrate();
 
-        var mockService = host.Services.GetService<MockupService>();
-        if (mockService != null)
-        {
-            await mockService.Run();
+            var dbIngest = scope.ServiceProvider.GetRequiredService<IngestService>();
+            await dbIngest.IngestProvider();
+            //// await dbIngest.IngestAll();
+
+            var mockService = scope.ServiceProvider.GetRequiredService<MockupService>();
+            //// await mockService.Run();
         }
-        */
 
         return host;
     }

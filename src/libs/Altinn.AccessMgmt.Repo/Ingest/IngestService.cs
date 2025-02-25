@@ -196,6 +196,7 @@ public class IngestService
 
         foreach (var item in providers)
         {
+            Console.WriteLine(item.Name);
             await providerService.Upsert(item);
         }
     }
