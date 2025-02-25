@@ -1,16 +1,21 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.Models;
+﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
 
 /// <inheritdoc/>
-public class RoleMapDefinition : IDbDefinition
+public class RoleMapDefinition : BaseDbDefinition<RoleMap>, IDbDefinition
 {
+    /// <inheritdoc/>
+    public RoleMapDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
+    {
+    }
+
     /// <inheritdoc/>
     public void Define()
     {
-        DefinitionStore.Define<RoleMap>(def =>
+        definitionRegistry.Define<RoleMap>(def =>
         {
             def.EnableHistory();
             def.EnableTranslation();

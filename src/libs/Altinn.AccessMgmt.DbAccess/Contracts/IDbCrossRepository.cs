@@ -1,7 +1,7 @@
-﻿using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.DbAccess.Models;
+﻿using Altinn.AccessMgmt.Persistence.Core.Helpers;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 
-namespace Altinn.AccessMgmt.DbAccess.Contracts;
+namespace Altinn.AccessMgmt.Persistence.Core.Contracts;
 
 /// <summary>
 /// Defines a repository that supports retrieving related entities via a cross-reference table.
@@ -41,4 +41,22 @@ public interface IDbCrossRepository<T, TExtended, TA, TB> : IDbExtendedRepositor
     /// A task that represents the asynchronous operation. The task result contains the collection of related entities of type <typeparamref name="TB"/>.
     /// </returns>
     Task<IEnumerable<TB>> GetB(Guid id, RequestOptions options, List<GenericFilter>? filters = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Create a cross-reference between two entities.
+    /// </summary>
+    /// <param name="AIdentity">Identity for A</param>
+    /// <param name="BIdentity">Identity for B</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
+    Task<int> CreateCross(Guid AIdentity, Guid BIdentity, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Delete cross reference.
+    /// </summary>
+    /// <param name="AIdentity">Identity for A</param>
+    /// <param name="BIdentity">Identity for B</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
+    Task<int> DeleteCross(Guid AIdentity, Guid BIdentity, CancellationToken cancellationToken = default);
 }

@@ -1,16 +1,21 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.Models;
+﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
 
 /// <inheritdoc/>
-public class ResourceDefinition : IDbDefinition
+public class ResourceDefinition : BaseDbDefinition<Resource>, IDbDefinition
 {
+    /// <inheritdoc/>
+    public ResourceDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
+    {
+    }
+
     /// <inheritdoc/>
     public void Define()
     {
-        DefinitionStore.Define<Resource>(def =>
+        definitionRegistry.Define<Resource>(def =>
         {
             def.EnableHistory();
             def.EnableTranslation();

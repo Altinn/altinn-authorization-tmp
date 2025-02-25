@@ -1,16 +1,21 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.Models;
+﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
 
 /// <inheritdoc/>
-public class AssignmentPackageDefinition : IDbDefinition
+public class AssignmentPackageDefinition : BaseDbDefinition<AssignmentPackage>, IDbDefinition
 {
+    /// <inheritdoc/>
+    public AssignmentPackageDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
+    {
+    }
+
     /// <inheritdoc/>
     public void Define()
     {
-        DefinitionStore.Define<AssignmentPackage>(def =>
+        definitionRegistry.Define<AssignmentPackage>(def =>
         {
             def.EnableHistory();
             def.RegisterPrimaryKey([t => t.Id]);
@@ -19,8 +24,10 @@ public class AssignmentPackageDefinition : IDbDefinition
             def.RegisterProperty(t => t.AssignmentId);
             def.RegisterProperty(t => t.PackageId);
 
-            def.RegisterExtendedProperty<ExtAssignmentPackage, Entity>(t => t.AssignmentId, t => t.Id, t => t.Assignment, cascadeDelete: true);
-            def.RegisterExtendedProperty<ExtAssignmentPackage, Entity>(t => t.PackageId, t => t.Id, t => t.Package, cascadeDelete: true);
+            def.RegisterAsCrossReferenceExtended<ExtAssignmentPackage, Assignment, Package>(
+                defineA: (t => t.AssignmentId, t => t.Id, t => t.Assignment, CascadeDelete: true),
+                defineB: (t => t.PackageId, t => t.Id, t => t.Package, CascadeDelete: true)
+            );
 
             def.RegisterUniqueConstraint([t => t.AssignmentId, t => t.PackageId]);
         });

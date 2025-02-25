@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Altinn.AccessMgmt.DbAccess.Models;
+﻿namespace Altinn.AccessMgmt.Persistence.Core.Models;
 
 /// <summary>
 /// Configuration settings for database access and migrations.

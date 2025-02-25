@@ -1,16 +1,21 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.Models;
+﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
 
 /// <inheritdoc/>
-public class EntityTypeDefinition : IDbDefinition
+public class EntityTypeDefinition : BaseDbDefinition<EntityType>, IDbDefinition
 {
+    /// <inheritdoc/>
+    public EntityTypeDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
+    {
+    }
+
     /// <inheritdoc/>
     public void Define()
     {
-        DefinitionStore.Define<EntityType>(def =>
+        definitionRegistry.Define<EntityType>(def =>
         {
             def.EnableHistory();
             def.EnableTranslation();
