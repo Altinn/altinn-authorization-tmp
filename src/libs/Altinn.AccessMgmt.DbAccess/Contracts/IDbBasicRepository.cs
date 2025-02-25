@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.DbAccess.Models;
+using Altinn.AccessMgmt.Persistence.Core.Helpers;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 
-namespace Altinn.AccessMgmt.DbAccess.Contracts;
+namespace Altinn.AccessMgmt.Persistence.Core.Contracts;
 
 /// <summary>
 /// Represents a basic repository that provides data access operations for entities of type <typeparamref name="T"/>

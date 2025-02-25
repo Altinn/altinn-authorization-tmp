@@ -1,16 +1,21 @@
-﻿using Altinn.AccessMgmt.DbAccess.Contracts;
-using Altinn.AccessMgmt.DbAccess.Helpers;
-using Altinn.AccessMgmt.Models;
+﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
 
 namespace Altinn.AccessMgmt.Repo.Definitions;
 
 /// <inheritdoc/>
-public class PackageTagDefinition : IDbDefinition
+public class PackageTagDefinition : BaseDbDefinition<PackageTag>, IDbDefinition
 {
+    /// <inheritdoc/>
+    public PackageTagDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
+    {
+    }
+
     /// <inheritdoc/>
     public void Define()
     {
-        DefinitionStore.Define<PackageTag>(def =>
+        definitionRegistry.Define<PackageTag>(def =>
         {
             def.EnableHistory();
             def.EnableTranslation();
@@ -20,8 +25,10 @@ public class PackageTagDefinition : IDbDefinition
             def.RegisterProperty(t => t.PackageId);
             def.RegisterProperty(t => t.TagId);
 
-            def.RegisterExtendedProperty<ExtPackageTag, Package>(t => t.PackageId, t => t.Id, t => t.Package, cascadeDelete: true);
-            def.RegisterExtendedProperty<ExtPackageTag, Tag>(t => t.TagId, t => t.Id, t => t.Tag, cascadeDelete: false);
+            def.RegisterAsCrossReferenceExtended<ExtPackageTag, Package, Tag>(
+               defineA: (t => t.PackageId, t => t.Id, t => t.Package, CascadeDelete: true),
+               defineB: (t => t.TagId, t => t.Id, t => t.Tag, CascadeDelete: false)
+            );
 
             def.RegisterUniqueConstraint([t => t.PackageId, t => t.TagId]);
         });
