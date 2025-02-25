@@ -809,7 +809,7 @@ namespace Altinn.AccessManagement.Core.Helpers
         {
             foreach (Rule rule in rulesList)
             {
-                if (TryGetDelegationParamsFromRule(rule, out _, out _, out _, out _, out _, out _, out UuidType fromUuidType, out Guid? toUuid, out UuidType toUuidType, out int? coveredByPartyId, out int? coveredByUserId, out _, out _, out _, out _, out _)
+                if (TryGetDelegationParamsFromRule(rule, out _, out _, out _, out _, out _, out _, out _, out _, out _, out int? coveredByPartyId, out int? coveredByUserId, out _, out _, out _, out _, out _)
                     && rule.Type == RuleType.None)
                 {
                     SetTypeForSingleRule(keyRolePartyIds, offeredByPartyId, coveredBy, parentPartyId, rule, coveredByPartyId, coveredByUserId);
