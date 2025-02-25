@@ -6,6 +6,8 @@ using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
+using Altinn.AccessMgmt.Persistence;
+using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Lease;
@@ -64,8 +66,20 @@ internal static partial class AccessManagementHost
         builder.ConfigureInternals();
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
+        builder.ConfigureAccessManagementPersistence();
 
         return builder.Build();
+    }
+
+    private static WebApplicationBuilder ConfigureAccessManagementPersistence(this WebApplicationBuilder builder)
+    {
+        builder.AddDb(opts =>
+        {
+            opts.DbType = MgmtDbType.Postgres;
+            opts.Enabled = false;
+        });
+
+        return builder;
     }
 
     private static WebApplicationBuilder ConfigureLibsIntegrations(this WebApplicationBuilder builder)
