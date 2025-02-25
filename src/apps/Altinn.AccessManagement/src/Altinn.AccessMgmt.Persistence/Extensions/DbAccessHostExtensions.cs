@@ -63,7 +63,7 @@ public static class DbAccessHostExtensions
             throw new Exception($"Unknown databasetype: {dbType}");
         }
 
-        /*Add Repository*/
+        /* Add Repository */
         var assembly = Assembly.GetExecutingAssembly();
         var repositoryTypes = assembly.GetTypes()
             .Where(t => t.IsClass && !t.IsAbstract && t.Name.EndsWith("Repository"))
