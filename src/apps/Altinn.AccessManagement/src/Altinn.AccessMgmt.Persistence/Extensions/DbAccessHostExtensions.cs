@@ -1,69 +1,48 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Executors;
-
 using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Altinn.AccessMgmt.Repo.Ingest;
 using Altinn.AccessMgmt.Repo.Mock;
+using Altinn.Authorization.Host.Startup;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace Altinn.AccessMgmt.Repo.Extensions;
+namespace Altinn.AccessMgmt.Persistence.Extensions;
 
 /// <summary>
-/// Extensions for setting up DbAccess services
+/// Provides extension methods for configuring database access services.
 /// </summary>
-public static class DbAccessHostExtensions
+public static partial class DbAccessHostExtensions
 {
     /// <summary>
-    /// Configure DbAccess services
+    /// Logger instance for logging database configuration messages.
     /// </summary>
-    /// <param name="builder">IHostApplicationBuilder</param>
-    /// <returns></returns>
-    public static IHostApplicationBuilder ConfigureDb(this IHostApplicationBuilder builder)
-    {
-        /*
-        builder.Services.Configure<DbAccessConfig>(builder.Configuration.GetRequiredSection("DbAccessConfig"));
-        builder.AddAltinnLease(opt =>
-        {
-            opt.Type = AltinnLeaseType.InMemory;
-            //opt.Type = AltinnLeaseType.AzureStorageAccount;
-            //opt.StorageAccount.Endpoint = new Uri("https://standreastest.blob.core.windows.net/");
-        });
-        */
-
-        return builder;
-    }
+    private static ILogger Logger { get; } = StartupLoggerFactory.Create(nameof(DbAccessHostExtensions));
 
     /// <summary>
-    /// Add DbAccess services
+    /// Adds database access services to the application builder.
     /// </summary>
-    /// <param name="builder">IHostApplicationBuilder</param>
-    /// <returns></returns>
-    public static IHostApplicationBuilder AddDb(this IHostApplicationBuilder builder)
+    /// <param name="builder">The host application builder.</param>
+    /// <param name="configureOptions">Action to configure database access options.</param>
+    /// <returns>The updated host application builder.</returns>
+    public static IHostApplicationBuilder AddDb(this IHostApplicationBuilder builder, Action<AccessMgmtPersistenceOptions> configureOptions)
     {
-        var dbType = "Postgres"; // TODO: Get from config
-        builder.Services.AddSingleton<DbDefinitionRegistry>();
+        var options = new AccessMgmtPersistenceOptions();
+        configureOptions?.Invoke(options);
 
-        if (dbType == "Postgres")
+        if (builder.Services.Contains(Marker.ServiceDescriptor) || options.Enabled == false)
         {
-            builder.Services.AddScoped<IDbConverter, DbConverter>();
-            builder.Services.AddScoped<IDbExecutor, PostgresDbExecutor>();
-        }
-        else if (dbType == "MSSQL")
-        {
-            builder.Services.AddScoped<IDbConverter, DbConverter>(); // TODO: Add MSSQL converter
-            builder.Services.AddScoped<IDbExecutor, MssqlDbExecutor>();
-        }
-        else
-        {
-            throw new Exception($"Unknown databasetype: {dbType}");
+            return builder;
         }
 
-        /* Add Repository */
+        Log.ConfigureDbType(Logger, options.DbType);
+        builder.ConfigureDb(options.DbType)();
+
+        // Add repository implementations dynamically
         var assembly = Assembly.GetExecutingAssembly();
         var repositoryTypes = assembly.GetTypes()
             .Where(t => t.IsClass && !t.IsAbstract && t.Name.EndsWith("Repository"))
@@ -78,23 +57,54 @@ public static class DbAccessHostExtensions
             }
         }
 
+        builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddScoped<MigrationService>();
         builder.Services.AddScoped<IngestService>();
         builder.Services.AddScoped<MockupService>();
+        builder.Services.Add(Marker.ServiceDescriptor);
 
         return builder;
     }
 
     /// <summary>
-    /// Use DbAccess services
+    /// Configures database services based on the specified database type.
     /// </summary>
-    /// <param name="host">IHost</param>
-    /// <returns></returns>
+    /// <param name="builder">The host application builder.</param>
+    /// <param name="dbType">The type of database to configure.</param>
+    /// <returns>An action to configure the database services.</returns>
+    private static Action ConfigureDb(this IHostApplicationBuilder builder, MgmtDbType dbType) => dbType switch
+    {
+        MgmtDbType.Postgres => () =>
+        {
+            builder.Services.AddScoped<IDbConverter, DbConverter>();
+            builder.Services.AddScoped<IDbExecutor, PostgresDbExecutor>();
+        }
+        ,
+        MgmtDbType.MSSQL => () =>
+        {
+            builder.Services.AddScoped<IDbConverter, DbConverter>(); // TODO: Add MSSQL converter
+            builder.Services.AddScoped<IDbExecutor, MssqlDbExecutor>();
+        }
+        ,
+        _ => () => throw new InvalidOperationException($"Unknown database type: {dbType}"),
+    };
+
+    /// <summary>
+    /// Initializes and applies database migrations and data ingestion processes.
+    /// </summary>
+    /// <param name="host">The application host.</param>
+    /// <returns>The updated host after applying database changes.</returns>
     public static async Task<IHost> UseDb(this IHost host)
     {
-        /*Add Definitions to DbDefinitionRegistry*/
-        DefineAllModels(host.Services);
+        // Make sure migration don't run if DB is not enabled
+        if (host.Services.GetService(Marker.Type) == null)
+        {
+            Log.DbNotEnabled(Logger);
+            return host;
+        }
 
+        // Add definitions to the database definition registry
+        DefineAllModels(host.Services);
         using (var scope = host.Services.CreateScope())
         {
             var migration = scope.ServiceProvider.GetRequiredService<MigrationService>();
@@ -112,11 +122,16 @@ public static class DbAccessHostExtensions
         return host;
     }
 
-    private static void DefineAllModels(IServiceProvider serviceProvider, string? definitionNamespace = null)
+    /// <summary>
+    /// Defines all database models and registers them in the database definition registry.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider.</param>
+    /// <param name="definitionNamespace">Optional namespace to filter the definitions.</param>
+    private static void DefineAllModels(IServiceProvider serviceProvider, string definitionNamespace = null)
     {
         var assemblies = string.IsNullOrEmpty(definitionNamespace)
-     ? AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GetName().Name!.StartsWith(Assembly.GetExecutingAssembly().GetName().Name!))
-     : new[] { Assembly.Load(definitionNamespace) };
+            ? AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GetName().Name!.StartsWith(Assembly.GetExecutingAssembly().GetName().Name!))
+            : [Assembly.Load(definitionNamespace)];
 
         var definitions = assemblies
             .SelectMany(a => a.GetTypes())
@@ -125,5 +140,24 @@ public static class DbAccessHostExtensions
             .ToList();
 
         definitions.ForEach(def => def.Define());
+    }
+
+    private sealed class Marker
+    {
+        public static readonly Type Type = typeof(Marker);
+
+        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Marker, Marker>();
+    }
+
+    /// <summary>
+    /// Logging utility for database configuration messages.
+    /// </summary>
+    static partial class Log
+    {
+        [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = "Configuring {dbtype} database for access management")]
+        internal static partial void ConfigureDbType(ILogger logger, MgmtDbType dbtype);
+
+        [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = $"Database is not enabled make sure it's initialized by calling IHostApplicationBuilder.AddDb.")]
+        internal static partial void DbNotEnabled(ILogger logger);
     }
 }
