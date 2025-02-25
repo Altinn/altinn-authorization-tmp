@@ -7,7 +7,7 @@ meta {
 post {
   url: {{baseUrl}}/accessmanagement/api/v1/delegations/deletepolicy
   body: json
-  auth: none
+  auth: inherit
 }
 
 body:json {
@@ -52,4 +52,14 @@ body:json {
       }
     }
   ]
+}
+
+script:pre-request {
+  var getTokenParameters = {
+    auth_app: "sbl.authorization",
+    auth_tokenType: "PlatformToken"
+  }
+  
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
 }
