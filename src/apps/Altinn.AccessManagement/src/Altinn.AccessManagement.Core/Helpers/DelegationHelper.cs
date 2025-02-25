@@ -422,7 +422,7 @@ namespace Altinn.AccessManagement.Core.Helpers
         public static bool TryGetDelegationPolicyPathFromRule(Rule rule, out string delegationPolicyPath)
         {
             delegationPolicyPath = null;
-            if (TryGetDelegationParamsFromRule(rule, out ResourceAttributeMatchType resourceMatchType, out string resourceId, out string org, out string app, out int offeredBy, out Guid? fromUuid, out UuidType fromUuidType, out Guid? toUuid, out UuidType toUuidType, out int? coveredByPartyId, out int? coveredByUserId, out _, out _, out _, out _, out _))
+            if (TryGetDelegationParamsFromRule(rule, out ResourceAttributeMatchType resourceMatchType, out string resourceId, out string org, out string app, out int offeredBy, out _, out _, out Guid? toUuid, out UuidType toUuidType, out int? coveredByPartyId, out int? coveredByUserId, out _, out _, out _, out _, out _))
             {
                 try
                 {
@@ -809,7 +809,7 @@ namespace Altinn.AccessManagement.Core.Helpers
         {
             foreach (Rule rule in rulesList)
             {
-                if (TryGetDelegationParamsFromRule(rule, out _, out _, out _, out _, out _, out Guid? fromUuid, out UuidType fromUuidType, out Guid? toUuid, out UuidType toUuidType, out int? coveredByPartyId, out int? coveredByUserId, out _, out _, out _, out _, out _)
+                if (TryGetDelegationParamsFromRule(rule, out _, out _, out _, out _, out _, out _, out UuidType fromUuidType, out Guid? toUuid, out UuidType toUuidType, out int? coveredByPartyId, out int? coveredByUserId, out _, out _, out _, out _, out _)
                     && rule.Type == RuleType.None)
                 {
                     SetTypeForSingleRule(keyRolePartyIds, offeredByPartyId, coveredBy, parentPartyId, rule, coveredByPartyId, coveredByUserId);
