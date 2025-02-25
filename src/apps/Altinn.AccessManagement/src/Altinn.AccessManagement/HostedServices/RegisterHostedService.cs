@@ -1,6 +1,8 @@
+using System.Net;
+using Altinn.AccessManagement;
 using Altinn.Authorization.Host.Lease;
-using Altinn.Authorization.Integration.Register;
-using Altinn.Authorization.Integration.Register.Models;
+using Altinn.Authorization.Integration.Platform.Register;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.Authorization.AccessManagement;
 
@@ -10,11 +12,13 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="lease">Lease provider for distributed locking.</param>
 /// <param name="register">Register integration service.</param>
 /// <param name="logger">Logger for logging service activities.</param>
-public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister register, ILogger<RegisterHostedService> logger) : IHostedService, IDisposable
+/// <param name="featureManager">for reading feature flags</param>
+public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister register, ILogger<RegisterHostedService> logger, IFeatureManager featureManager) : IHostedService, IDisposable
 {
     private readonly IAltinnLease _lease = lease;
     private readonly IAltinnRegister _register = register;
     private readonly ILogger<RegisterHostedService> _logger = logger;
+    private readonly IFeatureManager _featureManager = featureManager;
     private int _executionCount = 0;
     private Timer _timer = null;
     private readonly CancellationTokenSource _stop = new();
@@ -60,7 +64,7 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     {
         Log.StartRegisterSync(_logger);
 
-        _timer = new Timer(SyncRegisterDispatcher, _stop.Token, TimeSpan.Zero, TimeSpan.FromMinutes(2));
+        _timer = new Timer(async state => await SyncRegisterDispatcher(state), _stop.Token, TimeSpan.Zero, TimeSpan.FromMinutes(2));
 
         return Task.CompletedTask;
     }
@@ -69,10 +73,13 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     /// Dispatches the register synchronization process in a separate task.
     /// </summary>
     /// <param name="state">Cancellation token for stopping execution.</param>
-    private void SyncRegisterDispatcher(object state)
+    private async Task SyncRegisterDispatcher(object state)
     {
         var cancellationToken = (CancellationToken)state;
-        SyncRegister(cancellationToken).Wait();
+        if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
+        {
+            await SyncRegister(cancellationToken);
+        }
     }
 
     /// <summary>
@@ -90,29 +97,31 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
 
         try
         {
-            await foreach (var page in await _register.Stream(ls.Data?.NextPageLink, _registerFields, cancellationToken))
+            await foreach (var page in await _register.StreamParties([], ls.Data?.NextPageLink, cancellationToken))
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
 
-                foreach (var item in page.Items)
+                if (!page.IsSuccessful)
+                {
+                    Log.ResponseError(_logger, page.StatusCode);
+                }
+
+                foreach (var item in page.Content.Data)
                 {
                     Interlocked.Increment(ref _executionCount);
                     Log.Party(_logger, item.PartyUuid, _executionCount);
                     await WriteToDb(item);
                 }
 
-                if (!string.IsNullOrEmpty(page.Links.Next))
-                {
-                    await _lease.Put(ls, new() { NextPageLink = page.Links.Next }, cancellationToken);
-                }
-                else
+                if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
                 {
                     return;
                 }
 
+                await _lease.Put(ls, new() { NextPageLink = page.Content.Links.Next }, cancellationToken);
                 await _lease.RefreshLease(ls, cancellationToken);
             }
         }
@@ -120,6 +129,10 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
         {
             Log.SyncError(_logger, ex);
             return;
+        }
+        finally
+        {
+            await _lease.Release(ls, default);
         }
     }
 
@@ -143,7 +156,6 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
         finally
         {
             _timer?.Change(Timeout.Infinite, 0);
-            _stop.Cancel();
         }
 
         return Task.CompletedTask;
@@ -164,8 +176,9 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     {
         if (disposing)
         {
-            _stop?.Dispose();
             _timer?.Dispose();
+            _stop?.Cancel();
+            _stop?.Dispose();
         }
     }
 
@@ -182,6 +195,9 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
 
     private static partial class Log
     {
+        [LoggerMessage(EventId = 9, Level = LogLevel.Information, Message = "Error occured while fetching data from register, got {statusCode}")]
+        internal static partial void ResponseError(ILogger logger, HttpStatusCode statusCode);
+
         [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Processing party with uuid {partyUuid} from register. Count {count}")]
         internal static partial void Party(ILogger logger, string partyUuid, int count);
 
@@ -191,7 +207,7 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
         [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Starting register hosted service")]
         internal static partial void StartRegisterSync(ILogger logger);
 
-        [LoggerMessage(EventId = 3, Level = LogLevel.Error, Message = "Quit register hosted service")]
+        [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Quit register hosted service")]
         internal static partial void QuitRegisterSync(ILogger logger);
     }
 }

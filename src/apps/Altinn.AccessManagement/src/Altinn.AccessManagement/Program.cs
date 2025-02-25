@@ -2,6 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
 using Microsoft.IdentityModel.Logging;
 
+AppDomain domain = AppDomain.CurrentDomain;
+domain.SetData("REGEX_DEFAULT_MATCH_TIMEOUT", TimeSpan.FromSeconds(2));
+
 WebApplication app = AccessManagementHost.Create(args);
 
 app.AddDefaultAltinnMiddleware(errorHandlingPath: "/accessmanagement/api/v1/error");
@@ -28,6 +31,4 @@ await app.RunAsync();
 /// Startup class.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public sealed partial class Program
-{
-}
+public sealed partial class Program { }

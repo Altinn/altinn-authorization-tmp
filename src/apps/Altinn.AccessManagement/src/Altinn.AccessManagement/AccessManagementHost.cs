@@ -1,8 +1,6 @@
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
-using Altinn.AccessManagement.Core.Services.Implementation;
-using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Health;
 using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
@@ -11,7 +9,8 @@ using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Lease;
-using Altinn.Authorization.Integration.Register.Extensions;
+using Altinn.Authorization.Host.Startup;
+using Altinn.Authorization.Integration.Platform.Extensions;
 using Altinn.Authorization.ServiceDefaults;
 using Altinn.Common.AccessToken;
 using Altinn.Common.AccessToken.Configuration;
@@ -35,15 +34,19 @@ namespace Altinn.AccessManagement;
 /// <summary>
 /// Configures the register host.
 /// </summary>
-internal static class AccessManagementHost
+internal static partial class AccessManagementHost
 {
+    private static ILogger Logger { get; } = StartupLoggerFactory.Create(nameof(AccessManagementHost));
+
     /// <summary>
     /// Configures the register host.
     /// </summary>
     /// <param name="args">The command line arguments.</param>
     public static WebApplication Create(string[] args)
     {
+        Log.CreateAltinnHost(Logger);
         var builder = AltinnHost.CreateWebApplicationBuilder("access-management", args);
+        builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
 
         builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.AddControllers();
@@ -52,6 +55,9 @@ internal static class AccessManagementHost
         builder.Services.AddHealthChecks()
             .AddCheck<HealthCheck>("authorization_admin_health_check");
 
+        builder.ConfigureLibsHost();
+        builder.ConfigureLibsIntegrations();
+
         builder.ConfigureAppsettings();
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
@@ -59,23 +65,65 @@ internal static class AccessManagementHost
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
 
-        // builder.ConfigureHostedServices();
         return builder.Build();
     }
 
-    private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
+    private static WebApplicationBuilder ConfigureLibsIntegrations(this WebApplicationBuilder builder)
     {
-        builder.Services.AddHostedService<RegisterHostedService>();
-        builder.AddAppSettingDefaults();
-        builder.AddAltinnLease(cgf =>
+        builder.AddAltinnResourceRegisterIntegration(opts =>
         {
-            cgf.Type = AltinnLeaseType.AzureStorageAccount;
-            cgf.StorageAccount.Endpoint = new Uri("https://{blob_storage_name}.blob.core.windows.net/");
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            if (appsettings.Platform?.ResourceRegisterEndpoint == null)
+            {
+                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.ResourceRegisterEndpoint));
+                opts.Endpoint = default;
+            }
+            else
+            {
+                opts.Endpoint = appsettings.Platform.ResourceRegisterEndpoint;
+            }
         });
 
-        builder.AddAltinnRegister(opts =>
+        builder.AddAltinnRegisterIntegration(opts =>
         {
-            opts.Endpoint = new Uri("http://localhost:5020");
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            if (appsettings.Platform?.RegisterEndpoint == null)
+            {
+                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.RegisterEndpoint));
+                opts.Endpoint = default;
+            }
+            else
+            {
+                opts.Endpoint = appsettings.Platform.RegisterEndpoint;
+            }
+        });
+
+        return builder;
+    }
+
+    private static WebApplicationBuilder ConfigureLibsHost(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddHostedService<RegisterHostedService>();
+        builder.AddAzureAppConfigurationDefaults(opts =>
+        {
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            opts.Endpoint = appsettings.AppConfiguration.Endpoint;
+            opts.Enabled = appsettings.AppConfiguration.Enabled;
+            opts.AddDefaultLabels(appsettings.Environment, builder.GetAltinnServiceDescriptor().Name);
+        });
+
+        builder.AddAltinnLease(opts =>
+        {
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            if (appsettings.Lease?.StorageAccount?.BlobEndpoint == null)
+            {
+                opts.Type = AltinnLeaseType.InMemory;
+            }
+            else
+            {
+                opts.StorageAccount.BlobEndpoint = appsettings.Lease.StorageAccount.BlobEndpoint;
+                opts.Type = AltinnLeaseType.AzureStorageAccount;
+            }
         });
 
         return builder;
@@ -224,5 +272,14 @@ internal static class AccessManagementHost
                 KeyValuePair.Create($"ConnectionStrings:{serviceDescriptor.Name}_db_migrate", adminConnectionString.ToString()),
                 KeyValuePair.Create($"Altinn:Npgsql:{serviceDescriptor.Name}:Migrate:Enabled", runMigrations ? "true" : "false"),
             ]);
+    }
+
+    static partial class Log
+    {
+        [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = "Creating Altinn host.")]
+        internal static partial void CreateAltinnHost(ILogger logger);
+
+        [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Configuration setting '{field}' is null or empty.")]
+        internal static partial void ConfigValueIsNullOrEmpty(ILogger logger, string field);
     }
 }

@@ -23,7 +23,7 @@ data "azurerm_private_dns_zone" "hub_service_bus" {
 }
 
 resource "azurerm_servicebus_namespace" "service_bus" {
-  name                = "sbaltinn${local.suffix}"
+  name                = "sb${local.suffix}"
   resource_group_name = azurerm_resource_group.spoke.name
   location            = azurerm_resource_group.spoke.location
 
@@ -48,7 +48,7 @@ resource "azurerm_servicebus_namespace" "service_bus" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint
 resource "azurerm_private_endpoint" "service_bus_private_endpoint" {
-  name                          = "pe${azurerm_servicebus_namespace.service_bus.name}"
+  name                          = "pep${azurerm_servicebus_namespace.service_bus.name}"
   resource_group_name           = azurerm_resource_group.spoke.name
   location                      = azurerm_resource_group.spoke.location
   subnet_id                     = azurerm_subnet.dual_stack["ServiceBus"].id
@@ -66,5 +66,24 @@ resource "azurerm_private_endpoint" "service_bus_private_endpoint" {
   private_dns_zone_group {
     name                 = azurerm_servicebus_namespace.service_bus.name
     private_dns_zone_ids = [data.azurerm_private_dns_zone.hub_service_bus.id]
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "service_bus_diagnostics" {
+  name                       = azurerm_log_analytics_workspace.log_dwh.name
+  target_resource_id         = azurerm_servicebus_namespace.service_bus.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.log_dwh.id
+
+  enabled_log {
+    category_group = "allLogs"
+  }
+
+  enabled_log {
+    category_group = "audit"
+  }
+
+  metric {
+    category = "AllMetrics"
+    enabled  = true
   }
 }

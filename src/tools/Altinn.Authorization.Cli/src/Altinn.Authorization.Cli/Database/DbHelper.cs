@@ -12,6 +12,9 @@ namespace Altinn.Authorization.Cli.Database;
 internal sealed class DbHelper
     : IAsyncDisposable
 {
+    private const int KIBIBYTE_BYTE_COUNT = 1024;
+    private const int MIBIBYTE_BYTE_COUNT = 1024 * KIBIBYTE_BYTE_COUNT;
+
     /// <summary>
     /// Creates a new <see cref="DbHelper"/> instance.
     /// </summary>
@@ -23,9 +26,10 @@ internal sealed class DbHelper
         var connStrBuilder = new NpgsqlConnectionStringBuilder(connectionString);
         connStrBuilder.Pooling = false;
         connStrBuilder.IncludeErrorDetail = true;
-        connStrBuilder.Timeout = 600; // seconds
-        connStrBuilder.CancellationTimeout = 60 * 1000; // milliseconds
-        connStrBuilder.CommandTimeout = 600; // seconds
+        connStrBuilder.Timeout = (int)TimeSpan.FromMinutes(10).TotalSeconds;
+        connStrBuilder.CommandTimeout = (int)TimeSpan.FromMinutes(10).TotalSeconds;
+        connStrBuilder.SocketReceiveBufferSize = MIBIBYTE_BYTE_COUNT * 10;
+        connStrBuilder.SocketSendBufferSize = MIBIBYTE_BYTE_COUNT * 10;
 
         NpgsqlDataSource? source = NpgsqlDataSource.Create(connStrBuilder);
         try
