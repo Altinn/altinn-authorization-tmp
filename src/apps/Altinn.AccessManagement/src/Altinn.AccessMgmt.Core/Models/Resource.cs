@@ -16,11 +16,6 @@ public class Resource
     public Guid ProviderId { get; set; }
 
     /// <summary>
-    /// GroupId
-    /// </summary>
-    public Guid GroupId { get; set; }
-
-    /// <summary>
     /// TypeId
     /// </summary>
     public Guid TypeId { get; set; }
@@ -50,11 +45,6 @@ public class ExtResource : Resource
     /// Provider
     /// </summary>
     public Provider Provider { get; set; }
-
-    /// <summary>
-    /// EntityGroup
-    /// </summary>
-    public ResourceGroup Group { get; set; }
 
     /// <summary>
     /// Type

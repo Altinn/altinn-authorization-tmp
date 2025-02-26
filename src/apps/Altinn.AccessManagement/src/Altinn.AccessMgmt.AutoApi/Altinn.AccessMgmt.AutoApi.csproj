@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\libs\Altinn.AccessMgmt.Repo\Altinn.AccessMgmt.Persistence.csproj" />
+    <ProjectReference Include="..\Altinn.AccessMgmt.Persistence\Altinn.AccessMgmt.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

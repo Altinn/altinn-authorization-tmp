@@ -30,8 +30,6 @@ public class IngestService
     private readonly IRoleRepository roleService;
     private readonly IRoleMapRepository roleMapService;
     private readonly IRolePackageRepository rolePackageService;
-    private readonly ITagGroupRepository tagGroupService;
-    private readonly ITagRepository tagService;
 
     /// <summary>
     /// IngestService
@@ -47,8 +45,6 @@ public class IngestService
     /// <param name="roleService">IRoleRepository</param>
     /// <param name="roleMapService">IRoleMapRepository</param>
     /// <param name="rolePackageService">IRolePackageRepository</param>
-    /// <param name="tagGroupService">ITagGroupRepository</param>
-    /// <param name="tagService">ITagRepository</param>
     public IngestService(
         IOptions<DbAccessConfig> config,
         IProviderRepository providerService,
@@ -60,9 +56,7 @@ public class IngestService
         IPackageRepository packageService,
         IRoleRepository roleService,
         IRoleMapRepository roleMapService,
-        IRolePackageRepository rolePackageService,
-        ITagGroupRepository tagGroupService,
-        ITagRepository tagService
+        IRolePackageRepository rolePackageService
         )
     {
         Config = config.Value;
@@ -76,8 +70,6 @@ public class IngestService
         this.roleService = roleService;
         this.roleMapService = roleMapService;
         this.rolePackageService = rolePackageService;
-        this.tagGroupService = tagGroupService;
-        this.tagService = tagService;
     }
 
 
@@ -552,18 +544,6 @@ public class IngestService
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("RolePackagesIngestService"));
             result.AddRange(await IngestRolePackages(cancellationToken));
-        }
-
-        if (Config.JsonIngestEnabled.ContainsKey("tagGroupIngestService") && Config.JsonIngestEnabled["tagGroupIngestService"])
-        {
-            // a?.AddEvent(new System.Diagnostics.ActivityEvent("tagGroupIngestService"));
-            result.Add(await IngestData<TagGroup, ITagGroupRepository>(tagGroupService, cancellationToken));
-        }
-
-        if (Config.JsonIngestEnabled.ContainsKey("tagIngestService") && Config.JsonIngestEnabled["tagIngestService"])
-        {
-            // a?.AddEvent(new System.Diagnostics.ActivityEvent("tagIngestService"));
-            result.Add(await IngestData<Tag, ITagRepository>(tagService, cancellationToken));
         }
 
         if (Config.JsonIngestEnabled.ContainsKey("entityVariantRoleIngestService") && Config.JsonIngestEnabled["entityVariantRoleIngestService"])

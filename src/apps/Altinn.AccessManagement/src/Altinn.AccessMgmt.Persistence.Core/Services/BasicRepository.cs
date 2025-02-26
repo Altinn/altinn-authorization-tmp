@@ -66,15 +66,10 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
         string propertyName = ExtractPropertyInfo(property).Name;
         var filters = new List<GenericFilter>
         {
-            new GenericFilter(propertyName, value, FilterComparer.Equals)
+            new GenericFilter(propertyName, value!, FilterComparer.Equals)
         };
         return await Get(filters, options, cancellationToken: cancellationToken);
     }
