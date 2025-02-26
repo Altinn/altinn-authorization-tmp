@@ -8,6 +8,8 @@ using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Persistence;
 using Altinn.AccessMgmt.Persistence.Extensions;
+using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Lease;
@@ -30,6 +32,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using Swashbuckle.AspNetCore.Filters;
+using Altinn.Authorization.Host.Database;
 
 namespace Altinn.AccessManagement;
 
@@ -50,6 +53,27 @@ internal static partial class AccessManagementHost
         var builder = AltinnHost.CreateWebApplicationBuilder("access-management", args);
         builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
 
+        var adminConnectionStringFmt = builder.Configuration.GetValue<string>("PostgreSQLSettings:AdminConnectionString");
+        var adminConnectionStringPwd = builder.Configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbAdminPwd");
+        var connectionStringFmt = builder.Configuration.GetValue<string>("PostgreSQLSettings:ConnectionString");
+        var connectionStringPwd = builder.Configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbPwd");
+
+        var adminConnectionString = new NpgsqlConnectionStringBuilder(string.Format(adminConnectionStringFmt, adminConnectionStringPwd));
+        var connectionString = new NpgsqlConnectionStringBuilder(string.Format(connectionStringFmt, connectionStringPwd))
+        {
+            MaxAutoPrepare = 50,
+            AutoPrepareMinUsages = 2,
+        };
+
+
+        builder.AddAltinnDatabase(opt =>
+        {
+            opt.AppSource = new(connectionString.ConnectionString);
+            opt.MigrationSource = new(adminConnectionString.ConnectionString);
+            opt.Telemetry.EnableMetrics = false;
+            opt.Telemetry.EnableTraces = true;
+        });
+
         builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.AddControllers();
         builder.Services.AddFeatureManagement();
@@ -68,6 +92,8 @@ internal static partial class AccessManagementHost
         builder.ConfigureAuthorization();
         builder.ConfigureAccessManagementPersistence();
 
+        builder.Services.AddScoped<IPackageService, PackageService>();
+
         return builder.Build();
     }
 
@@ -76,7 +102,7 @@ internal static partial class AccessManagementHost
         builder.AddDb(opts =>
         {
             opts.DbType = MgmtDbType.Postgres;
-            opts.Enabled = false;
+            opts.Enabled = true;
         });
 
         return builder;

@@ -15,17 +15,17 @@ builder.Services.AddSingleton(NpgsqlDataSource.Create("Database=newtests;Host=lo
 var config = builder.Configuration.Get<DbAccessConfig>();
 //// builder.ConfigureDb();
 
-builder.AddDb(opts =>
-{
-    opts.DbType = MgmtDbType.Postgres;
-    opts.Enabled = true;
-});
+//builder.AddDb(opts =>
+//{
+//    opts.DbType = MgmtDbType.Postgres;
+//    opts.Enabled = true;
+//});
 
 var app = builder.Build();
 
-await app.UseDb();
+//await app.UseDb();
 
-app.MapAllDefinitionEndpoints();
+//app.MapAllDefinitionEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
