@@ -20,7 +20,7 @@ public class AltinnHostDatabaseOptions
     /// <summary>
     /// Gets or sets the telemetry options for monitoring database interactions.
     /// </summary>
-    public TelemetryOptions Telemetry { get; set; }
+    public TelemetryOptions Telemetry { get; set; } = new TelemetryOptions();
 
     /// <summary>
     /// Represents telemetry configuration options for monitoring database performance and activity.
@@ -41,21 +41,16 @@ public class AltinnHostDatabaseOptions
     /// <summary>
     /// Represents a PostgreSQL data source with a connection string and an optional builder action.
     /// </summary>
-    public class PgsqlDataSourceOptions
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="PgsqlDataSourceOptions"/> class.
+    /// </remarks>
+    /// <param name="connectionString">The connection string for the PostgreSQL database.</param>
+    public class PgsqlDataSourceOptions(string connectionString)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PgsqlDataSourceOptions"/> class.
-        /// </summary>
-        /// <param name="connectionString">The connection string for the PostgreSQL database.</param>
-        public PgsqlDataSourceOptions(string connectionString)
-        {
-            ConnectionString = new NpgsqlConnectionStringBuilder(connectionString);
-        }
-
         /// <summary>
         /// Gets the Npgsql connection string builder initialized with the provided connection string.
         /// </summary>
-        public NpgsqlConnectionStringBuilder ConnectionString { get; }
+        public NpgsqlConnectionStringBuilder ConnectionString { get; } = new NpgsqlConnectionStringBuilder(connectionString);
 
         /// <summary>
         /// Gets or sets an optional action to configure the Npgsql data source builder.
