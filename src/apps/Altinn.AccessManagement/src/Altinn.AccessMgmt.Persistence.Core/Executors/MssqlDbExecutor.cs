@@ -56,6 +56,11 @@ public class MssqlDbExecutor(SqlConnection connection, IDbConverter dbConverter)
         }
     }
 
+    public Task<int> ExecuteMigrationCommand(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default) 
         where T : new()

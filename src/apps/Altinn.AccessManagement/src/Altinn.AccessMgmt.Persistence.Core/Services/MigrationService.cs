@@ -24,23 +24,16 @@ public class MigrationService
     private readonly IDbExecutor executor;
 
     /// <summary>
-    /// Database converter
-    /// </summary>
-    private readonly IDbConverter dbConverter;
-
-    /// <summary>
     /// Migration Services
     /// </summary>
     /// <param name="options">DbAccessConfig</param>
     /// <param name="definitionRegistry">DbDefinitionRegistry</param>
     /// <param name="executor">IDbExecutor</param>
-    /// <param name="dbConverter">IDbConverter</param>
-    public MigrationService(IOptions<DbAccessConfig> options, DbDefinitionRegistry definitionRegistry, IDbExecutor executor, IDbConverter dbConverter)
+    public MigrationService(IOptions<DbAccessConfig> options, DbDefinitionRegistry definitionRegistry, IDbExecutor executor)
     {
         config = options.Value;
         this.definitionRegistry = definitionRegistry;
-        this.executor=executor;
-        this.dbConverter = dbConverter;
+        this.executor = executor;
         Migrations = new List<DbMigrationEntry>();
     }
 
@@ -74,10 +67,10 @@ public class MigrationService
 
         var defaultDefinition = new DbDefinition(typeof(string));
 
-        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.BaseSchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.BaseSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
 
         var migrationTable = """
         CREATE TABLE IF NOT EXISTS dbo._migration (
@@ -90,7 +83,7 @@ public class MigrationService
         );
         """;
 
-        await executor.ExecuteCommand(migrationTable, new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand(migrationTable, new List<GenericParameter>(), cancellationToken);
 
         Migrations = [.. await executor.ExecuteQuery<DbMigrationEntry>("SELECT * FROM dbo._migration")];
 
@@ -279,7 +272,7 @@ public class MigrationService
             {
                 try
                 {
-                    await executor.ExecuteCommand(script.Value, new List<GenericParameter>());
+                    await executor.ExecuteMigrationCommand(script.Value, new List<GenericParameter>());
                     await LogMigration(type, script.Key, script.Value);
                 }
                 catch
@@ -348,7 +341,7 @@ public class MigrationService
             new GenericParameter("CollectionId", "v1")
         };
 
-        await executor.ExecuteCommand("INSERT INTO dbo._migration (ObjectName, Key, At, Status, Script, CollectionId) VALUES(@ObjectName, @Key, @At, @Status, @Script, @CollectionId)", parameters, cancellationToken);
+        await executor.ExecuteMigrationCommand("INSERT INTO dbo._migration (ObjectName, Key, At, Status, Script, CollectionId) VALUES(@ObjectName, @Key, @At, @Status, @Script, @CollectionId)", parameters, cancellationToken);
         Migrations.Add(migrationEntry);
         Console.WriteLine(key);
     }
