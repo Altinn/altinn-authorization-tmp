@@ -4,48 +4,82 @@ using Npgsql;
 
 namespace Altinn.Authorization.Host.Database;
 
+/// <summary>
+/// Provides extension methods for configuring the Altinn host database.
+/// </summary>
 public static class AltinnHostDatabase
 {
     /// <summary>
-    /// 
+    /// Adds database to the host application builder using Altinn authorization default setup.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="configureOptions"></param>
-    /// <returns></returns>
+    /// <param name="builder">The host application builder.</param>
+    /// <param name="configureOptions">An action to configure the database options.</param>
+    /// <returns>The updated host application builder.</returns>
     public static IHostApplicationBuilder AddAltinnDatabase(this IHostApplicationBuilder builder, Action<AltinnHostDatabaseOptions> configureOptions)
     {
         var options = new AltinnHostDatabaseOptions();
         configureOptions?.Invoke(options);
 
-        if (builder.Services.Contains(Markers.MigrationSource.ServiceDescriptor) && options.MigrationSource == null)
+        if (!builder.Services.Contains(Markers.MigrationSource.ServiceDescriptor) && options.MigrationSource != null)
         {
             builder.Services.AddNpgsqlDataSource(options.MigrationSource.ToString(), options.MigrationSource.Builder, serviceKey: SourceType.Migration);
             builder.Services.Add(Markers.MigrationSource.ServiceDescriptor);
         }
 
-        if (builder.Services.Contains(Markers.AppSource.ServiceDescriptor) && options.AppSource == null)
+        if (!builder.Services.Contains(Markers.AppSource.ServiceDescriptor) && options.AppSource != null)
         {
             builder.Services.AddNpgsqlDataSource(options.AppSource.ToString(), serviceKey: SourceType.App);
             builder.Services.Add(Markers.AppSource.ServiceDescriptor);
         }
 
-        if (builder.Services.Contains(Markers.AppSource.ServiceDescriptor) || builder.Services.Contains(Markers.MigrationSource.ServiceDescriptor))
+        if (builder.Services.Contains(Markers.ServiceDescriptor))
         {
             builder.Services.AddSingleton<IAltinnDatabase, AltinnHostDatabaseFactory>();
+            if (options.Telemetry.EnableTraces)
+            {
+                builder.Services.AddOpenTelemetry()
+                    .WithTracing(traceProviderBuilder => traceProviderBuilder.AddNpgsql());
+            }
+
+            if (options.Telemetry.EnableMetrics)
+            {
+                builder.Services.AddOpenTelemetry()
+                    .WithMetrics(builder => builder.AddNpgsqlInstrumentation());
+            }
         }
 
         return builder;
     }
 
-    private static class Markers
+    /// <summary>
+    /// Contains marker classes for identifying service descriptors.
+    /// </summary>
+    private sealed class Markers
     {
+        /// <summary>
+        /// Marker class for the migration source service descriptor.
+        /// </summary>
+        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Markers, Markers>();
+
+        /// <summary>
+        /// Marker class for the migration source service descriptor.
+        /// </summary>
         internal sealed class MigrationSource
         {
+            /// <summary>
+            /// Gets the singleton service descriptor for the migration source.
+            /// </summary>
             public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<MigrationSource, MigrationSource>();
         }
 
+        /// <summary>
+        /// Marker class for the application source service descriptor.
+        /// </summary>
         internal sealed class AppSource
         {
+            /// <summary>
+            /// Gets the singleton service descriptor for the application source.
+            /// </summary>
             public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<AppSource, AppSource>();
         }
     }
