@@ -45,9 +45,4 @@ public class ExtArea : Area
     /// EntityGroup
     /// </summary>
     public AreaGroup Group { get; set; }
-
-    /// <summary>
-    /// Packages
-    /// </summary>
-    public List<Package> Packages { get; set; }
 }
