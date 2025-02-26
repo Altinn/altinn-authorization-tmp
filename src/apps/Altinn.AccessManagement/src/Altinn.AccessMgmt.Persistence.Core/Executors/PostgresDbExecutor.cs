@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Runtime.CompilerServices;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Altinn.Authorization.Host.Database;
@@ -17,19 +16,34 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
     private readonly IDbConverter _dbConverter = dbConverter;
 
     /// <summary>
+    /// Executes a query and maps the result to objects of type T.
+    /// </summary>
+    public async Task<IEnumerable<T>> ExecuteMigrationQuery<T>(string query, CancellationToken cancellationToken = default)
+        where T : new()
+    {
+        using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.Migration);
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = query;
+        conn.Open();
+        return _dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
+    }
+
+    /// <summary>
     /// Executes a non-query command (INSERT, UPDATE, DELETE) and returns the number of affected rows.
     /// </summary>
     public async Task<int> ExecuteMigrationCommand(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var cmd = _databaseFactory.CreatePgsqlConnection(SourceType.Migration).CreateCommand();
+            using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.Migration);
+            var cmd = conn.CreateCommand();
             cmd.CommandText = query;
             foreach (var parameter in parameters)
             {
                 cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
             }
 
+            conn.Open();
             return await cmd.ExecuteNonQueryAsync(cancellationToken: cancellationToken);
         }
         catch (Exception ex)
@@ -49,7 +63,10 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
     {
         try
         {
-            await using var cmd = _connection.CreateCommand(query);
+            using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = query;
+            conn.Open();
             foreach (var parameter in parameters)
             {
                 cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
@@ -74,7 +91,10 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
     {
         try
         {
-            await using var cmd = _connection.CreateCommand(query);
+            using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = query;
+            conn.Open();
             return await cmd.ExecuteNonQueryAsync(cancellationToken: cancellationToken);
         }
         catch (Exception ex)
@@ -93,7 +113,10 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
     public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
         where T : new()
     {
-        await using var cmd = _connection.CreateCommand(query);
+        using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = query;
+        conn.Open();
         foreach (var parameter in parameters)
         {
             cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
@@ -107,7 +130,10 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
     public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, CancellationToken cancellationToken = default)
         where T : new()
     {
-        await using var cmd = _connection.CreateCommand(query);
+        using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = query;
+        conn.Open();
         return _dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
     }
 }

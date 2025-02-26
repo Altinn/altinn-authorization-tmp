@@ -85,7 +85,7 @@ public class MigrationService
 
         await executor.ExecuteMigrationCommand(migrationTable, new List<GenericParameter>(), cancellationToken);
 
-        Migrations = [.. await executor.ExecuteQuery<DbMigrationEntry>("SELECT * FROM dbo._migration")];
+        Migrations = [.. await executor.ExecuteMigrationQuery<DbMigrationEntry>("SELECT * FROM dbo._migration")];
 
         HasInitialized = true;
     }

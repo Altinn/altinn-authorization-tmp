@@ -20,7 +20,6 @@ internal class AltinnHostDatabaseFactory(IServiceProvider serviceProvider) : IAl
         {
             throw new InvalidOperationException($"Data source {sourceType} is not initialized. Ensure {nameof(AltinnHostDatabase.AddAltinnDatabase)} is called with the appropriate configuration.");
         }
-
         return source;
     }
 }
