@@ -52,4 +52,13 @@ public interface IDbExecutor
     /// <returns></returns>
     Task<IEnumerable<T>> ExecuteQuery<T>(string query, CancellationToken cancellationToken = default)
     where T : new();
+
+    /// <summary>
+    /// Execute a query
+    /// </summary>
+    /// <param name="query">Query to execute</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
+    Task<IEnumerable<T>> ExecuteMigrationQuery<T>(string query, CancellationToken cancellationToken = default)
+    where T : new();
 }

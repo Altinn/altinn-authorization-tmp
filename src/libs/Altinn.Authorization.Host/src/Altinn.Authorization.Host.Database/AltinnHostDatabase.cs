@@ -22,7 +22,7 @@ public static class AltinnHostDatabase
 
         if (!builder.Services.Contains(Markers.MigrationSource.ServiceDescriptor) && options.MigrationSource != null)
         {
-            builder.Services.AddNpgsqlDataSource(options.MigrationSource.ConnectionString.ToString(), options.MigrationSource.Builder, serviceKey: SourceType.Migration);
+            builder.Services.AddNpgsqlDataSource(options.MigrationSource.ConnectionString.ToString(), serviceKey: SourceType.Migration);
             builder.Services.Add(Markers.MigrationSource.ServiceDescriptor);
         }
 

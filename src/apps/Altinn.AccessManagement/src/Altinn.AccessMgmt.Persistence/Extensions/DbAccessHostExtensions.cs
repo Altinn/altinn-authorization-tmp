@@ -108,10 +108,10 @@ public static partial class DbAccessHostExtensions
         {
             var migration = scope.ServiceProvider.GetRequiredService<MigrationService>();
             migration.GenerateAll();
-            // await migration.Migrate();
+            await migration.Migrate();
 
             var dbIngest = scope.ServiceProvider.GetRequiredService<IngestService>();
-            //// await dbIngest.IngestProvider();
+            await dbIngest.IngestProvider();
             //// await dbIngest.IngestAll();
 
             //// var mockService = scope.ServiceProvider.GetRequiredService<MockupService>();
