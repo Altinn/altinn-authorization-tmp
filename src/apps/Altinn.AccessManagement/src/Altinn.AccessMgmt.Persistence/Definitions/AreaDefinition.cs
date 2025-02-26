@@ -29,7 +29,6 @@ public class AreaDefinition : BaseDbDefinition<Area>, IDbDefinition
             def.RegisterProperty(t => t.Urn);
 
             def.RegisterExtendedProperty<ExtArea, AreaGroup>(t => t.GroupId, t => t.Id, t => t.Group, cascadeDelete: true);
-            def.RegisterExtendedProperty<ExtArea, Package>(t => t.Id, t => t.AreaId, t => t.Packages, isList: true);
 
             def.RegisterUniqueConstraint([t => t.Name]);
         });
