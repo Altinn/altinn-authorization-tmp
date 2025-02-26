@@ -32,7 +32,7 @@ public static class AltinnHostDatabase
             builder.Services.Add(Markers.AppSource.ServiceDescriptor);
         }
 
-        if (builder.Services.Contains(Markers.ServiceDescriptor))
+        if (!builder.Services.Contains(Markers.ServiceDescriptor))
         {
             builder.Services.AddSingleton<IAltinnDatabase, AltinnHostDatabaseFactory>();
             if (options.Telemetry.EnableTraces)
@@ -46,6 +46,8 @@ public static class AltinnHostDatabase
                 builder.Services.AddOpenTelemetry()
                     .WithMetrics(builder => builder.AddNpgsqlInstrumentation());
             }
+
+            builder.Services.Add(Markers.ServiceDescriptor);
         }
 
         return builder;
