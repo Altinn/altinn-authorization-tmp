@@ -1,5 +1,5 @@
 using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Repo.Extensions;
+using Altinn.AccessMgmt.Persistence.Extensions;
 using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,11 +14,11 @@ builder.Services.AddSingleton(NpgsqlDataSource.Create("Database=newtests;Host=lo
 var config = builder.Configuration.Get<DbAccessConfig>();
 //// builder.ConfigureDb();
 
-builder.AddDb();
+//builder.AddDb();
 
 var app = builder.Build();
 
-await app.UseDb();
+//await app.UseDb();
 
 app.MapAllDefinitionEndpoints();
 
