@@ -55,7 +55,7 @@ public class AltinnHostDatabaseOptions
         /// <summary>
         /// Gets or sets an optional action to configure the Npgsql data source builder.
         /// </summary>
-        public Action<NpgsqlDataSourceBuilder> Builder { get; set; } = null;
+        public Action<NpgsqlDataSourceBuilder> Builder { get; set; } = _ => { };
     }
 }
 
