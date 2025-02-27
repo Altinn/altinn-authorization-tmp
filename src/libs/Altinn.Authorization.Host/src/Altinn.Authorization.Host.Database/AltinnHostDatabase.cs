@@ -22,13 +22,13 @@ public static class AltinnHostDatabase
 
         if (!builder.Services.Contains(Markers.MigrationSource.ServiceDescriptor) && options.MigrationSource != null)
         {
-            builder.Services.AddNpgsqlDataSource(options.MigrationSource.ConnectionString.ToString(), serviceKey: SourceType.Migration);
+            builder.Services.AddNpgsqlDataSource(options.MigrationSource.ConnectionString.ToString(), options.AppSource.Builder, serviceKey: SourceType.Migration);
             builder.Services.Add(Markers.MigrationSource.ServiceDescriptor);
         }
 
         if (!builder.Services.Contains(Markers.AppSource.ServiceDescriptor) && options.AppSource != null)
         {
-            builder.Services.AddNpgsqlDataSource(options.AppSource.ConnectionString.ToString(), serviceKey: SourceType.App);
+            builder.Services.AddNpgsqlDataSource(options.AppSource.ConnectionString.ToString(), options.AppSource.Builder, serviceKey: SourceType.App);
             builder.Services.Add(Markers.AppSource.ServiceDescriptor);
         }
 
@@ -38,7 +38,7 @@ public static class AltinnHostDatabase
             if (options.Telemetry.EnableTraces)
             {
                 builder.Services.AddOpenTelemetry()
-                    .WithTracing(traceProviderBuilder => traceProviderBuilder.AddNpgsql());
+                    .WithTracing(builder => builder.AddNpgsql());
             }
 
             if (options.Telemetry.EnableMetrics)
