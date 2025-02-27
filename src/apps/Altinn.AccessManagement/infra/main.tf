@@ -226,13 +226,13 @@ module "postgres_server" {
   compute_tier = "Burstable"
   compute_size = "Standard_B1ms"
 
-  entraid_admins = [
+  entraid_admins = concat([
     {
       principal_id   = data.azurerm_user_assigned_identity.admin.principal_id
       principal_name = data.azurerm_user_assigned_identity.admin.name
       principal_type = "ServicePrincipal"
-    }
-  ]
+    },
+  ], var.db_admins_user_principal_ids)
 }
 
 resource "null_resource" "bootstrap_database" {
