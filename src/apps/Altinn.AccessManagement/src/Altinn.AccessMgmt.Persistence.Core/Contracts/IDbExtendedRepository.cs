@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.Persistence.Core.Helpers;
+﻿using System.Linq.Expressions;
+using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Contracts;
@@ -37,6 +38,16 @@ public interface IDbExtendedRepository<T, TExtended> : IDbBasicRepository<T>
     /// A task that represents the asynchronous operation. The task result contains a collection of extended entities.
     /// </returns>
     Task<IEnumerable<TExtended>> GetExtended(RequestOptions? options = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a collection of extended entities based on property and value
+    /// </summary>
+    /// <param name="property">Filter property</param>
+    /// <param name="value">Filter value</param>
+    /// <param name="options">RequestOptions</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns>T<see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+    Task<IEnumerable<TExtended>> GetExtended<TProperty>(Expression<Func<TExtended, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a collection of extended entities that match the criteria specified by a <see cref="GenericFilterBuilder{TExtended}"/>.

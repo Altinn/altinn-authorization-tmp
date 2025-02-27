@@ -1,5 +1,6 @@
 using System.Net;
 using Altinn.AccessManagement;
+using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Microsoft.FeatureManagement;
@@ -13,12 +14,16 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="register">Register integration service.</param>
 /// <param name="logger">Logger for logging service activities.</param>
 /// <param name="featureManager">for reading feature flags</param>
-public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister register, ILogger<RegisterHostedService> logger, IFeatureManager featureManager) : IHostedService, IDisposable
+/// <param name="entityRepository"></param>
+/// <param name="entityLookupRepository"></param>
+public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister register, ILogger<RegisterHostedService> logger, IFeatureManager featureManager, IEntityRepository entityRepository, IEntityLookupRepository entityLookupRepository) : IHostedService, IDisposable
 {
     private readonly IAltinnLease _lease = lease;
     private readonly IAltinnRegister _register = register;
     private readonly ILogger<RegisterHostedService> _logger = logger;
     private readonly IFeatureManager _featureManager = featureManager;
+    private readonly IEntityRepository entityRepository = entityRepository;
+    private readonly IEntityLookupRepository entityLookupRepository = entityLookupRepository;
     private int _executionCount = 0;
     private Timer _timer = null;
     private readonly CancellationTokenSource _stop = new();
@@ -143,6 +148,11 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     /// <returns>A completed task.</returns>
     public Task WriteToDb(PartyModel model)
     {
+        entityRepository.Upsert(new AccessMgmt.Core.Models.Entity()
+        {
+            Id = Guid.Parse(model.PartyUuid),
+
+        });
         return Task.CompletedTask;
     }
 

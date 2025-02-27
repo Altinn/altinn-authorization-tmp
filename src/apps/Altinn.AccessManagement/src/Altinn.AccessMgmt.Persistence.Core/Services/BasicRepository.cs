@@ -99,7 +99,13 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         return await executor.ExecuteQuery<T>(query, param, cancellationToken: cancellationToken);
     }
 
-    private PropertyInfo ExtractPropertyInfo<TLocal, TProperty>(Expression<Func<TLocal, TProperty>> expression)
+    /// <summary>
+    /// Extracts property info
+    /// </summary>
+    /// <typeparam name="TLocal"></typeparam>
+    /// <typeparam name="TProperty"></typeparam>
+    /// <returns></returns>
+    protected PropertyInfo ExtractPropertyInfo<TLocal, TProperty>(Expression<Func<TLocal, TProperty>> expression)
     {
         MemberExpression? memberExpression = expression.Body switch
         {
