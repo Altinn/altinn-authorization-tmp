@@ -24,7 +24,7 @@ public interface IDbExecutor
     /// <param name="parameters">Parameters</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    Task<int> ExecuteMigrationCommand(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default);
+    Task<int> ExecuteMigrationCommand(string query, List<GenericParameter>? parameters = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Execute a command

@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Security.Cryptography;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Altinn.Authorization.Host.Database;
@@ -31,16 +32,19 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
     /// <summary>
     /// Executes a non-query command (INSERT, UPDATE, DELETE) and returns the number of affected rows.
     /// </summary>
-    public async Task<int> ExecuteMigrationCommand(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
+    public async Task<int> ExecuteMigrationCommand(string query, List<GenericParameter>? parameters, CancellationToken cancellationToken = default)
     {
         try
         {
             using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.Migration);
             var cmd = conn.CreateCommand();
             cmd.CommandText = query;
-            foreach (var parameter in parameters)
-            {
-                cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
+            if (parameters != null) 
+            { 
+                foreach (var parameter in parameters)
+                {
+                    cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
+                }
             }
 
             conn.Open();
@@ -61,11 +65,11 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
     /// </summary>
     public async Task<int> ExecuteCommand(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
     {
+        using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = query;
         try
         {
-            using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
-            var cmd = conn.CreateCommand();
-            cmd.CommandText = query;
             conn.Open();
             foreach (var parameter in parameters)
             {
@@ -77,6 +81,7 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
         catch (Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(conn.ConnectionString);
             Console.WriteLine(query);
             Console.WriteLine(ex.Message);
             Console.ForegroundColor = ConsoleColor.White;

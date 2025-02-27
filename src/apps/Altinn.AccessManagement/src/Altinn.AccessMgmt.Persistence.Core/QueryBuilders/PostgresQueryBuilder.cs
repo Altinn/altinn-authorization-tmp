@@ -111,7 +111,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         var sb = new StringBuilder();
 
         sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})");
-        sb.AppendLine(" ON CONFLICT (name) DO ");
+        sb.AppendLine(" ON CONFLICT (id) DO ");
         sb.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
 
         return sb.ToString();
@@ -439,6 +439,11 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         foreach (var uc in _definition.Constraints)
         {
+            if (uc.IsPrimaryKey)
+            {
+                continue;
+            }
+
             scriptCollection.AddScripts(CreateUniqueConstraint(uc));
         }
 

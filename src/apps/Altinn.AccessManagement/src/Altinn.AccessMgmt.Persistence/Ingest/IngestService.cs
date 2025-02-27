@@ -197,8 +197,8 @@ public class IngestService
     public async Task IngestEntityType()
     {
         var entityTypes = new List<EntityType>();
-        entityTypes.Add(new EntityType() { Id = Guid.NewGuid(), Name = "Organisasjon", ProviderId = Guid.Parse("323F9FF9-11AD-4AF3-8CCB-0DB7BDB71D75") });
-        entityTypes.Add(new EntityType() { Id = Guid.NewGuid(), Name = "Person", ProviderId = Guid.Parse("AC991C6F-E404-4C8A-82AB-94C2F772CD00") });
+        entityTypes.Add(new EntityType() { Id = Guid.NewGuid(), Name = "Organisasjon", ProviderId = Guid.Parse("db4d3dca-8f70-4353-b408-a495677087b3") });
+        entityTypes.Add(new EntityType() { Id = Guid.NewGuid(), Name = "Person", ProviderId = Guid.Parse("db4d3dca-8f70-4353-b408-a495677087b3") });
 
         foreach (var item in entityTypes)
         {

@@ -19,16 +19,6 @@ public class Delegation
     /// Assignment to delegate to
     /// </summary>
     public Guid ToId { get; set; }
-
-    /// <summary>
-    /// Entity between from and to
-    /// </summary>
-    public Guid ViaId { get; set; }
-
-    /// <summary>
-    /// Entity origin
-    /// </summary>
-    public Guid SourceId { get; set; }
 }
 
 /// <summary>
@@ -45,14 +35,4 @@ public class ExtDelegation : Delegation
     /// Assignment to delegate to
     /// </summary>
     public Assignment To { get; set; }
-
-    /// <summary>
-    /// Entity between from and to
-    /// </summary>
-    public Entity Via { get; set; }
-
-    /// <summary>
-    /// Entity origin
-    /// </summary>
-    public Entity Source { get; set; }
 }

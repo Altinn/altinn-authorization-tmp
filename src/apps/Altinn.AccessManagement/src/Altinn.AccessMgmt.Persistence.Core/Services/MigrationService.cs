@@ -71,11 +71,6 @@ public class MigrationService
         await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
         await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
 
-        string grantBase = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};";
-        string grantTranslation = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};";
-        string grantBaseHistory = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseHistorySchema} TO {config.DatabaseReadUser};";
-        string grantTranslationHistory = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};";
-
         var migrationTable = """
         CREATE TABLE IF NOT EXISTS dbo._migration (
         ObjectName text NOT NULL,
@@ -92,6 +87,53 @@ public class MigrationService
         Migrations = [.. await executor.ExecuteMigrationQuery<DbMigrationEntry>("SELECT * FROM dbo._migration")];
 
         HasInitialized = true;
+    }
+
+    private async Task Grants()
+    {
+        var config = this.options.Value;
+
+        var keyBaseSchema = $"GRANT {config.BaseSchema} TO {config.DatabaseReadUser}";
+        if (NeedMigration(keyBaseSchema, "SCHEMA"))
+        {
+            string script = $"GRANT USAGE ON SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};";
+            await executor.ExecuteMigrationCommand(script);
+            await LogMigration(keyBaseSchema, script, "SCHEMA");
+        }
+
+        var keyTranslation = $"GRANT {config.TranslationSchema} TO {config.DatabaseReadUser}";
+        if (NeedMigration(keyTranslation, "SCHEMA"))
+        {
+            string script = $"GRANT USAGE ON SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};";
+            await executor.ExecuteMigrationCommand(script);
+            await LogMigration(keyTranslation, script, "SCHEMA");
+        }
+
+        var keyBaseHistory = $"GRANT {config.BaseHistorySchema} TO {config.DatabaseReadUser}";
+        if (NeedMigration(keyBaseHistory, "SCHEMA"))
+        {
+            string script = $"GRANT USAGE ON SCHEMA {config.BaseHistorySchema} TO {config.DatabaseReadUser};";
+            await executor.ExecuteMigrationCommand(script);
+            await LogMigration(keyBaseHistory, script, "SCHEMA");
+        }
+
+        var keyTranslationHistory = $"GRANT {config.TranslationHistorySchema} TO {config.DatabaseReadUser}";
+        if (NeedMigration(keyTranslationHistory, "SCHEMA"))
+        {
+            string script = $"GRANT USAGE ON SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};";
+            await executor.ExecuteMigrationCommand(script);
+            await LogMigration(keyTranslationHistory, script, "SCHEMA");
+        }
+
+        string script1 = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};";
+        string script2 = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};";
+        string script3 = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseHistorySchema} TO {config.DatabaseReadUser};";
+        string script4 = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};";
+
+        await executor.ExecuteMigrationCommand(script1);
+        await executor.ExecuteMigrationCommand(script2);
+        await executor.ExecuteMigrationCommand(script3);
+        await executor.ExecuteMigrationCommand(script4);
     }
 
     /// <summary>
@@ -111,6 +153,7 @@ public class MigrationService
         }
         
         await ExecuteMigration();
+        await Grants();
     }
 
     #region Generate
@@ -155,6 +198,11 @@ public class MigrationService
         {
             foreach (var script in Scripts)
             {
+                if (script.Key.Name == "Provider")
+                {
+                    Console.WriteLine("PROVIDER");
+                }
+
                 if (status[script.Key])
                 {
                     continue;
@@ -177,7 +225,7 @@ public class MigrationService
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Migration '{script.Key.Name}' failed");
+                        Console.WriteLine($"ERROR :: Migration '{script.Key.Name}' failed");
                         Console.WriteLine(ex.Message);
                         retry[script.Key]++;
                         continue;
@@ -200,10 +248,19 @@ public class MigrationService
                 {
                     Console.WriteLine($"Migration '{script.Key.Name}' not ready");
 
+                    Console.ForegroundColor = ConsoleColor.Red;
                     foreach (var dep in script.Value.Dependencies)
                     {
                         Console.WriteLine("Dep:" + dep.Key.Name);
                     }
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    foreach (var dep in status)
+                    {
+                        Console.WriteLine("Mig:" + dep.Key.Name + ":" + dep.Value);
+                    }
+
+                    Console.ForegroundColor = ConsoleColor.White;
 
                     retry[script.Key]++;
                     continue;
@@ -274,14 +331,21 @@ public class MigrationService
         {
             if (NeedMigration(type, script.Key))
             {
+                if (script.Key.Contains("PK_")) 
+                {
+                    Console.WriteLine("PK");
+                    continue;
+                }
+
                 try
                 {
                     await executor.ExecuteMigrationCommand(script.Value, new List<GenericParameter>());
                     await LogMigration(type, script.Key, script.Value);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Migration '{script.Key}' failed");
+                    Console.WriteLine($"ERROR :: Migration '{script.Key}' failed");
+                    Console.WriteLine(ex.Message);
                     Console.WriteLine(script.Value);
                     throw;
                 }

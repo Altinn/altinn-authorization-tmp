@@ -113,6 +113,7 @@ public static partial class DbAccessHostExtensions
 
             var dbIngest = scope.ServiceProvider.GetRequiredService<IngestService>();
             await dbIngest.IngestProvider();
+            //// await dbIngest.IngestEntityType();
             //// await dbIngest.IngestAll();
 
             //// var mockService = scope.ServiceProvider.GetRequiredService<MockupService>();
