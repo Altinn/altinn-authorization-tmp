@@ -15,7 +15,7 @@ public abstract class ExtendedRepository<T, TExtended> : BasicRepository<T>, IDb
     where TExtended : class, new()
 {
     /// <inheritdoc/>
-    protected ExtendedRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    protected ExtendedRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
     {
     }
 

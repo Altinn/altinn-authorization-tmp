@@ -14,7 +14,7 @@ namespace Altinn.AccessMgmt.Persistence.Repositories;
 public class AssignmentResourceRepository : CrossRepository<AssignmentResource, ExtAssignmentResource, Assignment, Resource>, IAssignmentResourceRepository
 {
     /// <inheritdoc/>
-    public AssignmentResourceRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    public AssignmentResourceRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
     {
     }
 }

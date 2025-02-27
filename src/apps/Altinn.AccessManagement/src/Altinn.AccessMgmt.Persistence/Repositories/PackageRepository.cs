@@ -14,7 +14,7 @@ namespace Altinn.AccessMgmt.Persistence.Repositories;
 public class PackageRepository : ExtendedRepository<Package, ExtPackage>, IPackageRepository
 {
     /// <inheritdoc/>
-    public PackageRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    public PackageRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
     {
     }
 }

@@ -14,7 +14,7 @@ namespace Altinn.AccessMgmt.Persistence.Repositories;
 public class ResourceTypeRepository : BasicRepository<ResourceType>, IResourceTypeRepository
 {
     /// <inheritdoc/>
-    public ResourceTypeRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    public ResourceTypeRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
     {
     }
 }

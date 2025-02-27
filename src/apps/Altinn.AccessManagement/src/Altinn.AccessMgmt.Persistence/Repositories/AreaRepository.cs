@@ -14,7 +14,7 @@ namespace Altinn.AccessMgmt.Persistence.Repositories;
 public class AreaRepository : ExtendedRepository<Area, ExtArea>, IAreaRepository
 {
     /// <inheritdoc/>
-    public AreaRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    public AreaRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
     {
     }
 }

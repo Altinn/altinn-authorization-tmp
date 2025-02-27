@@ -2,12 +2,14 @@
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
 
 /// <inheritdoc/>
 public class PostgresQueryBuilder : IDbQueryBuilder
 {
+    private readonly IOptions<AccessMgmtPersistenceOptions> config;
     private readonly DbDefinition _definition;
     private readonly DbDefinitionRegistry _definitionRegistry;
 
@@ -16,8 +18,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     /// </summary>
     /// <param name="type">Type</param>
     /// <param name="definitionRegistry">DbDefinitionRegistry</param>
-    public PostgresQueryBuilder(Type type, DbDefinitionRegistry definitionRegistry)
+    public PostgresQueryBuilder(IOptions<AccessMgmtPersistenceOptions> options, Type type, DbDefinitionRegistry definitionRegistry)
     {
+        this.config = options;
         _definition = definitionRegistry.TryGetDefinition(type) ?? throw new Exception("Missing definition");
         _definitionRegistry = definitionRegistry;
     }
@@ -128,6 +131,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
     private string GetTableName(DbDefinition dbDefinition, bool includeAlias = true, bool useHistory = false, bool useTranslation = false, bool useHistoryView = false)
     {
+        var config = this.config.Value;
         // If GetOrAddDefinition.Plantform == "Mssql" => Qualify names [..]
         string res = "";
         if (useHistory)
@@ -135,22 +139,22 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             string historyTablePrefix = useHistoryView ? "" : "_";
             if (useTranslation)
             {
-                res = $"{dbDefinition.TranslationHistorySchema}.{historyTablePrefix}{dbDefinition.ModelType.Name}";
+                res = $"{config.TranslationHistorySchema}.{historyTablePrefix}{dbDefinition.ModelType.Name}";
             }
             else
             {
-                res = $"{dbDefinition.BaseHistorySchema}.{historyTablePrefix}{dbDefinition.ModelType.Name}";
+                res = $"{config.BaseHistorySchema}.{historyTablePrefix}{dbDefinition.ModelType.Name}";
             }
         }
         else
         {
             if (useTranslation)
             {
-                res = $"{dbDefinition.TranslationSchema}.{dbDefinition.ModelType.Name}";
+                res = $"{config.TranslationSchema}.{dbDefinition.ModelType.Name}";
             }
             else
             {
-                res = $"{dbDefinition.BaseSchema}.{dbDefinition.ModelType.Name}";
+                res = $"{config.BaseSchema}.{dbDefinition.ModelType.Name}";
             }
         }
 

@@ -2,6 +2,8 @@
 using System.Reflection;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Executors;
+using Altinn.AccessMgmt.Persistence.Core.Models;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -13,6 +15,7 @@ namespace Altinn.AccessMgmt.Persistence.Core.Helpers;
 public class PostgresIngest<T> : IDbIngest<T> 
     where T : class, new()
 {
+    private readonly IOptions<AccessMgmtPersistenceOptions> config;
     private readonly IDbExecutor executor;
     private readonly DbDefinition _definition;
 
@@ -21,8 +24,9 @@ public class PostgresIngest<T> : IDbIngest<T>
     /// </summary>
     /// <param name="executor">IDbExecutor</param>
     /// <param name="definition">DbDefinition</param>
-    public PostgresIngest(IDbExecutor executor, DbDefinition definition)
+    public PostgresIngest(IOptions<AccessMgmtPersistenceOptions> options, IDbExecutor executor, DbDefinition definition)
     {
+        this.config = options;
         this.executor = executor;
         _definition = definition;
     }
@@ -107,18 +111,19 @@ public class PostgresIngest<T> : IDbIngest<T>
 
     private string GetPostgresDefinition(bool includeAlias = true, bool useHistory = false, bool useTranslation = false)
     {
+        var config = this.config.Value;
         string res;
         if (useHistory)
         {
             res = useTranslation
-                ? $"{_definition.TranslationHistorySchema}.{_definition.ModelType.Name}"
-                : $"{_definition.BaseHistorySchema}.{_definition.ModelType.Name}";
+                ? $"{config.TranslationHistorySchema}.{_definition.ModelType.Name}"
+                : $"{config.BaseHistorySchema}.{_definition.ModelType.Name}";
         }
         else
         {
             res = useTranslation
-                ? $"{_definition.TranslationSchema}.{_definition.ModelType.Name}"
-                : $"{_definition.BaseSchema}.{_definition.ModelType.Name}";
+                ? $"{config.TranslationSchema}.{_definition.ModelType.Name}"
+                : $"{config.BaseSchema}.{_definition.ModelType.Name}";
         }
 
         if (includeAlias)

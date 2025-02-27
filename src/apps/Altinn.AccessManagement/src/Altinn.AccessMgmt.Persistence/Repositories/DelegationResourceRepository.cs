@@ -14,7 +14,7 @@ namespace Altinn.AccessMgmt.Persistence.Repositories;
 public class DelegationResourceRepository : CrossRepository<DelegationResource, ExtDelegationResource, Delegation, Resource>, IDelegationResourceRepository
 {
     /// <inheritdoc/>
-    public DelegationResourceRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    public DelegationResourceRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
     {
     }
 }

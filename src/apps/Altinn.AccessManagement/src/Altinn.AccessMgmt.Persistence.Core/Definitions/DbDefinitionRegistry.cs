@@ -1,8 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Definitions;
 
@@ -16,12 +18,11 @@ public class DbDefinitionRegistry
     /// </summary>
     private readonly ConcurrentDictionary<Type, DbDefinition> store = new();
     private readonly ConcurrentDictionary<Type, Lazy<IDbQueryBuilder>> _queryBuilders = new();
-    private readonly string _databaseType;
+    private readonly IOptions<AccessMgmtPersistenceOptions> configuration;
 
-
-    public DbDefinitionRegistry(IConfiguration configuration)
+    public DbDefinitionRegistry(IOptions<AccessMgmtPersistenceOptions> configuration)
     {
-        _databaseType = "Postgres";
+        this.configuration=configuration;
     }
 
     /// <summary>
@@ -44,11 +45,11 @@ public class DbDefinitionRegistry
             new Lazy<IDbQueryBuilder>(() =>
             {
                 var definition = TryGetDefinition(type);
-                return _databaseType switch
+                return configuration.Value.DbType switch
                 {
-                    "Postgres" => new PostgresQueryBuilder(type, this),
-                    "MSSQL" => new MssqlQueryBuilder(type, this),
-                    _ => throw new NotSupportedException($"Database type '{_databaseType}' is not supported.")
+                    MgmtDbType.Postgres => new PostgresQueryBuilder(configuration, type, this),
+                    MgmtDbType.MSSQL => new MssqlQueryBuilder(type, this),
+                    _ => throw new NotSupportedException($"Database type '{configuration.Value.DbType.ToString()}' is not supported.")
                 };
             })
         ).Value;

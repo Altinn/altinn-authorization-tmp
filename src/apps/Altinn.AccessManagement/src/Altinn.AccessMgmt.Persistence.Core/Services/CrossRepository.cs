@@ -20,10 +20,9 @@ public abstract class CrossRepository<T, TExtended, TA, TB> : ExtendedRepository
     /// <summary>
     /// Initializes a new instance of the <see cref="CrossRepository{T, TExtended, TA, TB}"/> class.
     /// </summary>
-    /// <param name="options">DbAccessConfig</param>
     /// <param name="dbDefinitionRegistry">DbDefinitionRegistry</param>
     /// <param name="executor">IDbExecutor</param>
-    protected CrossRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    protected CrossRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
     { }
 
     /// <inheritdoc/>

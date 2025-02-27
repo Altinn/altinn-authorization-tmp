@@ -19,7 +19,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     /// DbAccessConfig
     /// </summary>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:FieldsMustBePrivate", Justification = "Reviewed")]
-    protected readonly DbAccessConfig config;
+    //protected readonly DbAccessConfig config;
 
     /// <summary>
     /// DbDefinitionRegistry
@@ -39,9 +39,9 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     /// <param name="options">DbAccessConfig</param>
     /// <param name="dbDefinitionRegistry">DbDefinitionRegistry</param>
     /// <param name="executor">NpgsqlDataSource</param>
-    public BasicRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor)
+    public BasicRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor)
     {
-        config = options.Value;
+        //config = options.Value;
         this.definitionRegistry = dbDefinitionRegistry;
         this.executor = executor;
     }

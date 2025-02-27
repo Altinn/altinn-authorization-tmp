@@ -14,14 +14,11 @@ namespace Altinn.AccessMgmt.Persistence.Core.Services;
 /// </summary>
 public class MigrationService
 {
-    /// <summary>
-    /// Configuration
-    /// </summary>
-    private readonly DbAccessConfig config;
-
     private readonly DbDefinitionRegistry definitionRegistry;
 
     private readonly IDbExecutor executor;
+
+    private readonly IOptions<AccessMgmtPersistenceOptions> options;
 
     /// <summary>
     /// Migration Services
@@ -29,9 +26,9 @@ public class MigrationService
     /// <param name="options">DbAccessConfig</param>
     /// <param name="definitionRegistry">DbDefinitionRegistry</param>
     /// <param name="executor">IDbExecutor</param>
-    public MigrationService(IOptions<DbAccessConfig> options, DbDefinitionRegistry definitionRegistry, IDbExecutor executor)
+    public MigrationService(IOptions<AccessMgmtPersistenceOptions> options, DbDefinitionRegistry definitionRegistry, IDbExecutor executor)
     {
-        config = options.Value;
+        this.options = options;
         this.definitionRegistry = definitionRegistry;
         this.executor = executor;
         Migrations = new List<DbMigrationEntry>();
@@ -65,12 +62,19 @@ public class MigrationService
             return;
         }
 
+        var config = this.options.Value;
+
         var defaultDefinition = new DbDefinition(typeof(string));
 
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.BaseSchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {defaultDefinition.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
+
+        string grantBase = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};";
+        string grantTranslation = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};";
+        string grantBaseHistory = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseHistorySchema} TO {config.DatabaseReadUser};";
+        string grantTranslationHistory = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};";
 
         var migrationTable = """
         CREATE TABLE IF NOT EXISTS dbo._migration (
