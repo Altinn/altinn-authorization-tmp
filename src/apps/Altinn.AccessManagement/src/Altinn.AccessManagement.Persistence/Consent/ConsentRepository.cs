@@ -1,4 +1,6 @@
 ﻿using System.Data;
+using System.Data.Common;
+using System.Linq.Expressions;
 using Altinn.AccessManagement.Core.Enums.Consent;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Register;
@@ -30,9 +32,64 @@ namespace Altinn.AccessManagement.Persistence.Consent
         }
 
         /// <inheritdoc/>
-        public Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest)
+        public async Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest)
         {
-            throw new NotImplementedException();
+            const string consentRquestQuery = /*strpsql*/@"
+                INSERT INTO consent.consentrequest (id, from, to, validTo, requestMessage, status)
+                VALUES (
+                @id, 
+                @from, 
+                @to, 
+                @validTo, 
+                @requestMessage, 
+                @status)
+                RETURNING id;
+                ";
+   
+            await using NpgsqlCommand command = _conn.CreateCommand(consentRquestQuery);
+            command.Parameters.AddWithValue("id", consentRequest.Id);
+            command.Parameters.AddWithValue("from", consentRequest.From);
+            command.Parameters.AddWithValue("to", consentRequest.To);
+            command.Parameters.AddWithValue("validTo", consentRequest.ValidTo);
+            await command.ExecuteNonQueryAsync();
+
+            foreach (ConsentRight consentRight in consentRequest.ConsentRights)
+            {
+                Guid consentRightGuid = Guid.NewGuid();
+
+                const string rightsQuery = /*strpsql*/@"
+                INSERT INTO consent.concentright(consentRightId , consentRequestId , action)
+                VALUES (
+                @consentRightId, 
+                @consentRequestId, 
+                @action
+                )
+                RETURNING id;
+                ";
+
+                await using NpgsqlCommand rightsCommand = _conn.CreateCommand(rightsQuery);
+                rightsCommand.Parameters.AddWithValue("consentRightId", consentRightGuid);
+                rightsCommand.Parameters.AddWithValue("consentRequestId", consentRequest.Id);
+                rightsCommand.Parameters.AddWithValue("action", consentRight.Action);
+
+                // Bulding up the query for the resource attributes. Typical this is only one, but in theory it can be multiple attributes identifying a resource.
+                var values = new List<string>();
+                var parameters = new List<NpgsqlParameter>();
+
+                await using NpgsqlCommand resourceCommand = _conn.CreateCommand();
+                for (int i = 0; i < consentRight.Resource.Count; i++)
+                {
+                    values.Add($"(@consentRightId{i}, @type{i}, @value{i})");
+                    resourceCommand.Parameters.AddWithValue($"@consentRightId{i}", consentRightGuid);
+                    resourceCommand.Parameters.AddWithValue($"@type{i}", consentRight.Resource[i].Type);
+                    resourceCommand.Parameters.AddWithValue($"@value{i}", consentRight.Resource[i].Value);
+                }
+
+                resourceCommand.CommandText = $"INSERT INTO consent.resourceattribute (consentRightId, type, value) VALUES {string.Join(", ", values)}";
+                await resourceCommand.ExecuteNonQueryAsync();
+            }
+
+            return await GetRequest(consentRequest.Id);
         }
 
         /// <inheritdoc/>

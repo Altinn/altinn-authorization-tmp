@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessManagement.Core.Enums.Consent;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Register;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Register.Core.Parties;
@@ -12,6 +13,16 @@ namespace Altinn.AccessManagement.Core.Services
     /// </summary>
     public class ConsentService : IConsent
     {
+        private readonly IConsentRepository _consentRepository;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ConsentService(IConsentRepository consentRepository)
+        {
+            _consentRepository = consentRepository;
+        }
+
         /// <inheritdoc/>
         public Task ApproveRequest(Guid id)
         {
@@ -21,18 +32,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest)
         {
-            ConsentRequestDetails details = new ConsentRequestDetails()
-            {
-                ConsentRequestStatus = ConsentRequestStatusType.Created,
-                ConsentRights = consentRequest.ConsentRights,
-                From = consentRequest.From,
-                Id = Guid.NewGuid(),
-                Requestmessage = consentRequest.Requestmessage,
-                To = consentRequest.To,
-                ValidTo = consentRequest.ValidTo
-            };
-
-            return details;
+            return await _consentRepository.CreateRequest(consentRequest);
         }
 
         /// <inheritdoc/>
