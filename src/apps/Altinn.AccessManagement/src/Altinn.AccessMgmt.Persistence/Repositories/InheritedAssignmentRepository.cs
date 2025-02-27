@@ -14,7 +14,7 @@ namespace Altinn.AccessMgmt.Persistence.Repositories;
 public class InheritedAssignmentRepository : ExtendedRepository<InheritedAssignment, ExtInheritedAssignment>, IInheritedAssignmentRepository
 {
     /// <inheritdoc/>
-    public InheritedAssignmentRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    public InheritedAssignmentRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
     {
     }
 }

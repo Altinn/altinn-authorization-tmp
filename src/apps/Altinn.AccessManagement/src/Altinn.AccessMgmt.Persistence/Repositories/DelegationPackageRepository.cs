@@ -14,7 +14,7 @@ namespace Altinn.AccessMgmt.Persistence.Repositories;
 public class DelegationPackageRepository : CrossRepository<DelegationPackage, ExtDelegationPackage, Delegation, Package>, IDelegationPackageRepository
 {
     /// <inheritdoc/>
-    public DelegationPackageRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    public DelegationPackageRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
     {
     }
 }

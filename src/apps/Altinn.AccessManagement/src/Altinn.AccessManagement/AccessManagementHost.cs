@@ -33,6 +33,7 @@ using Microsoft.OpenApi.Models;
 using Npgsql;
 using Swashbuckle.AspNetCore.Filters;
 using Altinn.Authorization.Host.Database;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 
 namespace Altinn.AccessManagement;
 

@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Repo.Ingest.Models;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
 
 //// using Altinn.AccessMgmt.Repo.Ingest.RagnhildModel;
@@ -18,7 +19,7 @@ public class IngestService
     /// <summary>
     /// Configuration
     /// </summary>
-    public DbAccessConfig Config { get; set; }
+    private readonly IOptions<AccessMgmtPersistenceOptions> options;
 
     private readonly IProviderRepository providerService;
     private readonly IAreaRepository areaService;
@@ -34,7 +35,7 @@ public class IngestService
     /// <summary>
     /// IngestService
     /// </summary>
-    /// <param name="config">DbAccessConfig</param>
+    /// <param name="options">DbAccessConfig</param>
     /// <param name="providerService">IProviderRepository</param>
     /// <param name="areaService">IAreaRepository</param>
     /// <param name="areaGroupService">IAreaGroupRepository</param>
@@ -46,7 +47,7 @@ public class IngestService
     /// <param name="roleMapService">IRoleMapRepository</param>
     /// <param name="rolePackageService">IRolePackageRepository</param>
     public IngestService(
-        IOptions<DbAccessConfig> config,
+        IOptions<AccessMgmtPersistenceOptions> options,
         IProviderRepository providerService,
         IAreaRepository areaService,
         IAreaGroupRepository areaGroupService,
@@ -59,7 +60,7 @@ public class IngestService
         IRolePackageRepository rolePackageService
         )
     {
-        Config = config.Value;
+        this.options = options;
         this.providerService = providerService;
         this.areaService = areaService;
         this.areaGroupService = areaGroupService;
@@ -502,51 +503,52 @@ public class IngestService
     /// <returns></returns>
     public async Task<List<IngestResult>> IngestAll(CancellationToken cancellationToken = default)
     {
+        var config = options.Value;
         var result = new List<IngestResult>();
 
-        if (Config.JsonIngestEnabled.ContainsKey("providerIngestService") && Config.JsonIngestEnabled["providerIngestService"])
+        if (config.JsonIngestEnabled.ContainsKey("providerIngestService") && config.JsonIngestEnabled["providerIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("providerIngestService"));
             result.Add(await IngestData<Provider, IProviderRepository>(providerService, cancellationToken));
         }
 
-        if (Config.JsonIngestEnabled.ContainsKey("entityTypeIngestService") && Config.JsonIngestEnabled["entityTypeIngestService"])
+        if (config.JsonIngestEnabled.ContainsKey("entityTypeIngestService") && config.JsonIngestEnabled["entityTypeIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("entityTypeIngestService"));
             result.Add(await IngestData<EntityType, IEntityTypeRepository>(entityTypeService, cancellationToken));
         }
 
-        if (Config.JsonIngestEnabled.ContainsKey("entityVariantIngestService") && Config.JsonIngestEnabled["entityVariantIngestService"])
+        if (config.JsonIngestEnabled.ContainsKey("entityVariantIngestService") && config.JsonIngestEnabled["entityVariantIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantIngestService"));
             result.Add(await IngestData<EntityVariant, IEntityVariantRepository>(entityVariantService, cancellationToken));
         }
 
-        if (Config.JsonIngestEnabled.ContainsKey("roleIngestService") && Config.JsonIngestEnabled["roleIngestService"])
+        if (config.JsonIngestEnabled.ContainsKey("roleIngestService") && config.JsonIngestEnabled["roleIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("roleIngestService"));
             result.Add(await IngestData<Role, IRoleRepository>(roleService, cancellationToken));
         }
 
-        if (Config.JsonIngestEnabled.ContainsKey("roleMapIngestService") && Config.JsonIngestEnabled["roleMapIngestService"])
+        if (config.JsonIngestEnabled.ContainsKey("roleMapIngestService") && config.JsonIngestEnabled["roleMapIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("roleMapIngestService"));
             result.Add(await IngestData<RoleMap, IRoleMapRepository>(roleMapService, cancellationToken));
         }
 
-        if (Config.JsonIngestEnabled.ContainsKey("areasAndPackagesIngestService") && Config.JsonIngestEnabled["areasAndPackagesIngestService"])
+        if (config.JsonIngestEnabled.ContainsKey("areasAndPackagesIngestService") && config.JsonIngestEnabled["areasAndPackagesIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("areasAndPackagesIngestService"));
             result.AddRange(await IngestAreasAndPackages(cancellationToken));
         }
 
-        if (Config.JsonIngestEnabled.ContainsKey("RolePackagesIngestService") && Config.JsonIngestEnabled["RolePackagesIngestService"])
+        if (config.JsonIngestEnabled.ContainsKey("RolePackagesIngestService") && config.JsonIngestEnabled["RolePackagesIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("RolePackagesIngestService"));
             result.AddRange(await IngestRolePackages(cancellationToken));
         }
 
-        if (Config.JsonIngestEnabled.ContainsKey("entityVariantRoleIngestService") && Config.JsonIngestEnabled["entityVariantRoleIngestService"])
+        if (config.JsonIngestEnabled.ContainsKey("entityVariantRoleIngestService") && config.JsonIngestEnabled["entityVariantRoleIngestService"])
         {
             // a?.AddEvent(new System.Diagnostics.ActivityEvent("entityVariantRoleIngestService"));
             result.Add(await IngestData<EntityVariantRole, IEntityVariantRoleRepository>(entityVariantRoleService, cancellationToken));
@@ -626,7 +628,7 @@ public class IngestService
         var type = typeof(T);
         var translatedItems = new Dictionary<string, List<T>>();
 
-        foreach (var lang in Config.JsonIngestLanguages.Distinct())
+        foreach (var lang in options.Value.JsonIngestLanguages.Distinct())
         {
             var translatedJsonData = await ReadJsonData<T>(lang, cancellationToken: cancellationToken);
             if (translatedJsonData == "[]")
@@ -866,7 +868,7 @@ public class IngestService
 
     private async Task<string> ReadJsonData(string baseName, string? language = null, CancellationToken cancellationToken = default)
     {
-        string fileName = $"{Config.JsonBasePath}{Path.DirectorySeparatorChar}{baseName}{(string.IsNullOrEmpty(language) ? string.Empty : "_" + language)}.json";
+        string fileName = $"{options.Value.JsonBasePath}{Path.DirectorySeparatorChar}{baseName}{(string.IsNullOrEmpty(language) ? string.Empty : "_" + language)}.json";
         if (File.Exists(fileName))
         {
             return await File.ReadAllTextAsync(fileName, cancellationToken);

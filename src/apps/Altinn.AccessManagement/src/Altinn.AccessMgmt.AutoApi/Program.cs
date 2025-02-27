@@ -12,7 +12,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton(NpgsqlDataSource.Create("Database=newtests;Host=localhost;Username=wigg;Password=jw8s0F4;Include Error Detail=true"));
 
-var config = builder.Configuration.Get<DbAccessConfig>();
+//// var config = builder.Configuration.Get<DbAccessConfig>();
 //// builder.ConfigureDb();
 
 //builder.AddDb(opts =>

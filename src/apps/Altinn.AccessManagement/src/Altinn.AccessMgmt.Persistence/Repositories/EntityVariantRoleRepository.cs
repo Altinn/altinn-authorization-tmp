@@ -14,7 +14,7 @@ namespace Altinn.AccessMgmt.Persistence.Repositories;
 public class EntityVariantRoleRepository : CrossRepository<EntityVariantRole, ExtEntityVariantRole, EntityVariant, Role>, IEntityVariantRoleRepository
 {
     /// <inheritdoc/>
-    public EntityVariantRoleRepository(IOptions<DbAccessConfig> options, DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(options, dbDefinitionRegistry, executor)
+    public EntityVariantRoleRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
     {
     }
 }
