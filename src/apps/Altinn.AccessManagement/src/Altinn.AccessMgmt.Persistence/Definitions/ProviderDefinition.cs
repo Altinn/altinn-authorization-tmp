@@ -20,8 +20,10 @@ public class ProviderDefinition : BaseDbDefinition<Provider>, IDbDefinition
             def.EnableHistory();
             def.RegisterPrimaryKey([t => t.Id]);
             def.RegisterProperty(t => t.Id);
+
             def.RegisterProperty(t => t.Name);
             def.RegisterProperty(t => t.RefId, nullable: true);
+            
             def.RegisterUniqueConstraint([t => t.Name]);
         });
     }
