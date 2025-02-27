@@ -7,11 +7,13 @@ using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Persistence;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Extensions;
-using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Host;
+using Altinn.Authorization.Host.Database;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Host.Startup;
 using Altinn.Authorization.Integration.Platform.Extensions;
@@ -32,8 +34,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using Swashbuckle.AspNetCore.Filters;
-using Altinn.Authorization.Host.Database;
-using Altinn.AccessMgmt.Persistence.Core.Models;
 
 namespace Altinn.AccessManagement;
 
@@ -54,23 +54,11 @@ internal static partial class AccessManagementHost
         var builder = AltinnHost.CreateWebApplicationBuilder("access-management", args);
         builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
 
-        var adminConnectionStringFmt = builder.Configuration.GetValue<string>("PostgreSQLSettings:AdminConnectionString");
-        var adminConnectionStringPwd = builder.Configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbAdminPwd");
-        var connectionStringFmt = builder.Configuration.GetValue<string>("PostgreSQLSettings:ConnectionString");
-        var connectionStringPwd = builder.Configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbPwd");
-
-        var adminConnectionString = new NpgsqlConnectionStringBuilder(string.Format(adminConnectionStringFmt, adminConnectionStringPwd));
-        var connectionString = new NpgsqlConnectionStringBuilder(string.Format(connectionStringFmt, connectionStringPwd))
-        {
-            MaxAutoPrepare = 50,
-            AutoPrepareMinUsages = 2,
-        };
-
-
         builder.AddAltinnDatabase(opt =>
         {
-            opt.AppSource = new(connectionString.ConnectionString);
-            opt.MigrationSource = new(adminConnectionString.ConnectionString);
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            opt.AppSource = new(appsettings.Database.Postgres.AppConnectionString);
+            opt.MigrationSource = new(appsettings.Database.Postgres.MigrationConnectionString);
             opt.Telemetry.EnableMetrics = false;
             opt.Telemetry.EnableTraces = true;
         });
