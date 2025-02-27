@@ -56,37 +56,3 @@ public class ExtDelegation : Delegation
     /// </summary>
     public Entity Source { get; set; }
 }
-
-public class DelegationPackage
-{
-    /// <summary>
-    /// 
-    /// </summary>
-    public Guid Id { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public Guid DelegationId { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public Guid PackageId { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public Guid DependencyId { get; set; }
-}
-
-public class DelegationResource
-{
-    public Guid Id { get; set; }
-    public Guid DelegationId { get; set; }
-    public Guid ResourceeId { get; set; }
-    public Guid DependencyId { get; set; }
-    /*
-     
-    */
-}

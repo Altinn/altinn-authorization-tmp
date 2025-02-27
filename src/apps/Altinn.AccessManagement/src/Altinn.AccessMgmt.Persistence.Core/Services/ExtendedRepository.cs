@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
 using Microsoft.Extensions.Options;
+using System.Linq.Expressions;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Services;
 
@@ -29,6 +30,17 @@ public abstract class ExtendedRepository<T, TExtended> : BasicRepository<T>, IDb
     public async Task<IEnumerable<TExtended>> GetExtended(RequestOptions? options = null, CancellationToken cancellationToken = default)
     {
         return await GetExtended(filters: [], options, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<TExtended>> GetExtended<TProperty>(Expression<Func<TExtended, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        string propertyName = ExtractPropertyInfo(property).Name;
+        var filters = new List<GenericFilter>
+        {
+            new GenericFilter(propertyName, value!, FilterComparer.Equals)
+        };
+        return await GetExtended(filters, options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>

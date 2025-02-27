@@ -599,8 +599,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             }
         }
 
-        string key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.UC_{name}";
-        string query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT UC_{name} UNIQUE ({string.Join(',', constraint.Properties.Keys)});";
+        string key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
+        string query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} UNIQUE ({string.Join(',', constraint.Properties.Keys)});";
 
         return (key, query);
     }
@@ -625,8 +625,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         string name = string.IsNullOrEmpty(foreignKey.Name) ? $"{_definition.ModelType.Name}_{foreignKey.BaseProperty}" : foreignKey.Name;
 
-        var key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.FK_{name}";
-        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT FK_{name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
+        var key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
+        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
 
         return (key, query);
     }
