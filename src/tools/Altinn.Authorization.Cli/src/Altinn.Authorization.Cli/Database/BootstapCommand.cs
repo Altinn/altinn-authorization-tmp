@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Altinn.Authorization.Cli.Config;
 using Altinn.Authorization.Cli.Utils;
 using Azure;
@@ -48,15 +49,15 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
 
             var postgresResource = await GetPostgresFlexibleServerResource(postgresArm, settings, cancellationToken);
             var keyVaultResource = await GetArmKeyVaultResource(keyVaultArm, settings, cancellationToken);
-            var connectionString = await CreateAdminConnectionString(token, postgresResource, settings, cancellationToken);
             var secretClient = new SecretClient(keyVaultResource.Data.Properties.VaultUri, token);
+            await CreateDatabase(settings, token, config, postgresResource, cancellationToken);
 
+            var connectionString = await CreateAdminConnectionString(token, postgresResource, settings, config.Database.Name, cancellationToken);
             await using var conn = new NpgsqlConnection(connectionString.ToString());
             await conn.OpenAsync(cancellationToken);
 
             var migratorUser = await CreateDatabaseRole(conn, secretClient, $"{config.Database.Prefix}_migrator", connectionString.Username!, settings, cancellationToken);
             var appUser = await CreateDatabaseRole(conn, secretClient, $"{config.Database.Prefix}_app", connectionString.Username!, settings, cancellationToken);
-            await CreateDatabase(conn, config.Database.Name, cancellationToken);
             await GrantDatabasePrivileges(conn, config.Database.Name, migratorUser.RoleName, "CREATE, CONNECT", cancellationToken);
             await GrantDatabasePrivileges(conn, config.Database.Name, appUser.RoleName, "CONNECT", cancellationToken);
 
@@ -72,6 +73,14 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
         WriteOperationSucceeded("[bold green]Bootstrap completed successfully![/]");
 
         return 0;
+    }
+
+    private async Task CreateDatabase(Settings settings, DefaultAzureCredential token, AppsConfig config, PostgreSqlFlexibleServerResource postgresResource, CancellationToken cancellationToken)
+    {
+        var connectionString = await CreateAdminConnectionString(token, postgresResource, settings, "postgres", cancellationToken);
+        await using var conn = new NpgsqlConnection(connectionString.ToString());
+        await conn.OpenAsync(cancellationToken);
+        await CreateDatabase(conn, config.Database.Name, cancellationToken);
     }
 
     private async Task<PostgreSqlFlexibleServerResource> GetPostgresFlexibleServerResource(ArmClient arm, Settings settings, CancellationToken cancellationToken)
@@ -108,7 +117,7 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
         }
     }
 
-    private async Task<NpgsqlConnectionStringBuilder> CreateAdminConnectionString(TokenCredential token, PostgreSqlFlexibleServerResource postgres, Settings settings, CancellationToken cancellationToken)
+    private async Task<NpgsqlConnectionStringBuilder> CreateAdminConnectionString(TokenCredential token, PostgreSqlFlexibleServerResource postgres, Settings settings, string database, CancellationToken cancellationToken)
     {
         try
         {
@@ -124,7 +133,7 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
             var connectionString = new NpgsqlConnectionStringBuilder()
             {
                 Host = postgres.Data.FullyQualifiedDomainName,
-                Database = "postgres",
+                Database = database,
                 Username = username,
                 Password = cred.Token,
                 Port = 5432,
