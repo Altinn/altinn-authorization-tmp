@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 
@@ -19,6 +20,11 @@ public static class AltinnHostDatabase
     {
         var options = new AltinnHostDatabaseOptions();
         configureOptions?.Invoke(options);
+        builder.Services.TryAddSingleton<IAltinnDatabase, AltinnHostDatabaseFactory>();
+        if (!options.Enabled)
+        {
+            return builder;
+        }
 
         if (!builder.Services.Contains(Markers.MigrationSource.ServiceDescriptor) && options.MigrationSource != null)
         {
@@ -34,7 +40,6 @@ public static class AltinnHostDatabase
 
         if (!builder.Services.Contains(Markers.ServiceDescriptor))
         {
-            builder.Services.AddSingleton<IAltinnDatabase, AltinnHostDatabaseFactory>();
             if (options.Telemetry.EnableTraces)
             {
                 builder.Services.AddOpenTelemetry()

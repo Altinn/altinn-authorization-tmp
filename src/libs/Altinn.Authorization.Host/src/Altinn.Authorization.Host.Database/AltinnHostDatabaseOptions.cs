@@ -8,6 +8,11 @@ namespace Altinn.Authorization.Host.Database;
 public class AltinnHostDatabaseOptions
 {
     /// <summary>
+    /// Specifies if DB connection is enabled
+    /// </summary>
+    public bool Enabled { get; set; } = false;
+
+    /// <summary>
     /// Gets or sets the data source for application-related database connections.
     /// </summary>
     public PgsqlDataSourceOptions AppSource { get; set; }

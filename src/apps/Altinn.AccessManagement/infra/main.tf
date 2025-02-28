@@ -211,6 +211,12 @@ module "appsettings" {
       description = "Specifies if the register data should streamed from register service to access management database"
       label       = "${lower(var.environment)}-access-management"
       value       = false
+    },
+    {
+      name        = "AccessManagement.MigrationDb"
+      description = "Specifies if database should be migrated"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
     }
   ]
   providers = {

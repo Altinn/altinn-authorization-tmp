@@ -57,9 +57,15 @@ internal static partial class AccessManagementHost
         builder.AddAltinnDatabase(opt =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            if (string.IsNullOrEmpty(appsettings.Database.Postgres.AppConnectionString) || string.IsNullOrEmpty(appsettings.Database.Postgres.MigrationConnectionString))
+            {
+                Log.PgsqlMissingConnectionString(Logger);
+                opt.Enabled = false;
+            }
+
             opt.AppSource = new(appsettings.Database.Postgres.AppConnectionString);
             opt.MigrationSource = new(appsettings.Database.Postgres.MigrationConnectionString);
-            opt.Telemetry.EnableMetrics = false;
+            opt.Telemetry.EnableMetrics = true;
             opt.Telemetry.EnableTraces = true;
         });
 
@@ -310,5 +316,8 @@ internal static partial class AccessManagementHost
 
         [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Configuration setting '{field}' is null or empty.")]
         internal static partial void ConfigValueIsNullOrEmpty(ILogger logger, string field);
+
+        [LoggerMessage(EventId = 2, Level = LogLevel.Debug, Message = "Connection string(s) for pgsql server are missing")]
+        internal static partial void PgsqlMissingConnectionString(ILogger logger);
     }
 }
