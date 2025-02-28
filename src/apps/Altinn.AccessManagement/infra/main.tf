@@ -152,6 +152,14 @@ module "key_vault" {
         principal_id         = principal_id
         role_definition_name = "Key Vault Secrets User"
       }
+    ],
+    [
+      for user in var.db_admins_user_principal_ids :
+      {
+        operation_id         = "grant_access_management_platform_app_secret_user_${user.principal_id}"
+        principal_id         = user.principal_id
+        role_definition_name = "Key Vault Secrets User"
+      }
   ])
 }
 
@@ -226,13 +234,13 @@ module "postgres_server" {
   compute_tier = "Burstable"
   compute_size = "Standard_B1ms"
 
-  entraid_admins = [
+  entraid_admins = concat([
     {
       principal_id   = data.azurerm_user_assigned_identity.admin.principal_id
       principal_name = data.azurerm_user_assigned_identity.admin.name
       principal_type = "ServicePrincipal"
-    }
-  ]
+    },
+  ], var.db_admins_user_principal_ids)
 }
 
 resource "null_resource" "bootstrap_database" {
@@ -240,7 +248,7 @@ resource "null_resource" "bootstrap_database" {
     ts = timestamp()
   }
 
-  depends_on = [module.key_vault]
+  depends_on = [module.key_vault, module.postgres_server]
   provisioner "local-exec" {
     working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
     command     = <<EOT
