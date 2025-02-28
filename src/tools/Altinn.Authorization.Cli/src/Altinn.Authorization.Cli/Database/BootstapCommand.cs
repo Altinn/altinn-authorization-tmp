@@ -61,11 +61,11 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
             var appUser = await CreateDatabaseRole(conn, secretClient, $"{config.Database.Prefix}_app", connectionString.Username!, settings, cancellationToken);
             await GrantDatabasePrivileges(conn, config.Database.Name, migratorUser.RoleName, "CREATE, CONNECT", cancellationToken);
             await GrantDatabasePrivileges(conn, config.Database.Name, appUser.RoleName, "CONNECT", cancellationToken);
-            await conn.CloseAsync();
 
             foreach (var (schemaName, schemaCfg) in config.Database.Schemas)
             {
                 await CreateDatabaseSchema(conn, migratorUser, schemaName, schemaCfg, cancellationToken);
+                await GrantSchemaPrivileges(conn, appUser, schemaName, cancellationToken);
             }
 
             await StoreConnectionString(config, migratorUser, postgresResource.Data.FullyQualifiedDomainName, secretClient, settings, cancellationToken);
