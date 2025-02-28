@@ -55,11 +55,13 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
             var connectionString = await CreateAdminConnectionString(token, postgresResource, settings, config.Database.Name, cancellationToken);
             await using var conn = new NpgsqlConnection(connectionString.ToString());
             await conn.OpenAsync(cancellationToken);
+            WriteOperationSucceeded($"Connected to datbase '{config.Database.Name}'");
 
             var migratorUser = await CreateDatabaseRole(conn, secretClient, $"{config.Database.Prefix}_migrator", connectionString.Username!, settings, cancellationToken);
             var appUser = await CreateDatabaseRole(conn, secretClient, $"{config.Database.Prefix}_app", connectionString.Username!, settings, cancellationToken);
             await GrantDatabasePrivileges(conn, config.Database.Name, migratorUser.RoleName, "CREATE, CONNECT", cancellationToken);
             await GrantDatabasePrivileges(conn, config.Database.Name, appUser.RoleName, "CONNECT", cancellationToken);
+            await conn.CloseAsync();
 
             foreach (var (schemaName, schemaCfg) in config.Database.Schemas)
             {
@@ -268,6 +270,26 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
         catch
         {
             WriteOperationFailed($"Upsert schema '{schemaName}' in database.'{conn.Database}");
+            throw;
+        }
+    }
+
+    private async Task GrantSchemaPrivileges(NpgsqlConnection conn, Result appUser, string schemaName, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText =
+                /*strpsql*/$"""
+                GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {schemaName} TO {appUser.RoleName};
+                """;
+
+            await cmd.ExecuteNonQueryAsync(cancellationToken);
+            WriteOperationSucceeded($"Grant privileges on '{schemaName}' in database for {appUser.RoleName}.");
+        }
+        catch
+        {
+            WriteOperationFailed($"Grant privileges on '{schemaName}' in database for {appUser.RoleName}.");
             throw;
         }
     }
