@@ -152,6 +152,14 @@ module "key_vault" {
         principal_id         = principal_id
         role_definition_name = "Key Vault Secrets User"
       }
+    ],
+    [
+      for user in var.db_admins_user_principal_ids :
+      {
+        operation_id         = "grant_access_management_platform_app_secret_user_${user.principal_id}"
+        principal_id         = user.principal_id
+        role_definition_name = "Key Vault Secrets User"
+      }
   ])
 }
 
