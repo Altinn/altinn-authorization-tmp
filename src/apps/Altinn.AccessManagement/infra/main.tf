@@ -248,7 +248,7 @@ resource "null_resource" "bootstrap_database" {
     ts = timestamp()
   }
 
-  depends_on = [module.key_vault]
+  depends_on = [module.key_vault, module.postgres_server]
   provisioner "local-exec" {
     working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
     command     = <<EOT
