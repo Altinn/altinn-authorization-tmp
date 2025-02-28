@@ -281,6 +281,7 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
             await using var cmd = conn.CreateCommand();
             cmd.CommandText =
                 /*strpsql*/$"""
+                GRANT USAGE ON SCHEMA {schemaName} TO {appUser.RoleName};
                 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {schemaName} TO {appUser.RoleName};
                 """;
 
