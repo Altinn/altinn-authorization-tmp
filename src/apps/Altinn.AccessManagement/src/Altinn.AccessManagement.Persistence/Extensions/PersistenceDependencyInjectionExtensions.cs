@@ -4,6 +4,7 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
 using Altinn.AccessManagement.Persistence.Configuration;
+using Altinn.AccessManagement.Persistence.Consent;
 using Altinn.AccessManagement.Persistence.Policy;
 using Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql;
 using Azure.Core;
@@ -52,6 +53,8 @@ public static class PersistenceDependencyInjectionExtensions
             builder.Services.AddSingleton<IDelegationMetadataRepository, DelegationMetadataRepository>();
             builder.Services.AddSingleton<IResourceMetadataRepository, ResourceMetadataRepository>();
         }
+
+        builder.Services.AddSingleton<IConsentRepository, ConsentRepository>();
 
         builder.AddDatabase();
         builder.Services.AddDelegationPolicyRepository(builder.Configuration);

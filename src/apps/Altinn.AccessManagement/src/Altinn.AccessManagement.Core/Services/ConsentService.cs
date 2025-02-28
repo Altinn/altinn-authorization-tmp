@@ -32,7 +32,12 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest)
         {
-            return await _consentRepository.CreateRequest(consentRequest);
+            consentRequest.From = MapFromExternalIdenity(consentRequest.From);
+            consentRequest.To = MapFromExternalIdenity(consentRequest.To);
+            ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(consentRequest);
+            requestDetails.From = MapToExternalIdenity(requestDetails.From);
+            requestDetails.To = MapToExternalIdenity(requestDetails.To);
+            return requestDetails;
         }
 
         /// <inheritdoc/>
@@ -71,6 +76,46 @@ namespace Altinn.AccessManagement.Core.Services
             };
 
             return Task.FromResult(consent);
+        }
+
+
+
+        private ConsentPartyUrn MapFromExternalIdenity(ConsentPartyUrn consentPartyUrn)
+        {
+            if (consentPartyUrn.IsPersonId(out PersonIdentifier personIdentifier))
+            {
+                return GetInternalIdentifier(personIdentifier);
+            }
+            else if (consentPartyUrn.IsOrganizationId(out OrganizationNumber organizationNumber))
+            {
+                return GetInternalIdentifier(organizationNumber);
+            }
+            return consentPartyUrn;
+        }
+
+        private ConsentPartyUrn MapToExternalIdenity(ConsentPartyUrn consentPartyUrn)
+        {
+            if (consentPartyUrn.IsPartyUuid(out Guid partyUuid))
+            {
+                return GetExternalIdentifier(partyUuid);    
+            }
+
+            return consentPartyUrn;
+        }
+
+        private ConsentPartyUrn GetExternalIdentifier(Guid guid)
+        {
+            return ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01014922047"));
+        }
+
+        private ConsentPartyUrn GetInternalIdentifier(OrganizationNumber organizationNumber)
+        {
+            return ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid());
+        }
+
+        private ConsentPartyUrn GetInternalIdentifier(PersonIdentifier personIdentifier)
+        {
+            return ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid());
         }
     }
 }

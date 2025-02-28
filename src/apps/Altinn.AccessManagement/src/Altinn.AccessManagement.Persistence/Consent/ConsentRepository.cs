@@ -1,12 +1,16 @@
 ﻿using System.Data;
 using System.Data.Common;
 using System.Linq.Expressions;
+using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Enums.Consent;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
+using Altinn.AccessManagement.Enums;
 using Altinn.Register.Core.Parties;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace Altinn.AccessManagement.Persistence.Consent
 {
@@ -35,22 +39,39 @@ namespace Altinn.AccessManagement.Persistence.Consent
         public async Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest)
         {
             const string consentRquestQuery = /*strpsql*/@"
-                INSERT INTO consent.consentrequest (id, from, to, validTo, requestMessage, status)
+                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, toPartyUuid, validTo, requestMessage)
                 VALUES (
-                @id, 
-                @from, 
-                @to, 
+                @consentRequestId, 
+                @fromPartyUuid, 
+                @toPartyUuid, 
                 @validTo, 
-                @requestMessage, 
-                @status)
-                RETURNING id;
+                @requestMessage)
+                RETURNING consentRequestId;
                 ";
    
             await using NpgsqlCommand command = _conn.CreateCommand(consentRquestQuery);
-            command.Parameters.AddWithValue("id", consentRequest.Id);
-            command.Parameters.AddWithValue("from", consentRequest.From);
-            command.Parameters.AddWithValue("to", consentRequest.To);
-            command.Parameters.AddWithValue("validTo", consentRequest.ValidTo);
+            command.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid,  consentRequest.Id);
+            if (consentRequest.From.IsPartyUuid(out Guid fromPartyGuid))
+            {
+                command.Parameters.AddWithValue("fromPartyUuid", NpgsqlDbType.Uuid, fromPartyGuid);
+            }
+            else
+            {
+                throw new InvalidDataException("Invalid party URN");
+            }
+
+            if (consentRequest.From.IsPartyUuid(out Guid toPartyGuid))
+            {
+                command.Parameters.AddWithValue("toPartyUuid", NpgsqlDbType.Uuid, toPartyGuid);
+            }
+            else
+            {
+                throw new InvalidDataException("Invalid party URN");
+            }
+
+            command.Parameters.AddWithValue("requestMessage", NpgsqlDbType.Hstore, consentRequest.Requestmessage);
+
+            command.Parameters.AddWithValue("validTo", NpgsqlDbType.TimestampTz, consentRequest.ValidTo.ToOffset(TimeSpan.Zero));
             await command.ExecuteNonQueryAsync();
 
             foreach (ConsentRight consentRight in consentRequest.ConsentRights)
