@@ -28,12 +28,12 @@ public class RolePackage
     /// <summary>
     /// HasAccess
     /// </summary>
-    public bool HasAccess { get; set; } // Is this the right place? Or is it Package Permission? No.... Or PackageResource?
+    public bool HasAccess { get; set; }
 
     /// <summary>
     /// CanDelegate
     /// </summary>
-    public bool CanDelegate { get; set; } // Is this the right place?
+    public bool CanDelegate { get; set; }
 }
 
 /// <summary>
