@@ -165,9 +165,6 @@ public sealed class DbConverter : IDbConverter
         (Member Member, Type? ElementType) prop,
         object value)
     {
-        // Log deserialization attempt – replace with proper logging as needed.
-        Console.WriteLine($"Deserializing value '{value}' into list property '{prop.Member.Name}' of type {prop.Member.Type}");
-
         // Use the actual property type (e.g., List<SomeType> or IEnumerable<SomeType>).
         var propertyType = prop.Member.Type;
 
