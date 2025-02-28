@@ -39,6 +39,11 @@ variable "db_admins_user_principal_ids" {
     principal_id   = "4241b5ee-326f-4359-bde7-ee1a99287d7f",
     principal_name = "ext-mthue-prod@ai-dev.no",
     principal_type = "User"
+    },
+    {
+      principal_id   = "be1a510a-db1e-473c-a73a-558cdb68e353",
+      principal_name = "ext-anils@ai-dev.no",
+      principal_type = "User"
   }]
 }
 
