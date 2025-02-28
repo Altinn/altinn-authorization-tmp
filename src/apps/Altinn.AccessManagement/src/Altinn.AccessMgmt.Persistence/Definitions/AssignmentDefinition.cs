@@ -24,7 +24,6 @@ public class AssignmentDefinition : BaseDbDefinition<Assignment>, IDbDefinition
             def.RegisterProperty(t => t.FromId);
             def.RegisterProperty(t => t.ToId);
             def.RegisterProperty(t => t.RoleId);
-            def.RegisterProperty(t => t.IsDelegable);
 
             def.RegisterExtendedProperty<ExtAssignment, Entity>(t => t.FromId, t => t.Id, t => t.From, cascadeDelete: true);
             def.RegisterExtendedProperty<ExtAssignment, Entity>(t => t.ToId, t => t.Id, t => t.To, cascadeDelete: true);

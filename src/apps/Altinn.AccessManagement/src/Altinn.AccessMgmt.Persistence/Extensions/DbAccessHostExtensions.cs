@@ -111,8 +111,8 @@ public static partial class DbAccessHostExtensions
             migration.GenerateAll();
             await migration.Migrate();
 
-            var dbIngest = scope.ServiceProvider.GetRequiredService<IngestService>();
-            await dbIngest.IngestProvider();
+            //// var dbIngest = scope.ServiceProvider.GetRequiredService<IngestService>();
+            //// await dbIngest.IngestProvider();
             //// await dbIngest.IngestEntityType();
             //// await dbIngest.IngestAll();
 

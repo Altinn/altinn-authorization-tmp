@@ -24,11 +24,6 @@ public class Assignment
     /// ToId
     /// </summary>
     public Guid ToId { get; set; }
-
-    /// <summary>
-    /// IsDelegable
-    /// </summary>
-    public bool IsDelegable { get; set; } //// TODO: REMOVE
 }
 
 /// <summary>

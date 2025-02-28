@@ -1,8 +1,9 @@
 ﻿using System.Data;
-using System.Security.Cryptography;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Altinn.Authorization.Host.Database;
+using Altinn.Authorization.Host.Startup;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Executors;
@@ -12,6 +13,11 @@ namespace Altinn.AccessMgmt.Persistence.Core.Executors;
 /// </summary>
 public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSource connection, IDbConverter dbConverter) : IDbExecutor
 {
+    /// <summary>
+    /// Logger instance for logging database configuration messages.
+    /// </summary>
+    private static ILogger Logger { get; } = StartupLoggerFactory.Create(nameof(PostgresDbExecutor));
+
     private readonly IAltinnDatabase _databaseFactory = databaseFactory;
     private readonly NpgsqlDataSource _connection = connection;
     private readonly IDbConverter _dbConverter = dbConverter;
@@ -52,10 +58,8 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
         }
         catch (Exception ex)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(query);
             Console.WriteLine(ex.Message);
-            Console.ForegroundColor = ConsoleColor.White;
             throw;
         }
     }
@@ -80,11 +84,8 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
         }
         catch (Exception ex)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(conn.ConnectionString);
             Console.WriteLine(query);
             Console.WriteLine(ex.Message);
-            Console.ForegroundColor = ConsoleColor.White;
             throw;
         }
     }
@@ -104,10 +105,8 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
         }
         catch (Exception ex)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(query);
             Console.WriteLine(ex.Message);
-            Console.ForegroundColor = ConsoleColor.White;
             throw;
         }
     }
@@ -126,6 +125,7 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
         {
             cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
         }
+
         return _dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
     }
 

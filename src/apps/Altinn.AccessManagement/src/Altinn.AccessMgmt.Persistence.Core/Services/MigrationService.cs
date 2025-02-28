@@ -66,10 +66,10 @@ public class MigrationService
 
         var defaultDefinition = new DbDefinition(typeof(string));
 
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseSchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        //await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseSchema};", new List<GenericParameter>(), cancellationToken);
+        //await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
+        //await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        //await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
 
         var migrationTable = """
         CREATE TABLE IF NOT EXISTS dbo._migration (
@@ -93,47 +93,24 @@ public class MigrationService
     {
         var config = this.options.Value;
 
-        var keyBaseSchema = $"GRANT {config.BaseSchema} TO {config.DatabaseReadUser}";
-        if (NeedMigration(keyBaseSchema, "SCHEMA"))
-        {
-            string script = $"GRANT USAGE ON SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};";
-            await executor.ExecuteMigrationCommand(script);
-            await LogMigration(keyBaseSchema, script, "SCHEMA");
-        }
+        /*
+        // Moved to terraform/bootstraping
+        GRANT USAGE ON SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};
+        GRANT USAGE ON SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};
+        GRANT USAGE ON SCHEMA {config.BaseHistorySchema} TO {config.DatabaseReadUser};
+        GRANT USAGE ON SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};
+        */
 
-        var keyTranslation = $"GRANT {config.TranslationSchema} TO {config.DatabaseReadUser}";
-        if (NeedMigration(keyTranslation, "SCHEMA"))
-        {
-            string script = $"GRANT USAGE ON SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};";
-            await executor.ExecuteMigrationCommand(script);
-            await LogMigration(keyTranslation, script, "SCHEMA");
-        }
+        //// TODO: Move to CREATE TABLE script
 
-        var keyBaseHistory = $"GRANT {config.BaseHistorySchema} TO {config.DatabaseReadUser}";
-        if (NeedMigration(keyBaseHistory, "SCHEMA"))
-        {
-            string script = $"GRANT USAGE ON SCHEMA {config.BaseHistorySchema} TO {config.DatabaseReadUser};";
-            await executor.ExecuteMigrationCommand(script);
-            await LogMigration(keyBaseHistory, script, "SCHEMA");
-        }
+        string script = $"""
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseHistorySchema} TO {config.DatabaseReadUser};
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};
+        """;
 
-        var keyTranslationHistory = $"GRANT {config.TranslationHistorySchema} TO {config.DatabaseReadUser}";
-        if (NeedMigration(keyTranslationHistory, "SCHEMA"))
-        {
-            string script = $"GRANT USAGE ON SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};";
-            await executor.ExecuteMigrationCommand(script);
-            await LogMigration(keyTranslationHistory, script, "SCHEMA");
-        }
-
-        string script1 = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};";
-        string script2 = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};";
-        string script3 = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseHistorySchema} TO {config.DatabaseReadUser};";
-        string script4 = $"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};";
-
-        await executor.ExecuteMigrationCommand(script1);
-        await executor.ExecuteMigrationCommand(script2);
-        await executor.ExecuteMigrationCommand(script3);
-        await executor.ExecuteMigrationCommand(script4);
+        await executor.ExecuteMigrationCommand(script);
     }
 
     /// <summary>
