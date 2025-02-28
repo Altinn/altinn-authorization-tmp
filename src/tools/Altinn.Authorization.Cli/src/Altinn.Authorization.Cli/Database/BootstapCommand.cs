@@ -65,7 +65,7 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
             foreach (var (schemaName, schemaCfg) in config.Database.Schemas)
             {
                 await CreateDatabaseSchema(conn, migratorUser, schemaName, schemaCfg, cancellationToken);
-                await GrantSchemaPrivileges(conn, appUser, schemaName, cancellationToken);
+                await GrantUsageOnSchema(conn, appUser, schemaName, cancellationToken);
             }
 
             await StoreConnectionString(config, migratorUser, postgresResource.Data.FullyQualifiedDomainName, secretClient, settings, cancellationToken);
@@ -274,7 +274,7 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
         }
     }
 
-    private async Task GrantSchemaPrivileges(NpgsqlConnection conn, Result appUser, string schemaName, CancellationToken cancellationToken)
+    private async Task GrantUsageOnSchema(NpgsqlConnection conn, Result appUser, string schemaName, CancellationToken cancellationToken)
     {
         try
         {
@@ -282,7 +282,6 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
             cmd.CommandText =
                 /*strpsql*/$"""
                 GRANT USAGE ON SCHEMA {schemaName} TO {appUser.RoleName};
-                GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {schemaName} TO {appUser.RoleName};
                 """;
 
             await cmd.ExecuteNonQueryAsync(cancellationToken);
