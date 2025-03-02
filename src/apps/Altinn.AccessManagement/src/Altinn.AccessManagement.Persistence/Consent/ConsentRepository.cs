@@ -79,19 +79,20 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 Guid consentRightGuid = Guid.NewGuid();
 
                 const string rightsQuery = /*strpsql*/@"
-                INSERT INTO consent.concentright(consentRightId , consentRequestId , action)
+                INSERT INTO consent.consentright(consentRightId , consentRequestId , action)
                 VALUES (
                 @consentRightId, 
                 @consentRequestId, 
                 @action
                 )
-                RETURNING id;
+                RETURNING consentRightId;
                 ";
 
                 await using NpgsqlCommand rightsCommand = _conn.CreateCommand(rightsQuery);
                 rightsCommand.Parameters.AddWithValue("consentRightId", consentRightGuid);
                 rightsCommand.Parameters.AddWithValue("consentRequestId", consentRequest.Id);
                 rightsCommand.Parameters.AddWithValue("action", consentRight.Action);
+                await rightsCommand.ExecuteNonQueryAsync();
 
                 // Bulding up the query for the resource attributes. Typical this is only one, but in theory it can be multiple attributes identifying a resource.
                 var values = new List<string>();
@@ -138,7 +139,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             string consentQuery = /*strpsql*/@$"
                 SELECT * FROM consent.consentrequest 
-                WHERE id = @id
+                WHERE consentRequestId = @id
                 ";
 
             await using var pgcom = _conn.CreateCommand(consentQuery);
@@ -214,7 +215,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             string consentRightsQuery = /*strpsql*/@$"
                 SELECT * FROM consent.consentright 
-                WHERE concentRequestId = @id
+                WHERE consentRequestId = @id
                 ";
 
             await using var pgcom = _conn.CreateCommand(consentRightsQuery);
@@ -223,7 +224,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             List<ConsentRight> consentRights = new List<ConsentRight>();
             while (await reader.ReadAsync())
             {
-                Guid consentRightId = reader.GetFieldValue<Guid>("concentRightId");
+                Guid consentRightId = reader.GetFieldValue<Guid>("consentRightId");
 
                 List<ConsentResourceAttribute> resourceAttributes = new List<ConsentResourceAttribute>();
                 if (keyValuePairs.TryGetValue(consentRightId, out List<ConsentResourceAttribute> foundAttributes))
@@ -260,8 +261,8 @@ namespace Altinn.AccessManagement.Persistence.Consent
         {
             string consentResourcesQuery = /*strpsql*/@$"
                 SELECT * FROM consent.resourceattributes ra 
-                join consent.concentright cr on cr.consentRightId = ra.consentRightId 
-                WHERE cr.concentRequestId = @id
+                join consent.consentright cr on cr.consentRightId = ra.consentRightId 
+                WHERE cr.consentRequestId = @id
                 ";
 
             await using var pgcom = _conn.CreateCommand(consentResourcesQuery);
@@ -296,7 +297,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             string consentMetadataQuery = /*strpsql*/@$"
                 SELECT * FROM consent.metadata ra 
                 join consent.consentright cr on cr.consentRightId = ra.consentRightId
-                WHERE cr.concentRequestId = @id
+                WHERE cr.consentRequestId = @id
                 ";
 
             await using var pgcom = _conn.CreateCommand(consentMetadataQuery);
