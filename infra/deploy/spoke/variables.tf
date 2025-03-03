@@ -57,7 +57,3 @@ variable "firewall_public_ipv4" {
 variable "appsettings_key_value" {
   type = map(string)
 }
-
-variable "platform_vnet_arm_id" {
-  type = string
-}
