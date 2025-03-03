@@ -16,7 +16,7 @@ resource "azurerm_private_dns_zone" "hex" {
 resource "azurerm_private_dns_a_record" "hex" {
   zone_name           = azurerm_private_dns_zone.hex[0].name
   name                = "@"
-  records             = [data.azurerm_private_dns_a_record.postgres.records[0]]
+  records             = data.azurerm_private_dns_a_record.postgres[0].records
   resource_group_name = var.resource_group_name
   ttl                 = 3600
   count               = var.pg_dns_hex == "" ? 0 : 1
