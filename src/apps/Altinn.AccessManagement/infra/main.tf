@@ -234,6 +234,9 @@ module "postgres_server" {
   resource_group_name = azurerm_resource_group.access_management.name
   location            = "norwayeast"
 
+  hub_suffix = local.hub_suffix
+  pg_dns_hex = var.pg_dns_hex
+
   subnet_id           = data.azurerm_subnet.postgres.id
   private_dns_zone_id = data.azurerm_private_dns_zone.postgres.id
   postgres_version    = "16"
@@ -251,6 +254,10 @@ module "postgres_server" {
       principal_type = "ServicePrincipal"
     },
   ], var.db_admins_user_principal_ids)
+
+  providers = {
+    azurerm.hub = azurerm.hub
+  }
 }
 
 resource "null_resource" "bootstrap_database" {

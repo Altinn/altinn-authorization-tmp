@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source                = "hashicorp/azurerm"
+      configuration_aliases = [azurerm.hub]
+    }
+  }
+}
+
 data "azurerm_client_config" "current" {}
 
 locals {
@@ -77,6 +86,5 @@ resource "azurerm_postgresql_flexible_server_configuration" "configuration" {
 # Bootstrap may fail if ran too fast.
 resource "time_sleep" "wait_30_seconds" {
   depends_on      = [azurerm_postgresql_flexible_server_configuration.configuration]
-  create_duration = "15s"
+  create_duration = "30s"
 }
-
