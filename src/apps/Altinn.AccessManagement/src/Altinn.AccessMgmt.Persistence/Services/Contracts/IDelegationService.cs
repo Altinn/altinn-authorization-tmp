@@ -6,14 +6,15 @@ namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
 /// Delegation service
 /// </summary>
 public interface IDelegationService
-{    
+{
     /// <summary>
     /// Create a new delegation betweeen two assignments
     /// </summary>
+    /// <param name="userId">User/param>
     /// <param name="fromAssignmentId">From</param>
     /// <param name="toAssignmentId">To</param>
     /// <returns></returns>
-    Task<ExtDelegation> CreateDelgation(Guid fromAssignmentId, Guid toAssignmentId);
+    Task<ExtDelegation> CreateDelgation(Guid userId, Guid fromAssignmentId, Guid toAssignmentId);
 
     /// <summary>
     /// Adds a package to the delegation
@@ -37,7 +38,13 @@ public interface IAssignmentService
     /// Gets assignment and creates if not exits
     /// </summary>
     /// <returns></returns>
-    Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode);
+    Task<Assignment> GetOrCreateAssignment(Guid fromId, Guid toId, string roleCode);
+
+    /// <summary>
+    /// Gets assignment and creates if not exits
+    /// </summary>
+    /// <returns></returns>
+    Task<Assignment> GetOrCreateAssignment(Guid fromId, Guid toId, Guid roleId);
 
     /// <summary>
     /// Adds a package to the delegation
@@ -52,5 +59,10 @@ public interface IAssignmentService
     Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId);
 
     Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId);
+    
     Task<Assignment> GetAssignment(Guid fromId, Guid toId, string roleCode);
+
+    Task<IEnumerable<InheritedAssignment>> GetInheritedAssignment(Guid fromId, Guid toId, Guid roleId);
+    
+    Task<IEnumerable<InheritedAssignment>> GetInheritedAssignment(Guid fromId, Guid toId, string roleCode);
 }

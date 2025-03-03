@@ -1,6 +1,8 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -17,7 +19,8 @@ public class DelegationService(
     IPackageRepository packageRepository,
     IResourceRepository resourceRepository,
     IDelegationPackageRepository delegationPackageRepository,
-    IDelegationResourceRepository delegationResourceRepository
+    IDelegationResourceRepository delegationResourceRepository,
+    IAssignmentService assignmentService
     ) : IDelegationService
 {
     private readonly IRoleRepository roleRepository = roleRepository;
@@ -32,6 +35,7 @@ public class DelegationService(
     private readonly IResourceRepository resourceRepository = resourceRepository;
     private readonly IDelegationPackageRepository delegationPackageRepository = delegationPackageRepository;
     private readonly IDelegationResourceRepository delegationResourceRepository = delegationResourceRepository;
+    private readonly IAssignmentService assignmentService = assignmentService;
 
     private async Task<bool> CheckIfEntityHasRole(string roleCode, Guid fromId, Guid toId)
     {
@@ -52,14 +56,20 @@ public class DelegationService(
     }
 
     /// <inheritdoc/>
-    public async Task<ExtDelegation> CreateDelgation(Guid fromAssignmentId, Guid toAssignmentId)
+    public async Task<ExtDelegation> CreateDelgation(Guid userId, Guid fromAssignmentId, Guid toAssignmentId)
     {
-        var fromAssignment = await assignmentRepository.Get(fromAssignmentId);
-        var toAssignment = await assignmentRepository.Get(toAssignmentId);
+        var fromAssignment = await assignmentRepository.GetExtended(fromAssignmentId);
+        var toAssignment = await assignmentRepository.GetExtended(toAssignmentId);
 
         if (fromAssignment.ToId != toAssignment.FromId) 
         {
             throw new InvalidOperationException("Assignments are not connected. FromAssignment.ToId != ToAssignment.FromId");
+        }
+
+        var assRes = await assignmentService.GetAssignment(fromAssignment.ToId, userId, "TS");
+        if (assRes == null)
+        {
+            throw new Exception(string.Format("User is not TS for '{0}'", fromAssignment.To.Name));
         }
 
         var delegation = new Delegation()
@@ -186,7 +196,8 @@ public class AssignmentService(
     IAssignmentPackageRepository assignmentPackageRepository,
     IAssignmentResourceRepository assignmentResourceRepository,
     IRoleRepository roleRepository,
-    IRolePackageRepository rolePackageRepository
+    IRolePackageRepository rolePackageRepository,
+    IEntityRepository entityRepository
     ) : IAssignmentService
 {
     private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
@@ -196,11 +207,17 @@ public class AssignmentService(
     private readonly IAssignmentResourceRepository assignmentResourceRepository = assignmentResourceRepository;
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
+    private readonly IEntityRepository entityRepository = entityRepository;
 
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId)
     {
-        var result = await assignmentRepository.Get();
+        var filter = assignmentRepository.CreateFilterBuilder();
+        filter.Equal(t => t.FromId, fromId);
+        filter.Equal(t => t.ToId, toId);
+        filter.Equal(t => t.RoleId, roleId);
+
+        var result = await assignmentRepository.Get(filter);
         if (result == null || !result.Any())
         {
             return null;
@@ -233,7 +250,7 @@ public class AssignmentService(
         [ ] Check if package can be delegated
         */
 
-
+        var user = await entityRepository.Get(userId);
 
         var assignment = await assignmentRepository.Get(assignmentId);
         var res = await GetAssignment(assignment.FromId, userId, "TS");
@@ -277,7 +294,7 @@ public class AssignmentService(
 
         if (!hasPackage) 
         {
-            throw new Exception("User '' does not have package");
+            throw new Exception(string.Format("User '{0}' does not have package '{1}'", user.Name, package.Name));
         }
 
         await assignmentPackageRepository.Create(new AssignmentPackage()
@@ -315,29 +332,73 @@ public class AssignmentService(
     /// <inheritdoc/>
     public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode)
     {
-        var assignment = await GetAssignment(fromEntityId, toEntityId, roleCode);
+        var roleResult = await roleRepository.Get(t => t.Name, roleCode);
+        if (roleResult == null || !roleResult.Any())
+        {
+            throw new Exception(string.Format("Role '{0}' not found", roleCode));
+        }
+
+        return await GetOrCreateAssignment(fromEntityId, toEntityId, roleResult.First().Id);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, Guid roleId)
+    {
+        var assignment = await GetAssignment(fromEntityId, toEntityId, roleId);
         if (assignment != null)
         {
             return assignment;
         }
 
-        var roleResult = await roleRepository.Get(t => t.Code, roleCode);
-        if (roleResult == null)
+        var role = await roleRepository.Get(roleId);
+        if (role == null)
         {
-            throw new Exception("Role '' not found");
+            throw new Exception(string.Format("Role '{0}' not found", roleId));
         }
 
+        var inheritedAssignments = await GetInheritedAssignment(fromEntityId, toEntityId, role.Id);
+        if (inheritedAssignments != null && inheritedAssignments.Any())
+        {
+            if (inheritedAssignments.Count() == 1)
+            {
+                throw new Exception(string.Format("An inheirited assignment exists From:'{0}.FromName' Via:'{0}.ViaName' To:'{}.ToName'. Use Force = true to create anyway.", inheritedAssignments.First()));
+            }
 
-        //// here ....
+            throw new Exception(string.Format("Multiple inheirited assignment exists. Use Force = true to create anyway."));
+        }
 
         await assignmentRepository.Create(new Assignment()
         {
-            Id= Guid.NewGuid(),
-            FromId= fromEntityId,
-            ToId= toEntityId,
-            RoleId = roleResult.First().Id
+            Id = Guid.NewGuid(),
+            FromId = fromEntityId,
+            ToId = toEntityId,
+            RoleId = role.Id
         });
 
         throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<InheritedAssignment>> GetInheritedAssignment(Guid fromId, Guid toId, Guid roleId)
+    {
+        var filter = inheritedAssignmentRepository.CreateFilterBuilder();
+        filter.Equal(t => t.FromId, fromId);
+        filter.Equal(t => t.ToId, toId);
+        filter.Equal(t => t.RoleId, roleId);
+
+        return await inheritedAssignmentRepository.Get(filter);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<InheritedAssignment>> GetInheritedAssignment(Guid fromId, Guid toId, string roleCode)
+    {
+        var roleResult = await roleRepository.Get(t => t.Code, roleCode);
+        if (roleResult == null || !roleResult.Any())
+        {
+            throw new Exception(string.Format("Role not found '{0}'", roleCode));
+        }
+
+        var roleId = roleResult.First().Id;
+        return await GetInheritedAssignment(fromId, toId, roleId);
     }
 }
