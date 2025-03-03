@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.18.0"
+      version = "4.20.0"
     }
     static = {
       source  = "tiwood/static"
@@ -34,7 +34,7 @@ locals {
   spoke_resource_group_name = lower("rg${local.spoke_suffix}")
   suffix                    = lower("${var.organization}${var.product_name}${var.name}${var.instance}${var.environment}")
   conf_json                 = jsondecode(file(local.conf_json_path))
-  conf_json_path            = "${path.module}/../conf.json"
+  conf_json_path            = abspath("${path.module}/../conf.json")
 
   default_tags = {
     ProductName = var.product_name
@@ -93,15 +93,15 @@ resource "azurerm_user_assigned_identity" "register" {
   tags                = merge({}, local.default_tags)
 }
 
-resource "azurerm_federated_identity_credential" "aks_federation" {
-  name                = "Aks"
-  resource_group_name = azurerm_resource_group.register.name
-  parent_id           = azurerm_user_assigned_identity.register.id
-  audience            = ["api://AzureADTokenExchange"]
-  subject             = "system:serviceaccount:${each.value.namespace}:${each.value.service_account}"
-  issuer              = each.value.issuer_url
-  for_each            = { for federation in var.aks_federation : federation.issuer_url => federation }
-}
+# resource "azurerm_federated_identity_credential" "aks_federation" {
+#   name                = "Aks"
+#   resource_group_name = azurerm_resource_group.register.name
+#   parent_id           = azurerm_user_assigned_identity.register.id
+#   audience            = ["api://AzureADTokenExchange"]
+#   subject             = "system:serviceaccount:${each.value.namespace}:${each.value.service_account}"
+#   issuer              = each.value.issuer_url
+#   for_each            = { for federation in var.aks_federation : federation.issuer_url => federation }
+# }
 
 # Should be removed once migrated from Platform AKS to Authorization AKS cluster
 module "rbac_platform_app" {
@@ -186,12 +186,12 @@ module "appsettings" {
     {
       key                 = "Postgres:AppConnectionString"
       key_vault_secret_id = data.azurerm_key_vault_secret.postgres_app.versionless_id
-      label               = "${var.environment}_register"
+      label               = "${var.environment}-register"
     },
     {
       key                 = "Postgres:MigrationConnectionString"
       key_vault_secret_id = data.azurerm_key_vault_secret.postgres_migration.versionless_id
-      label               = "${var.environment}_register"
+      label               = "${var.environment}-register"
     }
   ]
 
@@ -227,16 +227,10 @@ module "postgres_server" {
 
 resource "null_resource" "bootstrap_database" {
   triggers = {
-    server_resource_group = azurerm_resource_group.register.name
-    server_subscription   = data.azurerm_client_config.current.subscription_id
-    server_name           = module.postgres_server.name
-    kv_resource_group     = azurerm_resource_group.register.name
-    kv_subscription       = data.azurerm_client_config.current.subscription_id
-    kv_name               = module.key_vault.name
+    ts = timestamp()
   }
 
   depends_on = [module.key_vault]
-
   provisioner "local-exec" {
     working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
     command     = <<EOT

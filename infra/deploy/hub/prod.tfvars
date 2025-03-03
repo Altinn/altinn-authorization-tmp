@@ -5,8 +5,13 @@ single_stack_ipv4_address_space = "10.202.0.0/20"
 dual_stack_ipv4_address_space   = "10.202.16.0/20"
 dual_stack_ipv6_address_space   = "fd0a:7204:c37f::/56"
 client_certs = [
+  "jonkjetil",
+  "mariusthuen",
   "andreasisnes",
   "github",
+]
+hub_principal_ids = [
+  "a9585a64-20f0-4d18-aba6-9930f92b809c" # GitHub: altinn/altinn-authorization-tmp - Prod
 ]
 spoke_principal_ids = [
   "6eaed23e-df7f-4708-9c8e-a7f34deeadb4" # GitHub: altinn/altinn-authorization-tmp - Dev

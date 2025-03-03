@@ -10,7 +10,7 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.18.0"
+      version = "4.20.0"
     }
     static = {
       source  = "tiwood/static"
@@ -28,6 +28,10 @@ terraform {
 }
 
 provider "azurerm" {
+  # The Files Storage API does not support authenticating via AzureAD
+  # and will continue to use a SharedKey when AAD authentication is enabled.
+  # Thus storage_use_azuread must be disabled until azure supports it  
+  # storage_use_azuread = true 
   features {
   }
 }

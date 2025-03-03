@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.18.0"
+      version = "4.20.0"
     }
     static = {
       source  = "tiwood/static"
@@ -16,16 +16,15 @@ terraform {
 }
 
 provider "azurerm" {
+  # storage_use_azuread = true
   features {
   }
 }
 
 provider "azurerm" {
-  alias               = "hub"
-  subscription_id     = var.hub_subscription_id
-  storage_use_azuread = true
-  features {
-  }
+  alias           = "hub"
+  subscription_id = var.hub_subscription_id
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
