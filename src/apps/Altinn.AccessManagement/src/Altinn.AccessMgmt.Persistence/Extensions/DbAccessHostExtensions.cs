@@ -5,7 +5,7 @@ using Altinn.AccessMgmt.Persistence.Core.Executors;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
-using Altinn.AccessMgmt.Repo.Ingest;
+using Altinn.AccessMgmt.Repo.Data;
 using Altinn.Authorization.Host.Startup;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
