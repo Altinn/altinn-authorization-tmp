@@ -3,7 +3,9 @@ data "azurerm_private_dns_a_record" "postgres" {
   name                = var.pg_dns_hex
   resource_group_name = "rg${var.hub_suffix}"
   provider            = azurerm.hub
-  count               = var.pg_dns_hex == "" ? 0 : 1
+
+  depends_on = [azurerm_postgresql_flexible_server.postgres_server]
+  count      = var.pg_dns_hex == "" ? 0 : 1
 }
 
 # Poinpointed DNS server that contains just this DNS server. 
