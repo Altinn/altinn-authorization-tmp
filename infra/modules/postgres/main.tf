@@ -32,9 +32,10 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
   auto_grow_enabled = true
   storage_tier      = var.tier
 
-  administrator_login    = "NotInUse"
-  administrator_password = random_password.pass.result
-  backup_retention_days  = var.backup_retention_days
+  administrator_login          = "NotInUse"
+  administrator_password       = random_password.pass.result
+  backup_retention_days        = var.backup_retention_days
+  geo_redundant_backup_enabled = true
 
   authentication {
     active_directory_auth_enabled = true
