@@ -12,4 +12,5 @@ appsettings_key_value = {
   "Platform:ResourceRegistryEndpoint" : "http://altinn-resource-registry.default.svc.cluster.local"
   "Platform:RegisterEndpoint" : "http://altinn-register.default.svc.cluster.local"
 }
-spoke_principal_ids = ["a9585a64-20f0-4d18-aba6-9930f92b809c"]
+spoke_principal_ids  = ["a9585a64-20f0-4d18-aba6-9930f92b809c"]
+platform_vnet_arm_id = "/subscriptions/dd6d3e08-a70f-4f71-8847-781ddc5d8468/resourceGroups/altinnplatform-rg/providers/Microsoft.Network/virtualNetworks/staging-platform-vnet"

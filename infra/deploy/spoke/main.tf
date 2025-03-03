@@ -289,7 +289,7 @@ resource "azurerm_virtual_network_peering" "hub_to_spoke_dual_stack" {
   provider = azurerm.hub
 }
 
-resource "azurerm_virtual_network_peering" "spoke_to_hub_single_stack" {
+resource "azurerm_virtual_network_peering" "spoke_single_stack_to_hub" {
   name                      = "hub"
   resource_group_name       = azurerm_resource_group.spoke.name
   virtual_network_name      = azurerm_virtual_network.single_stack.name
@@ -301,7 +301,7 @@ resource "azurerm_virtual_network_peering" "spoke_to_hub_single_stack" {
   use_remote_gateways          = true
 }
 
-resource "azurerm_virtual_network_peering" "spoke_to_hub_dual_stack" {
+resource "azurerm_virtual_network_peering" "spoke_dual_stack_to_hub" {
   name                      = "hub"
   resource_group_name       = azurerm_resource_group.spoke.name
   virtual_network_name      = azurerm_virtual_network.dual_stack.name
@@ -312,6 +312,31 @@ resource "azurerm_virtual_network_peering" "spoke_to_hub_dual_stack" {
   allow_gateway_transit        = false
   use_remote_gateways          = true
 }
+
+resource "azurerm_virtual_network_peering" "spoke_single_stack_to_platform" {
+  name                      = "platform"
+  resource_group_name       = azurerm_resource_group.spoke.name
+  virtual_network_name      = azurerm_virtual_network.single_stack.name
+  remote_virtual_network_id = var.platform_vnet_arm_id
+
+  allow_virtual_network_access = true
+  allow_forwarded_traffic      = false
+  allow_gateway_transit        = false
+  use_remote_gateways          = false
+}
+
+resource "azurerm_virtual_network_peering" "spoke_dual_stack_to_platform" {
+  name                      = "platform"
+  resource_group_name       = azurerm_resource_group.spoke.name
+  virtual_network_name      = azurerm_virtual_network.dual_stack.name
+  remote_virtual_network_id = var.platform_vnet_arm_id
+
+  allow_virtual_network_access = true
+  allow_forwarded_traffic      = false
+  allow_gateway_transit        = false
+  use_remote_gateways          = false
+}
+
 
 resource "azurerm_user_assigned_identity" "admin" {
   name                = "mipgsqladmin${local.suffix}"
