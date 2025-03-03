@@ -72,3 +72,11 @@ resource "azurerm_postgresql_flexible_server_configuration" "configuration" {
   value     = each.value
   for_each  = var.configurations
 }
+
+# sleep for 20 seconds in order for admin change(s) to propegates.
+# Bootstrap may fail if ran too fast.
+resource "time_sleep" "wait_30_seconds" {
+  depends_on      = [azurerm_postgresql_flexible_server_configuration.configuration]
+  create_duration = "15s"
+}
+

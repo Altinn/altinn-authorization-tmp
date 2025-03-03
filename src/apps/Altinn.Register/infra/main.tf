@@ -8,6 +8,10 @@ terraform {
       source  = "tiwood/static"
       version = "0.1.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = "0.12.1"
+    }
   }
 
   backend "azurerm" {
@@ -230,7 +234,7 @@ resource "null_resource" "bootstrap_database" {
     ts = timestamp()
   }
 
-  depends_on = [module.key_vault]
+  depends_on = [module.postgres_server]
   provisioner "local-exec" {
     working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
     command     = <<EOT
