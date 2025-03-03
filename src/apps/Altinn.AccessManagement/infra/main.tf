@@ -270,3 +270,7 @@ resource "null_resource" "bootstrap_database" {
   EOT
   }
 }
+
+output "fqdn" {
+  value = module.postgres_server.fqdn
+}
