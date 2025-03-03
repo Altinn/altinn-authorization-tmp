@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Altinn.AccessManagement.Core.Enums;
+using Altinn.AccessManagement.Core.Enums.Consent;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
@@ -141,6 +142,7 @@ public static class PersistenceDependencyInjectionExtensions
             .MapEnum<UuidType>("delegation.uuidtype")
             .MapEnum<InstanceDelegationMode>("delegation.instancedelegationmode")
             .MapEnum<InstanceDelegationSource>("delegation.instancedelegationsource")
+            .MapEnum<ConsentRequestStatusType>("consent.status_type")
             .AddYuniqlMigrations(cfg =>
             {
                 cfg.Workspace = "/";

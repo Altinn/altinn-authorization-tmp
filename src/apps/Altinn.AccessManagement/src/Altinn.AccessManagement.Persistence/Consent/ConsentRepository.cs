@@ -149,29 +149,11 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             while (await reader.ReadAsync())
             {
-                string from = reader.GetFieldValue<string>("from");
-                string to = reader.GetFieldValue<string>("to");
+                Guid from = await reader.GetFieldValueAsync<Guid>("fromPartyUuid");
+                Guid to = await reader.GetFieldValueAsync<Guid>("toPartyUuid");
 
-                ConsentPartyUrn fromPartyUrn = null;
-                ConsentPartyUrn toPartyUrn = null;
-
-                if (PersonIdentifier.TryParse(from, provider: null, out PersonIdentifier personIdentifier))
-                {
-                    fromPartyUrn = ConsentPartyUrn.PersonId.Create(personIdentifier);
-                }
-                else if (OrganizationNumber.TryParse(from, provider: null, out OrganizationNumber organizationIdentifier))
-                {
-                    fromPartyUrn = ConsentPartyUrn.OrganizationId.Create(organizationIdentifier);
-                }
-
-                if (PersonIdentifier.TryParse(to, provider: null, out PersonIdentifier personIdentifierTo))
-                {
-                    toPartyUrn = ConsentPartyUrn.PersonId.Create(personIdentifierTo);
-                }
-                else if (OrganizationNumber.TryParse(to, provider: null, out OrganizationNumber organizationIdentifierTo))
-                {
-                    toPartyUrn = ConsentPartyUrn.OrganizationId.Create(organizationIdentifierTo);
-                }
+                ConsentPartyUrn fromPartyUrn = ConsentPartyUrn.PartyUuid.Create(from);
+                ConsentPartyUrn toPartyUrn = ConsentPartyUrn.PartyUuid.Create(to);
 
                 if (fromPartyUrn == null || toPartyUrn == null)
                 {
@@ -183,11 +165,11 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     Id = consentRequestId,
                     From = fromPartyUrn,
                     To = toPartyUrn,
-                    ValidTo = reader.GetFieldValue<DateTimeOffset>("validTo"),
+                    ValidTo = await reader.GetFieldValueAsync<DateTimeOffset>("validTo"),
                     ConsentRights = consentRight,
-                    Requestmessage = reader.GetFieldValue<Dictionary<string, string>>("requestMessage"),
-                    ConsentRequestStatus = reader.GetFieldValue<ConsentRequestStatusType>("status"),
-                    Consented = reader.GetFieldValue<DateTimeOffset?>("consented")
+                    Requestmessage = await reader.GetFieldValueAsync<Dictionary<string, string>>("requestMessage"),
+                    ConsentRequestStatus = await reader.GetFieldValueAsync<ConsentRequestStatusType>("status"),
+                    Consented = await reader.GetFieldValueAsync<DateTimeOffset?>("consented")
                 };
             }
 
