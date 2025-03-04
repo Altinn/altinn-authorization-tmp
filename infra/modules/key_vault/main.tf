@@ -12,7 +12,7 @@ data "azurerm_resource_group" "key_vault" {
 }
 
 data "azurerm_private_dns_zone" "key_vault" {
-  name                = "vault.azure.net"
+  name                = "privatelink.vaultcore.azure.net"
   resource_group_name = "rg${var.hub_suffix}"
   provider            = azurerm.hub
 }
@@ -51,7 +51,7 @@ resource "azurerm_private_endpoint" "key_vault" {
   subnet_id                     = var.subnet_id
   custom_network_interface_name = "nickv${azurerm_key_vault.key_vault.name}"
   private_dns_zone_group {
-    name                 = "vault.azure.net"
+    name                 = "privatelink.vaultcore.azure.net"
     private_dns_zone_ids = [data.azurerm_private_dns_zone.key_vault.id]
   }
   private_service_connection {

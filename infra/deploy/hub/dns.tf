@@ -4,8 +4,8 @@ locals {
     "servicebus.windows.net",
     "blob.core.windows.net",
     "postgres.database.azure.com",
-    "vault.azure.net",
-    "azconfig.io"
+    "azconfig.io",
+    "privatelink.vaultcore.azure.net",
   ]
 }
 
