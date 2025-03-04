@@ -1,5 +1,5 @@
 data "azurerm_private_dns_zone" "blob_storage" {
-  name                = "privatelink.blob.core.windows.net"
+  name                = "blob.core.windows.net"
   resource_group_name = "rg${local.hub_suffix}"
   provider            = azurerm.hub
 }

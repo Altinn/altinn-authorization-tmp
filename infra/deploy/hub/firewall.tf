@@ -8,6 +8,9 @@ resource "azurerm_public_ip" "frontend_ipv4" {
   public_ip_prefix_id = azurerm_public_ip_prefix.ipv4.id
 
   tags = merge({}, local.default_tags)
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_public_ip" "management_ipv4" {
@@ -19,6 +22,9 @@ resource "azurerm_public_ip" "management_ipv4" {
   public_ip_prefix_id = azurerm_public_ip_prefix.ipv4.id
 
   tags = merge({}, local.default_tags)
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_firewall" "firewall" {

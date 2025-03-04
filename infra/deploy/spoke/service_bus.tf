@@ -17,7 +17,7 @@ locals {
 
 
 data "azurerm_private_dns_zone" "hub_service_bus" {
-  name                = "privatelink.servicebus.windows.net"
+  name                = "servicebus.windows.net"
   resource_group_name = "rg${local.hub_suffix}"
   provider            = azurerm.hub
 }

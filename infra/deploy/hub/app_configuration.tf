@@ -12,6 +12,10 @@ resource "azurerm_app_configuration" "app_configuration" {
   }
 
   tags = merge({}, local.default_tags)
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_role_assignment" "app_configuration_data_owner" {
@@ -59,7 +63,7 @@ resource "azurerm_private_endpoint" "app_configuration" {
 
   private_dns_zone_group {
     name                 = azurerm_app_configuration.app_configuration.name
-    private_dns_zone_ids = [azurerm_private_dns_zone.dns["privatelink.azconfig.io"].id]
+    private_dns_zone_ids = [azurerm_private_dns_zone.dns["azconfig.io"].id]
   }
 
   private_service_connection {

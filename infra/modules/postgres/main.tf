@@ -56,8 +56,8 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
   sku_name    = local.sku_name
 
   lifecycle {
-    ignore_changes = [zone]
-    # prevent_destroy = true
+    ignore_changes  = [zone]
+    prevent_destroy = true
   }
 
   tags = var.tags

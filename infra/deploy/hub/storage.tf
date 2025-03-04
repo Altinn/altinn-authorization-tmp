@@ -41,7 +41,7 @@ resource "azurerm_private_endpoint" "blob" {
 
   private_dns_zone_group {
     name                 = azurerm_storage_account.storage.name
-    private_dns_zone_ids = [azurerm_private_dns_zone.dns["privatelink.blob.core.windows.net"].id]
+    private_dns_zone_ids = [azurerm_private_dns_zone.dns["blob.core.windows.net"].id]
   }
 
   private_service_connection {
