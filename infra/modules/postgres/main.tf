@@ -41,7 +41,7 @@ resource "azurerm_private_dns_zone" "postgres" {
 
 resource "azurerm_private_dns_zone_virtual_network_link" "link" {
   name                = data.azurerm_virtual_network.hub.name
-  resource_group_name = azurerm_private_dns_zone.postgres.name
+  resource_group_name = var.resource_group_name
 
   virtual_network_id    = data.azurerm_virtual_network.hub.id
   private_dns_zone_name = azurerm_private_dns_zone.postgres.name
