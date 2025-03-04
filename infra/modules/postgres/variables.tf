@@ -3,6 +3,10 @@ variable "prefix" {
   default = ""
 }
 
+variable "hub_suffix" {
+  type = string
+}
+
 variable "suffix" {
   type    = string
   default = ""
