@@ -105,7 +105,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 }
 
                 resourceCommand.CommandText = $"INSERT INTO consent.resourceattribute (consentRightId, type, value) VALUES {string.Join(", ", values)}";
-                await resourceCommand.ExecuteNonQueryAsync();
+                await resourceCommand.ExecuteNonQueryAsync(cancellationToken);
 
                 await using NpgsqlCommand metadatacommand = conn.CreateCommand();
                 List<string> metaValues = new List<string>();
@@ -120,7 +120,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 }
 
                 metadatacommand.CommandText = $"INSERT INTO consent.metadata (consentrightid, id, value) VALUES {string.Join(", ", metaValues)}";
-                await metadatacommand.ExecuteNonQueryAsync();
+                await metadatacommand.ExecuteNonQueryAsync(cancellationToken);
 
             }
 
@@ -160,7 +160,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             await using var pgcom = _db.CreateCommand(consentQuery);
             pgcom.Parameters.AddWithValue("id", consentRequestId);
 
-            using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync();
+            using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
 
             while (await reader.ReadAsync())
             {
