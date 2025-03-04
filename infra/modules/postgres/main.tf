@@ -33,7 +33,7 @@ data "azurerm_virtual_network" "hub" {
   provider            = azurerm.hub
 }
 
-# Poinpointed DNS server that contains just this DNS server. 
+# Pinpointed DNS server that contains just this pgsqlsrv. 
 resource "azurerm_private_dns_zone" "postgres" {
   name                = "psqlsrv${var.prefix}${var.suffix}.auth.postgres.database.azure.com"
   resource_group_name = var.resource_group_name
