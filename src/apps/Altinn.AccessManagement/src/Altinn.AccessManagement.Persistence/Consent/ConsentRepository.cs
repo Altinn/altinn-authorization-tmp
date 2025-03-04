@@ -1,14 +1,7 @@
 ﻿using System.Data;
-using System.Data.Common;
-using System.Linq.Expressions;
-using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Enums.Consent;
-using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
-using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
-using Altinn.AccessManagement.Enums;
-using Altinn.Register.Core.Parties;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -19,24 +12,24 @@ namespace Altinn.AccessManagement.Persistence.Consent
     /// </summary>
     public class ConsentRepository : IConsentRepository
     {
-        private readonly NpgsqlDataSource _conn;
+        private readonly NpgsqlDataSource _db;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsentRepository"/> class
         /// </summary>
-        public ConsentRepository(NpgsqlDataSource conn)
+        public ConsentRepository(NpgsqlDataSource db)
         {
-            _conn = conn;
+            _db = db;
         }
 
         /// <inheritdoc/>
-        public Task ApproveConsentRequest(Guid id)
+        public Task ApproveConsentRequest(Guid id, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
-        public async Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest)
+        public async Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest, CancellationToken cancellationToken = default)
         {
             const string consentRquestQuery = /*strpsql*/@"
                 INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, toPartyUuid, validTo, requestMessage)
@@ -48,8 +41,11 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 @requestMessage)
                 RETURNING consentRequestId;
                 ";
-   
-            await using NpgsqlCommand command = _conn.CreateCommand(consentRquestQuery);
+
+            await using NpgsqlConnection conn = await _db.OpenConnectionAsync(default);
+            await using NpgsqlTransaction tx = await conn.BeginTransactionAsync();
+            await using NpgsqlCommand command = conn.CreateCommand();
+            command.CommandText = consentRquestQuery;
             command.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid,  consentRequest.Id);
             if (consentRequest.From.IsPartyUuid(out Guid fromPartyGuid))
             {
@@ -88,7 +84,8 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 RETURNING consentRightId;
                 ";
 
-                await using NpgsqlCommand rightsCommand = _conn.CreateCommand(rightsQuery);
+                await using NpgsqlCommand rightsCommand = conn.CreateCommand();
+                rightsCommand.CommandText = rightsQuery;
                 rightsCommand.Parameters.AddWithValue("consentRightId", consentRightGuid);
                 rightsCommand.Parameters.AddWithValue("consentRequestId", consentRequest.Id);
                 rightsCommand.Parameters.AddWithValue("action", consentRight.Action);
@@ -98,7 +95,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 var values = new List<string>();
                 var parameters = new List<NpgsqlParameter>();
 
-                await using NpgsqlCommand resourceCommand = _conn.CreateCommand();
+                await using NpgsqlCommand resourceCommand = _db.CreateCommand();
                 for (int i = 0; i < consentRight.Resource.Count; i++)
                 {
                     values.Add($"(@consentRightId{i}, @type{i}, @value{i})");
@@ -111,29 +108,31 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 await resourceCommand.ExecuteNonQueryAsync();
             }
 
+            await tx.CommitAsync();
+
             return await GetRequest(consentRequest.Id);
         }
 
         /// <inheritdoc/>
-        public Task DeleteRequest(Guid id)
+        public Task DeleteRequest(Guid id, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
-        public Task<List<Core.Models.Consent.Consent>> GetAllConsents(Guid partyUid)
+        public Task<List<Core.Models.Consent.Consent>> GetAllConsents(Guid partyUid, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
-        public Task<Core.Models.Consent.Consent> GetConsent(Guid id)
+        public Task<Core.Models.Consent.Consent> GetConsent(Guid id, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
-        public async Task<ConsentRequestDetails> GetRequest(Guid consentRequestId)
+        public async Task<ConsentRequestDetails> GetRequest(Guid consentRequestId, CancellationToken cancellationToken = default)
         {
             List<ConsentRight> consentRight = await GetConsentRights(consentRequestId);
 
@@ -142,7 +141,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 WHERE consentRequestId = @id
                 ";
 
-            await using var pgcom = _conn.CreateCommand(consentQuery);
+            await using var pgcom = _db.CreateCommand(consentQuery);
             pgcom.Parameters.AddWithValue("id", consentRequestId);
 
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync();
@@ -177,13 +176,13 @@ namespace Altinn.AccessManagement.Persistence.Consent
         }
 
         /// <inheritdoc/>
-        public Task RejectConsentRequest(Guid id)
+        public Task RejectConsentRequest(Guid id, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
-        public Task Revoke(Guid id)
+        public Task Revoke(Guid id, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -191,7 +190,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
         /// <summary>
         /// Return the consent rights
         /// </summary>
-        private async Task<List<ConsentRight>> GetConsentRights(Guid consentRequestId)
+        private async Task<List<ConsentRight>> GetConsentRights(Guid consentRequestId, CancellationToken cancellationToken = default)
         {
             Dictionary<Guid, List<ConsentResourceAttribute>> keyValuePairs = await GetConsentResourceAttributes(consentRequestId);
 
@@ -200,7 +199,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 WHERE consentRequestId = @id
                 ";
 
-            await using var pgcom = _conn.CreateCommand(consentRightsQuery);
+            await using var pgcom = _db.CreateCommand(consentRightsQuery);
             pgcom.Parameters.AddWithValue("@id", NpgsqlTypes.NpgsqlDbType.Uuid, consentRequestId);
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync();
             List<ConsentRight> consentRights = new List<ConsentRight>();
@@ -247,7 +246,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 WHERE cr.consentRequestId = @id
                 ";
 
-            await using var pgcom = _conn.CreateCommand(consentResourcesQuery);
+            await using var pgcom = _db.CreateCommand(consentResourcesQuery);
             pgcom.Parameters.AddWithValue("@id", NpgsqlTypes.NpgsqlDbType.Uuid, consentRequestId);
 
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync();
@@ -282,7 +281,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 WHERE cr.consentRequestId = @id
                 ";
 
-            await using var pgcom = _conn.CreateCommand(consentMetadataQuery);
+            await using var pgcom = _db.CreateCommand(consentMetadataQuery);
             pgcom.Parameters.AddWithValue("@id", NpgsqlTypes.NpgsqlDbType.Uuid, consentRequestId);
             Dictionary<Guid, Dictionary<string, string>> consentMetadata = [];
 
