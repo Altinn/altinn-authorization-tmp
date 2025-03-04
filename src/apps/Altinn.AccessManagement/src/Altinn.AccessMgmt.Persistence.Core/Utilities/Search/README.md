@@ -165,6 +165,7 @@ var cachedData = cache.GetData();
 ---
 
 ## 🎯 **Videre utvikling**
+- [ ] **Paging**: La brukere page eller sett maxResult.
 - [ ] **Ekskluderende søkeord**: Filtrer bort uønskede treff.
 - [ ] **Caching**: Forhåndsgenerer søkedata for raskere søk.
 - [ ] **Forbedret caching for store datasett** 🚀
