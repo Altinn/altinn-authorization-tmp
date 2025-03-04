@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
@@ -79,6 +80,34 @@ public class PackageService(
 
         return result;
     }
+    
+    /// <inheritdoc/>
+    public async Task<PackageDto> GetPackageByUrnValue(string urnValue)
+    {
+        var filter = packageRepository.CreateFilterBuilder();
+        filter.Add(t => t.Urn, urnValue, FilterComparer.EndsWith);
+        var packages = await packageRepository.GetExtended();
+        if (packages == null || packages.Count() != 1)
+        {
+            return null;
+        }
+
+        var package = packages.First();
+
+        var area = await areaRepository.GetExtended(package.AreaId);
+        var resources = await packageResourceRepository.GetB(package.Id);
+
+        return new PackageDto()
+        {
+            Id = package.Id,
+            Name = package.Name,
+            Urn = package.Urn,
+            Description = package.Description,
+            Area = area,
+            Resources = resources
+        };
+    }
+
 
     /// <inheritdoc/>
     public async Task<PackageDto> GetPackage(Guid id)
@@ -227,5 +256,6 @@ public class PackageService(
         };
     }
 
+    
     #endregion
 }

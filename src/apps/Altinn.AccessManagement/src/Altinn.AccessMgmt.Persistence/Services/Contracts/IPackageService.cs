@@ -65,12 +65,12 @@ public interface IPackageService
     Task<PackageDto> GetPackage(Guid id);
 
     /// <summary>
-    /// Retrieves a specific package by its unique identifier.
+    /// Get package by urnValue
+    /// urn:altinn:accesspackage:skattnaering (Key:urn:altinn:accesspackage, Value:skattnaering)
     /// </summary>
-    /// <param name="urnValue">The unique identifier of the package.</param>
-    /// <returns>The package with the specified ID.</returns>
-    Task<IEnumerable<PackageDto>> GetPackageByUrnValue(string urnValue);
-    
+    /// <param name="urnValue">The urnValue to lookup</param>
+    /// <returns>The package with the specified Urn.</returns>
+    Task<PackageDto> GetPackageByUrnValue(string urnValue);
 
     /// <summary>
     /// Retrieves all resources associated with a specific package.
