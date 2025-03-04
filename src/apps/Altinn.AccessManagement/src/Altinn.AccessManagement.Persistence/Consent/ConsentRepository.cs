@@ -95,7 +95,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 var values = new List<string>();
                 var parameters = new List<NpgsqlParameter>();
 
-                await using NpgsqlCommand resourceCommand = _db.CreateCommand();
+                await using NpgsqlCommand resourceCommand = conn.CreateCommand();
                 for (int i = 0; i < consentRight.Resource.Count; i++)
                 {
                     values.Add($"(@consentRightId{i}, @type{i}, @value{i})");
@@ -106,6 +106,22 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
                 resourceCommand.CommandText = $"INSERT INTO consent.resourceattribute (consentRightId, type, value) VALUES {string.Join(", ", values)}";
                 await resourceCommand.ExecuteNonQueryAsync();
+
+                await using NpgsqlCommand metadatacommand = conn.CreateCommand();
+                List<string> metaValues = new List<string>();
+                int metaDataIndex = 0;
+                foreach (KeyValuePair<string, string> kvp in consentRight.MetaData)
+                {
+                    metaValues.Add($"(@consentRightId{metaDataIndex}, @id{metaDataIndex}, @value{metaDataIndex})");
+                    metadatacommand.Parameters.AddWithValue($"@consentrightid{metaDataIndex}", consentRightGuid);
+                    metadatacommand.Parameters.AddWithValue($"@id{metaDataIndex}", kvp.Key);
+                    metadatacommand.Parameters.AddWithValue($"@value{metaDataIndex}", kvp.Value);
+                    metaDataIndex++;
+                }
+
+                metadatacommand.CommandText = $"INSERT INTO consent.metadata (consentrightid, id, value) VALUES {string.Join(", ", metaValues)}";
+                await metadatacommand.ExecuteNonQueryAsync();
+
             }
 
             await tx.CommitAsync();
@@ -288,7 +304,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync();
             while (reader.Read())
             {
-                Guid consentRightId = reader.GetFieldValue<Guid>("concentRightId");
+                Guid consentRightId = reader.GetFieldValue<Guid>("consentRightId");
                 string id = reader.GetFieldValue<string>("id");
                 string value = reader.GetFieldValue<string>("value");
 

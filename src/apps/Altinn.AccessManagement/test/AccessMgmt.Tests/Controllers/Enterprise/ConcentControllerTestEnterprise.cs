@@ -44,7 +44,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             {
                 From = Altinn.AccessManagement.Api.Enterprise.Models.Consent.ConsentPartyUrnExternal2.PersonId.Create(PersonIdentifier.Parse("01025602168")),
                 To = Altinn.AccessManagement.Api.Enterprise.Models.Consent.ConsentPartyUrnExternal2.OrganizationId.Create(OrganizationNumber.Parse("910194143")),
-                ValidTo = DateTimeOffset.Now.AddDays(1),
+                ValidTo = DateTimeOffset.UtcNow.AddDays(1),
                 ConsentRights = new List<Altinn.AccessManagement.Api.Enterprise.Models.Consent.ConsentRightExternal2>
                 {
                     new Altinn.AccessManagement.Api.Enterprise.Models.Consent.ConsentRightExternal2
@@ -57,6 +57,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Type = "urn:altinn:resource",
                                 Value = "skd_inntektsopplsyniung"
                             }
+                        },
+                        MetaData = new Dictionary<string, string>
+                        {
+                            { "INNTEKTSAAR", "ADSF" }
                         }
                     }
                 },
@@ -76,6 +80,13 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
+            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
+            Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
+            Assert.Equal(consentRequest.ConsentRights[0].Action.Count(), consentInfo.ConsentRights[0].Action.Count());
+            Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
+            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+
         }
 
         private HttpClient GetTestClient()
