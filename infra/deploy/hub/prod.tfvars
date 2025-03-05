@@ -8,6 +8,8 @@ client_certs = [
   "jonkjetil",
   "mariusthuen",
   "andreasisnes",
+  "havardandersen",
+  "aleksanderh",
   "github",
 ]
 hub_principal_ids = [
