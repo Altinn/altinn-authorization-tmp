@@ -1,8 +1,22 @@
 {
   "image": {},
+  "database": {
+    "prefix": "accessmgmt",
+    "name": "accessmgmt",
+    "schema": {
+      "dbo": {},
+      "translation": {},
+      "dbo_history": {},
+      "translation_history": {}
+    }
+  },
   "infra": {
     "terraform": {
       "stateFile": "Altinn.AccessManagement.tfstate"
     }
-  }
+  },
+  "deps": [
+    "lib:Altinn.Authorization.Host",
+    "lib:Altinn.Authorization.Integration"
+  ]
 }

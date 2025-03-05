@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.16.0"
+      version = "4.20.0"
     }
     static = {
       source  = "tiwood/static"
@@ -16,16 +16,15 @@ terraform {
 }
 
 provider "azurerm" {
+  # storage_use_azuread = true
   features {
   }
 }
 
 provider "azurerm" {
-  alias               = "hub"
-  subscription_id     = var.hub_subscription_id
-  storage_use_azuread = true
-  features {
-  }
+  alias           = "hub"
+  subscription_id = var.hub_subscription_id
+  features {}
 }
 
 data "azurerm_client_config" "current" {}
@@ -39,6 +38,10 @@ locals {
   ipv4_dual_stack_cidr_prefix = tonumber(split("/", var.dual_stack_ipv4_address_space)[1])
   ipv6_cidr_prefix            = tonumber(split("/", var.dual_stack_ipv6_address_space)[1])
   ipv6_bits                   = 64 - local.ipv6_cidr_prefix
+
+  app_settings = merge(var.appsettings_key_value, {
+    "Lease:StorageAccount:BlobEndpoint" = azurerm_storage_account.storage.primary_blob_endpoint
+  })
 
   default_tags = {
     ProductName = var.product_name
@@ -108,9 +111,18 @@ resource "azurerm_resource_group" "spoke" {
 }
 
 module "app_configuration" {
-  source              = "../../modules/appsettings"
-  hub_subscription_id = var.hub_subscription_id
-  hub_suffix          = local.hub_suffix
+  source     = "../../modules/appsettings"
+  hub_suffix = local.hub_suffix
+
+  key_value = [for key, value in local.app_settings :
+    {
+      key   = key
+      value = value
+      label = lower(var.environment)
+  }]
+  providers = {
+    azurerm.hub = azurerm.hub
+  }
 }
 
 resource "azurerm_virtual_network" "dual_stack" {
@@ -277,7 +289,7 @@ resource "azurerm_virtual_network_peering" "hub_to_spoke_dual_stack" {
   provider = azurerm.hub
 }
 
-resource "azurerm_virtual_network_peering" "spoke_to_hub_single_stack" {
+resource "azurerm_virtual_network_peering" "spoke_single_stack_to_hub" {
   name                      = "hub"
   resource_group_name       = azurerm_resource_group.spoke.name
   virtual_network_name      = azurerm_virtual_network.single_stack.name
@@ -289,7 +301,7 @@ resource "azurerm_virtual_network_peering" "spoke_to_hub_single_stack" {
   use_remote_gateways          = true
 }
 
-resource "azurerm_virtual_network_peering" "spoke_to_hub_dual_stack" {
+resource "azurerm_virtual_network_peering" "spoke_dual_stack_to_hub" {
   name                      = "hub"
   resource_group_name       = azurerm_resource_group.spoke.name
   virtual_network_name      = azurerm_virtual_network.dual_stack.name
