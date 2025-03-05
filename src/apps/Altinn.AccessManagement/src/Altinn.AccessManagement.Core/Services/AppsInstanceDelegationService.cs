@@ -312,7 +312,7 @@ public class AppsInstanceDelegationService : IAppsInstanceDelegationService
         int limit = _appsInstanceDelegationSettings.MaxPolicyFilesToRevoke;
         if (rightsToRevoke.Count > limit)
         {
-            errors.Add(ValidationErrors.ToManyDelegationsToRevoke, "InstanceId");
+            errors.Add(ValidationErrors.ToManyDelegationsToRevoke, "ResourceId");
 
             if (errors.TryBuild(out errorResult))
             {
