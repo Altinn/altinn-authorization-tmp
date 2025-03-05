@@ -16,7 +16,7 @@
         public const string UserId = "urn:altinn:userid";
 
         /// <summary>
-        /// The users party uuid.
+        /// Thu uuid of the performing party (user)
         /// </summary>
         public const string PartyUuid = "urn:altinn:party:uuid";
 

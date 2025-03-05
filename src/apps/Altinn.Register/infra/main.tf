@@ -2,13 +2,18 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.13.0"
+      version = "4.20.0"
     }
     static = {
       source  = "tiwood/static"
       version = "0.1.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = "0.12.1"
+    }
   }
+
   backend "azurerm" {
     use_azuread_auth = true
   }
@@ -33,7 +38,7 @@ locals {
   spoke_resource_group_name = lower("rg${local.spoke_suffix}")
   suffix                    = lower("${var.organization}${var.product_name}${var.name}${var.instance}${var.environment}")
   conf_json                 = jsondecode(file(local.conf_json_path))
-  conf_json_path            = "${path.module}/../conf.json"
+  conf_json_path            = abspath("${path.module}/../conf.json")
 
   default_tags = {
     ProductName = var.product_name
@@ -92,25 +97,43 @@ resource "azurerm_user_assigned_identity" "register" {
   tags                = merge({}, local.default_tags)
 }
 
-resource "azurerm_federated_identity_credential" "aks_federation" {
-  name                = "Aks"
-  resource_group_name = azurerm_resource_group.register.name
-  parent_id           = azurerm_user_assigned_identity.register.id
-  audience            = ["api://AzureADTokenExchange"]
-  subject             = "system:serviceaccount:${each.value.namespace}:${each.value.service_account}"
-  issuer              = each.value.issuer_url
-  for_each            = { for federation in var.aks_federation : federation.issuer_url => federation }
+# resource "azurerm_federated_identity_credential" "aks_federation" {
+#   name                = "Aks"
+#   resource_group_name = azurerm_resource_group.register.name
+#   parent_id           = azurerm_user_assigned_identity.register.id
+#   audience            = ["api://AzureADTokenExchange"]
+#   subject             = "system:serviceaccount:${each.value.namespace}:${each.value.service_account}"
+#   issuer              = each.value.issuer_url
+#   for_each            = { for federation in var.aks_federation : federation.issuer_url => federation }
+# }
+
+# Should be removed once migrated from Platform AKS to Authorization AKS cluster
+module "rbac_platform_app" {
+  source                = "../../../../infra/modules/rbac"
+  principal_id          = each.value
+  hub_suffix            = local.hub_suffix
+  spoke_suffix          = local.spoke_suffix
+  use_app_configuration = true
+  use_masstransit       = true
+  use_lease             = false
+  providers = {
+    azurerm.hub = azurerm.hub
+  }
+
+  for_each = toset(var.platform_workflow_principal_ids)
 }
 
 module "rbac" {
   source                = "../../../../infra/modules/rbac"
   principal_id          = azurerm_user_assigned_identity.register.principal_id
-  hub_subscription_id   = var.hub_subscription_id
   hub_suffix            = local.hub_suffix
   spoke_suffix          = local.spoke_suffix
   use_app_configuration = true
-  use_lease             = true
   use_masstransit       = true
+  use_lease             = false
+  providers = {
+    azurerm.hub = azurerm.hub
+  }
 }
 
 module "key_vault" {
@@ -121,12 +144,7 @@ module "key_vault" {
   resource_group_name = azurerm_resource_group.register.name
   suffix              = local.spoke_suffix
   subnet_id           = data.azurerm_subnet.default.id
-  key_vault_roles = [
-    {
-      operation_id         = "grant_register_app_secret_user"
-      principal_id         = azurerm_user_assigned_identity.register.principal_id
-      role_definition_name = "Key Vault Secrets User"
-    },
+  key_vault_roles = concat([
     {
       operation_id         = "grant_pgsqlrv_administrator"
       principal_id         = data.azurerm_user_assigned_identity.admin.principal_id
@@ -136,8 +154,21 @@ module "key_vault" {
       operation_id         = "grant_deploy_app_administrator"
       principal_id         = var.deploy_app_principal_id
       role_definition_name = "Key Vault Administrator"
+    },
+    {
+      operation_id         = "grant_register_app_secret_user"
+      principal_id         = azurerm_user_assigned_identity.register.principal_id
+      role_definition_name = "Key Vault Secrets User"
     }
-  ]
+    ],
+    [
+      for principal_id in var.platform_workflow_principal_ids :
+      {
+        operation_id         = "grant_register_platform_app_secret_user_${principal_id}"
+        principal_id         = principal_id
+        role_definition_name = "Key Vault Secrets User"
+      }
+  ])
 }
 
 data "azurerm_key_vault_secret" "postgres_migration" {
@@ -153,21 +184,24 @@ data "azurerm_key_vault_secret" "postgres_app" {
 }
 
 module "appsettings" {
-  source              = "../../../../infra/modules/appsettings"
-  hub_suffix          = local.hub_suffix
-  hub_subscription_id = var.hub_subscription_id
+  source     = "../../../../infra/modules/appsettings"
+  hub_suffix = local.hub_suffix
   key_vault_reference = [
     {
       key                 = "Postgres:AppConnectionString"
       key_vault_secret_id = data.azurerm_key_vault_secret.postgres_app.versionless_id
-      label               = "${var.environment}_register"
+      label               = "${var.environment}-register"
     },
     {
       key                 = "Postgres:MigrationConnectionString"
       key_vault_secret_id = data.azurerm_key_vault_secret.postgres_migration.versionless_id
-      label               = "${var.environment}_register"
+      label               = "${var.environment}-register"
     }
   ]
+
+  providers = {
+    azurerm.hub = azurerm.hub
+  }
 }
 
 module "postgres_server" {
@@ -175,6 +209,8 @@ module "postgres_server" {
   suffix              = local.suffix
   resource_group_name = azurerm_resource_group.register.name
   location            = "norwayeast"
+
+  hub_suffix = local.hub_suffix
 
   subnet_id           = data.azurerm_subnet.postgres.id
   private_dns_zone_id = data.azurerm_private_dns_zone.postgres.id
@@ -193,21 +229,18 @@ module "postgres_server" {
       principal_type = "ServicePrincipal"
     }
   ]
+
+  providers = {
+    azurerm.hub = azurerm.hub
+  }
 }
 
 resource "null_resource" "bootstrap_database" {
   triggers = {
-    server_resource_group = azurerm_resource_group.register.name
-    server_subscription   = data.azurerm_client_config.current.subscription_id
-    server_name           = module.postgres_server.name
-    kv_resource_group     = azurerm_resource_group.register.name
-    kv_subscription       = data.azurerm_client_config.current.subscription_id
-    kv_name               = module.key_vault.name
-    conf                  = local.conf_json.database
+    ts = timestamp()
   }
 
-  depends_on = [module.key_vault]
-
+  depends_on = [module.postgres_server]
   provisioner "local-exec" {
     working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
     command     = <<EOT
