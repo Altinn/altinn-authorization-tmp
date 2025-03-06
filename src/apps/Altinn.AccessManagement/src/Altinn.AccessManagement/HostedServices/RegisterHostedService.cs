@@ -1,9 +1,13 @@
 using System.Net;
 using Altinn.AccessManagement;
+using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
+using Authorization.Platform.Authorization.Models;
 using Microsoft.FeatureManagement;
+using Role = Altinn.AccessMgmt.Core.Models.Role;
 
 namespace Altinn.Authorization.AccessManagement;
 
@@ -14,12 +18,35 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="register">Register integration service.</param>
 /// <param name="logger">Logger for logging service activities.</param>
 /// <param name="featureManager">for reading feature flags</param>
-public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister register, ILogger<RegisterHostedService> logger, IFeatureManager featureManager) : IHostedService, IDisposable
+/// <param name="entityRepository"></param>
+/// <param name="entityLookupRepository"></param>
+/// <param name="roleRepository"></param>
+/// <param name="assignmentRepository"></param>
+/// <param name="entityTypeRepository"></param>
+/// <param name="providerRepository"></param>
+public partial class RegisterHostedService(
+    IAltinnLease lease, 
+    IAltinnRegister register, 
+    ILogger<RegisterHostedService> logger, 
+    IFeatureManager featureManager,
+    IEntityRepository entityRepository,
+    IEntityLookupRepository entityLookupRepository,
+    IRoleRepository roleRepository,
+    IAssignmentRepository assignmentRepository,
+    IEntityTypeRepository entityTypeRepository,
+    IProviderRepository providerRepository
+    ) : IHostedService, IDisposable
 {
     private readonly IAltinnLease _lease = lease;
     private readonly IAltinnRegister _register = register;
     private readonly ILogger<RegisterHostedService> _logger = logger;
     private readonly IFeatureManager _featureManager = featureManager;
+    private readonly IEntityRepository entityRepository = entityRepository;
+    private readonly IEntityLookupRepository entityLookupRepository = entityLookupRepository;
+    private readonly IRoleRepository roleRepository = roleRepository;
+    private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
+    private readonly IEntityTypeRepository entityTypeRepository = entityTypeRepository;
+    private readonly IProviderRepository providerRepository = providerRepository;
     private int _executionCount = 0;
     private Timer _timer = null;
     private readonly CancellationTokenSource _stop = new();
@@ -111,34 +138,34 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     private async Task SyncRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
-            await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
+        await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
+        {
+            if (cancellationToken.IsCancellationRequested)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                if (!page.IsSuccessful)
-                {
-                    Log.ResponseError(_logger, page.StatusCode);
-                }
-
-                foreach (var item in page.Content.Data)
-                {
-                    // TODO: one for party, one for role
-                    Interlocked.Increment(ref _executionCount); 
-                    Log.Role(_logger, item.FromParty, item.ToParty, item.RoleIdentifier);
-                    await WriteRolesToDb(item);
-                }
-
-                if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
-                {
-                    return;
-                }
-
-                await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
-                await _lease.RefreshLease(ls, cancellationToken);
+                return;
             }
+
+            if (!page.IsSuccessful)
+            {
+                Log.ResponseError(_logger, page.StatusCode);
+            }
+
+            foreach (var item in page.Content.Data)
+            {
+                // TODO: one for party, one for role
+                Interlocked.Increment(ref _executionCount); 
+                Log.Role(_logger, item.FromParty, item.ToParty, item.RoleIdentifier);
+                await WriteRolesToDb(item);
+            }
+
+            if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
+            {
+                return;
+            }
+
+            await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
+            await _lease.RefreshLease(ls, cancellationToken);
+        }
     }
 
     /// <summary>
@@ -149,7 +176,7 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     private async Task SyncParty(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
-            await foreach (var page in await _register.StreamParties([], ls.Data?.PartyStreamNextPageLink, cancellationToken))
+            await foreach (var page in await _register.StreamParties(["organization-unit-type"], ls.Data?.PartyStreamNextPageLink, cancellationToken))
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -183,20 +210,149 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     /// </summary>
     /// <param name="model">Party model containing register data.</param>
     /// <returns>A completed task.</returns>
-    public Task WritePartyToDb(PartyModel model)
+    public async Task WritePartyToDb(PartyModel model)
     {
-        return Task.CompletedTask;
+        var entity = ConvertPartyModel(model);
+
+        await entityRepository.Upsert(entity);
+
+        if (model.PartyType == "Person")
+        {
+            await entityLookupRepository.Upsert(new EntityLookup()
+            {
+                Id = Guid.NewGuid(),
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "PII",
+                Value = model.PersonIdentifier
+            });
+        }
+
+        if (model.PartyType == "Organisasjon")
+        {
+            await entityLookupRepository.Upsert(new EntityLookup()
+            {
+                Id = Guid.NewGuid(),
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "OrgNo",
+                Value = model.OrganizationIdentifier
+            });
+        }
     }
+
+    private List<GenericFilter> entityLookupMergeFilter = new List<GenericFilter>()
+        {
+            new GenericFilter("EntityId", "EntityId"),
+            new GenericFilter("Key", "Key"),
+            new GenericFilter("Value", "Value"),
+        };
+
+    private Entity ConvertPartyModel(PartyModel model)
+    {
+        if (model.PartyType == "Person")
+        {
+            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person") ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", "Person", "Organisasjon"));
+
+            return new Entity()
+            {
+                Id = Guid.Parse(model.PartyUuid),
+                Name = model.Name,
+                RefId = model.DateOfBirth,
+                TypeId = type.Id,
+                VariantId = variant.Id
+            };
+        }
+        else if (model.PartyType == "Organisasjon")
+        {
+            var type = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == model.OrganizationUnitType) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.OrganizationUnitType, "Organisasjon"));
+
+            return new Entity()
+            {
+                Id = Guid.Parse(model.PartyUuid),
+                Name = model.Name,
+                RefId = model.OrganizationIdentifier,
+                TypeId = Guid.Empty,
+                VariantId = Guid.Empty
+            };
+        }
+        else
+        {
+            var type = EntityTypes.FirstOrDefault(t => t.Name == model.PartyType) ?? throw new Exception(string.Format("Unable to find type '{0}'", model.PartyType));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == model.OrganizationUnitType) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.OrganizationUnitType, model.PartyType));
+
+            return new Entity()
+            {
+                Id = Guid.Parse(model.PartyUuid),
+                Name = model.Name,
+                RefId = model.OrganizationIdentifier,
+                TypeId = Guid.Empty,
+                VariantId = Guid.Empty
+            };
+        }       
+    }
+
+    private List<EntityType> EntityTypes { get; set; }
+
+    private List<EntityVariant> EntityVariants { get; set; }
 
     /// <summary>
     /// Writes the synchronized register data to the database.
     /// </summary>
     /// <param name="model">Role model containing register data.</param>
     /// <returns>A completed task.</returns>
-    public Task WriteRolesToDb(RoleModel model)
+    public async Task WriteRolesToDb(RoleModel model)
     {
-        return Task.CompletedTask;
+        var role = await GetOrCreateRole(model.RoleIdentifier, model.RoleSource);
+        await assignmentRepository.Upsert(ConvertRoleModel(model, role.Id), assignmentMergeFilter);
     }
+
+    private Assignment ConvertRoleModel(RoleModel model, Guid roleId)
+    {
+        return new Assignment()
+        {
+            Id = Guid.NewGuid(),
+            FromId = Guid.Parse(model.FromParty),
+            ToId = Guid.Parse(model.ToParty),
+            RoleId = roleId
+        };
+    }
+
+    private async Task<Role> GetOrCreateRole(string roleIdentifier, string roleSource)
+    {
+        var role = (await roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
+        if (role == null)
+        {
+            var provider = (await providerRepository.Get(t => t.Name, roleSource == "ccr" ? "Brønnøysundregistrene" : "Digdir")).FirstOrDefault() ?? throw new Exception(string.Format("Provider '{0}' not found while creating new role.", roleSource));
+            var entityType = (await entityTypeRepository.Get(t => t.Name, "Organisasjon")).FirstOrDefault() ?? throw new Exception(string.Format("Unable to get type for '{0}'", "Organisasjon"));
+
+            await roleRepository.Create(new Role()
+            {
+                Id = Guid.NewGuid(),
+                Name = roleIdentifier,
+                Description = roleIdentifier,
+                Code = roleIdentifier,
+                Urn = roleIdentifier,
+                EntityTypeId = entityType.Id,
+                ProviderId = provider.Id,
+            });
+
+            role = (await roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
+            if (role == null)
+            {
+                throw new Exception(string.Format("Unable to get or create role ''", roleIdentifier));
+            }
+        }
+
+        return role;
+    }
+
+    private List<GenericFilter> assignmentMergeFilter = new List<GenericFilter>() 
+        { 
+            new GenericFilter("fromid", "fromid"),
+            new GenericFilter("toid", "toid"),
+            new GenericFilter("roleid", "roleid"),
+        };
 
     /// <inheritdoc/>
     public Task StopAsync(CancellationToken cancellationToken)

@@ -106,6 +106,12 @@ public class PartyModel
     public string OrganizationIdentifier { get; set; }
 
     /// <summary>
+    /// Gets or sets the organization unit type (e.g. AS, DA, ASA) (if applicable).
+    /// </summary>
+    [JsonPropertyName("organization-unit-type")]
+    public string OrganizationUnitType { get; set; }
+
+    /// <summary>
     /// Gets or sets the date and time when the party was created.
     /// </summary>
     [JsonPropertyName("createdAt")]
