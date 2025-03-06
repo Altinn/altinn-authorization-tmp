@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationReguiremnent
+namespace Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement
 {
     /// <summary>
     /// Requirement for authorization policies used for accessing apis. https://docs.asp.net/en/latest/security/authorization/policies.html

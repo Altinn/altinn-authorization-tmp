@@ -1,4 +1,4 @@
-﻿using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationReguiremnent;
+﻿using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement;
 using Altinn.AccessManagement.Api.Enduser.Authorization.Helper;
 using Altinn.Authorization.ABAC.Xacml.JsonProfile;
 using Altinn.Common.PEP.Interfaces;

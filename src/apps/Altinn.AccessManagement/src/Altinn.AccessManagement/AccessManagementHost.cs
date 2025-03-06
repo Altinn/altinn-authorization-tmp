@@ -1,5 +1,5 @@
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler;
-using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationReguiremnent;
+using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;

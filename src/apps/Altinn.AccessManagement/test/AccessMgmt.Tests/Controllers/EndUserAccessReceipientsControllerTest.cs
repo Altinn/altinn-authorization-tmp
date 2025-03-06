@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler;
-using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationReguiremnent;
+using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
 using Altinn.AccessManagement.Controllers;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
