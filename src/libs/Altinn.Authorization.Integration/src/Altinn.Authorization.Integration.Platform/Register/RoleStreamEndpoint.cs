@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Altinn.Authorization.Integration.Platform.Register;
 
@@ -12,7 +13,7 @@ public partial class RegisterClient
     {
         List<Action<HttpRequestMessage>> request = [
             RequestComposer.WithHttpVerb(HttpMethod.Get),
-            RequestComposer.WithSetUri(Options.Value.Endpoint, "/register/api/v2/internal/role/stream"),
+            RequestComposer.WithSetUri(Options.Value.Endpoint, "/register/api/v2/internal/parties/external-roles/assignments/events/stream"),
             RequestComposer.WithSetUri(nextPage),
             RequestComposer.WithAppendQueryParam("fields", fields),
             RequestComposer.WithPlatformAccessToken(AccessTokenGenerator, "access-management")
@@ -31,4 +32,21 @@ public partial class RegisterClient
 [ExcludeFromCodeCoverage]
 public class RoleModel
 {
+    [JsonPropertyName("versionId")]
+    public int VersionId { get; set; }
+
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
+
+    [JsonPropertyName("roleSource")]
+    public string RoleSource { get; set; }
+
+    [JsonPropertyName("roleIdentifier")]
+    public string RoleIdentifier { get; set; }
+
+    [JsonPropertyName("toParty")]
+    public string ToParty { get; set; }
+
+    [JsonPropertyName("fromParty")]
+    public string FromParty { get; set; }
 }

@@ -77,19 +77,7 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     private async Task SyncRegisterDispatcher(object state)
     {
         var cancellationToken = (CancellationToken)state;
-        if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
-        {
-            await SyncRegister(cancellationToken);
-        }
-    }
 
-    /// <summary>
-    /// Synchronizes register data by first acquiring a remote lease and streaming register entries.
-    /// Returns if lease is already taken.
-    /// </summary>
-    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-    private async Task SyncRegister(CancellationToken cancellationToken)
-    {
         await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("access_management_register_sync", cancellationToken);
         if (!ls.HasLease || cancellationToken.IsCancellationRequested)
         {
@@ -98,7 +86,70 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
 
         try
         {
-            await foreach (var page in await _register.StreamParties([], ls.Data?.NextPageLink, cancellationToken))
+            if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
+            {
+                await SyncParty(ls, cancellationToken);
+                await SyncRoles(ls, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.SyncError(_logger, ex);
+            return;
+        }
+        finally
+        {
+            await _lease.Release(ls, default);
+        }
+    }
+
+    /// <summary>
+    /// Synchronizes register data by first acquiring a remote lease and streaming register entries.
+    /// Returns if lease is already taken.
+    /// </summary>
+    /// <param name="ls">The lease result containing the lease data and status.</param>
+    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+    private async Task SyncRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+    {
+            await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (!page.IsSuccessful)
+                {
+                    Log.ResponseError(_logger, page.StatusCode);
+                }
+
+                foreach (var item in page.Content.Data)
+                {
+                    // TODO: one for party, one for role
+                    Interlocked.Increment(ref _executionCount); 
+                    Log.Role(_logger, item.FromParty, item.ToParty, item.RoleIdentifier);
+                    await WriteRolesToDb(item);
+                }
+
+                if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
+                {
+                    return;
+                }
+
+                await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
+                await _lease.RefreshLease(ls, cancellationToken);
+            }
+    }
+
+    /// <summary>
+    /// Synchronizes register data by first acquiring a remote lease and streaming register entries.
+    /// Returns if lease is already taken.
+    /// </summary>
+    /// <param name="ls">The lease result containing the lease data and status.</param>
+    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+    private async Task SyncParty(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+    {
+            await foreach (var page in await _register.StreamParties([], ls.Data?.PartyStreamNextPageLink, cancellationToken))
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -114,7 +165,7 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
                 {
                     Interlocked.Increment(ref _executionCount);
                     Log.Party(_logger, item.PartyUuid, _executionCount);
-                    await WriteToDb(item);
+                    await WritePartyToDb(item);
                 }
 
                 if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
@@ -122,19 +173,9 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
                     return;
                 }
 
-                await _lease.Put(ls, new() { NextPageLink = page.Content.Links.Next }, cancellationToken);
+                await _lease.Put(ls, new() { PartyStreamNextPageLink = page.Content.Links.Next, RoleStreamNextPageLink = ls.Data?.RoleStreamNextPageLink },  cancellationToken);
                 await _lease.RefreshLease(ls, cancellationToken);
             }
-        }
-        catch (Exception ex)
-        {
-            Log.SyncError(_logger, ex);
-            return;
-        }
-        finally
-        {
-            await _lease.Release(ls, default);
-        }
     }
 
     /// <summary>
@@ -142,7 +183,17 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     /// </summary>
     /// <param name="model">Party model containing register data.</param>
     /// <returns>A completed task.</returns>
-    public Task WriteToDb(PartyModel model)
+    public Task WritePartyToDb(PartyModel model)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Writes the synchronized register data to the database.
+    /// </summary>
+    /// <param name="model">Role model containing register data.</param>
+    /// <returns>A completed task.</returns>
+    public Task WriteRolesToDb(RoleModel model)
     {
         return Task.CompletedTask;
     }
@@ -189,9 +240,14 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
     public class LeaseContent()
     {
         /// <summary>
-        /// The URL of the next page of data.
+        /// The URL of the next page of Party data.
         /// </summary>
-        public string NextPageLink { get; set; }
+        public string PartyStreamNextPageLink { get; set; }
+
+        /// <summary>
+        /// The URL of the next page of Role data.
+        /// </summary>
+        public string RoleStreamNextPageLink { get; set; }
     }
 
     private static partial class Log
@@ -210,5 +266,8 @@ public partial class RegisterHostedService(IAltinnLease lease, IAltinnRegister r
 
         [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Quit register hosted service")]
         internal static partial void QuitRegisterSync(ILogger logger);
+
+        [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Party {fromParty} assigned role {roleIdentifier} to {toParty}")]
+        internal static partial void Role(ILogger logger, string fromParty, string toParty, string roleIdentifier);
     }
 }
