@@ -36,6 +36,21 @@
         public const string POLICY_ACCESS_MANAGEMENT_READ = "AccessManagementRead";
 
         /// <summary>
+        /// Policy tag for reading enduser access management information for the authorized party
+        /// </summary>
+        public const string POLICY_ACCESS_MANAGEMENT_ENDUSER_READ_WITH_PASS_TROUGH = "AccessManagementEndUserReadOrAuthorizedParty";
+
+        /// <summary>
+        /// Policy tag for reading enduser access management information
+        /// </summary>
+        public const string POLICY_ACCESS_MANAGEMENT_ENDUSER_READ = "AccessManagementEndUserRead";
+
+        /// <summary>
+        /// Policy tag for reading enduser access management information
+        /// </summary>
+        public const string POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE = "AccessManagementEndUserWrite";
+
+        /// <summary>
         /// Policy tag for writing access management delegations
         /// </summary>
         public const string POLICY_ACCESS_MANAGEMENT_WRITE = "AccessManagementWrite";
@@ -54,6 +69,21 @@
         /// Policy tag for scope authorization on the instance delegation API for Apps
         /// </summary>
         public const string POLICY_APPS_INSTANCEDELEGATION = "AppsInstanceDelegation";
+
+        /// <summary>
+        /// Policy tag for authorizing client administration API read access
+        /// </summary>
+        public const string POLICY_CLIENTDELEGATION_READ = "CLIENTDELEGATION_READ";
+
+        /// <summary>
+        /// Policy tag for authorizing client administration API write access
+        /// </summary>
+        public const string POLICY_CLIENTDELEGATION_WRITE = "CLIENTDELEGATION_WRITE";
+
+        /// <summary>
+        /// Portal enduser scope giving access to most of the end user APIs
+        /// </summary>
+        public const string SCOPE_PORTAL_ENDUSER = "altinn:portal/enduser";
 
         /// <summary>
         /// Scope giving access to getting authorized parties for a given subject.
