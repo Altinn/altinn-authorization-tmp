@@ -11,7 +11,7 @@ public class Assignment
     public Guid Id { get; set; }
 
     /// <summary>
-    /// RoleId
+    /// FromRoleId
     /// </summary>
     public Guid RoleId { get; set; }
 

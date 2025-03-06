@@ -16,7 +16,7 @@ public class EntityVariantRole
     public Guid VariantId { get; set; }
 
     /// <summary>
-    /// RoleId
+    /// FromRoleId
     /// </summary>
     public Guid RoleId { get; set; }
 }

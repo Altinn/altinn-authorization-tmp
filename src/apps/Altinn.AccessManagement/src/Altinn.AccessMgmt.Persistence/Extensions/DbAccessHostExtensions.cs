@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.Persistence.Core.Executors;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
+using Altinn.AccessMgmt.Persistence.Data.Mock;
 using Altinn.AccessMgmt.Repo.Data;
 using Altinn.Authorization.Host.Startup;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,7 +61,7 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddScoped<MigrationService>();
         builder.Services.AddScoped<IngestService>();
-        //// builder.Services.AddScoped<MockupService>();
+        builder.Services.AddScoped<MockDataService>();
         builder.Services.Add(Marker.ServiceDescriptor);
 
         return builder;
@@ -114,8 +115,9 @@ public static partial class DbAccessHostExtensions
             var dbIngest = scope.ServiceProvider.GetRequiredService<IngestService>();
             await dbIngest.IngestAll();
 
-            //// var mockService = scope.ServiceProvider.GetRequiredService<MockupService>();
-            //// await mockService.Run();
+            var mockService = scope.ServiceProvider.GetRequiredService<MockDataService>();
+            await mockService.GenerateBasicData();
+            await mockService.GeneratePackageResources();
         }
 
         return host;

@@ -18,3 +18,14 @@ public class AssignmentPackageRepository : CrossRepository<AssignmentPackage, Ex
     {
     }
 }
+
+/// <summary>
+/// Data service for AssignmentPackage
+/// </summary>
+public class ConnectionPackageRepository : CrossRepository<ConnectionPackage, ExtConnectionPackage, Connection, Package>, IConnectionPackageRepository
+{
+    /// <inheritdoc/>
+    public ConnectionPackageRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
+    {
+    }
+}

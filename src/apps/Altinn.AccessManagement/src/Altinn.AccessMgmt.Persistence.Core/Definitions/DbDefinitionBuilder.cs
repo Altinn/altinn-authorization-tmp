@@ -234,6 +234,12 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
             string baseProperty = ExtractPropertyInfo(TProperty).Name;
             string refProperty = ExtractPropertyInfo(TJoinProperty).Name;
             string extendedProperty = ExtractPropertyInfo(TExtendedProperty).Name;
+            string extendedPropertyType = ExtractPropertyInfo(TExtendedProperty).PropertyType.Name;
+
+            if (extendedPropertyType != typeof(TJoin).Name)
+            {
+                Console.WriteLine($"WARNING: Type missmatch on definition for '{typeof(T).Name}'");
+            }
 
             var join = new DbRelationDefinition()
             {

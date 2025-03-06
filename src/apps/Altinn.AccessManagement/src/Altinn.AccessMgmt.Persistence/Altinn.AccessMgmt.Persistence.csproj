@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<NoWarn>SA1122</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>

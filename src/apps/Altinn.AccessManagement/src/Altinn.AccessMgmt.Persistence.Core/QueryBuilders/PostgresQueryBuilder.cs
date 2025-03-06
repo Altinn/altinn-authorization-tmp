@@ -108,9 +108,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     /// <inheritdoc/>
     public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false)
     {
-
-        return BuildMergeQuery(parameters, forTranslation);
-
+        return BuildMergeQuery(parameters, new List<GenericFilter>() { new GenericFilter("id", "id") }, forTranslation);
+        
         /*
         var sb = new StringBuilder();
         sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})");
@@ -118,11 +117,21 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
         return sb.ToString();
         */
-
     }
 
-    private string BuildMergeQuery(List<GenericParameter> parameters, bool forTranslation = false)
+    /// <inheritdoc/>
+    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
     {
+        return BuildMergeQuery(parameters, mergeFilter, forTranslation);
+    }
+
+    private string BuildMergeQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
+    {
+        if (mergeFilter == null || !mergeFilter.Any())
+        {
+            throw new ArgumentException("Missing mergefilter");
+        }
+
         var sb = new StringBuilder();
         sb.AppendLine("WITH N AS ( SELECT ");
         sb.AppendLine("@id as id");
@@ -132,13 +141,18 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         }
 
         sb.AppendLine(")");
-        sb.AppendLine($"MERGE INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} AS T USING N ON T.id = N.id");
+        var mergeStatementFilter = string.Join(',', mergeFilter.Select(t => $"T.{t.PropertyName} = N.{t.PropertyName}"));
+        sb.AppendLine($"MERGE INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} AS T USING N ON {mergeStatementFilter}");
         if (forTranslation)
         {
             sb.AppendLine(" AND T.language = N.language");
         }
 
-        sb.AppendLine("WHEN MATCHED THEN");
+        sb.AppendLine("WHEN MATCHED");
+
+        sb.AppendLine($"AND ({MergeUpdateMatchStatement(parameters)})");
+
+        sb.AppendLine("THEN");
         sb.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
         sb.AppendLine("WHEN NOT MATCHED THEN");
         sb.AppendLine($"INSERT ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)});");
@@ -427,6 +441,15 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return string.Join(',', values.OrderBy(t => t).Select(t => $"@{t}").ToList());
     }
 
+    private string MergeUpdateMatchStatement(List<GenericParameter> values)
+    {
+        return MergeUpdateMatchStatement(values.Select(t => t.Key));
+    }
+
+    private string MergeUpdateMatchStatement(IEnumerable<string> values)
+    {
+        return string.Join(" OR ", values.OrderBy(t => t).Select(t => $"T.{t} <> @{t}").ToList());
+    }
     #endregion
 
     #region Schema
