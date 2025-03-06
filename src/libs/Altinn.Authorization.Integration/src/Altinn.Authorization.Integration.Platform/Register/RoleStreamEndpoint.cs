@@ -32,21 +32,39 @@ public partial class RegisterClient
 [ExcludeFromCodeCoverage]
 public class RoleModel
 {
+    /// <summary>
+    /// Gets or sets the version ID of the role.
+    /// </summary>
     [JsonPropertyName("versionId")]
     public int VersionId { get; set; }
 
+    /// <summary>
+    /// Gets or sets the type of the role.
+    /// </summary>
     [JsonPropertyName("type")]
     public string Type { get; set; }
 
+    /// <summary>
+    /// Gets or sets the source of the role.
+    /// </summary>
     [JsonPropertyName("roleSource")]
     public string RoleSource { get; set; }
 
+    /// <summary>
+    /// Gets or sets the unique identifier of the role.
+    /// </summary>
     [JsonPropertyName("roleIdentifier")]
     public string RoleIdentifier { get; set; }
 
+    /// <summary>
+    /// Gets or sets the party that this role is associated with (recipient).
+    /// </summary>
     [JsonPropertyName("toParty")]
     public string ToParty { get; set; }
 
+    /// <summary>
+    /// Gets or sets the party that assigned this role (source).
+    /// </summary>
     [JsonPropertyName("fromParty")]
     public string FromParty { get; set; }
 }
