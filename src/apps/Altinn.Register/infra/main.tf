@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.20.0"
+      version = "4.21.1"
     }
     static = {
       source  = "tiwood/static"
@@ -188,12 +188,12 @@ module "appsettings" {
   hub_suffix = local.hub_suffix
   key_vault_reference = [
     {
-      key                 = "Postgres:AppConnectionString"
+      key                 = "Altinn:Npgsql:register:ConnectionString"
       key_vault_secret_id = data.azurerm_key_vault_secret.postgres_app.versionless_id
       label               = "${var.environment}-register"
     },
     {
-      key                 = "Postgres:MigrationConnectionString"
+      key                 = "Altinn:Npgsql:register:Migrate:ConnectionString"
       key_vault_secret_id = data.azurerm_key_vault_secret.postgres_migration.versionless_id
       label               = "${var.environment}-register"
     }
