@@ -22,7 +22,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
         private const string DefaultType = "string";
 
         private const string PolicyObligationMinAuthnLevel = "urn:altinn:minimum-authenticationlevel";
-        private const string PolicyObligationMinAuthnLevelOrg = "urn:altinn:minimum-authenticationlevel-org";
 
         private static readonly JsonSerializerOptions Options = new() { PropertyNameCaseInsensitive = true };
 
@@ -214,95 +213,21 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
         {
             List<XacmlJsonAttribute> attributes = new List<XacmlJsonAttribute>();
 
-            XacmlJsonAttribute userIdAttribute = null;
-            XacmlJsonAttribute personUuidAttribute = null;
-            XacmlJsonAttribute partyIdAttribute = null;
-            XacmlJsonAttribute resourceIdAttribute = null;
-            XacmlJsonAttribute legacyOrganizationNumberAttibute = null;
-            XacmlJsonAttribute organizationNumberAttribute = null;
-            XacmlJsonAttribute systemUserAttribute = null;
-
             // Mapping all claims on user to attributes
             foreach (Claim claim in claims)
             {
-                if (IsCamelCaseOrgnumberClaim(claim.Type))
+                if (IsSystemUserClaim(claim, out SystemUserClaim? userClaim))
                 {
-                    // Set by Altinn authentication this format
-                    legacyOrganizationNumberAttibute = CreateXacmlJsonAttribute(MatchAttributeIdentifiers.OrganizationNumberAttribute, claim.Value, DefaultType, claim.Issuer);
-                    organizationNumberAttribute = CreateXacmlJsonAttribute(MatchAttributeIdentifiers.OrganizationId, claim.Value, DefaultType, claim.Issuer);
-                }
-                else if (IsScopeClaim(claim.Type))
-                {
-                    attributes.Add(CreateXacmlJsonAttribute(MatchAttributeIdentifiers.Scope, claim.Value, DefaultType, claim.Issuer));
-                }
-                else if (IsJtiClaim(claim.Type))
-                {
-                    attributes.Add(CreateXacmlJsonAttribute(MatchAttributeIdentifiers.SessionId, claim.Value, DefaultType, claim.Issuer));
-                }
-                else if (IsSystemUserClaim(claim, out SystemUserClaim? userClaim))
-                {
-                    systemUserAttribute = CreateXacmlJsonAttribute(MatchAttributeIdentifiers.SystemUserUuid, userClaim.Systemuser_id[0], DefaultType, claim.Issuer);
+                    attributes.Add(CreateXacmlJsonAttribute(MatchAttributeIdentifiers.SystemUserUuid, userClaim.Systemuser_id[0], DefaultType, claim.Issuer));
                 }
                 else if (IsUserIdClaim(claim.Type))
                 {
-                    userIdAttribute = CreateXacmlJsonAttribute(MatchAttributeIdentifiers.UserAttribute, claim.Value, DefaultType, claim.Issuer);
+                    attributes.Add(CreateXacmlJsonAttribute(MatchAttributeIdentifiers.UserAttribute, claim.Value, DefaultType, claim.Issuer));
                 }
-                else if (IsPersonUuidClaim(claim.Type))
+                else if (IsPartyUuidClaim(claim.Type))
                 {
-                    personUuidAttribute = CreateXacmlJsonAttribute(MatchAttributeIdentifiers.PersonUuid, claim.Value, DefaultType, claim.Issuer);
+                    attributes.Add(CreateXacmlJsonAttribute(MatchAttributeIdentifiers.PartyUuidAttribute, claim.Value, DefaultType, claim.Issuer));
                 }
-                else if (IsPartyIdClaim(claim.Type))
-                {
-                    partyIdAttribute = CreateXacmlJsonAttribute(MatchAttributeIdentifiers.PartyAttribute, claim.Value, DefaultType, claim.Issuer);
-                }
-                else if (IsResourceClaim(claim.Type))
-                {
-                    partyIdAttribute = CreateXacmlJsonAttribute(MatchAttributeIdentifiers.ResourceRegistryAttribute, claim.Value, DefaultType, claim.Issuer);
-                }
-                else if (IsOrganizationNumberAttributeClaim(claim.Type))
-                {
-                    // If claimlist contains new format of orgnumber reset any old. To ensure there is not a mismatch
-                    organizationNumberAttribute = CreateXacmlJsonAttribute(MatchAttributeIdentifiers.OrganizationId, claim.Value, DefaultType, claim.Issuer);
-                    legacyOrganizationNumberAttibute = null;
-                }
-                else if (IsValidUrn(claim.Type))
-                {
-                    attributes.Add(CreateXacmlJsonAttribute(claim.Type, claim.Value, DefaultType, claim.Issuer));
-                }
-            }
-
-            // Adding only one of the subject attributes to make sure we dont have mismatching duplicates for PDP request that potentially could cause issues
-            if (personUuidAttribute != null)
-            {
-                attributes.Add(personUuidAttribute);
-            }
-            else if (userIdAttribute != null)
-            {
-                attributes.Add(userIdAttribute);
-            }
-            else if (partyIdAttribute != null)
-            {
-                attributes.Add(partyIdAttribute);
-            }
-            else if (resourceIdAttribute != null)
-            {
-                attributes.Add(resourceIdAttribute);
-            }
-            else if (systemUserAttribute != null)
-            {
-                // If we have a system user we only add that. No other attributes allowed by PDP
-                attributes.Clear();
-                attributes.Add(systemUserAttribute);
-            }
-            else if (legacyOrganizationNumberAttibute != null)
-            {
-                // For legeacy we set both
-                attributes.Add(legacyOrganizationNumberAttibute);
-                attributes.Add(organizationNumberAttribute);
-            }
-            else if (organizationNumberAttribute != null)
-            {
-                attributes.Add(organizationNumberAttribute);
             }
 
             return attributes;
@@ -332,17 +257,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
             return xacmlJsonAttribute;
         }
 
-        private static Guid? TryParseUuid(string party)
-        {
-            Guid partyUuid;
-            if (!Guid.TryParse(party, out partyUuid))
-            {
-                return null;
-            }
-
-            return partyUuid;
-        }
-
         /// <summary>
         /// Create a new <see cref="XacmlJsonCategory"/> with a list of subject attributes based on the given claims.
         /// </summary>
@@ -352,7 +266,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
         {
             XacmlJsonCategory subjectAttributes = new XacmlJsonCategory();
             subjectAttributes.Attribute = CreateSubjectAttributes(claims);
-
             return subjectAttributes;
         }
 
@@ -365,24 +278,11 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
         private static XacmlJsonCategory CreateActionCategory(string actionType, bool includeResult = false)
         {
             XacmlJsonCategory actionAttributes = new XacmlJsonCategory();
-            actionAttributes.Attribute = new List<XacmlJsonAttribute>();
-            actionAttributes.Attribute.Add(CreateXacmlJsonAttribute(MatchAttributeIdentifiers.ActionId, actionType, DefaultType, DefaultIssuer, includeResult));
+            actionAttributes.Attribute =
+            [
+                CreateXacmlJsonAttribute(MatchAttributeIdentifiers.ActionId, actionType, DefaultType, DefaultIssuer, includeResult),
+            ];
             return actionAttributes;
-        }
-
-        private static bool IsCamelCaseOrgnumberClaim(string name)
-        {
-            return name.Equals("urn:altinn:orgNumber");
-        }
-
-        private static bool IsScopeClaim(string name)
-        {
-            return name.Equals("scope");
-        }
-
-        private static bool IsJtiClaim(string name)
-        {
-            return name.Equals("jti");
         }
 
         private static bool IsSystemUserClaim(Claim claim, out SystemUserClaim? userClaim)
@@ -409,30 +309,9 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
             return name.Equals(MatchAttributeIdentifiers.UserAttribute);
         }
 
-        private static bool IsPersonUuidClaim(string name)
+        private static bool IsPartyUuidClaim(string name)
         {
-            return name.Equals(MatchAttributeIdentifiers.PersonUuid);
-        }
-
-        private static bool IsPartyIdClaim(string name)
-        {
-            return name.Equals(MatchAttributeIdentifiers.PartyAttribute);
-        }
-
-        private static bool IsResourceClaim(string name)
-        {
-            return name.Equals(MatchAttributeIdentifiers.ResourceRegistryAttribute);
-        }
-
-        private static bool IsOrganizationNumberAttributeClaim(string name)
-        {
-            // The new format of orgnumber
-            return name.Equals(MatchAttributeIdentifiers.OrganizationId);
-        }
-
-        private static bool IsValidUrn(string value)
-        {
-            return value.StartsWith("urn:", StringComparison.Ordinal);
+            return name.Equals(MatchAttributeIdentifiers.PartyUuidAttribute);
         }
     }
 }

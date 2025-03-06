@@ -1,29 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler;
-using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement;
 using Altinn.AccessManagement.Api.Enduser.Controllers;
-using Altinn.AccessManagement.Controllers;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
-using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessManagement.Models;
 using Altinn.AccessManagement.Tests;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Util;
-using Altinn.Common.AccessToken;
 using Altinn.Common.AccessToken.Services;
-using Altinn.Common.PEP.Authorization;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -76,6 +63,10 @@ namespace AccessMgmt.Tests.Controllers
             Assert.Equal("true", responseContent);
         }
 
+        /// <summary>
+        /// Test Case: Authorize returns false when PDP returns deny
+        /// </summary>
+        /// <returns></returns>
         [Fact]
         public async Task AuthorizeFalse()
         {
