@@ -67,15 +67,8 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
         /// <returns>true or false, valid or not</returns>
         public static bool ValidatePdpDecision(XacmlJsonResponse response, ClaimsPrincipal user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-
-            if (response?.Response == null)
-            {
-                throw new ArgumentNullException("response");
-            }
+            ArgumentNullException.ThrowIfNull(response, nameof(response));
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
 
             // We request one thing and then only want one result
             if (response?.Response.Count != 1)
@@ -83,7 +76,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
                 return false;
             }
 
-            return ValidateDecisionResult(response.Response.First(), user);
+            return ValidateDecisionResult(response.Response[0], user);
         }
 
         /// <summary>
@@ -195,18 +188,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
                     // Checks that the user meets the minimum authentication level
                     if (Convert.ToInt32(usersAuthenticationLevel) < Convert.ToInt32(minAuthenticationLevel))
                     {
-                        if (user.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:org")) != null)
-                        {
-                            XacmlJsonAttributeAssignment attributeMinLvAuthOrg = GetObligation(PolicyObligationMinAuthnLevelOrg, obligationList);
-                            if (attributeMinLvAuthOrg != null)
-                            {
-                                if (Convert.ToInt32(usersAuthenticationLevel) >= Convert.ToInt32(attributeMinLvAuthOrg.Value))
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-
                         return false;
                     }
                 }
