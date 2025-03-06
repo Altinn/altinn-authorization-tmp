@@ -5,9 +5,7 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.ABAC.Xacml.JsonProfile;
-using Altinn.Common.PEP.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using static Altinn.AccessManagement.Core.Constants.AltinnXacmlConstants;
 
 namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
@@ -64,28 +62,28 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
         /// <summary>
         /// Validate the response from PDP
         /// </summary>
-        /// <param name="results">The response to validate</param>
+        /// <param name="response">The response to validate</param>
         /// <param name="user">The <see cref="ClaimsPrincipal"/></param>
         /// <returns>true or false, valid or not</returns>
-        public static bool ValidatePdpDecision(List<XacmlJsonResult> results, ClaimsPrincipal user)
+        public static bool ValidatePdpDecision(XacmlJsonResponse response, ClaimsPrincipal user)
         {
-            if (results == null)
-            {
-                throw new ArgumentNullException("results");
-            }
-
             if (user == null)
             {
                 throw new ArgumentNullException("user");
             }
 
+            if (response?.Response == null)
+            {
+                throw new ArgumentNullException("response");
+            }
+
             // We request one thing and then only want one result
-            if (results.Count != 1)
+            if (response?.Response.Count != 1)
             {
                 return false;
             }
 
-            return ValidateDecisionResult(results.First(), user);
+            return ValidateDecisionResult(response.Response.First(), user);
         }
 
         /// <summary>

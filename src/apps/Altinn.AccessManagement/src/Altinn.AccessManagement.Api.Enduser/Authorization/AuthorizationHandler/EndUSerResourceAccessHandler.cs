@@ -16,10 +16,9 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IPDP _pdp;
-        private readonly ILogger _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ResourceAccessHandler"/> class.
+        /// Initializes a new instance of the <see cref="EndUserResourceAccessHandler"/> class.
         /// </summary>
         /// <param name="httpContextAccessor">The http context accessor</param>
         /// <param name="pdp">The pdp</param>
@@ -31,7 +30,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler
         {
             _httpContextAccessor = httpContextAccessor;
             _pdp = pdp;
-            _logger = logger;
         }
 
         /// <summary>
@@ -55,12 +53,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler
 
             XacmlJsonResponse response = await _pdp.GetDecisionForRequest(request);
 
-            if (response?.Response == null)
-            {
-                throw new ArgumentNullException("response");
-            }
-
-            bool userHasRequestedPartyAccess = DecisionHelper.ValidatePdpDecision(response.Response, context.User);
+            bool userHasRequestedPartyAccess = DecisionHelper.ValidatePdpDecision(response, context.User);
 
             if (userHasRequestedPartyAccess)
             {
