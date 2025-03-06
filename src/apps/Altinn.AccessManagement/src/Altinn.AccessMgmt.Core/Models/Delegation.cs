@@ -19,6 +19,11 @@ public class Delegation
     /// Assignment to delegate to
     /// </summary>
     public Guid ToId { get; set; }
+
+    /// <summary>
+    /// Entity owner of the Delegation (?) MAybe
+    /// </summary>
+    public Guid FacilitatorId { get; set; }
 }
 
 /// <summary>

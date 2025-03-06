@@ -17,8 +17,8 @@ public class RoleService : IRoleService
             Description = description,
             Urn = "",
             EntityTypeId = Guid.NewGuid(),
-            ProviderId = Guid.NewGuid(),            
-        }
+            ProviderId = Guid.NewGuid(),
+        };
         throw new NotImplementedException();
     }
 
