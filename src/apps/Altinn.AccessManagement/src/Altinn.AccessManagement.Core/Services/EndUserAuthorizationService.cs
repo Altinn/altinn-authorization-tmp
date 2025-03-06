@@ -1,6 +1,6 @@
-﻿using Altinn.AccessManagement.Core.Models;
+﻿#nullable enable
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace Altinn.AccessManagement.Core.Services;
 
@@ -15,10 +15,8 @@ public class EndUserAuthorizationService : IEndUserAuthorizationService
     /// Initializes a new instance of the <see cref="EndUserAuthorizationService"/> class.
     /// </summary>
     /// <param name="authorizedPartiesService">Service to get authorized parties</param>
-    /// <param name="logger">Logger instance for logging</param>
     public EndUserAuthorizationService(
-        IAuthorizedPartiesService authorizedPartiesService,
-        ILogger<IEndUserAuthorizationService> logger)
+        IAuthorizedPartiesService authorizedPartiesService)
     {
         _authorizedPartiesService = authorizedPartiesService;
     }
