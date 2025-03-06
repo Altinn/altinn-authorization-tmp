@@ -44,10 +44,12 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
             request.AccessSubject.Add(CreateSubjectCategory(context.User.Claims));
             request.Action.Add(CreateActionCategory(requirement.ActionType));
 
-            Guid? partyUuid = TryParseUuid(party);
-            if (partyUuid.HasValue)
+            XacmlJsonCategory resource = CreateResourceCategoryForResource(requirement.ResourceId);
+            request.Resource.Add(resource);
+
+            if (Guid.TryParse(party, out Guid partyUuid))
             {
-                request.Resource.Add(CreateResourceCategoryForResource(partyUuid));
+                resource.Attribute.Add(CreateXacmlJsonAttribute(MatchAttributeIdentifiers.PartyUuidAttribute, partyUuid.ToString(), DefaultType, DefaultIssuer));
             }
             else
             {
@@ -327,15 +329,13 @@ namespace Altinn.AccessManagement.Api.Enduser.Authorization.Helper
             return attributes;
         }
 
-        private static XacmlJsonCategory CreateResourceCategoryForResource(Guid? partyUuid, bool includeResult = false)
+        private static XacmlJsonCategory CreateResourceCategoryForResource(string resourceId, bool includeResult = false)
         {
             XacmlJsonCategory resourceCategory = new XacmlJsonCategory();
-            resourceCategory.Attribute = new List<XacmlJsonAttribute>();
-
-            if (partyUuid.HasValue)
-            {
-                resourceCategory.Attribute.Add(CreateXacmlJsonAttribute(MatchAttributeIdentifiers.PartyUuidAttribute, partyUuid.Value.ToString(), DefaultType, DefaultIssuer, includeResult));
-            }
+            resourceCategory.Attribute =
+            [
+                CreateXacmlJsonAttribute(MatchAttributeIdentifiers.ResourceRegistryAttribute, resourceId, DefaultType, DefaultIssuer, includeResult),
+            ];
 
             return resourceCategory;
         }
