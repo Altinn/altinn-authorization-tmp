@@ -17,12 +17,13 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="register">Register integration service.</param>
 /// <param name="logger">Logger for logging service activities.</param>
 /// <param name="featureManager">for reading feature flags</param>
-/// <param name="entityRepository"></param>
-/// <param name="entityLookupRepository"></param>
-/// <param name="roleRepository"></param>
-/// <param name="assignmentRepository"></param>
-/// <param name="entityTypeRepository"></param>
-/// <param name="providerRepository"></param>
+/// <param name="entityRepository">Repository for entity data.</param>
+/// <param name="entityLookupRepository">Repository for entity lookup data.</param>
+/// <param name="roleRepository">Repository for role data.</param>
+/// <param name="assignmentRepository">Repository for assignment data.</param>
+/// <param name="entityTypeRepository">Repository for entity type data.</param>
+/// <param name="entityVariantRepository">Repository for entity variant data.</param>
+/// <param name="providerRepository">Repository for provider data.</param>
 public partial class RegisterHostedService(
     IAltinnLease lease,
     IAltinnRegister register,
@@ -33,6 +34,7 @@ public partial class RegisterHostedService(
     IRoleRepository roleRepository,
     IAssignmentRepository assignmentRepository,
     IEntityTypeRepository entityTypeRepository,
+    IEntityVariantRepository entityVariantRepository,
     IProviderRepository providerRepository
     ) : IHostedService, IDisposable
 {
@@ -45,6 +47,7 @@ public partial class RegisterHostedService(
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
     private readonly IEntityTypeRepository entityTypeRepository = entityTypeRepository;
+    private readonly IEntityVariantRepository entityVariantRepository = entityVariantRepository;
     private readonly IProviderRepository providerRepository = providerRepository;
     private int _executionCount = 0;
     private Timer _timer = null;
@@ -78,6 +81,7 @@ public partial class RegisterHostedService(
         {
             if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
             {
+                await PrepareSync();
                 await SyncParty(ls, cancellationToken);
                 await SyncRoles(ls, cancellationToken);
             }
@@ -168,6 +172,12 @@ public partial class RegisterHostedService(
         }
     }
 
+    private async Task PrepareSync()
+    {
+        EntityTypes = await entityTypeRepository.Get();
+        EntityVariants = await entityVariantRepository.Get();
+    }
+
     /// <summary>
     /// Writes the synchronized register data to the database.
     /// </summary>
@@ -175,30 +185,37 @@ public partial class RegisterHostedService(
     /// <returns>A completed task.</returns>
     public async Task WritePartyToDb(PartyModel model)
     {
-        var entity = ConvertPartyModel(model);
-
-        await entityRepository.Upsert(entity);
-
-        if (model.PartyType == "Person")
+        try
         {
-            await entityLookupRepository.Upsert(new EntityLookup()
+            var entity = ConvertPartyModel(model);
+            await entityRepository.Upsert(entity);
+
+            if (model.PartyType == "Person")
             {
-                Id = Guid.NewGuid(),
-                EntityId = Guid.Parse(model.PartyUuid),
-                Key = "PII",
-                Value = model.PersonIdentifier
-            });
+                await entityLookupRepository.Upsert(new EntityLookup()
+                {
+                    Id = Guid.NewGuid(),
+                    EntityId = Guid.Parse(model.PartyUuid),
+                    Key = "PII",
+                    Value = model.PersonIdentifier
+                });
+            }
+
+            if (model.PartyType == "Organisasjon")
+            {
+                await entityLookupRepository.Upsert(new EntityLookup()
+                {
+                    Id = Guid.NewGuid(),
+                    EntityId = Guid.Parse(model.PartyUuid),
+                    Key = "OrgNo",
+                    Value = model.OrganizationIdentifier
+                });
+            }
         }
-
-        if (model.PartyType == "Organisasjon")
+        catch (Exception ex)
         {
-            await entityLookupRepository.Upsert(new EntityLookup()
-            {
-                Id = Guid.NewGuid(),
-                EntityId = Guid.Parse(model.PartyUuid),
-                Key = "OrgNo",
-                Value = model.OrganizationIdentifier
-            });
+            Console.WriteLine("Failed to WritePartyToDb");
+            Console.WriteLine(ex.ToString());
         }
     }
 
@@ -211,7 +228,7 @@ public partial class RegisterHostedService(
 
     private Entity ConvertPartyModel(PartyModel model)
     {
-        if (model.PartyType == "Person")
+        if (model.PartyType.Equals("Person", StringComparison.OrdinalIgnoreCase))
         {
             var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
             var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person") ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", "Person", "Organisasjon"));
@@ -225,39 +242,39 @@ public partial class RegisterHostedService(
                 VariantId = variant.Id
             };
         }
-        else if (model.PartyType == "Organisasjon")
+        else if (model.PartyType.Equals("Organisasjon", StringComparison.OrdinalIgnoreCase))
         {
             var type = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == model.PartyType) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, "Organisasjon"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, "Organisasjon"));
 
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
                 Name = model.DisplayName,
                 RefId = model.OrganizationIdentifier,
-                TypeId = Guid.Empty,
-                VariantId = Guid.Empty
+                TypeId = type.Id,
+                VariantId = variant.Id
             };
         }
         else
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == model.PartyType) ?? throw new Exception(string.Format("Unable to find type '{0}'", model.PartyType));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == model.PartyType) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, model.PartyType));
+            var type = EntityTypes.FirstOrDefault(t => t.Name.Equals(model.PartyType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to find type '{0}'", model.PartyType));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, model.UnitType));
 
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
                 Name = model.DisplayName,
                 RefId = model.OrganizationIdentifier,
-                TypeId = Guid.Empty,
-                VariantId = Guid.Empty
+                TypeId = type.Id,
+                VariantId = variant.Id
             };
         }
     }
 
-    private List<EntityType> EntityTypes { get; set; }
+    private IEnumerable<EntityType> EntityTypes { get; set; }
 
-    private List<EntityVariant> EntityVariants { get; set; }
+    private IEnumerable<EntityVariant> EntityVariants { get; set; }
 
     /// <summary>
     /// Writes the synchronized register data to the database.
