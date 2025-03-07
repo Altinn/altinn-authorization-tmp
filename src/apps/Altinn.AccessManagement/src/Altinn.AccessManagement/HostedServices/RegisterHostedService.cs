@@ -5,7 +5,6 @@ using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
-using Authorization.Platform.Authorization.Models;
 using Microsoft.FeatureManagement;
 using Role = Altinn.AccessMgmt.Core.Models.Role;
 
@@ -25,9 +24,9 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="entityTypeRepository"></param>
 /// <param name="providerRepository"></param>
 public partial class RegisterHostedService(
-    IAltinnLease lease, 
-    IAltinnRegister register, 
-    ILogger<RegisterHostedService> logger, 
+    IAltinnLease lease,
+    IAltinnRegister register,
+    ILogger<RegisterHostedService> logger,
     IFeatureManager featureManager,
     IEntityRepository entityRepository,
     IEntityLookupRepository entityLookupRepository,
@@ -50,42 +49,6 @@ public partial class RegisterHostedService(
     private int _executionCount = 0;
     private Timer _timer = null;
     private readonly CancellationTokenSource _stop = new();
-
-    /// <summary>
-    /// List of register fields to be retrieved during synchronization.
-    /// </summary>
-    private static readonly IEnumerable<string> _registerFields = [
-        "party",
-        "organization",
-        "person",
-        "identifiers",
-        "party-uuid",
-        "party-version-id",
-        "organization-business-address",
-        "organization-mailing-address",
-        "organization-internet-address",
-        "organization-email-address",
-        "organization-fax-number",
-        "organization-mobile-number",
-        "organization-telephone-number",
-        "organization-unit-type",
-        "organization-unit-status",
-        "person-date-of-death",
-        "person-mailing-address",
-        "person-address",
-        "person-last-name",
-        "person-middle-name",
-        "person-first-name",
-        "party-modified-at",
-        "party-created-at",
-        "party-organization-identifier",
-        "party-person-identifier",
-        "party-name",
-        "party-type",
-        "party-id",
-        "person-date-of-birth",
-        "sub-units"
-    ];
 
     /// <inheritdoc/>
     public Task StartAsync(CancellationToken cancellationToken)
@@ -153,7 +116,7 @@ public partial class RegisterHostedService(
             foreach (var item in page.Content.Data)
             {
                 // TODO: one for party, one for role
-                Interlocked.Increment(ref _executionCount); 
+                Interlocked.Increment(ref _executionCount);
                 Log.Role(_logger, item.FromParty, item.ToParty, item.RoleIdentifier);
                 await WriteRolesToDb(item);
             }
@@ -176,33 +139,33 @@ public partial class RegisterHostedService(
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     private async Task SyncParty(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
-            await foreach (var page in await _register.StreamParties(["organization-unit-type"], ls.Data?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await _register.StreamParties(["organization-unit-type"], ls.Data?.PartyStreamNextPageLink, cancellationToken))
+        {
+            if (cancellationToken.IsCancellationRequested)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                if (!page.IsSuccessful)
-                {
-                    Log.ResponseError(_logger, page.StatusCode);
-                }
-
-                foreach (var item in page.Content.Data)
-                {
-                    Interlocked.Increment(ref _executionCount);
-                    Log.Party(_logger, item.PartyUuid, _executionCount);
-                    await WritePartyToDb(item);
-                }
-
-                if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
-                {
-                    return;
-                }
-
-                await _lease.Put(ls, new() { PartyStreamNextPageLink = page.Content.Links.Next, RoleStreamNextPageLink = ls.Data?.RoleStreamNextPageLink },  cancellationToken);
-                await _lease.RefreshLease(ls, cancellationToken);
+                return;
             }
+
+            if (!page.IsSuccessful)
+            {
+                Log.ResponseError(_logger, page.StatusCode);
+            }
+
+            foreach (var item in page.Content.Data)
+            {
+                Interlocked.Increment(ref _executionCount);
+                Log.Party(_logger, item.PartyUuid, _executionCount);
+                await WritePartyToDb(item);
+            }
+
+            if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
+            {
+                return;
+            }
+
+            await _lease.Put(ls, new() { PartyStreamNextPageLink = page.Content.Links.Next, RoleStreamNextPageLink = ls.Data?.RoleStreamNextPageLink }, cancellationToken);
+            await _lease.RefreshLease(ls, cancellationToken);
+        }
     }
 
     /// <summary>
@@ -256,8 +219,8 @@ public partial class RegisterHostedService(
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
-                Name = model.Name,
-                RefId = model.DateOfBirth,
+                Name = model.DisplayName,
+                RefId = model.DateOfBirth.ToString(),
                 TypeId = type.Id,
                 VariantId = variant.Id
             };
@@ -265,12 +228,12 @@ public partial class RegisterHostedService(
         else if (model.PartyType == "Organisasjon")
         {
             var type = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == model.OrganizationUnitType) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.OrganizationUnitType, "Organisasjon"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == model.PartyType) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, "Organisasjon"));
 
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
-                Name = model.Name,
+                Name = model.DisplayName,
                 RefId = model.OrganizationIdentifier,
                 TypeId = Guid.Empty,
                 VariantId = Guid.Empty
@@ -279,17 +242,17 @@ public partial class RegisterHostedService(
         else
         {
             var type = EntityTypes.FirstOrDefault(t => t.Name == model.PartyType) ?? throw new Exception(string.Format("Unable to find type '{0}'", model.PartyType));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == model.OrganizationUnitType) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.OrganizationUnitType, model.PartyType));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == model.PartyType) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, model.PartyType));
 
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
-                Name = model.Name,
+                Name = model.DisplayName,
                 RefId = model.OrganizationIdentifier,
                 TypeId = Guid.Empty,
                 VariantId = Guid.Empty
             };
-        }       
+        }
     }
 
     private List<EntityType> EntityTypes { get; set; }
@@ -323,7 +286,7 @@ public partial class RegisterHostedService(
         var role = (await roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
         if (role == null)
         {
-            var provider = (await providerRepository.Get(t => t.Name, roleSource == "ccr" ? "Brønnøysundregistrene" : "Digdir")).FirstOrDefault() ?? throw new Exception(string.Format("Provider '{0}' not found while creating new role.", roleSource));
+            var provider = (await providerRepository.Get(t => t.Name, roleSource == "ccr" ? "Brï¿½nnï¿½ysundregistrene" : "Digdir")).FirstOrDefault() ?? throw new Exception(string.Format("Provider '{0}' not found while creating new role.", roleSource));
             var entityType = (await entityTypeRepository.Get(t => t.Name, "Organisasjon")).FirstOrDefault() ?? throw new Exception(string.Format("Unable to get type for '{0}'", "Organisasjon"));
 
             await roleRepository.Create(new Role()
@@ -347,8 +310,8 @@ public partial class RegisterHostedService(
         return role;
     }
 
-    private List<GenericFilter> assignmentMergeFilter = new List<GenericFilter>() 
-        { 
+    private List<GenericFilter> assignmentMergeFilter = new List<GenericFilter>()
+        {
             new GenericFilter("fromid", "fromid"),
             new GenericFilter("toid", "toid"),
             new GenericFilter("roleid", "roleid"),

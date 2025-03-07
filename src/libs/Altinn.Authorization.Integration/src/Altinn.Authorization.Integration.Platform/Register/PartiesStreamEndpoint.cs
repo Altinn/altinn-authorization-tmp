@@ -104,7 +104,7 @@ public class PartyModel
     /// Gets or sets the identifier for an organization.
     /// </summary>
     [JsonPropertyName("organizationIdentifier")]
-    public object OrganizationIdentifier { get; set; }
+    public string OrganizationIdentifier { get; set; }
 
     /// <summary>
     /// Gets or sets the creation date of the party record.
