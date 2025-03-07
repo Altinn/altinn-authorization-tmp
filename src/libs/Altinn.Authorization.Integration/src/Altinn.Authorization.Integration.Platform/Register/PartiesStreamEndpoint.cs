@@ -11,7 +11,7 @@ public partial class RegisterClient
     /// <summary>
     /// List of available fields that can be retrieved from the register.
     /// </summary>
-    private readonly IEnumerable<string> _availableFields = [
+    public static readonly IEnumerable<string> AvailableFields = [
         "party",
         "org",
         "person",

@@ -139,7 +139,7 @@ public partial class RegisterHostedService(
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     private async Task SyncParty(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
-        await foreach (var page in await _register.StreamParties(["organization-unit-type"], ls.Data?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await _register.StreamParties(RegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {
