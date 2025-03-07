@@ -19,6 +19,16 @@ public class ConnectionPackage
     /// Package identifier
     /// </summary>
     public Guid PackageId { get; set; }
+
+    /// <summary>
+    /// HasAccess
+    /// </summary>
+    //// public bool HasAccess { get; set; }
+
+    /// <summary>
+    /// CanDelegate
+    /// </summary>
+    //// public bool CanDelegate { get; set; }
 }
 
 /// <summary>

@@ -45,7 +45,6 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// <returns></returns>
         public DbDefinitionBuilder<T> SetViewQuery(string query)
         {
-            // Add view script??
             DbDefinition.ViewQuery = query;
             return this;
         }

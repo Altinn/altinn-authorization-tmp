@@ -6,6 +6,8 @@ using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Altinn.AccessMgmt.Persistence.Data.Mock;
+using Altinn.AccessMgmt.Persistence.Repositories;
+using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Repo.Data;
 using Altinn.Authorization.Host.Startup;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,6 +59,10 @@ public static partial class DbAccessHostExtensions
                 builder.Services.AddScoped(interfaceType, repoType);
             }
         }
+
+        //builder.Services.AddScoped<IConnectionRepository, ConnectionRepository>();
+        //builder.Services.AddScoped<IConnectionPackageRepository, ConnectionPackageRepository>();
+        //builder.Services.AddScoped<IConnectionResourceRepository, ConnectionResourceRepository>();
 
         builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddScoped<MigrationService>();

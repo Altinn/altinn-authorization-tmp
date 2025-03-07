@@ -175,9 +175,9 @@ public class MigrationService
         {
             foreach (var script in Scripts)
             {
-                if (script.Key.Name == "Provider")
+                if (script.Key.Name == "Connection")
                 {
-                    Console.WriteLine("PROVIDER");
+                    Console.WriteLine("Connection");
                 }
 
                 if (status[script.Key])

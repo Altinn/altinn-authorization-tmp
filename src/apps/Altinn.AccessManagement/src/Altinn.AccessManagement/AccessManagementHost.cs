@@ -13,6 +13,7 @@ using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Database;
@@ -91,6 +92,8 @@ internal static partial class AccessManagementHost
         builder.ConfigureAccessManagementPersistence();
 
         builder.Services.AddScoped<IPackageService, PackageService>();
+        builder.Services.AddScoped<NewDelegationService>();
+
         builder.Services.AddSingleton(typeof(ISearchCache<>), typeof(SearchCache<>));
 
         return builder.Build();

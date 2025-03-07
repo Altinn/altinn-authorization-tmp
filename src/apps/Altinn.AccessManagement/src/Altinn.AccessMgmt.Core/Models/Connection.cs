@@ -1,7 +1,8 @@
-﻿using System.Security.Principal;
+﻿namespace Altinn.AccessMgmt.Core.Models;
 
-namespace Altinn.AccessMgmt.Core.Models;
-
+/// <summary>
+/// 
+/// </summary>
 public class Connection 
 {
     /// <summary>
@@ -10,19 +11,14 @@ public class Connection
     public Guid Id { get; set; } // AssignmentId or DelegationId
 
     /// <summary>
-    /// The entity identity the connection is from (origin, client, etc) 
+    /// The entity identity the connection is from (origin, client, source etc) 
     /// </summary>
     public Guid FromId { get; set; }
 
     /// <summary>
-    /// The role used for the assignment between from and to -or- between from and facilitator (when delegated)
+    /// The role To identifies as
     /// </summary>
-    public Guid FromRoleId { get; set; }
-
-    /// <summary>
-    /// The entity betweeen from and to. When connection is delegated.
-    /// </summary>
-    public Guid? FacilitatorId { get; set; }
+    public Guid RoleId { get; set; }
 
     /// <summary>
     /// The entity identity the connection is to (destination, agent, etc)
@@ -30,35 +26,48 @@ public class Connection
     public Guid ToId { get; set; }
 
     /// <summary>
-    /// The role identity used for the assignment between facilitator and to. When connection is delegated.
+    /// The entity betweeen from and to. When connection is delegated.
     /// </summary>
-    public Guid? ToRoleId { get; set; }
+    public Guid? FacilitatorId { get; set; }
+
+    /// <summary>
+    /// The role the facilitator has to the client
+    /// </summary>
+    public Guid? FacilitatorRoleId { get; set; }
 }
 
-public class ExtConnection : Connection
+/// <summary>
+/// 
+/// </summary>
+public class ExtConnection //: Connection
 {
     /// <summary>
-    /// 
+    /// Identity, either assignment og delegation
     /// </summary>
-    public Entity From { get; set; }
+    public Guid Id { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
-    public Role FromRole { get; set; }
+    public EntityParty From { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
-    public Entity Facilitator { get; set; } 
+    public Role Role { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
-    public Entity To { get; set; }
+    public EntityParty To { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
-    public Role ToRole { get; set; }
+    public EntityParty Facilitator { get; set; } 
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public Role FacilitatorRole { get; set; }
 }

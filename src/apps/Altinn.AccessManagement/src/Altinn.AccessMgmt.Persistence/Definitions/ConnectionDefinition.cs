@@ -22,32 +22,32 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
 
             def.RegisterProperty(t => t.Id);
             def.RegisterProperty(t => t.FromId);
-            def.RegisterProperty(t => t.FromRoleId);
+            def.RegisterProperty(t => t.RoleId);
             def.RegisterProperty(t => t.FacilitatorId, nullable: true);
             def.RegisterProperty(t => t.ToId);
-            def.RegisterProperty(t => t.ToRoleId, nullable: true);
+            def.RegisterProperty(t => t.FacilitatorRoleId, nullable: true);
 
-            def.RegisterExtendedProperty<ExtConnection, Entity>(t => t.FromId, t => t.Id, t => t.From);
-            def.RegisterExtendedProperty<ExtConnection, Role>(t => t.FromRoleId, t => t.Id, t => t.FromRole);
-            def.RegisterExtendedProperty<ExtConnection, Entity>(t => t.FacilitatorId, t => t.Id, t => t.Facilitator, optional: true);
-            def.RegisterExtendedProperty<ExtConnection, Entity>(t => t.ToId, t => t.Id, t => t.To);
-            def.RegisterExtendedProperty<ExtConnection, Role>(t => t.ToRoleId, t => t.Id, t => t.ToRole, optional: true);
+            def.RegisterExtendedProperty<ExtConnection, EntityParty>(t => t.FromId, t => t.Id, t => t.From);
+            def.RegisterExtendedProperty<ExtConnection, Role>(t => t.RoleId, t => t.Id, t => t.Role);
+            def.RegisterExtendedProperty<ExtConnection, EntityParty>(t => t.FacilitatorId, t => t.Id, t => t.Facilitator, optional: true);
+            def.RegisterExtendedProperty<ExtConnection, EntityParty>(t => t.ToId, t => t.Id, t => t.To);
+            def.RegisterExtendedProperty<ExtConnection, Role>(t => t.FacilitatorRoleId, t => t.Id, t => t.FacilitatorRole, optional: true);
 
             var sb = new StringBuilder();
 
             // Basic Assignment
-            sb.AppendLine($"SELECT a.{nameof(Assignment.Id)}, a.{nameof(Assignment.FromId)} AS {nameof(Connection.FromId)}, NULL AS {nameof(Connection.FacilitatorId)}, a.{nameof(Connection.ToId)}, a.{nameof(Assignment.RoleId)} AS {nameof(Connection.FromRoleId)}, NULL AS {nameof(Connection.ToRoleId)}");
+            sb.AppendLine($"SELECT a.{nameof(Assignment.Id)}, a.{nameof(Assignment.FromId)} AS {nameof(Connection.FromId)}, NULL::uuid AS {nameof(Connection.FacilitatorId)}, a.{nameof(Connection.ToId)}, a.{nameof(Assignment.RoleId)} AS {nameof(Connection.RoleId)}, NULL::uuid AS {nameof(Connection.FacilitatorRoleId)}");
             sb.AppendLine("FROM dbo.assignment AS a");
             sb.AppendLine("UNION ALL");
 
             // Inheireted Roles from RoleMap
-            sb.AppendLine($"SELECT a.{nameof(Assignment.Id)}, a.{nameof(Assignment.FromId)}, NULL AS {nameof(Connection.FacilitatorId)}, a.{nameof(Connection.ToId)}, rm.{nameof(RoleMap.GetRoleId)} AS {nameof(Connection.ToRoleId)}, NULL AS {nameof(Connection.ToRoleId)}");
+            sb.AppendLine($"SELECT a.{nameof(Assignment.Id)}, a.{nameof(Assignment.FromId)}, NULL AS {nameof(Connection.FacilitatorId)}, a.{nameof(Connection.ToId)}, rm.{nameof(RoleMap.GetRoleId)} AS {nameof(Connection.RoleId)}, rm.{nameof(RoleMap.HasRoleId)} AS {nameof(Connection.FacilitatorRoleId)}");
             sb.AppendLine("FROM dbo.assignment AS a");
             sb.AppendLine($"INNER JOIN dbo.rolemap as rm on a.{nameof(Assignment.RoleId)} = rm.{nameof(RoleMap.HasRoleId)}");
             sb.AppendLine("UNION ALL");
 
             // Delegations
-            sb.AppendLine($"SELECT d.{nameof(Delegation.Id)}, fa.{nameof(Assignment.FromId)} AS {nameof(Connection.FromId)}, fa.{nameof(Assignment.ToId)} AS {nameof(Connection.FacilitatorId)}, ta.{nameof(Assignment.ToId)} AS {nameof(Connection.ToId)}, fa.{nameof(Assignment.RoleId)} AS {nameof(Connection.FromRoleId)}, ta.{nameof(Assignment.RoleId)} AS {nameof(Connection.ToRoleId)}");
+            sb.AppendLine($"SELECT d.{nameof(Delegation.Id)}, fa.{nameof(Assignment.FromId)} AS {nameof(Connection.FromId)}, fa.{nameof(Assignment.ToId)} AS {nameof(Connection.FacilitatorId)}, ta.{nameof(Assignment.ToId)} AS {nameof(Connection.ToId)}, fa.{nameof(Assignment.RoleId)} AS {nameof(Connection.RoleId)}, ta.{nameof(Assignment.RoleId)} AS {nameof(Connection.FacilitatorRoleId)}");
             sb.AppendLine("FROM dbo.delegation AS d");
             sb.AppendLine($"INNER JOIN dbo.assignment AS fa ON d.{nameof(Delegation.FromId)} = fa.{nameof(Assignment.Id)}");
             sb.AppendLine($"INNER JOIN dbo.assignment AS ta ON d.{nameof(Delegation.ToId)} = ta.{nameof(Assignment.Id)};");

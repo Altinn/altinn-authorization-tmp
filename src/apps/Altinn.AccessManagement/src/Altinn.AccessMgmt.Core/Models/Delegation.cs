@@ -21,7 +21,7 @@ public class Delegation
     public Guid ToId { get; set; }
 
     /// <summary>
-    /// Entity owner of the Delegation (?) MAybe
+    /// Entity owner of the Delegation
     /// </summary>
     public Guid FacilitatorId { get; set; }
 }
@@ -40,4 +40,10 @@ public class ExtDelegation : Delegation
     /// Assignment to delegate to
     /// </summary>
     public Assignment To { get; set; }
+
+    /// <summary>
+    /// Delegation facilitator
+    /// </summary>
+    public Entity Facilitator { get; set; }
+
 }

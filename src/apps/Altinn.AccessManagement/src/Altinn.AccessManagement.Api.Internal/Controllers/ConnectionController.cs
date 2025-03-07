@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Internal.Controllers
@@ -15,12 +16,22 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
     public class ConnectionController(
         IConnectionRepository connectionRepository,
         IConnectionPackageRepository connectionPackageRepository,
-        IConnectionResourceRepository connectionResourceRepository
+        IConnectionResourceRepository connectionResourceRepository,
+        NewDelegationService delegationService
         ) : ControllerBase
     {
         private readonly IConnectionRepository connectionRepository = connectionRepository;
         private readonly IConnectionPackageRepository connectionPackageRepository = connectionPackageRepository;
         private readonly IConnectionResourceRepository connectionResourceRepository = connectionResourceRepository;
+        private readonly NewDelegationService delegationService = delegationService;
+
+        [Route("create/forsystem")]
+        [HttpPost]
+        public async Task CreateSystemClientDelegation(NewDelegationRequest request)
+        {
+            //await delegationService.CreateClientDelegation(request);
+        }
+
 
         /// <summary>
         /// Alle enheter {id} har gitt tilgang til.
@@ -35,7 +46,9 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Unauthorized();
             }
 
-            var res = await connectionRepository.GetExtended(t => t.FromId, id);
+            var filter = connectionRepository.CreateFilterBuilder();
+            filter.Equal(t => t.FromId, id);
+            var res = await connectionRepository.GetExtended(filter);
 
             return Ok(res);
         }
@@ -47,7 +60,9 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         [HttpGet]
         public async Task<ActionResult<ExtConnection>> GetRecived(Guid id)
         {
-            var res = await connectionRepository.GetExtended(t => t.ToId, id);
+            var filter = connectionRepository.CreateFilterBuilder();
+            filter.Equal(t => t.ToId, id);
+            var res = await connectionRepository.GetExtended(filter);
 
             return Ok(res);
         }
@@ -59,7 +74,9 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         [HttpGet]
         public async Task<ActionResult<ExtConnection>> GetFacilitated(Guid id)
         {
-            var res = await connectionRepository.GetExtended(t => t.FacilitatorId, id);
+            var filter = connectionRepository.CreateFilterBuilder();
+            filter.Equal(t => t.FacilitatorId, id);
+            var res = await connectionRepository.GetExtended(filter);
 
             return Ok(res);
         }
@@ -71,16 +88,17 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         [HttpGet]
         public async Task<ActionResult<ExtConnection>> GetAll(Guid id)
         {
-            var resGiven = await connectionRepository.GetExtended(t => t.FromId, id);
-            var resRecived = await connectionRepository.GetExtended(t => t.ToId, id);
-            var resFacilitated = await connectionRepository.GetExtended(t => t.FacilitatorId, id);
+            throw new NotImplementedException();
+            //var resGiven = await connectionRepository.GetExtended(t => t.FromId, id);
+            //var resRecived = await connectionRepository.GetExtended(t => t.ToId, id);
+            //var resFacilitated = await connectionRepository.GetExtended(t => t.FacilitatorId, id);
 
-            var res = new List<ExtConnection>();
-            res.AddRange(resGiven);
-            res.AddRange(resRecived);
-            res.AddRange(resFacilitated);
+            //var res = new List<ExtConnection>();
+            //res.AddRange(resGiven);
+            //res.AddRange(resRecived);
+            //res.AddRange(resFacilitated);
 
-            return Ok(res);
+            //return Ok(res);
         }
 
         /// <summary>
