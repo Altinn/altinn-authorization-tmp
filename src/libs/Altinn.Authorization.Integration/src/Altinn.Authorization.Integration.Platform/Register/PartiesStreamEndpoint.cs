@@ -70,182 +70,128 @@ public partial class RegisterClient
 [ExcludeFromCodeCoverage]
 public class PartyModel
 {
-    /// <summary>
-    /// Gets or sets the type of the party.
-    /// </summary>
     [JsonPropertyName("partyType")]
     public string PartyType { get; set; }
 
-    /// <summary>
-    /// Gets or sets the unique identifier of the party.
-    /// </summary>
     [JsonPropertyName("partyUuid")]
     public string PartyUuid { get; set; }
 
-    /// <summary>
-    /// Gets or sets the party's ID.
-    /// </summary>
     [JsonPropertyName("partyId")]
     public int PartyId { get; set; }
 
-    /// <summary>
-    /// Gets or sets the display name of the party.
-    /// </summary>
     [JsonPropertyName("displayName")]
     public string DisplayName { get; set; }
 
-    /// <summary>
-    /// Gets or sets the identifier for an individual person.
-    /// </summary>
     [JsonPropertyName("personIdentifier")]
     public string PersonIdentifier { get; set; }
 
-    /// <summary>
-    /// Gets or sets the identifier for an organization.
-    /// </summary>
     [JsonPropertyName("organizationIdentifier")]
     public string OrganizationIdentifier { get; set; }
 
-    /// <summary>
-    /// Gets or sets the creation date of the party record.
-    /// </summary>
     [JsonPropertyName("createdAt")]
     public DateTime CreatedAt { get; set; }
 
-    /// <summary>
-    /// Gets or sets the last modified date of the party record.
-    /// </summary>
     [JsonPropertyName("modifiedAt")]
     public DateTime ModifiedAt { get; set; }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether the party record is deleted.
-    /// </summary>
     [JsonPropertyName("isDeleted")]
     public bool IsDeleted { get; set; }
 
-    /// <summary>
-    /// Gets or sets the version ID of the party record.
-    /// </summary>
     [JsonPropertyName("versionId")]
     public int VersionId { get; set; }
 
-    /// <summary>
-    /// Gets or sets the first name of the party (if applicable).
-    /// </summary>
-    [JsonPropertyName("firstName")]
-    public string FirstName { get; set; }
+    [JsonPropertyName("unitStatus")]
+    public string UnitStatus { get; set; }
 
-    /// <summary>
-    /// Gets or sets the middle name of the party (if applicable).
-    /// </summary>
-    [JsonPropertyName("middleName")]
-    public string MiddleName { get; set; }
+    [JsonPropertyName("unitType")]
+    public string UnitType { get; set; }
 
-    /// <summary>
-    /// Gets or sets the last name of the party (if applicable).
-    /// </summary>
-    [JsonPropertyName("lastName")]
-    public string LastName { get; set; }
+    [JsonPropertyName("telephoneNumber")]
+    public object TelephoneNumber { get; set; }
 
-    /// <summary>
-    /// Gets or sets the short name of the party.
-    /// </summary>
-    [JsonPropertyName("shortName")]
-    public string ShortName { get; set; }
+    [JsonPropertyName("mobileNumber")]
+    public object MobileNumber { get; set; }
 
-    /// <summary>
-    /// Gets or sets the physical address of the party.
-    /// </summary>
-    [JsonPropertyName("address")]
-    public PartyAddress Address { get; set; }
+    [JsonPropertyName("faxNumber")]
+    public object FaxNumber { get; set; }
 
-    /// <summary>
-    /// Gets or sets the mailing address of the party.
-    /// </summary>
+    [JsonPropertyName("emailAddress")]
+    public object EmailAddress { get; set; }
+
+    [JsonPropertyName("internetAddress")]
+    public object InternetAddress { get; set; }
+
     [JsonPropertyName("mailingAddress")]
     public PartyMailingAddress MailingAddress { get; set; }
 
-    /// <summary>
-    /// Gets or sets the date of birth of the party (if applicable).
-    /// </summary>
+    [JsonPropertyName("businessAddress")]
+    public PartyBusinessAddress BusinessAddress { get; set; }
+
+    [JsonPropertyName("firstName")]
+    public string FirstName { get; set; }
+
+    [JsonPropertyName("middleName")]
+    public object MiddleName { get; set; }
+
+    [JsonPropertyName("lastName")]
+    public string LastName { get; set; }
+
+    [JsonPropertyName("shortName")]
+    public string ShortName { get; set; }
+
+    [JsonPropertyName("address")]
+    public PartyAddress Address { get; set; }
+
     [JsonPropertyName("dateOfBirth")]
-    public DateTime DateOfBirth { get; set; }
+    public string DateOfBirth { get; set; }
 
-    /// <summary>
-    /// Gets or sets the date of death of the party (if applicable).
-    /// </summary>
     [JsonPropertyName("dateOfDeath")]
-    public DateTime? DateOfDeath { get; set; }
+    public string DateOfDeath { get; set; }
 
-    /// <summary>
-    /// Represents the physical address details of a party.
-    /// </summary>
     public class PartyAddress
     {
-        /// <summary>
-        /// Gets or sets the municipal number of the address.
-        /// </summary>
         [JsonPropertyName("municipalNumber")]
         public string MunicipalNumber { get; set; }
 
-        /// <summary>
-        /// Gets or sets the municipal name of the address.
-        /// </summary>
         [JsonPropertyName("municipalName")]
         public string MunicipalName { get; set; }
 
-        /// <summary>
-        /// Gets or sets the street name of the address.
-        /// </summary>
         [JsonPropertyName("streetName")]
         public string StreetName { get; set; }
 
-        /// <summary>
-        /// Gets or sets the house number of the address.
-        /// </summary>
         [JsonPropertyName("houseNumber")]
         public string HouseNumber { get; set; }
 
-        /// <summary>
-        /// Gets or sets the house letter of the address (if applicable).
-        /// </summary>
         [JsonPropertyName("houseLetter")]
-        public string HouseLetter { get; set; }
+        public object HouseLetter { get; set; }
 
-        /// <summary>
-        /// Gets or sets the postal code of the address.
-        /// </summary>
         [JsonPropertyName("postalCode")]
         public string PostalCode { get; set; }
 
-        /// <summary>
-        /// Gets or sets the city of the address.
-        /// </summary>
         [JsonPropertyName("city")]
         public string City { get; set; }
     }
 
-    /// <summary>
-    /// Represents the mailing address details of a party.
-    /// </summary>
-    public class PartyMailingAddress
+    public class PartyBusinessAddress
     {
-        /// <summary>
-        /// Gets or sets the mailing address.
-        /// </summary>
         [JsonPropertyName("address")]
         public string Address { get; set; }
 
-        /// <summary>
-        /// Gets or sets the postal code of the mailing address.
-        /// </summary>
         [JsonPropertyName("postalCode")]
         public string PostalCode { get; set; }
 
-        /// <summary>
-        /// Gets or sets the city of the mailing address.
-        /// </summary>
+        [JsonPropertyName("city")]
+        public string City { get; set; }
+    }
+
+    public class PartyMailingAddress
+    {
+        [JsonPropertyName("address")]
+        public string Address { get; set; }
+
+        [JsonPropertyName("postalCode")]
+        public string PostalCode { get; set; }
+
         [JsonPropertyName("city")]
         public string City { get; set; }
     }
