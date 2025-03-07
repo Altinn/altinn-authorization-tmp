@@ -109,7 +109,6 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false)
     {
         return BuildMergeQuery(parameters, new List<GenericFilter>() { new GenericFilter("id", "id") }, forTranslation);
-        
         /*
         var sb = new StringBuilder();
         sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})");
@@ -118,6 +117,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return sb.ToString();
         */
     }
+
 
     /// <inheritdoc/>
     public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
@@ -141,6 +141,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         }
 
         sb.AppendLine(")");
+        
         var mergeStatementFilter = string.Join(',', mergeFilter.Select(t => $"T.{t.PropertyName} = N.{t.PropertyName}"));
         sb.AppendLine($"MERGE INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} AS T USING N ON {mergeStatementFilter}");
         if (forTranslation)
