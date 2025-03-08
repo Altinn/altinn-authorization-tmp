@@ -1,0 +1,30 @@
+on:
+  push:
+
+name: release-please
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: src/pkgs/release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - name: Log release output
+        env:
+          RELEASE_OUTPUT: ${{ toJSON(steps.release.outputs) }}
+        run: 'echo "Release output: $RELEASE_OUTPUT"'
+
+    outputs:
+      release_created: ${{ steps.release.outputs.releases_created }}
+      paths_released: ${{ steps.release.outputs.paths_released }}
+      full: ${{ toJSON(steps.release.outputs) }}
