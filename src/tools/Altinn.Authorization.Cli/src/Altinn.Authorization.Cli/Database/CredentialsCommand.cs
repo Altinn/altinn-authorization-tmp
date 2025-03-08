@@ -24,7 +24,8 @@ public sealed class CredentialsCommand(CancellationToken cancellationToken)
         var username = parsedToken.Claims.First(static claim => claim.Type == "unique_name");
 
         AnsiConsole.MarkupLineInterpolated($"[green]username[/]: {username.Value}");
-        AnsiConsole.MarkupLineInterpolated($"[green]password[/]: {token.Token}");
+        AnsiConsole.MarkupInterpolated($"[green]password[/]: ");
+        Console.WriteLine($"{token.Token}");
 
         return 0;
     }
