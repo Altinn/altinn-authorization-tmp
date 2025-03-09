@@ -295,5 +295,12 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     {
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
         return await executor.Ingest<T>(data, Definition, queryBuilder, batchSize, cancellationToken);
-    }  
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> IngestAndMerge(List<T> data, int batchSize = 1000, CancellationToken cancellationToken = default)
+    {
+        var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
+        return await executor.IngestAndMerge(data, Definition, queryBuilder, batchSize, cancellationToken);
+    }
 }

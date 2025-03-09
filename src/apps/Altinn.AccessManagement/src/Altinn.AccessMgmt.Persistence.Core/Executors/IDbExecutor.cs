@@ -66,7 +66,6 @@ public interface IDbExecutor
 
     /// <summary>
     /// Performs a bulk ingest operation by importing a list of entities into the database.
-    /// NOT TO BE USED LIGHTLY!
     /// </summary>
     /// <param name="data">The list of entities to import.</param>
     /// <param name="definition">DbDefinition</param>
@@ -77,5 +76,19 @@ public interface IDbExecutor
     /// A task that represents the asynchronous operation. The task result contains the number of entities successfully ingested.
     /// </returns>
     Task<int> Ingest<T>(List<T> data, DbDefinition definition, IDbQueryBuilder queryBuilder, int batchSize = 1000, CancellationToken cancellationToken = default)
+    where T : new();
+
+    /// <summary>
+    /// Performs a bulk ingest operation by importing a list of entities into the database and then running a MERGE statement.
+    /// </summary>
+    /// <param name="data">The list of entities to import.</param>
+    /// <param name="definition">DbDefinition</param>
+    /// <param name="queryBuilder">IDbQueryBuilder</param>
+    /// <param name="batchSize">Batch size (default: 1000)</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains the number of entities successfully ingested.
+    /// </returns>
+    Task<int> IngestAndMerge<T>(List<T> data, DbDefinition definition, IDbQueryBuilder queryBuilder, int batchSize = 1000, CancellationToken cancellationToken = default)
     where T : new();
 }

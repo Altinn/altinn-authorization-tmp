@@ -91,4 +91,9 @@ public class MssqlDbExecutor(SqlConnection connection, IDbConverter dbConverter)
     {
         throw new NotImplementedException();
     }
+
+    public Task<int> IngestAndMerge<T>(List<T> data, DbDefinition definition, IDbQueryBuilder queryBuilder, int batchSize = 1000, CancellationToken cancellationToken = default) where T : new()
+    {
+        throw new NotImplementedException();
+    }
 }
