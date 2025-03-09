@@ -55,7 +55,7 @@ public class AccessMgmtPersistenceOptions
     /// <summary>
     /// Gets or sets the name of the schema used for storing historical translations of the entity.
     /// </summary>
-    public string DatabaseReadUser { get; set; } = "wigg"; // = "accessmgmt_app";
+    public string DatabaseReadUser { get; set; } = "accessmgmt_app";
 
     /// <summary>
     /// A list of language codes (e.g., "en", "nb", "de") that should be considered

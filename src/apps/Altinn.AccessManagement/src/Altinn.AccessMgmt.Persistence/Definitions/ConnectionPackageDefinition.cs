@@ -36,8 +36,8 @@ public class ConnectionPackageDefinition : BaseDbDefinition<ConnectionPackage>, 
 
             sb.AppendLine("UNION ALL");
             sb.AppendLine($"SELECT a.{nameof(Assignment.Id)} AS {nameof(ConnectionPackage.ConnectionId)}, rp.{nameof(RolePackage.PackageId)} AS {nameof(ConnectionPackage.PackageId)}");
-            sb.AppendLine("FROM rolepackage AS rp");
-            sb.AppendLine("INNER JOIN assignment AS a ON rp.roleid = a.roleid");
+            sb.AppendLine("FROM dbo.rolepackage AS rp");
+            sb.AppendLine("INNER JOIN dbo.assignment AS a ON rp.roleid = a.roleid");
 
             sb.AppendLine("UNION ALL");
             sb.AppendLine($"SELECT dp.{nameof(DelegationPackage.DelegationId)} AS {nameof(ConnectionPackage.ConnectionId)}, dp.{nameof(DelegationPackage.PackageId)} AS {nameof(ConnectionPackage.PackageId)}");
