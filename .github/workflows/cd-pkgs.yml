@@ -22,7 +22,7 @@ jobs:
           # `MY_RELEASE_PLEASE_TOKEN` (this secret name is not important).
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: src/pkgs/release-please-config.json
-          manifest-file: src/pkgs/.release-please-manifest.json
+          manifest-file: src/pkgs/release-please-manifest.json
 
       - name: Log release output
         env:
