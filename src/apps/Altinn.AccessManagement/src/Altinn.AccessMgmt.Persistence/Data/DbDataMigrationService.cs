@@ -196,11 +196,7 @@ public class DbDataMigrationService(
             new Provider() { Id = Guid.Parse("879EF4EE-BED6-476C-B90E-EFEA22973AAE"), Name = "Utlendingsdirektoratet", RefId = "" },
             new Provider() { Id = Guid.Parse("49F3ACFD-94B7-4819-A8BA-F0780F0C8255"), Name = "Folkeregisteret", RefId = "" },
         };
-
-        foreach (var item in providers)
-        {
-            await providerService.Upsert(item, cancellationToken);
-        }
+        await providerService.IngestAndMerge(providers);
     }
 
     /// <summary>
@@ -564,10 +560,7 @@ public class DbDataMigrationService(
             new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleLede, GetRoleId = roleTS },
         };
 
-        foreach (var item in roleMaps)
-        {
-            await roleMapService.Upsert(item, cancellationToken);
-        }
+        await roleMapService.IngestAndMerge(roleMaps);
     }
 
     /// <summary>
@@ -876,10 +869,7 @@ public class DbDataMigrationService(
             new Package() { Id = Guid.Parse("0e219609-02c6-44e6-9c80-fe2c1997940e"), ProviderId = digdirProvider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_konkursbo, Urn = "urn:altinn:accesspackage:konkursboskrivetilgang", Name = "Konkursbo skrivetilgang", Description = "Denne fullmakten gir bostyrers medhjelper tilgang til å jobbe på vegne av bostyrer. Bostyrer delegerer denne fullmakten sammen med Konkursbo lesetilgang til medhjelper for hvert konkursbo.  ", IsDelegable = true, HasResources = true },
         };
 
-        foreach (var item in packages)
-        {
-            await packageService.Upsert(item, cancellationToken);
-        }
+        await packageService.IngestAndMerge(packages);
     }
 
     /// <summary>
@@ -907,7 +897,7 @@ public class DbDataMigrationService(
             roles.Add(variant.Name, variant.Id);
         }
 
-        var result = new List<RolePackage>()
+        var rolePackages = new List<RolePackage>()
         {
             new RolePackage() { Id = Guid.Parse("d39dac3e-736c-4e60-a7eb-7efbb9484815"), RoleId = roles["brreg:role:regn"], PackageId = packages["urn:altinn:accesspackage:regnskapsforermedsigneringsrettighet"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { Id = Guid.Parse("d39dac3e-736c-4e60-a7eb-7efbb9484815"), RoleId = roles["brreg:role:regn"], PackageId = packages["urn:altinn:accesspackage:regnskapsforerutensigneringsrettighet"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
@@ -1812,10 +1802,7 @@ public class DbDataMigrationService(
             new RolePackage() { Id = Guid.Parse("fc644611-e4d7-4d83-9422-84f5e3ea4241"), RoleId = roles["brreg:role:bobe"], PackageId = packages["urn:altinn:accesspackage:folkeregister"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
         };
 
-        foreach (var r in result)
-        {
-            await rolePackageService.Upsert(r, cancellationToken);
-        }
+        await rolePackageService.IngestAndMerge(rolePackages);
     }
 
     /// <summary>
@@ -1839,7 +1826,7 @@ public class DbDataMigrationService(
 
         Console.WriteLine("VariantRoles");
 
-        var result = new List<EntityVariantRole>()
+        var variantRoles = new List<EntityVariantRole>()
         {
             new EntityVariantRole() { Id = Guid.Parse("7f677a6d-295f-4b7a-bef9-070ddd6525d7"), VariantId = variants["ADOS"], RoleId = roles["brreg:role:regn"] },
             new EntityVariantRole() { Id = Guid.Parse("1624a50c-5ca3-480b-9128-29703d2b2038"), VariantId = variants["ADOS"], RoleId = roles["brreg:role:obs"] },
@@ -2212,9 +2199,6 @@ public class DbDataMigrationService(
             new EntityVariantRole() { Id = Guid.Parse("a3719e58-286d-4395-95b0-1a654f2eeafa"), VariantId = variants["VPFO"], RoleId = roles["brreg:role:dagl"] },
         };
 
-        foreach (var r in result)
-        {
-            await entityVariantRoleService.Upsert(r, cancellationToken);
-        }
+        await entityVariantRoleService.IngestAndMerge(variantRoles);
     }
 }
