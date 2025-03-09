@@ -1,13 +1,13 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 
 namespace Altinn.AccessMgmt.Repo.Data;
 
 /// <summary>
-/// Ingest Service
-/// Ingest static data to repositories
+/// Service for running data migrations
 /// </summary>
-public class IngestService(
+public class DbDataMigrationService(
         IProviderRepository providerService,
         IAreaRepository areaService,
         IAreaGroupRepository areaGroupService,
@@ -17,7 +17,8 @@ public class IngestService(
         IPackageRepository packageService,
         IRoleRepository roleService,
         IRoleMapRepository roleMapService,
-        IRolePackageRepository rolePackageService
+        IRolePackageRepository rolePackageService,
+        IMigrationService migrationService
         )
 {
     private readonly IProviderRepository providerService = providerService;
@@ -30,6 +31,7 @@ public class IngestService(
     private readonly IRoleRepository roleService = roleService;
     private readonly IRoleMapRepository roleMapService = roleMapService;
     private readonly IRolePackageRepository rolePackageService = rolePackageService;
+    private readonly IMigrationService migrationService = migrationService;
 
     /// <summary>
     /// Ingest all static data
@@ -41,16 +43,67 @@ public class IngestService(
         //// TODO: Add featureflags
         //// TODO: Add Activity logging
 
-        await IngestProvider();
-        await IngestEntityType();
-        await IngestEntityVariant();
-        await IngestRole();
-        await IngestRoleMap();
-        await IngestAreaGroup();
-        await IngestArea();
-        await IngestPackage();
-        await IngestRolePackage();
-        await IngestVariantRole();
+        string dataKey = "<data>";
+
+        if (migrationService.NeedMigration<Provider>(dataKey, 1)) 
+        {
+            await IngestProvider();
+            await migrationService.LogMigration<Provider>(dataKey, "", 1);
+        }
+
+        if (migrationService.NeedMigration<EntityType>(dataKey, 1))
+        {
+            await IngestEntityType();
+            await migrationService.LogMigration<EntityType>(dataKey, "", 1);
+        }
+
+        if (migrationService.NeedMigration<EntityVariant>(dataKey, 1))
+        {
+            await IngestEntityVariant();
+            await migrationService.LogMigration<EntityVariant>(dataKey, "", 1);
+        }
+
+        if (migrationService.NeedMigration<Role>(dataKey, 1))
+        {
+            await IngestRole();
+            await migrationService.LogMigration<Role>(dataKey, "", 1);
+        }
+
+        if (migrationService.NeedMigration<RoleMap>(dataKey, 1))
+        {
+            await IngestRoleMap();
+            await migrationService.LogMigration<RoleMap>(dataKey, "", 1);
+        }
+
+        if (migrationService.NeedMigration<AreaGroup>(dataKey, 1))
+        {
+            await IngestAreaGroup();
+            await migrationService.LogMigration<AreaGroup>(dataKey, "", 1);
+        }
+
+        if (migrationService.NeedMigration<Area>(dataKey, 1))
+        {
+            await IngestArea();
+            await migrationService.LogMigration<Area>(dataKey, "", 1);
+        }
+
+        if (migrationService.NeedMigration<Package>(dataKey, 1))
+        {
+            await IngestPackage();
+            await migrationService.LogMigration<Package>(dataKey, "", 1);
+        }
+
+        if (migrationService.NeedMigration<RolePackage>(dataKey, 1))
+        {
+            await IngestRolePackage();
+            await migrationService.LogMigration<RolePackage>(dataKey, "", 1);
+        }
+
+        if (migrationService.NeedMigration<EntityVariantRole>(dataKey, 1))
+        {
+            await IngestEntityVariantRole();
+            await migrationService.LogMigration<EntityVariantRole>(dataKey, "", 1);
+        }
     }
 
     /// <summary>
@@ -186,8 +239,7 @@ public class IngestService(
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
     public async Task IngestEntityVariant(CancellationToken cancellationToken = default)
-    {
-        
+    {        
         var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "Organisasjon"));
         var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "Person"));
         var entityVariants = new List<EntityVariant>()
@@ -475,7 +527,6 @@ public class IngestService(
             new Role() { Id = Guid.Parse("38c368c1-c9f4-4b01-a296-f1ef7e466c13"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Opplysningar om foretaket i heimalandet", Code = "HFOR", Description = "Opplysningar om foretaket i heimalandet", Urn = "brreg:role:hfor" },
             new Role() { Id = Guid.Parse("303d78e8-a658-454d-88ae-f836596982c7"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Reknskapsførar", Code = "REGN", Description = "Reknskapsførar", Urn = "brreg:role:regn" }
         };
-
 
         foreach (var item in roles)
         {
@@ -822,7 +873,7 @@ public class IngestService(
             new Package() { Id = Guid.Parse("96120c32-389d-46eb-8212-0a6540540c25"), ProviderId = digdirProvider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_revisor, Urn = "urn:altinn:accesspackage:revisormedarbeider", Name = "Revisormedarbeider", Description = "Denne fullmakten gir revisor tilgang til å opptre som revisormedarbeider for en kunde og utføre alle tjenester som krever denne fullmakten. Dette er tjenester som tjenestetilbyder har vurdert det som naturlig at en revisor utfører på vegne av sin kunde. Fullmakten gis kun til autoriserte revisorer. Fullmakt hos revisor oppstår når kunden registrerer regnskapsfører i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.  ", IsDelegable = true, HasResources = true },
             new Package() { Id = Guid.Parse("a784a0b3-2ca1-46c1-97dc-f5df0dd1ab53"), ProviderId = digdirProvider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_konkursbo, Urn = "urn:altinn:accesspackage:konkursbotilgangsstyring", Name = "Konkursbo tilgangsstyring", Description = "Denne fullmakten gir rettighet til å administrere konkursbo. Fullmakten er en engangsdelegering, og den gir ikke tilgang til noen tjenester.  ", IsDelegable = true, HasResources = true },
             new Package() { Id = Guid.Parse("5ef836c7-69cc-4ea8-84d6-fb933cc4fc5c"), ProviderId = digdirProvider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_konkursbo, Urn = "urn:altinn:accesspackage:konkursbolesetilgang", Name = "Konkursbo lesetilgang", Description = "Denne fullmakten delegeres til kreditorer og andre som skal ha lesetilgang til det enkelte konkursbo.  ", IsDelegable = true, HasResources = true },
-            new Package() { Id = Guid.Parse("0e219609-02c6-44e6-9c80-fe2c1997940e"), ProviderId = digdirProvider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_konkursbo, Urn = "urn:altinn:accesspackage:konkursboskrivetilgang", Name = "Konkursbo skrivetilgang", Description = "Denne fullmakten gir bostyrers medhjelper tilgang til å jobbe på vegne av bostyrer. Bostyrer delegerer denne fullmakten sammen med Konkursbo lesetilgang til medhjelper for hvert konkursbo.  ", IsDelegable = true, HasResources = true  },
+            new Package() { Id = Guid.Parse("0e219609-02c6-44e6-9c80-fe2c1997940e"), ProviderId = digdirProvider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_konkursbo, Urn = "urn:altinn:accesspackage:konkursboskrivetilgang", Name = "Konkursbo skrivetilgang", Description = "Denne fullmakten gir bostyrers medhjelper tilgang til å jobbe på vegne av bostyrer. Bostyrer delegerer denne fullmakten sammen med Konkursbo lesetilgang til medhjelper for hvert konkursbo.  ", IsDelegable = true, HasResources = true },
         };
 
         foreach (var item in packages)
@@ -1772,7 +1823,7 @@ public class IngestService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestVariantRole(CancellationToken cancellationToken = default)
+    public async Task IngestEntityVariantRole(CancellationToken cancellationToken = default)
     {
         var roles = new Dictionary<string, Guid>();
         foreach (var role in await roleService.Get())

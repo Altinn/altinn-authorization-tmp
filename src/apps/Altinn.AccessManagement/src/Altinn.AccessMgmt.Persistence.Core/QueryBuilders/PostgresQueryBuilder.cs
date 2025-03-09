@@ -16,6 +16,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     /// <summary>
     /// QueryBuilder for Postgres
     /// </summary>
+    /// <param name="options">AccessMgmtPersistenceOptions</param>
     /// <param name="type">Type</param>
     /// <param name="definitionRegistry">DbDefinitionRegistry</param>
     public PostgresQueryBuilder(IOptions<AccessMgmtPersistenceOptions> options, Type type, DbDefinitionRegistry definitionRegistry)
@@ -117,7 +118,6 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
         return sb.ToString();
         */
-
     }
 
     /// <inheritdoc />
@@ -173,7 +173,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     private string GetTableName(DbDefinition dbDefinition, bool includeAlias = true, bool useHistory = false, bool useTranslation = false, bool useHistoryView = false)
     {
         var config = this.config.Value;
-        // If GetOrAddDefinition.Plantform == "Mssql" => Qualify names [..]
+
         string res = "";
         if (useHistory)
         {

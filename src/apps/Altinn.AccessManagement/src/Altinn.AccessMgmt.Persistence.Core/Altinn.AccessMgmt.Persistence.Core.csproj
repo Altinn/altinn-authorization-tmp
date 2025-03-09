@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <Nullable>enable</Nullable>
+		<NoWarn>SA1122;CA1860</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

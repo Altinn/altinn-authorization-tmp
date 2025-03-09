@@ -125,6 +125,7 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, NpgsqlDataSourc
         {
             cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
         }
+
         return _dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
     }
 
