@@ -59,13 +59,15 @@ public interface IDbBasicRepository<T>
 
     /// <summary>
     /// Performs a bulk ingest operation by importing a list of entities into the database.
+    /// NOT TO BE USED LIGHTLY!
     /// </summary>
     /// <param name="data">The list of entities to import.</param>
+    /// <param name="batchSize">Batch size (default: 1000)</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of entities successfully ingested.
     /// </returns>
-    Task<int> Ingest(List<T> data, CancellationToken cancellationToken = default);
+    Task<int> Ingest(List<T> data, int batchSize = 1000, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Inserts a new entity into the database.
@@ -86,7 +88,6 @@ public interface IDbBasicRepository<T>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
     Task<int> Upsert(T entity, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Inserts or updates an entity in the database. If the entity already exists, it will be updated.
@@ -165,7 +166,6 @@ public interface IDbBasicRepository<T>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
     Task<int> UpsertTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Creates a new instance of a <see cref="GenericFilterBuilder{T}"/> for constructing filter criteria for queries.

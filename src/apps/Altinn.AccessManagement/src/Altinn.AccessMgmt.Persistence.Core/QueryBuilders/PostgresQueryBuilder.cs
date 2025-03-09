@@ -164,8 +164,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return $"DELETE FROM {GetTableName(includeAlias: false)} WHERE id = @_id";
     }
 
-    /*DbHelperMethods*/
-    private string GetTableName(bool includeAlias = true, bool useHistory = false, bool useTranslation = false, bool useHistoryView = false)
+    /// <inheritdoc />
+    public string GetTableName(bool includeAlias = true, bool useHistory = false, bool useTranslation = false, bool useHistoryView = false)
     {
         return GetTableName(_definition, includeAlias, useHistory, useTranslation, useHistoryView);
     }

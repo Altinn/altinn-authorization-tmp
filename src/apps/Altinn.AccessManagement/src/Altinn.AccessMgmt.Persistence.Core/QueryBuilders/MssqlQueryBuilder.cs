@@ -54,16 +54,12 @@ public class MssqlQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters)
-    {
-        throw new NotImplementedException();
-    }
-
     public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
     {
         throw new NotImplementedException();
@@ -71,6 +67,12 @@ public class MssqlQueryBuilder : IDbQueryBuilder
 
     /// <inheritdoc/>
     public DbMigrationScriptCollection GetMigrationScripts()
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public string GetTableName(bool includeAlias = true, bool useHistory = false, bool useTranslation = false, bool useHistoryView = false)
     {
         throw new NotImplementedException();
     }

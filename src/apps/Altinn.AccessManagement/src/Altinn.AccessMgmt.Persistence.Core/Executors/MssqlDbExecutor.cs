@@ -1,7 +1,9 @@
 ﻿using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Microsoft.Data.SqlClient;
 
@@ -83,5 +85,10 @@ public class MssqlDbExecutor(SqlConnection connection, IDbConverter dbConverter)
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = query;
         return dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(cancellationToken));
+    }
+
+    public Task<int> Ingest<T>(List<T> data, DbDefinition definition, IDbQueryBuilder queryBuilder, int batchSize = 1000, CancellationToken cancellationToken = default) where T : new()
+    {
+        throw new NotImplementedException();
     }
 }
