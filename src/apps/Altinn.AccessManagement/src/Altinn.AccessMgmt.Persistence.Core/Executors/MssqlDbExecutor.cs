@@ -90,12 +90,16 @@ public class MssqlDbExecutor(SqlConnection connection, IDbConverter dbConverter)
         return dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(cancellationToken));
     }
 
-    public Task<int> Ingest<T>(List<T> data, DbDefinition definition, IDbQueryBuilder queryBuilder, int batchSize = 1000, CancellationToken cancellationToken = default) where T : new()
+    /// <inheritdoc />
+    public Task<int> Ingest<T>(List<T> data, DbDefinition definition, IDbQueryBuilder queryBuilder, int batchSize = 1000, CancellationToken cancellationToken = default) 
+        where T : new()
     {
         throw new NotImplementedException();
     }
 
-    public Task<int> IngestAndMerge<T>(List<T> data, DbDefinition definition, IDbQueryBuilder queryBuilder, int batchSize = 1000, CancellationToken cancellationToken = default) where T : new()
+    /// <inheritdoc />
+    public Task<int> IngestAndMerge<T>(List<T> data, DbDefinition definition, IDbQueryBuilder queryBuilder, int batchSize = 1000, CancellationToken cancellationToken = default) 
+        where T : new()
     {
         throw new NotImplementedException();
     }

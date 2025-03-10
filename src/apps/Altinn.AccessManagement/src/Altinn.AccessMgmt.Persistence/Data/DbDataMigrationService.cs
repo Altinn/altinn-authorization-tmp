@@ -48,61 +48,61 @@ public class DbDataMigrationService(
         if (migrationService.NeedMigration<Provider>(dataKey, 1)) 
         {
             await IngestProvider();
-            await migrationService.LogMigration<Provider>(dataKey, "", 1);
+            await migrationService.LogMigration<Provider>(dataKey, string.Empty, 1);
         }
 
         if (migrationService.NeedMigration<EntityType>(dataKey, 1))
         {
             await IngestEntityType();
-            await migrationService.LogMigration<EntityType>(dataKey, "", 1);
+            await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 1);
         }
 
         if (migrationService.NeedMigration<EntityVariant>(dataKey, 1))
         {
             await IngestEntityVariant();
-            await migrationService.LogMigration<EntityVariant>(dataKey, "", 1);
+            await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 1);
         }
 
         if (migrationService.NeedMigration<Role>(dataKey, 1))
         {
             await IngestRole();
-            await migrationService.LogMigration<Role>(dataKey, "", 1);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 1);
         }
 
         if (migrationService.NeedMigration<RoleMap>(dataKey, 1))
         {
             await IngestRoleMap();
-            await migrationService.LogMigration<RoleMap>(dataKey, "", 1);
+            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 1);
         }
 
         if (migrationService.NeedMigration<AreaGroup>(dataKey, 1))
         {
             await IngestAreaGroup();
-            await migrationService.LogMigration<AreaGroup>(dataKey, "", 1);
+            await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 1);
         }
 
         if (migrationService.NeedMigration<Area>(dataKey, 1))
         {
             await IngestArea();
-            await migrationService.LogMigration<Area>(dataKey, "", 1);
+            await migrationService.LogMigration<Area>(dataKey, string.Empty, 1);
         }
 
         if (migrationService.NeedMigration<Package>(dataKey, 1))
         {
             await IngestPackage();
-            await migrationService.LogMigration<Package>(dataKey, "", 1);
+            await migrationService.LogMigration<Package>(dataKey, string.Empty, 1);
         }
 
         if (migrationService.NeedMigration<RolePackage>(dataKey, 1))
         {
             await IngestRolePackage();
-            await migrationService.LogMigration<RolePackage>(dataKey, "", 1);
+            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 1);
         }
 
         if (migrationService.NeedMigration<EntityVariantRole>(dataKey, 1))
         {
             await IngestEntityVariantRole();
-            await migrationService.LogMigration<EntityVariantRole>(dataKey, "", 1);
+            await migrationService.LogMigration<EntityVariantRole>(dataKey, string.Empty, 1);
         }
     }
 

@@ -244,7 +244,7 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, IDbConverter db
         }
 
         string tableName = queryBuilder.GetTableName(includeAlias: false); // dbo.Provider
-        var ingestId = Guid.NewGuid().ToString().Replace("-", "");
+        var ingestId = Guid.NewGuid().ToString().Replace("-", string.Empty);
         string ingestTableName = tableName + "_" + ingestId;
 
         using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.Migration);

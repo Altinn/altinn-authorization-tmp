@@ -182,14 +182,6 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public Task<int> Ingest(List<T> data, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-        //// var importer = new BulkImporter<T>(connection, GetOrAddDefinition);
-        //// return await importer.Ingest(data, cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public async Task<int> Create(T entity, CancellationToken cancellationToken = default)
     {
         var param = BuildParameters(entity);
