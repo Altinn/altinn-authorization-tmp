@@ -2,11 +2,15 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.20.0"
+      version = "4.21.1"
     }
     static = {
       source  = "tiwood/static"
       version = "0.1.0"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = "0.12.1"
     }
   }
 
@@ -184,12 +188,12 @@ module "appsettings" {
   hub_suffix = local.hub_suffix
   key_vault_reference = [
     {
-      key                 = "Postgres:AppConnectionString"
+      key                 = "Altinn:Npgsql:register:ConnectionString"
       key_vault_secret_id = data.azurerm_key_vault_secret.postgres_app.versionless_id
       label               = "${var.environment}-register"
     },
     {
-      key                 = "Postgres:MigrationConnectionString"
+      key                 = "Altinn:Npgsql:register:Migrate:ConnectionString"
       key_vault_secret_id = data.azurerm_key_vault_secret.postgres_migration.versionless_id
       label               = "${var.environment}-register"
     }
@@ -205,6 +209,8 @@ module "postgres_server" {
   suffix              = local.suffix
   resource_group_name = azurerm_resource_group.register.name
   location            = "norwayeast"
+
+  hub_suffix = local.hub_suffix
 
   subnet_id           = data.azurerm_subnet.postgres.id
   private_dns_zone_id = data.azurerm_private_dns_zone.postgres.id
@@ -223,6 +229,10 @@ module "postgres_server" {
       principal_type = "ServicePrincipal"
     }
   ]
+
+  providers = {
+    azurerm.hub = azurerm.hub
+  }
 }
 
 resource "null_resource" "bootstrap_database" {
@@ -230,7 +240,7 @@ resource "null_resource" "bootstrap_database" {
     ts = timestamp()
   }
 
-  depends_on = [module.key_vault]
+  depends_on = [module.postgres_server]
   provisioner "local-exec" {
     working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
     command     = <<EOT

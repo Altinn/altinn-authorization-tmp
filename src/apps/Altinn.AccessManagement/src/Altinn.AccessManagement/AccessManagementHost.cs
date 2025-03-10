@@ -1,3 +1,5 @@
+using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler;
+using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
@@ -8,6 +10,7 @@ using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Persistence;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
@@ -55,6 +58,7 @@ internal static partial class AccessManagementHost
         builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
         builder.ConfigureLibsHost();
 
+        builder.Services.AddMemoryCache();
         builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.AddControllers();
         builder.Services.AddFeatureManagement();
@@ -87,7 +91,8 @@ internal static partial class AccessManagementHost
         builder.ConfigureAuthorization();
         builder.ConfigureAccessManagementPersistence();
 
-        builder.Services.AddScoped<IPackageService, PackageService>();
+        builder.Services.AddSingleton<IPackageService, PackageService>();
+        builder.Services.AddSingleton(typeof(ISearchCache<>), typeof(SearchCache<>));
 
         return builder.Build();
     }
@@ -131,6 +136,8 @@ internal static partial class AccessManagementHost
             {
                 opts.Endpoint = appsettings.Platform.RegisterEndpoint;
             }
+
+            //// opts.Endpoint = new("http://localhost:5020");
         });
 
         return builder;
@@ -271,11 +278,18 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATIONS_PROXY, policy => policy.Requirements.Add(new ScopeAccessRequirement(["altinn:maskinporten/delegations", "altinn:maskinporten/delegations.admin"])))
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ, policy => policy.Requirements.Add(new ResourceAccessRequirement("read", "altinn_access_management")))
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_WRITE, policy => policy.Requirements.Add(new ResourceAccessRequirement("write", "altinn_access_management")))
-            .AddPolicy(AuthzConstants.POLICY_RESOURCEOWNER_AUTHORIZEDPARTIES, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_AUTHORIZEDPARTIES_RESOURCEOWNER, AuthzConstants.SCOPE_AUTHORIZEDPARTIES_ADMIN])));
+            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_enduser_access_management", false)))
+            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_enduser_access_management", false)))
+            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ_WITH_PASS_TROUGH, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_enduser_access_management", true)))
+            .AddPolicy(AuthzConstants.POLICY_RESOURCEOWNER_AUTHORIZEDPARTIES, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_AUTHORIZEDPARTIES_RESOURCEOWNER, AuthzConstants.SCOPE_AUTHORIZEDPARTIES_ADMIN])))
+            .AddPolicy(AuthzConstants.POLICY_CLIENTDELEGATION_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_client_administration")))
+            .AddPolicy(AuthzConstants.POLICY_CLIENTDELEGATION_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_client_administration")))
+            .AddPolicy(AuthzConstants.SCOPE_PORTAL_ENDUSER, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER])));
 
         builder.Services.AddScoped<IAuthorizationHandler, AccessTokenHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, ClaimAccessHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, ResourceAccessHandler>();
+        builder.Services.AddScoped<IAuthorizationHandler, EndUserResourceAccessHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, ScopeAccessHandler>();
     }
 

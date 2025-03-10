@@ -5,7 +5,7 @@ using Altinn.AccessMgmt.Persistence.Core.Executors;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
-using Altinn.AccessMgmt.Repo.Ingest;
+using Altinn.AccessMgmt.Repo.Data;
 using Altinn.Authorization.Host.Startup;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -53,7 +53,7 @@ public static partial class DbAccessHostExtensions
             var interfaceType = repoType.GetInterfaces().FirstOrDefault(i => i.Name == "I" + repoType.Name);
             if (interfaceType != null)
             {
-                builder.Services.AddScoped(interfaceType, repoType);
+                builder.Services.AddSingleton(interfaceType, repoType);
             }
         }
 
@@ -76,14 +76,14 @@ public static partial class DbAccessHostExtensions
     {
         MgmtDbType.Postgres => () =>
         {
-            builder.Services.AddScoped<IDbConverter, DbConverter>();
-            builder.Services.AddScoped<IDbExecutor, PostgresDbExecutor>();
+            builder.Services.AddSingleton<IDbConverter, DbConverter>();
+            builder.Services.AddSingleton<IDbExecutor, PostgresDbExecutor>();
         }
         ,
         MgmtDbType.MSSQL => () =>
         {
-            builder.Services.AddScoped<IDbConverter, DbConverter>(); // TODO: Add MSSQL converter
-            builder.Services.AddScoped<IDbExecutor, MssqlDbExecutor>();
+            builder.Services.AddSingleton<IDbConverter, DbConverter>(); // TODO: Add MSSQL converter
+            builder.Services.AddSingleton<IDbExecutor, MssqlDbExecutor>();
         }
         ,
         _ => () => throw new InvalidOperationException($"Unknown database type: {dbType}"),
@@ -111,10 +111,8 @@ public static partial class DbAccessHostExtensions
             migration.GenerateAll();
             await migration.Migrate();
 
-            //// var dbIngest = scope.ServiceProvider.GetRequiredService<IngestService>();
-            //// await dbIngest.IngestProvider();
-            //// await dbIngest.IngestEntityType();
-            //// await dbIngest.IngestAll();
+            var dbIngest = scope.ServiceProvider.GetRequiredService<IngestService>();
+            await dbIngest.IngestAll();
 
             //// var mockService = scope.ServiceProvider.GetRequiredService<MockupService>();
             //// await mockService.Run();

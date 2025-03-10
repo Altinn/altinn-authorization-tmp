@@ -9,18 +9,19 @@ namespace Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
 /// <inheritdoc/>
 public class PostgresQueryBuilder : IDbQueryBuilder
 {
-    private readonly IOptions<AccessMgmtPersistenceOptions> config;
+    private readonly IOptions<AccessMgmtPersistenceOptions> _config;
     private readonly DbDefinition _definition;
     private readonly DbDefinitionRegistry _definitionRegistry;
 
     /// <summary>
     /// QueryBuilder for Postgres
     /// </summary>
+    /// <param name="options"><see cref="IOptions{TOptions}"/></param>
     /// <param name="type">Type</param>
     /// <param name="definitionRegistry">DbDefinitionRegistry</param>
     public PostgresQueryBuilder(IOptions<AccessMgmtPersistenceOptions> options, Type type, DbDefinitionRegistry definitionRegistry)
     {
-        this.config = options;
+        _config = options;
         _definition = definitionRegistry.TryGetDefinition(type) ?? throw new Exception("Missing definition");
         _definitionRegistry = definitionRegistry;
     }
@@ -28,7 +29,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     #region Query
 
     /// <inheritdoc/>
-    public string BuildBasicSelectQuery(RequestOptions options, IEnumerable<GenericFilter> filters, DbCrossRelationDefinition? crossDef = null)
+    public string BuildBasicSelectQuery(RequestOptions options, IEnumerable<GenericFilter> filters, DbCrossRelationDefinition crossDef = null)
     {
         var sb = new StringBuilder();
 
@@ -53,7 +54,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
-    public string BuildExtendedSelectQuery(RequestOptions options, IEnumerable<GenericFilter> filters, DbCrossRelationDefinition? crossDef = null)
+    public string BuildExtendedSelectQuery(RequestOptions options, IEnumerable<GenericFilter> filters, DbCrossRelationDefinition crossDef = null)
     {
         var sb = new StringBuilder();
 
@@ -102,17 +103,57 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     /// <inheritdoc/>
     public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false)
     {
-        return $"UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {UpdateSetStatement(parameters)} WHERE id = @_id{(forTranslation ? " AND language = @_language" : "")}";
+        return $"UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {UpdateSetStatement(parameters)} WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
     }
 
     /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters)
+    public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false)
     {
-        var sb = new StringBuilder();
+        return BuildMergeQuery(parameters, [new GenericFilter("id", "id")], forTranslation);
 
-        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})");
+        /*
+        var sb = new StringBuilder();
+        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})");
         sb.AppendLine(" ON CONFLICT (id) DO ");
         sb.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
+        return sb.ToString();
+        */
+    }
+
+    /// <inheritdoc />
+    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
+    {
+        return BuildMergeQuery(parameters, mergeFilter, forTranslation);
+    }
+
+    private string BuildMergeQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
+    {
+        if (mergeFilter == null || !mergeFilter.Any())
+        {
+            throw new ArgumentException("Missing mergefilter");
+        }
+
+        var sb = new StringBuilder();
+        sb.AppendLine("WITH N AS ( SELECT ");
+        sb.AppendLine("@id as id");
+        if (forTranslation)
+        {
+            sb.AppendLine(", @language as language");
+        }
+
+        sb.AppendLine(")");
+
+        var mergeStatementFilter = string.Join(',', mergeFilter.Select(t => $"T.{t.PropertyName} = N.{t.PropertyName}"));
+        sb.AppendLine($"MERGE INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} AS T USING N ON {mergeStatementFilter}");
+        if (forTranslation)
+        {
+            sb.AppendLine(" AND T.language = N.language");
+        }
+
+        sb.AppendLine("WHEN MATCHED THEN");
+        sb.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
+        sb.AppendLine("WHEN NOT MATCHED THEN");
+        sb.AppendLine($"INSERT ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)});");
 
         return sb.ToString();
     }
@@ -131,12 +172,13 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
     private string GetTableName(DbDefinition dbDefinition, bool includeAlias = true, bool useHistory = false, bool useTranslation = false, bool useHistoryView = false)
     {
-        var config = this.config.Value;
+        var config = this._config.Value;
+
         // If GetOrAddDefinition.Plantform == "Mssql" => Qualify names [..]
-        string res = "";
+        string res = string.Empty;
         if (useHistory)
         {
-            string historyTablePrefix = useHistoryView ? "" : "_";
+            string historyTablePrefix = useHistoryView ? string.Empty : "_";
             if (useTranslation)
             {
                 res = $"{config.TranslationHistorySchema}.{historyTablePrefix}{dbDefinition.ModelType.Name}";
@@ -212,7 +254,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         if (useTranslation)
         {
             // Example for translation JOIN
-            return $@"""
+            return $"""
                 {GetTableName(includeAlias: true, useHistory: useHistory)}
                 LEFT JOIN LATERAL (SELECT * FROM {GetTableName(includeAlias: false, useTranslation: true, useHistory: useHistory)} AS T 
                 WHERE T.Id = {_definition.ModelType.Name}.Id AND T.Language = @Language ) AS T_{_definition.ModelType.Name} ON 1=1
@@ -237,18 +279,18 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         var crossRefDef = _definitionRegistry.TryGetDefinition(crossRef.CrossType) ?? throw new InvalidOperationException();
 
         string mainTable = GetTableAlias();
-        string crossTable = GetTableName(crossRefDef, useHistory: useHistory);
-        string mainIdentityProperty = crossRef.GetIdentityProperty(_definition.ModelType);
-        string joinColumn = crossRef.GetReferenceProperty(_definition.ModelType);
-        string filterColumn = crossRef.GetFilterProperty(_definition.ModelType);
+        string crossTable = GetTableName(crossRefDef, includeAlias: false, useHistory: useHistory);
+        string mainIdentityProperty = crossRef.GetReferenceProperty(_definition.ModelType);
+        string joinColumn = crossRef.GetIdentityProperty(_definition.ModelType);
+        string filterColumn = crossRef.GetReverseIdentityProperty(_definition.ModelType);
 
         return $@"
         INNER JOIN {crossTable} AS X 
         ON {mainTable}.{mainIdentityProperty} = X.{joinColumn}
-        AND X.{filterColumn} = @X_{filterColumn}";
+        AND X.{filterColumn} = @X_Id";
     }
 
-    private string GenerateFilterStatement(string tableAlias, IEnumerable<GenericFilter>? filters)
+    private string GenerateFilterStatement(string tableAlias, IEnumerable<GenericFilter> filters)
     {
         if (filters == null || !filters.Any())
         {
@@ -354,7 +396,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     {
         if (join.Filters == null || join.Filters.Count == 0)
         {
-            return "";
+            return string.Empty;
         }
 
         string result = string.Empty;
@@ -586,10 +628,10 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return scripts;
     }
 
-    private (string Key, string Query) CreateColumn(string tableName, string columnName, string columnDataType, bool isNullable, string? defaultValue = null)
+    private (string Key, string Query) CreateColumn(string tableName, string columnName, string columnDataType, bool isNullable, string defaultValue = null)
     {
         var key = $"ADD COLUMN {tableName}.{columnName}";
-        var query = $"ALTER TABLE {tableName} ADD {columnName} {columnDataType} {(isNullable ? "NULL" : "NOT NULL")}{(string.IsNullOrEmpty(defaultValue) ? "" : $" DEFAULT {defaultValue}")};";
+        var query = $"ALTER TABLE {tableName} ADD {columnName} {columnDataType} {(isNullable ? "NULL" : "NOT NULL")}{(string.IsNullOrEmpty(defaultValue) ? string.Empty : $" DEFAULT {defaultValue}")};";
 
         return (key, query);
     }
@@ -685,7 +727,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string keyCopyToHistory = $"FUNCTION {copyToHistoryFuncName}";
         string queryCopyToHistory = $"""
         CREATE OR REPLACE FUNCTION {copyToHistoryFuncName} RETURNS TRIGGER AS $$ BEGIN
-        INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : "")}validfrom, validto) VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : "")}OLD.validfrom, now());
+        INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto) VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now());
         RETURN NEW;
         END; $$ LANGUAGE plpgsql;
         CREATE OR REPLACE TRIGGER {_definition.ModelType.Name}_History AFTER UPDATE ON {tableName}
@@ -696,12 +738,12 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string viewKey = $"VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: forTranslationTable)}";
         string viewQuery = $"""
         CREATE OR REPLACE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: forTranslationTable)} AS
-        SELECT {columnDefinitions}, {(forTranslationTable ? "language, " : "")} validfrom, validto
+        SELECT {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)} validfrom, validto
         FROM  {GetTableName(useHistory: true, useTranslation: forTranslationTable)}
         WHERE validfrom <= coalesce(current_setting('x.asof', true)::timestamptz, now())
         AND validto > coalesce(current_setting('x.asof', true)::timestamptz, now())
         UNION ALL
-        SELECT  {columnDefinitions}, {(forTranslationTable ? "language, " : "")}validfrom, now() AS validto
+        SELECT  {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, now() AS validto
         FROM {tableName}
         where validfrom <= coalesce(current_setting('x.asof', true)::timestamptz, now());
         """;

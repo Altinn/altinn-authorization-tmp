@@ -12,12 +12,12 @@ public interface IDbQueryBuilder
     /// <summary>
     /// Builds a SELECT query for basic types
     /// </summary>
-    string BuildBasicSelectQuery(RequestOptions options, IEnumerable<GenericFilter> filters, DbCrossRelationDefinition? crossDef = null);
-    
+    string BuildBasicSelectQuery(RequestOptions options, IEnumerable<GenericFilter> filters, DbCrossRelationDefinition crossDef = null);
+
     /// <summary>
     /// Builds a SELECT query for extended types
     /// </summary>
-    string BuildExtendedSelectQuery(RequestOptions options, IEnumerable<GenericFilter> filters, DbCrossRelationDefinition? crossDef = null);
+    string BuildExtendedSelectQuery(RequestOptions options, IEnumerable<GenericFilter> filters, DbCrossRelationDefinition crossDef = null);
 
     /// <summary>
     /// Builds a INSERT query
@@ -45,8 +45,18 @@ public interface IDbQueryBuilder
     /// Builds a UPSERT query
     /// </summary>
     /// <param name="parameters">Parameters</param>
+    /// <param name="forTranslation">Is this for a translation table</param>
     /// <returns></returns>
-    string BuildUpsertQuery(List<GenericParameter> parameters);
+    string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false);
+
+    /// <summary>
+    /// Builds a UPSERT query
+    /// </summary>
+    /// <param name="parameters">Parameters</param>
+    /// <param name="mergeFilter">Parameters for merge statement</param>
+    /// <param name="forTranslation">Is this for a translation table</param>
+    /// <returns></returns>
+    string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false);
 
     /// <summary>
     /// Generates mirgration scripts for the definition
