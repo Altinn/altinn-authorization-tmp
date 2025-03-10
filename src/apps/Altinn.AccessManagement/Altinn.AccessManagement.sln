@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.AutoApi",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Database", "..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host.Database\Altinn.Authorization.Host.Database.csproj", "{03D4C26D-493A-420A-A5D3-FED002D2F2DC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api.Internal", "src\Altinn.AccessManagement.Api.Internal\Altinn.AccessManagement.Api.Internal.csproj", "{B1992988-2897-CF26-4AD7-F38255ABA79A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -275,6 +277,18 @@ Global
 		{03D4C26D-493A-420A-A5D3-FED002D2F2DC}.Release|x64.Build.0 = Release|Any CPU
 		{03D4C26D-493A-420A-A5D3-FED002D2F2DC}.Release|x86.ActiveCfg = Release|Any CPU
 		{03D4C26D-493A-420A-A5D3-FED002D2F2DC}.Release|x86.Build.0 = Release|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Debug|x64.Build.0 = Debug|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Debug|x86.Build.0 = Debug|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Release|x64.ActiveCfg = Release|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Release|x64.Build.0 = Release|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Release|x86.ActiveCfg = Release|Any CPU
+		{B1992988-2897-CF26-4AD7-F38255ABA79A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -300,6 +314,7 @@ Global
 		{23A5C62F-0827-429D-B177-3AA4D34F818A} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{4A098628-8D79-3859-F8DB-DCCADA0E3A29} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{03D4C26D-493A-420A-A5D3-FED002D2F2DC} = {935C4FF9-8B5E-1FBA-4117-FAEFD052FCC5}
+		{B1992988-2897-CF26-4AD7-F38255ABA79A} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CE8800B1-89AB-4650-A5A6-7C52A886DD36}
