@@ -55,6 +55,7 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
             await conn.OpenAsync(cancellationToken);
 
             var migratorUser = await CreateDatabaseRole(conn, secretClient, $"{config.Database.Prefix}_migrator", connectionString.Username!, settings, cancellationToken);
+            await GrantAzurePgAdmin(conn, migratorUser.RoleName, cancellationToken);
             var appUser = await CreateDatabaseRole(conn, secretClient, $"{config.Database.Prefix}_app", connectionString.Username!, settings, cancellationToken);
             await CreateDatabase(conn, config.Database.Name, cancellationToken);
             await GrantDatabasePrivileges(conn, config.Database.Name, migratorUser.RoleName, "CREATE, CONNECT", cancellationToken);
@@ -190,6 +191,26 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
         catch
         {
             WriteOperationFailed($"""Role Creation "{roleName}" and assigment to "{user}" failed.""");
+            throw;
+        }
+    }
+
+    private async Task GrantAzurePgAdmin(NpgsqlConnection conn, string roleName, CancellationToken cancellationToken)
+    {
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = /*strpsql*/
+            $""" 
+            GRANT "azure_pg_admin" TO "{roleName}"
+            """;
+
+        try
+        {
+            await cmd.ExecuteNonQueryAsync(cancellationToken);
+            WriteOperationSucceeded($"Granted 'azure_pg_admin' to role '{roleName}'.");
+        }
+        catch
+        {
+            WriteOperationFailed($"Grant 'azure_pg_admin' to role '{roleName}'.");
             throw;
         }
     }
