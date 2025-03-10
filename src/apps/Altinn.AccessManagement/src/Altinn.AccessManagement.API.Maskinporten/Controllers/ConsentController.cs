@@ -30,7 +30,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
         [Route("lookup")]
         public async Task<ActionResult<ConsentInfoMaskinporten>> GetConcent(Guid id, string from, string to)
         {
-            Consent consent = await _consentService.GetConcent(id, from, to);
+            Consent consent = await _consentService.GetConcent(id, MapParty(from), MapParty(to));
 
             if (consent == null)
             {
@@ -38,6 +38,15 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
             }
 
             return Ok(ConsentInfoMaskinporten.Convert(consent));
+        }
+
+        /// <summary>
+        /// TODO THis will call new mapping functionalit when in place.
+        /// Mock method for now
+        /// </summary>
+        private ConsentPartyUrn MapParty(string partyInfo)
+        {
+            return ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid());
         }
     }
 }
