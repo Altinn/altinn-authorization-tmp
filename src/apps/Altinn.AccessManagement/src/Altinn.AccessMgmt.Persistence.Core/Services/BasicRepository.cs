@@ -47,14 +47,14 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     #region Read
 
     /// <inheritdoc/>
-    public async Task<T?> Get(Guid id, RequestOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<T> Get(Guid id, RequestOptions options = null, CancellationToken cancellationToken = default)
     {
         var res = await Get(new List<GenericFilter>() { new GenericFilter("id", id) }, options, cancellationToken: cancellationToken);
         return res.FirstOrDefault();
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions options = null, CancellationToken cancellationToken = default)
     {
         string propertyName = ExtractPropertyInfo(property).Name;
         var filters = new List<GenericFilter>
@@ -65,19 +65,19 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get(RequestOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> Get(RequestOptions options = null, CancellationToken cancellationToken = default)
     {
         return await Get(filters: new List<GenericFilter>(), options: options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get(GenericFilterBuilder<T> filterBuilder, RequestOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> Get(GenericFilterBuilder<T> filterBuilder, RequestOptions options = null, CancellationToken cancellationToken = default)
     {
         return await Get(filters: filterBuilder, options: options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get(IEnumerable<GenericFilter> filters, RequestOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> Get(IEnumerable<GenericFilter> filters, RequestOptions options = null, CancellationToken cancellationToken = default)
     {
         options ??= new RequestOptions();
         filters ??= new List<GenericFilter>();
@@ -97,7 +97,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     /// <returns></returns>
     protected PropertyInfo ExtractPropertyInfo<TLocal, TProperty>(Expression<Func<TLocal, TProperty>> expression)
     {
-        MemberExpression? memberExpression = expression.Body switch
+        MemberExpression memberExpression = expression.Body switch
         {
             MemberExpression member => member,
             UnaryExpression { Operand: MemberExpression member } => member,
@@ -179,6 +179,14 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         }
 
         return parameters;
+    }
+
+    /// <inheritdoc/>
+    public Task<int> Ingest(List<T> data, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+        //// var importer = new BulkImporter<T>(connection, GetOrAddDefinition);
+        //// return await importer.Ingest(data, cancellationToken);
     }
 
     /// <inheritdoc/>

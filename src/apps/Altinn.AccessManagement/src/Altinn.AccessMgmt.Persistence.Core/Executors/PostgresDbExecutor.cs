@@ -52,15 +52,15 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, IDbConverter db
     /// <summary>
     /// Executes a non-query command (INSERT, UPDATE, DELETE) and returns the number of affected rows.
     /// </summary>
-    public async Task<int> ExecuteMigrationCommand(string query, List<GenericParameter>? parameters, CancellationToken cancellationToken = default)
+    public async Task<int> ExecuteMigrationCommand(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
     {
         try
         {
             using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.Migration);
             var cmd = conn.CreateCommand();
             cmd.CommandText = query;
-            if (parameters != null) 
-            { 
+            if (parameters != null)
+            {
                 foreach (var parameter in parameters)
                 {
                     cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);

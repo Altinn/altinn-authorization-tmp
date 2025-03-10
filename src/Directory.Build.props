@@ -5,11 +5,12 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>12.0</LangVersion>
-        <!-- <Nullable>enable</Nullable> -->
         <EnableStyleCop>true</EnableStyleCop>
+        <Authors>Altinn Platform Contributors</Authors>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Authors>Altinn Authorization</Authors>
+        <NoWarn>SA1600;CS1591;CS8767;CS8632</NoWarn>
     </PropertyGroup>
 
 </Project>
