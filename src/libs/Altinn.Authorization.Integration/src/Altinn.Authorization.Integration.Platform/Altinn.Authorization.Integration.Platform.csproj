@@ -5,6 +5,11 @@
         <PackageReference Include="Microsoft.Extensions.Http" />
         <PackageReference Include="Altinn.Common.AccessTokenClient" />
         <PackageReference Include="Altinn.Authorization.ProblemDetails" />
+        <PackageReference Include="Microsoft.Extensions.Azure" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Altinn.Authorization.Host\src\Altinn.Authorization.Host\Altinn.Authorization.Host.csproj" />
     </ItemGroup>
 
 </Project>

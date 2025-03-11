@@ -20,8 +20,8 @@ public static class ResponseComposer
     {
         var context = new ResponseContext<T>()
         {
-            Content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult(),
-            Message = response,
+            Body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult(),
+            Response = response,
             Result = new PlatformResponse<T>()
             {
                 IsSuccessful = response.IsSuccessStatusCode,
@@ -44,9 +44,9 @@ public static class ResponseComposer
     /// <param name="context">The response context containing the HTTP response data.</param>
     public static void DeserializeResponseOnSuccess<T>(ResponseContext<T> context)
     {
-        if (context.Message.IsSuccessStatusCode)
+        if (context.Response.IsSuccessStatusCode)
         {
-            context.Result.Content = JsonSerializer.Deserialize<T>(context.Content);
+            context.Result.Content = JsonSerializer.Deserialize<T>(context.Body);
         }
     }
 
@@ -57,11 +57,11 @@ public static class ResponseComposer
     /// <param name="context">The response context containing the HTTP response data.</param>
     public static void DeserializeProblemDetailsOnUnsuccessStatusCode<T>(ResponseContext<T> context)
     {
-        if (!context.Message.IsSuccessStatusCode)
+        if (!context.Response.IsSuccessStatusCode)
         {
             try
             {
-                context.Result.ProblemDetails = JsonSerializer.Deserialize<AltinnProblemDetails>(context.Content);
+                context.Result.ProblemDetails = JsonSerializer.Deserialize<AltinnProblemDetails>(context.Body);
             }
             catch (JsonException)
             {
@@ -78,11 +78,11 @@ public static class ResponseComposer
     /// <returns>An action that deserializes <see cref="AltinnProblemDetails"/> when the status code matches.</returns>
     public static Action<ResponseContext<T>> DeserilizeProblemDetailsOnStatusCode<T>(HttpStatusCode httpStatus) => context =>
     {
-        if (context.Message.StatusCode == httpStatus)
+        if (context.Response.StatusCode == httpStatus)
         {
             try
             {
-                context.Result.ProblemDetails = JsonSerializer.Deserialize<AltinnProblemDetails>(context.Content);
+                context.Result.ProblemDetails = JsonSerializer.Deserialize<AltinnProblemDetails>(context.Body);
             }
             catch (JsonException)
             {
@@ -90,6 +90,14 @@ public static class ResponseComposer
             }
         }
     };
+
+    public static void SetBodyAsStringResultIfSuccesful(ResponseContext<string> context)
+    {
+        if (context.Response.IsSuccessStatusCode)
+        {
+            context.Result.Content = context.Body;
+        }
+    }
 
     /// <summary>
     /// Represents the context for handling an HTTP response.
@@ -100,12 +108,12 @@ public static class ResponseComposer
         /// <summary>
         /// Gets or sets the HTTP response message.
         /// </summary>
-        public HttpResponseMessage Message { get; set; }
+        public HttpResponseMessage Response { get; set; }
 
         /// <summary>
         /// Gets or sets the response content as a string.
         /// </summary>
-        public string Content { get; set; }
+        public string Body { get; set; }
 
         /// <summary>
         /// Gets or sets the processed result of the response.

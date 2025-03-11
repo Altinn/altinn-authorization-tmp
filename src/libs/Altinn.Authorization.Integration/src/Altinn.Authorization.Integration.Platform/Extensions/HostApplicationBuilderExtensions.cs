@@ -1,6 +1,9 @@
+using Altinn.Authorization.Host.Identity;
 using Altinn.Authorization.Integration.Platform.Register;
 using Altinn.Authorization.Integration.Platform.ResourceRegister;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace Altinn.Authorization.Integration.Platform.Extensions;
@@ -8,7 +11,7 @@ namespace Altinn.Authorization.Integration.Platform.Extensions;
 /// <summary>
 /// Extension methods for <see cref="IHostApplicationBuilder"/> to register Altinn Register services.
 /// </summary>
-public static class WebApplicationBuilderExtensions
+public static class HostApplicationBuilderExtensions
 {
     public static IHostApplicationBuilder AddAltinnIntegrations(this IHostApplicationBuilder builder, Action<AltinnIntegrationOptions> configureOptions)
     {
@@ -19,10 +22,51 @@ public static class WebApplicationBuilderExtensions
 
         builder.Services.AddOptions<AltinnIntegrationOptions>()
             .Validate(opts => opts.PlatformAccessToken != null)
-            .Validate(opts => opts.PlatformAccessToken.UseTestTokenGenerator && opts.PlatformAccessToken.TokenGeneratorUrl != null, $"Can't use test token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.Username)}' specified")
-            .Validate(opts => opts.PlatformAccessToken.UseTestTokenGenerator && opts.PlatformAccessToken.Username != null, $"Can't use test token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.Username)}' specified")
-            .Validate(opts => opts.PlatformAccessToken.UseTestTokenGenerator && opts.PlatformAccessToken.Password != null, $"Can't use password and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.Password)}' specified")
+            .Validate(opts => !string.IsNullOrEmpty(opts.PlatformAccessToken.Issuer), $"Platform access token issuer can't be null or empty string")
+            .Validate(opts => !string.IsNullOrEmpty(opts.PlatformAccessToken.App), $"Platform access token app can't be null or empty string")
+            .Validate(
+                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.AzureKeyVault && opts.PlatformAccessToken.KeyVault.Uri == null,
+                $"Can't specify key vault for token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.KeyVault.Uri)}' specified")
+            .Validate(
+                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTokenGenerator && string.IsNullOrEmpty(opts.PlatformAccessToken.TestTool.Username),
+                $"Can't use test tool token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.TestTool.Username)}' specified")
+            .Validate(
+                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTokenGenerator && opts.PlatformAccessToken.TestTool.TokenGeneratorUrl == null,
+                $"Can't use test tool token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.TestTool.TokenGeneratorUrl)}' specified")
+            .Validate(
+                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTokenGenerator && string.IsNullOrEmpty(opts.PlatformAccessToken.TestTool.Password),
+                $"Can't use test tool token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.TestTool.Password)}' specified")
+            .Validate(
+                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTokenGenerator && string.IsNullOrEmpty(opts.PlatformAccessToken.TestTool.Environment),
+                $"Can't use test tool token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.TestTool.Password)}' specified")
             .Configure(configureOptions);
+
+        var options = new AltinnIntegrationOptions();
+        configureOptions?.Invoke(options);
+
+        if (options.PlatformAccessToken.TokenSource == AltinnIntegrationOptions.TokenSource.AzureKeyVault)
+        {
+            builder.Services.AddAzureClients(builder =>
+            {
+                builder.UseCredential(AzureToken.Default);
+                builder.AddSecretClient(options.PlatformAccessToken.KeyVault.Uri)
+                    .WithName(TokenGenerator.TokenGeneratorKeyVault.ServiceKey);
+            });
+
+            builder.Services.TryAddSingleton<ITokenGenerator, TokenGenerator.TokenGeneratorKeyVault>();
+        }
+
+        if (options.PlatformAccessToken.TokenSource == AltinnIntegrationOptions.TokenSource.TestTokenGenerator)
+        {
+            if (string.IsNullOrEmpty(options.HttpClientName))
+            {
+                builder.Services.AddHttpClient();
+            }
+
+            builder.Services.TryAddSingleton<ITokenGenerator, TokenGenerator.TokenGeneratorTestTool>();
+        }
+
+        return builder;
     }
 
     private sealed class Marker
@@ -99,16 +143,50 @@ public static class WebApplicationBuilderExtensions
 
 public class AltinnIntegrationOptions
 {
+    public string HttpClientName { get; set; } = string.Empty;
+
     public PlatformAccessTokenOptions PlatformAccessToken { get; set; } = new();
 
     public class PlatformAccessTokenOptions
     {
-        public bool UseTestTokenGenerator { get; set; }
+        public TokenSource TokenSource { get; set; } = TokenSource.LocalCert;
 
-        public Uri TokenGeneratorUrl { get; set; }
+        public string Issuer { get; set; } = string.Empty;
 
-        public string Username { get; set; }
+        public string App { get; set; } = string.Empty;
 
-        public string Password { get; set; }
+        public KeyVaultOptions KeyVault { get; set; } = new();
+
+        public TestToolGeneratorOptions TestTool { get; set; } = new();
+
+        public class KeyVaultOptions
+        {
+            public Uri Uri { get; set; }
+
+            public Func<string, IServiceProvider, Task<string>> CacheHandler { get; set; } = (_, _) =>
+            {
+                return Task.FromResult(string.Empty);
+            };
+        }
+
+        public class TestToolGeneratorOptions
+        {
+            public Uri TokenGeneratorUrl { get; set; }
+
+            public string Username { get; set; } = string.Empty;
+
+            public string Password { get; set; } = string.Empty;
+
+            public string Environment { get; set; } = string.Empty;
+        }
+    }
+
+    public enum TokenSource
+    {
+        AzureKeyVault,
+
+        TestTokenGenerator,
+
+        LocalCert,
     }
 }

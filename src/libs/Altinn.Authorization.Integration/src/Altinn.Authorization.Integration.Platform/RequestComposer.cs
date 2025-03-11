@@ -1,3 +1,4 @@
+using System.Text;
 using System.Web;
 using Altinn.Common.AccessTokenClient.Services;
 
@@ -110,6 +111,15 @@ public static class RequestComposer
         {
             Query = query.ToString()
         }.Uri;
+    };
+
+    public static Action<HttpRequestMessage> WithBasicAuth(string username, string password) => request =>
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(username, nameof(username));
+        ArgumentException.ThrowIfNullOrWhiteSpace(password, nameof(password));
+
+        var cred = $"{username}:{password}";
+        request.Headers.Authorization = new("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(cred)));
     };
 
     /// <summary>
