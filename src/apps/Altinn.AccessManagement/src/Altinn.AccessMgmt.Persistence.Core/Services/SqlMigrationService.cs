@@ -118,13 +118,13 @@ public class SqlMigrationService(IDbExecutor executor) : IMigrationService
         var parameters = new List<GenericParameter>
         {
             new GenericParameter("ObjectName", objectName),
-            new GenericParameter("Name", key),
+            new GenericParameter("Key", key),
             new GenericParameter("Version", version),
             new GenericParameter("Script", script),
             new GenericParameter("CompletedAt", DateTimeOffset.UtcNow)
         };
 
-        await executor.ExecuteMigrationCommand("INSERT INTO dbo._dbmigration (ObjectName, Name, Version, Script, CompletedAt) VALUES(@ObjectName, @Name, @Version, @Script, @CompletedAt)", parameters, cancellationToken);
+        await executor.ExecuteMigrationCommand("INSERT INTO dbo._dbmigration (ObjectName, Key, Version, Script, CompletedAt) VALUES(@ObjectName, @Key, @Version, @Script, @CompletedAt)", parameters, cancellationToken);
         Migrations.Add(migrationEntry);
         Console.WriteLine(key);
     }

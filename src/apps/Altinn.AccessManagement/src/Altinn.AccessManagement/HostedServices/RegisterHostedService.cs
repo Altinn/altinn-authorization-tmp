@@ -1,8 +1,12 @@
+using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
@@ -85,7 +89,7 @@ public partial class RegisterHostedService(
         {
             await PrepareSync();
             await SyncParty(ls, cancellationToken);
-            await SyncRoles(ls, cancellationToken);
+            // await SyncRoles(ls, cancellationToken);
 
             if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
             {
@@ -164,15 +168,28 @@ public partial class RegisterHostedService(
             {
                 var ingestId = Guid.NewGuid();
                 var bulk = new List<Entity>();
+                var bulkLookup = new List<EntityLookup>();
                 foreach (var item in page.Content.Data)
                 {
-                    Interlocked.Increment(ref _executionCount);
-                    Log.Party(_logger, item.PartyUuid, _executionCount);
-                    bulk.Add(ConvertPartyModel(item));
+                    try
+                    {
+                        Interlocked.Increment(ref _executionCount);
+                        Log.Party(_logger, item.PartyUuid, _executionCount);
+                        bulk.Add(ConvertPartyModel(item));
+                        bulkLookup.AddRange(ConvertPartyModelToLookup(item));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                        Console.WriteLine(JsonSerializer.Serialize(item));
+                    }
                 }
 
                 await ingestService.IngestTempData<Entity>(bulk, ingestId);
-                await ingestService.MergeTempData<Entity>(ingestId);
+                await ingestService.IngestTempData<EntityLookup>(bulkLookup, ingestId);
+
+                await ingestService.MergeTempData<Entity>(ingestId, GetEntityMergeMatchFilter);
+                await ingestService.MergeTempData<EntityLookup>(ingestId, GetEntityLookupMergeMatchFilter);
             }
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
@@ -184,6 +201,17 @@ public partial class RegisterHostedService(
             await _lease.RefreshLease(ls, cancellationToken);
         }
     }
+
+    private static readonly IReadOnlyList<GenericParameter> GetEntityMergeMatchFilter = new List<GenericParameter>()
+    {
+        new GenericParameter("id", "id")
+    }.AsReadOnly();
+
+    private static readonly IReadOnlyList<GenericParameter> GetEntityLookupMergeMatchFilter = new List<GenericParameter>()
+    {
+        new GenericParameter("entityid", "entityid"),
+        new GenericParameter("key", "key"),
+    }.AsReadOnly();
 
     private async Task PrepareSync()
     {
@@ -241,24 +269,26 @@ public partial class RegisterHostedService(
 
     private Entity ConvertPartyModel(PartyModel model)
     {
-        if (model.PartyType.Equals("Person", StringComparison.OrdinalIgnoreCase))
+        //// source: src/Altinn.Register/src/Altinn.Register.Core/Parties/PartyType.cs
+
+        if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
         {
             var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person") ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", "Person", "Organisasjon"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person") ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", "Person", type.Name));
 
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
                 Name = model.DisplayName,
-                RefId = model.DateOfBirth.ToString(),
+                RefId = model.PersonIdentifier, //.DateOfBirth.ToString(),
                 TypeId = type.Id,
                 VariantId = variant.Id
             };
         }
-        else if (model.PartyType.Equals("Organisasjon", StringComparison.OrdinalIgnoreCase))
+        else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
         {
             var type = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, "Organisasjon"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.UnitType, type.Name));
 
             return new Entity()
             {
@@ -269,8 +299,23 @@ public partial class RegisterHostedService(
                 VariantId = variant.Id
             };
         }
+        else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+        {
+            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "SI") ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", "SI", type.Name));
+
+            return new Entity()
+            {
+                Id = Guid.Parse(model.PartyUuid),
+                Name = model.DisplayName,
+                RefId = model.DateOfBirth.ToString(),
+                TypeId = type.Id,
+                VariantId = variant.Id
+            };
+        }
         else
         {
+            // Create Unknown EntityType ?
             var type = EntityTypes.FirstOrDefault(t => t.Name.Equals(model.PartyType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to find type '{0}'", model.PartyType));
             var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, model.UnitType));
 
@@ -283,6 +328,80 @@ public partial class RegisterHostedService(
                 VariantId = variant.Id
             };
         }
+    }
+
+    private List<EntityLookup> ConvertPartyModelToLookup(PartyModel model)
+    {
+        //// source: src/Altinn.Register/src/Altinn.Register.Core/Parties/PartyType.cs
+
+        var res = new List<EntityLookup>();
+
+
+        if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
+        {
+            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person") ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", "Person", type.Name));
+
+            res.Add(new EntityLookup()
+            {
+                Id = Guid.NewGuid(),
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "DateOfBirth",
+                Value = model.DateOfBirth
+            });
+
+            res.Add(new EntityLookup()
+            {
+                Id = Guid.NewGuid(),
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "PartyId",
+                Value = model.PartyId.ToString()
+            });
+
+            res.Add(new EntityLookup()
+            {
+                Id = Guid.NewGuid(),
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "PersonIdentifier",
+                Value = model.PersonIdentifier
+            });
+        }
+        else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
+        {
+            var type = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.UnitType, type.Name));
+
+            res.Add(new EntityLookup()
+            {
+                Id = Guid.NewGuid(),
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "PartyId",
+                Value = model.PartyId.ToString()
+            });
+
+            res.Add(new EntityLookup()
+            {
+                Id = Guid.NewGuid(),
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "OrganizationIdentifier",
+                Value = model.OrganizationIdentifier
+            });
+        }
+        else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+        {
+            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "SI") ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", "SI", type.Name));
+
+            res.Add(new EntityLookup()
+            {
+                Id = Guid.NewGuid(),
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "PartyId",
+                Value = model.PartyId.ToString()
+            });
+        }
+
+        return res;
     }
 
     private IEnumerable<EntityType> EntityTypes { get; set; }

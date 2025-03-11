@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
 using Altinn.Authorization.Host.Database;
 using Npgsql;
@@ -58,8 +59,13 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
     }
 
     /// <inheritdoc />
-    public async Task<int> MergeTempData<T>(Guid ingestId, CancellationToken cancellationToken = default)
+    public async Task<int> MergeTempData<T>(Guid ingestId, IEnumerable<GenericParameter> matchColumns = null, CancellationToken cancellationToken = default)
     {
+        if (matchColumns == null || matchColumns.Count() == 0)
+        {
+            matchColumns = [new GenericParameter("id", "id")];
+        }
+
         var type = typeof(T);
         var definition = definitionRegistry.TryGetDefinition<T>() ?? throw new Exception(string.Format("Definition not found for '{0}'", type.Name));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
@@ -71,14 +77,14 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
         var ingestName = ingestId.ToString().Replace("-", string.Empty);
         string ingestTableName = tableName + "_" + ingestName;
 
-        var mergeMatchStatement = string.Join(',', ingestColumns.Select(t => $"target.{t.Name} = source.{t.Name}")); // needed ?
-        var mergeUpdateUnMatchStatement = string.Join(" OR ", ingestColumns.Select(t => $"target.{t.Name} <> source.{t.Name}")); // exclue id => exclude mergeMatchStatement columns
-        var mergeUpdateStatement = string.Join(" , ", ingestColumns.Select(t => $"{t.Name} = source.{t.Name}"));
+        var mergeMatchStatement = string.Join(" AND ", matchColumns.Select(t => $"target.{t.Key} = source.{t.Key}"));
+        var mergeUpdateUnMatchStatement = string.Join(" OR ", ingestColumns.Where(t => matchColumns.Count(y => y.Key.Equals(t.Name, StringComparison.OrdinalIgnoreCase)) == 0).Select(t => $"target.{t.Name} <> source.{t.Name}"));
+        var mergeUpdateStatement = string.Join(" , ", ingestColumns.Where(t => matchColumns.Count(y => y.Key.Equals(t.Name, StringComparison.OrdinalIgnoreCase)) == 0).Select(t => $"{t.Name} = source.{t.Name}"));
         var insertColumns = string.Join(" , ", ingestColumns.Select(t => $"{t.Name}"));
         var insertValues = string.Join(" , ", ingestColumns.Select(t => $"source.{t.Name}"));
 
         var sb = new StringBuilder();
-        sb.AppendLine($"MERGE INTO {tableName} AS target USING {ingestTableName} AS source ON target.id = source.id"); // <= mergeMatchStatement ? 
+        sb.AppendLine($"MERGE INTO {tableName} AS target USING {ingestTableName} AS source ON {mergeMatchStatement}");
         sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
         sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
         sb.AppendLine($"WHEN NOT MATCHED THEN ");
@@ -98,11 +104,11 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
     }
 
     /// <inheritdoc />
-    public async Task<int> IngestAndMergeData<T>(List<T> data, CancellationToken cancellationToken = default)
+    public async Task<int> IngestAndMergeData<T>(List<T> data, IEnumerable<GenericParameter> matchColumns = null, CancellationToken cancellationToken = default)
     {
         var ingestId = Guid.NewGuid();
         await IngestTempData(data, ingestId, cancellationToken);
-        var res = await MergeTempData<T>(ingestId, cancellationToken);
+        var res = await MergeTempData<T>(ingestId, matchColumns, cancellationToken);
 
         return res;
     }
@@ -153,8 +159,15 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
         return completed;
     }
 
+    private Dictionary<Type, List<IngestColumnDefinition>> TypedIngestColumnDefinitions { get; set; } = new Dictionary<Type, List<IngestColumnDefinition>>();
+
     private List<IngestColumnDefinition> GetColumns(DbDefinition definition, IDbQueryBuilder queryBuilder)
     {
+        if (TypedIngestColumnDefinitions.ContainsKey(definition.ModelType))
+        {
+            return TypedIngestColumnDefinitions[definition.ModelType];
+        }
+
         using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.Migration);
         if (conn.State != ConnectionState.Open)
         {
@@ -184,6 +197,7 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
             });
         }
 
+        TypedIngestColumnDefinitions.Add(definition.ModelType, columns);
         return columns;
     }
     
