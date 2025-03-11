@@ -3,12 +3,12 @@
 /// <summary>
 /// Generic Parameter
 /// </summary>
-/// <param name="key">Key</param>
+/// <param name="key">Name</param>
 /// <param name="value">Value</param>
 public class GenericParameter(string key, object value)
 {
     /// <summary>
-    /// Key
+    /// Name
     /// </summary>
     public string Key { get; set; } = key;
 

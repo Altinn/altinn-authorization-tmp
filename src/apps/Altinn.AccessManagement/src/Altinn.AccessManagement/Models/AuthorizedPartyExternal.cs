@@ -74,7 +74,7 @@ public class AuthorizedPartyExternal
     public List<AuthorizedPartyExternal> Subunits { get; set; } = [];
 
     /// <summary>
-    /// Composite Key instances
+    /// Composite Name instances
     /// </summary>
     public class AuthorizedResource
     {

@@ -11,7 +11,7 @@ public class DbMigrationEntry
     public string ObjectName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Key for object script
+    /// Name for object script
     /// </summary>
     public string Key { get; set; } = string.Empty;
 

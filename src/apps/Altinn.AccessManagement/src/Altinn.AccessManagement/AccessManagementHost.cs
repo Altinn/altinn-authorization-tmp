@@ -137,7 +137,8 @@ internal static partial class AccessManagementHost
                 opts.Endpoint = appsettings.Platform.RegisterEndpoint;
             }
 
-            //// opts.Endpoint = new("http://localhost:5020");
+            /*FOR LOCAL TEST*/
+            opts.Endpoint = new("http://localhost:5020");
         });
 
         return builder;

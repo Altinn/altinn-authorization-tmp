@@ -1,6 +1,7 @@
 using System.Net;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.Host.Lease;
@@ -17,6 +18,7 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="register">Register integration service.</param>
 /// <param name="logger">Logger for logging service activities.</param>
 /// <param name="featureManager">for reading feature flags</param>
+/// <param name="ingestService">Ingest service</param>
 /// <param name="entityRepository">Repository for entity data.</param>
 /// <param name="entityLookupRepository">Repository for entity lookup data.</param>
 /// <param name="roleRepository">Repository for role data.</param>
@@ -29,6 +31,7 @@ public partial class RegisterHostedService(
     IAltinnRegister register,
     ILogger<RegisterHostedService> logger,
     IFeatureManager featureManager,
+    IIngestService ingestService,
     IEntityRepository entityRepository,
     IEntityLookupRepository entityLookupRepository,
     IRoleRepository roleRepository,
@@ -42,6 +45,7 @@ public partial class RegisterHostedService(
     private readonly IAltinnRegister _register = register;
     private readonly ILogger<RegisterHostedService> _logger = logger;
     private readonly IFeatureManager _featureManager = featureManager;
+    private readonly IIngestService ingestService = ingestService;
     private readonly IEntityRepository entityRepository = entityRepository;
     private readonly IEntityLookupRepository entityLookupRepository = entityLookupRepository;
     private readonly IRoleRepository roleRepository = roleRepository;
@@ -79,11 +83,12 @@ public partial class RegisterHostedService(
 
         try
         {
+            await PrepareSync();
+            await SyncParty(ls, cancellationToken);
+            await SyncRoles(ls, cancellationToken);
+
             if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
             {
-                await PrepareSync();
-                await SyncParty(ls, cancellationToken);
-                await SyncRoles(ls, cancellationToken);
             }
         }
         catch (Exception ex)
@@ -155,11 +160,19 @@ public partial class RegisterHostedService(
                 Log.ResponseError(_logger, page.StatusCode);
             }
 
-            foreach (var item in page.Content.Data)
+            if (page.Content != null)
             {
-                Interlocked.Increment(ref _executionCount);
-                Log.Party(_logger, item.PartyUuid, _executionCount);
-                await WritePartyToDb(item);
+                var ingestId = Guid.NewGuid();
+                var bulk = new List<Entity>();
+                foreach (var item in page.Content.Data)
+                {
+                    Interlocked.Increment(ref _executionCount);
+                    Log.Party(_logger, item.PartyUuid, _executionCount);
+                    bulk.Add(ConvertPartyModel(item));
+                }
+
+                await ingestService.IngestTempData<Entity>(bulk, ingestId);
+                await ingestService.MergeTempData<Entity>(ingestId);
             }
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
@@ -222,7 +235,7 @@ public partial class RegisterHostedService(
     private List<GenericFilter> entityLookupMergeFilter = new List<GenericFilter>()
         {
             new GenericFilter("EntityId", "EntityId"),
-            new GenericFilter("Key", "Key"),
+            new GenericFilter("Name", "Name"),
             new GenericFilter("Value", "Value"),
         };
 

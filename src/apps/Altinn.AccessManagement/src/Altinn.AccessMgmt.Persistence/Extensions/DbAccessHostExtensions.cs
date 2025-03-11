@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.Persistence.Core.Executors;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
+using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Repo.Data;
 using Altinn.Authorization.Host.Startup;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,6 +58,7 @@ public static partial class DbAccessHostExtensions
             }
         }
 
+        builder.Services.AddSingleton<IIngestService, PostgresIngestService>();
         builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddSingleton<IMigrationService, SqlMigrationService>();
         builder.Services.AddScoped<DbSchemaMigrationService>();

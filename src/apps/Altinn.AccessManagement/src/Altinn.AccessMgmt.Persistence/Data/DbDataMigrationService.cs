@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 
@@ -18,7 +19,8 @@ public class DbDataMigrationService(
         IRoleRepository roleService,
         IRoleMapRepository roleMapService,
         IRolePackageRepository rolePackageService,
-        IMigrationService migrationService
+        IMigrationService migrationService,
+        IIngestService ingestService
         )
 {
     private readonly IProviderRepository providerService = providerService;
@@ -32,6 +34,7 @@ public class DbDataMigrationService(
     private readonly IRoleMapRepository roleMapService = roleMapService;
     private readonly IRolePackageRepository rolePackageService = rolePackageService;
     private readonly IMigrationService migrationService = migrationService;
+    private readonly IIngestService ingestService = ingestService;
 
     /// <summary>
     /// Ingest all static data
@@ -196,7 +199,8 @@ public class DbDataMigrationService(
             new Provider() { Id = Guid.Parse("879EF4EE-BED6-476C-B90E-EFEA22973AAE"), Name = "Utlendingsdirektoratet", RefId = string.Empty },
             new Provider() { Id = Guid.Parse("49F3ACFD-94B7-4819-A8BA-F0780F0C8255"), Name = "Folkeregisteret", RefId = string.Empty },
         };
-        await providerService.IngestAndMerge(providers);
+
+        await ingestService.IngestAndMergeData(providers, cancellationToken);
     }
 
     /// <summary>
@@ -560,7 +564,7 @@ public class DbDataMigrationService(
             new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleLede, GetRoleId = roleTS },
         };
 
-        await roleMapService.IngestAndMerge(roleMaps);
+        await ingestService.IngestAndMergeData(roleMaps, cancellationToken);
     }
 
     /// <summary>
@@ -869,7 +873,7 @@ public class DbDataMigrationService(
             new Package() { Id = Guid.Parse("0e219609-02c6-44e6-9c80-fe2c1997940e"), ProviderId = digdirProvider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_konkursbo, Urn = "urn:altinn:accesspackage:konkursboskrivetilgang", Name = "Konkursbo skrivetilgang", Description = "Denne fullmakten gir bostyrers medhjelper tilgang til å jobbe på vegne av bostyrer. Bostyrer delegerer denne fullmakten sammen med Konkursbo lesetilgang til medhjelper for hvert konkursbo.  ", IsDelegable = true, HasResources = true },
         };
 
-        await packageService.IngestAndMerge(packages);
+        await ingestService.IngestAndMergeData(packages, cancellationToken);
     }
 
     /// <summary>
@@ -1802,7 +1806,7 @@ public class DbDataMigrationService(
             new RolePackage() { Id = Guid.Parse("fc644611-e4d7-4d83-9422-84f5e3ea4241"), RoleId = roles["brreg:role:bobe"], PackageId = packages["urn:altinn:accesspackage:folkeregister"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
         };
 
-        await rolePackageService.IngestAndMerge(rolePackages);
+        await ingestService.IngestAndMergeData(rolePackages, cancellationToken);
     }
 
     /// <summary>
@@ -2199,6 +2203,6 @@ public class DbDataMigrationService(
             new EntityVariantRole() { Id = Guid.Parse("a3719e58-286d-4395-95b0-1a654f2eeafa"), VariantId = variants["VPFO"], RoleId = roles["brreg:role:dagl"] },
         };
 
-        await entityVariantRoleService.IngestAndMerge(variantRoles);
+        await ingestService.IngestAndMergeData(variantRoles, cancellationToken);
     }
 }

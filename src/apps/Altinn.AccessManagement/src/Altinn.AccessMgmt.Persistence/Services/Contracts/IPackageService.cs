@@ -66,7 +66,7 @@ public interface IPackageService
 
     /// <summary>
     /// Get package by urnValue
-    /// urn:altinn:accesspackage:skattnaering (Key:urn:altinn:accesspackage, Value:skattnaering)
+    /// urn:altinn:accesspackage:skattnaering (Name:urn:altinn:accesspackage, Value:skattnaering)
     /// </summary>
     /// <param name="urnValue">The urnValue to lookup</param>
     /// <returns>The package with the specified Urn.</returns>
