@@ -10,6 +10,26 @@ namespace Altinn.Authorization.Integration.Platform.Extensions;
 /// </summary>
 public static class WebApplicationBuilderExtensions
 {
+    public static IHostApplicationBuilder AddAltinnIntegrations(this IHostApplicationBuilder builder, Action<AltinnIntegrationOptions> configureOptions)
+    {
+        if (builder.Services.Contains(Register.ServiceDescriptor))
+        {
+            return builder;
+        }
+
+        builder.Services.AddOptions<AltinnIntegrationOptions>()
+            .Validate(opts => opts.PlatformAccessToken != null)
+            .Validate(opts => opts.PlatformAccessToken.UseTestTokenGenerator && opts.PlatformAccessToken.TokenGeneratorUrl != null, $"Can't use test token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.Username)}' specified")
+            .Validate(opts => opts.PlatformAccessToken.UseTestTokenGenerator && opts.PlatformAccessToken.Username != null, $"Can't use test token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.Username)}' specified")
+            .Validate(opts => opts.PlatformAccessToken.UseTestTokenGenerator && opts.PlatformAccessToken.Password != null, $"Can't use password and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.Password)}' specified")
+            .Configure(configureOptions);
+    }
+
+    private sealed class Marker
+    {
+        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Register, Register>();
+    }
+
     /// <summary>
     /// Adds the Altinn Register services to the <see cref="IHostApplicationBuilder"/>.
     /// Configures the <see cref="AltinnRegisterOptions"/> using the provided configuration action.
@@ -74,5 +94,21 @@ public static class WebApplicationBuilderExtensions
     private sealed class ResourceRegister
     {
         public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<ResourceRegister, ResourceRegister>();
+    }
+}
+
+public class AltinnIntegrationOptions
+{
+    public PlatformAccessTokenOptions PlatformAccessToken { get; set; } = new();
+
+    public class PlatformAccessTokenOptions
+    {
+        public bool UseTestTokenGenerator { get; set; }
+
+        public Uri TokenGeneratorUrl { get; set; }
+
+        public string Username { get; set; }
+
+        public string Password { get; set; }
     }
 }
