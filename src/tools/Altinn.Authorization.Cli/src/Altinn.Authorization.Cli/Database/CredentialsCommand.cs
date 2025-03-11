@@ -17,8 +17,8 @@ public sealed class CredentialsCommand(CancellationToken cancellationToken)
     /// <inheritdoc/>
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        var credentials = new DefaultAzureCredential();
-        var token = await credentials.GetTokenAsync(new(["https://ossrdbms-aad.database.windows.net/.default"]), cancellationToken);
+        bool useInteractive = false; // TODO: Get from arguments
+        var token = await (useInteractive ? new InteractiveBrowserCredential().GetTokenAsync(new(["https://ossrdbms-aad.database.windows.net/.default"]), cancellationToken) : new DefaultAzureCredential().GetTokenAsync(new(["https://ossrdbms-aad.database.windows.net/.default"]), cancellationToken));
         var parsedToken = new JwtSecurityTokenHandler().ReadJwtToken(token.Token);
         var username = parsedToken.Claims.First(static claim => claim.Type == "unique_name");
 
