@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Internal.Controllers
 {
+    /// <summary>
+    /// Assignments
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class AssignmentController(
-        IAssignmentRepository assignmentRepository
-        ) : ControllerBase
+    public class AssignmentController(IAssignmentRepository assignmentRepository) : ControllerBase
     {
         private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
 

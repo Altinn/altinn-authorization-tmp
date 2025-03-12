@@ -29,7 +29,13 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         [HttpPost]
         public async Task CreateSystemClientDelegation(NewDelegationRequest request)
         {
-            //await delegationService.CreateClientDelegation(request);
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return;
+            }
+
+            await delegationService.CreateClientDelegation(request, userId);
         }
 
 
@@ -129,6 +135,22 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         /// <summary>
         /// Alle relasjoner hvor {id} er involvert i from, to eller facilitator.
         /// </summary>
+        [Route("{id}/packages")]
+        [HttpPost]
+        public async Task<ActionResult<Package>> AddPackage([FromBody] string aa, Guid id)
+        {
+            var dp = new DelegationPackage()
+            {
+                Id = id,
+                DelegationId = id,
+                PackageId = id
+            };
+            return Ok(await connectionPackageRepository.GetB(id));
+        }
+
+        /// <summary>
+        /// Alle relasjoner hvor {id} er involvert i from, to eller facilitator.
+        /// </summary>
         [Route("{id}/resources")]
         [HttpGet]
         public async Task<ActionResult<Resource>> GetResources(Guid id)
@@ -137,3 +159,11 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         }
     }
 }
+
+public class AddAssignmentPackageRequestDto
+{
+    public Guid AssignmentId { get; set; }
+    public Guid PackageId { get; set; }
+}
+
+
