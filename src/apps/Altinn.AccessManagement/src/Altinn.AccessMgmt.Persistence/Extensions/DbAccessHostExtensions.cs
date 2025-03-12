@@ -66,6 +66,7 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<IConnectionPackageRepository, ConnectionPackageRepository>();
         builder.Services.AddSingleton<IConnectionResourceRepository, ConnectionResourceRepository>();
         builder.Services.AddSingleton<IConnectionService, ConnectionService>();
+        builder.Services.AddSingleton<IRoleService, RoleService>();
 
         builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddSingleton<IMigrationService, SqlMigrationService>();
