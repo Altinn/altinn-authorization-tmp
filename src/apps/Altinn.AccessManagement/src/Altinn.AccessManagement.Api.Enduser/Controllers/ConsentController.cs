@@ -1,9 +1,7 @@
 ﻿using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Formats.Asn1;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers
 {
@@ -52,7 +50,8 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
                 return Unauthorized();
             }
 
-            await _consentService.DeleteRequest(requestId, cancellationToken);
+            await _consentService.DenyRequest(requestId, performedBy.Value, cancellationToken);
+            return Ok();
         }
     }
 }
