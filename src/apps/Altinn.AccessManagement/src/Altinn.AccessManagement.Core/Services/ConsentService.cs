@@ -1,34 +1,32 @@
-﻿using Altinn.AccessManagement.Core.Repositories.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
+using Altinn.Platform.Register.Models;
 
 namespace Altinn.AccessManagement.Core.Services
 {
     /// <summary>
     /// Service for handling consent
     /// </summary>
-    public class ConsentService : IConsent
+    /// <remarks>
+    /// Service responsible for consent functionality
+    /// </remarks>
+    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient) : IConsent
     {
-        private readonly IConsentRepository _consentRepository;
-
-        /// <summary>
-        /// Service responsible for consent functionality
-        /// </summary>
-        public ConsentService(IConsentRepository consentRepository)
-        {
-            _consentRepository = consentRepository;
-        }
+        private readonly IConsentRepository _consentRepository = consentRepository;
+        private readonly IPartiesClient _partiesClient = partiesClient;
 
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, CancellationToken cancellationToken = default)
         {
-            consentRequest.From = MapFromExternalIdenity(consentRequest.From);
-            consentRequest.To = MapFromExternalIdenity(consentRequest.To);
+            consentRequest.From = await MapFromExternalIdenity(consentRequest.From);
+            consentRequest.To = await MapFromExternalIdenity(consentRequest.To);
             ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(consentRequest);
-            requestDetails.From = MapToExternalIdenity(requestDetails.From);
-            requestDetails.To = MapToExternalIdenity(requestDetails.To);
+            requestDetails.From = consentRequest.From;
+            requestDetails.To = consentRequest.To;
             return requestDetails;
         }
 
@@ -39,7 +37,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public Task<Consent> GetConcent(Guid id, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken = default)
+        public async Task<Consent> GetConcent(Guid id, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken = default)
         {
             Consent consent = new Consent
             {
@@ -67,13 +65,19 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             };
 
-            return Task.FromResult(consent);
+            consent.From = await MapToExternalIdenity(consent.From);
+            consent.To = await MapToExternalIdenity(consent.To);
+
+            return consent;
         }
 
         /// <inheritdoc/>
         public async Task<ConsentRequestDetails> GetRequest(Guid id, CancellationToken cancellationToken = default)
         {
-            return await _consentRepository.GetRequest(id, cancellationToken);
+            ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
+            details.To = await MapToExternalIdenity(details.To, cancellationToken);
+            details.From = await MapToExternalIdenity(details.From, cancellationToken);
+            return details;
         }
 
         /// <inheritdoc/>
@@ -88,43 +92,73 @@ namespace Altinn.AccessManagement.Core.Services
             throw new NotImplementedException();
         }
 
-        private ConsentPartyUrn MapFromExternalIdenity(ConsentPartyUrn consentPartyUrn)
+        private async Task<ConsentPartyUrn> MapFromExternalIdenity(ConsentPartyUrn consentPartyUrn)
         {
             if (consentPartyUrn.IsPersonId(out PersonIdentifier personIdentifier))
             {
-                return GetInternalIdentifier(personIdentifier);
+                return await GetInternalIdentifier(personIdentifier);
             }
             else if (consentPartyUrn.IsOrganizationId(out OrganizationNumber organizationNumber))
             {
-                return GetInternalIdentifier(organizationNumber);
+                return await GetInternalIdentifier(organizationNumber);
             }
 
             return consentPartyUrn;
         }
 
-        private ConsentPartyUrn MapToExternalIdenity(ConsentPartyUrn consentPartyUrn)
+        private async Task<ConsentPartyUrn> MapToExternalIdenity(ConsentPartyUrn consentPartyUrn, CancellationToken cancellationToken = default)
         {
             if (consentPartyUrn.IsPartyUuid(out Guid partyUuid))
             {
-                return GetExternalIdentifier(partyUuid);    
+                return await GetExternalIdentifier(partyUuid, cancellationToken);    
             }
 
             return consentPartyUrn;
         }
 
-        private ConsentPartyUrn GetExternalIdentifier(Guid guid)
+        private async Task<ConsentPartyUrn> GetExternalIdentifier(Guid guid, CancellationToken cancellationToken = default)
         {
-            return ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01014922047"));
+            List<Party> parties = await _partiesClient.GetPartiesAsync(new List<Guid> { guid });
+
+            if (parties.Count == 0)
+            {
+                throw new ArgumentException($"Party with guid {guid} not found");
+            }
+
+            Party party = parties.First();
+
+            if (party.OrgNumber != null)
+            {
+                return ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(party.OrgNumber));
+            }
+            else if (party.SSN != null)
+            {
+                return ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(party.SSN));
+            }
+
+            throw new ArgumentException($"Party with guid {guid} is not valid consent party");
         }
 
-        private ConsentPartyUrn GetInternalIdentifier(OrganizationNumber organizationNumber)
+        private async Task<ConsentPartyUrn> GetInternalIdentifier(OrganizationNumber organizationNumber, CancellationToken cancellationToken = default)
         {
-            return ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid());
+            Party party = await _partiesClient.LookupPartyBySSNOrOrgNo(new PartyLookup { OrgNo = organizationNumber.ToString() }, cancellationToken);
+            if (party == null || party.PartyUuid == null)
+            {
+                throw new ArgumentException($"Party with orgNo {organizationNumber} not found");
+            }
+
+            return ConsentPartyUrn.PartyUuid.Create(party.PartyUuid.Value);
         }
 
-        private ConsentPartyUrn GetInternalIdentifier(PersonIdentifier personIdentifier)
+        private async Task<ConsentPartyUrn> GetInternalIdentifier(PersonIdentifier personIdentifier, CancellationToken cancellationToken = default)
         {
-            return ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid());
+            Party party = await _partiesClient.LookupPartyBySSNOrOrgNo(new PartyLookup { Ssn = personIdentifier.ToString() }, cancellationToken);
+            if (party == null || party.PartyUuid == null)
+            {
+                throw new ArgumentException($"Party with ssn {personIdentifier} not found");
+            }
+
+            return ConsentPartyUrn.PartyUuid.Create(party.PartyUuid.Value);
         }
     }
 }

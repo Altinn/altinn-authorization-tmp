@@ -3,8 +3,10 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using AccessMgmt.Tests.Mocks;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Tests;
+using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.Authorization.Api.Models.Consent;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -12,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AccessMgmt.Tests.Controllers.Enduser
 {
-    public class ConcentControllerTestEnduser : IClassFixture<CustomWebApplicationFactory<Program>>
+    public class ConsentControllerTestEnduser : IClassFixture<CustomWebApplicationFactory<Program>>
     {
         private readonly CustomWebApplicationFactory<Program> _factory;
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
@@ -23,7 +25,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
         /// <summary>
         /// Concent controller test
         /// </summary>
-        public ConcentControllerTestEnduser(CustomWebApplicationFactory<Program> factory)
+        public ConsentControllerTestEnduser(CustomWebApplicationFactory<Program> factory)
         {
             _factory = factory;
         }
@@ -46,6 +48,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
                 builder.ConfigureTestServices(services =>
                 {
                     services.AddSingleton<IConsentRepository, ConsentRepositoryMock>();
+                    services.AddSingleton<IPartiesClient, PartiesClientMock>();
                 });
             }).CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
