@@ -8,6 +8,8 @@ using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Altinn.AccessMgmt.Persistence.Data.Mock;
 using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Repo.Data;
 using Altinn.Authorization.Host.Startup;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,15 +62,16 @@ public static partial class DbAccessHostExtensions
             }
         }
 
-        //builder.Services.AddScoped<IConnectionRepository, ConnectionRepository>();
-        //builder.Services.AddScoped<IConnectionPackageRepository, ConnectionPackageRepository>();
-        //builder.Services.AddScoped<IConnectionResourceRepository, ConnectionResourceRepository>();
+        builder.Services.AddSingleton<IConnectionRepository, ConnectionRepository>();
+        builder.Services.AddSingleton<IConnectionPackageRepository, ConnectionPackageRepository>();
+        builder.Services.AddSingleton<IConnectionResourceRepository, ConnectionResourceRepository>();
+        builder.Services.AddSingleton<IConnectionService, ConnectionService>();
 
         builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddSingleton<IMigrationService, SqlMigrationService>();
         builder.Services.AddScoped<DbSchemaMigrationService>();
         builder.Services.AddScoped<DbDataMigrationService>();
-        //// builder.Services.AddScoped<MockupService>();
+        builder.Services.AddScoped<MockDataService>();
         builder.Services.Add(Marker.ServiceDescriptor);
 
         return builder;

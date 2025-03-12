@@ -52,22 +52,22 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Provider>(dataKey, string.Empty, 1);
         }
 
-        if (migrationService.NeedMigration<EntityType>(dataKey, 1))
+        if (migrationService.NeedMigration<EntityType>(dataKey, 2))
         {
             await IngestEntityType();
-            await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 1);
+            await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<EntityVariant>(dataKey, 1))
+        if (migrationService.NeedMigration<EntityVariant>(dataKey, 2))
         {
             await IngestEntityVariant();
-            await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 1);
+            await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 1))
+        if (migrationService.NeedMigration<Role>(dataKey, 2))
         {
             await IngestRole();
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 1);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 2);
         }
 
         if (migrationService.NeedMigration<RoleMap>(dataKey, 1))
@@ -210,13 +210,15 @@ public class DbDataMigrationService(
         var entityTypes = new List<EntityType>()
         {
             new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = Guid.Parse("C45F525C-D6B1-45B7-8D75-10B5B7F453DA") },
-            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = Guid.Parse("49F3ACFD-94B7-4819-A8BA-F0780F0C8255") }
+            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = Guid.Parse("49F3ACFD-94B7-4819-A8BA-F0780F0C8255") },
+            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "System", ProviderId = Guid.Parse("0900e42a-4396-4674-add3-1d33a268745b") },
         };
 
         var entityTypesEng = new List<EntityType>()
         {
             new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organization", ProviderId = Guid.Parse("C45F525C-D6B1-45B7-8D75-10B5B7F453DA") },
-            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = Guid.Parse("49F3ACFD-94B7-4819-A8BA-F0780F0C8255") }
+            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = Guid.Parse("49F3ACFD-94B7-4819-A8BA-F0780F0C8255") },
+            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "System", ProviderId = Guid.Parse("0900e42a-4396-4674-add3-1d33a268745b") },
         };
 
         foreach (var item in entityTypes)
@@ -239,6 +241,7 @@ public class DbDataMigrationService(
     {        
         var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "Organisasjon"));
         var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "Person"));
+        var systemTypeId = (await entityTypeService.Get(t => t.Name, "System")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "System"));
         var entityVariants = new List<EntityVariant>()
         {
             new EntityVariant() { Id = Guid.Parse("d786bc0e-8e9e-4116-bfc2-0344207c9127"), TypeId = orgTypeId, Name = "SAM", Description = "Tingsrettslig sameie" },
@@ -286,6 +289,7 @@ public class DbDataMigrationService(
             new EntityVariant() { Id = Guid.Parse("d7208d54-067d-4b5c-a906-f0da3d3de0f1"), TypeId = orgTypeId, Name = "KBO", Description = "Konkursbo" },
             new EntityVariant() { Id = Guid.Parse("ea460099-515f-4e54-88d8-fbe53a807276"), TypeId = orgTypeId, Name = "BA", Description = "Selskap med begrenset ansvar" },
             new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId, Name = "Person", Description = "Person" },
+            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
         };
 
         var entityVariantsEng = new List<EntityVariant>()
@@ -335,6 +339,7 @@ public class DbDataMigrationService(
             new EntityVariant() { Id = Guid.Parse("d7208d54-067d-4b5c-a906-f0da3d3de0f1"), TypeId = orgTypeId, Name = "KBO", Description = "Bankruptcy estate" },
             new EntityVariant() { Id = Guid.Parse("ea460099-515f-4e54-88d8-fbe53a807276"), TypeId = orgTypeId, Name = "BA", Description = "Limited liability company" },
             new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId, Name = "Person", Description = "Person" },
+            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
         };
 
         var entityVariantsNno = new List<EntityVariant>()
@@ -384,6 +389,7 @@ public class DbDataMigrationService(
             new EntityVariant() { Id = Guid.Parse("d7208d54-067d-4b5c-a906-f0da3d3de0f1"), TypeId = orgTypeId, Name = "KBO", Description = "Konkursbo" },
             new EntityVariant() { Id = Guid.Parse("ea460099-515f-4e54-88d8-fbe53a807276"), TypeId = orgTypeId, Name = "BA", Description = "Selskap med avgrensa ansvar" },
             new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId, Name = "PERS", Description = "Person" },
+            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
         };
 
         foreach (var item in entityVariants)
@@ -416,7 +422,7 @@ public class DbDataMigrationService(
 
         var roles = new List<Role>()
         {
-            new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = persEntityTypeId, ProviderId = digdirProviderId, Name = "Agent", Code = "AGENT", Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten", Urn = "digdir:role:agent" },
+            new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Agent", Code = "AGENT", Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten", Urn = "digdir:role:agent" },
             new Role() { Id = Guid.Parse("6795081e-e69c-4efd-8d42-2bfccd346777"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Klientadministrator", Code = "KLA", Description = "Gir mulighet til å administrere tilgang til tjenester videre til ansatte på vegne av deres kunder", Urn = "digdir:role:kla" },
             new Role() { Id = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Tilgangsstyrer", Code = "TS", Description = "Gir mulighet til å gi videre tilganger for virksomheten som man selv har mottatt", Urn = "digdir:role:ts" },
             new Role() { Id = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Hovedadministrator", Code = "HA", Description = "Gir mulighet til å administrere alle tilganger for virksomheten", Urn = "digdir:role:ha" },
@@ -453,7 +459,7 @@ public class DbDataMigrationService(
 
         var rolesEng = new List<Role>()
         {
-            new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = persEntityTypeId, ProviderId = digdirProviderId, Name = "Agent", Code = "AGENT", Description = "Allows receiving delegated authorizations for the business", Urn = "digdir:role:agent" },
+            new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Agent", Code = "AGENT", Description = "Allows receiving delegated authorizations for the business", Urn = "digdir:role:agent" },
             new Role() { Id = Guid.Parse("6795081e-e69c-4efd-8d42-2bfccd346777"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "ClientId Administrator", Code = "KLA", Description = "Allows managing access to services for employees on behalf of their clients", Urn = "digdir:role:kla" },
             new Role() { Id = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Access Manager", Code = "TS", Description = "Allows granting further accesses for the business that have been received", Urn = "digdir:role:ts" },
             new Role() { Id = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Main Administrator", Code = "HA", Description = "Allows managing all accesses for the business", Urn = "digdir:role:ha" },
@@ -490,7 +496,7 @@ public class DbDataMigrationService(
 
         var rolesNno = new List<Role>()
         {
-            new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = persEntityTypeId, ProviderId = digdirProviderId, Name = "Agent", Code = "AGENT", Description = "Gjev høve til å motta delegerte fullmakter for verksemda", Urn = "digdir:role:agent" },
+            new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Agent", Code = "AGENT", Description = "Gjev høve til å motta delegerte fullmakter for verksemda", Urn = "digdir:role:agent" },
             new Role() { Id = Guid.Parse("6795081e-e69c-4efd-8d42-2bfccd346777"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Klientadministrator", Code = "KLA", Description = "Gjev høve til å administrere tilgang til tenester vidare til tilsette på vegne av kundane deira", Urn = "digdir:role:kla" },
             new Role() { Id = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Tilgangsstyrer", Code = "TS", Description = "Gjev høve til å vidareformidle tilgongar for verksemda som ein sjølv har motteke", Urn = "digdir:role:ts" },
             new Role() { Id = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Hovudadministrator", Code = "HA", Description = "Gjev høve til å administrere alle tilgongar for verksemda", Urn = "digdir:role:ha" },
@@ -916,7 +922,7 @@ public class DbDataMigrationService(
             new RolePackage() { Id = Guid.Parse("1c599384-cfa3-4fda-b173-47b911dac598"), RoleId = roles["brreg:role:komp"], PackageId = packages["urn:altinn:accesspackage:ordinaerposttilvirksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { Id = Guid.Parse("56c560cf-8c3d-4f02-89f6-3ba6fa8899f8"), RoleId = roles["brreg:role:best"], PackageId = packages["urn:altinn:accesspackage:ordinaerposttilvirksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { Id = Guid.Parse("821e644a-0ae1-4635-a4d3-132a46377410"), RoleId = roles["brreg:role:bobe"], PackageId = packages["urn:altinn:accesspackage:ordinaerposttilvirksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
-            new RolePackage() { Id = Guid.Parse("d39dac3e-736c-4e60-a7eb-7efbb9484815"), RoleId = roles["brreg:role:dagl"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { Id = Guid.Parse("35C7BC9D-DA4B-49C5-A04F-EE621C08419C"), RoleId = roles["brreg:role:dagl"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { Id = Guid.Parse("8e41cb55-158b-4eea-ad6b-639723790412"), RoleId = roles["brreg:role:lede"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { Id = Guid.Parse("5a8cce7a-ea00-4f5a-801f-622dc96fc810"), RoleId = roles["brreg:role:innh"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { Id = Guid.Parse("ea246d6f-f30d-4bba-aa4d-36eaea914ee2"), RoleId = roles["brreg:role:dtso"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = false },

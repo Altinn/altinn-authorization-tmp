@@ -34,7 +34,7 @@ public class Entity
 /// <summary>
 /// Extended Entity
 /// </summary>
-public class ExtEntity 
+public class ExtEntity : Entity
 {
     /// <summary>
     /// Type

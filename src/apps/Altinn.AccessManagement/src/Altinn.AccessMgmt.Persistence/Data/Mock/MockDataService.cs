@@ -55,7 +55,7 @@ public class MockDataService
         var roleRegnskap = roles.FirstOrDefault(t => t.Code == "REGN");
         var roleAgent = roles.FirstOrDefault(t => t.Code == "AGENT");
 
-        var spirhAS = new Entity() { Id = Guid.Parse("B2432FB4-744C-404B-9298-03FC282D5B4A"), Name = "Spirh AS", RefId = "ORG-000", TypeId = orgType.Id, VariantId = variantAS.Id };
+        var spirhAS = new Entity() { Id = Guid.Parse("DDC63ADF-6513-4570-8DD0-21D6B7A55001"), Name = "Spirh AS", RefId = "ORG-000", TypeId = orgType.Id, VariantId = variantAS.Id };
         var bakerHansenAS = new Entity() { Id = Guid.Parse("212B4355-CE4D-4672-93BB-073AEC2BFC1E"), Name = "Baker Hansen", RefId = "ORG-001", TypeId = orgType.Id, VariantId = variantAS.Id };
         var regnskapsfolkAS = new Entity() { Id = Guid.Parse("02B0602E-9991-4E2F-9667-10B8F9D0C5A4"), Name = "Regnskapsfolk AS", RefId = "ORG-002", TypeId = orgType.Id, VariantId = variantAS.Id };
         var revisjonstroll = new Entity() { Id = Guid.Parse("2571B708-561B-4A33-92A9-1C53B439DE5B"), Name = "Revisjonstroll", RefId = "ORG-003", TypeId = orgType.Id, VariantId = variantAS.Id };
