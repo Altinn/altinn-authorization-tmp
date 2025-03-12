@@ -30,8 +30,8 @@
         </LeftContent>
         <RightContent>
             <ButtonGroup>
-                @*   <Button OnClick=@(() => CreateDelegationIsOpen = !CreateDelegationIsOpen)>Ny delegering</Button>
-                <Button OnClick=@(() => CreateAssignmentPackageModalIsOpen = !CreateAssignmentPackageModalIsOpen)>Gi pakke</Button>
+                <Button>Ny delegering</Button>
+                @*<Button OnClick=@(() => CreateAssignmentPackageModalIsOpen = !CreateAssignmentPackageModalIsOpen)>Gi pakke</Button>
                 <Button OnClick=@(() => CreateAssignmentResourceModalIsOpen = !CreateAssignmentResourceModalIsOpen)>Gi ressurs</Button> *@
             </ButtonGroup>
         </RightContent>
@@ -73,15 +73,32 @@
                             <th>Name</th>
                             <th>IsDelegable</th>
                             <th>Urn</th>
+                            @if (IsDelegation)
+                            {
+                                <th>Action</th>
+                            }
                         </SimpleTableRow>
                     </Head>
                     <Body>
-                        @foreach(var package in Packages)
+                        @foreach (var package in SourcePackages)
                         {
                             <SimpleTableRow>
                                 <td>@package.Name</td>
                                 <td>@package.IsDelegable</td>
                                 <td>@package.Urn</td>
+                                @if (IsDelegation)
+                                {
+                                    <td>
+                                        @if(Packages.Count(t=>t.Id == package.Id) == 1)
+                                        {
+                                            <Button State="Button.ButtonState.Alert" Variant="Button.ButtonVariant.Filled">Remove</Button>
+                                        }
+                                        else
+                                        {
+                                            <Button State="Button.ButtonState.Inverted" Variant="Button.ButtonVariant.Filled">Add</Button>
+                                        }
+                                    </td>
+                                }
                             </SimpleTableRow>
                         }
                     </Body>
@@ -123,14 +140,44 @@
                 <SimpleTable>
                     <Head>
                         <SimpleTableRow IsHeaderRow>
-                            <th>Name</th>
+                            <th>From</th>
+                            <th>Role</th>
+                            <th>To</th>
+                            <th>&nbsp;</th>
                         </SimpleTableRow>
                     </Head>
                     <Body>
                         @foreach (var delegation in ClientDelegations)
                         {
                             <SimpleTableRow>
-                                <td>@delegation.Id</td>
+                               @*  <td>
+                                    @if (IsDelegation)
+                                    {
+                                        <Icon Name="arrow-right-to-arc"></Icon>
+                                    }
+                                    else
+                                    {
+                                        <Icon Name="arrow-down-to-arc"></Icon>
+                                    }
+                                </td> *@
+                                <td><EntityTypeIcon Name="@delegation.From.Type" /> <a href=@($"/entity/{delegation.From.Id}")>@delegation.From.Name</a></td>
+                                @if (delegation.FacilitatorRole == null)
+                                {
+                                    <td><Badge Inverted>@delegation.Role.Name</Badge></td>
+                                }
+                                else
+                                {
+                                    if (delegation.Facilitator == null)
+                                    {
+                                        <td><SplitBadge Inverted Key=@delegation.FacilitatorRole.Name Value=@delegation.Role.Name></SplitBadge></td>
+                                    }
+                                    else
+                                    {
+                                        <td><SplitBadge Inverted Key=@delegation.Role.Name Value=@delegation.FacilitatorRole.Name></SplitBadge></td>
+                                    }
+                                }
+                                <td><EntityTypeIcon Name="@delegation.To.Type" /> <a href=@($"/entity/{delegation.To.Id}")>@delegation.To.Name</a></td>
+                                <td><a href=@($"/connection/{delegation.Id}")><Icon Name="arrow-up-right-from-square"></Icon></a></td>
                             </SimpleTableRow>
                         }
                     </Body>
@@ -145,14 +192,34 @@
                 <SimpleTable>
                     <Head>
                         <SimpleTableRow IsHeaderRow>
-                            <th>Name</th>
+                            <th>From</th>
+                            <th>Role</th>
+                            <th>To</th>
+                            <th>&nbsp;</th>
                         </SimpleTableRow>
                     </Head>
                     <Body>
                         @foreach (var delegation in AgentDelegations)
                         {
                             <SimpleTableRow>
-                                <td>@delegation.Id</td>
+                                <td><EntityTypeIcon Name="@delegation.From.Type" /> <a href=@($"/entity/{delegation.From.Id}")>@delegation.From.Name</a></td>
+                                @if (delegation.FacilitatorRole == null)
+                                {
+                                    <td><Badge Inverted>@delegation.Role.Name</Badge></td>
+                                }
+                                else
+                                {
+                                    if (delegation.Facilitator == null)
+                                    {
+                                        <td><SplitBadge Inverted Key=@delegation.FacilitatorRole.Name Value=@delegation.Role.Name></SplitBadge></td>
+                                    }
+                                    else
+                                    {
+                                        <td><SplitBadge Inverted Key=@delegation.Role.Name Value=@delegation.FacilitatorRole.Name></SplitBadge></td>
+                                    }
+                                }
+                                <td><EntityTypeIcon Name="@delegation.To.Type" /> <a href=@($"/entity/{delegation.To.Id}")>@delegation.To.Name</a></td>
+                                <td><a href=@($"/connection/{delegation.Id}")><Icon Name="arrow-up-right-from-square"></Icon></a></td>
                             </SimpleTableRow>
                         }
                     </Body>
@@ -173,10 +240,12 @@
     public IEnumerable<Package> Packages { get; set; }
     public IEnumerable<Resource> Resources { get; set; }
 
+    public IEnumerable<Package> SourcePackages { get; set; }
+
     public bool IsDelegation { get; set; }
 
-    public IEnumerable<ExtDelegation> AgentDelegations { get; set; }
-    public IEnumerable<ExtDelegation> ClientDelegations { get; set; }
+    public List<ExtConnection> AgentDelegations { get; set; } = new();
+    public List<ExtConnection> ClientDelegations { get; set; } = new();
 
     protected async override Task OnParametersSetAsync()
     {
@@ -189,17 +258,40 @@
         Packages = await connectionService.GetPackages(Id); // connectionPackageRepository.GetB(Id);
         Resources = await connectionService.GetResources(Id); // connectionResourceRepository.GetB(Id);
 
+        var sourceFilter = assignmentRepository.CreateFilterBuilder();
+        sourceFilter.Equal(t => t.FromId, Connection.From.Id);
+        sourceFilter.Equal(t => t.RoleId, Connection.Role.Id);
+        if (IsDelegation)
+        {
+            sourceFilter.Equal(t => t.ToId, Connection.Facilitator.Id);
+        }
+        else
+        {
+            sourceFilter.Equal(t => t.ToId, Connection.To.Id);
+        }
+        var sourceAssignment = (await assignmentRepository.Get(sourceFilter)).FirstOrDefault() ?? Assignment;
+        SourcePackages = await connectionPackageRepository.GetB(sourceAssignment.Id);
+
+
         if (!IsDelegation)
         {
             /*Find all Agents*/
             var agentFilter = delegationRepository.CreateFilterBuilder();
             agentFilter.Equal(t => t.FromId, Connection.Id);
-            AgentDelegations = await delegationRepository.GetExtended(agentFilter);
+            var r1 = await delegationRepository.GetExtended(agentFilter);
+            foreach(var rr in r1)
+            {
+                AgentDelegations.Add(await connectionService.Get(rr.Id));
+            }
 
             /*Find all Clients*/
             var clientFilter = delegationRepository.CreateFilterBuilder();
             clientFilter.Equal(t => t.ToId, Connection.Id);
-            ClientDelegations = await delegationRepository.GetExtended(clientFilter);
+            var r2 = await delegationRepository.GetExtended(clientFilter);
+            foreach (var rr in r2)
+            {
+                ClientDelegations.Add(await connectionService.Get(rr.Id));
+            }
         }
         
        
