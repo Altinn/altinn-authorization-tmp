@@ -32,30 +32,26 @@ public class DbSchemaMigrationService
         this.migrationService = migrationService;
     }
 
-    private async Task PreMigration()
+    private async Task PreMigration(CancellationToken cancellationToken = default)
     {
-        //// await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseSchema};", new List<GenericParameter>(), cancellationToken);
-        //// await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
-        //// await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
-        //// await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        /* Moved to terraform/bootstraping */
 
-        await Task.CompletedTask;
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {options.Value.BaseSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {options.Value.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {options.Value.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {options.Value.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        
+        await executor.ExecuteMigrationCommand($"GRANT USAGE ON SCHEMA {options.Value.BaseSchema} TO {options.Value.DatabaseReadUser};");
+        await executor.ExecuteMigrationCommand($"GRANT USAGE ON SCHEMA {options.Value.TranslationSchema} TO {options.Value.DatabaseReadUser};");
+        await executor.ExecuteMigrationCommand($"GRANT USAGE ON SCHEMA {options.Value.BaseHistorySchema} TO {options.Value.DatabaseReadUser};");
+        await executor.ExecuteMigrationCommand($"GRANT USAGE ON SCHEMA {options.Value.TranslationHistorySchema} TO {options.Value.DatabaseReadUser};");
     }
 
-    private async Task PostMigration()
+    private async Task PostMigration(CancellationToken cancellationToken = default)
     {
         var config = this.options.Value;
 
-        /*
-        // Moved to terraform/bootstraping
-        GRANT USAGE ON SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};
-        GRANT USAGE ON SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};
-        GRANT USAGE ON SCHEMA {config.BaseHistorySchema} TO {config.DatabaseReadUser};
-        GRANT USAGE ON SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};
-        */
-
         //// TODO: Move to CREATE TABLE script
-
         string script = $"""
         GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};
         GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};
@@ -63,23 +59,23 @@ public class DbSchemaMigrationService
         GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};
         """;
 
-        await executor.ExecuteMigrationCommand(script);
+        await executor.ExecuteMigrationCommand(script, null, cancellationToken);
     }
 
     /// <summary>
     /// MigrateAll
     /// </summary>
     /// <returns></returns>
-    public async Task MigrateAll()
+    public async Task MigrateAll(CancellationToken cancellationToken = default)
     {
         if (Scripts.Count == 0)
         {
             throw new Exception("Nothing to migrate. Remember to generate first.");
         }
 
-        await PreMigration();
-        await ExecuteMigration();
-        await PostMigration();
+        await PreMigration(cancellationToken: cancellationToken);
+        await ExecuteMigration(cancellationToken: cancellationToken);
+        await PostMigration(cancellationToken: cancellationToken);
     }
 
     /// <summary>

@@ -120,7 +120,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         */
     }
 
-    /// <inheritdoc />
+
+    /// <inheritdoc/>
     public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
     {
         return BuildMergeQuery(parameters, mergeFilter, forTranslation);
@@ -142,7 +143,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         }
 
         sb.AppendLine(")");
-
+        
         var mergeStatementFilter = string.Join(',', mergeFilter.Select(t => $"T.{t.PropertyName} = N.{t.PropertyName}"));
         sb.AppendLine($"MERGE INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} AS T USING N ON {mergeStatementFilter}");
         if (forTranslation)
@@ -150,7 +151,11 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             sb.AppendLine(" AND T.language = N.language");
         }
 
-        sb.AppendLine("WHEN MATCHED THEN");
+        sb.AppendLine("WHEN MATCHED");
+
+        sb.AppendLine($"AND ({MergeUpdateMatchStatement(parameters)})");
+
+        sb.AppendLine("THEN");
         sb.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
         sb.AppendLine("WHEN NOT MATCHED THEN");
         sb.AppendLine($"INSERT ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)});");
@@ -439,6 +444,15 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return string.Join(',', values.OrderBy(t => t).Select(t => $"@{t}").ToList());
     }
 
+    private string MergeUpdateMatchStatement(List<GenericParameter> values)
+    {
+        return MergeUpdateMatchStatement(values.Select(t => t.Key));
+    }
+
+    private string MergeUpdateMatchStatement(IEnumerable<string> values)
+    {
+        return string.Join(" OR ", values.OrderBy(t => t).Select(t => $"T.{t} <> @{t}").ToList());
+    }
     #endregion
 
     #region Schema
