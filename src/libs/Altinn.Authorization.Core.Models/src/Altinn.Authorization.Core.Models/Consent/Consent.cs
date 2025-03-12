@@ -1,4 +1,4 @@
-﻿namespace Altinn.AccessManagement.Core.Models.Consent
+﻿namespace Altinn.Authorization.Core.Models.Consent
 {
     /// <summary>
     /// Describes a concent

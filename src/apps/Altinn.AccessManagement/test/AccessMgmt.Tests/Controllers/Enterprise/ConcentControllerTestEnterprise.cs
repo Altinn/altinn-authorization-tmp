@@ -2,12 +2,10 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using Altinn.AccessManagement.Api.Enterprise.Models.Consent;
-using Altinn.AccessManagement.Api.Maskinporten.Models.Concent;
-using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Tests;
+using Altinn.Authorization.Api.Models.Consent;
+using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
-using Altinn.Register.Core.Parties;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 
@@ -42,17 +40,17 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         {
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
-                From = Altinn.AccessManagement.Api.Enterprise.Models.Consent.ConsentPartyUrnExternal2.PersonId.Create(PersonIdentifier.Parse("01025602168")),
-                To = Altinn.AccessManagement.Api.Enterprise.Models.Consent.ConsentPartyUrnExternal2.OrganizationId.Create(OrganizationNumber.Parse("910194143")),
+                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025602168")),
+                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("910194143")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<Altinn.AccessManagement.Api.Enterprise.Models.Consent.ConsentRightExternal2>
+                ConsentRights = new List<ConsentRightExternal>
                 {
-                    new Altinn.AccessManagement.Api.Enterprise.Models.Consent.ConsentRightExternal2
+                    new ConsentRightExternal
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<Altinn.AccessManagement.Api.Enterprise.Models.Consent.ConsentResourceAttributeExternal2>
+                        Resource = new List<ConsentResourceAttributeExternal>
                         {
-                            new Altinn.AccessManagement.Api.Enterprise.Models.Consent.ConsentResourceAttributeExternal2
+                            new ConsentResourceAttributeExternal
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "skd_inntektsopplsyniung"

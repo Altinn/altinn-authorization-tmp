@@ -1,4 +1,4 @@
-﻿namespace Altinn.AccessManagement.Core.Models.Consent
+﻿namespace Altinn.Authorization.Core.Models.Consent
 {
     /// <summary>
     /// A resurce attribute identifying part or whole resource

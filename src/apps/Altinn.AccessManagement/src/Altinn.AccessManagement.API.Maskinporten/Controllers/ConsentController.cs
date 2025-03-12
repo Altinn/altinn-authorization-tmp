@@ -1,7 +1,6 @@
 ﻿using Altinn.AccessManagement.Api.Maskinporten.Models.Concent;
-using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.Register.Core.Parties;
+using Altinn.Authorization.Core.Models.Consent;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Maskinporten.Controllers

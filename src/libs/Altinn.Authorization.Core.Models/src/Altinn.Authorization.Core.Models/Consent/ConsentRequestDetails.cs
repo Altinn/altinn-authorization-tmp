@@ -1,6 +1,4 @@
-﻿using Altinn.AccessManagement.Core.Enums.Consent;
-
-namespace Altinn.AccessManagement.Core.Models.Consent
+﻿namespace Altinn.Authorization.Core.Models.Consent
 {
     /// <summary>
     /// Represents a consent request.

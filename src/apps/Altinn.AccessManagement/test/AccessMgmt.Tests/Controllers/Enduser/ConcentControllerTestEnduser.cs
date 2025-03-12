@@ -3,16 +3,12 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using AccessMgmt.Tests.Mocks;
-using Altinn.AccessManagement.Api.Enterprise.Models.Consent;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Tests;
-using Altinn.AccessManagement.Tests.Mocks;
-using AltinnCore.Authentication.JwtCookie;
+using Altinn.Authorization.Api.Models.Consent;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace AccessMgmt.Tests.Controllers.Enduser
 {

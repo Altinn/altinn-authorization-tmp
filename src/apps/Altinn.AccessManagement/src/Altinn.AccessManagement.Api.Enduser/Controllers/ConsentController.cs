@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessManagement.Api.Enduser.Utils;
-using Altinn.AccessManagement.Core.Models.Consent;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.Authorization.Core.Models.Consent;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers
@@ -12,9 +13,10 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
     /// </summary>
     [Route("accessmanagement/api/v1/enduser/consent/")]
     [ApiController]
-    public class ConsentController(IConsent consentService) : ControllerBase
+    public class ConsentController(IConsent consentService, IPartiesClient partiesClient) : ControllerBase
     {
         private readonly IConsent _consentService = consentService;
+        private readonly IPartiesClient _partiesClient = partiesClient;
 
         /// <summary>
         /// Get a specific consent

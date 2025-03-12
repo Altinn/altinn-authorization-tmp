@@ -1,10 +1,8 @@
-﻿using Altinn.AccessManagement.Core.Enums.Consent;
-using Altinn.AccessManagement.Core.Models.Consent;
-using Altinn.AccessManagement.Core.Models.Register;
-using Altinn.AccessManagement.Core.Repositories.Interfaces;
+﻿using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.Authorization.Core.Models.Consent;
+using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
-using Altinn.Register.Core.Parties;
 
 namespace Altinn.AccessManagement.Core.Services
 {

@@ -1,7 +1,6 @@
-﻿using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Core.Models.Consent;
+﻿using System.Text.Json;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
-using System.Text.Json;
+using Altinn.Authorization.Core.Models.Consent;
 
 namespace AccessMgmt.Tests.Mocks
 {

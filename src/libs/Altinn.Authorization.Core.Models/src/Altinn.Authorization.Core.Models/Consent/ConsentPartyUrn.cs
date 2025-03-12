@@ -1,10 +1,8 @@
 ﻿using System.Globalization;
-using Altinn.AccessManagement.Core.Models.Register;
-using Altinn.Register.Core.Parties;
+using Altinn.Authorization.Core.Models.Register;
 using Altinn.Urn;
-using static Altinn.AccessManagement.Core.Models.Register.PartyUrn;
 
-namespace Altinn.AccessManagement.Core.Models.Consent
+namespace Altinn.Authorization.Core.Models.Consent
 {
     /// <summary>
     /// A unique reference to a party in the form of an URN.

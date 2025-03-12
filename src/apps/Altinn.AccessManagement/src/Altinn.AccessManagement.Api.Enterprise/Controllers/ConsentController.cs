@@ -1,7 +1,8 @@
 ﻿using System.Net.Mime;
-using Altinn.AccessManagement.Api.Enterprise.Models.Consent;
-using Altinn.AccessManagement.Core.Models.Consent;
+using Altinn.AccessManagement.Api.Enterprise.Utils;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.Authorization.Api.Models.Consent;
+using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +29,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> CreateRequest([FromBody] ConsentRequestExternal consentRequest)
         {
-            Result<ConsentRequestDetails> consentRequestStatus = await _consentService.CreateRequest(consentRequest.ToCore());
+            Result<ConsentRequestDetails> consentRequestStatus = await _consentService.CreateRequest(ModelMapper.ToCore(consentRequest));
 
             if (consentRequestStatus.IsProblem)
             {
