@@ -34,3 +34,6 @@ vpn_owners_principal_ids = [
   "6eaed23e-df7f-4708-9c8e-a7f34deeadb4", # GitHub: altinn/altinn-authorization-tmp - Dev
   "a9585a64-20f0-4d18-aba6-9930f92b809c"  # GitHub: altinn/altinn-authorization-tmp - Prod
 ]
+vpn_routes = {
+  AuthorizationInfrastructure : "10.202.0.0/16"
+}
