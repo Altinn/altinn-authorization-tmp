@@ -4,6 +4,7 @@ using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
+using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 
 namespace Altinn.AccessManagement.Core.Services
@@ -127,11 +128,11 @@ namespace Altinn.AccessManagement.Core.Services
 
             Party party = parties.First();
 
-            if (party.OrgNumber != null)
+            if (party.PartyTypeName.Equals(PartyType.Organisation))
             {
                 return ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(party.OrgNumber));
             }
-            else if (party.SSN != null)
+            else if (party.PartyTypeName.Equals(PartyType.Person))
             {
                 return ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(party.SSN));
             }
