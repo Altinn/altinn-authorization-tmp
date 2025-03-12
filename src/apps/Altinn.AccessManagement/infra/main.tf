@@ -243,8 +243,8 @@ module "postgres_server" {
     "azure.extensions" : "HSTORE"
   }
 
-  compute_tier = "Burstable"
-  compute_size = "Standard_B1ms"
+  compute_tier = var.db_compute_tier
+  compute_size = var.db_compute_size
 
   entraid_admins = concat([
     {
@@ -269,6 +269,7 @@ resource "null_resource" "bootstrap_database" {
     working_dir = "../../../tools/Altinn.Authorization.Cli/src/Altinn.Authorization.Cli"
     command     = <<EOT
       dotnet run -- db bootstrap ${local.conf_json_path} \
+        --max-pool-size=${var.db_max_pool_size} \
         --tenant-id=${data.azurerm_client_config.current.tenant_id} \
         --principal-name=${data.azurerm_user_assigned_identity.admin.name} \
         --server-resource-group=${azurerm_resource_group.access_management.name} \
