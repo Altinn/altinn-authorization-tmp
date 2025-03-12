@@ -1,22 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Altinn.AccessManagement.Api.Maskinporten.Controllers;
 using Altinn.AccessManagement.Api.Maskinporten.Models.Concent;
-using Altinn.AccessManagement.Controllers;
 using Altinn.AccessManagement.Tests;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace AccessMgmt.Tests.Controllers.MaskinPorten
 {
-
     /// <summary>
     /// Tests for maskinporten controller for consent
     /// </summary>
