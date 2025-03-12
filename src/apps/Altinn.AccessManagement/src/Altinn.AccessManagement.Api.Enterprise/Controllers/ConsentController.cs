@@ -17,7 +17,9 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
     {
         private readonly IConsent _consentService = consentService;
 
-        // Existing code...
+        /// <summary>
+        /// Endpoint to create a consent request
+        /// </summary>
         [HttpPost]
         [Route("request")]
         [Consumes(MediaTypeNames.Application.Json)]

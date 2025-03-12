@@ -29,6 +29,5 @@
         /// The request message
         /// </summary>
         public Dictionary<string, string>? Requestmessage { get; set; }
-
     }
 }

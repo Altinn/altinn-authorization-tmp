@@ -1,17 +1,24 @@
-﻿using Altinn.Authorization.Api.Models.Consent;
+﻿#nullable enable
+using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
 
 namespace Altinn.AccessManagement.Api.Enduser.Utils
 {
+    /// <summary>
+    /// Mapper for converting between external and internal models
+    /// </summary>
     public static class ModelMapper
     {
-        public static ConsentRequest ToCore(ConsentRequestStatusExternal consentRequestExternal)
+        /// <summary>
+        /// Converts external consent request to internam model
+        /// </summary>
+        public static ConsentRequest ToCore(ConsentRequestExternal consentRequestExternal)
         {
             // The id 
             Guid consentId = Guid.NewGuid();
 
-            ConsentPartyUrn fromInternal = null;
+            ConsentPartyUrn? fromInternal = null;
             if (consentRequestExternal.From.IsOrganizationId(out OrganizationNumber? organizationNumber))
             {
                 fromInternal = ConsentPartyUrn.OrganizationId.Create(organizationNumber);
@@ -21,7 +28,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils
                 fromInternal = ConsentPartyUrn.PersonId.Create(personIdentifier);
             }
 
-            ConsentPartyUrn toInternal = null;
+            ConsentPartyUrn? toInternal = null;
             if (consentRequestExternal.To.IsOrganizationId(out OrganizationNumber? organizationNumberTo))
             {
                 toInternal = ConsentPartyUrn.OrganizationId.Create(organizationNumberTo);
@@ -29,6 +36,11 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils
             else if (consentRequestExternal.To.IsPersonId(out PersonIdentifier? personIdentifier))
             {
                 toInternal = ConsentPartyUrn.PersonId.Create(personIdentifier);
+            }
+
+            if (fromInternal == null || toInternal == null)
+            {
+                throw new ArgumentException("Unknown consent party urn");
             }
 
             return new ConsentRequest
@@ -41,7 +53,5 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils
                 Requestmessage = consentRequestExternal.Requestmessage
             };
         }
-
-
     }
 }

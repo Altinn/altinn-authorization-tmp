@@ -21,6 +21,6 @@
         /// <summary>
         /// The metadata for the right. Can be multiple but in most concents it is only one.    
         /// </summary>
-        public Dictionary<string, string> MetaData { get; set; }
+        public Dictionary<string, string>? MetaData { get; set; }
     }
 }

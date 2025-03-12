@@ -4,15 +4,20 @@ using Altinn.Authorization.Core.Models.Register;
 
 namespace Altinn.AccessManagement.Api.Enterprise.Utils
 {
+    /// <summary>
+    /// Mapper for converting between external and internal models
+    /// </summary>
     public static class ModelMapper
     {
-
+        /// <summary>
+        /// Converts external consent request to internam model
+        /// </summary>
         public static ConsentRequest ToCore(ConsentRequestExternal consentRequestExternal)
         {
             // The id 
             Guid consentId = Guid.NewGuid();
 
-            ConsentPartyUrn fromInternal = null;
+            ConsentPartyUrn? fromInternal = null;
             if (consentRequestExternal.From.IsOrganizationId(out OrganizationNumber? organizationNumber))
             {
                 fromInternal = ConsentPartyUrn.OrganizationId.Create(organizationNumber);
@@ -22,7 +27,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
                 fromInternal = ConsentPartyUrn.PersonId.Create(personIdentifier);
             }
 
-            ConsentPartyUrn toInternal = null;
+            ConsentPartyUrn? toInternal = null;
             if (consentRequestExternal.To.IsOrganizationId(out OrganizationNumber? organizationNumberTo))
             {
                 toInternal = ConsentPartyUrn.OrganizationId.Create(organizationNumberTo);
@@ -30,6 +35,11 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
             else if (consentRequestExternal.To.IsPersonId(out PersonIdentifier? personIdentifier))
             {
                 toInternal = ConsentPartyUrn.PersonId.Create(personIdentifier);
+            }
+
+            if (fromInternal == null || toInternal == null)
+            {
+                throw new ArgumentException("Unknown consent party urn");
             }
 
             return new ConsentRequest

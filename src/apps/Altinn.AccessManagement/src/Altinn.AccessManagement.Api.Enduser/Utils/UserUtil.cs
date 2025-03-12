@@ -3,7 +3,7 @@
 namespace Altinn.AccessManagement.Api.Enduser.Utils
 {
     /// <summary>
-    /// 
+    /// Utility class for user related operations
     /// </summary>
     public static class UserUtil
     {

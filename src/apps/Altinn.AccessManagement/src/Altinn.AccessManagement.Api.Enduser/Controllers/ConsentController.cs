@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers
 {
-    
     /// <summary>
     /// Api for consent information for end users.
     /// Most API is are only available from Altinn Portal. This to ensure that end user is web informed about details 
@@ -28,6 +27,12 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
             return Ok(consentRequest);
         }
 
+        /// <summary>
+        /// Endpoint to approve a consent request
+        /// The authenticated user must fullfill the requirements to approve the request.
+        /// - Have right for accessmanagement for the party that is requesting the consent
+        /// - Have the right to delegate the requested rights. Either by having the right self or beeing the main administrator
+        /// </summary>
         [HttpPost]
         [Route("request/{requestId}/approve/")]
         public async Task<IActionResult> Approve(Guid requestId, CancellationToken cancellationToken = default)
@@ -42,8 +47,11 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Endpoint to deny a consent request
+        /// </summary>
         [HttpPost]
-        [Route("request/{requestId}/revoke/")]
+        [Route("request/{requestId}/deny/")]
         public async Task<IActionResult> Deny(Guid requestId, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);

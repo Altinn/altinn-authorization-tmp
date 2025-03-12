@@ -64,6 +64,5 @@ namespace Altinn.Authorization.Api.Models.Consent
                 ConsentRights = core.ConsentRights.Select(ConsentRightExternal.FromCore).ToList()
             };
         }
-
     }
 }

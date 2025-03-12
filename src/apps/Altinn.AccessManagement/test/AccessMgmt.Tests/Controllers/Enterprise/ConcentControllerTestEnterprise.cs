@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.TestHost;
 
 namespace AccessMgmt.Tests.Controllers.Enterprise
 {
-
     /// <summary>
     /// Tests for maskinporten controller for consent
     /// </summary>
@@ -84,7 +83,6 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count(), consentInfo.ConsentRights[0].Action.Count());
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
-
         }
 
         private HttpClient GetTestClient()

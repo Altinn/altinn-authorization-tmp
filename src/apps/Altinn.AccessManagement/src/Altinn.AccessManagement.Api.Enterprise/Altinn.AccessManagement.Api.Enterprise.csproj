@@ -12,11 +12,7 @@
     <PackageReference Include="Altinn.Urn" />
   </ItemGroup>
 
-  <ItemGroup>
-	  <PackageVersion Include="Altinn.Urn" Version="2.6.1" />
-  </ItemGroup>
-
-  <ItemGroup>
+ <ItemGroup>
     <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Api.Models\src\Altinn.Authorization.Api.Models\Altinn.Authorization.Api.Models.csproj" />
     <ProjectReference Include="..\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj" />
   </ItemGroup>

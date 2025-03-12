@@ -70,6 +70,24 @@ namespace Altinn.AccessManagement.Core.Services
             return Task.FromResult(consent);
         }
 
+        /// <inheritdoc/>
+        public async Task<ConsentRequestDetails> GetRequest(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _consentRepository.GetRequest(id, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task ApproveRequest(Guid id, Guid approvedByParty, CancellationToken cancellationToken = default)
+        {
+            await _consentRepository.ApproveConsentRequest(id, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public Task RevokeConsent(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
         private ConsentPartyUrn MapFromExternalIdenity(ConsentPartyUrn consentPartyUrn)
         {
             if (consentPartyUrn.IsPersonId(out PersonIdentifier personIdentifier))
@@ -107,21 +125,6 @@ namespace Altinn.AccessManagement.Core.Services
         private ConsentPartyUrn GetInternalIdentifier(PersonIdentifier personIdentifier)
         {
             return ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid());
-        }
-
-        public async Task<ConsentRequestDetails> GetRequest(Guid id, CancellationToken cancellationToken = default)
-        {
-          return await _consentRepository.GetRequest(id, cancellationToken);
-        }
-
-        public async Task ApproveRequest(Guid id, Guid approvedByParty, CancellationToken cancellationToken = default)
-        {
-            await _consentRepository.ApproveConsentRequest(id, cancellationToken);
-        }
-
-        public Task RevokeConsent(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
         }
     }
 }

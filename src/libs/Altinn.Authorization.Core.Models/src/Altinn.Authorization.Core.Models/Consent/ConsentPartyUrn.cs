@@ -49,6 +49,5 @@ namespace Altinn.Authorization.Core.Models.Consent
         // Manually overridden to disallow negative party ids
         private static bool TryParsePartyId(ReadOnlySpan<char> segment, IFormatProvider provider, out int value)
             => int.TryParse(segment, NumberStyles.None, provider, out value);
-
     }
 }
