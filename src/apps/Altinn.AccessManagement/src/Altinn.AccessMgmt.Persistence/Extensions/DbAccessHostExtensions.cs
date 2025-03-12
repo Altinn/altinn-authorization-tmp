@@ -5,6 +5,8 @@ using Altinn.AccessMgmt.Persistence.Core.Executors;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
+using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Repo.Data;
 using Altinn.Authorization.Host.Startup;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,9 +59,12 @@ public static partial class DbAccessHostExtensions
             }
         }
 
+        builder.Services.AddSingleton<IRoleService, RoleService>();
+
         builder.Services.AddSingleton<DbDefinitionRegistry>();
-        builder.Services.AddScoped<MigrationService>();
-        builder.Services.AddScoped<IngestService>();
+        builder.Services.AddSingleton<IMigrationService, SqlMigrationService>();
+        builder.Services.AddScoped<DbSchemaMigrationService>();
+        builder.Services.AddScoped<DbDataMigrationService>();
         //// builder.Services.AddScoped<MockupService>();
         builder.Services.Add(Marker.ServiceDescriptor);
 
@@ -107,11 +112,11 @@ public static partial class DbAccessHostExtensions
         DefineAllModels(host.Services);
         using (var scope = host.Services.CreateScope())
         {
-            var migration = scope.ServiceProvider.GetRequiredService<MigrationService>();
+            var migration = scope.ServiceProvider.GetRequiredService<DbSchemaMigrationService>();
             migration.GenerateAll();
-            await migration.Migrate();
+            await migration.MigrateAll();
 
-            var dbIngest = scope.ServiceProvider.GetRequiredService<IngestService>();
+            var dbIngest = scope.ServiceProvider.GetRequiredService<DbDataMigrationService>();
             await dbIngest.IngestAll();
 
             //// var mockService = scope.ServiceProvider.GetRequiredService<MockupService>();
