@@ -1,12 +1,16 @@
+using System.Security.Cryptography.X509Certificates;
 using Altinn.Authorization.Integration.Platform.Extensions;
 using Altinn.Common.AccessTokenClient.Services;
+using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Options;
 
 namespace Altinn.Authorization.Integration.Platform;
 
-public class TokenGenerator
+internal class TokenGenerator
 {
-    public class TokenGeneratorTestTool(IOptions<AltinnIntegrationOptions> options, IHttpClientFactory httpClientFactory) : ITokenGenerator
+    internal class TokenGeneratorTestTool(IOptions<AltinnIntegrationOptions> options, IHttpClientFactory httpClientFactory) : ITokenGenerator
     {
         private IOptions<AltinnIntegrationOptions> Options { get; } = options;
 
@@ -25,7 +29,7 @@ public class TokenGenerator
             var options = Options.Value;
 
             var request = RequestComposer.New(
-                RequestComposer.WithSetUri(options.PlatformAccessToken.TestTool.TokenGeneratorUrl),
+                RequestComposer.WithSetUri(options.PlatformAccessToken.TestTool.Endpoint),
                 RequestComposer.WithHttpVerb(HttpMethod.Get),
                 RequestComposer.WithAppendQueryParam("env", options.PlatformAccessToken.TestTool.Environment),
                 RequestComposer.WithAppendQueryParam("ttl", 3600),
@@ -61,13 +65,27 @@ public class TokenGenerator
         }
     }
 
-    public class TokenGeneratorKeyVault(IOptions<AltinnIntegrationOptions> options, IAccessTokenGenerator platformKeyVault) : ITokenGenerator
+    internal class TokenGeneratorKeyVault(
+            IOptions<AltinnIntegrationOptions> options,
+            IAzureClientFactory<SecretClient> azureSecretClientFactory,
+            IAzureClientFactory<CertificateClient> azureCertificateClientFactory,
+            IAccessTokenGenerator platformKeyVault) : ITokenGenerator
     {
+        public const string ServiceKey = "AltinnPlatformKeyVault";
+
+        private SemaphoreSlim Semaphore { get; } = new(1, 1);
+
         private IAccessTokenGenerator KeyVaultGenerator { get; } = platformKeyVault;
 
         private IOptions<AltinnIntegrationOptions> Options { get; } = options;
 
-        public const string ServiceKey = "AltinnPlatformKeyVault";
+        private IAzureClientFactory<SecretClient> AzureSecretClientFactory { get; } = azureSecretClientFactory;
+
+        private IAzureClientFactory<CertificateClient> AzureCertificateClientFactory { get; } = azureCertificateClientFactory;
+
+        private string AccessToken { get; set; } = string.Empty;
+
+        private DateTimeOffset AccessTokenExpires { get; set; } = DateTime.MinValue;
 
         public async Task<string> Create(CancellationToken cancellationToken = default)
         {
@@ -76,9 +94,50 @@ public class TokenGenerator
         }
 
         /// <inheritdoc/>
-        public Task<string> Create(string issuer, string app, CancellationToken cancellationToken = default)
+        public async Task<string> Create(string issuer, string app, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(KeyVaultGenerator.GenerateAccessToken(issuer, app));
+            await Semaphore.WaitAsync(cancellationToken);
+
+            try
+            {
+                if (string.IsNullOrEmpty(AccessToken) || AccessTokenExpires < DateTime.UtcNow)
+                {
+                    return await GenerateAndSetJWTToken(issuer, app, cancellationToken);
+                }
+            }
+            finally
+            {
+                Semaphore.Release();
+            }
+
+            return AccessToken;
+        }
+
+        private async Task<string> GenerateAndSetJWTToken(string issuer, string app, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var options = Options.Value;
+                var certClient = AzureCertificateClientFactory.CreateClient(ServiceKey);
+                var secretClient = AzureSecretClientFactory.CreateClient(ServiceKey);
+                await foreach (var cert in certClient.GetPropertiesOfCertificateVersionsAsync("JWTCertificate", cancellationToken))
+                {
+                    if ((cert.Enabled == true && cert.ExpiresOn == null) || cert.ExpiresOn >= DateTime.UtcNow)
+                    {
+                        var secret = await secretClient.GetSecretAsync(cert.Name, cert.Version, cancellationToken);
+                        var pkcs12 = X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(secret.Value.Value), null, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
+                        AccessToken = KeyVaultGenerator.GenerateAccessToken(issuer, app, pkcs12);
+                        AccessTokenExpires = cert.ExpiresOn ?? secret.Value.Properties.ExpiresOn ?? DateTime.UtcNow.AddSeconds(options.PlatformAccessToken.KeyVault.CacheTimeout);
+                        return AccessToken;
+                    }
+                }
+            }
+            catch (Azure.RequestFailedException ex)
+            {
+                throw new UnauthorizedAccessException("Failed to retrieve certificate from key vault", ex);
+            }
+
+            throw new UnauthorizedAccessException("Couldn't find any cert 'JWTCertificate' that's enabled or not expired");
         }
     }
 }

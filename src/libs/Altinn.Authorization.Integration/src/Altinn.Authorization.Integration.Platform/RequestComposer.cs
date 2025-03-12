@@ -7,7 +7,7 @@ namespace Altinn.Authorization.Integration.Platform;
 /// <summary>
 /// Provides utility methods to create and modify HTTP requests.
 /// </summary>
-public static class RequestComposer
+internal static class RequestComposer
 {
     /// <summary>
     /// Creates a new HTTP request message and applies the provided actions to it.

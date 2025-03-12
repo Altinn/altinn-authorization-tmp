@@ -8,11 +8,9 @@ using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
-using Altinn.AccessMgmt.Persistence;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
 using Altinn.AccessMgmt.Persistence.Extensions;
-using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Host;
@@ -36,6 +34,7 @@ using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using Npgsql.Replication;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace Altinn.AccessManagement;
@@ -110,34 +109,11 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureLibsIntegrations(this WebApplicationBuilder builder)
     {
-        builder.AddAltinnResourceRegisterIntegration(opts =>
+        builder.Services.AddAltinnPlatformIntegrationDefaults(() =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings.Platform?.ResourceRegisterEndpoint == null)
-            {
-                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.ResourceRegisterEndpoint));
-                opts.Endpoint = default;
-            }
-            else
-            {
-                opts.Endpoint = appsettings.Platform.ResourceRegisterEndpoint;
-            }
-        });
-
-        builder.AddAltinnRegisterIntegration(opts =>
-        {
-            var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings.Platform?.RegisterEndpoint == null)
-            {
-                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.RegisterEndpoint));
-                opts.Endpoint = default;
-            }
-            else
-            {
-                opts.Endpoint = appsettings.Platform.RegisterEndpoint;
-            }
-
-            //// opts.Endpoint = new("http://localhost:5020");
+            appsettings.Platform.Token.TestTool.Environment = appsettings.Environment;
+            return appsettings.Platform;
         });
 
         return builder;

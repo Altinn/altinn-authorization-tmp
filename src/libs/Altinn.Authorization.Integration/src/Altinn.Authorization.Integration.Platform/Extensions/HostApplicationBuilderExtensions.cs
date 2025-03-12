@@ -1,6 +1,8 @@
 using Altinn.Authorization.Host.Identity;
+using Altinn.Authorization.Integration.Platform.Appsettings;
 using Altinn.Authorization.Integration.Platform.Register;
 using Altinn.Authorization.Integration.Platform.ResourceRegister;
+using Altinn.Common.AccessTokenClient.Services;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -13,143 +15,194 @@ namespace Altinn.Authorization.Integration.Platform.Extensions;
 /// </summary>
 public static class HostApplicationBuilderExtensions
 {
-    public static IHostApplicationBuilder AddAltinnIntegrations(this IHostApplicationBuilder builder, Action<AltinnIntegrationOptions> configureOptions)
+    public static IServiceCollection AddAltinnPlatformIntegrationDefaults(this IServiceCollection services, Func<PlatformSettings> configureOptions)
     {
-        if (builder.Services.Contains(Register.ServiceDescriptor))
+        var appsettings = configureOptions();
+        var descriptor = services.GetAltinnServiceDescriptor();
+
+        services.AddAltinnPlatformIntegration(opts =>
         {
-            return builder;
+            opts.PlatformAccessToken.App = descriptor.Name;
+            opts.PlatformAccessToken.Issuer = "platform";
+            if (appsettings.Token.KeyVault != null)
+            {
+                opts.PlatformAccessToken.TokenSource = AltinnIntegrationOptions.TokenSource.AzureKeyVault;
+                opts.PlatformAccessToken.KeyVault.Endpoint = appsettings.Token.KeyVault.Endpoint;
+                opts.PlatformAccessToken.KeyVault.CacheTimeout = 30;
+            }
+            else
+            {
+                opts.PlatformAccessToken.TokenSource = AltinnIntegrationOptions.TokenSource.TestTool;
+                opts.PlatformAccessToken.TestTool.Endpoint = appsettings.Token.TestTool.Endpoint;
+                opts.PlatformAccessToken.TestTool.Username = appsettings.Token.TestTool.Username;
+                opts.PlatformAccessToken.TestTool.Password = appsettings.Token.TestTool.Password;
+            }
+        })
+        .AddRegister(opts =>
+        {
+            opts.Endpoint = appsettings.Register.Endpoint;
+        })
+        .AddResourceRegister(opts =>
+        {
+            opts.Endpoint = appsettings.ResourceRegister.Endpoint;
+        });
+
+        return services;
+    }
+
+    public static PlatformBuilder AddAltinnPlatformIntegration(this IServiceCollection services, Action<AltinnIntegrationOptions> configureOptions)
+    {
+        var options = new AltinnIntegrationOptions();
+        configureOptions?.Invoke(options);
+
+        if (services.Contains(Marker.ServiceDescriptor))
+        {
+            return new(services);
         }
 
-        builder.Services.AddOptions<AltinnIntegrationOptions>()
+        services.AddOptions<AltinnIntegrationOptions>()
             .Validate(opts => opts.PlatformAccessToken != null)
             .Validate(opts => !string.IsNullOrEmpty(opts.PlatformAccessToken.Issuer), $"Platform access token issuer can't be null or empty string")
             .Validate(opts => !string.IsNullOrEmpty(opts.PlatformAccessToken.App), $"Platform access token app can't be null or empty string")
             .Validate(
-                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.AzureKeyVault && opts.PlatformAccessToken.KeyVault.Uri == null,
-                $"Can't specify key vault for token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.KeyVault.Uri)}' specified")
+                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.AzureKeyVault && opts.PlatformAccessToken.KeyVault.Endpoint != null,
+                $"Can't specify key vault for token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.KeyVault.Endpoint)}' specified")
             .Validate(
-                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTokenGenerator && string.IsNullOrEmpty(opts.PlatformAccessToken.TestTool.Username),
+                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTool && string.IsNullOrEmpty(opts.PlatformAccessToken.TestTool.Username),
                 $"Can't use test tool token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.TestTool.Username)}' specified")
             .Validate(
-                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTokenGenerator && opts.PlatformAccessToken.TestTool.TokenGeneratorUrl == null,
-                $"Can't use test tool token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.TestTool.TokenGeneratorUrl)}' specified")
+                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTool && opts.PlatformAccessToken.TestTool.Endpoint == null,
+                $"Can't use test tool token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.TestTool.Endpoint)}' specified")
             .Validate(
-                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTokenGenerator && string.IsNullOrEmpty(opts.PlatformAccessToken.TestTool.Password),
+                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTool && string.IsNullOrEmpty(opts.PlatformAccessToken.TestTool.Password),
                 $"Can't use test tool token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.TestTool.Password)}' specified")
             .Validate(
-                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTokenGenerator && string.IsNullOrEmpty(opts.PlatformAccessToken.TestTool.Environment),
+                opts => opts.PlatformAccessToken.TokenSource != AltinnIntegrationOptions.TokenSource.TestTool && string.IsNullOrEmpty(opts.PlatformAccessToken.TestTool.Environment),
                 $"Can't use test tool token generator and not having '{nameof(AltinnIntegrationOptions.PlatformAccessToken.TestTool.Password)}' specified")
             .Configure(configureOptions);
 
-        var options = new AltinnIntegrationOptions();
-        configureOptions?.Invoke(options);
-
         if (options.PlatformAccessToken.TokenSource == AltinnIntegrationOptions.TokenSource.AzureKeyVault)
         {
-            builder.Services.AddAzureClients(builder =>
+            services.AddAzureClients(opts =>
             {
-                builder.UseCredential(AzureToken.Default);
-                builder.AddSecretClient(options.PlatformAccessToken.KeyVault.Uri)
-                    .WithName(TokenGenerator.TokenGeneratorKeyVault.ServiceKey);
+                opts.AddSecretClient(options.PlatformAccessToken.KeyVault.Endpoint)
+                    .WithName(TokenGenerator.TokenGeneratorKeyVault.ServiceKey)
+                    .WithCredential(AzureToken.Default);
+
+                opts.AddCertificateClient(options.PlatformAccessToken.KeyVault.Endpoint)
+                    .WithName(TokenGenerator.TokenGeneratorKeyVault.ServiceKey)
+                    .WithCredential(AzureToken.Default);
             });
 
-            builder.Services.TryAddSingleton<ITokenGenerator, TokenGenerator.TokenGeneratorKeyVault>();
+            services.TryAddSingleton<ITokenGenerator, TokenGenerator.TokenGeneratorKeyVault>();
+            services.TryAddSingleton<IAccessTokenGenerator, AccessTokenGenerator>();
         }
 
-        if (options.PlatformAccessToken.TokenSource == AltinnIntegrationOptions.TokenSource.TestTokenGenerator)
+        if (options.PlatformAccessToken.TokenSource == AltinnIntegrationOptions.TokenSource.TestTool)
         {
             if (string.IsNullOrEmpty(options.HttpClientName))
             {
-                builder.Services.AddHttpClient();
+                services.AddHttpClient();
             }
 
-            builder.Services.TryAddSingleton<ITokenGenerator, TokenGenerator.TokenGeneratorTestTool>();
+            services.TryAddSingleton<ITokenGenerator, TokenGenerator.TokenGeneratorTestTool>();
         }
 
-        return builder;
+        return new(services);
     }
 
     private sealed class Marker
     {
-        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Register, Register>();
+        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Marker, Marker>();
     }
 
-    /// <summary>
-    /// Adds the Altinn Register services to the <see cref="IHostApplicationBuilder"/>.
-    /// Configures the <see cref="AltinnRegisterOptions"/> using the provided configuration action.
-    /// </summary>
-    /// <param name="builder">The <see cref="IHostApplicationBuilder"/> to add the services to.</param>
-    /// <param name="configureOptions">A delegate to configure the <see cref="AltinnRegisterOptions"/> instance.</param>
-    /// <returns>The updated <see cref="IHostApplicationBuilder"/> instance with the Altinn Register services added.</returns>
-    /// <remarks>
-    /// This method registers the Altinn Register options, HTTP client, and the <see cref="IAltinnRegister"/> implementation to the dependency injection container.
-    /// </remarks>
-    public static IHostApplicationBuilder AddAltinnRegisterIntegration(this IHostApplicationBuilder builder, Action<AltinnRegisterOptions> configureOptions)
+    public class PlatformBuilder
     {
-        if (builder.Services.Contains(Register.ServiceDescriptor))
+        internal PlatformBuilder(IServiceCollection services)
         {
-            return builder;
+            Services = services;
         }
 
-        builder.Services.AddOptions<AltinnRegisterOptions>()
-            .Validate(opts => opts.Endpoint != null)
-            .Configure(configureOptions);
+        internal IServiceCollection Services { get; }
 
-        builder.Services.AddHttpClient(RegisterClient.HttpClientName, (serviceProvider, httpClient) => { });
-        builder.Services.AddSingleton<IAltinnRegister, RegisterClient>();
-        builder.Services.Add(Register.ServiceDescriptor);
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Adds the Altinn Resource Register services to the <see cref="IHostApplicationBuilder"/>.
-    /// Configures the <see cref="AltinnResourceRegisterOptions"/> using the provided configuration action.
-    /// </summary>
-    /// <param name="builder">The <see cref="IHostApplicationBuilder"/> to add the services to.</param>
-    /// <param name="configureOptions">A delegate to configure the <see cref="AltinnResourceRegisterOptions"/> instance.</param>
-    /// <returns>The updated <see cref="IHostApplicationBuilder"/> instance with the Altinn Resource Register services added.</returns>
-    /// <remarks>
-    /// This method registers the Altinn Resource Register options, HTTP client, and the <see cref="IAltinnRegister"/> implementation to the dependency injection container.
-    /// </remarks>
-    public static IHostApplicationBuilder AddAltinnResourceRegisterIntegration(this IHostApplicationBuilder builder, Action<AltinnResourceRegisterOptions> configureOptions)
-    {
-        if (builder.Services.Contains(ResourceRegister.ServiceDescriptor))
+        /// <summary>
+        /// Adds the Altinn Register services to the <see cref="IServiceCollection"/>.
+        /// Configures the <see cref="AltinnRegisterOptions"/> using the provided configuration action.
+        /// </summary>
+        /// <param name="configureOptions">A delegate to configure the <see cref="AltinnRegisterOptions"/> instance.</param>
+        /// <returns>The updated <see cref="IServiceCollection"/> instance with the Altinn Register services added.</returns>
+        /// <remarks>
+        /// This method registers the Altinn Register options, HTTP client, and the <see cref="IAltinnRegister"/> implementation to the dependency injection container.
+        /// </remarks>
+        public PlatformBuilder AddRegister(Action<AltinnRegisterOptions> configureOptions)
         {
-            return builder;
+            if (Services.Contains(Register.ServiceDescriptor))
+            {
+                return this;
+            }
+
+            Services.AddOptions<AltinnRegisterOptions>()
+                .Validate(opts => opts.Endpoint != null)
+                .Configure(configureOptions);
+
+            Services.AddHttpClient(RegisterClient.HttpClientName, (serviceProvider, httpClient) => { });
+            Services.AddSingleton<IAltinnRegister, RegisterClient>();
+            Services.Add(Register.ServiceDescriptor);
+
+            return this;
         }
 
-        builder.Services.AddOptions<AltinnResourceRegisterOptions>()
-            .Validate(opts => opts.Endpoint != null)
-            .Configure(configureOptions);
+        /// <summary>
+        /// Adds the Altinn Resource Register services to the <see cref="IServiceCollection"/>.
+        /// Configures the <see cref="AltinnResourceRegisterOptions"/> using the provided configuration action.
+        /// </summary>
+        /// <param name="configureOptions">A delegate to configure the <see cref="AltinnResourceRegisterOptions"/> instance.</param>
+        /// <returns>The updated <see cref="IServiceCollection"/> instance with the Altinn Resource Register services added.</returns>
+        /// <remarks>
+        /// This method registers the Altinn Resource Register options, HTTP client, and the <see cref="IAltinnRegister"/> implementation to the dependency injection container.
+        /// </remarks>
+        public PlatformBuilder AddResourceRegister(Action<AltinnResourceRegisterOptions> configureOptions)
+        {
+            if (Services.Contains(ResourceRegister.ServiceDescriptor))
+            {
+                return this;
+            }
 
-        builder.Services.AddHttpClient(ResourceRegisterClient.HttpClientName, (serviceProvider, httpClient) => { });
-        builder.Services.AddSingleton<IAltinnResourceRegister, ResourceRegisterClient>();
-        builder.Services.Add(ResourceRegister.ServiceDescriptor);
+            Services.AddOptions<AltinnResourceRegisterOptions>()
+                .Validate(opts => opts.Endpoint != null)
+                .Configure(configureOptions);
 
-        return builder;
-    }
+            Services.AddHttpClient(ResourceRegisterClient.HttpClientName, (serviceProvider, httpClient) => { });
+            Services.AddSingleton<IAltinnResourceRegister, ResourceRegisterClient>();
+            Services.Add(ResourceRegister.ServiceDescriptor);
 
-    private sealed class Register
-    {
-        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Register, Register>();
-    }
+            return this;
+        }
 
-    private sealed class ResourceRegister
-    {
-        public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<ResourceRegister, ResourceRegister>();
+        private sealed class Register
+        {
+            public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Register, Register>();
+        }
+
+        private sealed class ResourceRegister
+        {
+            public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<ResourceRegister, ResourceRegister>();
+        }
     }
 }
 
 public class AltinnIntegrationOptions
 {
+    /// <summary>
+    /// Override this with HTTP client name if having a custom HTTP client
+    /// </summary>
     public string HttpClientName { get; set; } = string.Empty;
 
     public PlatformAccessTokenOptions PlatformAccessToken { get; set; } = new();
 
     public class PlatformAccessTokenOptions
     {
-        public TokenSource TokenSource { get; set; } = TokenSource.LocalCert;
+        public TokenSource TokenSource { get; set; } = TokenSource.TestTool;
 
         public string Issuer { get; set; } = string.Empty;
 
@@ -157,21 +210,18 @@ public class AltinnIntegrationOptions
 
         public KeyVaultOptions KeyVault { get; set; } = new();
 
-        public TestToolGeneratorOptions TestTool { get; set; } = new();
+        public TestToolOptions TestTool { get; set; } = new();
 
         public class KeyVaultOptions
         {
-            public Uri Uri { get; set; }
+            public Uri Endpoint { get; set; }
 
-            public Func<string, IServiceProvider, Task<string>> CacheHandler { get; set; } = (_, _) =>
-            {
-                return Task.FromResult(string.Empty);
-            };
+            public int CacheTimeout { get; set; } = 30;
         }
 
-        public class TestToolGeneratorOptions
+        public class TestToolOptions
         {
-            public Uri TokenGeneratorUrl { get; set; }
+            public Uri Endpoint { get; set; }
 
             public string Username { get; set; } = string.Empty;
 
@@ -185,8 +235,6 @@ public class AltinnIntegrationOptions
     {
         AzureKeyVault,
 
-        TestTokenGenerator,
-
-        LocalCert,
+        TestTool,
     }
 }
