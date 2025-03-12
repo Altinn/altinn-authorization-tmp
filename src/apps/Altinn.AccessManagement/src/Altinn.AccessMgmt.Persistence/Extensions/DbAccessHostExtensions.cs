@@ -5,6 +5,8 @@ using Altinn.AccessMgmt.Persistence.Core.Executors;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
+using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Repo.Data;
 using Altinn.Authorization.Host.Startup;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,13 +55,16 @@ public static partial class DbAccessHostExtensions
             var interfaceType = repoType.GetInterfaces().FirstOrDefault(i => i.Name == "I" + repoType.Name);
             if (interfaceType != null)
             {
-                builder.Services.AddScoped(interfaceType, repoType);
+                builder.Services.AddSingleton(interfaceType, repoType);
             }
         }
 
+        builder.Services.AddSingleton<IRoleService, RoleService>();
+
         builder.Services.AddSingleton<DbDefinitionRegistry>();
-        builder.Services.AddScoped<MigrationService>();
-        builder.Services.AddScoped<IngestService>();
+        builder.Services.AddSingleton<IMigrationService, SqlMigrationService>();
+        builder.Services.AddScoped<DbSchemaMigrationService>();
+        builder.Services.AddScoped<DbDataMigrationService>();
         //// builder.Services.AddScoped<MockupService>();
         builder.Services.Add(Marker.ServiceDescriptor);
 
@@ -76,14 +81,14 @@ public static partial class DbAccessHostExtensions
     {
         MgmtDbType.Postgres => () =>
         {
-            builder.Services.AddScoped<IDbConverter, DbConverter>();
-            builder.Services.AddScoped<IDbExecutor, PostgresDbExecutor>();
+            builder.Services.AddSingleton<IDbConverter, DbConverter>();
+            builder.Services.AddSingleton<IDbExecutor, PostgresDbExecutor>();
         }
         ,
         MgmtDbType.MSSQL => () =>
         {
-            builder.Services.AddScoped<IDbConverter, DbConverter>(); // TODO: Add MSSQL converter
-            builder.Services.AddScoped<IDbExecutor, MssqlDbExecutor>();
+            builder.Services.AddSingleton<IDbConverter, DbConverter>(); // TODO: Add MSSQL converter
+            builder.Services.AddSingleton<IDbExecutor, MssqlDbExecutor>();
         }
         ,
         _ => () => throw new InvalidOperationException($"Unknown database type: {dbType}"),
@@ -107,11 +112,11 @@ public static partial class DbAccessHostExtensions
         DefineAllModels(host.Services);
         using (var scope = host.Services.CreateScope())
         {
-            var migration = scope.ServiceProvider.GetRequiredService<MigrationService>();
+            var migration = scope.ServiceProvider.GetRequiredService<DbSchemaMigrationService>();
             migration.GenerateAll();
-            await migration.Migrate();
+            await migration.MigrateAll();
 
-            var dbIngest = scope.ServiceProvider.GetRequiredService<IngestService>();
+            var dbIngest = scope.ServiceProvider.GetRequiredService<DbDataMigrationService>();
             await dbIngest.IngestAll();
 
             //// var mockService = scope.ServiceProvider.GetRequiredService<MockupService>();

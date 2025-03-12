@@ -11,15 +11,15 @@ public class EndUserAuthorizationService : IEndUserAuthorizationService
 {
     private readonly IAuthorizedPartiesService _authorizedPartiesService;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EndUserAuthorizationService"/> class.
-    /// </summary>
-    /// <param name="authorizedPartiesService">Service to get authorized parties</param>
-    public EndUserAuthorizationService(
-        IAuthorizedPartiesService authorizedPartiesService)
-    {
-        _authorizedPartiesService = authorizedPartiesService;
-    }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EndUserAuthorizationService"/> class.
+        /// </summary>
+        /// <param name="authorizedPartiesService">Service to get authorized parties</param>
+        public EndUserAuthorizationService(
+            IAuthorizedPartiesService authorizedPartiesService)
+        {
+            _authorizedPartiesService = authorizedPartiesService;
+        }
 
     /// <inheritdoc />
     public async Task<bool> HasPartyInAuthorizedParties(Guid? userPartyUuid, Guid? fromPartyUuid, Guid? directionPartyUuid)
@@ -30,15 +30,16 @@ public class EndUserAuthorizationService : IEndUserAuthorizationService
             return false;
         }
 
-        List<AuthorizedParty> authorizedParties = await _authorizedPartiesService.GetAuthorizedPartiesForUser(1, true, includeAuthorizedResourcesThroughRoles: false, default);
-        AuthorizedParty? authorizedParty = authorizedParties.Find(ap => ap.PartyUuid == directionPartyUuid && !ap.OnlyHierarchyElementWithNoAccess) ??
-        authorizedParties.SelectMany(ap => ap.Subunits).FirstOrDefault(subunit => subunit.PartyUuid == directionPartyUuid);
+            List<AuthorizedParty> authorizedParties = await _authorizedPartiesService.GetAuthorizedPartiesForUser(1, true, includeAuthorizedResourcesThroughRoles: false, default);
+            AuthorizedParty authorizedParty = authorizedParties.Find(ap => ap.PartyUuid == directionPartyUuid && !ap.OnlyHierarchyElementWithNoAccess) ??
+            authorizedParties.SelectMany(ap => ap.Subunits).FirstOrDefault(subunit => subunit.PartyUuid == directionPartyUuid);
 
         if (authorizedParty != null)
         {
             return true;
         }
 
-        return false;
-    }                
+            return false;
+        }
+    }
 }

@@ -16,7 +16,7 @@ public interface IDbBasicRepository<T>
     /// <param name="options">The request options such as paging, language, or as-of date. If null, default options are applied.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the collection of entities.</returns>
-    Task<IEnumerable<T>> Get(RequestOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> Get(RequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a single entity by its unique identifier.
@@ -27,7 +27,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the entity if found; otherwise, null.
     /// </returns>
-    Task<T?> Get(Guid id, RequestOptions? options = null, CancellationToken cancellationToken = default);
+    Task<T> Get(Guid id, RequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get Entities based on property and value
@@ -37,7 +37,7 @@ public interface IDbBasicRepository<T>
     /// <param name="options">RequestOptions</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>T<see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a collection of entities that match the criteria specified by a <see cref="GenericFilterBuilder{T}"/>.
@@ -46,7 +46,7 @@ public interface IDbBasicRepository<T>
     /// <param name="options">The request options, such as paging or language settings.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the collection of matching entities.</returns>
-    Task<IEnumerable<T>> Get(GenericFilterBuilder<T> filterBuilder, RequestOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> Get(GenericFilterBuilder<T> filterBuilder, RequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a collection of entities that match the provided list of filters.
@@ -55,17 +55,31 @@ public interface IDbBasicRepository<T>
     /// <param name="options">The request options, such as paging, language, or as-of date.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the collection of matching entities.</returns>
-    Task<IEnumerable<T>> Get(IEnumerable<GenericFilter> filters, RequestOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> Get(IEnumerable<GenericFilter> filters, RequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Performs a bulk ingest operation by importing a list of entities into the database.
+    /// NOT TO BE USED LIGHTLY!
     /// </summary>
     /// <param name="data">The list of entities to import.</param>
+    /// <param name="batchSize">Batch size (default: 1000)</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of entities successfully ingested.
     /// </returns>
-    Task<int> Ingest(List<T> data, CancellationToken cancellationToken = default);
+    Task<int> Ingest(List<T> data, int batchSize = 1000, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Performs a bulk ingest operation by importing a list of entities into the database.
+    /// NOT TO BE USED LIGHTLY!
+    /// </summary>
+    /// <param name="data">The list of entities to import.</param>
+    /// <param name="batchSize">Batch size (default: 1000)</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains the number of entities successfully ingested.
+    /// </returns>
+    Task<int> IngestAndMerge(List<T> data, int batchSize = 1000, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Inserts a new entity into the database.
@@ -86,6 +100,17 @@ public interface IDbBasicRepository<T>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
     Task<int> Upsert(T entity, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Inserts or updates an entity in the database. If the entity already exists, it will be updated.
+    /// </summary>
+    /// <param name="entity">The entity to upsert.</param>
+    /// <param name="mergeFilter">Properties for merge statement</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
+    /// </returns>
+    Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates an existing entity in the database identified by its unique identifier.
@@ -153,7 +178,6 @@ public interface IDbBasicRepository<T>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
     Task<int> UpsertTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Creates a new instance of a <see cref="GenericFilterBuilder{T}"/> for constructing filter criteria for queries.

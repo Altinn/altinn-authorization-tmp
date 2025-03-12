@@ -55,9 +55,10 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
             var connectionString = await CreateAdminConnectionString(token, postgresResource, settings, config.Database.Name, cancellationToken);
             await using var conn = new NpgsqlConnection(connectionString.ToString());
             await conn.OpenAsync(cancellationToken);
-            WriteOperationSucceeded($"Connected to datbase '{config.Database.Name}'");
+            WriteOperationSucceeded($"Connected to database '{config.Database.Name}'");
 
             var migratorUser = await CreateDatabaseRole(conn, secretClient, $"{config.Database.Prefix}_migrator", connectionString.Username!, settings, cancellationToken);
+            await GrantAzurePgAdmin(conn, migratorUser.RoleName, cancellationToken);
             var appUser = await CreateDatabaseRole(conn, secretClient, $"{config.Database.Prefix}_app", connectionString.Username!, settings, cancellationToken);
             await GrantDatabasePrivileges(conn, config.Database.Name, migratorUser.RoleName, "CREATE, CONNECT", cancellationToken);
             await GrantDatabasePrivileges(conn, config.Database.Name, appUser.RoleName, "CONNECT", cancellationToken);
@@ -205,6 +206,26 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
         }
     }
 
+    private async Task GrantAzurePgAdmin(NpgsqlConnection conn, string roleName, CancellationToken cancellationToken)
+    {
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = /*strpsql*/
+            $""" 
+            GRANT "azure_pg_admin" TO "{roleName}"
+            """;
+
+        try
+        {
+            await cmd.ExecuteNonQueryAsync(cancellationToken);
+            WriteOperationSucceeded($"Granted 'azure_pg_admin' to role '{roleName}'.");
+        }
+        catch
+        {
+            WriteOperationFailed($"Grant 'azure_pg_admin' to role '{roleName}'.");
+            throw;
+        }
+    }
+
     private async Task CreateDatabase(NpgsqlConnection conn, string database, CancellationToken cancellationToken)
     {
         await using var cmd = conn.CreateCommand();
@@ -296,7 +317,7 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
 
     private async Task StoreConnectionString(AppsConfig config, Result user, string serverUrl, SecretClient secretClient, Settings settings, CancellationToken cancellationToken)
     {
-        var connectionString = new NpgsqlConnectionStringBuilder()
+        var connectionStringBuilder = new NpgsqlConnectionStringBuilder()
         {
             Username = user.RoleName,
             Password = user.Password,
@@ -304,7 +325,14 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
             Database = config.Database.Name,
             Port = 5432,
             SslMode = SslMode.Require,
-        }.ToString();
+        };
+
+        if (settings.MaxPoolSize.HasValue)
+        {
+            connectionStringBuilder.MaxPoolSize = settings.MaxPoolSize.Value;
+        }
+
+        var connectionString = connectionStringBuilder.ToString();
 
         var key = $"db-{settings.ServerName}-{user.RoleName.Replace("_", "-")}";
 
@@ -452,6 +480,13 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
         [Description("Name of the Key Vault.")]
         [ExpandEnvironmentVariables]
         public required string KeyVaultName { get; init; }
+
+        /// <summary>
+        /// Gets the maximum pool size for the database connection.
+        /// </summary>
+        [CommandOption("--max-pool-size <MAX_POOL_SIZE>")]
+        [Description("Maximum pool size for the database connection.")]
+        public int? MaxPoolSize { get; init; }
 
         /// <summary>
         /// Gets the path to conf.json for the app.
