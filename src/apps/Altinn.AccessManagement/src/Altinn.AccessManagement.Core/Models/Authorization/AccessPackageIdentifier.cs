@@ -13,6 +13,7 @@ namespace Altinn.Authorization.Models;
 /// A string value identifier of an access package.
 /// </summary>
 [JsonConverter(typeof(JsonConverter))]
+[ExcludeFromCodeCoverage]
 public class AccessPackageIdentifier
     : ISpanParsable<AccessPackageIdentifier>,
     ISpanFormattable,
