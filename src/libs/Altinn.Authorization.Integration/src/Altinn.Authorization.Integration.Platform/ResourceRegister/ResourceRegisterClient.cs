@@ -7,7 +7,7 @@ namespace Altinn.Authorization.Integration.Platform.ResourceRegister;
 /// </summary>
 /// <param name="httpClientFactory">Factory for creating HTTP client instances.</param>
 /// <param name="options">Configuration options for the Altinn Resource Register service.</param>
-internal partial class ResourceRegisterClient(IHttpClientFactory httpClientFactory, IOptions<AltinnResourceRegisterOptions> options) : IAltinnResourceRegister
+public partial class ResourceRegisterClient(IHttpClientFactory httpClientFactory, IOptions<AltinnResourceRegisterOptions> options) : IAltinnResourceRegister
 {
     /// <summary>
     /// The name of the HTTP client used to communicate with the Altinn Register service.

@@ -9,7 +9,7 @@ namespace Altinn.Authorization.Integration.Platform.Register;
 /// <param name="httpClientFactory">Factory for creating HTTP clients.</param>
 /// <param name="accessTokenGenerator">Service for generating access tokens.</param>
 /// <param name="options">Configuration options for the Altinn Register service.</param>
-internal partial class RegisterClient(IHttpClientFactory httpClientFactory, IAccessTokenGenerator accessTokenGenerator, IOptions<AltinnRegisterOptions> options) : IAltinnRegister
+public partial class RegisterClient(IHttpClientFactory httpClientFactory, IAccessTokenGenerator accessTokenGenerator, IOptions<AltinnRegisterOptions> options) : IAltinnRegister
 {
     /// <summary>
     /// The name of the HTTP client used to communicate with the Altinn Register service.

@@ -1,6 +1,7 @@
 using System.Security.Cryptography.X509Certificates;
 using Altinn.Authorization.Integration.Platform.Extensions;
 using Altinn.Common.AccessTokenClient.Services;
+using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Azure;
@@ -29,7 +30,7 @@ internal class TokenGenerator
             var options = Options.Value;
 
             var request = RequestComposer.New(
-                RequestComposer.WithSetUri(options.PlatformAccessToken.TestTool.Endpoint),
+                RequestComposer.WithSetUri(options.PlatformAccessToken.TestTool.Endpoint, "/api/GetPlatformAccessToken"),
                 RequestComposer.WithHttpVerb(HttpMethod.Get),
                 RequestComposer.WithAppendQueryParam("env", options.PlatformAccessToken.TestTool.Environment),
                 RequestComposer.WithAppendQueryParam("ttl", 3600),

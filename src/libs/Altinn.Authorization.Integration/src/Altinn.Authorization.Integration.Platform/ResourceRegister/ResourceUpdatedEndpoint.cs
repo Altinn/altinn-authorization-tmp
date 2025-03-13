@@ -5,7 +5,7 @@ namespace Altinn.Authorization.Integration.Platform.ResourceRegister;
 /// <summary>
 /// Client for interacting with endpoint that provides information regarding updated resources.
 /// </summary>
-internal partial class ResourceRegisterClient
+public partial class ResourceRegisterClient
 {
     /// <inheritdoc/>
     public async Task<IAsyncEnumerable<PlatformResponse<PageStream<ResourceUpdatedModel>>>> StreamResources(string nextPage = null, CancellationToken cancellationToken = default)
