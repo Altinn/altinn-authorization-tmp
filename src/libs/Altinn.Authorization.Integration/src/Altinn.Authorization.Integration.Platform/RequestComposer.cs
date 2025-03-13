@@ -125,14 +125,9 @@ internal static class RequestComposer
     /// <summary>
     /// Adds a platform access token to the request headers.
     /// </summary>
-    /// <param name="accessTokenGenerator">The access token generator.</param>
-    /// <param name="app">The application identifier.</param>
-    /// <param name="issuer">The token issuer (default: "platform").</param>
     /// <returns>An action to add the access token to the request headers.</returns>
-    public static Action<HttpRequestMessage> WithPlatformAccessToken(IAccessTokenGenerator accessTokenGenerator, string app, string issuer = "platform") => request =>
+    public static Action<HttpRequestMessage> WithPlatformAccessToken(string token) => request =>
     {
-        var token = accessTokenGenerator.GenerateAccessToken(issuer, app);
-
         if (!string.IsNullOrEmpty(token))
         {
             request.Headers.Add("PlatformAccessToken", token);

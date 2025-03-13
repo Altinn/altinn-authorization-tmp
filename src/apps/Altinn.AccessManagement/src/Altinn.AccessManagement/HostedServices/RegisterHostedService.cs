@@ -127,7 +127,7 @@ public partial class RegisterHostedService(
                 // TODO: one for party, one for role
                 Interlocked.Increment(ref _executionCount);
                 Log.Role(_logger, item.FromParty, item.ToParty, item.RoleIdentifier);
-                // await WriteRolesToDb(item);
+                await WriteRolesToDb(item);
             }
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
@@ -164,7 +164,7 @@ public partial class RegisterHostedService(
             {
                 Interlocked.Increment(ref _executionCount);
                 Log.Party(_logger, item.PartyUuid, _executionCount);
-                // await WritePartyToDb(item);
+                await WritePartyToDb(item);
             }
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))

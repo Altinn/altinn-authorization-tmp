@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.L
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Database", "src\Altinn.Authorization.Host.Database\Altinn.Authorization.Host.Database.csproj", "{298CB882-3D16-4D65-B492-F4C258413132}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Cache", "src\Altinn.Authorization.Host.Cache\Altinn.Authorization.Host.Cache.csproj", "{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,18 @@ Global
 		{298CB882-3D16-4D65-B492-F4C258413132}.Release|x64.Build.0 = Release|Any CPU
 		{298CB882-3D16-4D65-B492-F4C258413132}.Release|x86.ActiveCfg = Release|Any CPU
 		{298CB882-3D16-4D65-B492-F4C258413132}.Release|x86.Build.0 = Release|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Debug|x64.Build.0 = Debug|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Debug|x86.Build.0 = Debug|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Release|x64.ActiveCfg = Release|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Release|x64.Build.0 = Release|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Release|x86.ActiveCfg = Release|Any CPU
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,5 +111,6 @@ Global
 		{D553C712-6CAF-4845-9CBD-DAFC2585335F} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{EA27B3D2-45BD-434C-B2CF-68FD71389E8C} = {0C88DD14-F956-CE84-757C-A364CCF449FC}
 		{298CB882-3D16-4D65-B492-F4C258413132} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{1DD9AFCD-F0C5-46B0-BA28-460F11DE3272} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal
