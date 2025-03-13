@@ -31,7 +31,7 @@ public class PackagesController : ControllerBase
     /// <returns>Liste over søkeresultater.</returns>
     [Route("search")]
     [HttpGet]
-    public async Task<IEnumerable<SearchObject<PackageDto>>> Search(string term)
+    public async Task<IEnumerable<SearchObject<PackageDto>>> Search([FromQuery] string term)
     {
         return await packageService.Search(term);
     }
