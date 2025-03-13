@@ -1,8 +1,10 @@
 locals {
   vpn_client_id = "c632b3df-fb67-4d84-bdcf-b95ad541b5c8"
-  vpn_flat_routes = { for idx, cidr in flatten([for k, v in var.vpn_routes : [
-    for i, cidr in v : { key = "${k}_${i}", value = cidr }
-  ]]) : idx => cidr }
+  vpn_flat_routes = { for idx, cidr in flatten(
+    [for k, v in var.vpn_routes :
+      [for i, cidr in "${k}_${i}" : cidr]
+    ]
+  ) : idx => cidr }
 }
 
 resource "azuread_application" "vpn" {
