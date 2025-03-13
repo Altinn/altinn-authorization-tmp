@@ -62,7 +62,9 @@
     {
       "matchManagers": ["npm"],
       "matchPackageNames": [
-        "@digdir/designsystemet-*"
+        "@digdir/designsystemet-css",
+        "@digdir/designsystemet-react",
+        "@digdir/designsystemet-theme"
       ],
       "groupName": "Digdir Designsystemet",
       "groupSlug": "digdir-designsystemet",
