@@ -402,12 +402,9 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     subjectOrgnNo = xacmlAttribute.AttributeValues.First().Value;
                 }
 
-                if (xacmlAttribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.SystemUserIdAttribute))
+                if (xacmlAttribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.SystemUserIdAttribute) && !Guid.TryParse(xacmlAttribute.AttributeValues.First().Value, out subjectSystemUser))
                 {
-                    if (!Guid.TryParse(xacmlAttribute.AttributeValues.First().Value, out subjectSystemUser))
-                    {
-                        throw new ArgumentException($"{XacmlRequestAttribute.SystemUserIdAttribute}: Not a valid uuid");
-                    }
+                    throw new ArgumentException($"{XacmlRequestAttribute.SystemUserIdAttribute}: Not a valid uuid");
                 }
             }
 

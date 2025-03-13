@@ -39,33 +39,20 @@ public class AccessManagementWrapper : IAccessManagementWrapper
     /// <inheritdoc/>
     public async Task<IEnumerable<DelegationChangeExternal>> GetAllDelegationChanges(DelegationChangeInput input, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var response = await _client.Client.SendAsync(
-                new(HttpMethod.Post, new Uri(new Uri(_client.Settings.Value.ApiAccessManagementEndpoint), "policyinformation/getdelegationchanges"))
-                {
-                    Content = new StringContent(JsonSerializer.Serialize(input), Encoding.UTF8, MediaTypeNames.Application.Json)
-                },
-                cancellationToken);
-
-            if (response.IsSuccessStatusCode)
+        var response = await _client.Client.SendAsync(
+            new(HttpMethod.Post, new Uri(new Uri(_client.Settings.Value.ApiAccessManagementEndpoint), "policyinformation/getdelegationchanges"))
             {
-                return await response.Content.ReadFromJsonAsync<IEnumerable<DelegationChangeExternal>>(_serializerOptions, cancellationToken);
-            }
+                Content = new StringContent(JsonSerializer.Serialize(input), Encoding.UTF8, MediaTypeNames.Application.Json)
+            },
+            cancellationToken);
 
-            var content = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new HttpRequestException(content == string.Empty ? $"received status code {response.StatusCode}" : content);
-        }
-        catch (HttpRequestException ex)
+        if (response.IsSuccessStatusCode)
         {
-            _logger.LogError("Authorization // AccessManagementWrapper // GetAllDelegationChanges // Failed // Unexpected Exception // Unexpected HttpStatusCode: {statusCode}\n {responseContent}", ex.StatusCode, ex.Message);
-            throw;
+            return await response.Content.ReadFromJsonAsync<IEnumerable<DelegationChangeExternal>>(_serializerOptions, cancellationToken);
         }
-        catch (Exception ex)
-        {
-            _logger.LogError("Authorization // AccessManagementWrapper // GetAllDelegationChanges // Failed // Unexpected Exception // Unexpected Message: {message}", ex.Message);
-            throw;
-        }
+
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        throw new HttpRequestException(content == string.Empty ? $"received status code {response.StatusCode}" : content);
     }
 
     /// <inheritdoc/>
@@ -98,31 +85,18 @@ public class AccessManagementWrapper : IAccessManagementWrapper
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<AccessPackageUrn>> GetAccessPackages(Guid from, Guid to, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<AccessPackageUrn>> GetAccessPackages(Guid to, Guid from, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var response = await _client.Client.SendAsync(
-                new(HttpMethod.Get, new Uri(new Uri(_client.Settings.Value.ApiAccessManagementEndpoint), "policyinformation/accesspackages")),
-                cancellationToken);
+        var response = await _client.Client.SendAsync(
+            new(HttpMethod.Get, new Uri(new Uri(_client.Settings.Value.ApiAccessManagementEndpoint), $"policyinformation/accesspackages?to={to}&from={from}")),
+            cancellationToken);
 
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<IEnumerable<AccessPackageUrn>>(_serializerOptions, cancellationToken);
-            }
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<IEnumerable<AccessPackageUrn>>(_serializerOptions, cancellationToken);
+        }
 
-            var content = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new HttpRequestException(content == string.Empty ? $"received status code {response.StatusCode}" : content);
-        }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogError("Authorization // AccessManagementWrapper // GetAccessPackages // Failed // Unexpected Exception // Unexpected HttpStatusCode: {statusCode}\n {responseContent}", ex.StatusCode, ex.Message);
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Authorization // AccessManagementWrapper // GetAccessPackages // Failed // Unexpected Exception // Unexpected Message: {message}", ex.Message);
-            throw;
-        }
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        throw new HttpRequestException(content == string.Empty ? $"received status code {response.StatusCode}" : content);
     }
 }
