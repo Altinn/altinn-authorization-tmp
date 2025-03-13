@@ -248,3 +248,7 @@ resource "azurerm_storage_blob" "client_pfx_cert" {
   source_content = pkcs12_from_pem.client_certs[each.key].result
   for_each       = toset(var.client_certs)
 }
+
+output "routes" {
+  value = local.vpn_flat_routes
+}
