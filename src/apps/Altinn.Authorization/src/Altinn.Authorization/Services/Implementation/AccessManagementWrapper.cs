@@ -21,16 +21,14 @@ public class AccessManagementWrapper : IAccessManagementWrapper
 {
     private readonly GeneralSettings _generalSettings;
     private readonly AccessManagementClient _client;
-    private readonly ILogger<AccessManagementWrapper> _logger;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AccessManagementWrapper"/> class.
     /// </summary>
-    public AccessManagementWrapper(ILogger<AccessManagementWrapper> logger, IOptions<GeneralSettings> generalSettings, AccessManagementClient client, IHttpContextAccessor httpContextAccessor)
+    public AccessManagementWrapper(IOptions<GeneralSettings> generalSettings, AccessManagementClient client, IHttpContextAccessor httpContextAccessor)
     {
-        _logger = logger;
         _client = client;
         _generalSettings = generalSettings.Value;
         _httpContextAccessor = httpContextAccessor;
