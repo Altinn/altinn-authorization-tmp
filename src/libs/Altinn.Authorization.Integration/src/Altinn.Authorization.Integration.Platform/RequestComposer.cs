@@ -133,4 +133,16 @@ internal static class RequestComposer
             request.Headers.Add("PlatformAccessToken", token);
         }
     };
+
+    /// <summary>
+    /// Adds a platform access token to the request headers.
+    /// </summary>
+    /// <returns>An action to add the access token to the request headers.</returns>
+    public static Action<HttpRequestMessage> WithJWTToken(string token) => request =>
+    {
+        if (!string.IsNullOrEmpty(token))
+        {
+            request.Headers.Add("Authorization", $"Bearer {token}");
+        }
+    };
 }

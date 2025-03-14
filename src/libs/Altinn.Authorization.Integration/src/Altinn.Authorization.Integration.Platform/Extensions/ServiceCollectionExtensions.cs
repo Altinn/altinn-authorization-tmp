@@ -1,4 +1,5 @@
 using Altinn.Authorization.Host.Identity;
+using Altinn.Authorization.Host.Startup;
 using Altinn.Authorization.Integration.Platform.Appsettings;
 using Altinn.Authorization.Integration.Platform.Register;
 using Altinn.Authorization.Integration.Platform.ResourceRegister;
@@ -6,41 +7,45 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Altinn.Authorization.Integration.Platform.Extensions;
 
 /// <summary>
 /// Provides extension methods for <see cref="IHostApplicationBuilder"/> to register Altinn Register services.
 /// </summary>
-public static class ServiceCollectionExtensions
+public static partial class ServiceCollectionExtensions
 {
+    private static ILogger Logger { get; } = StartupLoggerFactory.Create(nameof(ServiceCollectionExtensions));
+
     /// <summary>
     /// Adds Altinn platform integration defaults to the service collection.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
-    /// <param name="configureOptions">A function that provides <see cref="PlatformSettings"/>.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddAltinnPlatformIntegrationDefaults(this IServiceCollection services, Func<PlatformSettings> configureOptions)
     {
         var appsettings = configureOptions();
         var descriptor = services.GetAltinnServiceDescriptor();
-
         services.AddAltinnPlatformIntegration(opts =>
         {
             opts.PlatformAccessToken.App = descriptor.Name;
             opts.PlatformAccessToken.Issuer = "platform";
-            if (appsettings.Token.KeyVault.Endpoint != null)
+            if (opts.PlatformAccessToken.KeyVault.Endpoint != null)
             {
+                Log.AddKeyVaultTokenSource(Logger);
                 opts.PlatformAccessToken.TokenSource = AltinnIntegrationOptions.TokenSource.AzureKeyVault;
                 opts.PlatformAccessToken.KeyVault.Endpoint = appsettings.Token.KeyVault.Endpoint;
-                opts.PlatformAccessToken.KeyVault.CacheTimeout = 30;
+                opts.PlatformAccessToken.KeyVault.CacheTimeout = 3;
             }
             else
             {
+                Log.AddTestToolTokenSource(Logger);
                 opts.PlatformAccessToken.TokenSource = AltinnIntegrationOptions.TokenSource.TestTool;
                 opts.PlatformAccessToken.TestTool.Endpoint = appsettings.Token.TestTool.Endpoint;
                 opts.PlatformAccessToken.TestTool.Username = appsettings.Token.TestTool.Username;
                 opts.PlatformAccessToken.TestTool.Password = appsettings.Token.TestTool.Password;
+                opts.PlatformAccessToken.TestTool.Environment = appsettings.Token.TestTool.Environment;
             }
         })
         .AddRegister(opts =>
@@ -192,5 +197,14 @@ public static class ServiceCollectionExtensions
         {
             public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<ResourceRegister, ResourceRegister>();
         }
+    }
+
+    static partial class Log
+    {
+        [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Adding Key Vault source as platform access token generator")]
+        internal static partial void AddKeyVaultTokenSource(ILogger logger);
+
+        [LoggerMessage(EventId = 0, Level = LogLevel.Warning, Message = "Adding test token source as platform access token generator")]
+        internal static partial void AddTestToolTokenSource(ILogger logger);
     }
 }

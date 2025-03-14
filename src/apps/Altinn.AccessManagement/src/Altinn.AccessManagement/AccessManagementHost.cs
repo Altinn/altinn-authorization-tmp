@@ -34,7 +34,6 @@ using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
-using Npgsql.Replication;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace Altinn.AccessManagement;
@@ -54,9 +53,8 @@ internal static partial class AccessManagementHost
     {
         Log.CreateAltinnHost(Logger);
         var builder = AltinnHost.CreateWebApplicationBuilder("access-management", args);
-        builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
+        builder.ConfigureAppsettings();
         builder.ConfigureLibsHost();
-
         builder.Services.AddMemoryCache();
         builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.AddControllers();
@@ -82,7 +80,6 @@ internal static partial class AccessManagementHost
             opt.Telemetry.EnableTraces = true;
         });
 
-        builder.ConfigureAppsettings();
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
         builder.ConfigureInternals();
@@ -112,7 +109,18 @@ internal static partial class AccessManagementHost
         builder.Services.AddAltinnPlatformIntegrationDefaults(() =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            appsettings.Platform.Token.TestTool.Environment = appsettings.Environment;
+            var platformVault = new KeyVaultSettings();
+            builder.Configuration.Bind(platformVault);
+
+            if (!string.IsNullOrEmpty(platformVault.SecretUri))
+            {
+                appsettings.Platform.Token.KeyVault.Endpoint = new(platformVault.SecretUri);
+            }
+            else
+            {
+                appsettings.Platform.Token.TestTool.Environment = appsettings.Environment;
+            }
+
             return appsettings.Platform;
         });
 
@@ -202,7 +210,7 @@ internal static partial class AccessManagementHost
     private static void ConfigureAppsettings(this WebApplicationBuilder builder)
     {
         var config = builder.Configuration;
-
+        builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
         builder.Services.Configure<GeneralSettings>(config.GetSection("GeneralSettings"));
         builder.Services.Configure<PlatformSettings>(config.GetSection("PlatformSettings"));
         builder.Services.Configure<Altinn.Common.PEP.Configuration.PlatformSettings>(config.GetSection("PlatformSettings"));

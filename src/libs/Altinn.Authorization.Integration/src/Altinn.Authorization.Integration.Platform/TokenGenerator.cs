@@ -1,7 +1,5 @@
 using System.Security.Cryptography.X509Certificates;
-using Altinn.Authorization.Integration.Platform.Extensions;
 using Altinn.Common.AccessTokenClient.Services;
-using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Azure;
@@ -18,14 +16,26 @@ internal class TokenGenerator
         private IHttpClientFactory HttpClientFactory { get; } = httpClientFactory;
 
         /// <inheritdoc/>
-        public async Task<string> Create(CancellationToken cancellationToken = default)
+        public Task<string> CreateJWT(CancellationToken cancellationToken = default)
         {
-            var options = Options.Value;
-            return await Create(options.PlatformAccessToken.Issuer, options.PlatformAccessToken.App, cancellationToken);
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
-        public async Task<string> Create(string issuer, string app, CancellationToken cancellationToken = default)
+        public Task<string> CreateJWT(string issuer, string app, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc/>
+        public async Task<string> CreatePlatformAccessToken(CancellationToken cancellationToken = default)
+        {
+            var options = Options.Value;
+            return await CreateJWT(options.PlatformAccessToken.Issuer, options.PlatformAccessToken.App, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<string> CreatePlatformAccessToken(string issuer, string app, CancellationToken cancellationToken = default)
         {
             var options = Options.Value;
 
@@ -76,7 +86,7 @@ internal class TokenGenerator
 
         private SemaphoreSlim Semaphore { get; } = new(1, 1);
 
-        private IAccessTokenGenerator KeyVaultGenerator { get; } = platformKeyVault;
+        private IAccessTokenGenerator PlatformTokenGenerator { get; } = platformKeyVault;
 
         private IOptions<AltinnIntegrationOptions> Options { get; } = options;
 
@@ -88,14 +98,28 @@ internal class TokenGenerator
 
         private DateTimeOffset AccessTokenExpires { get; set; } = DateTime.MinValue;
 
-        public async Task<string> Create(CancellationToken cancellationToken = default)
+        /// <inheritdoc/>
+        public async Task<string> CreatePlatformAccessToken(CancellationToken cancellationToken = default)
         {
             var options = Options.Value;
-            return await Create(options.PlatformAccessToken.Issuer, options.PlatformAccessToken.App, cancellationToken);
+            return await CreatePlatformAccessToken(options.PlatformAccessToken.Issuer, options.PlatformAccessToken.App, cancellationToken);
         }
 
         /// <inheritdoc/>
-        public async Task<string> Create(string issuer, string app, CancellationToken cancellationToken = default)
+        public Task<string> CreatePlatformAccessToken(string issuer, string app, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(PlatformTokenGenerator.GenerateAccessToken(issuer, app));
+        }
+
+        /// <inheritdoc/>
+        public async Task<string> CreateJWT(CancellationToken cancellationToken = default)
+        {
+            var options = Options.Value;
+            return await CreateJWT(options.PlatformAccessToken.Issuer, options.PlatformAccessToken.App, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<string> CreateJWT(string issuer, string app, CancellationToken cancellationToken = default)
         {
             await Semaphore.WaitAsync(cancellationToken);
 
@@ -127,7 +151,7 @@ internal class TokenGenerator
                     {
                         var secret = await secretClient.GetSecretAsync(cert.Name, cert.Version, cancellationToken);
                         var pkcs12 = X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(secret.Value.Value), null, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
-                        AccessToken = KeyVaultGenerator.GenerateAccessToken(issuer, app, pkcs12);
+                        AccessToken = PlatformTokenGenerator.GenerateAccessToken(issuer, app, pkcs12);
                         AccessTokenExpires = cert.ExpiresOn ?? secret.Value.Properties.ExpiresOn ?? DateTime.UtcNow.AddSeconds(options.PlatformAccessToken.KeyVault.CacheTimeout);
                         return AccessToken;
                     }
@@ -150,7 +174,14 @@ public interface ITokenGenerator
     /// </summary>
     /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
     /// <returns></returns>
-    Task<string> Create(CancellationToken cancellationToken = default);
+    Task<string> CreateJWT(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a new Platform access token
+    /// </summary>
+    /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+    /// <returns></returns>
+    Task<string> CreatePlatformAccessToken(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a new Platform Access Token
@@ -159,5 +190,14 @@ public interface ITokenGenerator
     /// <param name="app">app name</param>
     /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
     /// <returns></returns>
-    Task<string> Create(string issuer, string app, CancellationToken cancellationToken = default);
+    Task<string> CreateJWT(string issuer, string app, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a new Platform Access Token
+    /// </summary>
+    /// <param name="issuer">token issuer</param>
+    /// <param name="app">app name</param>
+    /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+    /// <returns></returns>
+    Task<string> CreatePlatformAccessToken(string issuer, string app, CancellationToken cancellationToken = default);
 }

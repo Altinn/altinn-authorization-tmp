@@ -13,8 +13,8 @@ public partial class ResourceRegisterClient
     {
         List<Action<HttpRequestMessage>> request = [
             RequestComposer.WithHttpVerb(HttpMethod.Get),
-                RequestComposer.WithSetUri(ResourceRegisterOptions.Value.Endpoint, "/resourceregistry/api/v1/resource/", id),
-            ];
+            RequestComposer.WithSetUri(ResourceRegisterOptions.Value.Endpoint, "/resourceregistry/api/v1/resource", id),
+        ];
 
         var response = await HttpClient.SendAsync(RequestComposer.New([.. request]), cancellationToken);
 
@@ -188,12 +188,6 @@ public class ResourceHasCompetentAuthority
     {
         [JsonPropertyName("en")]
         public string En { get; set; }
-
-        [JsonPropertyName("nb-no")]
-        public string NbNo { get; set; }
-
-        [JsonPropertyName("nn-no")]
-        public string NnNo { get; set; }
 
         [JsonPropertyName("nb")]
         public string Nb { get; set; }
