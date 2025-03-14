@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
         {
             opts.PlatformAccessToken.App = descriptor.Name;
             opts.PlatformAccessToken.Issuer = "platform";
-            if (appsettings.Token.KeyVault != null)
+            if (appsettings.Token.KeyVault.Endpoint != null)
             {
                 opts.PlatformAccessToken.TokenSource = AltinnIntegrationOptions.TokenSource.AzureKeyVault;
                 opts.PlatformAccessToken.KeyVault.Endpoint = appsettings.Token.KeyVault.Endpoint;

@@ -39,12 +39,19 @@ namespace Altinn.Authorization.Integration.Platform.Appsettings
             /// Gets or sets the endpoint options for the Key Vault service.
             /// This service manages cryptographic keys and secrets.
             /// </summary>
-            public EndpointOptions KeyVault { get; set; } = new();
+            public KeyVaultOptions KeyVault { get; set; } = new();
 
             /// <summary>
             /// Gets or sets the test tool configuration options.
             /// </summary>
             public TestToolOptions TestTool { get; set; } = new();
+
+            /// <summary>
+            /// Options for Key vault
+            /// </summary>
+            public class KeyVaultOptions : EndpointOptions
+            {
+            }
 
             /// <summary>
             /// Represents configuration settings for the test tool, including authentication details.
