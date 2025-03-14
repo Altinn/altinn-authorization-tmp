@@ -74,6 +74,19 @@
                 "partyUuid": "86ae6d6a-3545-4956-b395-c67ca0df4e51"
             }
         },
+        "client_ENK_HUMAN_TOPP_KATT_BIL": {
+            "name": "HUMAN TOPP KATT BIL",
+            "orgno": "310329495",
+            "partyId": 51340351,
+            "partyUuid": "ab07bec2-fcd0-4563-908a-d9f564724252",
+            "innehaver": {
+                "name": "EVENTYRLIG FALK",
+                "pid": "31886896576",
+                "userId": 20013167,
+                "partyId": 50175254,
+                "partyUuid": "00273506-3b4a-4e8e-a1f7-b7f28c4b411b"
+            }
+        },
         "client_WITHOUT_CLIENTDELEGATION": {
             "name": "UNYTTIG MANGE TIGER AS",
             "orgno": "313750531",
