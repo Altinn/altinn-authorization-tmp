@@ -15,9 +15,9 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<Consent> GetConcent(Guid id, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Get a specific concent request
+        /// Get a specific concent request. Requires the userId for the user that is requesting the concent.
         /// </summary>
-        Task<ConsentRequestDetails> GetRequest(Guid id, CancellationToken cancellationToken = default);
+        Task<ConsentRequestDetails> GetRequest(Guid id, Guid userId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates a concent requests and return info about the created one.

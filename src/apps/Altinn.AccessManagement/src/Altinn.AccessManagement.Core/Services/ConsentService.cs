@@ -1,4 +1,7 @@
 ﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Enums;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Core.Models.Consent;
@@ -6,6 +9,7 @@ using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
+using System;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -15,10 +19,11 @@ namespace Altinn.AccessManagement.Core.Services
     /// <remarks>
     /// Service responsible for consent functionality
     /// </remarks>
-    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient) : IConsent
+    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
         private readonly IPartiesClient _partiesClient = partiesClient;
+        private readonly ISingleRightsService _singleRightsService = singleRightsService;
 
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, CancellationToken cancellationToken = default)
@@ -73,9 +78,10 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ConsentRequestDetails> GetRequest(Guid id, CancellationToken cancellationToken = default)
+        public async Task<ConsentRequestDetails> GetRequest(Guid id, Guid userId, CancellationToken cancellationToken = default)
         {
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
+            bool isAuthorized = await AuthorizeUserForConsentRequest(userId, details);
             details.To = await MapToExternalIdenity(details.To, cancellationToken);
             details.From = await MapToExternalIdenity(details.From, cancellationToken);
             return details;
@@ -160,6 +166,67 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             return ConsentPartyUrn.PartyUuid.Create(party.PartyUuid.Value);
+        }
+
+        /// <summary>
+        /// This method iterates throug the consent request and verifies that user is allowe to delegate all rights requested in consent
+        /// Currently no sub resources is supported. Ignores sub resources in response.
+        /// TODO: Verify when we have new delegation check with support for 
+        /// </summary>
+        private async Task<bool> AuthorizeUserForConsentRequest(Guid userUuid, ConsentRequestDetails consentRequest)
+        {
+            Guid fromParty = consentRequest.From.IsPartyUuid(out Guid from) ? from : Guid.Empty;
+            List<Party> parties = await _partiesClient.GetPartiesAsync(new List<Guid> { fromParty });
+            Party party = parties.First();
+
+            int userID = await GetUserIdForParty(userUuid);
+
+            foreach (ConsentRight consentRight in consentRequest.ConsentRights)
+            {
+                RightsDelegationCheckRequest rightsDelegationCheckRequest = new RightsDelegationCheckRequest();
+                rightsDelegationCheckRequest.From = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = party.PartyId.ToString() }];
+
+                foreach (ConsentResourceAttribute resource in consentRight.Resource)
+                {
+                    rightsDelegationCheckRequest.Resource = [new AttributeMatch { Id = resource.Type, Value = resource.Value }];
+                }
+
+                DelegationCheckResponse response = await _singleRightsService.RightsDelegationCheck(userID, 3, rightsDelegationCheckRequest);
+             
+                if (response.RightDelegationCheckResults != null)
+                {
+                    foreach (string action in consentRight.Action)
+                    {
+                        bool actionMatch = false;
+                        foreach (RightDelegationCheckResult result in response.RightDelegationCheckResults)
+                        {
+                            if (result.Action.Equals(action) && result.Status.Equals(DelegableStatus.Delegable))
+                            {
+                                actionMatch = true;
+                                break;
+                            }
+                        }
+
+                        if (!actionMatch)
+                        {
+                            return false;
+                        }
+
+                        return true;
+                    }
+                }
+            }
+
+            // Temporary return true until we have the actual response
+            return true;
+        }
+
+        private async Task<int> GetUserIdForParty(Guid partyId)
+        {
+            return 20001337;
+            //List<Party> parties = await _partiesClient.GetPartiesAsync(new List<Guid> { partyId });
+            //Party party = parties.First();
+            //return party.PartyId;
         }
     }
 }

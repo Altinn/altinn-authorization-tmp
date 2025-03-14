@@ -1,8 +1,11 @@
 ﻿using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Core.Models.Consent;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Formats.Asn1;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers
 {
@@ -12,18 +15,30 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
     /// </summary>
     [Route("accessmanagement/api/v1/enduser/consent/")]
     [ApiController]
-    public class ConsentController(IConsent consentService, IPartiesClient partiesClient) : ControllerBase
+    public class ConsentController(IConsent consentService, IPartiesClient partiesClient, ISingleRightsService singleRightsService) : ControllerBase
     {
         private readonly IConsent _consentService = consentService;
         private readonly IPartiesClient _partiesClient = partiesClient;
 
         /// <summary>
-        /// Get a specific consent
+        /// Get a specific consent. 
+        /// Requires the following.
+        /// User is authenticated
+        /// User is have write access to access management for the party that is requestesd to consent (from party)
+        /// User is authorized to delegated the rights that is requested. Either by having the right self or beeing the main administrator
         /// </summary>
+        [HttpGet]
+        [Authorize]
         [Route("request/{requestId}")]
         public async Task<IActionResult> GetConsentRequest([FromRoute] Guid requestId, CancellationToken cancellationToken = default)
         {
-            ConsentRequestDetails consentRequest = await _consentService.GetRequest(requestId, cancellationToken);
+            Guid? performedBy = UserUtil.GetUserUuid(User);
+            if (performedBy == null)
+            {
+                return Unauthorized();
+            }
+
+            ConsentRequestDetails consentRequest = await _consentService.GetRequest(requestId, performedBy.Value, cancellationToken);
             return Ok(consentRequest);
         }
 
@@ -51,8 +66,8 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// Endpoint to deny a consent request
         /// </summary>
         [HttpPost]
-        [Route("request/{requestId}/deny/")]
-        public async Task<IActionResult> Deny(Guid requestId, CancellationToken cancellationToken = default)
+        [Route("request/{requestId}/reject/")]
+        public async Task<IActionResult> Reject(Guid requestId, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);
             if (performedBy == null)
