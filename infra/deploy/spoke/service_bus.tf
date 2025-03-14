@@ -5,10 +5,11 @@
 # * Using User Assigned Identity due to problematic execution order for System assigned identity and enabling CMK encryption
 
 locals {
-  service_bus_enable_public_endpoint = !var.prod_like
-  service_bus_sku                    = var.prod_like ? "Premium" : "Standard"
-  service_bus_enable_local_auth      = !var.prod_like
+  service_bus_sku               = var.prod_like ? "Premium" : "Standard"
+  service_bus_enable_local_auth = !var.prod_like
 
+  # service_bus_enable_public_endpoint = !var.prod_like
+  service_bus_enable_public_endpoint = true
   # service_bus_ip_rules               = var.prod_like ? [] : concat(var.service_bus_firewall, [var.firewall_public_ipv4])
   service_bus_ip_rules = concat(var.service_bus_firewall, [var.firewall_public_ipv4])
   # service_bus_default_action = var.prod_like ? "Allow" : "Deny"
