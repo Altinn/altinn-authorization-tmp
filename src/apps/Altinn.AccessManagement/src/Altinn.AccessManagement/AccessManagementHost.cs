@@ -112,7 +112,7 @@ internal static partial class AccessManagementHost
         builder.Services.AddAltinnPlatformIntegrationDefaults(() =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            appsettings.Platform.Token.TestTool.Environment = appsettings?.Environment;
+            appsettings.Platform.Token.TestTool.Environment = appsettings.Environment;
             return appsettings.Platform;
         });
 

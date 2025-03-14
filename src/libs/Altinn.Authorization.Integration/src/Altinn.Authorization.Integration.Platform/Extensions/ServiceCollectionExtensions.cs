@@ -97,6 +97,9 @@ public static class ServiceCollectionExtensions
             services.AddAzureClients(builder =>
             {
                 builder.UseCredential(AzureToken.Default);
+                builder.AddCertificateClient(options.PlatformAccessToken.KeyVault.Endpoint)
+                    .WithName(TokenGenerator.TokenGeneratorKeyVault.ServiceKey);
+
                 builder.AddSecretClient(options.PlatformAccessToken.KeyVault.Endpoint)
                     .WithName(TokenGenerator.TokenGeneratorKeyVault.ServiceKey);
             });
