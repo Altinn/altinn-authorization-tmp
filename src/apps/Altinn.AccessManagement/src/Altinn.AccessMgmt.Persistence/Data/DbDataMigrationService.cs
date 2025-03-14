@@ -2028,7 +2028,7 @@ public class DbDataMigrationService(
             new EntityVariantRole() { Id = Guid.Parse("85ac1dd8-64e2-41d3-a192-8d625cffd589"), VariantId = variants["KIRK"], RoleId = roles["urn:altinn:external-role:ccr:nestleder"] },
             new EntityVariantRole() { Id = Guid.Parse("22bedc49-8a2a-4ea4-adaf-3e4af232077d"), VariantId = variants["KIRK"], RoleId = roles["urn:altinn:external-role:ccr:observator"] },
             new EntityVariantRole() { Id = Guid.Parse("551af393-175e-445d-853e-2709cdc22d9f"), VariantId = variants["KIRK"], RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"] },
-            new EntityVariantRole() { Id = Guid.Parse("434f59c8-dea2-46ba-8bd4-cfa79c443b8d"), VariantId = variants["KIRK"], RoleId = roles["	urn:altinn:external-role:ccr:kirkelig-fellesraad"] },
+            new EntityVariantRole() { Id = Guid.Parse("434f59c8-dea2-46ba-8bd4-cfa79c443b8d"), VariantId = variants["KIRK"], RoleId = roles["urn:altinn:external-role:ccr:kirkelig-fellesraad"] },
             new EntityVariantRole() { Id = Guid.Parse("0bd3e5ea-af73-4e4f-b898-f7158c612373"), VariantId = variants["KIRK"], RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"] },
             new EntityVariantRole() { Id = Guid.Parse("fd8c5446-d143-4241-814b-436a4ee30e37"), VariantId = variants["KIRK"], RoleId = roles["urn:altinn:external-role:ccr:revisor"] },
             new EntityVariantRole() { Id = Guid.Parse("965b9833-b73e-4f69-902e-648878c26b9a"), VariantId = variants["KIRK"], RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"] },
