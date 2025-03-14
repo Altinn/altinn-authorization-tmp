@@ -229,9 +229,16 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     /// <inheritdoc/>
     public async Task<int> Delete(Guid id, CancellationToken cancellationToken = default)
     {
+        return await Delete([new GenericFilter("id", id)], cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> Delete(IEnumerable<GenericFilter> filters, CancellationToken cancellationToken = default)
+    {
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildDeleteQuery();
-        return await executor.ExecuteCommand(query, [new GenericParameter("_id", id)], cancellationToken: cancellationToken);
+        var param = BuildFilterParameters(filters, null);
+        string query = queryBuilder.BuildDeleteQuery(filters);
+        return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>

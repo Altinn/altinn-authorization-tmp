@@ -9,7 +9,7 @@ using Altinn.Authorization.Host.Database;
 using Npgsql;
 using NpgsqlTypes;
 
-namespace Altinn.AccessMgmt.Persistence.Core.Executors;
+namespace Altinn.AccessMgmt.Persistence.Core.Services;
 
 /// <inheritdoc />
 public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor dbExecutor, DbDefinitionRegistry definitionRegistry) : IIngestService
@@ -92,6 +92,7 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
         string mergeStatement = sb.ToString();
 
         Console.WriteLine("Starting MERGE");
+
         var res = await dbExecutor.ExecuteMigrationCommand(mergeStatement, null, cancellationToken);
 
         Console.WriteLine("Cleanup");

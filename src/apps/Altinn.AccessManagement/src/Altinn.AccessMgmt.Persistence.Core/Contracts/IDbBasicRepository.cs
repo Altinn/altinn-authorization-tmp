@@ -121,6 +121,16 @@ public interface IDbBasicRepository<T>
     Task<int> Delete(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Deletes an entity from the database identified by its unique identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the entity to delete.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
+    /// </returns>
+    Task<int> Delete(IEnumerable<GenericFilter> filters, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Creates a translation entry for the specified entity in a different language.
     /// </summary>
     /// <param name="obj">The entity for which to create a translation.</param>

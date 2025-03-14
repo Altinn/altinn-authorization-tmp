@@ -20,9 +20,8 @@ public class DbDataMigrationService(
         IRoleMapRepository roleMapService,
         IRolePackageRepository rolePackageService,
         IMigrationService migrationService,
-        IIngestService ingestService
-        IRoleLookupRepository roleLookupRepository,
-        IMigrationService migrationService
+        IIngestService ingestService,
+        IRoleLookupRepository roleLookupRepository
         )
 {
     private readonly IProviderRepository providerService = providerService;
@@ -534,17 +533,17 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("303d78e8-a658-454d-88ae-f836596982c7"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Reknskapsførar", Code = "REGN", Description = "Reknskapsførar", Urn = "brreg:role:regn" }
         };
 
-        var mergeFilter = new List<Persistence.Core.Helpers.GenericFilter>() 
-        { 
-            new Persistence.Core.Helpers.GenericFilter("RoleId", "RoleId"),
-            new Persistence.Core.Helpers.GenericFilter("Key", "Key")
-        };
+        //var mergeFilter = new List<Persistence.Core.Helpers.GenericFilter>() 
+        //{ 
+        //    new Persistence.Core.Helpers.GenericFilter("RoleId", "RoleId"),
+        //    new Persistence.Core.Helpers.GenericFilter("Key", "Key")
+        //};
 
-        foreach (var role in roles)
-        {
-            // MergeFilter will have the upsert compare on roleId and key instead of default (id).
-            await roleLookupRepository.Upsert(new RoleLookup() { Id = Guid.NewGuid(), RoleId = role.Id, Key = "Urn", Value = role.Urn }, mergeFilter: mergeFilter);
-        }
+        //foreach (var role in roles)
+        //{
+        //    // MergeFilter will have the upsert compare on roleId and key instead of default (id).
+        //    await roleLookupRepository.Upsert(new RoleLookup() { Id = Guid.NewGuid(), RoleId = role.Id, Key = "Urn", Value = role.Urn }, mergeFilter: mergeFilter);
+        //}
 
         foreach (var item in roles)
         {
@@ -921,14 +920,14 @@ public class DbDataMigrationService(
 
         var rolePackages = new List<RolePackage>()
         {
-            new RolePackage() { Id = Guid.Parse("d39dac3e-736c-4e60-a7eb-7efbb9484815"), RoleId = roles["brreg:role:regn"], PackageId = packages["urn:altinn:accesspackage:regnskapsforermedsigneringsrettighet"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
-            new RolePackage() { Id = Guid.Parse("d39dac3e-736c-4e60-a7eb-7efbb9484815"), RoleId = roles["brreg:role:regn"], PackageId = packages["urn:altinn:accesspackage:regnskapsforerutensigneringsrettighet"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
-            new RolePackage() { Id = Guid.Parse("d39dac3e-736c-4e60-a7eb-7efbb9484815"), RoleId = roles["brreg:role:regn"], PackageId = packages["urn:altinn:accesspackage:regnskapsforerlonn"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
-            new RolePackage() { Id = Guid.Parse("d39dac3e-736c-4e60-a7eb-7efbb9484815"), RoleId = roles["brreg:role:revi"], PackageId = packages["urn:altinn:accesspackage:ansvarligrevisor"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
-            new RolePackage() { Id = Guid.Parse("d39dac3e-736c-4e60-a7eb-7efbb9484815"), RoleId = roles["brreg:role:revi"], PackageId = packages["urn:altinn:accesspackage:revisormedarbeider"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
-            new RolePackage() { Id = Guid.Parse("d39dac3e-736c-4e60-a7eb-7efbb9484815"), RoleId = roles["brreg:role:bobe"], PackageId = packages["urn:altinn:accesspackage:konkursbotilgangsstyring"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
-            new RolePackage() { Id = Guid.Parse("d39dac3e-736c-4e60-a7eb-7efbb9484815"), RoleId = roles["brreg:role:bobe"], PackageId = packages["urn:altinn:accesspackage:konkursbolesetilgang"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
-            new RolePackage() { Id = Guid.Parse("d39dac3e-736c-4e60-a7eb-7efbb9484815"), RoleId = roles["brreg:role:bobe"], PackageId = packages["urn:altinn:accesspackage:konkursboskrivetilgang"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { Id = Guid.Parse("4987236B-6450-4604-9CBC-16A5317E20D5"), RoleId = roles["brreg:role:regn"], PackageId = packages["urn:altinn:accesspackage:regnskapsforermedsigneringsrettighet"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { Id = Guid.Parse("D998D155-414E-4501-B606-23673CB665CF"), RoleId = roles["brreg:role:regn"], PackageId = packages["urn:altinn:accesspackage:regnskapsforerutensigneringsrettighet"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { Id = Guid.Parse("9DC3AADF-1A38-4A52-8F71-49DF65C6E0BC"), RoleId = roles["brreg:role:regn"], PackageId = packages["urn:altinn:accesspackage:regnskapsforerlonn"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { Id = Guid.Parse("448A8F64-053B-44E9-8029-5BDEEE697AFE"), RoleId = roles["brreg:role:revi"], PackageId = packages["urn:altinn:accesspackage:ansvarligrevisor"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { Id = Guid.Parse("41F269AB-84E7-434C-9123-611CD34D81FF"), RoleId = roles["brreg:role:revi"], PackageId = packages["urn:altinn:accesspackage:revisormedarbeider"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { Id = Guid.Parse("8B3C2DB0-E7D4-4658-8949-734E7524E424"), RoleId = roles["brreg:role:bobe"], PackageId = packages["urn:altinn:accesspackage:konkursbotilgangsstyring"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { Id = Guid.Parse("73ED4721-728F-41B7-AF4B-7652C441BF3B"), RoleId = roles["brreg:role:bobe"], PackageId = packages["urn:altinn:accesspackage:konkursbolesetilgang"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { Id = Guid.Parse("0F77A6C0-F830-438D-BDE9-AC4326AE516E"), RoleId = roles["brreg:role:bobe"], PackageId = packages["urn:altinn:accesspackage:konkursboskrivetilgang"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { Id = Guid.Parse("b99e0000-f015-433a-9104-31e7362ac610"), RoleId = roles["brreg:role:dagl"], PackageId = packages["urn:altinn:accesspackage:ordinaerposttilvirksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { Id = Guid.Parse("dd3e3ce2-2d14-49bb-95cd-05c08799cc4d"), RoleId = roles["brreg:role:lede"], PackageId = packages["urn:altinn:accesspackage:ordinaerposttilvirksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { Id = Guid.Parse("f005f317-fd89-4f22-9f21-bcca91ad6510"), RoleId = roles["brreg:role:innh"], PackageId = packages["urn:altinn:accesspackage:ordinaerposttilvirksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = false },

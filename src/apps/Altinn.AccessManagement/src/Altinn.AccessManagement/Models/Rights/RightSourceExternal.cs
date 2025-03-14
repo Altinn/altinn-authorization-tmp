@@ -9,7 +9,7 @@ namespace Altinn.AccessManagement.Models
     public class RightSourceExternal
     {
         /// <summary>
-        /// Gets or sets the set of type of source this right originated from (Role, AccessGroup, AppDelegation, ResourceRegistryDelegation etc.)
+        /// Gets or sets the set of type of source this right originated from (AssignmentAdded, AccessGroup, AppDelegation, ResourceRegistryDelegation etc.)
         /// </summary>
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public RightSourceTypeExternal RightSourceType { get; set; }
