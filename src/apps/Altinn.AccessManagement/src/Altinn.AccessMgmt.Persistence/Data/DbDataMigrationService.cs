@@ -600,8 +600,8 @@ public class DbDataMigrationService(
             new RoleMap() { Id = Guid.Parse("D8E9F0A1-B2C3-4567-8901-23456789BCDE"), HasRoleId = roleDtpr, GetRoleId = roleMPA },
             new RoleMap() { Id = Guid.Parse("E9F0A1B2-C3D4-5678-9012-3456789CDEF0"), HasRoleId = roleKomp, GetRoleId = roleMPA },
             new RoleMap() { Id = Guid.Parse("F0A1B2C3-D4E5-6789-0123-456789DEF012"), HasRoleId = roleBest, GetRoleId = roleMPA },
-            new RoleMap() { Id = Guid.Parse("A1B2C3D4-E5F6-7890-1234-56789ABCDEF0"), HasRoleId = roleRepr, GetRoleId = roleMPA },
-            new RoleMap() { Id = Guid.Parse("B2C3D4E5-F6A7-8901-2345-6789BCDEF012"), HasRoleId = roleBobe, GetRoleId = roleMPA }
+            new RoleMap() { Id = Guid.Parse("D4F1A2B3-5C6D-7E8F-9A0B-1C2D3E4F5A6B"), HasRoleId = roleRepr, GetRoleId = roleMPA },
+            new RoleMap() { Id = Guid.Parse("F6A3C4D5-7E8F-9A0B-1C2D-3E4F5A6B7C8D"), HasRoleId = roleBobe, GetRoleId = roleMPA }
         };
 
         await roleMapService.IngestAndMerge(roleMaps);
