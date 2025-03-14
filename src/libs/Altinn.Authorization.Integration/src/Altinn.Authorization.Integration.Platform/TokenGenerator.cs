@@ -30,25 +30,25 @@ internal class TokenGenerator
         /// <inheritdoc/>
         public async Task<string> CreatePlatformAccessToken(CancellationToken cancellationToken = default)
         {
-            var options = Options.Value;
-            return await CreateJWT(options.PlatformAccessToken.Issuer, options.PlatformAccessToken.App, cancellationToken);
+            var opts = Options.Value;
+            return await CreateJWT(opts.PlatformAccessToken.Issuer, opts.PlatformAccessToken.App, cancellationToken);
         }
 
         /// <inheritdoc/>
         public async Task<string> CreatePlatformAccessToken(string issuer, string app, CancellationToken cancellationToken = default)
         {
-            var options = Options.Value;
+            var otps = Options.Value;
 
             var request = RequestComposer.New(
-                RequestComposer.WithSetUri(options.PlatformAccessToken.TestTool.Endpoint, "/api/GetPlatformAccessToken"),
+                RequestComposer.WithSetUri(otps.PlatformAccessToken.TestTool.Endpoint, "/api/GetPlatformAccessToken"),
                 RequestComposer.WithHttpVerb(HttpMethod.Get),
-                RequestComposer.WithAppendQueryParam("env", options.PlatformAccessToken.TestTool.Environment),
+                RequestComposer.WithAppendQueryParam("env", otps.PlatformAccessToken.TestTool.Environment),
                 RequestComposer.WithAppendQueryParam("ttl", 3600),
                 RequestComposer.WithAppendQueryParam("app", app),
-                RequestComposer.WithBasicAuth(options.PlatformAccessToken.TestTool.Username, options.PlatformAccessToken.TestTool.Password)
+                RequestComposer.WithBasicAuth(otps.PlatformAccessToken.TestTool.Username, otps.PlatformAccessToken.TestTool.Password)
             );
 
-            var client = CreateHttpClient(options.HttpClientName);
+            var client = CreateHttpClient(otps.HttpClientName);
 
             var response = await client.SendAsync(request, cancellationToken);
 
@@ -101,8 +101,8 @@ internal class TokenGenerator
         /// <inheritdoc/>
         public async Task<string> CreatePlatformAccessToken(CancellationToken cancellationToken = default)
         {
-            var options = Options.Value;
-            return await CreatePlatformAccessToken(options.PlatformAccessToken.Issuer, options.PlatformAccessToken.App, cancellationToken);
+            var opts = Options.Value;
+            return await CreatePlatformAccessToken(opts.PlatformAccessToken.Issuer, opts.PlatformAccessToken.App, cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -114,8 +114,8 @@ internal class TokenGenerator
         /// <inheritdoc/>
         public async Task<string> CreateJWT(CancellationToken cancellationToken = default)
         {
-            var options = Options.Value;
-            return await CreateJWT(options.PlatformAccessToken.Issuer, options.PlatformAccessToken.App, cancellationToken);
+            var opts = Options.Value;
+            return await CreateJWT(opts.PlatformAccessToken.Issuer, opts.PlatformAccessToken.App, cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -142,7 +142,7 @@ internal class TokenGenerator
         {
             try
             {
-                var options = Options.Value;
+                var opts = Options.Value;
                 var certClient = AzureCertificateClientFactory.CreateClient(ServiceKey);
                 var secretClient = AzureSecretClientFactory.CreateClient(ServiceKey);
                 await foreach (var cert in certClient.GetPropertiesOfCertificateVersionsAsync("JWTCertificate", cancellationToken))
@@ -152,7 +152,7 @@ internal class TokenGenerator
                         var secret = await secretClient.GetSecretAsync(cert.Name, cert.Version, cancellationToken);
                         var pkcs12 = X509CertificateLoader.LoadPkcs12(Convert.FromBase64String(secret.Value.Value), null, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
                         AccessToken = PlatformTokenGenerator.GenerateAccessToken(issuer, app, pkcs12);
-                        AccessTokenExpires = cert.ExpiresOn ?? secret.Value.Properties.ExpiresOn ?? DateTime.UtcNow.AddSeconds(options.PlatformAccessToken.KeyVault.CacheTimeout);
+                        AccessTokenExpires = cert.ExpiresOn ?? secret.Value.Properties.ExpiresOn ?? DateTime.UtcNow.AddSeconds(opts.PlatformAccessToken.KeyVault.CacheTimeout);
                         return AccessToken;
                     }
                 }
@@ -177,13 +177,6 @@ public interface ITokenGenerator
     Task<string> CreateJWT(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Creates a new Platform access token
-    /// </summary>
-    /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
-    /// <returns></returns>
-    Task<string> CreatePlatformAccessToken(CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Creates a new Platform Access Token
     /// </summary>
     /// <param name="issuer">token issuer</param>
@@ -191,6 +184,13 @@ public interface ITokenGenerator
     /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
     /// <returns></returns>
     Task<string> CreateJWT(string issuer, string app, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a new Platform access token
+    /// </summary>
+    /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+    /// <returns></returns>
+    Task<string> CreatePlatformAccessToken(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a new Platform Access Token

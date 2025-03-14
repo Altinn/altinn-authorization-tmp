@@ -22,6 +22,7 @@ public static partial class ServiceCollectionExtensions
     /// Adds Altinn platform integration defaults to the service collection.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
+    /// <param name="configureOptions">configure options for <see cref="PlatformSettings"/></param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddAltinnPlatformIntegrationDefaults(this IServiceCollection services, Func<PlatformSettings> configureOptions)
     {
@@ -204,7 +205,7 @@ public static partial class ServiceCollectionExtensions
         [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Adding Key Vault source as platform access token generator")]
         internal static partial void AddKeyVaultTokenSource(ILogger logger);
 
-        [LoggerMessage(EventId = 0, Level = LogLevel.Warning, Message = "Adding test token source as platform access token generator")]
+        [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Adding test token source as platform access token generator")]
         internal static partial void AddTestToolTokenSource(ILogger logger);
     }
 }
