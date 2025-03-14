@@ -88,6 +88,13 @@
             "partyUuid": "0ffac65a-380f-4c9c-8831-5418a3e5e950"
         },
         "a2_hovedadministrator": {
+            "name": "MATEMATISK UNIVERSITET",
+            "pid": "03899798324",
+            "userId": 1442921,
+            "partyId": 50676220,
+            "partyUuid": "b8f2d185-9bfd-4787-a479-242acc4d1cea"
+        },
+        "a2_tilgangsstyrer": {
             "name": "GLEMSOM GREND",
             "pid": "27920898721",
             "userId": 1442949,
