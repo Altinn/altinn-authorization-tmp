@@ -433,7 +433,7 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("197fbfbb-d867-4c0f-8d4a-62e9287e340d"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Observatør", Code = "OBS", Description = "Fysisk person som deltar i styremøter i en virksomhet, men uten stemmerett", Urn = "urn:altinn:external-role:ccr:observator" },
             new Role() { Id = Guid.Parse("de42ae15-c265-42b3-8060-64c779684902"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Styremedlem", Code = "MEDL", Description = "Fysisk- eller juridisk person som inngår i et styre", Urn = "urn:altinn:external-role:ccr:styremedlem" },
             new Role() { Id = Guid.Parse("72c336a2-1705-4aef-b220-7f4aa6c0e69d"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Styrets leder", Code = "LEDE", Description = "Fysisk- eller juridisk person som er styremedlem og leder et styre", Urn = "urn:altinn:external-role:ccr:styreleder" },
-            new Role() { Id = Guid.Parse("38453a5d-ff7d-44eb-ba9a-92b1cd7fc98c"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Den personlige konkursen angår", Code = "KENK", Description = "Den personlige konkursen angår", Urn = "	urn:altinn:external-role:ccr:personlige-konkurs" },
+            new Role() { Id = Guid.Parse("38453a5d-ff7d-44eb-ba9a-92b1cd7fc98c"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Den personlige konkursen angår", Code = "KENK", Description = "Den personlige konkursen angår", Urn = "urn:altinn:external-role:ccr:personlige-konkurs" },
             new Role() { Id = Guid.Parse("6adad370-5524-4438-a811-932d27f655b9"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Norsk representant for utenlandsk enhet", Code = "REPR", Description = "Fysisk- eller juridisk person som har ansvaret for den daglige driften i Norge", Urn = "urn:altinn:external-role:ccr:norsk-representant" },
             new Role() { Id = Guid.Parse("49def9e7-9ea4-4f78-9013-98c9af5918d4"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Kontaktperson", Code = "KONT", Description = "Fysisk person som representerer en virksomhet", Urn = "urn:altinn:external-role:ccr:kontaktperson" },
             new Role() { Id = Guid.Parse("1BCEEA98-3D3A-4CFB-9C1A-3D09FAD9E70B"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Kontaktperson NUF", Code = "KNUF", Description = "Fysisk person som representerer en virksomhet - NUF", Urn = "urn:altinn:external-role:ccr:kontaktperson-nuf" },
@@ -470,7 +470,7 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("197fbfbb-d867-4c0f-8d4a-62e9287e340d"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Observer", Code = "OBS", Description = "An individual who participates in board meetings of a business, but without voting rights", Urn = "urn:altinn:external-role:ccr:observator" },
             new Role() { Id = Guid.Parse("de42ae15-c265-42b3-8060-64c779684902"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Board Member", Code = "MEDL", Description = "An individual or legal entity who is a member of a board", Urn = "urn:altinn:external-role:ccr:styremedlem" },
             new Role() { Id = Guid.Parse("72c336a2-1705-4aef-b220-7f4aa6c0e69d"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Chair of the Board", Code = "LEDE", Description = "An individual or legal entity who is a board member and chairs the board", Urn = "urn:altinn:external-role:ccr:styreleder" },
-            new Role() { Id = Guid.Parse("38453a5d-ff7d-44eb-ba9a-92b1cd7fc98c"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Personal Bankruptcy", Code = "KENK", Description = "Personal Bankruptcy", Urn = "	urn:altinn:external-role:ccr:personlige-konkurs" },
+            new Role() { Id = Guid.Parse("38453a5d-ff7d-44eb-ba9a-92b1cd7fc98c"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Personal Bankruptcy", Code = "KENK", Description = "Personal Bankruptcy", Urn = "urn:altinn:external-role:ccr:personlige-konkurs" },
             new Role() { Id = Guid.Parse("6adad370-5524-4438-a811-932d27f655b9"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Norwegian Representative for a Foreign Entity", Code = "REPR", Description = "An individual or legal entity responsible for the daily operations in Norway", Urn = "urn:altinn:external-role:ccr:norsk-representant" },
             new Role() { Id = Guid.Parse("49def9e7-9ea4-4f78-9013-98c9af5918d4"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Contact Person", Code = "KONT", Description = "An individual who represents a business", Urn = "urn:altinn:external-role:ccr:kontaktperson" },
             new Role() { Id = Guid.Parse("1BCEEA98-3D3A-4CFB-9C1A-3D09FAD9E70B"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Contact Person NUF", Code = "KNUF", Description = "An individual who represents a business - NUF", Urn = "brreg:role:knuf" },
@@ -507,7 +507,7 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("197fbfbb-d867-4c0f-8d4a-62e9287e340d"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Observatør", Code = "OBS", Description = "Fysisk person som deltek i styremøter i ei verksemd, men utan stemmerett", Urn = "urn:altinn:external-role:ccr:observator" },
             new Role() { Id = Guid.Parse("de42ae15-c265-42b3-8060-64c779684902"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Styremedlem", Code = "MEDL", Description = "Fysisk- eller juridisk person som inngår i eit styre", Urn = "urn:altinn:external-role:ccr:styremedlem" },
             new Role() { Id = Guid.Parse("72c336a2-1705-4aef-b220-7f4aa6c0e69d"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Styrets leiar", Code = "LEDE", Description = "Fysisk- eller juridisk person som er styremedlem og leiar eit styre", Urn = "urn:altinn:external-role:ccr:styreleder" },
-            new Role() { Id = Guid.Parse("38453a5d-ff7d-44eb-ba9a-92b1cd7fc98c"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Den personlege konkursen angår", Code = "KENK", Description = "Den personlege konkursen angår", Urn = "	urn:altinn:external-role:ccr:personlige-konkurs" },
+            new Role() { Id = Guid.Parse("38453a5d-ff7d-44eb-ba9a-92b1cd7fc98c"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Den personlege konkursen angår", Code = "KENK", Description = "Den personlege konkursen angår", Urn = "urn:altinn:external-role:ccr:personlige-konkurs" },
             new Role() { Id = Guid.Parse("6adad370-5524-4438-a811-932d27f655b9"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Norsk representant for utanlandsk eining", Code = "REPR", Description = "Fysisk- eller juridisk person som har ansvaret for den daglege drifta i Noreg", Urn = "urn:altinn:external-role:ccr:norsk-representant" },
             new Role() { Id = Guid.Parse("49def9e7-9ea4-4f78-9013-98c9af5918d4"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Kontaktperson", Code = "KONT", Description = "Fysisk person som representerer ei verksemd", Urn = "urn:altinn:external-role:ccr:kontaktperson" },
             new Role() { Id = Guid.Parse("1BCEEA98-3D3A-4CFB-9C1A-3D09FAD9E70B"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Kontaktperson NUF", Code = "KNUF", Description = "Fysisk person som representerer ei verksemd - NUF", Urn = "brreg:role:knuf" },
@@ -549,15 +549,63 @@ public class DbDataMigrationService(
     {
         var roleDagl = (await roleService.Get(t => t.Code, "DAGL")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "DAGL"));
         var roleLede = (await roleService.Get(t => t.Code, "LEDE")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "LEDE"));
+        var roleInnh = (await roleService.Get(t => t.Code, "INNH")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "INNH"));
+        var roleDtso = (await roleService.Get(t => t.Code, "DTSO")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "DTSO"));
+        var roleDtpr = (await roleService.Get(t => t.Code, "DTPR")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "DTPR"));
+        var roleKomp = (await roleService.Get(t => t.Code, "KOMP")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "KOMP"));
+        var roleBest = (await roleService.Get(t => t.Code, "BEST")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "BEST"));
+        var roleRepr = (await roleService.Get(t => t.Code, "REPR")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "REPR"));
+        var roleBobe = (await roleService.Get(t => t.Code, "BOBE")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "BOBE"));
+        var roleRegn = (await roleService.Get(t => t.Code, "REGN")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "REGN"));
+        var roleRevi = (await roleService.Get(t => t.Code, "REVI")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "REVI"));
+        var roleKnuf = (await roleService.Get(t => t.Code, "KNUF")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "KNUF"));
 
+        var roleKLA = (await roleService.Get(t => t.Code, "KLA")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "KLA"));
         var roleTS = (await roleService.Get(t => t.Code, "TS")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "TS"));
         var roleHA = (await roleService.Get(t => t.Code, "HA")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "HA"));
+        var roleMPA = (await roleService.Get(t => t.Code, "MPA")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "MPA"));
 
         var roleMaps = new List<RoleMap>()
         {
             new RoleMap() { Id = Guid.Parse("722EBFD1-AE48-43E8-85C4-7F1FE6EEA057"), HasRoleId = roleDagl, GetRoleId = roleHA },
             new RoleMap() { Id = Guid.Parse("72215C65-F3AA-4F78-8480-7F907CB2FFBC"), HasRoleId = roleDagl, GetRoleId = roleTS },
             new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleLede, GetRoleId = roleTS },
+
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDagl, GetRoleId = roleKLA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleLede, GetRoleId = roleKLA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleInnh, GetRoleId = roleKLA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDtso, GetRoleId = roleKLA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDtpr, GetRoleId = roleKLA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleKomp, GetRoleId = roleKLA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleBest, GetRoleId = roleKLA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleBobe, GetRoleId = roleKLA },
+
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDagl, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleLede, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleInnh, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDtso, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDtpr, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleKomp, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleBest, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleBobe, GetRoleId = roleTS },
+
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDagl, GetRoleId = roleHA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleLede, GetRoleId = roleHA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleInnh, GetRoleId = roleHA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDtso, GetRoleId = roleHA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDtpr, GetRoleId = roleHA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleBest, GetRoleId = roleHA },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleBobe, GetRoleId = roleHA },
+
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDagl, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleLede, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleInnh, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDtso, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleDtpr, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleKomp, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleBest, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleRepr, GetRoleId = roleTS },
+            new RoleMap() { Id = Guid.Parse("BE7F299E-B6AE-43AF-AEA9-8032DB483D50"), HasRoleId = roleBobe, GetRoleId = roleTS }
         };
 
         await roleMapService.IngestAndMerge(roleMaps);
