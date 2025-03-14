@@ -13,7 +13,6 @@ appsettings_key_value = {
   "Platform:RegisterEndpoint" : "http://altinn-register.default.svc.cluster.local"                  # Obsolete
   "Platform:ResourceRegistry:Endpoint" : "http://altinn-resource-registry.default.svc.cluster.local"
   "Platform:Register:Endpoint" : "http://altinn-register.default.svc.cluster.local"
-  "Platform:Token:KeyVault:Endpoint" : ""
 }
 spoke_principal_ids = ["6eaed23e-df7f-4708-9c8e-a7f34deeadb4"]
 service_bus_firewall = [
