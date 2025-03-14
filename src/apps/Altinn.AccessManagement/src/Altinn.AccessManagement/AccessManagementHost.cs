@@ -8,11 +8,9 @@ using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
-using Altinn.AccessMgmt.Persistence;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
 using Altinn.AccessMgmt.Persistence.Extensions;
-using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Host;
@@ -55,9 +53,8 @@ internal static partial class AccessManagementHost
     {
         Log.CreateAltinnHost(Logger);
         var builder = AltinnHost.CreateWebApplicationBuilder("access-management", args);
-        builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
+        builder.ConfigureAppsettings();
         builder.ConfigureLibsHost();
-
         builder.Services.AddMemoryCache();
         builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.AddControllers();
@@ -83,7 +80,6 @@ internal static partial class AccessManagementHost
             opt.Telemetry.EnableTraces = true;
         });
 
-        builder.ConfigureAppsettings();
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
         builder.ConfigureInternals();
@@ -110,34 +106,22 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureLibsIntegrations(this WebApplicationBuilder builder)
     {
-        builder.AddAltinnResourceRegisterIntegration(opts =>
+        builder.Services.AddAltinnPlatformIntegrationDefaults(() =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings.Platform?.ResourceRegisterEndpoint == null)
+            var platformVault = new KeyVaultSettings();
+            builder.Configuration.Bind(platformVault);
+
+            if (!string.IsNullOrEmpty(platformVault.SecretUri))
             {
-                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.ResourceRegisterEndpoint));
-                opts.Endpoint = default;
+                appsettings.Platform.Token.KeyVault.Endpoint = new(platformVault.SecretUri);
             }
             else
             {
-                opts.Endpoint = appsettings.Platform.ResourceRegisterEndpoint;
-            }
-        });
-
-        builder.AddAltinnRegisterIntegration(opts =>
-        {
-            var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings.Platform?.RegisterEndpoint == null)
-            {
-                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.RegisterEndpoint));
-                opts.Endpoint = default;
-            }
-            else
-            {
-                opts.Endpoint = appsettings.Platform.RegisterEndpoint;
+                appsettings.Platform.Token.TestTool.Environment = appsettings.Environment;
             }
 
-            //// opts.Endpoint = new("http://localhost:5020");
+            return appsettings.Platform;
         });
 
         return builder;
@@ -226,7 +210,7 @@ internal static partial class AccessManagementHost
     private static void ConfigureAppsettings(this WebApplicationBuilder builder)
     {
         var config = builder.Configuration;
-
+        builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
         builder.Services.Configure<GeneralSettings>(config.GetSection("GeneralSettings"));
         builder.Services.Configure<PlatformSettings>(config.GetSection("PlatformSettings"));
         builder.Services.Configure<Altinn.Common.PEP.Configuration.PlatformSettings>(config.GetSection("PlatformSettings"));
