@@ -53,6 +53,7 @@ public static class FuzzySearch
         {
             return results;
         }
+
         var properties = builder.Build();
         var searchTerms = term.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
