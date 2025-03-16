@@ -10,7 +10,7 @@ public interface IDelegationService
     /// <summary>
     /// Create a new delegation betweeen two assignments
     /// </summary>
-    /// <param name="userId">User/param>
+    /// <param name="userId">User</param>
     /// <param name="fromAssignmentId">From</param>
     /// <param name="toAssignmentId">To</param>
     /// <returns></returns>

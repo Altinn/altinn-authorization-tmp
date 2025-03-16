@@ -5,10 +5,12 @@
 </div>
 
 @code {
+#pragma warning disable BL0007
 
     [Parameter] public RenderFragment ChildContent { get; set; }
 
     private int? _small { get; set; }
+
     [Parameter] public int Small { get { return _small ?? 1; } set { _small = value; } }
     
     private int? _medium { get; set; }
@@ -24,6 +26,5 @@
     [Parameter] public int Huge { get { return _huge ?? Big; } set { _huge = value; } }
 
     public string Style => $"--bf-grid-cols: {Small}; --bf-grid-s-cols: {Small}; --bf-grid-m-cols: {Medium}; --bf-grid-l-cols: {Large}; --bf-grid-xl-cols: {Big}; --bf-grid-xxl-cols: {Huge};";
-    
-
+#pragma warning restore BL0007
 }

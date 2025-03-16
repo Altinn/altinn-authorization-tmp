@@ -120,7 +120,6 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         */
     }
 
-
     /// <inheritdoc/>
     public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
     {

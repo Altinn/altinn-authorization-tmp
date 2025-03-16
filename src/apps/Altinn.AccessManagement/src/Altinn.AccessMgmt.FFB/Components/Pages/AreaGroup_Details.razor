@@ -51,7 +51,7 @@
 @code {
 
     [Parameter] public Guid id { get; set; }
-    public AreaGroup? AreaGroup { get; set; }
+    public AreaGroup AreaGroup { get; set; }
     public List<ExtArea> Areas { get; set; }
 
     protected async override Task OnParametersSetAsync()

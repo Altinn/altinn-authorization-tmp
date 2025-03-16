@@ -52,8 +52,8 @@
         && i.Name.ToLower().Contains(ResourceSearchTerm.ToLower())
     ).ToList();
 
-    public Provider? FilterProvider { get; set; }
-    public ResourceType? FilterResourceType { get; set; }
+    public Provider FilterProvider { get; set; }
+    public ResourceType FilterResourceType { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {

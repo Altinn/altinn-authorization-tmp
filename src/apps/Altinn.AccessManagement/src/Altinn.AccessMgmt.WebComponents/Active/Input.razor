@@ -15,6 +15,7 @@
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
     private string _value;
+#pragma warning disable BL0007
     [Parameter]
     public string Value
     {
@@ -31,5 +32,5 @@
             }
         }
     }
-    
+#pragma warning restore BL0007
 }
