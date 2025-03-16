@@ -107,6 +107,11 @@ public partial class RegisterHostedService(
     {
         await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
         {
+            if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
+            {
+                return;
+            }
+
             if (cancellationToken.IsCancellationRequested)
             {
                 return;
