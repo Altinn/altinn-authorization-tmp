@@ -68,6 +68,7 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<IConnectionService, ConnectionService>();
         builder.Services.AddSingleton<IRoleService, RoleService>();
 
+        builder.Services.AddSingleton<IIngestService, PostgresIngestService>();
         builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddSingleton<IMigrationService, SqlMigrationService>();
         builder.Services.AddScoped<DbSchemaMigrationService>();
