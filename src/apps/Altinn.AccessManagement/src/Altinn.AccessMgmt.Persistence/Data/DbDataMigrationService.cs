@@ -574,19 +574,6 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestRole(CancellationToken cancellationToken = default)
     {
-        //var mergeFilter = new List<Persistence.Core.Helpers.GenericFilter>() 
-        //{ 
-        //    new Persistence.Core.Helpers.GenericFilter("RoleId", "RoleId"),
-        //    new Persistence.Core.Helpers.GenericFilter("Key", "Key")
-        //};
-
-        //foreach (var role in roles)
-        //{
-        //    // MergeFilter will have the upsert compare on roleId and key instead of default (id).
-        //    await roleLookupRepository.Upsert(new RoleLookup() { Id = Guid.NewGuid(), RoleId = role.Id, Key = "Urn", Value = role.Urn }, mergeFilter: mergeFilter);
-        //}
-
-
         var orgEntityTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found '{0}'", "Organisasjon"));
         var persEntityTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found '{0}'", "Person"));
         var brrProviderId = (await providerService.Get(t => t.Name, "Brønnøysundregistrene")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Provider not found '{0}'", "Brønnøysundregistrene"));
