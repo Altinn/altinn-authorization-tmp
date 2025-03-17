@@ -71,9 +71,9 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<IIngestService, PostgresIngestService>();
         builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddSingleton<IMigrationService, SqlMigrationService>();
-        builder.Services.AddScoped<DbSchemaMigrationService>();
-        builder.Services.AddScoped<DbDataMigrationService>();
-        builder.Services.AddScoped<MockDataService>();
+        builder.Services.AddSingleton<DbSchemaMigrationService>();
+        builder.Services.AddSingleton<DbDataMigrationService>();
+        builder.Services.AddSingleton<MockDataService>();
         builder.Services.Add(Marker.ServiceDescriptor);
 
         return builder;
@@ -118,19 +118,31 @@ public static partial class DbAccessHostExtensions
 
         // Add definitions to the database definition registry
         DefineAllModels(host.Services);
-        using (var scope = host.Services.CreateScope())
-        {
-            var migration = scope.ServiceProvider.GetRequiredService<DbSchemaMigrationService>();
-            migration.GenerateAll();
-            await migration.MigrateAll();
 
-            var dbIngest = scope.ServiceProvider.GetRequiredService<DbDataMigrationService>();
-            await dbIngest.IngestAll();
+        var migration = host.Services.GetRequiredService<DbSchemaMigrationService>();
+        migration.GenerateAll();
+        await migration.MigrateAll();
 
-            var mockService = scope.ServiceProvider.GetRequiredService<MockDataService>();
-            await mockService.GenerateBasicData();
-            await mockService.GeneratePackageResources();
-        }
+        var dbIngest = host.Services.GetRequiredService<DbDataMigrationService>();
+        await dbIngest.IngestAll();
+
+        var mockService = host.Services.GetRequiredService<MockDataService>();
+        //await mockService.GenerateBasicData();
+        //await mockService.GeneratePackageResources();
+
+        //using (var scope = host.Services.CreateScope())
+        //{
+        //    var migration = scope.ServiceProvider.GetRequiredService<DbSchemaMigrationService>();
+        //    migration.GenerateAll();
+        //    await migration.MigrateAll();
+
+        //    var dbIngest = scope.ServiceProvider.GetRequiredService<DbDataMigrationService>();
+        //    await dbIngest.IngestAll();
+
+        //    var mockService = scope.ServiceProvider.GetRequiredService<MockDataService>();
+        //    await mockService.GenerateBasicData();
+        //    await mockService.GeneratePackageResources();
+        //}
 
         return host;
     }

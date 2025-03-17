@@ -323,9 +323,9 @@ public partial class RegisterHostedService(
     
     private async Task<Role> GetOrCreateRole(string roleIdentifier, string roleSource)
     {
-        if (Roles.Count(t => t.Urn == roleIdentifier) == 1)
+        if (Roles.Count(t => t.Code == roleIdentifier) == 1)
         {
-            return Roles.First(t => t.Urn == roleIdentifier);
+            return Roles.First(t => t.Code == roleIdentifier);
         }
 
         var role = (await roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();

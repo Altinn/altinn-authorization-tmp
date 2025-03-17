@@ -54,5 +54,5 @@ public class ExtEntity : Entity
     /// <summary>
     /// Parent
     /// </summary>
-    public EntityParty Parent { get; set; }
+    public Entity Parent { get; set; }
 }

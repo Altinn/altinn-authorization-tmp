@@ -28,7 +28,7 @@ builder.AddDb(opt =>
 {
     opt.DbType = Altinn.AccessMgmt.Persistence.Core.Models.MgmtDbType.Postgres;
     opt.Enabled = true;
-    opt.DatabaseReadUser = "wigg";
+    opt.DatabaseReadUser = "accessmgmt_app";
 });
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
