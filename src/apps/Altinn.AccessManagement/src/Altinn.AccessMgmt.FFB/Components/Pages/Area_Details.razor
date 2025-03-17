@@ -47,7 +47,7 @@
                             <td><a href=@($"/package/{package.Id}")>@package.Name</a></td>
                             <td>@package.Description</td>
                             <td style="text-align: center;">
-                                @if (package.IsDelegable)
+                                @if (package.IsAssignable)
                                 {
                                     <Icon Name="square-check"></Icon>
                                 }

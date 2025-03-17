@@ -65,7 +65,7 @@
                                 <td>@package.Package.Description</td>
                                 <td><Icon Name=@(package.HasAccess ? "check" : "xmark")></Icon></td>
                                 <td><Icon Name=@(package.CanDelegate ? "check" : "xmark")></Icon></td>
-                                <td><Icon Name=@(package.Package.IsDelegable ? "check" : "xmark")></Icon></td>
+                                <td><Icon Name=@(package.Package.IsAssignable ? "check" : "xmark")></Icon></td>
                                 <td>@package.EntityVariant?.Name</td>
                             </SimpleTableRow>
                         }
@@ -93,7 +93,7 @@
                             <SimpleTableRow>
                                 <td><a href=@($"/package/{package.Package.Id}")>@package.Package.Name</a></td>
                                 <td>@package.Package.Description</td>
-                                <td><Icon Name=@(package.Package.IsDelegable ? "check" : "xmark")></Icon></td>
+                                <td><Icon Name=@(package.Package.IsAssignable ? "check" : "xmark")></Icon></td>
                             </SimpleTableRow>
                         }
                     </Body>
@@ -155,7 +155,7 @@
                                                 <SimpleTableRow>
                                                     <td><a href=@($"/package/{package.Id}")>@package.Name</a></td>
                                                     <td>@package.Description</td>
-                                                    <td><Icon Name=@(package.IsDelegable ? "check" : "xmark")></Icon></td>
+                                                    <td><Icon Name=@(package.IsAssignable ? "check" : "xmark")></Icon></td>
                                                 </SimpleTableRow>
                                             }
                                         </Body>
