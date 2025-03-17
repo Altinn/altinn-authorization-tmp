@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Services;
 
@@ -154,7 +155,9 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     {
         var parameters = new List<GenericParameter>();
 
-        foreach (var filter in filters)
+        var multiple = filters.CountBy(t => t.PropertyName).Where(t => t.Value > 1).Select(t => t.Key);
+
+        foreach (var filter in filters.Where(t => !multiple.Contains(t.PropertyName)))
         {
             object value = filter.Comparer switch
             {
@@ -165,6 +168,16 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
             };
 
             parameters.Add(new GenericParameter(filter.PropertyName, value));
+        }
+
+        foreach (var m in multiple)
+        {
+            int a = 1;
+            foreach (var filter in filters.Where(t => t.PropertyName == m))
+            {
+                parameters.Add(new GenericParameter($"@{m}_{a}", filter.Value));
+                a++;
+            }
         }
 
         if (options.Language != null)

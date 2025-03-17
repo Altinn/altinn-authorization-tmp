@@ -303,7 +303,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         var conditions = new List<string>();
 
-        foreach (var filter in filters)
+        var multiple = filters.CountBy(t => t.PropertyName).Where(t => t.Value > 1).Select(t => t.Key);
+
+        foreach (var filter in filters.Where(t => !multiple.Contains(t.PropertyName)))
         {
             string condition = filter.Comparer switch
             {
@@ -320,6 +322,41 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             };
 
             conditions.Add(condition);
+        }
+
+        foreach (var m in multiple)
+        {
+            var inList = new List<string>();
+            var notInList = new List<string>();
+
+            int a = 1;
+            foreach (var filter in filters.Where(t => t.PropertyName == m))
+            {
+                if (filter.Comparer == FilterComparer.Equals)
+                {
+                    inList.Add($"@{m}_{a}");
+                }
+                else if (filter.Comparer == FilterComparer.NotEqual)
+                {
+                    notInList.Add($"@{m}_{a}");
+                }
+                else
+                {
+                    throw new Exception("Filter not supported");
+                }
+
+                a++;
+            }
+
+            if (inList.Any())
+            {
+                conditions.Add($"{tableAlias}.{m} IN ({string.Join(",", notInList)})");
+            }
+
+            if (notInList.Any())
+            {
+                conditions.Add($"{tableAlias}.{m} NOT IN ({string.Join(",", notInList)})");
+            }
         }
 
         return conditions.Count > 0 ? "WHERE " + string.Join(" AND ", conditions) : string.Empty;
