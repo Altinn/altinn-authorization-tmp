@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.21.1"
+      version = "4.22.0"
     }
     static = {
       source  = "tiwood/static"
@@ -10,7 +10,7 @@ terraform {
     }
     time = {
       source  = "hashicorp/time"
-      version = "0.12.1"
+      version = "0.13.0"
     }
   }
 
@@ -219,8 +219,8 @@ module "postgres_server" {
     "azure.extensions" : "HSTORE"
   }
 
-  compute_tier = "Burstable"
-  compute_size = "Standard_B1ms"
+  compute_tier = var.db_compute_tier
+  compute_size = var.db_compute_size
 
   entraid_admins = [
     {

@@ -5,16 +5,21 @@
 # * Using User Assigned Identity due to problematic execution order for System assigned identity and enabling CMK encryption
 
 locals {
-  service_bus_enable_public_endpoint = !var.prod_like
-  service_bus_sku                    = var.prod_like ? "Premium" : "Standard"
-  service_bus_enable_local_auth      = !var.prod_like
+  service_bus_sku               = var.prod_like ? "Premium" : "Standard"
+  service_bus_enable_local_auth = !var.prod_like
+
+  # service_bus_enable_public_endpoint = !var.prod_like
+  service_bus_enable_public_endpoint = true
+  # service_bus_ip_rules               = var.prod_like ? [] : concat(var.service_bus_firewall, [var.firewall_public_ipv4])
+  service_bus_ip_rules = concat(var.service_bus_firewall, [var.firewall_public_ipv4])
+  # service_bus_default_action = var.prod_like ? "Allow" : "Deny"
+  service_bus_default_action = "Deny"
 
   service_bus_enable_private_endpoint      = var.prod_like         # Only avaiable for Premium tier
   service_bus_enable_encryption_at_rest    = var.prod_like         # Only avaiable for Premium tier
   service_bus_capacity                     = var.prod_like ? 1 : 0 # Only avaiable for Premium tier
   service_bus_premium_messaging_partitions = var.prod_like ? 1 : 0 # Only avaiable for Premium tier
 }
-
 
 data "azurerm_private_dns_zone" "hub_service_bus" {
   name                = "privatelink.servicebus.windows.net"
@@ -33,9 +38,9 @@ resource "azurerm_servicebus_namespace" "service_bus" {
   premium_messaging_partitions = local.service_bus_premium_messaging_partitions
 
   network_rule_set {
-    default_action                = "Deny"
+    default_action                = local.service_bus_default_action
     public_network_access_enabled = local.service_bus_enable_public_endpoint
-    ip_rules                      = [var.firewall_public_ipv4]
+    ip_rules                      = local.service_bus_ip_rules
     trusted_services_allowed      = true
   }
 
