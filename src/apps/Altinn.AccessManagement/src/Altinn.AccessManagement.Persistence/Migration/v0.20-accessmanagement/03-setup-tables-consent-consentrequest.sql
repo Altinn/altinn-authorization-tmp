@@ -12,6 +12,6 @@ CREATE TABLE IF NOT EXISTS consent.consentrequest
     validto  timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     consented timestamp with time zone NULL,
     revoked timestamp with time zone NULL
-)
+);
 
 
