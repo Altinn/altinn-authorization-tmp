@@ -1,7 +1,7 @@
 ﻿namespace Altinn.AccessMgmt.Core.Models;
 
 /// <summary>
-/// 
+/// Generated view for assignments and delegations
 /// </summary>
 public class Connection 
 {
@@ -37,7 +37,7 @@ public class Connection
 }
 
 /// <summary>
-/// 
+/// Extended Connection
 /// </summary>
 public class ExtConnection //: Connection
 {
@@ -47,27 +47,27 @@ public class ExtConnection //: Connection
     public Guid Id { get; set; }
 
     /// <summary>
-    /// 
+    /// The entity identity the connection is from (origin, client, source etc) 
     /// </summary>
     public EntityParty From { get; set; }
 
     /// <summary>
-    /// 
+    /// The role To identifies as
     /// </summary>
     public Role Role { get; set; }
 
     /// <summary>
-    /// 
+    /// The entity identity the connection is to (destination, agent, etc)
     /// </summary>
     public EntityParty To { get; set; }
 
     /// <summary>
-    /// 
+    /// The entity betweeen from and to. When connection is delegated.
     /// </summary>
-    public EntityParty Facilitator { get; set; } 
+    public EntityParty Facilitator { get; set; }
 
     /// <summary>
-    /// 
+    /// The role the facilitator has to the client 
     /// </summary>
     public Role FacilitatorRole { get; set; }
 }

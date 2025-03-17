@@ -38,7 +38,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
             await delegationService.CreateClientDelegation(request, userId);
         }
 
-
         /// <summary>
         /// Alle enheter {id} har gitt tilgang til.
         /// </summary>
@@ -88,42 +87,26 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         }
 
         /// <summary>
-        /// Alle relasjoner hvor {id} er involvert i from, to eller facilitator.
+        /// Alle enheter der {id} fasiliterer en delegering.
         /// </summary>
-        [Route("all/{id}")]
+        [Route("{from}/{to}/packages")]
         [HttpGet]
-        public async Task<ActionResult<ExtConnection>> GetAll(Guid id)
+        public async Task<ActionResult<Package>> GetPackages(Guid from, Guid to)
         {
-            throw new NotImplementedException();
-            //var resGiven = await connectionRepository.GetExtended(t => t.FromId, id);
-            //var resRecived = await connectionRepository.GetExtended(t => t.ToId, id);
-            //var resFacilitated = await connectionRepository.GetExtended(t => t.FacilitatorId, id);
+            var connectionFilter = connectionRepository.CreateFilterBuilder();
+            connectionFilter.Equal(t => t.FromId, from);
+            connectionFilter.Equal(t => t.ToId, to);
+            var connections = await connectionRepository.Get(connectionFilter);
 
-            //var res = new List<ExtConnection>();
-            //res.AddRange(resGiven);
-            //res.AddRange(resRecived);
-            //res.AddRange(resFacilitated);
+            var filter = connectionPackageRepository.CreateFilterBuilder();
+            filter.In(t => t.ConnectionId, connections.Select(t => t.Id));
+            var r = await connectionPackageRepository.GetExtended(filter);
 
-            //return Ok(res);
+            return Ok(r.Select(t => t.Package));
         }
 
         /// <summary>
-        /// Alle relasjoner hvor {id} er involvert i from, to eller facilitator.
-        /// </summary>
-        [Route("{fromid}/{toid}")]
-        [HttpGet]
-        public async Task<ActionResult<ExtConnection>> GetSpecific(Guid fromId, Guid toId)
-        {
-            var filter = connectionRepository.CreateFilterBuilder();
-            filter.Equal(t => t.FromId, fromId);
-            filter.Equal(t => t.ToId, toId);
-            var res = await connectionRepository.GetExtended(filter);
-
-            return Ok(res);
-        }
-
-        /// <summary>
-        /// Alle relasjoner hvor {id} er involvert i from, to eller facilitator.
+        /// All packages on connection
         /// </summary>
         [Route("{id}/packages")]
         [HttpGet]
@@ -133,23 +116,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         }
 
         /// <summary>
-        /// Alle relasjoner hvor {id} er involvert i from, to eller facilitator.
-        /// </summary>
-        [Route("{id}/packages")]
-        [HttpPost]
-        public async Task<ActionResult<Package>> AddPackage([FromBody] string aa, Guid id)
-        {
-            var dp = new DelegationPackage()
-            {
-                Id = id,
-                DelegationId = id,
-                PackageId = id
-            };
-            return Ok(await connectionPackageRepository.GetB(id));
-        }
-
-        /// <summary>
-        /// Alle relasjoner hvor {id} er involvert i from, to eller facilitator.
+        /// All resources on connection
         /// </summary>
         [Route("{id}/resources")]
         [HttpGet]
@@ -160,10 +127,8 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
     }
 }
 
-public class AddAssignmentPackageRequestDto
+public class AssignmentPackageRequestDto
 {
-    public Guid AssignmentId { get; set; }
+    public Guid ConnectionId { get; set; } // Assignment or Delegation => move to assignment/delegation controllers
     public Guid PackageId { get; set; }
 }
-
-
