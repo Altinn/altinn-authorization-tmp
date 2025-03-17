@@ -5,7 +5,9 @@ using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using DnsClient.Protocol;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Components;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Services;
 
@@ -228,6 +230,14 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     {
         var param = BuildParameters(entity);
         return await Update(id: id, parameters: param, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, CancellationToken cancellationToken = default)
+    {
+        var parameters = new List<GenericParameter>();
+        parameters.Add(new GenericParameter(ExtractPropertyInfo(property).Name, value));
+        return await Update(id, parameters, cancellationToken);
     }
 
     /// <inheritdoc/>

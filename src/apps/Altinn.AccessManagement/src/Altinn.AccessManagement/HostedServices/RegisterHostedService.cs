@@ -1,8 +1,5 @@
-using System.Collections.Generic;
-using System.IO.Pipelines;
 using System.Net;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
@@ -12,7 +9,6 @@ using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Microsoft.FeatureManagement;
-using Role = Altinn.AccessMgmt.Core.Models.Role;
 
 namespace Altinn.Authorization.AccessManagement;
 
@@ -141,7 +137,7 @@ public partial class RegisterHostedService(
                 if (batchData.Count(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId) > 0)
                 {
                     // If changes on same assignment then execute as-is before continuing.
-                    await FlushBatchAsync();
+                    await FlushBatchAsync(cancellationToken);
                 }
 
                 Interlocked.Increment(ref _executionCount);
@@ -150,6 +146,10 @@ public partial class RegisterHostedService(
                 if (item.Type == "Added")
                 {
                     batchData.Add(assignment);
+                    if (item.RoleIdentifier == "hovedenhet")
+                    {
+                        await SetParent(assignment.FromId, assignment.ToId, cancellationToken);
+                    }
                 }
                 else
                 {
@@ -158,12 +158,17 @@ public partial class RegisterHostedService(
                     filter.Equal(t => t.ToId, assignment.ToId);
                     filter.Equal(t => t.RoleId, assignment.RoleId);
                     await assignmentRepository.Delete(filter);
+
+                    if (item.RoleIdentifier == "hovedenhet")
+                    {
+                        await RemoveParent(assignment.FromId, cancellationToken);
+                    }
                 }
             }
 
             if (batchData.Count >= batchSize)
             {
-                await FlushBatchAsync();
+                await FlushBatchAsync(cancellationToken);
             }
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
@@ -177,18 +182,18 @@ public partial class RegisterHostedService(
 
         if (batchData.Count > 0)
         {
-            await FlushBatchAsync();
+            await FlushBatchAsync(cancellationToken);
         }
 
-        async Task FlushBatchAsync()
+        async Task FlushBatchAsync(CancellationToken cancellationToken = default)
         {
             try
             {
                 Console.WriteLine("Write batchData to db");
-                await ingestService.IngestTempData<Assignment>(batchData, batchId);
+                await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
 
                 Console.WriteLine("Merge batchData to db");
-                await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter);
+                await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -199,6 +204,16 @@ public partial class RegisterHostedService(
             batchId = Guid.NewGuid();
             batchData.Clear();
         }
+    }
+
+    private async Task SetParent(Guid childId, Guid parentId, CancellationToken cancellationToken = default)
+    {
+        await entityRepository.Update(t => t.ParentId, parentId, childId, cancellationToken);
+    }
+
+    private async Task RemoveParent(Guid childId, CancellationToken cancellationToken = default)
+    {
+        await entityRepository.Update(t => t.ParentId, null, childId, cancellationToken);
     }
 
     /// <summary>
