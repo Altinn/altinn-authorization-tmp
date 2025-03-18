@@ -145,7 +145,7 @@ public partial class RegisterHostedService(
                 if (item.Type == "Added")
                 {
                     batchData.Add(assignment);
-                    if (item.RoleIdentifier == "hovedenhet")
+                    if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
                     {
                         await SetParent(assignment.FromId, assignment.ToId, cancellationToken);
                     }
@@ -158,7 +158,7 @@ public partial class RegisterHostedService(
                     filter.Equal(t => t.RoleId, assignment.RoleId);
                     await assignmentRepository.Delete(filter);
 
-                    if (item.RoleIdentifier == "hovedenhet")
+                    if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
                     {
                         await RemoveParent(assignment.FromId, cancellationToken);
                     }
