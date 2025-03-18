@@ -16,7 +16,7 @@
                 <BreadcrumbItem Url=@($"/area/{Package.Area.Id}")>@Package.Area.Name</BreadcrumbItem>
                 <BreadcrumbItem Url=@($"/packages/{Package.Id}")>@Package.Name</BreadcrumbItem>
             </BreadcrumbContainer>
-            <H1><SvgIcon Path="@Package.Area.IconName"></SvgIcon> @Package.Name</H1>
+            <H1><SvgIcon Path="@Package.Area.IconUrl"></SvgIcon> @Package.Name</H1>
             <p>@Package.Description</p>
         </LeftContent>
         <RightContent>

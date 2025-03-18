@@ -27,7 +27,7 @@
             <div>
 
                 <div class="bf-h3" style="display: flex;gap: .5rem;margin-top: 1rem; margin-bottom:.5rem; align-items: center;">
-                    <SvgIcon Path="@area.IconName" Small /> @area.Name
+                    <SvgIcon Path="@area.IconUrl" Small /> @area.Name
                 </div>
 
                 <table class="bf-table bfc-base-3-bg">
@@ -80,7 +80,7 @@
                     @foreach (var package in Filtered.OrderBy(t => t.Name))
                     {
                         <tr class="bf-table-row bf-table-row-compact">
-                            <td title="@package.Area.Name"><a href=@($"/area/{package.Area.Id}")><SvgIcon Path="@package.Area.IconName" Small /></a></td>
+                            <td title="@package.Area.Name"><a href=@($"/area/{package.Area.Id}")><SvgIcon Path="@package.Area.IconUrl" Small /></a></td>
                             <td><a href=@($"/package/{package.Id}")>@package.Name</a></td>
                             <td>@package.Description</td>
                             <td style="text-align:center">
