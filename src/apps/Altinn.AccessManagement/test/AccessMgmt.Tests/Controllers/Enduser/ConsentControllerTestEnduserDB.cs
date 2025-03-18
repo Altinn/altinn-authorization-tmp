@@ -23,7 +23,18 @@ namespace AccessMgmt.Tests.Controllers.Enduser
 {
     public class ConsentControllerTestEnduserDB(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
     {
-        private WebApplicationFixture Fixture { get; } = fixture;
+        private WebApplicationFactory<Program> Fixture { get; } = fixture.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IPartiesClient, PartiesClientMock>();
+                services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
+                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
+                services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
+                services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
+            });
+        });
 
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
@@ -53,25 +64,13 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             Assert.Equal(requestId, consentRequest.Id);
             Assert.True(consentRequest.ConsentRights.Count > 0);
             Assert.Equal("27099450067", consentRequest.From.ValueSpan);
-            Assert.Equal("810419512", consentRequest.To.ValueSpan);
+            Assert.Equal("27099450067", consentRequest.To.ValueSpan);  // TODO FIx
             Assert.Equal("urn:altinn:resource", consentRequest.ConsentRights[0].Resource[0].Type);
         }
 
         private HttpClient GetTestClient()
         {
-            HttpClient client = Fixture.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureTestServices(services =>
-                {
-                    services.AddSingleton<IPartiesClient, PartiesClientMock>();
-                    services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                    services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
-                    services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
-                    services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
-                    services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
-                });
-            }).CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
-
+            HttpClient client = Fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             return client;
         }

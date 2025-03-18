@@ -1,12 +1,11 @@
-﻿using System.Reflection;
-using Altinn.AccessManagement.Core.Enums;
-using Altinn.AccessManagement.Core.Enums.Consent;
+﻿using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Consent;
 using Altinn.AccessManagement.Persistence.Policy;
+using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql;
 using Azure.Core;
 using Azure.Storage;
@@ -17,9 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Npgsql;
 
 namespace Altinn.AccessManagement.Persistence.Extensions;
 
