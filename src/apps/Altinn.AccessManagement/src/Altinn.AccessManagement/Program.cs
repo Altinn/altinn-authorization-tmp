@@ -9,7 +9,7 @@ domain.SetData("REGEX_DEFAULT_MATCH_TIMEOUT", TimeSpan.FromSeconds(2));
 
 WebApplication app = AccessManagementHost.Create(args);
 
-await app.UseDb();
+await app.UseAccessMgmtDb();
 
 if (await app.Services.GetRequiredService<FeatureManager>().IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
 {

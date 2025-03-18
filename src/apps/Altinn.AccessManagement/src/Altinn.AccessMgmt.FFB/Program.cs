@@ -24,11 +24,9 @@ builder.AddAltinnDatabase(opt =>
     opt.Telemetry.EnableTraces = true;
 });
 
-builder.AddDb(opt => 
+builder.AddAccessMgmtDb(opts =>
 {
-    opt.DbType = Altinn.AccessMgmt.Persistence.Core.Models.MgmtDbType.Postgres;
-    opt.Enabled = true;
-    opt.DatabaseReadUser = "accessmgmt_app";
+    builder.Configuration.GetSection("AccessMgmtPersistenceOptions").Bind(opts);
 });
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -37,7 +35,7 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 
 var app = builder.Build();
 
-await app.UseDb();
+await app.UseAccessMgmtDb();
 
 if (!app.Environment.IsDevelopment())
 {

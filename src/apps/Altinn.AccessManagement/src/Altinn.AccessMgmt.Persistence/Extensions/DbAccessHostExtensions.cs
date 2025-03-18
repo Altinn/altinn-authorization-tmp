@@ -34,7 +34,7 @@ public static partial class DbAccessHostExtensions
     /// <param name="builder">The host application builder.</param>
     /// <param name="configureOptions">Action to configure database access options.</param>
     /// <returns>The updated host application builder.</returns>
-    public static IHostApplicationBuilder AddDb(this IHostApplicationBuilder builder, Action<AccessMgmtPersistenceOptions> configureOptions)
+    public static IHostApplicationBuilder AddAccessMgmtDb(this IHostApplicationBuilder builder, Action<AccessMgmtPersistenceOptions> configureOptions)
     {
         var options = new AccessMgmtPersistenceOptions();
         configureOptions?.Invoke(options);
@@ -45,7 +45,7 @@ public static partial class DbAccessHostExtensions
         }
 
         Log.ConfigureDbType(Logger, options.DbType);
-        builder.ConfigureDb(options.DbType)();
+        builder.ConfigureAccessMgmtDb(options.DbType)();
 
         // Add repository implementations dynamically
         var assembly = Assembly.GetExecutingAssembly();
@@ -85,7 +85,7 @@ public static partial class DbAccessHostExtensions
     /// <param name="builder">The host application builder.</param>
     /// <param name="dbType">The type of database to configure.</param>
     /// <returns>An action to configure the database services.</returns>
-    private static Action ConfigureDb(this IHostApplicationBuilder builder, MgmtDbType dbType) => dbType switch
+    private static Action ConfigureAccessMgmtDb(this IHostApplicationBuilder builder, MgmtDbType dbType) => dbType switch
     {
         MgmtDbType.Postgres => () =>
         {
@@ -107,7 +107,7 @@ public static partial class DbAccessHostExtensions
     /// </summary>
     /// <param name="host">The application host.</param>
     /// <returns>The updated host after applying database changes.</returns>
-    public static async Task<IHost> UseDb(this IHost host)
+    public static async Task<IHost> UseAccessMgmtDb(this IHost host)
     {
         // Make sure migration don't run if DB is not enabled
         if (host.Services.GetService(Marker.Type) == null)
@@ -126,9 +126,10 @@ public static partial class DbAccessHostExtensions
         var dbIngest = host.Services.GetRequiredService<DbDataMigrationService>();
         await dbIngest.IngestAll();
 
+        // TODO: Add FeatureFlag
         var mockService = host.Services.GetRequiredService<MockDataService>();
-        await mockService.GenerateBasicData();
-        //await mockService.GeneratePackageResources();
+        //// await mockService.GenerateBasicData(); 
+        //// await mockService.GeneratePackageResources();
 
         return host;
     }
@@ -168,7 +169,7 @@ public static partial class DbAccessHostExtensions
         [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = "Configuring {dbtype} database for access management")]
         internal static partial void ConfigureDbType(ILogger logger, MgmtDbType dbtype);
 
-        [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = $"Database is not enabled make sure it's initialized by calling IHostApplicationBuilder.AddDb.")]
+        [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = $"Database is not enabled make sure it's initialized by calling IHostApplicationBuilder.AddAccessMgmtDb.")]
         internal static partial void DbNotEnabled(ILogger logger);
     }
 }
