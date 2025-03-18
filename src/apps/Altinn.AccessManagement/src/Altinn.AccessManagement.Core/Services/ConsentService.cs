@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -10,6 +11,7 @@ using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using System;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -28,9 +30,14 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, CancellationToken cancellationToken = default)
         {
-            consentRequest.From = await MapFromExternalIdenity(consentRequest.From);
-            consentRequest.To = await MapFromExternalIdenity(consentRequest.To);
-            ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(consentRequest);
+            Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest);
+
+            if (result.IsProblem)
+            {
+                return result.Problem;
+            }
+
+            ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(result.Value, cancellationToken);
             requestDetails.From = consentRequest.From;
             requestDetails.To = consentRequest.To;
             return requestDetails;
@@ -219,6 +226,57 @@ namespace Altinn.AccessManagement.Core.Services
 
             // Temporary return true until we have the actual response
             return true;
+        }
+
+        /// <summary>
+        /// Validates and sets internal identifiers for the consent request
+        /// - Validates that the from and to party is valid
+        /// - Validates that resources requested in consent is valid
+        /// - Validates that valid to time is valid
+        /// </summary>
+        private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest)
+        {
+            ValidationErrorBuilder errors = default;
+            ConsentPartyUrn from = await MapFromExternalIdenity(consentRequest.From);
+            if (from == null)
+            {
+                if (consentRequest.From.IsOrganizationId(out OrganizationNumber organizationNumber))
+                {
+                    errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                }
+                else if (consentRequest.From.IsPersonId(out PersonIdentifier personIdentifier))
+                {
+                    errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                }
+            }
+            else
+            {
+                consentRequest.From = from;
+            }
+
+            ConsentPartyUrn to = await MapFromExternalIdenity(consentRequest.To);
+            if (from == null)
+            {
+                if (consentRequest.From.IsOrganizationId(out OrganizationNumber organizationNumber))
+                {
+                    errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                }
+                else if (consentRequest.From.IsPersonId(out PersonIdentifier personIdentifier))
+                {
+                    errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                }
+            }
+            else
+            {
+                consentRequest.To = to;
+            }
+
+            if (errors.TryBuild(out var errorResult))
+            {
+                return errorResult;
+            }
+
+            return consentRequest;
         }
 
         private async Task<int> GetUserIdForParty(Guid partyId)

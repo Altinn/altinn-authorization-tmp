@@ -41,4 +41,16 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor ToManyDelegationsToRevoke { get; }
         = _factory.Create(5, $"There is to many policy files to update. Must delete individual delegations.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidPersonIdentifier { get; }
+        = _factory.Create(6, "Invalid person identifier. No person with this identifier.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidOrganizationIdentifier { get; }
+        = _factory.Create(7, $"Invalid organization identifier. No organization with this identifier.");
 }
