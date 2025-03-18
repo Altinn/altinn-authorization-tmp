@@ -103,7 +103,8 @@ internal static partial class AccessManagementHost
         builder.AddDb(opts =>
         {
             opts.DbType = MgmtDbType.Postgres;
-            opts.Enabled = true;
+            opts.Enabled = false;
+            opts.DatabaseReadUser = "accessmgmt_app";
         });
 
         return builder;
