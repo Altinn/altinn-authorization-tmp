@@ -8,7 +8,6 @@ namespace Altinn.AccessManagement.Core.Clients.Interfaces
     /// </summary>
     public interface IAuthenticationClient
     {
-
         /// <summary>
         /// Fetching a System user from Authentication
         /// </summary>
