@@ -143,7 +143,7 @@ public class MockDataService
             resourceTypes = await resourceTypeRepository.Get();
         }
 
-        var provider = (await providerRepository.Get(t => t.Name, "Digdir")).FirstOrDefault() ?? throw new Exception("Provider not found");
+        var provider = (await providerRepository.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault() ?? throw new Exception("Provider not found");
 
         foreach (var package in packages)
         {

@@ -129,7 +129,7 @@ public static partial class DbAccessHostExtensions
         await dbIngest.IngestAll();
 
         // TODO: Add FeatureFlag
-        var mockService = host.Services.GetRequiredService<MockDataService>();
+        //// var mockService = host.Services.GetRequiredService<MockDataService>();
         //// await mockService.GenerateBasicData(); 
         //// await mockService.GeneratePackageResources();
 

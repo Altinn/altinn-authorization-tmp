@@ -20,18 +20,9 @@ public class AssignmentService(
     private readonly IInheritedAssignmentRepository inheritedAssignmentRepository = inheritedAssignmentRepository;
     private readonly IPackageRepository packageRepository = packageRepository;
     private readonly IAssignmentPackageRepository assignmentPackageRepository = assignmentPackageRepository;
-    private readonly IAssignmentResourceRepository assignmentResourceRepository = assignmentResourceRepository;
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
     private readonly IEntityRepository entityRepository = entityRepository;
-
-    /*
-
-   THE VIEW
-
-   From,To,Via,FromAss,ToAss,FromAssRole,ToAssRole,
-
-   */
 
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId)
@@ -77,11 +68,8 @@ public class AssignmentService(
         var user = await entityRepository.Get(userId);
 
         var assignment = await assignmentRepository.Get(assignmentId);
-        var res = await GetAssignment(assignment.FromId, userId, "TS");
-        if (res == null)
-        {
-            throw new Exception("User is not TS");
-        }
+
+        /* TODO: Future Sjekk om bruker er Tilgangsstyrer */
 
         var package = await packageRepository.Get(packageId);
         

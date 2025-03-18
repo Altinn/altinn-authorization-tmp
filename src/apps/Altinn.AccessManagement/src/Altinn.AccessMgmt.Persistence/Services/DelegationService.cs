@@ -79,13 +79,7 @@ public class DelegationService(
             throw new InvalidOperationException("Assignments are not connected. FromAssignment.ToId != ToAssignment.FromId");
         }
 
-        // Sjekk om bruker er Tilgangsstyrer for FromAssignment
-        // TODO: Sjekk inheireted. Man kan få TS fra DAGL
-        var assResTS = await assignmentService.GetAssignment(fromAssignment.ToId, userId, "TS");
-        if (assResTS == null)
-        {
-            throw new Exception(string.Format("User is not TS for '{0}'", fromAssignment.To.Name));
-        }
+        /* TODO: Future Sjekk om bruker er Tilgangsstyrer */
 
         var delegation = new Delegation()
         {
@@ -121,13 +115,6 @@ public class DelegationService(
         var delegation = await delegationRepository.GetExtended(delegationId);
         var fromAssignment = await assignmentRepository.GetExtended(delegation.FromId);
         var toAssignment = await assignmentRepository.GetExtended(delegation.ToId);
-
-        var userHasTS = await CheckIfEntityHasRole("TS", toAssignment.FromId, userId);
-
-        if (!userHasTS) 
-        {
-            throw new Exception($"{toAssignment.To.Name}' is not TS on '{toAssignment.From.Name}'");
-        }
 
         var assignmentPackages = await assignmentPackageRepository.GetB(fromAssignment.Id);
         var rolePackages = await rolePackageRepository.Get(t => t.RoleId, fromAssignment.RoleId);
@@ -167,13 +154,6 @@ public class DelegationService(
         var fromAssignment = await assignmentRepository.GetExtended(delegation.FromId);
         var toAssignment = await assignmentRepository.GetExtended(delegation.ToId);
 
-        var userHasTS = await CheckIfEntityHasRole("TS", toAssignment.FromId, userId);
-
-        if (!userHasTS)
-        {
-            throw new Exception($"{toAssignment.To.Name}' is not TS on '{toAssignment.From.Name}'");
-        }
-
         var assignmentResources = await assignmentResourceRepository.GetB(fromAssignment.Id);
         var roleResources = await roleResourceRepository.GetB(fromAssignment.RoleId);
         var rolePackages = await rolePackageRepository.Get(t => t.RoleId, fromAssignment.RoleId);
@@ -211,18 +191,7 @@ public class DelegationService(
         // Find Facilitator : Regnskapsfolk
         var facilitator = (await entityRepository.Get(facilitatorPartyId)) ?? throw new Exception(string.Format("Party not found '{0}'", facilitatorPartyId));
 
-        // Find admin role : Tilgangstyrer eller KlientAdmin?
-        var adminRole = await GetRole("tilgangsstyrer") ?? throw new Exception(string.Format("Role not found '{0}'", "tilgangsstyrer"));
-
-        var userAssignmentFilter = connectionRepository.CreateFilterBuilder(); // InheiritedAssignmentRepo...
-        userAssignmentFilter.Equal(t => t.FromId, facilitator.Id);
-        userAssignmentFilter.Equal(t => t.ToId, user.Id);
-        userAssignmentFilter.Equal(t => t.RoleId, adminRole.Id);
-        var userAssignment = (await connectionRepository.Get(userAssignmentFilter)).FirstOrDefault();
-        if (userAssignment == null)
-        {
-            throw new Exception(string.Format("User '{0}' does not have '{1}' role at '{2}'", user.Name, adminRole.Name, facilitator.Name));
-        }
+        // Find admin role : Tilgangstyrer eller KlientAdmin
 
         // Find Agent Role : AGENT
         var agentRole = await GetRole(request.AgentRole) ?? throw new Exception(string.Format("Role not found '{0}'", request.AgentRole));
@@ -400,22 +369,8 @@ public class DelegationService(
         return (await assignmentRepository.Get(filter)).FirstOrDefault();
     }
 
-    public async Task<Role> GetRole(string code)
+    private async Task<Role> GetRole(string code)
     {
         return (await roleRepository.Get(t => t.Code, code)).FirstOrDefault();
-    }
-
-    public async Task<Entity> GetEntity(string lookup)
-    {
-        var split = lookup.Split(':');
-        var lookupValue = split.Last();
-        var lookupKey = lookup.Reverse().ToString().Substring(lookupValue.Length + 1).Reverse().ToString();
-        var clientEntityFilter = entityLookupRepository.CreateFilterBuilder();
-        clientEntityFilter.Equal(t => t.Value, lookupValue);
-        clientEntityFilter.Equal(t => t.Key, lookupKey);
-        var client = await entityLookupRepository.GetExtended(clientEntityFilter);
-        return client.First()?.Entity ?? null;
-
-        //// return (await entityRepository.Get(t => t.RefId, request.ClientPartyId)).First() ?? throw new Exception(string.Format("Party not found '{0}'", request.ClientPartyId));
     }
 }

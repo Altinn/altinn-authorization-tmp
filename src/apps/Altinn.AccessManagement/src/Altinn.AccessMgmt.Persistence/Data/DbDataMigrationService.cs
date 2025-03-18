@@ -363,23 +363,39 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestEntityType(CancellationToken cancellationToken = default)
     {
+        var providerDD = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault() ?? throw new Exception("Digitaliseringsdirektoratet not found");
+        var providerBR = (await providerService.Get(t => t.Name, "Brønnøysundregistrene")).FirstOrDefault() ?? throw new Exception("Digitaliseringsdirektoratet not found");
+        var providerFR = (await providerService.Get(t => t.Name, "Folkeregisteret")).FirstOrDefault() ?? throw new Exception("Digitaliseringsdirektoratet not found");
+
         var entityTypes = new List<EntityType>()
         {
-            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = Guid.Parse("C45F525C-D6B1-45B7-8D75-10B5B7F453DA") },
-            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = Guid.Parse("49F3ACFD-94B7-4819-A8BA-F0780F0C8255") },
-            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "System", ProviderId = Guid.Parse("0900e42a-4396-4674-add3-1d33a268745b") },
+            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerBR.Id },
+            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerFR.Id },
+            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembruker", ProviderId = providerDD.Id },
+        };
+
+        var entityTypesNno = new List<EntityType>()
+        {
+            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerBR.Id },
+            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerFR.Id },
+            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembrukar", ProviderId = providerDD.Id },
         };
 
         var entityTypesEng = new List<EntityType>()
         {
-            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organization", ProviderId = Guid.Parse("C45F525C-D6B1-45B7-8D75-10B5B7F453DA") },
-            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = Guid.Parse("49F3ACFD-94B7-4819-A8BA-F0780F0C8255") },
-            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "System", ProviderId = Guid.Parse("0900e42a-4396-4674-add3-1d33a268745b") },
+            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organization", ProviderId = providerBR.Id },
+            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerFR.Id },
+            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "SystemUser", ProviderId = providerDD.Id },
         };
 
         foreach (var item in entityTypes)
         {
             await entityTypeService.Upsert(item, cancellationToken);
+        }
+
+        foreach (var item in entityTypesNno)
+        {
+            await entityTypeService.UpdateTranslation(item.Id, item, "nno", cancellationToken);
         }
 
         foreach (var item in entityTypesEng)
@@ -809,7 +825,7 @@ public class DbDataMigrationService(
         erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "bostyrer").Id, Key = "ERCode", Value = "BOBE" });
         erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "helseforetak").Id, Key = "ERCode", Value = "HLSE" });
         erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "revisor").Id, Key = "ERCode", Value = "REVI" });
-        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "forretningsforer").Id, Key = "ERCode", Value = "FF-R" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "forretningsforer").Id, Key = "ERCode", Value = "FFØR" });
         erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "komplementar").Id, Key = "ERCode", Value = "KOMP" });
         erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "konkursdebitor").Id, Key = "ERCode", Value = "KDEB" });
         erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "kirkelig-fellesraad").Id, Key = "ERCode", Value = "KIRK" });
