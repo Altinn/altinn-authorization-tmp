@@ -40,11 +40,6 @@ public static partial class DbAccessHostExtensions
         var options = new AccessMgmtPersistenceOptions();
         configureOptions?.Invoke(options);
 
-        if (builder.Services.Contains(Marker.ServiceDescriptor) || options.Enabled == false)
-        {
-            return builder;
-        }
-
         Log.ConfigureDbType(Logger, options.DbType);
         builder.ConfigureAccessMgmtDb(options.DbType)();
 
