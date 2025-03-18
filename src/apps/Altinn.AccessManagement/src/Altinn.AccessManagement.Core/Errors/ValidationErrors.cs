@@ -53,4 +53,16 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor InvalidOrganizationIdentifier { get; }
         = _factory.Create(7, $"Invalid organization identifier. No organization with this identifier.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidValidToTime { get; }
+    = _factory.Create(8, $"The ValidTo time need to be in the future");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor MissingConsentRight { get; }
+    = _factory.Create(9, $"The consentrequest needs to include at least 1 right");
 }

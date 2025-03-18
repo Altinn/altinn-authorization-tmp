@@ -271,6 +271,16 @@ namespace Altinn.AccessManagement.Core.Services
                 consentRequest.To = to;
             }
 
+            if (consentRequest.ValidTo < DateTime.UtcNow)
+            {
+                errors.Add(ValidationErrors.InvalidValidToTime, "ValidTo");
+            }
+
+            if (consentRequest.ConsentRights == null || consentRequest.ConsentRights.Count == 0)
+            {
+                errors.Add(ValidationErrors.MissingConsentRight, "Resource");
+            }
+
             if (errors.TryBuild(out var errorResult))
             {
                 return errorResult;
