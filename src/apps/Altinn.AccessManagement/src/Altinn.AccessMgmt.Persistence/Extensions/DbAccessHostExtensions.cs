@@ -130,20 +130,6 @@ public static partial class DbAccessHostExtensions
         //await mockService.GenerateBasicData();
         //await mockService.GeneratePackageResources();
 
-        //using (var scope = host.Services.CreateScope())
-        //{
-        //    var migration = scope.ServiceProvider.GetRequiredService<DbSchemaMigrationService>();
-        //    migration.GenerateAll();
-        //    await migration.MigrateAll();
-
-        //    var dbIngest = scope.ServiceProvider.GetRequiredService<DbDataMigrationService>();
-        //    await dbIngest.IngestAll();
-
-        //    var mockService = scope.ServiceProvider.GetRequiredService<MockDataService>();
-        //    await mockService.GenerateBasicData();
-        //    await mockService.GeneratePackageResources();
-        //}
-
         return host;
     }
 

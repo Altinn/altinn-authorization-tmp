@@ -35,20 +35,10 @@ public class DbSchemaMigrationService
     private async Task PreMigration(CancellationToken cancellationToken = default)
     {
         var config = this.options.Value;
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseSchema};", new List<GenericParameter>());
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationSchema};", new List<GenericParameter>());
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseHistorySchema};", new List<GenericParameter>());
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationHistorySchema};", new List<GenericParameter>());
-
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {options.Value.BaseSchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {options.Value.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {options.Value.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {options.Value.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
-        
-        await executor.ExecuteMigrationCommand($"GRANT USAGE ON SCHEMA {options.Value.BaseSchema} TO {options.Value.DatabaseReadUser};");
-        await executor.ExecuteMigrationCommand($"GRANT USAGE ON SCHEMA {options.Value.TranslationSchema} TO {options.Value.DatabaseReadUser};");
-        await executor.ExecuteMigrationCommand($"GRANT USAGE ON SCHEMA {options.Value.BaseHistorySchema} TO {options.Value.DatabaseReadUser};");
-        await executor.ExecuteMigrationCommand($"GRANT USAGE ON SCHEMA {options.Value.TranslationHistorySchema} TO {options.Value.DatabaseReadUser};");
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
     }
 
     private async Task PostMigration(CancellationToken cancellationToken = default)

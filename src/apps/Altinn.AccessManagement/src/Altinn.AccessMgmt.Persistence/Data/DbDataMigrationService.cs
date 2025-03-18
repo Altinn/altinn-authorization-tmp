@@ -71,16 +71,16 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 3);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 4))
+        if (migrationService.NeedMigration<Role>(dataKey, 5))
         {
             await IngestRole();
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 4);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 5);
         }
 
-        if (migrationService.NeedMigration<RoleMap>(dataKey, 2))
+        if (migrationService.NeedMigration<RoleMap>(dataKey, 3))
         {
             await IngestRoleMap();
-            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 2);
+            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 3);
         }
 
         if (migrationService.NeedMigration<AreaGroup>(dataKey, 2))
@@ -751,79 +751,78 @@ public class DbDataMigrationService(
             await roleService.UpsertTranslation(item.Id, item, "nno", cancellationToken);
         }
 
-        await RoleLookup();
+        await RoleLookup(roles, cancellationToken);
     }
 
-    private async Task RoleLookup(CancellationToken cancellationToken = default)
+    private async Task RoleLookup(List<Role> roles, CancellationToken cancellationToken = default)
     {
-        var urn = new List<RoleLookup>()
-        {
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), Key = "Urn", Value = "urn:altinn:role:agent" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("6795081e-e69c-4efd-8d42-2bfccd346777"), Key = "Urn", Value = "urn:altinn:role:klientadministrator" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), Key = "Urn", Value = "urn:altinn:role:tilgangsstyrer" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), Key = "Urn", Value = "urn:altinn:role:hovedadministrator" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("b3f5c1e8-4e3b-4d2a-8c3e-1f2b3d4e5f6a"), Key = "Urn", Value = "urn:altinn:role:maskinporten-administrator" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("66ad5542-4f4a-4606-996f-18690129ce00"), Key = "Urn", Value = "urn:altinn:external-role:ccr:kontaktperson-ados" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("585ac6f7-aef0-47ca-8597-1ac7e63a58ce"), Key = "Urn", Value = "urn:altinn:external-role:ccr:nestleder" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("a715f610-4096-49bf-9b59-1c9ec81966f5"), Key = "Urn", Value = "urn:altinn:external-role:ccr:kontorfelleskapmedlem" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("ffa924c7-45ba-469b-9657-27bbb66002d4"), Key = "Urn", Value = "urn:altinn:external-role:ccr:organisasjonsledd-offentlig-sektor" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("792c01dc-29c9-4dec-ae6d-28cff0b04678"), Key = "Urn", Value = "urn:altinn:external-role:ccr:saerskilt-oppdelt-enhet" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("857bb1fb-fcaa-4a3c-859d-319032626539"), Key = "Urn", Value = "urn:altinn:external-role:ccr:daglig-leder" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("3af9bb77-9455-44bd-8d93-4d3f2a9fda33"), Key = "Urn", Value = "urn:altinn:external-role:ccr:deltaker-delt-ansvar" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("f96756f4-415a-45dd-8d10-4ebee0e6db84"), Key = "Urn", Value = "urn:altinn:external-role:ccr:innehaver" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("77778386-d57f-4378-ac31-5f260b407079"), Key = "Urn", Value = "urn:altinn:external-role:ccr:deltaker-fullt-ansvar" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("748ec709-78d6-4b13-a3f9-5fb8e783e679"), Key = "Urn", Value = "urn:altinn:external-role:ccr:varamedlem" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("197fbfbb-d867-4c0f-8d4a-62e9287e340d"), Key = "Urn", Value = "urn:altinn:external-role:ccr:observator" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("de42ae15-c265-42b3-8060-64c779684902"), Key = "Urn", Value = "urn:altinn:external-role:ccr:styremedlem" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("72c336a2-1705-4aef-b220-7f4aa6c0e69d"), Key = "Urn", Value = "urn:altinn:external-role:ccr:styreleder" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("38453a5d-ff7d-44eb-ba9a-92b1cd7fc98c"), Key = "Urn", Value = "urn:altinn:external-role:ccr:personlige-konkurs" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("6adad370-5524-4438-a811-932d27f655b9"), Key = "Urn", Value = "urn:altinn:external-role:ccr:norsk-representant" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("49def9e7-9ea4-4f78-9013-98c9af5918d4"), Key = "Urn", Value = "urn:altinn:external-role:ccr:kontaktperson" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("1BCEEA98-3D3A-4CFB-9C1A-3D09FAD9E70B"), Key = "Urn", Value = "urn:altinn:external-role:ccr:kontaktperson-nuf" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("d7ab8fd4-de81-4c82-8b0e-9cb6470a274e"), Key = "Urn", Value = "urn:altinn:external-role:ccr:bestyrende-reder" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("d4f78604-db47-4ff7-8537-a4e7318e8c11"), Key = "Urn", Value = "urn:altinn:external-role:ccr:eierkommune" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("0610a058-2046-4fb7-8566-a7cef6515baf"), Key = "Urn", Value = "urn:altinn:external-role:ccr:bostyrer" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("e4674211-034a-45f3-99ac-b2356984968a"), Key = "Urn", Value = "urn:altinn:external-role:ccr:helseforetak" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("63b5255d-4776-4ba1-bed2-c950bb5b04ab"), Key = "Urn", Value = "urn:altinn:external-role:ccr:revisor" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("e207eaf7-afde-452c-a1ba-ce7ba9305bcc"), Key = "Urn", Value = "urn:altinn:external-role:ccr:forretningsforer" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("1005e523-9423-4037-92e7-d23dee6a9813"), Key = "Urn", Value = "urn:altinn:external-role:ccr:komplementar" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("e4df5308-56ed-4301-ae53-ef67da3a57e9"), Key = "Urn", Value = "urn:altinn:external-role:ccr:konkursdebitor" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("3bdd603a-dbe0-4caa-bc97-f0b6a1675b15"), Key = "Urn", Value = "urn:altinn:external-role:ccr:kirkelig-fellesraad" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("38c368c1-c9f4-4b01-a296-f1ef7e466c13"), Key = "Urn", Value = "urn:altinn:external-role:ccr:hovedforetak" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("303d78e8-a658-454d-88ae-f836596982c7"), Key = "Urn", Value = "urn:altinn:external-role:ccr:regnskapsforer" }
-        };
+        var urn = new List<RoleLookup>();
+     
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "agent").Id, Key = "Urn", Value = "urn:altinn:role:agent" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "klientadministrator").Id, Key = "Urn", Value = "urn:altinn:role:klientadministrator" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "tilgangsstyrer").Id, Key = "Urn", Value = "urn:altinn:role:tilgangsstyrer" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "hovedadministrator").Id, Key = "Urn", Value = "urn:altinn:role:hovedadministrator" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "maskinporten-administrator").Id, Key = "Urn", Value = "urn:altinn:role:maskinporten-administrator" });
+
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "kontaktperson-ados").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:kontaktperson-ados" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "nestleder").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:nestleder" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "kontorfelleskapmedlem").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:kontorfelleskapmedlem" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "organisasjonsledd-offentlig-sektor").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:organisasjonsledd-offentlig-sektor" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "saerskilt-oppdelt-enhet").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:saerskilt-oppdelt-enhet" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "daglig-leder").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:daglig-leder" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "deltaker-delt-ansvar").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:deltaker-delt-ansvar" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "innehaver").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:innehaver" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "deltaker-fullt-ansvar").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:deltaker-fullt-ansvar" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "varamedlem").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:varamedlem" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "observator").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:observator" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "styremedlem").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:styremedlem" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "styreleder").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:styreleder" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "personlige-konkurs").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:personlige-konkurs" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "norsk-representant").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:norsk-representant" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "kontaktperson").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:kontaktperson" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "kontaktperson-nuf").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:kontaktperson-nuf" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "bestyrende-reder").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:bestyrende-reder" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "eierkommune").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:eierkommune" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "bostyrer").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:bostyrer" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "helseforetak").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:helseforetak" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "revisor").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:revisor" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "forretningsforer").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:forretningsforer" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "komplementar").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:komplementar" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "konkursdebitor").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:konkursdebitor" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "kirkelig-fellesraad").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:kirkelig-fellesraad" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "hovedforetak").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:hovedforetak" });
+        urn.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "regnskapsforer").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:regnskapsforer" });
+
+        var erCodes = new List<RoleLookup>();
         
-        var erCodes = new List<RoleLookup>()
-        {
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("66ad5542-4f4a-4606-996f-18690129ce00"), Key = "ERCode", Value = "ADOS" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("585ac6f7-aef0-47ca-8597-1ac7e63a58ce"), Key = "ERCode", Value = "NEST" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("a715f610-4096-49bf-9b59-1c9ec81966f5"), Key = "ERCode", Value = "KTRF" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("ffa924c7-45ba-469b-9657-27bbb66002d4"), Key = "ERCode", Value = "ORGL" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("792c01dc-29c9-4dec-ae6d-28cff0b04678"), Key = "ERCode", Value = "OPMV" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("857bb1fb-fcaa-4a3c-859d-319032626539"), Key = "ERCode", Value = "DAGL" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("3af9bb77-9455-44bd-8d93-4d3f2a9fda33"), Key = "ERCode", Value = "DTPR" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("f96756f4-415a-45dd-8d10-4ebee0e6db84"), Key = "ERCode", Value = "INNH" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("77778386-d57f-4378-ac31-5f260b407079"), Key = "ERCode", Value = "DTSO" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("748ec709-78d6-4b13-a3f9-5fb8e783e679"), Key = "ERCode", Value = "VARA" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("197fbfbb-d867-4c0f-8d4a-62e9287e340d"), Key = "ERCode", Value = "OBS" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("de42ae15-c265-42b3-8060-64c779684902"), Key = "ERCode", Value = "MEDL" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("72c336a2-1705-4aef-b220-7f4aa6c0e69d"), Key = "ERCode", Value = "LEDE" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("38453a5d-ff7d-44eb-ba9a-92b1cd7fc98c"), Key = "ERCode", Value = "KENK" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("6adad370-5524-4438-a811-932d27f655b9"), Key = "ERCode", Value = "REPR" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("49def9e7-9ea4-4f78-9013-98c9af5918d4"), Key = "ERCode", Value = "KONT" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("1BCEEA98-3D3A-4CFB-9C1A-3D09FAD9E70B"), Key = "ERCode", Value = "KNUF" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("d7ab8fd4-de81-4c82-8b0e-9cb6470a274e"), Key = "ERCode", Value = "BEST" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("d4f78604-db47-4ff7-8537-a4e7318e8c11"), Key = "ERCode", Value = "EIKM" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("0610a058-2046-4fb7-8566-a7cef6515baf"), Key = "ERCode", Value = "BOBE" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("e4674211-034a-45f3-99ac-b2356984968a"), Key = "ERCode", Value = "HLSE" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("63b5255d-4776-4ba1-bed2-c950bb5b04ab"), Key = "ERCode", Value = "REVI" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("e207eaf7-afde-452c-a1ba-ce7ba9305bcc"), Key = "ERCode", Value = "FFØR" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("1005e523-9423-4037-92e7-d23dee6a9813"), Key = "ERCode", Value = "KOMP" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("e4df5308-56ed-4301-ae53-ef67da3a57e9"), Key = "ERCode", Value = "KDEB" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("3bdd603a-dbe0-4caa-bc97-f0b6a1675b15"), Key = "ERCode", Value = "KIRK" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("38c368c1-c9f4-4b01-a296-f1ef7e466c13"), Key = "ERCode", Value = "HFOR" },
-            new RoleLookup() { Id = Guid.NewGuid(), RoleId = Guid.Parse("303d78e8-a658-454d-88ae-f836596982c7"), Key = "ERCode", Value = "REGN" }
-        };
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "kontaktperson-ados").Id, Key = "ERCode", Value = "ADOS" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "nestleder").Id, Key = "ERCode", Value = "NEST" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "kontorfelleskapmedlem").Id, Key = "ERCode", Value = "KTRF" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "organisasjonsledd-offentlig-sektor").Id, Key = "ERCode", Value = "ORGL" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "saerskilt-oppdelt-enhet").Id, Key = "ERCode", Value = "OPMV" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "daglig-leder").Id, Key = "ERCode", Value = "DAGL" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "deltaker-delt-ansvar").Id, Key = "ERCode", Value = "DTPR" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "innehaver").Id, Key = "ERCode", Value = "INNH" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "deltaker-fullt-ansvar").Id, Key = "ERCode", Value = "DTSO" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "varamedlem").Id, Key = "ERCode", Value = "VARA" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "observator").Id, Key = "ERCode", Value = "OBS" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "styremedlem").Id, Key = "ERCode", Value = "MEDL" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "styreleder").Id, Key = "ERCode", Value = "LEDE" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "personlige-konkurs").Id, Key = "ERCode", Value = "KENK" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "norsk-representant").Id, Key = "ERCode", Value = "REPR" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "kontaktperson").Id, Key = "ERCode", Value = "KONT" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "kontaktperson-nuf").Id, Key = "ERCode", Value = "KNUF" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "bestyrende-reder").Id, Key = "ERCode", Value = "BEST" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "eierkommune").Id, Key = "ERCode", Value = "EIKM" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "bostyrer").Id, Key = "ERCode", Value = "BOBE" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "helseforetak").Id, Key = "ERCode", Value = "HLSE" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "revisor").Id, Key = "ERCode", Value = "REVI" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "forretningsforer").Id, Key = "ERCode", Value = "FF-R" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "komplementar").Id, Key = "ERCode", Value = "KOMP" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "konkursdebitor").Id, Key = "ERCode", Value = "KDEB" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "kirkelig-fellesraad").Id, Key = "ERCode", Value = "KIRK" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "hovedforetak").Id, Key = "ERCode", Value = "HFOR" });
+        erCodes.Add(new RoleLookup() { Id = Guid.NewGuid(), RoleId = roles.First(t => t.Code == "regnskapsforer").Id, Key = "ERCode", Value = "REGN" });
 
         var mergeFilter = new List<GenericParameter>()
         {
