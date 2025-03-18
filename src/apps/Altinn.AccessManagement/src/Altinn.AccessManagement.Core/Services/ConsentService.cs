@@ -158,7 +158,7 @@ namespace Altinn.AccessManagement.Core.Services
             Party party = await _partiesClient.LookupPartyBySSNOrOrgNo(new PartyLookup { OrgNo = organizationNumber.ToString() }, cancellationToken);
             if (party == null || party.PartyUuid == null)
             {
-                throw new ArgumentException($"Party with orgNo {organizationNumber} not found");
+                return null;
             }
 
             return ConsentPartyUrn.PartyUuid.Create(party.PartyUuid.Value);
@@ -169,7 +169,7 @@ namespace Altinn.AccessManagement.Core.Services
             Party party = await _partiesClient.LookupPartyBySSNOrOrgNo(new PartyLookup { Ssn = personIdentifier.ToString() }, cancellationToken);
             if (party == null || party.PartyUuid == null)
             {
-                throw new ArgumentException($"Party with ssn {personIdentifier} not found");
+                return null;
             }
 
             return ConsentPartyUrn.PartyUuid.Create(party.PartyUuid.Value);
@@ -242,11 +242,11 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 if (consentRequest.From.IsOrganizationId(out OrganizationNumber organizationNumber))
                 {
-                    errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                    errors.Add(ValidationErrors.InvalidOrganizationIdentifier, "From");
                 }
                 else if (consentRequest.From.IsPersonId(out PersonIdentifier personIdentifier))
                 {
-                    errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                    errors.Add(ValidationErrors.InvalidPersonIdentifier, "From");
                 }
             }
             else
@@ -255,15 +255,15 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             ConsentPartyUrn to = await MapFromExternalIdenity(consentRequest.To);
-            if (from == null)
+            if (to == null)
             {
-                if (consentRequest.From.IsOrganizationId(out OrganizationNumber organizationNumber))
+                if (consentRequest.To.IsOrganizationId(out OrganizationNumber organizationNumber))
                 {
-                    errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                    errors.Add(ValidationErrors.InvalidOrganizationIdentifier, "To");
                 }
-                else if (consentRequest.From.IsPersonId(out PersonIdentifier personIdentifier))
+                else if (consentRequest.To.IsPersonId(out PersonIdentifier personIdentifier))
                 {
-                    errors.Add(ValidationErrors.InvalidPartyUrn, "From");
+                    errors.Add(ValidationErrors.InvalidPersonIdentifier, "To");
                 }
             }
             else
