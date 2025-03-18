@@ -32,5 +32,5 @@ public interface IDelegationService
     /// <summary>
     /// Create a delegation and required assignments for system agent flow
     /// </summary>
-    Task<Delegation> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid userId, Guid facilitatorId);
+    Task<IEnumerable<Delegation>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid userId, Guid facilitatorPartyId);
 }
