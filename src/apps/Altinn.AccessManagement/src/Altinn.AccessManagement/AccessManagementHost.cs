@@ -101,48 +101,14 @@ internal static partial class AccessManagementHost
         builder.ConfigureAuthorization();
         builder.ConfigureAccessManagementPersistence();
 
-        builder.Services.AddSingleton<IAssignmentService, AssignmentService>();
-        builder.Services.AddSingleton<IDelegationService, DelegationService>();
-        builder.Services.AddSingleton<IConnectionService, ConnectionService>();
-        builder.Services.AddSingleton<IPackageService, PackageService>();
-        builder.Services.AddSingleton(typeof(ISearchCache<>), typeof(SearchCache<>));
-        builder.Services.AddSingleton<IIngestService, PostgresIngestService>();
-        builder.Services.AddSingleton<IInheritedAssignmentRepository, InheritedAssignmentRepository>();
-        builder.Services.AddSingleton<IRoleRepository, RoleRepository>();
-        builder.Services.AddSingleton<IConnectionRepository, ConnectionRepository>();
-        builder.Services.AddSingleton<IPackageRepository, PackageRepository>();
-        builder.Services.AddSingleton<IDbExecutor, PostgresDbExecutor>();
-        builder.Services.AddSingleton<DbDefinitionRegistry>();
-        builder.Services.AddSingleton<IDbConverter, DbConverter>();
-        builder.Services.AddSingleton<IEntityRepository, EntityRepository>();
-        builder.Services.AddSingleton<IAssignmentRepository, AssignmentRepository>();
-        builder.Services.AddSingleton<IConnectionPackageRepository, ConnectionPackageRepository>();
-        builder.Services.AddSingleton<IAreaGroupRepository, AreaGroupRepository>();
-        builder.Services.AddSingleton<IEntityLookupRepository, EntityLookupRepository>();
-        builder.Services.AddSingleton<IAssignmentPackageRepository, AssignmentPackageRepository>();
-        builder.Services.AddSingleton<IConnectionResourceRepository, ConnectionResourceRepository>();
-        builder.Services.AddSingleton<IAreaRepository, AreaRepository>();
-        builder.Services.AddSingleton<IEntityTypeRepository, EntityTypeRepository>();
-        builder.Services.AddSingleton<IAssignmentResourceRepository, AssignmentResourceRepository>();
-        builder.Services.AddSingleton<IPackageResourceRepository, PackageResourceRepository>();
-        builder.Services.AddSingleton<IEntityVariantRepository, EntityVariantRepository>();
-        builder.Services.AddSingleton<IRolePackageRepository, RolePackageRepository>();
-        builder.Services.AddSingleton<IResourceRepository, ResourceRepository>();
-        builder.Services.AddSingleton<IProviderRepository, ProviderRepository>();
-        builder.Services.AddSingleton<IRoleResourceRepository, RoleResourceRepository>();
-        builder.Services.AddSingleton<IDelegationRepository, DelegationRepository>();
-        builder.Services.AddSingleton<IDelegationPackageRepository, DelegationPackageRepository>();
-        builder.Services.AddSingleton<IDelegationResourceRepository, DelegationResourceRepository>();
         return builder.Build();
     }
 
     private static WebApplicationBuilder ConfigureAccessManagementPersistence(this WebApplicationBuilder builder)
     {
-        builder.AddDb(opts =>
+        builder.AddAccessMgmtDb(opts =>
         {
-            opts.DbType = MgmtDbType.Postgres;
-            opts.Enabled = false;
-            opts.DatabaseReadUser = "accessmgmt_app";
+            builder.Configuration.GetSection("AccessMgmtPersistenceOptions").Bind(opts);
         });
 
         return builder;

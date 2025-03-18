@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.Persistence.Core.Executors;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
+using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
 using Altinn.AccessMgmt.Persistence.Data.Mock;
 using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
@@ -50,7 +51,7 @@ public static partial class DbAccessHostExtensions
         // Add repository implementations dynamically
         var assembly = Assembly.GetExecutingAssembly();
         var repositoryTypes = assembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract && t.Name.EndsWith("Repository"))
+            .Where(t => t.IsClass && !t.IsAbstract && t.Namespace == "Altinn.AccessMgmt.Persistence.Repositories" && t.Name.EndsWith("Repository"))
             .ToList();
 
         foreach (var repoType in repositoryTypes)
@@ -62,18 +63,24 @@ public static partial class DbAccessHostExtensions
             }
         }
 
-        builder.Services.AddSingleton<IConnectionRepository, ConnectionRepository>();
-        builder.Services.AddSingleton<IConnectionPackageRepository, ConnectionPackageRepository>();
-        builder.Services.AddSingleton<IConnectionResourceRepository, ConnectionResourceRepository>();
+        builder.Services.AddSingleton<DbDefinitionRegistry>();
+        builder.Services.AddSingleton(typeof(ISearchCache<>), typeof(SearchCache<>));
+
         builder.Services.AddSingleton<IConnectionService, ConnectionService>();
+        builder.Services.AddSingleton<IAssignmentService, AssignmentService>();
+        builder.Services.AddSingleton<IDelegationService, DelegationService>();
+        builder.Services.AddSingleton<IPackageService, PackageService>();
         builder.Services.AddSingleton<IRoleService, RoleService>();
 
         builder.Services.AddSingleton<IIngestService, PostgresIngestService>();
-        builder.Services.AddSingleton<DbDefinitionRegistry>();
+        builder.Services.AddSingleton<IDbExecutor, PostgresDbExecutor>();
+        builder.Services.AddSingleton<IDbConverter, DbConverter>();
         builder.Services.AddSingleton<IMigrationService, SqlMigrationService>();
+        builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddSingleton<DbSchemaMigrationService>();
         builder.Services.AddSingleton<DbDataMigrationService>();
         builder.Services.AddSingleton<MockDataService>();
+
         builder.Services.Add(Marker.ServiceDescriptor);
 
         return builder;
