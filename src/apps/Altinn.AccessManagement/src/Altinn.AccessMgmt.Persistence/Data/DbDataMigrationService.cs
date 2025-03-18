@@ -413,7 +413,7 @@ public class DbDataMigrationService(
     {
         var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "Organisasjon"));
         var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "Person"));
-        var systemTypeId = (await entityTypeService.Get(t => t.Name, "System")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "System"));
+        var systemTypeId = (await entityTypeService.Get(t => t.Name, "Systembruker")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "System"));
         var entityVariants = new List<EntityVariant>()
         {
             new EntityVariant() { Id = Guid.Parse("d786bc0e-8e9e-4116-bfc2-0344207c9127"), TypeId = orgTypeId, Name = "SAM", Description = "Tingsrettslig sameie" },
