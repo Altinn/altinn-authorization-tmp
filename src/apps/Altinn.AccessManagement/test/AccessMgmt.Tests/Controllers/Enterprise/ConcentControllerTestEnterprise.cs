@@ -2,33 +2,46 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests;
+using Altinn.AccessManagement.Tests.Fixtures;
+using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
+using Altinn.Common.AccessToken.Services;
+using AltinnCore.Authentication.JwtCookie;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace AccessMgmt.Tests.Controllers.Enterprise
 {
     /// <summary>
     /// Tests for maskinporten controller for consent
     /// </summary>
-    public class ConcentControllerTestEnterprise : IClassFixture<CustomWebApplicationFactory<Program>>
+    public class ConcentControllerTestEnterprise(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
     {
-        private readonly CustomWebApplicationFactory<Program> _factory;
+        private WebApplicationFactory<Program> Fixture { get; } = fixture.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton<IPartiesClient, PartiesClientMock>();
+                services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
+                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
+                services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
+                services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
+            });
+        });
+
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
-
-        /// <summary>
-        /// Concent controller test
-        /// </summary>
-        public ConcentControllerTestEnterprise(CustomWebApplicationFactory<Program> factory)
-        {
-            _factory = factory;
-        }
 
         /// <summary>
         /// Test get consent. Expect a consent in response
@@ -39,8 +52,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         {
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025602168")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("910194143")),
+                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("27099450067")),
+                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
                 ConsentRights = new List<ConsentRightExternal>
                 {
@@ -87,13 +100,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
         private HttpClient GetTestClient()
         {
-            HttpClient client = _factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureTestServices(services =>
-                {
-                });
-            }).CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
-
+            HttpClient client = Fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             return client;
         }

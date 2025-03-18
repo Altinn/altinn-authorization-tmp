@@ -2,9 +2,16 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Maskinporten.Models.Concent;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests;
+using Altinn.AccessManagement.Tests.Mocks;
+using Altinn.Common.AccessToken.Services;
+using AltinnCore.Authentication.JwtCookie;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace AccessMgmt.Tests.Controllers.MaskinPorten
 {
@@ -50,6 +57,12 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             {
                 builder.ConfigureTestServices(services =>
                 {
+                    services.AddSingleton<IPartiesClient, PartiesClientMock>();
+                    services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
+                    services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+                    services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
+                    services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
+                    services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                 });
             }).CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
