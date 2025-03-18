@@ -8,12 +8,6 @@ namespace Altinn.AccessManagement.Core.Clients.Interfaces
     /// </summary>
     public interface IAuthenticationClient
     {
-        /// <summary>
-        /// Refreshes the AltinnStudioRuntime JwtToken.
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Response message from Altinn Platform with refreshed token.</returns>
-        Task<string> RefreshToken(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Fetching a System user from Authentication
