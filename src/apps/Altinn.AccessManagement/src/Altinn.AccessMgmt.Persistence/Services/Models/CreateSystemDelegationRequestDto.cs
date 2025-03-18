@@ -11,11 +11,6 @@ public class CreateSystemDelegationRequestDto
     public Guid ClientPartyId { get; set; }
 
     /// <summary>
-    /// Facilitator party uuid
-    /// </summary>
-    public Guid FacilitatorPartyId { get; set; }
-
-    /// <summary>
     /// Client role (From -> Facilitator)
     /// e.g REGN/REVI
     /// </summary>

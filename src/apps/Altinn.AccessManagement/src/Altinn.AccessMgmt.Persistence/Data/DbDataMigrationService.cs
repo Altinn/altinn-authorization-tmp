@@ -17,14 +17,10 @@ public class DbDataMigrationService(
         IAreaGroupRepository areaGroupService,
         IEntityTypeRepository entityTypeService,
         IEntityVariantRepository entityVariantService,
-        IEntityVariantRoleRepository entityVariantRoleService,
         IPackageRepository packageService,
         IRoleRepository roleService,
-        IRoleMapRepository roleMapService,
-        IRolePackageRepository rolePackageService,
         IMigrationService migrationService,
-        IIngestService ingestService,
-        IRoleLookupRepository roleLookupRepository
+        IIngestService ingestService
         )
 {
     private readonly IProviderRepository providerService = providerService;
@@ -32,12 +28,8 @@ public class DbDataMigrationService(
     private readonly IAreaGroupRepository areaGroupService = areaGroupService;
     private readonly IEntityTypeRepository entityTypeService = entityTypeService;
     private readonly IEntityVariantRepository entityVariantService = entityVariantService;
-    private readonly IEntityVariantRoleRepository entityVariantRoleService = entityVariantRoleService;
     private readonly IPackageRepository packageService = packageService;
     private readonly IRoleRepository roleService = roleService;
-    private readonly IRoleMapRepository roleMapService = roleMapService;
-    private readonly IRolePackageRepository rolePackageService = rolePackageService;
-    private readonly IRoleLookupRepository roleLookupRepository = roleLookupRepository;
     private readonly IMigrationService migrationService = migrationService;
     private readonly IIngestService ingestService = ingestService;
 

@@ -27,27 +27,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         private readonly IDelegationService delegationService = delegationService;
 
         /// <summary>
-        /// Create System Delegation with required assignments
-        /// </summary>
-        [Route("create/forsystem")]
-        [HttpPost]
-        [Authorize]
-        public async Task<ActionResult<ExtConnection>> CreateSystemClientDelegation(CreateSystemDelegationRequestDto request)
-        {
-            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
-            if (userId == Guid.Empty)
-            {
-                return Unauthorized();
-            }
-
-            var delegation = await delegationService.CreateClientDelegation(request, userId);
-
-            var res = await connectionRepository.GetExtended(delegation.Id);
-
-            return Created();
-        }
-
-        /// <summary>
         /// Alle enheter {id} har gitt tilgang til.
         /// </summary>
         [Route("{id}")]

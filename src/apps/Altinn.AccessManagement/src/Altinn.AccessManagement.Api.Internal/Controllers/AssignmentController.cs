@@ -115,7 +115,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
 
             await assignmentRepository.Create(new Assignment()
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 FromId = fromEntity.Id,
                 ToId = toEntity.Id,
                 RoleId = role.Id,
@@ -394,7 +394,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
 
             var dp = new AssignmentResource()
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 AssignmentId = id,
                 ResourceId = resourceId
             };

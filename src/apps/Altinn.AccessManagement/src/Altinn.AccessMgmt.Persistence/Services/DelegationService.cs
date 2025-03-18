@@ -203,13 +203,13 @@ public class DelegationService(
     }
 
     /// <inheritdoc/>
-    public async Task<Delegation> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid userId)
+    public async Task<Delegation> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid userId, Guid facilitatorPartyId)
     {
         // Find user : Fredrik
         var user = (await entityRepository.Get(userId)) ?? throw new Exception(string.Format("Party not found '{0}'", userId));
 
         // Find Facilitator : Regnskapsfolk
-        var facilitator = (await entityRepository.Get(request.FacilitatorPartyId)) ?? throw new Exception(string.Format("Party not found '{0}'", request.FacilitatorPartyId));
+        var facilitator = (await entityRepository.Get(facilitatorPartyId)) ?? throw new Exception(string.Format("Party not found '{0}'", facilitatorPartyId));
 
         // Find admin role : Tilgangstyrer eller KlientAdmin?
         var adminRole = await GetRole("tilgangsstyrer") ?? throw new Exception(string.Format("Role not found '{0}'", "tilgangsstyrer"));
