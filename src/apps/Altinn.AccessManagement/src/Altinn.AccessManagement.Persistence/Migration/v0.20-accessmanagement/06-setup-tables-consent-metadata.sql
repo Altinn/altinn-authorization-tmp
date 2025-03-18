@@ -1,10 +1,10 @@
--- Enum: delegation.instanceType
+-- Table: consent.metadata
 
 CREATE TABLE IF NOT EXISTS consent.metadata
 (
-  consentRightId uuid PRIMARY KEY NOT NULL,
+  consentRightId uuid NOT NULL,
   id text,
-   value text  
+  value text  
 );
 
 

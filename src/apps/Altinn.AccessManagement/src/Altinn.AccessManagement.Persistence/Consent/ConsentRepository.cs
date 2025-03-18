@@ -262,10 +262,10 @@ namespace Altinn.AccessManagement.Persistence.Consent
         {
             string consentResourcesQuery = /*strpsql*/@$"
                 SELECT 
-                consentRightId,
+                cr.consentRightId,
                 type,
                 value 
-                FROM consent.resourceattributes ra 
+                FROM consent.resourceattribute ra 
                 join consent.consentright cr on cr.consentRightId = ra.consentRightId 
                 WHERE cr.consentRequestId = @id
                 ";
@@ -278,7 +278,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             while (reader.Read())
             {
-                Guid consentRightId = reader.GetFieldValue<Guid>("concentRightId");
+                Guid consentRightId = reader.GetFieldValue<Guid>("consentRightId");
                 ConsentResourceAttribute consentResourceAttribute = new ConsentResourceAttribute
                 {
                     Type = reader.GetFieldValue<string>("type"),
@@ -301,6 +301,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
         {
             string consentMetadataQuery = /*strpsql*/@$"
                 SELECT
+                cr.consentRightId,
                 id,
                 value 
                 FROM consent.metadata ra 
