@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,23 +13,19 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
     [Route("/accessmanagement/api/v1/delegations")]
     [ApiController]
     public class DelegationController(
-        IConnectionRepository connectionRepository,
-        IConnectionPackageRepository connectionPackageRepository,
-        IConnectionResourceRepository connectionResourceRepository,
         IDelegationRepository delegationRepository,
         IDelegationPackageRepository delegationPackageRepository,
         IDelegationResourceRepository delegationResourceRepository,
         IAssignmentRepository assignmentRepository,
+        IConnectionRepository connectionRepository,
         IEntityRepository entityRepository
         ) : ControllerBase
     {
-        private readonly IConnectionRepository connectionRepository = connectionRepository;
-        private readonly IConnectionPackageRepository connectionPackageRepository = connectionPackageRepository;
-        private readonly IConnectionResourceRepository connectionResourceRepository = connectionResourceRepository;
         private readonly IDelegationRepository delegationRepository = delegationRepository;
         private readonly IDelegationPackageRepository delegationPackageRepository = delegationPackageRepository;
         private readonly IDelegationResourceRepository delegationResourceRepository = delegationResourceRepository;
         private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
+        private readonly IConnectionRepository connectionRepository = connectionRepository;
         private readonly IEntityRepository entityRepository = entityRepository;
 
         /// <summary>
@@ -76,8 +73,15 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         /// </summary>
         [Route("")]
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult> Post([FromBody] CreateDelegationRequestDto request)
         {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
             var fromAssignment = await assignmentRepository.Get(request.FromAssignmentId);
             var toAssignment = await assignmentRepository.Get(request.ToAssignmentId);
 
@@ -121,28 +125,11 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         }
 
         /// <summary>
-        /// Add package to delegation
-        /// </summary>
-        [Route("/system")]
-        [HttpPost]
-        public async Task<ActionResult> CreateDelegationForSystemAgent([FromBody] CreateSystemDelegationRequestDto request)
-        {
-            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
-            if (userId == Guid.Empty)
-            {
-                return Unauthorized();
-            }
-
-            //var user = (await entityRepository.Get(userId)) ?? throw new Exception(string.Format("Party not found '{0}'", userId));
-
-            return Problem();
-        }
-
-        /// <summary>
         /// Remove package from delegation
         /// </summary>
         [Route("{id}")]
         [HttpDelete]
+        [Authorize]
         public async Task<ActionResult> Delete(Guid id)
         {
             var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
@@ -193,10 +180,46 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         /// <summary>
         /// Add package to delegation
         /// </summary>
+        [Route("{id}/packages")]
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<Package>> GetPackages(Guid id)
+        {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
+            /*
+            - [ ] User must have role:TS
+            */
+
+            try
+            {
+                var res = await delegationPackageRepository.GetB(id);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Add package to delegation
+        /// </summary>
         [Route("{id}/package/{packageId}")]
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult> AddPackage(Guid id, Guid packageId)
         {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
             /*
             
             - User must have role:TS on Facilitator
@@ -226,8 +249,15 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         /// </summary>
         [Route("{id}/package/{packageId}")]
         [HttpDelete]
+        [Authorize]
         public async Task<ActionResult> RemovePackage(Guid id, Guid packageId)
         {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
             /*
 
            - User must have role:TS on Facilitator
@@ -244,6 +274,110 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 }
 
                 throw new Exception("Unable to remove package from delegation");
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Add package to delegation
+        /// </summary>
+        [Route("{id}/resources")]
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<Resource>> GetResources(Guid id)
+        {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
+            /*
+            - [ ] User must have role:TS
+            */
+
+            try
+            {
+                var res = await delegationResourceRepository.GetB(id);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Add package to delegation
+        /// </summary>
+        [Route("{id}/resource/{resourceId}")]
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> AddResource(Guid id, Guid resourceId)
+        {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
+            /*
+            
+            - User must have role:TS on Facilitator
+            - Package must exist in /connection/{assignment_id}/packages
+            - Package must be delegable
+
+            */
+
+            try
+            {
+                var res = await delegationResourceRepository.CreateCross(id, resourceId);
+                if (res > 0)
+                {
+                    return Created();
+                }
+
+                throw new Exception("Unable to add resource to delegation");
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Remove package from delegation
+        /// </summary>
+        [Route("{id}/resource/{resourceId}")]
+        [HttpDelete]
+        [Authorize]
+        public async Task<ActionResult> RemoveResource(Guid id, Guid resourceId)
+        {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
+            /*
+
+           - User must have role:TS on Facilitator
+           - Package should exist in /connection/{delegation_id}/packages
+
+           */
+
+            try
+            {
+                var res = await delegationResourceRepository.DeleteCross(id, resourceId);
+                if (res > 0)
+                {
+                    return NoContent();
+                }
+
+                throw new Exception("Unable to remove resource from delegation");
             }
             catch (Exception ex)
             {
@@ -268,56 +402,3 @@ public class CreateDelegationRequestDto
     /// </summary>
     public Guid ToAssignmentId { get; set; }
 }
-
-/// <summary>
-/// RequestDto to create Delegation and required assignments for System
-/// </summary>
-public class CreateSystemDelegationRequestDto
-{
-    /// <summary>
-    /// Client party uuid
-    /// </summary>
-    public Guid ClientPartyId { get; set; }
-
-    /// <summary>
-    /// Facilitator party uuid
-    /// </summary>
-    public Guid FacilitatorPartyId { get; set; }
-
-    /// <summary>
-    /// Client role (From -> Facilitator)
-    /// e.g REGN/REVI
-    /// </summary>
-    public string ClientRole { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Agent party uuid
-    /// </summary>
-    public Guid AgentPartyId { get; set; }
-
-    /// <summary>
-    /// Agent name (need to create new party)
-    /// System displayName
-    /// </summary>
-    public Guid AgentName { get; set; }
-
-    /// <summary>
-    /// Agent role (Facilitator -> Agent)
-    /// e.g Agent
-    /// </summary>
-    public string AgentRole { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Packages to be delegated to Agent
-    /// </summary>
-    public string[] Packages { get; set; } = [];
-}
-
-/*
-// Do we need a RequestDto?  
-public class AddDelegationPackageRequestDto
-{
-    public Guid DelegationId { get; set; }
-    public Guid PackageId { get; set; }
-}
-*/

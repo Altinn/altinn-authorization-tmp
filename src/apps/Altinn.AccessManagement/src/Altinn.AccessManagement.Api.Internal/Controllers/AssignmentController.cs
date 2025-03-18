@@ -81,6 +81,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         /// Create a new assignment
         /// From+To+Role
         /// </summary>
+        [Route("")]
         [HttpPost]
         [Authorize]
         public async Task<ActionResult> Post([FromBody] CreatAssignmentRequestDto assignment)

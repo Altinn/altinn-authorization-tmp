@@ -84,12 +84,11 @@ public partial class RegisterHostedService(
 
         try
         {
-            await PrepareSync();
-            await SyncParty(ls, cancellationToken);
-            await SyncRolesBatched(ls, cancellationToken);
-
             if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
             {
+                await PrepareSync();
+                await SyncParty(ls, cancellationToken);
+                await SyncRolesBatched(ls, cancellationToken);
             }
         }
         catch (Exception ex)

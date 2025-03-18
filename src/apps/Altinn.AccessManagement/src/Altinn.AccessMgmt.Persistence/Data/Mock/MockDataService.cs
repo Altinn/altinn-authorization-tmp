@@ -48,12 +48,12 @@ public class MockDataService
         var variantAS = variants.First(t => t.TypeId == orgType.Id && t.Name == "AS");
         var variantPers = variants.First(t => t.TypeId == persType.Id && t.Name == "Person");
         var roles = await roleRepository.Get();
-        var roleDagligLeder = roles.FirstOrDefault(t => t.Code == "DAGL");
-        var roleStyreLeder = roles.FirstOrDefault(t => t.Code == "LEDE");
-        var roleStyreMedlem = roles.FirstOrDefault(t => t.Code == "MEDL");
-        var roleRevisor = roles.FirstOrDefault(t => t.Code == "REVI");
-        var roleRegnskap = roles.FirstOrDefault(t => t.Code == "REGN");
-        var roleAgent = roles.FirstOrDefault(t => t.Code == "AGENT");
+        var roleDagligLeder = roles.FirstOrDefault(t => t.Code == "daglig-leder");
+        var roleStyreLeder = roles.FirstOrDefault(t => t.Code == "styreleder");
+        var roleStyreMedlem = roles.FirstOrDefault(t => t.Code == "styremedlem");
+        var roleRevisor = roles.FirstOrDefault(t => t.Code == "revisor");
+        var roleRegnskap = roles.FirstOrDefault(t => t.Code == "regnskapsforer");
+        var roleAgent = roles.FirstOrDefault(t => t.Code == "agent");
 
         var spirhAS = new Entity() { Id = Guid.Parse("DDC63ADF-6513-4570-8DD0-21D6B7A55001"), Name = "Spirh AS", RefId = "ORG-000", TypeId = orgType.Id, VariantId = variantAS.Id };
         var bakerHansenAS = new Entity() { Id = Guid.Parse("212B4355-CE4D-4672-93BB-073AEC2BFC1E"), Name = "Baker Hansen", RefId = "ORG-001", TypeId = orgType.Id, VariantId = variantAS.Id };
@@ -110,7 +110,7 @@ public class MockDataService
         await assignmentRepository.Upsert(new Assignment() { Id = Guid.Parse("A8C31715-CE59-411F-8C81-BE69103C5131"), FromId = revisjonstroll.Id, ToId = petterStromstad.Id, RoleId = roleStyreLeder.Id });
         await assignmentRepository.Upsert(new Assignment() { Id = Guid.Parse("FBAB1C24-B4A1-487F-86BA-E02BE9CC4053"), FromId = bakerNordbyAS.Id, ToId = kjetilNordby.Id, RoleId = roleDagligLeder.Id });
         await assignmentRepository.Upsert(new Assignment() { Id = Guid.Parse("CCB8E1F9-DEC4-47E2-9026-E72F03D133ED"), FromId = bakerNordbyAS.Id, ToId = kjetilNordby.Id, RoleId = roleStyreLeder.Id });
-        await assignmentRepository.Upsert(new Assignment() { Id = Guid.Parse("995F7F16-A426-4B85-B23D-F05F56BC5E6F"), FromId = spirhAS.Id, ToId = oleJohnnyMartinsen.Id, RoleId = roleRegnskap.Id });
+        await assignmentRepository.Upsert(new Assignment() { Id = Guid.Parse("995F7F16-A426-4B85-B23D-F05F56BC5E6F"), FromId = spirhAS.Id, ToId = norskRegnskap.Id, RoleId = roleRegnskap.Id });
         await assignmentRepository.Upsert(new Assignment() { Id = Guid.Parse("B6C603B2-3CAC-4940-90A4-FA226D4DEBE4"), FromId = bakerHansenAS.Id, ToId = regnskapsfolkAS.Id, RoleId = roleRegnskap.Id });
         await assignmentRepository.Upsert(new Assignment() { Id = Guid.Parse("E2DCA66E-4C40-4B4B-8902-FDDD394A3054"), FromId = bakerHansenAS.Id, ToId = revisjonstroll.Id, RoleId = roleRevisor.Id });
         await assignmentRepository.Upsert(new Assignment() { Id = Guid.Parse("F32BE41A-49C6-4DAE-8DC1-38BD4C14D3D5"), FromId = bakerNordbyAS.Id, ToId = regnskapsfolkAS.Id, RoleId = roleRegnskap.Id });
@@ -125,12 +125,12 @@ public class MockDataService
         await assignmentRepository.Upsert(assignment003);
         await assignmentRepository.Upsert(assignment004);
 
-        var delegation01 = new Delegation() { Id = Guid.Parse("119B118F-DC5D-48F9-8DAA-DDF4175EBD16"), FromId = assignment002.Id, ToId = assignment004.Id, FacilitatorId = norskRegnskap.Id };
-        await delegationRepository.Upsert(delegation01);
+        //var delegation01 = new Delegation() { Id = Guid.Parse("119B118F-DC5D-48F9-8DAA-DDF4175EBD16"), FromId = assignment002.Id, ToId = assignment004.Id, FacilitatorId = norskRegnskap.Id };
+        //await delegationRepository.Upsert(delegation01);
 
-        var packages = await connectionPackageRepository.GetB(delegation01.FromId);
+        //var packages = await connectionPackageRepository.GetB(delegation01.FromId);
 
-        await delegationPackageRepository.Upsert(new DelegationPackage() { Id = Guid.Parse("90A840A5-325F-4FC9-BD77-F9BFED592CEE"), DelegationId = delegation01.Id, PackageId = packages.First().Id });
+        //await delegationPackageRepository.Upsert(new DelegationPackage() { Id = Guid.Parse("90A840A5-325F-4FC9-BD77-F9BFED592CEE"), DelegationId = delegation01.Id, PackageId = packages.First().Id });
     }
 
     public async Task GeneratePackageResources()

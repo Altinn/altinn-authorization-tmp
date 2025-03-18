@@ -20,7 +20,6 @@ public class ConnectionPackageDefinition : BaseDbDefinition<ConnectionPackage>, 
         {
             def.IsView();
 
-            def.RegisterProperty(t => t.Id);
             def.RegisterProperty(t => t.ConnectionId);
             def.RegisterProperty(t => t.PackageId);
 

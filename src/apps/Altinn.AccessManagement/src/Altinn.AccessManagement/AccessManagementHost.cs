@@ -95,7 +95,9 @@ internal static partial class AccessManagementHost
         builder.ConfigureAuthorization();
         builder.ConfigureAccessManagementPersistence();
 
-        builder.Services.AddSingleton<NewDelegationService>();
+        builder.Services.AddSingleton<IAssignmentService, AssignmentService>();
+        builder.Services.AddSingleton<IDelegationService, DelegationService>();
+        builder.Services.AddSingleton<IConnectionService, ConnectionService>();
         builder.Services.AddSingleton<IPackageService, PackageService>();
         builder.Services.AddSingleton(typeof(ISearchCache<>), typeof(SearchCache<>));
 

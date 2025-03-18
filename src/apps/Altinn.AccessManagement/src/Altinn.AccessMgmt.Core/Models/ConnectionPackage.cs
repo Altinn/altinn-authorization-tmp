@@ -6,11 +6,6 @@
 public class ConnectionPackage
 {
     /// <summary>
-    /// Identifier, AssignmentPackageId or DelegationPackageId
-    /// </summary>
-    public Guid Id { get; set; }
-
-    /// <summary>
     /// Identifier, AssignmentId or DelegationId
     /// </summary>
     public Guid ConnectionId { get; set; }

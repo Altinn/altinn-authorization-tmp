@@ -1,8 +1,9 @@
 ﻿using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Internal.Controllers
@@ -17,32 +18,61 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         IConnectionRepository connectionRepository,
         IConnectionPackageRepository connectionPackageRepository,
         IConnectionResourceRepository connectionResourceRepository,
-        NewDelegationService delegationService
+        IDelegationService delegationService
         ) : ControllerBase
     {
         private readonly IConnectionRepository connectionRepository = connectionRepository;
         private readonly IConnectionPackageRepository connectionPackageRepository = connectionPackageRepository;
         private readonly IConnectionResourceRepository connectionResourceRepository = connectionResourceRepository;
-        private readonly NewDelegationService delegationService = delegationService;
+        private readonly IDelegationService delegationService = delegationService;
 
+        /// <summary>
+        /// Create System Delegation with required assignments
+        /// </summary>
         [Route("create/forsystem")]
         [HttpPost]
-        public async Task CreateSystemClientDelegation(NewDelegationRequest request)
+        [Authorize]
+        public async Task<ActionResult<ExtConnection>> CreateSystemClientDelegation(CreateSystemDelegationRequestDto request)
         {
             var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
             if (userId == Guid.Empty)
             {
-                return;
+                return Unauthorized();
             }
 
-            await delegationService.CreateClientDelegation(request, userId);
+            var delegation = await delegationService.CreateClientDelegation(request, userId);
+
+            var res = await connectionRepository.GetExtended(delegation.Id);
+
+            return Created();
         }
+
+        /// <summary>
+        /// Alle enheter {id} har gitt tilgang til.
+        /// </summary>
+        [Route("{id}")]
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<ExtConnection>> GetSingle(Guid id)
+        {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
+            var res = await connectionRepository.GetExtended(id);
+
+            return Ok(res);
+        }
+
 
         /// <summary>
         /// Alle enheter {id} har gitt tilgang til.
         /// </summary>
         [Route("given/{id}")]
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<ExtConnection>> GetGiven(Guid id)
         {
             var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
@@ -63,8 +93,15 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         /// </summary>
         [Route("recived/{id}")]
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<ExtConnection>> GetRecived(Guid id)
         {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
             var filter = connectionRepository.CreateFilterBuilder();
             filter.Equal(t => t.ToId, id);
             var res = await connectionRepository.GetExtended(filter);
@@ -77,8 +114,15 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         /// </summary>
         [Route("facilitated/{id}")]
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<ExtConnection>> GetFacilitated(Guid id)
         {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
             var filter = connectionRepository.CreateFilterBuilder();
             filter.Equal(t => t.FacilitatorId, id);
             var res = await connectionRepository.GetExtended(filter);
@@ -91,8 +135,15 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         /// </summary>
         [Route("{from}/{to}/packages")]
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<Package>> GetPackages(Guid from, Guid to)
         {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
             var connectionFilter = connectionRepository.CreateFilterBuilder();
             connectionFilter.Equal(t => t.FromId, from);
             connectionFilter.Equal(t => t.ToId, to);
@@ -110,8 +161,15 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         /// </summary>
         [Route("{id}/packages")]
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<Package>> GetPackages(Guid id)
         {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
             return Ok(await connectionPackageRepository.GetB(id));
         }
 
@@ -120,15 +178,16 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         /// </summary>
         [Route("{id}/resources")]
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<Resource>> GetResources(Guid id)
         {
+            var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized();
+            }
+
             return Ok(await connectionResourceRepository.GetB(id));
         }
     }
-}
-
-public class AssignmentPackageRequestDto
-{
-    public Guid ConnectionId { get; set; } // Assignment or Delegation => move to assignment/delegation controllers
-    public Guid PackageId { get; set; }
 }

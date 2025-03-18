@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 
 namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
 
@@ -27,4 +28,9 @@ public interface IDelegationService
     /// </summary>
     /// <returns></returns>
     Task<bool> AddResourceToDelegation(Guid userId, Guid delegationId, Guid resourceId);
+
+    /// <summary>
+    /// Create a delegation and required assignments for system agent flow
+    /// </summary>
+    Task<Delegation> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid userId);
 }

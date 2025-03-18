@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -18,7 +19,14 @@ public class DelegationService(
     IResourceRepository resourceRepository,
     IDelegationPackageRepository delegationPackageRepository,
     IDelegationResourceRepository delegationResourceRepository,
-    IAssignmentService assignmentService
+    IAssignmentService assignmentService,
+    IEntityRepository entityRepository,
+    IConnectionRepository connectionRepository,
+    IEntityTypeRepository entityTypeRepository,
+    IEntityVariantRepository entityVariantRepository,
+    IProviderRepository providerRepository,
+    IEntityLookupRepository entityLookupRepository,
+    IConnectionPackageRepository connectionPackageRepository
     ) : IDelegationService
 {
     private readonly IRoleRepository roleRepository = roleRepository;
@@ -34,6 +42,12 @@ public class DelegationService(
     private readonly IDelegationPackageRepository delegationPackageRepository = delegationPackageRepository;
     private readonly IDelegationResourceRepository delegationResourceRepository = delegationResourceRepository;
     private readonly IAssignmentService assignmentService = assignmentService;
+    private readonly IEntityRepository entityRepository = entityRepository;
+    private readonly IConnectionRepository connectionRepository = connectionRepository;
+    private readonly IEntityTypeRepository entityTypeRepository = entityTypeRepository;
+    private readonly IEntityVariantRepository entityVariantRepository = entityVariantRepository;
+    private readonly IEntityLookupRepository entityLookupRepository = entityLookupRepository;
+    private readonly IConnectionPackageRepository connectionPackageRepository = connectionPackageRepository;
 
     private async Task<bool> CheckIfEntityHasRole(string roleCode, Guid fromId, Guid toId)
     {
@@ -187,25 +201,187 @@ public class DelegationService(
 
         return res > 0;
     }
+
+    /// <inheritdoc/>
+    public async Task<Delegation> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid userId)
+    {
+        // Find user : Fredrik
+        var user = (await entityRepository.Get(userId)) ?? throw new Exception(string.Format("Party not found '{0}'", userId));
+
+        // Find Facilitator : Regnskapsfolk
+        var facilitator = (await entityRepository.Get(request.FacilitatorPartyId)) ?? throw new Exception(string.Format("Party not found '{0}'", request.FacilitatorPartyId));
+
+        // Find admin role : Tilgangstyrer eller KlientAdmin?
+        var adminRole = await GetRole("tilgangsstyrer") ?? throw new Exception(string.Format("Role not found '{0}'", "tilgangsstyrer"));
+
+        // Find user roles at facilitator : Fredrik - TS - Regnskapsfolk
+        var userAssignmentFilter = connectionRepository.CreateFilterBuilder(); // InheiritedAssign2mentRepo...
+        userAssignmentFilter.Equal(t => t.FromId, facilitator.Id);
+        userAssignmentFilter.Equal(t => t.ToId, user.Id);
+        userAssignmentFilter.Equal(t => t.RoleId, adminRole.Id);
+        var userAssignment = (await connectionRepository.Get(userAssignmentFilter)).FirstOrDefault();
+        if (userAssignment == null)
+        {
+            throw new Exception(string.Format("User '{0}' does not have '{1}' role at '{2}'", user.Name, adminRole.Name, facilitator.Name));
+        }
+
+        // Find ClientPartyId Role : REGN
+        var clientRole = (await roleRepository.Get(t => t.Code, request.ClientRole)).First() ?? throw new Exception(string.Format("Role not found '{0}'", request.ClientRole));
+
+        // Find ClientPartyId : Bakeriet
+        var client = (await entityRepository.Get(request.ClientPartyId)) ?? throw new Exception(string.Format("Party not found '{0}'", request.ClientPartyId));
+
+        // Find ClientPartyId Assignment : Bakeriet - (REGN) - Regnskapsfolk 
+        var clientAssignment = await GetOrCreateAssignment(client, facilitator, clientRole) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
+
+        // Find Agent Role : AGENT
+        var agentRole = await GetRole(request.AgentRole) ?? throw new Exception(string.Format("Role not found '{0}'", request.AgentRole));
+
+        // Find Agent
+        var agent = await GetOrCreateEntity(request.AgentPartyId, request.AgentName, request.AgentPartyId.ToString(), "System", "System") ?? throw new Exception(string.Format("Could not find or create '{0}'", request.AgentPartyId));
+
+        // Find or Create Agent Assignment : Regnskapsfolk - AGENT - SystemBruker01
+        var agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
+
+        // Find or Create Delegation
+        var delegationFilter = delegationRepository.CreateFilterBuilder();
+        delegationFilter.Equal(t => t.FromId, clientAssignment.Id);
+        delegationFilter.Equal(t => t.ToId, agentAssignment.Id);
+        delegationFilter.Equal(t => t.FacilitatorId, facilitator.Id);
+        var delegation = (await delegationRepository.Get(delegationFilter)).FirstOrDefault();
+        if (delegation == null)
+        {
+            var res = await delegationRepository.Create(new Delegation()
+            {
+                Id = Guid.NewGuid(),
+                FromId = clientAssignment.Id,
+                ToId = agentAssignment.Id,
+                FacilitatorId = facilitator.Id
+            });
+
+            delegation = (await delegationRepository.Get(delegationFilter)).FirstOrDefault();
+        }
+
+        foreach (var package in request.Packages)
+        {
+            // Find Package (check if exists)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+            var packageFilter = packageRepository.CreateFilterBuilder();
+            packageFilter.Equal(t => t.Urn, package);
+            var packages = await packageRepository.Get(packageFilter);
+            if (packages == null || !packages.Any())
+            {
+                throw new Exception(string.Format("Package not found '{0}'", package));
+            }
+
+            var repoPackage = packages.First();
+
+            // Find AssignmentPackage
+            var clientPackages = await connectionPackageRepository.GetB(clientAssignment.Id);
+            var assignmentPackage = clientPackages.FirstOrDefault(t => t.Urn == package);
+            if (assignmentPackage == null)
+            {
+                throw new Exception(string.Format("ClientPartyId assignment does not have the package '{0}'", package));
+            }
+
+            // Find or Create DelegationPackage
+            var delegationPackageFilter = delegationPackageRepository.CreateFilterBuilder();
+            delegationPackageFilter.Equal(t => t.DelegationId, delegation.Id);
+            delegationPackageFilter.Equal(t => t.PackageId, repoPackage.Id);
+            var delegationPackages = (await delegationPackageRepository.Get(delegationPackageFilter)).FirstOrDefault();
+            if (delegationPackages == null)
+            {
+                var res = await delegationPackageRepository.Create(new DelegationPackage()
+                {
+                    Id = Guid.NewGuid(),
+                    DelegationId = delegation.Id,
+                    PackageId = repoPackage.Id
+                });
+                delegationPackages = (await delegationPackageRepository.Get(delegationPackageFilter)).FirstOrDefault();
+            }
+
+            if (delegationPackages == null)
+            {
+                throw new Exception("Unable to add package to delegation");
+            }
+        }
+
+        return delegation;
+    }
+    
+    public async Task<Entity> GetOrCreateEntity(Guid id, string name, string refId, string type, string variant)
+    {
+        var entity = await entityRepository.Get(id);
+        if (entity != null)
+        {
+            return entity;
+        }
+
+        var entityType = (await entityTypeRepository.Get(t => t.Name, type)).First() ?? throw new Exception(string.Format("Type not found '{0}'", type));
+        var variantFilter = entityVariantRepository.CreateFilterBuilder();
+        variantFilter.Equal(t => t.TypeId, entityType.Id);
+        variantFilter.Equal(t => t.Name, variant);
+        var entityVariant = (await entityVariantRepository.Get(variantFilter)).First() ?? throw new Exception(string.Format("Variant not found '{0}'", type));
+
+        await entityRepository.Create(new Entity()
+        {
+            Id = id,
+            Name = name,
+            RefId = refId,
+            TypeId = entityType.Id,
+            VariantId = entityVariant.Id
+        });
+
+        return await entityRepository.Get(id);
+    }
+
+    public async Task<Assignment> GetOrCreateAssignment(Entity from, Entity to, Role role)
+    {
+        var filter = assignmentRepository.CreateFilterBuilder();
+        filter.Equal(t => t.RoleId, role.Id);
+        filter.Equal(t => t.FromId, from.Id);
+        filter.Equal(t => t.ToId, to.Id);
+        var clientAssignment = await assignmentRepository.Get(filter);
+
+        if (clientAssignment != null && clientAssignment.Any())
+        {
+            return clientAssignment.First();
+        }
+        else
+        {
+            var roleProvider = await providerRepository.Get(role.ProviderId);
+            if (roleProvider.Name != "Digitaliseringsdirektoratet") // Get system from token
+            {
+                throw new Exception(string.Format("You cannot create assignment with the role '{0}' ({1})", role.Name, role.Code));
+            }
+
+            var res = await assignmentRepository.Create(new Assignment()
+            {
+                Id = Guid.NewGuid(),
+                FromId = from.Id,
+                ToId = to.Id,
+                RoleId = role.Id
+            });
+        }
+
+        return (await assignmentRepository.Get(filter)).FirstOrDefault();
+    }
+
+    public async Task<Role> GetRole(string code)
+    {
+        return (await roleRepository.Get(t => t.Code, code)).FirstOrDefault();
+    }
+
+    public async Task<Entity> GetEntity(string lookup)
+    {
+        var split = lookup.Split(':');
+        var lookupValue = split.Last();
+        var lookupKey = lookup.Reverse().ToString().Substring(lookupValue.Length + 1).Reverse().ToString();
+        var clientEntityFilter = entityLookupRepository.CreateFilterBuilder();
+        clientEntityFilter.Equal(t => t.Value, lookupValue);
+        clientEntityFilter.Equal(t => t.Key, lookupKey);
+        var client = await entityLookupRepository.GetExtended(clientEntityFilter);
+        return client.First()?.Entity ?? null;
+
+        //// return (await entityRepository.Get(t => t.RefId, request.ClientPartyId)).First() ?? throw new Exception(string.Format("Party not found '{0}'", request.ClientPartyId));
+    }
 }
-
-
-/*
-
-KLIENT DELEGERINGS FLYT
-
-Finn KlientAssignment med Role=REGN og From=BakerHansen og To=BDO
-Finn eller opprett SystemBruker01 som Entity av type System hvor RefId = Uuid
-Finn eller opprett AgentAssignment med Role:Agent, From:BDO og To:SystemBruker01
-Opprett Delegation med KlientAssignment og AgentAssignment
-Finn alle Packer på KlientAssignment som kan delegeres
-Deleger en Pakke til Delegation med PakkeId og DelegeringsId
-(Legg ved en constraint på hvor den kommer fra, BONUS)
-
-
-StartMock:
-Roller: ....
-Entity: Bakeriet, Regnskapsfolk, PederAgent, GunnarLeder
-
- 
-*/

@@ -20,7 +20,6 @@ public class ConnectionResourceDefinition : BaseDbDefinition<ConnectionResource>
         {
             def.IsView();
 
-            def.RegisterProperty(t => t.Id);
             def.RegisterProperty(t => t.ConnectionId);
             def.RegisterProperty(t => t.ResourceId);
 
