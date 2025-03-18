@@ -3,6 +3,7 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Core.Models.Consent;
@@ -21,16 +22,17 @@ namespace Altinn.AccessManagement.Core.Services
     /// <remarks>
     /// Service responsible for consent functionality
     /// </remarks>
-    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService) : IConsent
+    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService, IResourceRegistryClient resourceRegistryClient) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
         private readonly IPartiesClient _partiesClient = partiesClient;
         private readonly ISingleRightsService _singleRightsService = singleRightsService;
+        private readonly IResourceRegistryClient _resourceRegistryClient = resourceRegistryClient;
 
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, CancellationToken cancellationToken = default)
         {
-            Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest);
+            Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest, cancellationToken);
 
             if (result.IsProblem)
             {
@@ -234,7 +236,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// - Validates that resources requested in consent is valid
         /// - Validates that valid to time is valid
         /// </summary>
-        private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest)
+        private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest, CancellationToken cancelactionToken)
         {
             ValidationErrorBuilder errors = default;
             ConsentPartyUrn from = await MapFromExternalIdenity(consentRequest.From);
@@ -279,6 +281,28 @@ namespace Altinn.AccessManagement.Core.Services
             if (consentRequest.ConsentRights == null || consentRequest.ConsentRights.Count == 0)
             {
                 errors.Add(ValidationErrors.MissingConsentRight, "Resource");
+            }
+            else
+            {
+                foreach (ConsentRight consentRight in consentRequest.ConsentRights)
+                {
+                    if (consentRight.Resource == null || consentRight.Resource.Count == 0 || consentRight.Resource.Count > 1)
+                    {
+                        errors.Add(ValidationErrors.InvalidResource, "Resource");
+                    }
+                    else
+                    {
+                        ServiceResource resourceDetails = await _resourceRegistryClient.GetResource(consentRight.Resource[0].Value, cancelactionToken);
+                        if (resourceDetails == null)
+                        {
+                            errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
+                        } 
+                        else if (!resourceDetails.ResourceType.Equals(ResourceType.Consentresource))
+                        {
+                            errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
+                        }
+                    }
+                }
             }
 
             if (errors.TryBuild(out var errorResult))

@@ -58,11 +58,17 @@ public static class ValidationErrors
     /// Gets a validation error descriptor
     /// </summary>
     public static ValidationErrorDescriptor InvalidValidToTime { get; }
-    = _factory.Create(8, $"The ValidTo time need to be in the future");
+        = _factory.Create(8, $"The ValidTo time need to be in the future");
 
     /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
     public static ValidationErrorDescriptor MissingConsentRight { get; }
-    = _factory.Create(9, $"The consentrequest needs to include at least 1 right");
+        = _factory.Create(9, $"The consentrequest needs to include at least 1 right");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidConsentResource { get; }
+        = _factory.Create(10, $"Invalid resource for consent right");
 }

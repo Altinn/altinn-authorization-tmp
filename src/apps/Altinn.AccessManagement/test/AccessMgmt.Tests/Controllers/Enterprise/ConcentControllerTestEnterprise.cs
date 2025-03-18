@@ -66,7 +66,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                             new ConsentResourceAttributeExternal
                             {
                                 Type = "urn:altinn:resource",
-                                Value = "skd_inntektsopplsyniung"
+                                Value = "ttd_skattegrunnlag"
                             }
                         },
                         MetaData = new Dictionary<string, string>
@@ -159,7 +159,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                             new ConsentResourceAttributeExternal
                             {
                                 Type = "urn:altinn:resource",
-                                Value = "skd_inntektsopplsyniung"
+                                Value = "ttd_skattegrunnlag"
                             }
                         },
                         MetaData = new Dictionary<string, string>
