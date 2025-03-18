@@ -53,64 +53,64 @@ public class DbDataMigrationService(
 
         string dataKey = "<data>";
 
-        if (migrationService.NeedMigration<Provider>(dataKey, 1))
+        if (migrationService.NeedMigration<Provider>(dataKey, 2))
         {
             await IngestProvider();
-            await migrationService.LogMigration<Provider>(dataKey, string.Empty, 1);
+            await migrationService.LogMigration<Provider>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<EntityType>(dataKey, 2))
+        if (migrationService.NeedMigration<EntityType>(dataKey, 3))
         {
             await IngestEntityType();
-            await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 2);
+            await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 3);
         }
 
-        if (migrationService.NeedMigration<EntityVariant>(dataKey, 2))
+        if (migrationService.NeedMigration<EntityVariant>(dataKey, 3))
         {
             await IngestEntityVariant();
-            await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 2);
+            await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 3);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 3))
+        if (migrationService.NeedMigration<Role>(dataKey, 4))
         {
             await IngestRole();
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 3);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 4);
         }
 
-        if (migrationService.NeedMigration<RoleMap>(dataKey, 1))
+        if (migrationService.NeedMigration<RoleMap>(dataKey, 2))
         {
             await IngestRoleMap();
-            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 1);
+            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<AreaGroup>(dataKey, 1))
+        if (migrationService.NeedMigration<AreaGroup>(dataKey, 2))
         {
             await IngestAreaGroup();
-            await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 1);
+            await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<Area>(dataKey, 1))
+        if (migrationService.NeedMigration<Area>(dataKey, 2))
         {
             await IngestArea();
-            await migrationService.LogMigration<Area>(dataKey, string.Empty, 1);
+            await migrationService.LogMigration<Area>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<Package>(dataKey, 1))
+        if (migrationService.NeedMigration<Package>(dataKey, 2))
         {
             await IngestPackage();
-            await migrationService.LogMigration<Package>(dataKey, string.Empty, 1);
+            await migrationService.LogMigration<Package>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<RolePackage>(dataKey, 1))
+        if (migrationService.NeedMigration<RolePackage>(dataKey, 2))
         {
             await IngestRolePackage();
-            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 1);
+            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<EntityVariantRole>(dataKey, 1))
+        if (migrationService.NeedMigration<EntityVariantRole>(dataKey, 2))
         {
             await IngestEntityVariantRole();
-            await migrationService.LogMigration<EntityVariantRole>(dataKey, string.Empty, 1);
+            await migrationService.LogMigration<EntityVariantRole>(dataKey, string.Empty, 2);
         }
     }
 
@@ -585,7 +585,7 @@ public class DbDataMigrationService(
         var orgEntityTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found '{0}'", "Organisasjon"));
         var persEntityTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found '{0}'", "Person"));
         var brrProviderId = (await providerService.Get(t => t.Name, "Brønnøysundregistrene")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Provider not found '{0}'", "Brønnøysundregistrene"));
-        var digdirProviderId = (await providerService.Get(t => t.Name, "Digdir")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Provider not found '{0}'", "Digdir"));
+        var digdirProviderId = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Provider not found '{0}'", "Digitaliseringsdirektoratet"));
 
         var roles = new List<Role>()
         {
@@ -1052,7 +1052,7 @@ public class DbDataMigrationService(
     {
         //// TODO: Translate
 
-        var digdirProvider = (await providerService.Get(t => t.Name, "Digdir")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Provider not found '{0}'", "Digdir"));
+        var digdirProvider = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Provider not found '{0}'", "Digitaliseringsdirektoratet"));
         var orgEntityType = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found '{0}'", "Organisasjon"));
 
         var areas = await areaService.Get();

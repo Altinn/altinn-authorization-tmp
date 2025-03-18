@@ -5,9 +5,6 @@ using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
-using DnsClient.Protocol;
-using Google.Protobuf.WellKnownTypes;
-using Microsoft.AspNetCore.Components;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Services;
 
