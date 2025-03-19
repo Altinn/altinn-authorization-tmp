@@ -89,4 +89,10 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor MissingMetadata { get; }
         = _factory.Create(13, $"Missing required metadata for consentright");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor MissingAction { get; }
+        = _factory.Create(14, $"Missing required actions for consent request");
 }

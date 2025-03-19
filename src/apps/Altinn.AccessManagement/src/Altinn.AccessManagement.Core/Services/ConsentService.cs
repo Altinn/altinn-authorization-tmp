@@ -11,8 +11,6 @@ using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
-using System;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -284,11 +282,14 @@ namespace Altinn.AccessManagement.Core.Services
             }
             else
             {
-
-
                 for (int rightIndex = 0; rightIndex < consentRequest.ConsentRights.Count; rightIndex++)
                 {
                     ConsentRight consentRight = consentRequest.ConsentRights[rightIndex];
+
+                    if (consentRight.Action == null || consentRight.Action.Count == 0)
+                    {
+                        errors.Add(ValidationErrors.MissingAction, $"/consentRight/{rightIndex}/action");
+                    }
 
                     if (consentRight.Resource == null || consentRight.Resource.Count == 0 || consentRight.Resource.Count > 1)
                     {
