@@ -36,6 +36,10 @@
   "selfIdentifiedUserEnabled": false,
   "enterpriseUserEnabled": false,
   "resourceType": "Consentresource",
+  "consentMetadata": {
+    "fraOgMed": {},
+    "tilOgMed": {}
+  },
   "authorizationReference": [
     {
       "id": "urn:altinn:resource",

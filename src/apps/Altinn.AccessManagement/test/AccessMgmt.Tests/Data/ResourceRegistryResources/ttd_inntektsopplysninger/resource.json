@@ -36,10 +36,13 @@
   "selfIdentifiedUserEnabled": false,
   "enterpriseUserEnabled": false,
   "resourceType": "Consentresource",
-  "authorizationReference": [
-    {
-      "id": "urn:altinn:resource",
-      "value": "ttd_inntektsopplysninger"
-    }
-  ]
-}
+  "consentMetadata": {
+    "inntektsaar": {}
+  },
+    "authorizationReference": [
+      {
+        "id": "urn:altinn:resource",
+        "value": "ttd_inntektsopplysninger"
+      }
+    ]
+  }

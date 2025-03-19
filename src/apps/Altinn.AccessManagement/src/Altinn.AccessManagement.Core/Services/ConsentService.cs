@@ -301,6 +301,44 @@ namespace Altinn.AccessManagement.Core.Services
                         {
                             errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
                         }
+
+                        if (consentRight.MetaData != null && consentRight.MetaData.Count > 0)
+                        {
+                            foreach (KeyValuePair<string, string> metaData in consentRight.MetaData)
+                            {
+                                if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
+                                {
+                                    errors.Add(ValidationErrors.UnknownConsentMetadata, "MetaData" + metaData.Key.ToLower());
+                                }
+
+                                if (string.IsNullOrEmpty(metaData.Value))
+                                {
+                                    errors.Add(ValidationErrors.MissingMetadataValue, "MetaData" + metaData.Key.ToLower());
+                                }
+                            }
+                        }
+
+                        if (resourceDetails.ConsentMetadata != null)
+                        {
+                            foreach (KeyValuePair<string, ConsentMetadata> consentMetadata in resourceDetails.ConsentMetadata)
+                            {
+                                bool found = false;
+
+                                foreach (KeyValuePair<string, string> metaData in consentRight.MetaData)
+                                {
+                                    if (metaData.Key.ToLower().Equals(consentMetadata.Key.ToLower()))
+                                    {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!found)
+                                {
+                                    errors.Add(ValidationErrors.MissingMetadata, "MetaData" + consentMetadata.Key.ToLower());
+                                }
+                            }
+                        }
                     }
                 }
             }

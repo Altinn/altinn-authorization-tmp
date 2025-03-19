@@ -66,7 +66,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                             new ConsentResourceAttributeExternal
                             {
                                 Type = "urn:altinn:resource",
-                                Value = "ttd_skattegrunnlag"
+                                Value = "ttd_inntektsopplysninger"
                             }
                         },
                         MetaData = new Dictionary<string, string>
@@ -151,7 +151,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
                 ConsentRights = new List<ConsentRightExternal>
                 {
-                    new ConsentRightExternal
+                   new ConsentRightExternal
                     {
                         Action = new List<string> { "read" },
                         Resource = new List<ConsentResourceAttributeExternal>
@@ -159,7 +159,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                             new ConsentResourceAttributeExternal
                             {
                                 Type = "urn:altinn:resource",
-                                Value = "ttd_skattegrunnlag"
+                                Value = "ttd_inntektsopplysninger"
                             }
                         },
                         MetaData = new Dictionary<string, string>

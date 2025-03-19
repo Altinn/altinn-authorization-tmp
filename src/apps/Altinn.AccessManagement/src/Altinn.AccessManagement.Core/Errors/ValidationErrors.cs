@@ -70,5 +70,23 @@ public static class ValidationErrors
     /// Gets a validation error descriptor
     /// </summary>
     public static ValidationErrorDescriptor InvalidConsentResource { get; }
-        = _factory.Create(10, $"Invalid resource for consent right");
+        = _factory.Create(10, $"Invalid resource for consent right.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor UnknownConsentMetadata { get; }
+        = _factory.Create(11, $"Unknown consent metaddata.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor MissingMetadataValue { get; }
+        = _factory.Create(12, $"Missing value for metadata");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor MissingMetadata { get; }
+        = _factory.Create(13, $"Missing missing required metadata for consentright");
 }
