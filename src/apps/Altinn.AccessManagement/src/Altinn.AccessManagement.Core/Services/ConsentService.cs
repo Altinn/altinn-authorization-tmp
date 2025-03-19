@@ -284,8 +284,12 @@ namespace Altinn.AccessManagement.Core.Services
             }
             else
             {
-                foreach (ConsentRight consentRight in consentRequest.ConsentRights)
+
+
+                for (int rightIndex = 0; rightIndex < consentRequest.ConsentRights.Count; rightIndex++)
                 {
+                    ConsentRight consentRight = consentRequest.ConsentRights[rightIndex];
+
                     if (consentRight.Resource == null || consentRight.Resource.Count == 0 || consentRight.Resource.Count > 1)
                     {
                         errors.Add(ValidationErrors.InvalidResource, "Resource");
@@ -296,7 +300,7 @@ namespace Altinn.AccessManagement.Core.Services
                         if (resourceDetails == null)
                         {
                             errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
-                        } 
+                        }
                         else if (!resourceDetails.ResourceType.Equals(ResourceType.Consentresource))
                         {
                             errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
@@ -308,12 +312,12 @@ namespace Altinn.AccessManagement.Core.Services
                             {
                                 if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
                                 {
-                                    errors.Add(ValidationErrors.UnknownConsentMetadata, "MetaData" + metaData.Key.ToLower());
+                                    errors.Add(ValidationErrors.UnknownConsentMetadata, $"/consentRight/{rightIndex}/Metadata");
                                 }
 
                                 if (string.IsNullOrEmpty(metaData.Value))
                                 {
-                                    errors.Add(ValidationErrors.MissingMetadataValue, "MetaData" + metaData.Key.ToLower());
+                                    errors.Add(ValidationErrors.MissingMetadataValue, $"/consentRight/{rightIndex}/Metadata");
                                 }
                             }
                         }
@@ -322,26 +326,10 @@ namespace Altinn.AccessManagement.Core.Services
                         {
                             foreach (KeyValuePair<string, ConsentMetadata> consentMetadata in resourceDetails.ConsentMetadata)
                             {
-                                bool found = false;
-
-                                if (consentRight.MetaData == null)
+                                if (consentRight.MetaData == null || consentRight.MetaData.ContainsKey(consentMetadata.Key))
                                 {
-                                    errors.Add(ValidationErrors.MissingMetadata, "MetaData" + consentMetadata.Key.ToLower());
+                                    errors.Add(ValidationErrors.MissingMetadata, $"/consentRight/{rightIndex}/Metadata/{consentMetadata.Key}");
                                     continue;
-                                }
-
-                                foreach (KeyValuePair<string, string> metaData in consentRight.MetaData)
-                                {
-                                    if (metaData.Key.ToLower().Equals(consentMetadata.Key.ToLower()))
-                                    {
-                                        found = true;
-                                        break;
-                                    }
-                                }
-
-                                if (!found)
-                                {
-                                    errors.Add(ValidationErrors.MissingMetadata, "MetaData" + consentMetadata.Key.ToLower());
                                 }
                             }
                         }

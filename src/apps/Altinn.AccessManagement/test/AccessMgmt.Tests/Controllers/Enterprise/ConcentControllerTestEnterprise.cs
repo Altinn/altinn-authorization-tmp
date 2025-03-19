@@ -146,6 +146,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Single(problemDetails.Errors);
             Assert.Equal("AM.VLD-00013", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
             Assert.Equal("Missing required metadata for consentright", problemDetails.Errors.ToList()[0].Detail.ToString());
+            Assert.Equal("/consentRight/0/Metadata/inntektsaar", problemDetails.Errors.ToList()[0].Paths[0]);
         }
 
         /// <summary>
