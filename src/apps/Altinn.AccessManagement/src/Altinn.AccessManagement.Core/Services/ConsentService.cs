@@ -326,7 +326,7 @@ namespace Altinn.AccessManagement.Core.Services
                         {
                             foreach (KeyValuePair<string, ConsentMetadata> consentMetadata in resourceDetails.ConsentMetadata)
                             {
-                                if (consentRight.MetaData == null || consentRight.MetaData.ContainsKey(consentMetadata.Key))
+                                if (consentRight.MetaData == null || !consentRight.MetaData.ContainsKey(consentMetadata.Key))
                                 {
                                     errors.Add(ValidationErrors.MissingMetadata, $"/consentRight/{rightIndex}/Metadata/{consentMetadata.Key}");
                                     continue;
