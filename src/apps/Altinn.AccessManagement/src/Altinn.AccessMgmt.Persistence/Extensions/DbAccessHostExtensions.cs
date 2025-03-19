@@ -7,8 +7,6 @@ using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
 using Altinn.AccessMgmt.Persistence.Data.Mock;
-using Altinn.AccessMgmt.Persistence.Repositories;
-using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Repo.Data;
@@ -128,9 +126,9 @@ public static partial class DbAccessHostExtensions
         var dbIngest = host.Services.GetRequiredService<DbDataMigrationService>();
         await dbIngest.IngestAll();
 
-        // TODO: Add FeatureFlag
+        //// TODO: Add FeatureFlag
         //// var mockService = host.Services.GetRequiredService<MockDataService>();
-        //// await mockService.GenerateBasicData(); 
+        //// await mockService.GenerateBasicData();
         //// await mockService.GeneratePackageResources();
 
         return host;

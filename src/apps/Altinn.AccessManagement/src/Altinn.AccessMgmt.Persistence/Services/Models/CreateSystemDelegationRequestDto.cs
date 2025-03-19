@@ -53,5 +53,5 @@ public class CreateSystemDelegationRolePackageDto
     /// This field uses the urn notation, such as:
     /// urn:altinn:accesspackage:ansvarlig-revisor
     /// </summary>
-    public required string PackagesUrn{ get; set; }
+    public required string PackageUrn { get; set; }
 }

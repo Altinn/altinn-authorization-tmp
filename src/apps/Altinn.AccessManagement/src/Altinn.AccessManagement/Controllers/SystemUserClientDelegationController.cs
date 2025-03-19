@@ -15,7 +15,7 @@ namespace Altinn.AccessManagement.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/internal/[controller]")]
-[ApiExplorerSettings(IgnoreApi = true)]
+[ApiExplorerSettings(IgnoreApi = false)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class SystemUserClientDelegationController : ControllerBase
 {
@@ -73,8 +73,9 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <param name="client">The client the authenticated user is removing access from</param>
     /// <param name="systemUser">The system user the authenticated user is removing client access to</param>
     [HttpDelete]
+    [Route("delete")]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
-    public async Task<ActionResult> DeleteClientDelegation([FromQuery] Guid party, [FromQuery] Guid client, [FromQuery] Guid systemUser)
+    public async Task<ActionResult> DeleteClientDelegations([FromQuery] Guid party, [FromQuery] Guid client, [FromQuery] Guid systemUser)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)
@@ -107,6 +108,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
     /// <param name="delegationId">The delegation identifier</param>
     [HttpDelete]
+    [Route("deletedelegation")]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     public async Task<ActionResult> DeleteClientDelegation([FromQuery] Guid party, [FromQuery] Guid delegationId)
     {
@@ -142,6 +144,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
     /// <param name="assignmentId">The assignment identifier</param>
     [HttpDelete]
+    [Route("deleteassignment")]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     public async Task<ActionResult> DeleteClientAssignment([FromQuery] Guid party, [FromQuery] Guid assignmentId)
     {

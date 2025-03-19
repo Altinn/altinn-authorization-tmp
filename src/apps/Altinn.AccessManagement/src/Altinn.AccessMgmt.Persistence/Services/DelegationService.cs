@@ -197,13 +197,14 @@ public class DelegationService(
         var agentRole = await GetRole(request.AgentRole) ?? throw new Exception(string.Format("Role not found '{0}'", request.AgentRole));
 
         // Find Agent
-        var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "System", "System") ?? throw new Exception(string.Format("Could not find or create '{0}'", request.AgentId));
+        var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "System") ?? throw new Exception(string.Format("Could not find or create '{0}'", request.AgentId));
+        
+        // Find ClientId : Bakeriet
+        var client = (await entityRepository.Get(request.ClientId)) ?? throw new Exception(string.Format("Party not found '{0}'", request.ClientId));
 
         // Find or Create Agent Assignment : Regnskapsfolk - AGENT - SystemBruker01
         var agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
 
-        // Find ClientId : Bakeriet
-        var client = (await entityRepository.Get(request.ClientId)) ?? throw new Exception(string.Format("Party not found '{0}'", request.ClientId));
 
         return await CreateClientDelegations(request.RolePackages, client, facilitator, agentAssignment);
     }
@@ -215,7 +216,7 @@ public class DelegationService(
         var rolepacks = new Dictionary<string, List<string>>();
         foreach (var role in rolepackages.Select(t => t.RoleIdentifier).Distinct())
         {
-            rolepacks.Add(role, rolepackages.Where(t => t.RoleIdentifier == role).Select(t => t.PackagesUrn).ToList());
+            rolepacks.Add(role, rolepackages.Where(t => t.RoleIdentifier == role).Select(t => t.PackageUrn).ToList());
         }
 
         foreach (var rp in rolepacks)
