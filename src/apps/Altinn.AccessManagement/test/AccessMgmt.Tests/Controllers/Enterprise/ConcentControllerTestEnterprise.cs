@@ -221,6 +221,81 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal("/consentRight/0/Metadata/inntektsaar", problemDetails.Errors.ToList()[0].Paths[0]);
         }
 
+
+        /// <summary>
+        /// T
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task CreateConsentRequest_WrongNamingMetadata()
+        {
+            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            {
+                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("27099450067")),
+                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                ValidTo = DateTimeOffset.UtcNow.AddDays(1),
+                ConsentRights = new List<ConsentRightExternal>
+                {
+                    new ConsentRightExternal
+                    {
+                        Action = new List<string> { "read" },
+                        Resource = new List<ConsentResourceAttributeExternal>
+                        {
+                            new ConsentResourceAttributeExternal
+                            {
+                                Type = "urn:altinn:resource",
+                                Value = "ttd_inntektsopplysninger"
+                            }
+                        },
+                        MetaData = new Dictionary<string, string>
+                        {
+                            { "INNTEKTSAAR", "ADSF" }
+                        }
+                    },
+                    new ConsentRightExternal
+                    {
+                        Action = new List<string> { "read" },
+                        Resource = new List<ConsentResourceAttributeExternal>
+                        {
+                            new ConsentResourceAttributeExternal
+                            {
+                                Type = "urn:altinn:resource",
+                                Value = "ttd_skattegrunnlag"
+                            }
+                        },
+                        MetaData = new Dictionary<string, string>
+                        {
+                            { "fraOgMed", "ADSF" },
+                            { "tilOgMedwrong", "ADSF" }
+                        }
+                    }
+                },
+                Requestmessage = new Dictionary<string, string>
+                {
+                    { "en", "Please approve this consent request" }
+                }
+            };
+
+            HttpClient client = GetTestClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.NotNull(responseContent);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
+
+            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
+            Assert.Equal(2, problemDetails.Errors.Count);
+            Assert.Equal("AM.VLD-00011", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("Unknown consent metaddata.", problemDetails.Errors.ToList()[0].Detail.ToString());
+            Assert.Equal("/consentRight/1/Metadata/tilogmedwrong", problemDetails.Errors.ToList()[0].Paths[0]);
+            Assert.Equal("AM.VLD-00013", problemDetails.Errors.ToList()[1].ErrorCode.ToString());
+            Assert.Equal("Missing required metadata for consentright", problemDetails.Errors.ToList()[1].Detail.ToString());
+            Assert.Equal("/consentRight/1/Metadata/tilogmed", problemDetails.Errors.ToList()[1].Paths[0]);
+        }
+
         /// <summary>
         /// Scenario: Tries to 
         /// </summary>

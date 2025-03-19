@@ -312,7 +312,7 @@ namespace Altinn.AccessManagement.Core.Services
                             {
                                 if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
                                 {
-                                    errors.Add(ValidationErrors.UnknownConsentMetadata, $"/consentRight/{rightIndex}/Metadata");
+                                    errors.Add(ValidationErrors.UnknownConsentMetadata, $"/consentRight/{rightIndex}/Metadata/{metaData.Key.ToLower()}");
                                 }
 
                                 if (string.IsNullOrEmpty(metaData.Value))
