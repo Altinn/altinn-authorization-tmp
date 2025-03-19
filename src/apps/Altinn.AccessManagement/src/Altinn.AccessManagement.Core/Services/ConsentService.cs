@@ -324,6 +324,12 @@ namespace Altinn.AccessManagement.Core.Services
                             {
                                 bool found = false;
 
+                                if (consentRight.MetaData == null)
+                                {
+                                    errors.Add(ValidationErrors.MissingMetadata, "MetaData" + consentMetadata.Key.ToLower());
+                                    continue;
+                                }
+
                                 foreach (KeyValuePair<string, string> metaData in consentRight.MetaData)
                                 {
                                     if (metaData.Key.ToLower().Equals(consentMetadata.Key.ToLower()))
