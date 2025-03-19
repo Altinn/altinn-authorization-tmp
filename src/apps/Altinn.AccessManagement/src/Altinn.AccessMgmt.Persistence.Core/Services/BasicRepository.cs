@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
-using Altinn.AccessMgmt.Persistence.Core.Executors;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 
@@ -155,7 +154,9 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     {
         var parameters = new List<GenericParameter>();
 
-        foreach (var filter in filters)
+        var multiple = filters.CountBy(t => t.PropertyName).Where(t => t.Value > 1).Select(t => t.Key);
+
+        foreach (var filter in filters.Where(t => !multiple.Contains(t.PropertyName)))
         {
             object value = filter.Comparer switch
             {
@@ -166,6 +167,16 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
             };
 
             parameters.Add(new GenericParameter(filter.PropertyName, value));
+        }
+
+        foreach (var m in multiple)
+        {
+            int a = 1;
+            foreach (var filter in filters.Where(t => t.PropertyName == m))
+            {
+                parameters.Add(new GenericParameter($"@{m}_{a}", filter.Value));
+                a++;
+            }
         }
 
         if (options.Language != null)
@@ -219,6 +230,14 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
+    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, CancellationToken cancellationToken = default)
+    {
+        var parameters = new List<GenericParameter>();
+        parameters.Add(new GenericParameter(ExtractPropertyInfo(property).Name, value));
+        return await Update(id, parameters, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<int> Update(Guid id, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
     {
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
@@ -230,9 +249,16 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     /// <inheritdoc/>
     public async Task<int> Delete(Guid id, CancellationToken cancellationToken = default)
     {
+        return await Delete([new GenericFilter("id", id)], cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> Delete(IEnumerable<GenericFilter> filters, CancellationToken cancellationToken = default)
+    {
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildDeleteQuery();
-        return await executor.ExecuteCommand(query, [new GenericParameter("_id", id)], cancellationToken: cancellationToken);
+        var param = BuildFilterParameters(filters, null);
+        string query = queryBuilder.BuildDeleteQuery(filters);
+        return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -290,17 +316,4 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
 
     #endregion
 
-    /// <inheritdoc/>
-    public async Task<int> Ingest(List<T> data, int batchSize = 1000, CancellationToken cancellationToken = default)
-    {
-        var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        return await executor.Ingest<T>(data, Definition, queryBuilder, batchSize, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<int> IngestAndMerge(List<T> data, int batchSize = 1000, CancellationToken cancellationToken = default)
-    {
-        var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        return await executor.IngestAndMerge(data, Definition, queryBuilder, batchSize, cancellationToken);
-    }
 }

@@ -11,6 +11,7 @@ public class PackageService(
     IAreaGroupRepository areaGroupRepository,
     IAreaRepository areaRepository,
     IPackageResourceRepository packageResourceRepository,
+    IResourceRepository resourceRepository,
     ISearchCache<PackageDto> searchPackageCache
     ) : IPackageService
 {
@@ -18,12 +19,19 @@ public class PackageService(
     private readonly IAreaGroupRepository areaGroupRepository = areaGroupRepository;
     private readonly IAreaRepository areaRepository = areaRepository;
     private readonly IPackageResourceRepository packageResourceRepository = packageResourceRepository;
+    private readonly IResourceRepository resourceRepository = resourceRepository;
     private readonly ISearchCache<PackageDto> searchPackageCache = searchPackageCache;
 
     /// <inheritdoc/>
-    public async Task<List<SearchObject<PackageDto>>> Search(string term)
+    public async Task<IEnumerable<SearchObject<PackageDto>>> Search(string term)
     {
         var data = await GetSearchData();
+
+        if (string.IsNullOrEmpty(term))
+        {
+            return data.Select(t => new SearchObject<PackageDto>() { Object = t, Score = 0, Fields = [] });
+        }
+
         bool detailed = false;
 
         var builder = new SearchPropertyBuilder<PackageDto>()
@@ -48,7 +56,7 @@ public class PackageService(
             }
         }
 
-        return results;
+        return results.OrderByDescending(t => t.Score).ToList();
     }
 
     private async Task<List<PackageDto>> GetSearchData()
@@ -61,19 +69,14 @@ public class PackageService(
 
         var areas = await areaRepository.GetExtended();
         var packages = await packageRepository.GetExtended();
-        var resources = await packageResourceRepository.GetExtended();
 
         var result = new List<PackageDto>();
         foreach (var package in packages)
         {
-            result.Add(new PackageDto()
+            result.Add(new PackageDto(package)
             {
-                Id = package.Id,
-                Name = package.Name,
-                Urn = package.Urn,
-                Description = package.Description,
                 Area = areas.First(t => t.Id == package.AreaId),
-                Resources = resources.Where(t => t.PackageId == package.Id).Select(t => t.Resource).ToList()
+                Resources = await packageResourceRepository.GetB(package.Id)
             });
         }
 
@@ -87,7 +90,7 @@ public class PackageService(
     {
         var filter = packageRepository.CreateFilterBuilder();
         filter.Add(t => t.Urn, urnValue, FilterComparer.EndsWith);
-        var packages = await packageRepository.GetExtended();
+        var packages = await packageRepository.GetExtended(filter);
         if (packages == null || packages.Count() != 1)
         {
             return null;
@@ -98,12 +101,8 @@ public class PackageService(
         var area = await areaRepository.GetExtended(package.AreaId);
         var resources = await packageResourceRepository.GetB(package.Id);
 
-        return new PackageDto()
+        return new PackageDto(package)
         {
-            Id = package.Id,
-            Name = package.Name,
-            Urn = package.Urn,
-            Description = package.Description,
             Area = area,
             Resources = resources
         };
@@ -116,12 +115,8 @@ public class PackageService(
         var area = await areaRepository.GetExtended(package.AreaId);
         var resources = await packageResourceRepository.GetB(package.Id);
 
-        return new PackageDto()
+        return new PackageDto(package)
         {
-            Id = package.Id,
-            Name = package.Name,
-            Urn = package.Urn,
-            Description = package.Description,
             Area = area,
             Resources = resources
         };
@@ -136,12 +131,8 @@ public class PackageService(
         var result = new List<PackageDto>();
         foreach (var package in packages)
         {
-            result.Add(new PackageDto()
+            result.Add(new PackageDto(package)
             {
-                Id = package.Id,
-                Name = package.Name,
-                Urn = package.Urn,
-                Description = package.Description,
                 Area = area,
                 Resources = await packageResourceRepository.GetB(package.Id)
             });
@@ -181,7 +172,7 @@ public class PackageService(
             else
             {
                 var area = grp.Areas.First(t => t.Id == areaId);
-                area.Packages.Add(ConvertToDto(package));
+                area.Packages.Add(new PackageDto(package));
             }
         }
 
@@ -240,21 +231,9 @@ public class PackageService(
             Name = area.Name,
             Urn = area.Urn,
             Description = area.Description,
-            Icon = area.IconName,
+            Icon = area.IconUrl,
             Packages = new List<PackageDto>()
         };
     }
-
-    private PackageDto ConvertToDto(ExtPackage package)
-    {
-        return new PackageDto()
-        {
-            Id = package.Id,
-            Name = package.Name,
-            Urn = package.Urn,
-            Description = package.Description
-        };
-    }
-
     #endregion
 }
