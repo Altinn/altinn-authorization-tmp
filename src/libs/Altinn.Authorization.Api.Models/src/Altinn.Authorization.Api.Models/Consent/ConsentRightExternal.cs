@@ -43,12 +43,21 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// </summary>
         public static ConsentRight ToCore(ConsentRightExternal external)
         {
-            return new ConsentRight
+            ConsentRight consentRight = new ConsentRight
             {
                 Action = external.Action,
-                Resource = external.Resource.Select(ConsentResourceAttributeExternal.ToCore).ToList(),
-                MetaData = external.MetaData
+                Resource = external.Resource.Select(ConsentResourceAttributeExternal.ToCore).ToList()
             };
+
+            if (external.MetaData != null)
+            {
+                foreach (var item in external.MetaData)
+                {
+                    consentRight.MetaData.Add(item.Key, item.Value);
+                }
+            }
+
+            return consentRight;
         }
     }
 }

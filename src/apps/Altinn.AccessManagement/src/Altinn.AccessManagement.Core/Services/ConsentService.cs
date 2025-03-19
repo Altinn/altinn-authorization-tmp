@@ -72,7 +72,7 @@ namespace Altinn.AccessManagement.Core.Services
                                 Value = "skd_inntektsnfo"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        MetaData =
                         {
                             { "inntektsaar", "2024" }
                         }

@@ -7,8 +7,6 @@ namespace Altinn.Authorization.Core.Models.Consent
     /// </summary>
     public class ConsentRight
     {
-        private Dictionary<string, string>? _metaData;
-
         /// <summary>
         /// The action in the consent. Read, write etc. Can be multiple but in most concents it is only one.
         /// </summary>
@@ -26,26 +24,19 @@ namespace Altinn.Authorization.Core.Models.Consent
         /// The metadata for the right. Can be multiple but in most concents it is only one.   
         /// Keys are case insensitive.
         /// </summary>
-        public Dictionary<string, string>? MetaData
+        public Dictionary<string, string> MetaData { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);    
+
+        public void SetMetaData(IDictionary<string, string>? keyValuePairs)
         {
-            get => _metaData;
-            set
+            MetaData.Clear();
+            if (keyValuePairs == null)
             {
-                if (value is not null)
-                {
-                    if (value.Comparer == StringComparer.OrdinalIgnoreCase)
-                    {
-                        _metaData = value;
-                    }
-                    else
-                    {
-                        _metaData = new Dictionary<string, string>(value, StringComparer.OrdinalIgnoreCase);
-                    }
-                }
-                else
-                {
-                    _metaData = null;
-                }
+                return;
+            }
+
+            foreach (var item in keyValuePairs)
+            {
+                MetaData.Add(item.Key, item.Value);
             }
         }
     }

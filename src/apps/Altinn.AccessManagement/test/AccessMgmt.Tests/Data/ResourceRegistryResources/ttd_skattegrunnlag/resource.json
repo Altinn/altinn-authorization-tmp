@@ -37,8 +37,8 @@
   "enterpriseUserEnabled": false,
   "resourceType": "Consentresource",
   "consentMetadata": {
-    "fraOgMed": {},
-    "tilOgMed": {}
+    "fraogmed": {},
+    "tilogmed": {}
   },
   "authorizationReference": [
     {

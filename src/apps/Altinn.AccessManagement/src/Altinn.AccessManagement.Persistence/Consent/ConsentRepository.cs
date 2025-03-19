@@ -244,12 +244,15 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     metadata = null;
                 }
 
-                consentRights.Add(new ConsentRight
+                ConsentRight consentRight = new ConsentRight
                 {
                     Action = reader.GetFieldValue<List<string>>("action"),
                     Resource = resourceAttributes,
-                    MetaData = metadata
-                });
+                };
+
+                consentRight.SetMetaData(metadata);
+
+                consentRights.Add(consentRight);
             }
 
             return consentRights;
