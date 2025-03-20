@@ -51,6 +51,7 @@ namespace Altinn.Authorization.Api.Models.Consent
 
             if (external.MetaData != null)
             {
+                consentRight.MetaData = new MetadataDictionary();
                 foreach (var item in external.MetaData)
                 {
                     consentRight.MetaData.Add(item.Key, item.Value);
