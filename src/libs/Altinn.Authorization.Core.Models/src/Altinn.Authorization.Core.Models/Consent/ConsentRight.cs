@@ -24,20 +24,19 @@ namespace Altinn.Authorization.Core.Models.Consent
         /// The metadata for the right. Can be multiple but in most concents it is only one.   
         /// Keys are case insensitive.
         /// </summary>
-        public Dictionary<string, string> MetaData { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);    
+        public MetadataDictionary? MetaData { get; set; }
 
-        public void SetMetaData(IDictionary<string, string>? keyValuePairs)
+
+        public void SetMetadataValues(Dictionary<string, string> dictionary)
         {
-            MetaData.Clear();
-            if (keyValuePairs == null)
+            if (dictionary != null)
             {
-                return;
-            }
-
-            foreach (var item in keyValuePairs)
-            {
-                MetaData.Add(item.Key, item.Value);
-            }
+                MetaData = new MetadataDictionary();
+                foreach (var item in dictionary)
+                {
+                    MetaData.Add(item.Key, item.Value);
+                }
+            }   
         }
-    }
+     }
 }

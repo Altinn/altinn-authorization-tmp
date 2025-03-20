@@ -124,7 +124,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 await metadatacommand.ExecuteNonQueryAsync(cancellationToken);
             }
 
-            await tx.CommitAsync();
+            await tx.CommitAsync(); 
 
             return await GetRequest(consentRequest.Id);
         }
@@ -247,10 +247,10 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 ConsentRight consentRight = new ConsentRight
                 {
                     Action = reader.GetFieldValue<List<string>>("action"),
-                    Resource = resourceAttributes,
+                    Resource = resourceAttributes
                 };
 
-                consentRight.SetMetaData(metadata);
+                consentRight.SetMetadataValues(metadata);
 
                 consentRights.Add(consentRight);
             }
