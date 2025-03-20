@@ -51,6 +51,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}");
             string responseText = response.Content.ReadAsStringAsync().Result;
             ConsentRequestDetailsExternal consentRequest = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsExternal>();
+            Assert.StartsWith("{\"id", responseText);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(requestId, consentRequest.Id);
             Assert.True(consentRequest.ConsentRights.Count > 0);
