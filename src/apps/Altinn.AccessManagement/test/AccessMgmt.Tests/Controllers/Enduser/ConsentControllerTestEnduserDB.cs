@@ -41,7 +41,6 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
-
         /// <summary>
         /// Test case: Get consent request
         /// Scenario: User is authenticated and is the same person that has been request to accept the request
