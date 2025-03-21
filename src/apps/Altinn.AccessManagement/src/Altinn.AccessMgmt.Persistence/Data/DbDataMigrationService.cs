@@ -366,9 +366,9 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestEntityType(CancellationToken cancellationToken = default)
     {
-        var providerDD = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault() ?? throw new Exception("Digitaliseringsdirektoratet not found");
-        var providerBR = (await providerService.Get(t => t.Name, "Brønnøysundregistrene")).FirstOrDefault() ?? throw new Exception("Digitaliseringsdirektoratet not found");
-        var providerFR = (await providerService.Get(t => t.Name, "Folkeregisteret")).FirstOrDefault() ?? throw new Exception("Digitaliseringsdirektoratet not found");
+        var providerDD = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault() ?? throw new KeyNotFoundException("Digitaliseringsdirektoratet not found");
+        var providerBR = (await providerService.Get(t => t.Name, "Brønnøysundregistrene")).FirstOrDefault() ?? throw new KeyNotFoundException("Digitaliseringsdirektoratet not found");
+        var providerFR = (await providerService.Get(t => t.Name, "Folkeregisteret")).FirstOrDefault() ?? throw new KeyNotFoundException("Digitaliseringsdirektoratet not found");
 
         var entityTypes = new List<EntityType>()
         {
@@ -414,9 +414,9 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestEntityVariant(CancellationToken cancellationToken = default)
     {
-        var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "Organisasjon"));
-        var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "Person"));
-        var systemTypeId = (await entityTypeService.Get(t => t.Name, "Systembruker")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found", "System"));
+        var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found", "Organisasjon"));
+        var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found", "Person"));
+        var systemTypeId = (await entityTypeService.Get(t => t.Name, "Systembruker")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found", "System"));
         var entityVariants = new List<EntityVariant>()
         {
             new EntityVariant() { Id = Guid.Parse("d786bc0e-8e9e-4116-bfc2-0344207c9127"), TypeId = orgTypeId, Name = "SAM", Description = "Tingsrettslig sameie" },
@@ -593,10 +593,10 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestRole(CancellationToken cancellationToken = default)
     {
-        var orgEntityTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found '{0}'", "Organisasjon"));
-        var persEntityTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found '{0}'", "Person"));
-        var brrProviderId = (await providerService.Get(t => t.Name, "Brønnøysundregistrene")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Provider not found '{0}'", "Brønnøysundregistrene"));
-        var digdirProviderId = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Provider not found '{0}'", "Digitaliseringsdirektoratet"));
+        var orgEntityTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Organisasjon"));
+        var persEntityTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Person"));
+        var brrProviderId = (await providerService.Get(t => t.Name, "Brønnøysundregistrene")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Brønnøysundregistrene"));
+        var digdirProviderId = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Digitaliseringsdirektoratet"));
 
         var roles = new List<Role>()
         {
@@ -852,23 +852,23 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestRoleMap(CancellationToken cancellationToken = default)
     {
-        var roleDagl = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:daglig-leder")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "daglig-leder"));
-        var roleLede = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:styreleder")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "styreleder"));
-        var roleInnh = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:innehaver")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "innehaver"));
-        var roleDtso = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:deltaker-fullt-ansvar")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "deltaker-fullt-ansvar"));
-        var roleDtpr = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:deltaker-delt-ansvar")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "deltaker-delt-ansvar"));
-        var roleKomp = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:komplementar")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "komplementar"));
-        var roleBest = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:bestyrende-reder")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "bestyrende-reder"));
-        var roleRepr = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:norsk-representant")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "norsk-representant"));
-        var roleBobe = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:bostyrer")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "bostyrer"));
-        var roleRegn = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:regnskapsforer")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "regnskapsforer"));
-        var roleRevi = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:revisor")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "revisor"));
-        var roleKnuf = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-nuf")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "kontaktperson-nuf"));
+        var roleDagl = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:daglig-leder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "daglig-leder"));
+        var roleLede = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:styreleder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "styreleder"));
+        var roleInnh = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:innehaver")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "innehaver"));
+        var roleDtso = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:deltaker-fullt-ansvar")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "deltaker-fullt-ansvar"));
+        var roleDtpr = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:deltaker-delt-ansvar")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "deltaker-delt-ansvar"));
+        var roleKomp = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:komplementar")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "komplementar"));
+        var roleBest = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:bestyrende-reder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "bestyrende-reder"));
+        var roleRepr = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:norsk-representant")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "norsk-representant"));
+        var roleBobe = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:bostyrer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "bostyrer"));
+        var roleRegn = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:regnskapsforer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "regnskapsforer"));
+        var roleRevi = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:revisor")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "revisor"));
+        var roleKnuf = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-nuf")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-nuf"));
 
-        var roleKLA = (await roleService.Get(t => t.Urn, "urn:altinn:role:klientadministrator")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "klientadministrator"));
-        var roleTS = (await roleService.Get(t => t.Urn, "urn:altinn:role:tilgangsstyrer")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "tilgangsstyrer"));
-        var roleHA = (await roleService.Get(t => t.Urn, "urn:altinn:role:hovedadministrator")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "hovedadministrator"));
-        var roleMPA = (await roleService.Get(t => t.Urn, "urn:altinn:role:maskinporten-administrator")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Role not found '{0}'", "maskinporten-administrator"));
+        var roleKLA = (await roleService.Get(t => t.Urn, "urn:altinn:role:klientadministrator")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "klientadministrator"));
+        var roleTS = (await roleService.Get(t => t.Urn, "urn:altinn:role:tilgangsstyrer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "tilgangsstyrer"));
+        var roleHA = (await roleService.Get(t => t.Urn, "urn:altinn:role:hovedadministrator")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "hovedadministrator"));
+        var roleMPA = (await roleService.Get(t => t.Urn, "urn:altinn:role:maskinporten-administrator")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "maskinporten-administrator"));
 
         var roleMaps = new List<RoleMap>()
         {
@@ -920,7 +920,7 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestAreaGroup(CancellationToken cancellationToken = default)
     {
-        var orgEntityTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found '{0}'", "Organisasjon"));
+        var orgEntityTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Organisasjon"));
 
         var areaGroups = new List<AreaGroup>()
         {
@@ -1063,31 +1063,31 @@ public class DbDataMigrationService(
     {
         //// TODO: Translate
 
-        var digdirProvider = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("Provider not found '{0}'", "Digitaliseringsdirektoratet"));
-        var orgEntityType = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new Exception(string.Format("EntityType not found '{0}'", "Organisasjon"));
+        var digdirProvider = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Digitaliseringsdirektoratet"));
+        var orgEntityType = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Organisasjon"));
 
         var areas = await areaService.Get();
 
-        var area_oppvekst_og_utdanning = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:oppvekst_og_utdanning")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Oppvekst og utdanning")); /*7326614f-cf7c-492e-8e7f-d74e6e4a8970*/
-        var area_skatt_avgift_regnskap_og_toll = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:skatt_avgift_regnskap_og_toll")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Skatt, avgift, regnskap og toll")); /*7d32591d-34b7-4afc-8afa-013722f8c05d*/
-        var area_personale = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:personale")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Personale")); /*6f7f3b02-8b5a-4823-9468-0f4646d3a790*/
-        var area_miljo_ulykke_og_sikkerhet = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:miljo_ulykke_og_sikkerhet")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Miljø, ulykke og sikkerhet")); /*a8834a7c-ed89-4c73-b5d5-19a2347f3b13*/
-        var area_post_og_arkiv = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:post_og_arkiv")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Post og arkiv")); /*6f938de8-34f2-4bab-a0c6-3a3eb64aad3b*/
-        var area_forhold_ved_virksomheten = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:forhold_ved_virksomheten")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Forhold ved virksomheten")); /*3f5df819-7aca-49e1-bf6f-3e8f120f20d1*/
-        var area_integrasjoner = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:integrasjoner")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Integrasjoner")); /*892e98c6-1696-46e7-9bb1-59c08761ec64*/
-        var area_administrere_tilganger = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:administrere_tilganger")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Administrere tilganger")); /*e4ae823f-41db-46ed-873f-8a5d1378fff8*/
-        var area_jordbruk_skogbruk_jakt_fiske_og_akvakultur = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:jordbruk_skogbruk_jakt_fiske_og_akvakultur")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Jordbruk, skogbruk, jakt, fiske og akvakultur")); /*fc93d25e-80bc-469a-aa43-a6cee80eb3e2*/
-        var area_bygg_anlegg_og_eiendom = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:bygg_anlegg_og_eiendom")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Bygg, anlegg og eiendom")); /*536b317c-ef85-45d4-9b48-6511578e1952*/
-        var area_transport_og_lagring = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:transport_og_lagring")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Transport og lagring")); /*6ff90072-566b-4acd-baac-ec477534e712*/
-        var area_helse_pleie_omsorg_og_vern = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:helse_pleie_omsorg_og_vern")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Helse, pleie, omsorg og vern")); /*eab59b26-833f-40ca-9e27-72107e8f1908*/
-        var area_energi_vann_avlop_og_avfall = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:energi_vann_avlop_og_avfall")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Energi, vann,avløp og avfall")); /*6e152c10-0f63-4060-9b14-66808e7ac320*/
-        var area_industrier = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:industrier")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Industrier")); /*10c2dd29-5ab3-4a26-900e-8e2326150353*/
-        var area_kultur_og_frivillighet = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:kultur_og_frivillighet")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Kultur og frivillighet")); /*5996ba37-6db0-4391-8918-b1b0bd4b394b*/
-        var area_handel_overnatting_og_servering = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:handel_overnatting_og_servering")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Handel, overnatting og servering")); /*3797e9f0-dd83-404c-9897-e356c32ef600*/
-        var area_andre_tjenesteytende_naeringer = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:andre_tjenesteytende_naeringer")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Andre tjenesteytende næringer")); /*e31169f6-d4c7-4e45-93c7-f90bc285b639*/
-        var area_fullmakter_for_regnskapsforer = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_regnskapsforer")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Fullmakter for regnskapsfører")); /*64cbcdc8-01c9-448c-b3d2-eb9582beb3c2*/
-        var area_fullmakter_for_revisor = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_revisor")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Fullmakter for revisor")); /*7df15290-f43c-4831-a1b4-3edfa43e526d*/
-        var area_fullmakter_for_konkursbo = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_konkursbo")?.Id ?? throw new Exception(string.Format("Area not found '{0}'", "Fullmakter for konkursbo")); /*f3daddb7-6e21-455e-b6d2-65a281375b6b*/
+        var area_oppvekst_og_utdanning = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:oppvekst_og_utdanning")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Oppvekst og utdanning")); /*7326614f-cf7c-492e-8e7f-d74e6e4a8970*/
+        var area_skatt_avgift_regnskap_og_toll = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:skatt_avgift_regnskap_og_toll")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Skatt, avgift, regnskap og toll")); /*7d32591d-34b7-4afc-8afa-013722f8c05d*/
+        var area_personale = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:personale")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Personale")); /*6f7f3b02-8b5a-4823-9468-0f4646d3a790*/
+        var area_miljo_ulykke_og_sikkerhet = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:miljo_ulykke_og_sikkerhet")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Miljø, ulykke og sikkerhet")); /*a8834a7c-ed89-4c73-b5d5-19a2347f3b13*/
+        var area_post_og_arkiv = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:post_og_arkiv")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Post og arkiv")); /*6f938de8-34f2-4bab-a0c6-3a3eb64aad3b*/
+        var area_forhold_ved_virksomheten = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:forhold_ved_virksomheten")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Forhold ved virksomheten")); /*3f5df819-7aca-49e1-bf6f-3e8f120f20d1*/
+        var area_integrasjoner = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:integrasjoner")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Integrasjoner")); /*892e98c6-1696-46e7-9bb1-59c08761ec64*/
+        var area_administrere_tilganger = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:administrere_tilganger")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Administrere tilganger")); /*e4ae823f-41db-46ed-873f-8a5d1378fff8*/
+        var area_jordbruk_skogbruk_jakt_fiske_og_akvakultur = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:jordbruk_skogbruk_jakt_fiske_og_akvakultur")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Jordbruk, skogbruk, jakt, fiske og akvakultur")); /*fc93d25e-80bc-469a-aa43-a6cee80eb3e2*/
+        var area_bygg_anlegg_og_eiendom = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:bygg_anlegg_og_eiendom")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Bygg, anlegg og eiendom")); /*536b317c-ef85-45d4-9b48-6511578e1952*/
+        var area_transport_og_lagring = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:transport_og_lagring")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Transport og lagring")); /*6ff90072-566b-4acd-baac-ec477534e712*/
+        var area_helse_pleie_omsorg_og_vern = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:helse_pleie_omsorg_og_vern")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Helse, pleie, omsorg og vern")); /*eab59b26-833f-40ca-9e27-72107e8f1908*/
+        var area_energi_vann_avlop_og_avfall = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:energi_vann_avlop_og_avfall")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Energi, vann,avløp og avfall")); /*6e152c10-0f63-4060-9b14-66808e7ac320*/
+        var area_industrier = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:industrier")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Industrier")); /*10c2dd29-5ab3-4a26-900e-8e2326150353*/
+        var area_kultur_og_frivillighet = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:kultur_og_frivillighet")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Kultur og frivillighet")); /*5996ba37-6db0-4391-8918-b1b0bd4b394b*/
+        var area_handel_overnatting_og_servering = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:handel_overnatting_og_servering")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Handel, overnatting og servering")); /*3797e9f0-dd83-404c-9897-e356c32ef600*/
+        var area_andre_tjenesteytende_naeringer = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:andre_tjenesteytende_naeringer")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Andre tjenesteytende næringer")); /*e31169f6-d4c7-4e45-93c7-f90bc285b639*/
+        var area_fullmakter_for_regnskapsforer = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_regnskapsforer")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Fullmakter for regnskapsfører")); /*64cbcdc8-01c9-448c-b3d2-eb9582beb3c2*/
+        var area_fullmakter_for_revisor = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_revisor")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Fullmakter for revisor")); /*7df15290-f43c-4831-a1b4-3edfa43e526d*/
+        var area_fullmakter_for_konkursbo = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_konkursbo")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Fullmakter for konkursbo")); /*f3daddb7-6e21-455e-b6d2-65a281375b6b*/
 
         var packages = new List<Package>()
         {
