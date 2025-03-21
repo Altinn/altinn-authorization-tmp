@@ -73,6 +73,7 @@ namespace Altinn.AccessManagement.Core.Services
                     }
                 }
             };
+            
 
             consent.ConcentRights[0].SetMetadataValues(new Dictionary<string, string> { { "skd_inntektsnfo", "2021" } });
 
