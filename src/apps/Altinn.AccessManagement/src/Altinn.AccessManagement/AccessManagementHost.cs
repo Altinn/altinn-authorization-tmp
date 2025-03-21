@@ -9,10 +9,16 @@ using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
-using Altinn.AccessMgmt.Persistence;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Definitions;
+using Altinn.AccessMgmt.Persistence.Core.Executors;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Services;
+using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
 using Altinn.AccessMgmt.Persistence.Extensions;
+using Altinn.AccessMgmt.Persistence.Repositories;
+using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.AccessManagement;
@@ -69,22 +75,26 @@ internal static partial class AccessManagementHost
 
         builder.ConfigureLibsIntegrations();
 
+        builder.ConfigureAppsettings();
         builder.AddAltinnDatabase(opt =>
         {
+            var adminConnectionStringFmt = builder.Configuration.GetValue<string>("PostgreSQLSettings:AdminConnectionString");
+            var adminConnectionStringPwd = builder.Configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbAdminPwd");
+            var connectionStringFmt = builder.Configuration.GetValue<string>("PostgreSQLSettings:ConnectionString");
+            var connectionStringPwd = builder.Configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbPwd");
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (string.IsNullOrEmpty(appsettings.Database.Postgres.AppConnectionString) || string.IsNullOrEmpty(appsettings.Database.Postgres.MigrationConnectionString))
+            if (string.IsNullOrEmpty(connectionStringFmt) || string.IsNullOrEmpty(adminConnectionStringFmt))
             {
                 Log.PgsqlMissingConnectionString(Logger);
                 opt.Enabled = false;
             }
 
-            opt.AppSource = new(appsettings.Database.Postgres.AppConnectionString);
-            opt.MigrationSource = new(appsettings.Database.Postgres.MigrationConnectionString);
+            opt.AppSource = new(string.Format(connectionStringFmt, connectionStringPwd));
+            opt.MigrationSource = new(string.Format(adminConnectionStringFmt, adminConnectionStringPwd));
             opt.Telemetry.EnableMetrics = true;
             opt.Telemetry.EnableTraces = true;
         });
 
-        builder.ConfigureAppsettings();
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
         builder.ConfigureInternals();
@@ -92,18 +102,14 @@ internal static partial class AccessManagementHost
         builder.ConfigureAuthorization();
         builder.ConfigureAccessManagementPersistence();
 
-        builder.Services.AddSingleton<IPackageService, PackageService>();
-        builder.Services.AddSingleton(typeof(ISearchCache<>), typeof(SearchCache<>));
-
         return builder.Build();
     }
 
     private static WebApplicationBuilder ConfigureAccessManagementPersistence(this WebApplicationBuilder builder)
     {
-        builder.AddDb(opts =>
+        builder.AddAccessMgmtDb(opts =>
         {
-            opts.DbType = MgmtDbType.Postgres;
-            opts.Enabled = true;
+            builder.Configuration.GetSection("AccessMgmtPersistenceOptions").Bind(opts);
         });
 
         return builder;
@@ -137,8 +143,6 @@ internal static partial class AccessManagementHost
             {
                 opts.Endpoint = appsettings.Platform.RegisterEndpoint;
             }
-
-            //// opts.Endpoint = new("http://localhost:5020");
         });
 
         builder.AddAltinnRoleIntegration(opts =>
@@ -334,9 +338,9 @@ internal static partial class AccessManagementHost
 
         builder.Configuration.AddInMemoryCollection([
             KeyValuePair.Create($"ConnectionStrings:{serviceDescriptor.Name}_db", connectionString.ToString()),
-                KeyValuePair.Create($"ConnectionStrings:{serviceDescriptor.Name}_db_migrate", adminConnectionString.ToString()),
-                KeyValuePair.Create($"Altinn:Npgsql:{serviceDescriptor.Name}:Migrate:Enabled", runMigrations ? "true" : "false"),
-            ]);
+            KeyValuePair.Create($"ConnectionStrings:{serviceDescriptor.Name}_db_migrate", adminConnectionString.ToString()),
+            KeyValuePair.Create($"Altinn:Npgsql:{serviceDescriptor.Name}:Migrate:Enabled", runMigrations ? "true" : "false"),
+        ]);
     }
 
     static partial class Log

@@ -45,7 +45,6 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// <returns></returns>
         public DbDefinitionBuilder<T> SetViewQuery(string query)
         {
-            // Add view script??
             DbDefinition.ViewQuery = query;
             return this;
         }
@@ -226,7 +225,7 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         public DbDefinitionBuilder<T> RegisterExtendedProperty<TExtended, TJoin>(
             Expression<Func<T, object>> TProperty,
             Expression<Func<TJoin, object>> TJoinProperty,
-            Expression<Func<TExtended, object>> TExtendedProperty,
+            Expression<Func<TExtended, TJoin>> TExtendedProperty,
             bool optional = false,
             bool isList = false,
             bool cascadeDelete = false)
@@ -234,6 +233,12 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
             string baseProperty = ExtractPropertyInfo(TProperty).Name;
             string refProperty = ExtractPropertyInfo(TJoinProperty).Name;
             string extendedProperty = ExtractPropertyInfo(TExtendedProperty).Name;
+            string extendedPropertyType = ExtractPropertyInfo(TExtendedProperty).PropertyType.Name;
+
+            if (extendedPropertyType != typeof(TJoin).Name)
+            {
+                Console.WriteLine($"WARNING: Type missmatch on definition for '{typeof(T).Name}'");
+            }
 
             var join = new DbRelationDefinition()
             {
@@ -271,8 +276,8 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// </param>
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         public DbDefinitionBuilder<T> RegisterAsCrossReferenceExtended<TExtended, TA, TB>(
-            (Expression<Func<T, object>> Source, Expression<Func<TA, object>> Join, Expression<Func<TExtended, object>> Extended, bool? CascadeDelete) defineA,
-            (Expression<Func<T, object>> Source, Expression<Func<TB, object>> Join, Expression<Func<TExtended, object>> Extended, bool? CascadeDelete) defineB
+            (Expression<Func<T, object>> Source, Expression<Func<TA, object>> Join, Expression<Func<TExtended, TA>> Extended, bool? CascadeDelete) defineA,
+            (Expression<Func<T, object>> Source, Expression<Func<TB, object>> Join, Expression<Func<TExtended, TB>> Extended, bool? CascadeDelete) defineB
         )
         {
             RegisterExtendedProperty(defineA.Source, defineA.Join, defineA.Extended, defineA.CascadeDelete ?? false);
@@ -306,6 +311,26 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// <returns>The <see cref="PropertyInfo"/> corresponding to the property in the expression.</returns>
         /// <exception cref="ArgumentException">Thrown if the expression does not refer to a valid property.</exception>
         private PropertyInfo ExtractPropertyInfo<TLocal>(Expression<Func<TLocal, object>> expression)
+        {
+            MemberExpression memberExpression;
+
+            if (expression.Body is MemberExpression)
+            {
+                memberExpression = (MemberExpression)expression.Body;
+            }
+            else if (expression.Body is UnaryExpression unaryExpression && unaryExpression.Operand is MemberExpression)
+            {
+                memberExpression = (MemberExpression)unaryExpression.Operand;
+            }
+            else
+            {
+                throw new ArgumentException("Expression must refer to a property.");
+            }
+
+            return memberExpression.Member as PropertyInfo ?? throw new ArgumentException("Member is not a property.");
+        }
+
+        private PropertyInfo ExtractPropertyInfo<TLocal, TLocalJoin>(Expression<Func<TLocal, TLocalJoin>> expression)
         {
             MemberExpression memberExpression;
 

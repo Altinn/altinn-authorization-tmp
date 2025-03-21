@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
-using Altinn.AccessMgmt.Persistence.Core.Executors;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 
@@ -54,7 +53,7 @@ public abstract class ExtendedRepository<T, TExtended> : BasicRepository<T>, IDb
         filters ??= new List<GenericFilter>();
 
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        var query = queryBuilder.BuildExtendedSelectQuery(options, filters);
+        var query = queryBuilder.BuildExtendedSelectQuery(options, filters); //// TODO: Add CrossDefinition when needed
         var param = BuildFilterParameters(filters, options);
 
         return await executor.ExecuteQuery<TExtended>(query, param, cancellationToken);
