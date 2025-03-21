@@ -69,14 +69,12 @@ namespace Altinn.AccessManagement.Core.Services
                                 Type = "urn:altinn:resource",
                                 Value = "skd_inntektsnfo"
                             }
-                        },
-                        MetaData =
-                        {
-                            { "inntektsaar", "2024" }
                         }
                     }
                 }
             };
+
+            consent.ConcentRights[0].SetMetadataValues(new Dictionary<string, string> { { "skd_inntektsnfo", "2021" } });
 
             consent.From = await MapToExternalIdenity(consent.From);
             consent.To = await MapToExternalIdenity(consent.To);

@@ -26,7 +26,6 @@ namespace Altinn.Authorization.Core.Models.Consent
         /// </summary>
         public MetadataDictionary? MetaData { get; set; }
 
-
         public void SetMetadataValues(Dictionary<string, string> dictionary)
         {
             if (dictionary != null)
