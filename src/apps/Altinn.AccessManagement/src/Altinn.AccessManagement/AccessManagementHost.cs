@@ -4,6 +4,7 @@ using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
 using Altinn.AccessManagement.Health;
+using Altinn.AccessManagement.HostedServices;
 using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
@@ -140,12 +141,27 @@ internal static partial class AccessManagementHost
             //// opts.Endpoint = new("http://localhost:5020");
         });
 
+        builder.AddAltinnRoleIntegration(opts =>
+        {
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            if (appsettings.SblBridge?.BaseApiUrl == null)
+            {
+                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.SblBridge.BaseApiUrl));
+                opts.Endpoint = default;
+            }
+            else
+            {
+                opts.Endpoint = appsettings.SblBridge.BaseApiUrl;
+            }
+        });        
+
         return builder;
     }
 
     private static WebApplicationBuilder ConfigureLibsHost(this WebApplicationBuilder builder)
     {
         builder.Services.AddHostedService<RegisterHostedService>();
+        builder.Services.AddHostedService<AltinnRoleHostedServices>();
         builder.AddAzureAppConfigurationDefaults(opts =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
