@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
@@ -88,7 +89,7 @@ public partial class RegisterHostedService(
             {
                 await PrepareSync();
                 await SyncParty(ls, cancellationToken);
-                await SyncRolesBatched(ls, cancellationToken);
+                await SyncRoles(ls, cancellationToken);
             }
         }
         catch (Exception ex)
@@ -104,13 +105,189 @@ public partial class RegisterHostedService(
     
     private async Task PrepareSync()
     {
-        EntityTypes = await entityTypeRepository.Get();
+        EntityTypes = [.. await entityTypeRepository.Get()];
         EntityVariants = [.. await entityVariantRepository.Get()];
         Roles = [.. await roleRepository.Get()];
+        Providers = [.. await providerRepository.Get()];
     }
 
     #region Roles
 
+    private async Task SyncRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+    {
+        Guid batchId = Guid.NewGuid();
+        var batchData = new List<Assignment>();
+
+        await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (!page.IsSuccessful || page.Content == null)
+            {
+                Log.ResponseError(_logger, page.StatusCode);
+            }
+
+            foreach (var item in page.Content.Data)
+            {
+                try
+                {
+                    var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+
+                    if (item.Type == "Added")
+                    {
+                        try
+                        {
+                            batchData.Add(assignment);
+                            if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
+                            {
+                                await SetParent(assignment.FromId, assignment.ToId, cancellationToken);
+                            }
+
+                            Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
+                        }
+                        catch
+                        {
+                            Log.AssignmentFailed(_logger, "add", item.FromParty, item.ToParty, item.RoleIdentifier);
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            var filter = assignmentRepository.CreateFilterBuilder();
+                            filter.Equal(t => t.FromId, assignment.FromId);
+                            filter.Equal(t => t.ToId, assignment.ToId);
+                            filter.Equal(t => t.RoleId, assignment.RoleId);
+                            await assignmentRepository.Delete(filter);
+
+                            if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
+                            {
+                                await RemoveParent(assignment.FromId, cancellationToken);
+                            }
+
+                            Log.AssignmentSuccess(_logger, "removed", item.FromParty, item.ToParty, item.RoleIdentifier);
+                        }
+                        catch
+                        {
+                            Log.AssignmentFailed(_logger, "remove", item.FromParty, item.ToParty, item.RoleIdentifier);
+                        }
+                    }
+
+                    Interlocked.Increment(ref _executionCount);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to ingest assignment");
+                }
+            }
+
+            try
+            {
+                _logger.LogInformation("Write page to db");
+                await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
+
+                _logger.LogInformation("Merge page to db");
+                await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to merge page '{batchId}'", batchId);
+                await Task.Delay(2000);
+            }
+
+            batchId = Guid.NewGuid();
+            batchData.Clear();
+
+            if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
+            {
+                return;
+            }
+
+            await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
+            await _lease.RefreshLease(ls, cancellationToken);
+        }
+    }
+
+    private async Task SyncRolesSingle(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+    {
+        var failedAdds = new List<Assignment>();
+        var failedRemoves = new List<Assignment>();
+
+        await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (!page.IsSuccessful || page.Content == null)
+            {
+                Log.ResponseError(_logger, page.StatusCode);
+            }
+
+            foreach (var item in page.Content.Data)
+            {
+                var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+                if (item.Type == "Added")
+                {
+                    try
+                    {
+                        var res = await assignmentRepository.Create(assignment);
+                        Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
+                    } 
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to add assignment");
+                        Log.AssignmentFailed(_logger, "add", assignment.FromId.ToString(), assignment.ToId.ToString(), assignment.RoleId.ToString());
+                        failedAdds.Add(assignment);
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        var filter = assignmentRepository.CreateFilterBuilder();
+                        filter.Equal(t => t.FromId, assignment.FromId);
+                        filter.Equal(t => t.ToId, assignment.ToId);
+                        filter.Equal(t => t.RoleId, assignment.RoleId);
+                        var res = await assignmentRepository.Delete(filter);
+                        Log.AssignmentSuccess(_logger, "removed", item.FromParty, item.ToParty, item.RoleIdentifier);
+                    } 
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to remove assignment");
+                        Log.AssignmentFailed(_logger, "remove", assignment.FromId.ToString(), assignment.ToId.ToString(), assignment.RoleId.ToString());
+                        failedRemoves.Add(assignment);
+                    }
+                }
+
+                Interlocked.Increment(ref _executionCount);
+            }
+
+            if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
+            {
+                return;
+            }
+
+            await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
+            await _lease.RefreshLease(ls, cancellationToken);
+        }
+
+        _logger.LogInformation("Role import failures;");
+        foreach (var ass in failedAdds)
+        {
+            _logger.LogInformation("Failed to {0} assingment from '{1}' to '{2}' with role '{3}'", "add", ass.FromId, ass.ToId, ass.RoleId);
+        }
+
+        foreach (var ass in failedRemoves)
+        {
+            _logger.LogInformation("Failed to {0} assingment from '{1}' to '{2}' with role '{3}'", "remove", ass.FromId, ass.ToId, ass.RoleId);
+        }
+    }
+    
     private async Task SyncRolesBatched(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
         int batchSize = 1000;
@@ -131,37 +308,62 @@ public partial class RegisterHostedService(
 
             foreach (var item in page.Content.Data)
             {
-                var assignment = await ConvertRoleModel(item);
-
-                if (batchData.Count(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId) > 0)
+                try
                 {
-                    // If changes on same assignment then execute as-is before continuing.
-                    await FlushBatchAsync(cancellationToken);
-                }
-
-                Interlocked.Increment(ref _executionCount);
-                Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
-
-                if (item.Type == "Added")
-                {
-                    batchData.Add(assignment);
-                    if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
+                    var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+                    
+                    if (batchData.Any(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId))
                     {
-                        await SetParent(assignment.FromId, assignment.ToId, cancellationToken);
+                        // If changes on same assignment then execute as-is before continuing.
+                        await FlushBatchAsync(cancellationToken);
                     }
-                }
-                else
-                {
-                    var filter = assignmentRepository.CreateFilterBuilder();
-                    filter.Equal(t => t.FromId, assignment.FromId);
-                    filter.Equal(t => t.ToId, assignment.ToId);
-                    filter.Equal(t => t.RoleId, assignment.RoleId);
-                    await assignmentRepository.Delete(filter);
 
-                    if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
+                    if (item.Type == "Added")
                     {
-                        await RemoveParent(assignment.FromId, cancellationToken);
+                        try
+                        {
+                            batchData.Add(assignment);
+                            if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
+                            {
+                                await SetParent(assignment.FromId, assignment.ToId, cancellationToken);
+                            }
+
+                            Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
+                        }
+                        catch
+                        {
+                            Log.AssignmentFailed(_logger, "add", item.FromParty, item.ToParty, item.RoleIdentifier);
+                        }
                     }
+                    else
+                    {
+                        try
+                        {
+                            var filter = assignmentRepository.CreateFilterBuilder();
+                            filter.Equal(t => t.FromId, assignment.FromId);
+                            filter.Equal(t => t.ToId, assignment.ToId);
+                            filter.Equal(t => t.RoleId, assignment.RoleId);
+                            await assignmentRepository.Delete(filter);
+
+                            if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
+                            {
+                                await RemoveParent(assignment.FromId, cancellationToken);
+                            }
+
+                            Log.AssignmentSuccess(_logger, "removed", item.FromParty, item.ToParty, item.RoleIdentifier);
+                        }
+                        catch
+                        {
+                            Log.AssignmentFailed(_logger, "remove", item.FromParty, item.ToParty, item.RoleIdentifier);
+                        }
+
+                    }
+
+                    Interlocked.Increment(ref _executionCount);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Faild to ingest assignments");
                 }
             }
 
@@ -207,95 +409,25 @@ public partial class RegisterHostedService(
 
     private async Task SetParent(Guid childId, Guid parentId, CancellationToken cancellationToken = default)
     {
-        await entityRepository.Update(t => t.ParentId, parentId, childId, cancellationToken);
+        try
+        {
+            await entityRepository.Update(t => t.ParentId, parentId, childId, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(string.Format("Unable to set '{1}' as parent to '{0}'", childId, parentId), ex);
+        }
     }
 
     private async Task RemoveParent(Guid childId, CancellationToken cancellationToken = default)
     {
-        await entityRepository.Update(t => t.ParentId, null, childId, cancellationToken);
-    }
-
-    /// <summary>
-    /// Synchronizes register data by first acquiring a remote lease and streaming register entries.
-    /// Returns if lease is already taken.
-    /// </summary>
-    /// <param name="ls">The lease result containing the lease data and status.</param>
-    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-    private async Task SyncRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
-    {
-        var failedAdds = new List<Assignment>();
-        var failedRemoves = new List<Assignment>();
-
-        await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
+        try
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-
-            if (!page.IsSuccessful || page.Content == null)
-            {
-                Log.ResponseError(_logger, page.StatusCode);
-            }
-
-            foreach (var item in page.Content.Data)
-            {
-                var assignment = await ConvertRoleModel(item);
-
-                if (item.Type == "Added")
-                {
-                    try
-                    {
-                        var res = await assignmentRepository.Create(assignment);
-                        Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
-                    } 
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to add assignment");
-                        Log.AssignmentFailed(_logger, "add", assignment.FromId.ToString(), assignment.ToId.ToString(), assignment.RoleId.ToString());
-                        failedAdds.Add(assignment);
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        var filter = assignmentRepository.CreateFilterBuilder();
-                        filter.Equal(t => t.FromId, assignment.FromId);
-                        filter.Equal(t => t.ToId, assignment.ToId);
-                        filter.Equal(t => t.RoleId, assignment.RoleId);
-                        var res = await assignmentRepository.Delete(filter);
-                        Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
-                    } 
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to remove assignment");
-                        Log.AssignmentFailed(_logger, "remove", assignment.FromId.ToString(), assignment.ToId.ToString(), assignment.RoleId.ToString());
-                        failedRemoves.Add(assignment);
-                    }
-                }
-
-                Interlocked.Increment(ref _executionCount);
-            }
-
-            if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
-            {
-                return;
-            }
-
-            await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
-            await _lease.RefreshLease(ls, cancellationToken);
+            await entityRepository.Update(t => t.ParentId, null, childId, cancellationToken);
         }
-
-        _logger.LogInformation("Role import failures;");
-        foreach (var ass in failedAdds)
+        catch (Exception ex)
         {
-            _logger.LogInformation("Failed to {0} assingment from '{1}' to '{2}' with role '{3}'", "add", ass.FromId, ass.ToId, ass.RoleId);
-        }
-
-        foreach (var ass in failedRemoves)
-        {
-            _logger.LogInformation("Failed to {0} assingment from '{1}' to '{2}' with role '{3}'", "remove", ass.FromId, ass.ToId, ass.RoleId);
+            throw new Exception(string.Format("Unable to remove parent for '{0}'", childId), ex);
         }
     }
 
@@ -313,7 +445,7 @@ public partial class RegisterHostedService(
         var role = await GetOrCreateRole(model.RoleIdentifier, model.RoleSource);
         return new Assignment()
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             FromId = Guid.Parse(model.FromParty),
             ToId = Guid.Parse(model.ToParty),
             RoleId = role.Id
@@ -330,12 +462,12 @@ public partial class RegisterHostedService(
         var role = (await roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
         if (role == null)
         {
-            var provider = (await providerRepository.Get(t => t.Name, roleSource == "ccr" ? "Brønnøysundregistrene" : "Digdir")).FirstOrDefault() ?? throw new Exception(string.Format("Provider '{0}' not found while creating new role.", roleSource));
-            var entityType = (await entityTypeRepository.Get(t => t.Name, "Organisasjon")).FirstOrDefault() ?? throw new Exception(string.Format("Unable to get type for '{0}'", "Organisasjon"));
+            var provider = Providers.FirstOrDefault(t => t.Name == (roleSource == "ccr" ? "Brønnøysundregistrene" : "Digdir")) ?? throw new Exception(string.Format("Provider '{0}' not found while creating new role.", roleSource));
+            var entityType = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
 
             await roleRepository.Create(new Role()
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 Name = roleIdentifier,
                 Description = roleIdentifier,
                 Code = roleIdentifier,
@@ -347,7 +479,7 @@ public partial class RegisterHostedService(
             role = (await roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
             if (role == null)
             {
-                throw new Exception(string.Format("Unable to get or create role ''", roleIdentifier));
+                throw new Exception(string.Format("Unable to get or create role '{0}'", roleIdentifier));
             }
         }
 
@@ -631,7 +763,9 @@ public partial class RegisterHostedService(
         return res;
     }
 
-    private IEnumerable<EntityType> EntityTypes { get; set; }
+    private List<Provider> Providers { get; set; } = [];
+
+    private List<EntityType> EntityTypes { get; set; } = [];
 
     private List<EntityVariant> EntityVariants { get; set; } = [];
     #endregion

@@ -706,8 +706,10 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return (key, query);
     }
 
-    private (string Key, string Query) CreateForeignKeyConstraint(DbRelationDefinition foreignKey)
+    private OrderedDictionary<string, string> CreateForeignKeyConstraint(DbRelationDefinition foreignKey)
     {
+        var res = new OrderedDictionary<string, string>();
+
         if (!_definition.ModelType.GetProperties().ToList().Exists(t => t.Name.Equals(foreignKey.BaseProperty, StringComparison.OrdinalIgnoreCase)))
         {
             throw new Exception($"{_definition.ModelType.Name} does not contain the property '{foreignKey.BaseProperty}'");
@@ -729,7 +731,15 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         var key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
         var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
 
-        return (key, query);
+        res.Add(key, query);
+
+        var idxName = $"fk_{_definition.ModelType.Name}_{foreignKey.BaseProperty}_{targetDef.ModelType.Name}_idx".ToLower();
+        var idxKey = $"CREATE INDEX {idxName}";
+        var idxQuery = $"CREATE INDEX IF NOT EXISTS {idxName} ON {GetTableName(includeAlias: false)} ({foreignKey.BaseProperty});";
+
+        res.Add(idxKey, idxQuery);
+
+        return res;
     }
 
     private OrderedDictionary<string, string> CreateSharedHistoryFunction()
