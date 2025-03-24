@@ -23,7 +23,7 @@
         /// <summary>
         /// Defines when the consent was given.
         /// </summary>
-        public DateTimeOffset Concented { get; set; }
+        public DateTimeOffset Consented { get; set; }
 
         /// <summary>
         /// Defines how long the concent is valid

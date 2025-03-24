@@ -74,6 +74,8 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             };
             
+            consent.Consented = DateTime.UtcNow.AddDays(-100);
+            consent.ValidTo = DateTime.UtcNow.AddDays(100);
 
             consent.ConcentRights[0].SetMetadataValues(new Dictionary<string, string> { { "skd_inntektsnfo", "2021" } });
 
