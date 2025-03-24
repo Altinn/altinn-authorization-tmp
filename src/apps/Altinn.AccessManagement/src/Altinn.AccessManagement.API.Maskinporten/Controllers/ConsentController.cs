@@ -1,6 +1,8 @@
 ﻿using Altinn.AccessManagement.Api.Maskinporten.Models.Concent;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Consent;
+using Altinn.Authorization.Core.Models.Register;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
@@ -25,11 +27,18 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
         /// <summary>
         /// Returns a specific consent
         /// </summary>
-        [HttpGet]
+        [HttpPost]
         [Route("lookup")]
-        public async Task<ActionResult<ConsentInfoMaskinporten>> GetConcent(Guid id, string from, string to)
+        public async Task<ActionResult<ConsentInfoMaskinporten>> GetConcent([FromBody] ConsentLookup consentLookup)
         {
-            Consent consent = await _consentService.GetConcent(id, MapParty(from), MapParty(to));
+            ConsentPartyUrn from = consentLookup.From switch
+            {
+                ConsentPartyUrnExternal.PersonId => ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(consentLookup.From.ValueSpan)),
+                ConsentPartyUrnExternal.OrganizationId => ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(consentLookup.From.ValueSpan)),
+                _ => throw new ArgumentException("Unknown consent party urn")
+            };
+
+            Consent consent = await _consentService.GetConsent(consentLookup.Id, MapToCore(consentLookup.From), MapToCore(consentLookup.To));
 
             if (consent == null)
             {
@@ -39,13 +48,16 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
             return Ok(ConsentInfoMaskinporten.Convert(consent));
         }
 
-        /// <summary>
-        /// TODO THis will call new mapping functionalit when in place.
-        /// Mock method for now
-        /// </summary>
-        private ConsentPartyUrn MapParty(string partyInfo)
+        private ConsentPartyUrn MapToCore(ConsentPartyUrnExternal consentPartyUrnExternal)
         {
-            return ConsentPartyUrn.PartyUuid.Create(Guid.NewGuid());
+            ConsentPartyUrn consentPartyUrn = consentPartyUrnExternal switch
+            {
+                ConsentPartyUrnExternal.PersonId => ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(consentPartyUrnExternal.ValueSpan)),
+                ConsentPartyUrnExternal.OrganizationId => ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(consentPartyUrnExternal.ValueSpan)),
+                _ => throw new ArgumentException("Unknown consent party urn")
+            };
+
+            return consentPartyUrn;
         }
     }
 }

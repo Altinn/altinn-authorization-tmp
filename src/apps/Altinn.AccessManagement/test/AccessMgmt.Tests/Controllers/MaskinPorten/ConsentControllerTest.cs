@@ -1,11 +1,15 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Altinn.AccessManagement.Api.Maskinporten.Models.Concent;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
+using Altinn.Authorization.Api.Models.Consent;
+using Altinn.Authorization.Core.Models.Consent;
+using Altinn.Authorization.Core.Models.Register;
 using Altinn.Common.AccessToken.Services;
 using AltinnCore.Authentication.JwtCookie;
 using Microsoft.AspNetCore.Hosting;
@@ -48,8 +52,16 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
         public async Task GetConsent()
         {
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/?id={Guid.NewGuid()}&from=01017512345&to=12312432545";
-            HttpResponseMessage response = await client.GetAsync(url);
+            string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";
+
+            ConsentLookup consentLookup = new ConsentLookup()
+                {   
+                    Id = Guid.NewGuid(),
+                    From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01014922047")),
+                    To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("910194143"))
+                };
+
+            HttpResponseMessage response = await client.PostAsJsonAsync(url,consentLookup);
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(responseContent);
