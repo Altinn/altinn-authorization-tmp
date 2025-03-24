@@ -4,7 +4,6 @@ using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
-using MassTransit.Initializers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,6 +22,7 @@ public class SystemUserClientDelegationController : ControllerBase
     private readonly IDelegationService delegationService;
     private readonly IDelegationRepository delegationRepository;
     private readonly IAssignmentRepository assignmentRepository;
+    private readonly IProviderRepository providerRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemUserClientDelegationController"/> class.
@@ -31,13 +31,39 @@ public class SystemUserClientDelegationController : ControllerBase
         IConnectionRepository connectionRepository, 
         IDelegationService delegationService, 
         IDelegationRepository delegationRepository,
-        IAssignmentRepository assignmentRepository
+        IAssignmentRepository assignmentRepository,
+        IProviderRepository providerRepository
         )
     {
         this.connectionRepository = connectionRepository;
         this.delegationService = delegationService;
         this.delegationRepository = delegationRepository;
         this.assignmentRepository = assignmentRepository;
+        this.providerRepository = providerRepository;
+    }
+
+    /// <summary>
+    /// Gets all client delegations for a given system user
+    /// </summary>
+    /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
+    /// <param name="systemUser">The system user the authenticated user is delegating access to</param>
+    /// <returns><seealso cref="ExtConnection"/>List of connections</returns>
+    [HttpGet]
+    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
+    public async Task<ActionResult> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser, [FromQuery] bool cascade = false)
+    {
+        var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+        if (userId == Guid.Empty)
+        {
+            return Unauthorized();
+        }
+
+        var f = connectionRepository.CreateFilterBuilder();
+        f.Equal(t => t.ToId, systemUser);
+        f.Equal(t => t.FacilitatorId, party);
+        var res = await connectionRepository.GetExtended(f);
+
+        return Ok(res);
     }
 
     /// <summary>
@@ -72,42 +98,6 @@ public class SystemUserClientDelegationController : ControllerBase
     /// Delete client delegation
     /// </summary>
     /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
-    /// <param name="client">The client the authenticated user is removing access from</param>
-    /// <param name="systemUser">The system user the authenticated user is removing client access to</param>
-    [HttpDelete]
-    [Route("delete")]
-    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
-    public async Task<ActionResult> DeleteClientDelegations([FromQuery] Guid party, [FromQuery] Guid client, [FromQuery] Guid systemUser)
-    {
-        var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
-        if (userId == Guid.Empty)
-        {
-            return Unauthorized();
-        }
-
-        /*
-        Find all delegations with facilitator(party) and From(client) and To(systemUser)
-        */
-
-        // Using connection to lookup to bypass assignment lookup.
-        var filter = connectionRepository.CreateFilterBuilder();
-        filter.Equal(t => t.FromId, client);
-        filter.Equal(t => t.FacilitatorId, party);
-        filter.Equal(t => t.ToId, systemUser);
-        var delegationConnections = await connectionRepository.Get();
-
-        foreach (var delegationId in delegationConnections.Select(t => t.Id))
-        {
-            await delegationRepository.Delete(delegationId);
-        }
-
-        return Ok();
-    }
-
-    /// <summary>
-    /// Delete client delegation
-    /// </summary>
-    /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
     /// <param name="delegationId">The delegation identifier</param>
     [HttpDelete]
     [Route("deletedelegation")]
@@ -121,7 +111,8 @@ public class SystemUserClientDelegationController : ControllerBase
         }
 
         /*
-        if party is facilitator for delegation
+        - [X] Delegation exists
+        - [X] if party is facilitator for delegation
         */
 
         var delegation = await delegationRepository.Get(delegationId);
@@ -134,6 +125,16 @@ public class SystemUserClientDelegationController : ControllerBase
         {
             return BadRequest("Party does not match delegation facilitator");
         }
+
+        // Redundant? This is Facilitator check...
+        /*
+        var from = await assignmentRepository.Get(delegation.FromId);
+        var to = await assignmentRepository.Get(delegation.ToId);
+        if (!from.ToId.Equals(party) || !to.FromId.Equals(party))
+        {
+            return BadRequest("Party does not match delegation assignments");
+        }
+        */
 
         await delegationRepository.Delete(delegation.Id);
 
@@ -148,7 +149,7 @@ public class SystemUserClientDelegationController : ControllerBase
     [HttpDelete]
     [Route("deleteassignment")]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
-    public async Task<ActionResult> DeleteClientAssignment([FromQuery] Guid party, [FromQuery] Guid assignmentId)
+    public async Task<ActionResult> DeleteClientAssignment([FromQuery] Guid party, [FromQuery] Guid assignmentId, [FromQuery] bool cascade = false)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)
@@ -156,7 +157,15 @@ public class SystemUserClientDelegationController : ControllerBase
             return Unauthorized();
         }
 
-        var assignment = await assignmentRepository.Get(assignmentId);
+        /*
+        - [X] Assignment exists
+        - [X] Assignment connected to party
+        - [X] Assignment role is owned by Digdir
+        - [X] Assignment not connected to any Delegation (or cascade = true)
+        - [?] Temp: Only 'Agent' role
+        */
+
+        var assignment = await assignmentRepository.GetExtended(assignmentId);
         if (assignment == null)
         {
             return BadRequest("Assignment not found");
@@ -164,7 +173,24 @@ public class SystemUserClientDelegationController : ControllerBase
 
         if (assignment.FromId.Equals(party))
         {
-            return BadRequest("Assignment not connected to party");
+            return BadRequest("Assignment not from party");
+        }
+
+        var digdirProvider = (await providerRepository.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault();
+        if (digdirProvider == null || assignment.Role.ProviderId == digdirProvider.Id)
+        {
+            return Problem($"You cannot removed assignments with this role '{assignment.Role.Code}'");
+        }
+
+        if (!cascade)
+        {
+            var delegationsFromAssignment = await delegationRepository.Get(t => t.FromId, assignment.Id);
+            var delegationsToAssignment = await delegationRepository.Get(t => t.ToId, assignment.Id);
+
+            if (delegationsFromAssignment.Any() || delegationsToAssignment.Any())
+            {
+                return Problem("Assignment is active in one or more delegations and cascadeflag is false.");
+            }
         }
 
         await assignmentRepository.Delete(assignment.Id);
@@ -172,27 +198,4 @@ public class SystemUserClientDelegationController : ControllerBase
         return Ok();
     }
 
-    /// <summary>
-    /// Gets all client delegations for a given system user
-    /// </summary>
-    /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
-    /// <param name="systemUser">The system user the authenticated user is delegating access to</param>
-    /// <returns><seealso cref="ExtConnection"/>List of connections</returns>
-    [HttpGet]
-    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
-    public async Task<ActionResult> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser)
-    {
-        var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
-        if (userId == Guid.Empty)
-        {
-            return Unauthorized();
-        }
-
-        var f = connectionRepository.CreateFilterBuilder();
-        f.Equal(t => t.ToId, systemUser);
-        f.Equal(t => t.FacilitatorId, party);
-        var res = await connectionRepository.GetExtended(f);
-
-        return Ok(res);
-    }
 }
