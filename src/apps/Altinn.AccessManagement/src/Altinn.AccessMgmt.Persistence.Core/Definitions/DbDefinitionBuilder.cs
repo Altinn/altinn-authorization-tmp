@@ -172,16 +172,19 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
                 propertyDefinitions[propertyInfo.Name] = propertyInfo.PropertyType;
             }
 
-            foreach (var property in includedProperties)
+            if (includedProperties != null)
             {
-                var propertyInfo = ExtractPropertyInfo(property);
-
-                if (!propertyInfos.ContainsKey(propertyInfo.Name))
+                foreach (var property in includedProperties)
                 {
-                    throw new Exception($"{typeof(T).Name} does not contain the property '{propertyInfo.Name}'");
-                }
+                    var propertyInfo = ExtractPropertyInfo(property);
 
-                includedPropertyDefinitions[propertyInfo.Name] = propertyInfo.PropertyType;
+                    if (!propertyInfos.ContainsKey(propertyInfo.Name))
+                    {
+                        throw new Exception($"{typeof(T).Name} does not contain the property '{propertyInfo.Name}'");
+                    }
+
+                    includedPropertyDefinitions[propertyInfo.Name] = propertyInfo.PropertyType;
+                }
             }
 
             var constraint = new DbConstraintDefinition()
