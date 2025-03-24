@@ -54,8 +54,9 @@ namespace Altinn.AccessManagement.HostedServices
             {
                 if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesAltinnRoleSync))
                 {
-                    //await PrepareSync();
-                    await SyncRoles(ls, cancellationToken);
+                    //await PrepareSync(); // do db setup
+                    await SyncAllRoles(ls, cancellationToken);
+
                 }
             }
             catch (Exception ex)
@@ -75,9 +76,10 @@ namespace Altinn.AccessManagement.HostedServices
         /// </summary>
         /// <param name="ls">The lease result containing the lease data and status.</param>
         /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-        private async Task SyncRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+        private async Task SyncAllRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
         {
             var test = await _role.StreamRoles("3", ls.Data?.AltinnRoleStreamNextPageLink, cancellationToken);
+            
             await foreach (var page in test)
             {
                 if (cancellationToken.IsCancellationRequested)

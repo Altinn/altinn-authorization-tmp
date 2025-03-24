@@ -64,7 +64,7 @@ public class RoleDelegationModel
     /// <summary>
     /// Gets or sets the ID of the user to whom the role is delegated.
     /// </summary>
-    [JsonPropertyName("delegationAction")]
+    [JsonPropertyName("toUserId")]
     public int? ToUserId { get; set; }
 
     /// <summary>
@@ -76,8 +76,8 @@ public class RoleDelegationModel
     /// <summary>
     /// Gets or sets the UUID of the user party to which the role is delegated.
     /// </summary>
-    [JsonPropertyName("delegationAction")]
-    public Guid ToUserPartyUuid { get; set; }
+    [JsonPropertyName("toUserPartyUuid")]
+    public Guid? ToUserPartyUuid { get; set; }
 
     /// <summary>
     /// Gets or sets the date and time when the delegation change occurred.
@@ -125,29 +125,30 @@ public class RoleDelegationModel
 /// <summary>
 /// Enumeration for which delegation action was performed
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<DelegationAction>))]
 public enum DelegationAction : int
 {
     /// <summary>
     /// Value indicating no value has been set
     /// </summary>
-    [EnumMember]
+    [JsonStringEnumMemberName("NotSet")]
     NotSet = 0,
 
     /// <summary>
     /// Value indicating that this was a delegation
     /// </summary>
-    [EnumMember]
+    [JsonStringEnumMemberName("Delegate")]
     Delegate = 1,
 
     /// <summary>
     /// Value indicating that this was a revoke
     /// </summary>
-    [EnumMember]
+    [JsonStringEnumMemberName("Revoke")]
     Revoke = 2,
 
     /// <summary>
     /// Value indicating that this was a delete based on a soft delete of a DelegationScheme
     /// </summary>
-    [EnumMember]
+    [JsonStringEnumMemberName("DelegationSchemeCascadingDelete")]
     DelegationSchemeCascadingDelete = 3
 }
