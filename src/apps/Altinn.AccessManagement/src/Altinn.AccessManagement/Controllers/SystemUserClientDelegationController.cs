@@ -48,10 +48,10 @@ public class SystemUserClientDelegationController : ControllerBase
     /// </summary>
     /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
     /// <param name="systemUser">The system user the authenticated user is delegating access to</param>
-    /// <returns><seealso cref="ExtConnection"/>List of connections</returns>
+    /// <returns><seealso cref="ConnectionDto"/>List of connections</returns>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
-    public async Task<ActionResult<ConnectionDto>> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser, [FromQuery] bool cascade = false)
+    public async Task<ActionResult<ConnectionDto>> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)
@@ -108,7 +108,7 @@ public class SystemUserClientDelegationController : ControllerBase
     [HttpDelete]
     [Route("deletedelegation")]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
-    public async Task<ActionResult> DeleteClientDelegation([FromQuery] Guid party, [FromQuery] Guid delegationId)
+    public async Task<ActionResult> DeleteDelegation([FromQuery] Guid party, [FromQuery] Guid delegationId)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)
@@ -132,15 +132,12 @@ public class SystemUserClientDelegationController : ControllerBase
             return BadRequest("Party does not match delegation facilitator");
         }
 
-        // Redundant? This is Facilitator check...
-        /*
         var from = await assignmentRepository.Get(delegation.FromId);
         var to = await assignmentRepository.Get(delegation.ToId);
         if (!from.ToId.Equals(party) || !to.FromId.Equals(party))
         {
             return BadRequest("Party does not match delegation assignments");
         }
-        */
 
         await delegationRepository.Delete(delegation.Id);
 
@@ -152,10 +149,11 @@ public class SystemUserClientDelegationController : ControllerBase
     /// </summary>
     /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
     /// <param name="assignmentId">The assignment identifier</param>
+    /// <param name="cascade">If true; dependent rows in the database will be deleted</param>
     [HttpDelete]
     [Route("deleteassignment")]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
-    public async Task<ActionResult> DeleteClientAssignment([FromQuery] Guid party, [FromQuery] Guid assignmentId, [FromQuery] bool cascade = false)
+    public async Task<ActionResult> DeleteAssignment([FromQuery] Guid party, [FromQuery] Guid assignmentId, [FromQuery] bool cascade = false)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)
@@ -168,8 +166,10 @@ public class SystemUserClientDelegationController : ControllerBase
         - [X] Assignment connected to party
         - [X] Assignment role is owned by Digdir
         - [X] Assignment not connected to any Delegation (or cascade = true)
-        - [?] Temp: Only 'Agent' role
+        - [X] Temp: Only 'agent' role - Get this from queryparam future
         */
+ 
+        string roleIdentifier = "agent"; 
 
         var assignment = await assignmentRepository.GetExtended(assignmentId);
         if (assignment == null)
@@ -186,6 +186,11 @@ public class SystemUserClientDelegationController : ControllerBase
         if (digdirProvider == null || assignment.Role.ProviderId == digdirProvider.Id)
         {
             return Problem($"You cannot removed assignments with this role '{assignment.Role.Code}'");
+        }
+
+        if (!assignment.Role.Code.Equals(roleIdentifier, StringComparison.OrdinalIgnoreCase))
+        {
+            return Problem($"You cannot removed assignments with this role '{assignment.Role.Code}', only '{roleIdentifier}'");
         }
 
         if (!cascade)
