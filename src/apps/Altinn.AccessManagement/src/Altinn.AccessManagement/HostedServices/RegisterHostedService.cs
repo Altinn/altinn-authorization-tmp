@@ -1,6 +1,4 @@
 using System.Net;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
@@ -153,9 +151,10 @@ public partial class RegisterHostedService(
 
                                 Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
                             }
-                            catch
+                            catch (Exception ex)
                             {
                                 Log.AssignmentFailed(_logger, "add", item.FromParty, item.ToParty, item.RoleIdentifier);
+                                throw new Exception("Failed to add assignment to batch", ex);
                             }
                         }
                         else
@@ -186,6 +185,7 @@ public partial class RegisterHostedService(
                     catch (Exception ex)
                     {
                         _logger.LogWarning(ex, "Failed to ingest assignment");
+                        throw;
                     }
                 }
             }
@@ -461,14 +461,21 @@ public partial class RegisterHostedService(
 
     private async Task<Assignment> ConvertRoleModel(RoleModel model)
     {
-        var role = await GetOrCreateRole(model.RoleIdentifier, model.RoleSource);
-        return new Assignment()
+        try
         {
-            Id = Guid.CreateVersion7(),
-            FromId = Guid.Parse(model.FromParty),
-            ToId = Guid.Parse(model.ToParty),
-            RoleId = role.Id
-        };
+            var role = await GetOrCreateRole(model.RoleIdentifier, model.RoleSource);
+            return new Assignment()
+            {
+                Id = Guid.CreateVersion7(),
+                FromId = Guid.Parse(model.FromParty),
+                ToId = Guid.Parse(model.ToParty),
+                RoleId = role.Id
+            };
+        } 
+        catch (Exception ex)
+        {
+            throw new Exception("Failed to convert model to Assignment");
+        }
     }
     
     private async Task<Role> GetOrCreateRole(string roleIdentifier, string roleSource)
