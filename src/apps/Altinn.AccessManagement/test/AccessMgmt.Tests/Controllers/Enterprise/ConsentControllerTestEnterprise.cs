@@ -24,7 +24,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
     /// <summary>
     /// Tests for maskinporten controller for consent
     /// </summary>
-    public class ConcentControllerTestEnterprise(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
+    public class ConsentControllerTestEnterprise(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
     {
         private WebApplicationFactory<Program> Fixture { get; } = fixture.WithWebHostBuilder(builder =>
         {
@@ -98,6 +98,59 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
         }
+
+
+        /// <summary>
+        /// Test get consent. Expect a consent in response
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task CreateConsentRequest_ValidWithoutMetadata()
+        {
+            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            {
+                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("27099450067")),
+                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                ValidTo = DateTimeOffset.UtcNow.AddDays(1),
+                ConsentRights = new List<ConsentRightExternal>
+                {
+                    new ConsentRightExternal
+                    {
+                        Action = new List<string> { "read" },
+                        Resource = new List<ConsentResourceAttributeExternal>
+                        {
+                            new ConsentResourceAttributeExternal
+                            {
+                                Type = "urn:altinn:resource",
+                                Value = "ttd_navnescore"
+                            }
+                        }
+                    }
+                },
+                Requestmessage = new Dictionary<string, string>
+                {
+                    { "en", "Please approve this consent request" }
+                }
+            };
+
+            HttpClient client = GetTestClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.NotNull(responseContent);
+            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            Assert.Single(consentInfo.ConsentRights);
+            Assert.Null(consentInfo.ConsentRights[0].MetaData);
+            Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
+            Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
+            Assert.Equal(consentRequest.ConsentRights[0].Action.Count(), consentInfo.ConsentRights[0].Action.Count());
+            Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
+
+       }
+
 
         /// <summary>
         /// Test get consent. Expect a consent in response

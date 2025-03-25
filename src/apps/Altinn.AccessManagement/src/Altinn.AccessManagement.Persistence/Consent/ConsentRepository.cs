@@ -108,20 +108,23 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 resourceCommand.CommandText = $"INSERT INTO consent.resourceattribute (consentRightId, type, value) VALUES {string.Join(", ", values)}";
                 await resourceCommand.ExecuteNonQueryAsync(cancellationToken);
 
-                await using NpgsqlCommand metadatacommand = conn.CreateCommand();
-                List<string> metaValues = new List<string>();
-                int metaDataIndex = 0;
-                foreach (KeyValuePair<string, string> kvp in consentRight.MetaData)
+                if (consentRight.MetaData != null && consentRight.MetaData.Count > 0)
                 {
-                    metaValues.Add($"(@consentRightId{metaDataIndex}, @id{metaDataIndex}, @value{metaDataIndex})");
-                    metadatacommand.Parameters.AddWithValue($"@consentrightid{metaDataIndex}", consentRightGuid);
-                    metadatacommand.Parameters.AddWithValue($"@id{metaDataIndex}", kvp.Key);
-                    metadatacommand.Parameters.AddWithValue($"@value{metaDataIndex}", kvp.Value);
-                    metaDataIndex++;
-                }
+                    await using NpgsqlCommand metadatacommand = conn.CreateCommand();
+                    List<string> metaValues = [];
+                    int metaDataIndex = 0;
+                    foreach (KeyValuePair<string, string> kvp in consentRight.MetaData)
+                    {
+                        metaValues.Add($"(@consentRightId{metaDataIndex}, @id{metaDataIndex}, @value{metaDataIndex})");
+                        metadatacommand.Parameters.AddWithValue($"@consentrightid{metaDataIndex}", consentRightGuid);
+                        metadatacommand.Parameters.AddWithValue($"@id{metaDataIndex}", kvp.Key);
+                        metadatacommand.Parameters.AddWithValue($"@value{metaDataIndex}", kvp.Value);
+                        metaDataIndex++;
+                    }
 
-                metadatacommand.CommandText = $"INSERT INTO consent.metadata (consentrightid, id, value) VALUES {string.Join(", ", metaValues)}";
-                await metadatacommand.ExecuteNonQueryAsync(cancellationToken);
+                    metadatacommand.CommandText = $"INSERT INTO consent.metadata (consentrightid, id, value) VALUES {string.Join(", ", metaValues)}";
+                    await metadatacommand.ExecuteNonQueryAsync(cancellationToken);
+                }
             }
 
             await tx.CommitAsync(); 
