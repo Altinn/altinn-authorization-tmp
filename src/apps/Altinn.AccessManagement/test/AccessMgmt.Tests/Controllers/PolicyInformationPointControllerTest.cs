@@ -71,12 +71,12 @@ public class PolicyInformationPointControllerTest : IClassFixture<CustomWebAppli
     /// </summary>
     public static TheoryData<string, string, string, List<AccessPackageUrn>> SystemUserAccessPackageScenarios() => new()
     {
-        { "directDelgFromMainUnit_fromMainUnit_toSystemUser", "066148fe-7077-4484-b7ea-44b5ede0014e", "e2eba2c3-b369-4ff9-8418-99a810d6bb58", new List<AccessPackageUrn> { AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked("ansettelsesforhold")) } },
-        { "directDelgFromMainUnit_fromSubUnit_toSystemUser", "825d14bf-b3f3-4d68-ae33-0994febf8a43", "e2eba2c3-b369-4ff9-8418-99a810d6bb58" , new List<AccessPackageUrn> { AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked("ansettelsesforhold")) } },
+        //// ToDo: Add Support for Direct delegations { "directDelgFromMainUnit_fromMainUnit_toSystemUser", "066148fe-7077-4484-b7ea-44b5ede0014e", "e2eba2c3-b369-4ff9-8418-99a810d6bb58", new List<AccessPackageUrn> { AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked("ansettelsesforhold")) } },
+        //// ToDo: Add Support for Direct delegations { "directDelgFromMainUnit_fromSubUnit_toSystemUser", "825d14bf-b3f3-4d68-ae33-0994febf8a43", "e2eba2c3-b369-4ff9-8418-99a810d6bb58" , new List<AccessPackageUrn> { AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked("ansettelsesforhold")) } },
         { "clientDelgFromMainUnitClient_fromMainUnitClient_toSystemUser", "c12f8f37-391b-4651-be09-05665f5acdb6", "e2eba2c3-b369-4ff9-8418-99a810d6bb58", new List<AccessPackageUrn> { AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked("regnskapsforer-med-signeringsrettighet")) } },
         { "clientDelgFromMainUnitClient_fromSubUnitClient_toSystemUser", "86ae6d6a-3545-4956-b395-c67ca0df4e51", "e2eba2c3-b369-4ff9-8418-99a810d6bb58", new List<AccessPackageUrn> { AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked("regnskapsforer-med-signeringsrettighet")) } },
         { "clientDelgFromEnkClient_fromEnkClient_toSystemUser", "ab07bec2-fcd0-4563-908a-d9f564724252", "e2eba2c3-b369-4ff9-8418-99a810d6bb58", new List<AccessPackageUrn> { AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked("regnskapsforer-lonn")) } },
-        { "clientDelgFromEnkClient_fromEnkClientInnh_toSystemUser", "00273506-3b4a-4e8e-a1f7-b7f28c4b411b", "e2eba2c3-b369-4ff9-8418-99a810d6bb58", new List<AccessPackageUrn> { AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked("regnskapsforer-lonn")) } }
+        //// ToDo: Add Support for inherited rights for Innehaver through REVI/REGN{ "clientDelgFromEnkClient_fromEnkClientInnh_toSystemUser", "00273506-3b4a-4e8e-a1f7-b7f28c4b411b", "e2eba2c3-b369-4ff9-8418-99a810d6bb58", new List<AccessPackageUrn> { AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked("regnskapsforer-lonn")) } }
     };
 
     /// <summary>
