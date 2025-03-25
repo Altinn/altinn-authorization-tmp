@@ -350,6 +350,61 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         }
 
         /// <summary>
+        /// Try too request consent with meta on a resource that does not require metadata with consent
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task CreateConsentRequest_UnknownMetadata()
+        {
+            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            {
+                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("27099450067")),
+                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                ValidTo = DateTimeOffset.UtcNow.AddDays(1),
+                ConsentRights = new List<ConsentRightExternal>
+                {
+                    new ConsentRightExternal
+                    {
+                        Action = new List<string> { "read" },
+                        Resource = new List<ConsentResourceAttributeExternal>
+                        {
+                            new ConsentResourceAttributeExternal
+                            {
+                                Type = "urn:altinn:resource",
+                                Value = "ttd_navnescore"
+                            }
+                        },
+                        MetaData = new Dictionary<string, string>
+                        {
+                            { "INNTEKTSAAR", "ADSF" }
+                        }
+                    },
+                   
+                },
+                Requestmessage = new Dictionary<string, string>
+                {
+                    { "en", "Please approve this consent request" }
+                }
+            };
+
+            HttpClient client = GetTestClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.NotNull(responseContent);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
+
+            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
+            Assert.Single(problemDetails.Errors);
+            Assert.Equal("AM.VLD-00011", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("Unknown consent metaddata.", problemDetails.Errors.ToList()[0].Detail.ToString());
+            Assert.Equal("/consentRight/0/Metadata/inntektsaar", problemDetails.Errors.ToList()[0].Paths[0]);
+        }
+
+        /// <summary>
         /// Scenario: Tries to 
         /// </summary>
         /// <returns></returns>
