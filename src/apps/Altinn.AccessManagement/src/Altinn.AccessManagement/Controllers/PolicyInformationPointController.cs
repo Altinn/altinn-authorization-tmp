@@ -80,11 +80,14 @@ public class PolicyInformationPointController : ControllerBase
         conFilter.Equal(t => t.ToId, to);
         var connections = await _connectionRepository.Get(conFilter);
 
-        var conPackFilter = _connectionPackageRepository.CreateFilterBuilder();
-        conPackFilter.In(t => t.ConnectionId, connections.Select(t => t.Id));
-        var conPackages = await _connectionPackageRepository.GetExtended(conPackFilter);
+        if (connections.Count() > 0)
+        {
+            var conPackFilter = _connectionPackageRepository.CreateFilterBuilder();
+            conPackFilter.In(t => t.ConnectionId, connections.Select(t => t.Id));
+            var conPackages = await _connectionPackageRepository.GetExtended(conPackFilter);
 
-        packages.AddRange(conPackages.Select(conPackage => AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked(conPackage.Package.Urn.Split(':').Last()))));
+            packages.AddRange(conPackages.Select(conPackage => AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked(conPackage.Package.Urn.Split(':').Last()))));
+        }
 
         return Ok(packages);
     }

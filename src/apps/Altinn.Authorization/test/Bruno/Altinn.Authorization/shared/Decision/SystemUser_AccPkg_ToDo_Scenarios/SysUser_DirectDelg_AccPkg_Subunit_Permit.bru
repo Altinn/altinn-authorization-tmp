@@ -1,7 +1,7 @@
 meta {
-  name: SysUser_ClientDelg_AccPkg_ENK-INNH-partyid_Permit
+  name: SysUser_DirectDelg_AccPkg_Subunit_Permit
   type: http
-  seq: 8
+  seq: 2
 }
 
 post {
@@ -51,8 +51,8 @@ body:json {
                           "Value": "{{resourceId}}"
                       },
                       {
-                          "AttributeId": "urn:altinn:partyid",
-                          "Value": "{{resourcePartyId}}",
+                          "AttributeId": "urn:altinn:party:uuid",
+                          "Value": "{{resourcePartyUuid}}",
                           "DataType": "http://www.w3.org/2001/XMLSchema#string"
                       }
                   ]
@@ -65,10 +65,10 @@ body:json {
 script:pre-request {
   const testdata = require(`./testdata/Authorization/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "SysUser_ClientDelg_AccPkg_ENK-INNH-partyid_Permit");
+  bru.setVar("requestName", "SysUser_DirectDelg_AccPkg_Subunit_Permit");
   bru.setVar("resourceId", testdata.resources.clientDelgResourceId);
   bru.setVar("subjectSystemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
-  bru.setVar("resourcePartyId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.innehaver.partyId);
+  bru.setVar("resourcePartyUuid", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.subunit.partyUuid);
   
 }
 
