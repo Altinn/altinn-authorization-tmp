@@ -1,6 +1,6 @@
--- Table: consent.metadata
+-- Table: consent.consentevent
 
-CREATE TABLE IF NOT EXISTS consent.consentevents
+CREATE TABLE IF NOT EXISTS consent.consentevent
 (
   consentEventId uuid NOT NULL,
   eventtype consent.event_type NOT NULL,
