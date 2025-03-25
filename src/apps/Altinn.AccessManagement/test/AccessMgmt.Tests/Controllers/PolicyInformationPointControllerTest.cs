@@ -97,6 +97,7 @@ public class PolicyInformationPointControllerTest : IClassFixture<CustomWebAppli
         AssertionUtil.AssertEqual(GetExpected(scenario), actualDelegationChanges);
     }
 
+    /* ToDo: Add Integration tests on database container
     /// <summary>
     /// Test case: Tests getting all access packages av given to-party has for a given from-party
     /// Expected: Returns collection of access packages
@@ -114,6 +115,7 @@ public class PolicyInformationPointControllerTest : IClassFixture<CustomWebAppli
         List<AccessPackageUrn> actualAccessPackages = await actualResponse.Content.ReadFromJsonAsync<List<AccessPackageUrn>>(options);
         AssertionUtil.AssertCollections(expected, actualAccessPackages, AssertionUtil.AssertAccessPackageUrn);
     }
+    */
 
     private static StreamContent GetRequest(string scenario)
     {
