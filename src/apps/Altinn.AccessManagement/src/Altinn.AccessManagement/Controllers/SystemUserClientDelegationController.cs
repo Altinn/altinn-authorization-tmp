@@ -2,6 +2,7 @@
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -50,7 +51,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <returns><seealso cref="ExtConnection"/>List of connections</returns>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
-    public async Task<ActionResult> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser, [FromQuery] bool cascade = false)
+    public async Task<ActionResult<ConnectionDto>> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser, [FromQuery] bool cascade = false)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)
@@ -61,8 +62,13 @@ public class SystemUserClientDelegationController : ControllerBase
         var f = connectionRepository.CreateFilterBuilder();
         f.Equal(t => t.ToId, systemUser);
         f.Equal(t => t.FacilitatorId, party);
-        var res = await connectionRepository.GetExtended(f);
+        var res = new List<ConnectionDto>();
 
+        foreach (var r in await connectionRepository.GetExtended(f))
+        {
+            res.Add(ConnectionConverter.ConvertToDto(r));
+        }
+       
         return Ok(res);
     }
 
@@ -74,7 +80,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <returns><seealso cref="ExtConnection"/>List of connections</returns>
     [HttpPost]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
-    public async Task<ActionResult> PostClientDelegation([FromQuery] Guid party, [FromBody] CreateSystemDelegationRequestDto request)
+    public async Task<ActionResult<ConnectionDto>> PostClientDelegation([FromQuery] Guid party, [FromBody] CreateSystemDelegationRequestDto request)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)
@@ -83,11 +89,11 @@ public class SystemUserClientDelegationController : ControllerBase
         }
 
         var delegations = await delegationService.CreateClientDelegation(request, userId, party);
-        var result = new List<ExtConnection>();
+        var result = new List<ConnectionDto>();
         
         foreach (var delegation in delegations)
         {
-            result.Add(await connectionRepository.GetExtended(delegation.Id));
+            result.Add(ConnectionConverter.ConvertToDto(await connectionRepository.GetExtended(delegation.Id)));
         }
 
         // Remark: Kan ikke garantere at det KUN er delegeringer som er opprettet i denne handlingen som blir returnert.
@@ -197,5 +203,4 @@ public class SystemUserClientDelegationController : ControllerBase
 
         return Ok();
     }
-
 }
