@@ -49,7 +49,7 @@ public class GenericFilterBuilder<T> : IEnumerable<GenericFilter>
     {
         if (values == null || !values.Any())
         {
-            throw new Exception("Must have values in IN query");
+            throw new ArgumentException("Must have values in IN query");
         }
 
         foreach (var value in values)
@@ -71,7 +71,7 @@ public class GenericFilterBuilder<T> : IEnumerable<GenericFilter>
     {
         if (values == null || !values.Any())
         {
-            throw new Exception("Must have values in IN query");
+            throw new ArgumentException("Must have values in IN query");
         }
 
         foreach (var value in values)
