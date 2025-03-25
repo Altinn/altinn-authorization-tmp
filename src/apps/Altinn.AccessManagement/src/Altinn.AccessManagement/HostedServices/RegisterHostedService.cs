@@ -115,7 +115,6 @@ public partial class RegisterHostedService(
 
     private async Task SyncRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
-        Guid batchId = Guid.NewGuid();
         var batchData = new List<Assignment>();
 
         await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
@@ -130,76 +129,68 @@ public partial class RegisterHostedService(
                 Log.ResponseError(_logger, page.StatusCode);
             }
 
-            foreach (var item in page.Content.Data)
+            Guid batchId = Guid.NewGuid();
+            var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
+            _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
+
+            if (page.Content != null)
             {
-                try
+                foreach (var item in page.Content.Data)
                 {
-                    var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
-
-                    if (item.Type == "Added")
+                    try
                     {
-                        try
-                        {
-                            batchData.Add(assignment);
-                            if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
-                            {
-                                await SetParent(assignment.FromId, assignment.ToId, cancellationToken);
-                            }
+                        var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
 
-                            Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
-                        }
-                        catch
+                        if (item.Type == "Added")
                         {
-                            Log.AssignmentFailed(_logger, "add", item.FromParty, item.ToParty, item.RoleIdentifier);
+                            try
+                            {
+                                batchData.Add(assignment);
+                                if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
+                                {
+                                    await SetParent(assignment.FromId, assignment.ToId, cancellationToken);
+                                }
+
+                                Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
+                            }
+                            catch
+                            {
+                                Log.AssignmentFailed(_logger, "add", item.FromParty, item.ToParty, item.RoleIdentifier);
+                            }
                         }
+                        else
+                        {
+                            try
+                            {
+                                var filter = assignmentRepository.CreateFilterBuilder();
+                                filter.Equal(t => t.FromId, assignment.FromId);
+                                filter.Equal(t => t.ToId, assignment.ToId);
+                                filter.Equal(t => t.RoleId, assignment.RoleId);
+                                await assignmentRepository.Delete(filter);
+
+                                if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
+                                {
+                                    await RemoveParent(assignment.FromId, cancellationToken);
+                                }
+
+                                Log.AssignmentSuccess(_logger, "removed", item.FromParty, item.ToParty, item.RoleIdentifier);
+                            }
+                            catch
+                            {
+                                Log.AssignmentFailed(_logger, "remove", item.FromParty, item.ToParty, item.RoleIdentifier);
+                            }
+                        }
+
+                        Interlocked.Increment(ref _executionCount);
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        try
-                        {
-                            var filter = assignmentRepository.CreateFilterBuilder();
-                            filter.Equal(t => t.FromId, assignment.FromId);
-                            filter.Equal(t => t.ToId, assignment.ToId);
-                            filter.Equal(t => t.RoleId, assignment.RoleId);
-                            await assignmentRepository.Delete(filter);
-
-                            if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
-                            {
-                                await RemoveParent(assignment.FromId, cancellationToken);
-                            }
-
-                            Log.AssignmentSuccess(_logger, "removed", item.FromParty, item.ToParty, item.RoleIdentifier);
-                        }
-                        catch
-                        {
-                            Log.AssignmentFailed(_logger, "remove", item.FromParty, item.ToParty, item.RoleIdentifier);
-                        }
+                        _logger.LogWarning(ex, "Failed to ingest assignment");
                     }
-
-                    Interlocked.Increment(ref _executionCount);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to ingest assignment");
                 }
             }
 
-            try
-            {
-                _logger.LogInformation("Write page to db");
-                await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
-
-                _logger.LogInformation("Merge page to db");
-                await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to merge page '{batchId}'", batchId);
-                await Task.Delay(2000);
-            }
-
-            batchId = Guid.NewGuid();
-            batchData.Clear();
+            await Flush(batchId);
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
             {
@@ -208,6 +199,34 @@ public partial class RegisterHostedService(
 
             await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
             await _lease.RefreshLease(ls, cancellationToken);
+
+            async Task Flush(Guid batchId)
+            {
+                try
+                {
+                    _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchName);
+                    var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
+
+                    if (ingested != batchData.Count)
+                    {
+                        _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
+                    }
+
+                    var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken);
+
+                    _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName);
+                    await Task.Delay(2000);
+                }
+                finally
+                {
+                    batchId = Guid.NewGuid();
+                    batchData.Clear();
+                }
+            }
         }
     }
 
@@ -519,30 +538,35 @@ public partial class RegisterHostedService(
             {
                 Log.ResponseError(_logger, page.StatusCode);
             }
-
+            
             Guid batchId = Guid.NewGuid();
+            var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
+            _logger.LogInformation("Starting proccessing party page '{0}'", batchName);
+
             if (page.Content != null)
             {
                 foreach (var item in page.Content.Data)
                 {
-                    var entity = ConvertPartyModel(item);
-
-                    if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
-                    {
-                        await Flush(batchId);
-                    }
 
                     try
                     {
-                        Interlocked.Increment(ref _executionCount);
+                        var entity = ConvertPartyModel(item);
+
+                        if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
+                        {
+                            await Flush(batchId);
+                        }
+
                         bulk.Add(entity);
                         bulkLookup.AddRange(ConvertPartyModelToLookup(item));
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(ex.ToString());
-                        Console.WriteLine(JsonSerializer.Serialize(item));
+                        _logger.LogError(ex, "Failed to convert party to entity");
+                        //// _logger.LogTrace(JsonSerializer.Serialize(item));
                     }
+
+                    Interlocked.Increment(ref _executionCount);
                 }
             }
 
@@ -558,16 +582,33 @@ public partial class RegisterHostedService(
 
             async Task Flush(Guid batchId)
             {
-                Console.WriteLine("Write batchData to db");
-                await ingestService.IngestTempData<Entity>(bulk, batchId);
-                await ingestService.IngestTempData<EntityLookup>(bulkLookup, batchId);
+                try
+                {
+                    _logger.LogInformation("Ingest and Merge Entity and EntityLookup batch '{0}' to db", batchName);
 
-                Console.WriteLine("Merge batchData to db");
-                await ingestService.MergeTempData<Entity>(batchId, GetEntityMergeMatchFilter);
-                await ingestService.MergeTempData<EntityLookup>(batchId, GetEntityLookupMergeMatchFilter);
+                    var ingestedEntities = await ingestService.IngestTempData<Entity>(bulk, batchId);
+                    var ingestedLookups = await ingestService.IngestTempData<EntityLookup>(bulkLookup, batchId);
 
-                bulk.Clear();
-                bulkLookup.Clear();
+                    if (ingestedEntities != bulk.Count || ingestedLookups != bulkLookup.Count)
+                    {
+                        _logger.LogWarning("Ingest partial complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", ingestedEntities, bulk.Count, ingestedLookups, bulkLookup.Count);
+                    }
+
+                    var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, GetEntityMergeMatchFilter);
+                    var mergedLookups = await ingestService.MergeTempData<EntityLookup>(batchId, GetEntityLookupMergeMatchFilter);
+
+                    _logger.LogInformation("Merge complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", mergedEntities, ingestedEntities, mergedLookups, ingestedLookups);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to ingest and/or merge Entity and EntityLookup batch {0} to db", batchName);
+                    await Task.Delay(2000);
+                }
+                finally
+                {
+                    bulk.Clear();
+                    bulkLookup.Clear();
+                }
             }
         }
     }
