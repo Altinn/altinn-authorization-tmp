@@ -17,6 +17,8 @@ public class AreaDefinition : BaseDbDefinition<Area>, IDbDefinition
     {
         definitionRegistry.Define<Area>(def =>
         {
+            def.SetVersion(2);
+
             def.EnableHistory();
             def.EnableTranslation();
             def.RegisterPrimaryKey([t => t.Id]);

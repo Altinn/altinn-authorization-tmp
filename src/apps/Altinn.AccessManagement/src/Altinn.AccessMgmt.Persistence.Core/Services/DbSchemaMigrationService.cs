@@ -126,6 +126,20 @@ public class DbSchemaMigrationService
                     continue;
                 }
 
+                bool needMigration = migrationService.NeedAnyMigration(script.Key, script.Value.Scripts.Select(t => t.Key).ToList());
+
+                if(script.Key.Name == "Area")
+                {
+                    needMigration = true;
+                }
+
+                if (!needMigration)
+                {
+                    status[script.Key] = true;
+                    retry[script.Key] = 0;
+                    continue;
+                }
+
                 if (!script.Value.Dependencies.Any())
                 {
                     try
@@ -142,15 +156,6 @@ public class DbSchemaMigrationService
                         retry[script.Key]++;
                         continue;
                     }
-                }
-
-                bool needMigration = migrationService.NeedAnyMigration(script.Key, script.Value.Scripts.Select(t => t.Key).ToList());
-
-                if (!needMigration)
-                {
-                    status[script.Key] = true;
-                    retry[script.Key] = 0;
-                    continue;
                 }
 
                 // Check if all dependencies are migrated
@@ -190,10 +195,19 @@ public class DbSchemaMigrationService
     private async Task ExecuteMigration(Type type, DbMigrationScriptCollection collection)
     {
         var dbDefinition = definitionRegistry.TryGetDefinition(type) ?? throw new Exception($"GetOrAddDefinition for '{type.Name}' not found.");
+        bool any = migrationService.NeedAnyMigration(type, collection.Scripts.Keys.ToList()); //// TODO: This needs to be refined to not allways run everything
+        bool ver = migrationService.NeedMigration(type, "Version", 1);
+
         foreach (var script in collection.Scripts)
         {
-            if (migrationService.NeedMigration(type, script.Key))
+            // Run all if any (temp)
+            if (any || ver || migrationService.NeedMigration(type, script.Key))
             {
+                if (script.Key.StartsWith("ADD CONSTRAINT") && !migrationService.NeedMigration(type, script.Key))
+                {
+                    continue;
+                }
+
                 if (script.Key.Contains("PK_")) 
                 {
                     //// TODO: Hack ... Remove from scripts ...
@@ -214,5 +228,7 @@ public class DbSchemaMigrationService
                 }
             }
         }
+
+        await migrationService.LogMigration(type, "Version", "", 1);
     }
 }

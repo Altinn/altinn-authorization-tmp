@@ -88,7 +88,7 @@ public partial class RegisterHostedService(
             {
                 await PrepareSync();
                 await SyncParty(ls, cancellationToken);
-                await SyncRolesBatched(ls, cancellationToken);
+                await SyncRoles(ls, cancellationToken);
             }
         }
         catch (Exception ex)

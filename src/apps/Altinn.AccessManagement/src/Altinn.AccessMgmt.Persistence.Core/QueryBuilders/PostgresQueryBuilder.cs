@@ -3,6 +3,7 @@ using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Microsoft.Extensions.Options;
+using static Npgsql.Replication.PgOutput.Messages.RelationMessage;
 
 namespace Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
 
@@ -498,10 +499,11 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     public DbMigrationScriptCollection GetMigrationScripts()
     {
         var scriptCollection = new DbMigrationScriptCollection(_definition.ModelType);
+        scriptCollection.Version = _definition.Version;
 
         if (_definition.IsView)
         {
-            scriptCollection.AddScripts(CreateView(_definition.ViewVersion));
+            scriptCollection.AddScripts(CreateView());
             foreach (var dep in _definition.ViewDependencies)
             {
                 scriptCollection.AddDependency(dep);
@@ -522,6 +524,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
             scriptCollection.AddScripts(CreateColumn(column));
         }
+
+        scriptCollection.AddScripts(CreateColumn(columnName: "PerformedBy", columnDataType: typeof(Guid), isNullable: false, defaultValue: "'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B'"));
 
         foreach (var fk in _definition.Relations)
         {
@@ -553,7 +557,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return scriptCollection;
     }
 
-    private OrderedDictionary<string, string> CreateView(int version = 1)
+    private OrderedDictionary<string, string> CreateView()
     {
         var scripts = new OrderedDictionary<string, string>();
 
@@ -562,7 +566,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         {_definition.ViewQuery}
         """;
 
-        scripts.Add($"CREATE VIEW {GetTableName(includeAlias: false)} {version}", query);
+        scripts.Add($"CREATE VIEW {GetTableName(includeAlias: false)}", query);
 
         return scripts;
     }
@@ -590,8 +594,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         string basicKey = $"CREATE TABLE {GetTableName(includeAlias: false)}";
         var basicTable = new StringBuilder();
-        basicTable.AppendLine($"CREATE TABLE {GetTableName(includeAlias: false)} (");
+        basicTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false)} (");
         basicTable.AppendLine(primaryKeyDefinition);
+        basicTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
         if (_definition.HasHistory)
         {
             basicTable.AppendLine(", validfrom timestamptz default now()");
@@ -606,13 +611,14 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         {
             string translationKey = $"CREATE TABLE {GetTableName(includeAlias: false, useTranslation: true)}";
             var translationTable = new StringBuilder();
-            translationTable.AppendLine($"CREATE TABLE {GetTableName(includeAlias: false, useTranslation: true)} (");
+            translationTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false, useTranslation: true)} (");
             translationTable.AppendLine(primaryKeyDefinition);
             if (_definition.HasHistory)
             {
                 translationTable.AppendLine(", validfrom timestamptz default now()");
             }
 
+            translationTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
             translationTable.AppendLine($", Language text NOT NULL");
             translationTable.AppendLine($", CONSTRAINT PK_{_definition.ModelType.Name} PRIMARY KEY ({string.Join(',', _definition.Constraints.First(t => t.IsPrimaryKey).Properties.Select(t => $"{t.Key}"))}, Language)");
             translationTable.AppendLine(");");
@@ -624,10 +630,11 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         {
             string historyKey = $"CREATE TABLE {GetTableName(includeAlias: false, useHistory: true)}";
             var historyTable = new StringBuilder();
-            historyTable.AppendLine($"CREATE TABLE {GetTableName(includeAlias: false, useHistory: true)}(");
+            historyTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false, useHistory: true)}(");
             historyTable.AppendLine(primaryKeyDefinition);
             historyTable.AppendLine(", validfrom timestamptz default now()");
             historyTable.AppendLine(", validto timestamptz default now()");
+            historyTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
             historyTable.AppendLine(");");
 
             scripts.Add(historyKey, historyTable.ToString());
@@ -636,10 +643,11 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             {
                 string historyTranslationKey = $"CREATE TABLE {GetTableName(includeAlias: false, useTranslation: true, useHistory: true)}";
                 var historyTranslationTable = new StringBuilder();
-                historyTranslationTable.AppendLine($"CREATE TABLE {GetTableName(includeAlias: false, useTranslation: true, useHistory: true)}(");
+                historyTranslationTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false, useTranslation: true, useHistory: true)}(");
                 historyTranslationTable.AppendLine(primaryKeyDefinition);
                 historyTranslationTable.AppendLine(", validfrom timestamptz default now()");
                 historyTranslationTable.AppendLine(", validto timestamptz default now()");
+                historyTranslationTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
                 historyTranslationTable.AppendLine(", Language text NOT NULL");
                 historyTranslationTable.AppendLine(");");
 
@@ -678,10 +686,37 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return scripts;
     }
 
+    public OrderedDictionary<string, string> CreateColumn(string columnName, Type columnDataType, bool isNullable, string defaultValue = null)
+    {
+        var scripts = new OrderedDictionary<string, string>();
+        var basic = CreateColumn(GetTableName(includeAlias: false), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), isNullable, defaultValue);
+        scripts.Add(basic.Key, basic.Query);
+
+        if (_definition.HasTranslation)
+        {
+            var translation = CreateColumn(GetTableName(includeAlias: false, useTranslation: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
+            scripts.Add(translation.Key, translation.Query);
+        }
+
+        if (_definition.HasHistory)
+        {
+            var history = CreateColumn(GetTableName(includeAlias: false, useHistory: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
+            scripts.Add(history.Key, history.Query);
+
+            if (_definition.HasTranslation)
+            {
+                var translationHistory = CreateColumn(GetTableName(includeAlias: false, useTranslation: true, useHistory: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
+                scripts.Add(translationHistory.Key, translationHistory.Query);
+            }
+        }
+
+        return scripts;
+    }
+
     private (string Key, string Query) CreateColumn(string tableName, string columnName, string columnDataType, bool isNullable, string defaultValue = null)
     {
         var key = $"ADD COLUMN {tableName}.{columnName}";
-        var query = $"ALTER TABLE {tableName} ADD {columnName} {columnDataType} {(isNullable ? "NULL" : "NOT NULL")}{(string.IsNullOrEmpty(defaultValue) ? string.Empty : $" DEFAULT {defaultValue}")};";
+        var query = $"ALTER TABLE {tableName} ADD IF NOT EXISTS {columnName} {columnDataType} {(isNullable ? "NULL" : "NOT NULL")}{(string.IsNullOrEmpty(defaultValue) ? string.Empty : $" DEFAULT {defaultValue}")};";
 
         return (key, query);
     }
@@ -701,7 +736,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         }
 
         string key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
-        string query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} UNIQUE ({string.Join(',', constraint.Properties.Keys)});";
+        string query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD IF NOT EXISTS CONSTRAINT {name} UNIQUE ({string.Join(',', constraint.Properties.Keys)});";
 
         return (key, query);
     }
@@ -727,7 +762,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string name = string.IsNullOrEmpty(foreignKey.Name) ? $"{_definition.ModelType.Name}_{foreignKey.BaseProperty}" : foreignKey.Name;
 
         var key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
-        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
+        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD IF NOT EXISTS CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
 
         return (key, query);
     }
@@ -777,7 +812,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string keyCopyToHistory = $"FUNCTION {copyToHistoryFuncName}";
         string queryCopyToHistory = $"""
         CREATE OR REPLACE FUNCTION {copyToHistoryFuncName} RETURNS TRIGGER AS $$ BEGIN
-        INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto) VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now());
+        INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}performedby, validfrom, validto) VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.performedby, OLD.validfrom, now());
         RETURN NEW;
         END; $$ LANGUAGE plpgsql;
         CREATE OR REPLACE TRIGGER {_definition.ModelType.Name}_History AFTER UPDATE ON {tableName}
@@ -788,12 +823,12 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string viewKey = $"VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: forTranslationTable)}";
         string viewQuery = $"""
         CREATE OR REPLACE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: forTranslationTable)} AS
-        SELECT {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)} validfrom, validto
+        SELECT {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto, performedby
         FROM  {GetTableName(useHistory: true, useTranslation: forTranslationTable)}
         WHERE validfrom <= coalesce(current_setting('x.asof', true)::timestamptz, now())
         AND validto > coalesce(current_setting('x.asof', true)::timestamptz, now())
         UNION ALL
-        SELECT  {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, now() AS validto
+        SELECT  {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, now() AS validto, performedby
         FROM {tableName}
         where validfrom <= coalesce(current_setting('x.asof', true)::timestamptz, now());
         """;

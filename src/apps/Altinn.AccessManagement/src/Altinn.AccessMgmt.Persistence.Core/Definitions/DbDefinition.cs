@@ -18,6 +18,11 @@ public class DbDefinition(Type type)
     public Type ModelType { get; set; } = type;
 
     /// <summary>
+    /// Version
+    /// </summary>
+    public int Version { get; set; } = 1;
+
+    /// <summary>
     /// Gets or sets the collection of column definitions for the entity.
     /// </summary>
     public List<DbPropertyDefinition> Properties { get; set; } = new();
@@ -41,11 +46,6 @@ public class DbDefinition(Type type)
     /// Indicates whether the entity is a view.
     /// </summary>
     public bool IsView { get; set; }
-
-    /// <summary>
-    /// Version of view script
-    /// </summary>
-    public int ViewVersion { get; set; } = 1;
 
     /// <summary>
     /// The SQL query used in the view.
