@@ -37,6 +37,8 @@ public class DbDataMigrationService(
     private readonly IMigrationService migrationService = migrationService;
     private readonly IIngestService ingestService = ingestService;
     private readonly string iconBaseUrl = configuration["AltinnCDN:AccessPackageIconsBaseURL"];
+    
+    private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
 
     /// <summary>
     /// Ingest all static data
@@ -74,10 +76,10 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Entity>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 5))
+        if (migrationService.NeedMigration<Role>(dataKey, 6))
         {
             await IngestRole();
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 5);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 6);
         }
 
         if (migrationService.NeedMigration<RoleMap>(dataKey, 3))
@@ -86,16 +88,16 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 3);
         }
 
-        if (migrationService.NeedMigration<AreaGroup>(dataKey, 3))
+        if (migrationService.NeedMigration<AreaGroup>(dataKey, 4))
         {
             await IngestAreaGroup();
-            await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 3);
+            await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 4);
         }
 
-        if (migrationService.NeedMigration<Area>(dataKey, 3))
+        if (migrationService.NeedMigration<Area>(dataKey, 4))
         {
             await IngestArea();
-            await migrationService.LogMigration<Area>(dataKey, string.Empty, 3);
+            await migrationService.LogMigration<Area>(dataKey, string.Empty, 4);
         }
 
         if (migrationService.NeedMigration<Package>(dataKey, 3))
@@ -789,17 +791,17 @@ public class DbDataMigrationService(
 
         foreach (var item in roles)
         {
-            await roleService.Upsert(item, cancellationToken);
+            await roleService.Upsert(item, cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in rolesEng)
         {
-            await roleService.UpsertTranslation(item.Id, item, "eng", cancellationToken);
+            await roleService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in rolesNno)
         {
-            await roleService.UpsertTranslation(item.Id, item, "nno", cancellationToken);
+            await roleService.UpsertTranslation(item.Id, item, "nno", cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         await RoleLookup(roles, cancellationToken);
@@ -985,17 +987,17 @@ public class DbDataMigrationService(
 
         foreach (var item in areaGroups)
         {
-            await areaGroupService.Upsert(item, cancellationToken);
+            await areaGroupService.Upsert(item, cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in areaGroupsEng)
         {
-            await areaGroupService.UpsertTranslation(item.Id, item, "eng", cancellationToken);
+            await areaGroupService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in areaGroupsNno)
         {
-            await areaGroupService.UpsertTranslation(item.Id, item, "nno", cancellationToken);
+            await areaGroupService.UpsertTranslation(item.Id, item, "nno", cancellationToken, performedBy: DefaultPerformedBy);
         }
     }
 
@@ -1080,17 +1082,17 @@ public class DbDataMigrationService(
 
         foreach (var item in areas)
         {
-            await areaService.Upsert(item, cancellationToken);
+            await areaService.Upsert(item, cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in areasEng)
         {
-            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken);
+            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in areasNno)
         {
-            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken);
+            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
         }
     }
 

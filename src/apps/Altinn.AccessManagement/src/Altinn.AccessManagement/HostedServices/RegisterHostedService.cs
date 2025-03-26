@@ -57,6 +57,7 @@ public partial class RegisterHostedService(
     private int _executionCount = 0;
     private Timer _timer = null;
     private readonly CancellationTokenSource _stop = new();
+    private static readonly Guid DefaultPerformedBy = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A");
 
     /// <inheritdoc/>
     public Task StartAsync(CancellationToken cancellationToken)
@@ -234,7 +235,7 @@ public partial class RegisterHostedService(
                         _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
                     }
 
-                    var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken);
+                    var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken, performedBy: DefaultPerformedBy);
 
                     _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
                 }
@@ -615,8 +616,8 @@ public partial class RegisterHostedService(
                         _logger.LogWarning("Ingest partial complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", ingestedEntities, bulk.Count, ingestedLookups, bulkLookup.Count);
                     }
 
-                    var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, GetEntityMergeMatchFilter);
-                    var mergedLookups = await ingestService.MergeTempData<EntityLookup>(batchId, GetEntityLookupMergeMatchFilter);
+                    var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, GetEntityMergeMatchFilter, performedBy: DefaultPerformedBy);
+                    var mergedLookups = await ingestService.MergeTempData<EntityLookup>(batchId, GetEntityLookupMergeMatchFilter, performedBy: DefaultPerformedBy);
 
                     _logger.LogInformation("Merge complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", mergedEntities, ingestedEntities, mergedLookups, ingestedLookups);
                 }

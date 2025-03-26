@@ -59,7 +59,7 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
     }
 
     /// <inheritdoc />
-    public async Task<int> MergeTempData<T>(Guid ingestId, IEnumerable<GenericParameter> matchColumns = null, CancellationToken cancellationToken = default)
+    public async Task<int> MergeTempData<T>(Guid ingestId, IEnumerable<GenericParameter> matchColumns = null, CancellationToken cancellationToken = default, Guid? performedBy = null)
     {
         if (matchColumns == null || matchColumns.Count() == 0)
         {
@@ -86,9 +86,20 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
         var sb = new StringBuilder();
         sb.AppendLine($"MERGE INTO {tableName} AS target USING {ingestTableName} AS source ON {mergeMatchStatement}");
         sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
-        sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
-        sb.AppendLine($"WHEN NOT MATCHED THEN ");
-        sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
+
+        if (performedBy.HasValue && performedBy.Value != Guid.Empty)
+        {
+            sb.AppendLine($"UPDATE SET {mergeUpdateStatement}, PerformedBy = '{performedBy}'");
+            sb.AppendLine($"WHEN NOT MATCHED THEN ");
+            sb.AppendLine($"INSERT ({insertColumns}, PerformedBy) VALUES ({insertValues}, '{performedBy}');");
+        }
+        else
+        {
+            sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
+            sb.AppendLine($"WHEN NOT MATCHED THEN ");
+            sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
+        }
+
         string mergeStatement = sb.ToString();
 
         Console.WriteLine("Starting MERGE");
@@ -105,7 +116,7 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
     }
 
     /// <inheritdoc />
-    public async Task<int> IngestAndMergeData<T>(List<T> data, IEnumerable<GenericParameter> matchColumns = null, CancellationToken cancellationToken = default)
+    public async Task<int> IngestAndMergeData<T>(List<T> data, IEnumerable<GenericParameter> matchColumns = null, CancellationToken cancellationToken = default, Guid? performedBy = null)
     {
         var ingestId = Guid.NewGuid();
         await IngestTempData(data, ingestId, cancellationToken);
