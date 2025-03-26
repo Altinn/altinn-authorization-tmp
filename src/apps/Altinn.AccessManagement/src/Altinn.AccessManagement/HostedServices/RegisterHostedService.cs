@@ -645,7 +645,7 @@ public partial class RegisterHostedService(
         new GenericParameter("key", "key"),
     }.AsReadOnly();
 
-    private Entity ConvertPartyModel(PartyModel model)
+    private Entity ConvertPartyModel(PartyModel model, bool createTypeIfMissing = false)
     {
         if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
         {
@@ -724,29 +724,40 @@ public partial class RegisterHostedService(
         }
         else
         {
-            // Create Unknown EntityType ?
-            var type = EntityTypes.FirstOrDefault(t => t.Name.Equals(model.PartyType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to find type '{0}'", model.PartyType));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, model.UnitType));
-            if (variant == null)
+            if (createTypeIfMissing)
             {
-                variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                var res = entityVariantRepository.Create(variant).Result;
-                if (res == 0)
+                var type = EntityTypes.FirstOrDefault(t => t.Name.Equals(model.PartyType, StringComparison.OrdinalIgnoreCase));
+                if (type == null)
                 {
-                    throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
+                    type = EntityTypes.FirstOrDefault(t => t.Name.Equals("Ukjent", StringComparison.OrdinalIgnoreCase)) ?? throw new Exception("EntityType 'Ukjent' not found");
                 }
 
-                EntityVariants.Add(variant);
-            }
+                var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, model.UnitType));
+                if (variant == null)
+                {
+                    variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
+                    var res = entityVariantRepository.Create(variant).Result;
+                    if (res == 0)
+                    {
+                        throw new Exception(string.Format("Unable to create variant '{0}' for type '{1}'", model.UnitType, type.Name));
+                    }
 
-            return new Entity()
+                    EntityVariants.Add(variant);
+                }
+
+                return new Entity()
+                {
+                    Id = Guid.Parse(model.PartyUuid),
+                    Name = model.DisplayName,
+                    RefId = string.Empty,
+                    TypeId = type.Id,
+                    VariantId = variant.Id
+                };
+            }
+            else
             {
-                Id = Guid.Parse(model.PartyUuid),
-                Name = model.DisplayName,
-                RefId = model.OrganizationIdentifier,
-                TypeId = type.Id,
-                VariantId = variant.Id
-            };
+                throw new Exception(string.Format("Unable to find type '{0}' and variant '{1}'", model.PartyType, model.UnitType));
+            }
         }
        
     }
