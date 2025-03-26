@@ -90,6 +90,7 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
             sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
             sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
         }
+
         sb.AppendLine($"WHEN NOT MATCHED THEN ");
         sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
         string mergeStatement = sb.ToString();
