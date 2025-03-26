@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Microsoft.FeatureManagement;
@@ -19,8 +20,8 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="logger">Logger for logging service activities.</param>
 /// <param name="featureManager">for reading feature flags</param>
 /// <param name="ingestService">Ingest service</param>
+/// <param name="statusService">Status service</param>
 /// <param name="entityRepository">Repository for entity data.</param>
-/// <param name="entityLookupRepository">Repository for entity lookup data.</param>
 /// <param name="roleRepository">Repository for role data.</param>
 /// <param name="assignmentRepository">Repository for assignment data.</param>
 /// <param name="entityTypeRepository">Repository for entity type data.</param>
@@ -32,8 +33,8 @@ public partial class RegisterHostedService(
     ILogger<RegisterHostedService> logger,
     IFeatureManager featureManager,
     IIngestService ingestService,
+    IStatusService statusService,
     IEntityRepository entityRepository,
-    IEntityLookupRepository entityLookupRepository,
     IRoleRepository roleRepository,
     IAssignmentRepository assignmentRepository,
     IEntityTypeRepository entityTypeRepository,
@@ -46,8 +47,8 @@ public partial class RegisterHostedService(
     private readonly ILogger<RegisterHostedService> _logger = logger;
     private readonly IFeatureManager _featureManager = featureManager;
     private readonly IIngestService ingestService = ingestService;
+    private readonly IStatusService statusService = statusService;
     private readonly IEntityRepository entityRepository = entityRepository;
-    private readonly IEntityLookupRepository entityLookupRepository = entityLookupRepository;
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
     private readonly IEntityTypeRepository entityTypeRepository = entityTypeRepository;
@@ -73,31 +74,73 @@ public partial class RegisterHostedService(
     /// <param name="state">Cancellation token for stopping execution.</param>
     private async Task SyncRegisterDispatcher(object state)
     {
-        var cancellationToken = (CancellationToken)state;
-
-        if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
+        try
         {
-            await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("access_management_register_sync", cancellationToken);
-            if (!ls.HasLease || cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
+            var cancellationToken = (CancellationToken)state;
 
-            try
+            if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
             {
-                await PrepareSync();
-                await SyncParty(ls, cancellationToken);
-                await SyncRoles(ls, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Log.SyncError(_logger, ex);
-                return;
-            }
-            finally
-            {
+                await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("access_management_register_sync", cancellationToken);
+                if (!ls.HasLease || cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                var partyStatus = await statusService.GetOrCreateRecord(Guid.Parse("C18B67F6-B07E-482C-AB11-7FE12CD1F48D"), "accessmgmt-sync-register-party", 5);
+                var roleStatus = await statusService.GetOrCreateRecord(Guid.Parse("84E9726D-E61B-4DFF-91D7-9E17C8BB41A6"), "accessmgmt-sync-register-role", 5);
+
+                bool canRunPartySync = await statusService.TryToRun(partyStatus);
+                bool canRunRoleSync = await statusService.TryToRun(partyStatus);
+
+                if (!canRunPartySync && !canRunRoleSync)
+                {
+                    return;
+                }            
+
+                try
+                {
+                    await PrepareSync();
+                }
+                catch (Exception ex)
+                {
+                    Log.SyncError(_logger, ex);
+                    throw;
+                }
+
+                try
+                {
+                    if (canRunPartySync)
+                    {
+                        await SyncParty(ls, cancellationToken);
+                        await statusService.RunSuccess(partyStatus);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.SyncError(_logger, ex);
+                    await statusService.RunFailed(partyStatus, ex);
+                }
+
+                try
+                {
+                    if (canRunPartySync)
+                    {
+                        await SyncRoles(ls, cancellationToken);
+                        await statusService.RunSuccess(roleStatus);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.SyncError(_logger, ex);
+                    await statusService.RunFailed(partyStatus, ex);
+                }
+
                 await _lease.Release(ls, default);
             }
+        } 
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed in SyncRegisterDispatcher");
         }
     }
     
@@ -122,9 +165,10 @@ public partial class RegisterHostedService(
                 return;
             }
 
-            if (!page.IsSuccessful || page.Content == null)
+            if (!page.IsSuccessful)
             {
                 Log.ResponseError(_logger, page.StatusCode);
+                throw new Exception("Stream page is not successful");
             }
 
             Guid batchId = Guid.NewGuid();
@@ -135,58 +179,31 @@ public partial class RegisterHostedService(
             {
                 foreach (var item in page.Content.Data)
                 {
-                    try
+                    var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+
+                    if (item.Type == "Added")
                     {
-                        var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
-
-                        if (item.Type == "Added")
+                        batchData.Add(assignment);
+                        if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
                         {
-                            try
-                            {
-                                batchData.Add(assignment);
-                                if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
-                                {
-                                    await SetParent(assignment.FromId, assignment.ToId, cancellationToken);
-                                }
-
-                                Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.AssignmentFailed(_logger, "add", item.FromParty, item.ToParty, item.RoleIdentifier);
-                                throw new Exception("Failed to add assignment to batch", ex);
-                            }
+                            await SetParent(assignment.FromId, assignment.ToId, cancellationToken);
                         }
-                        else
-                        {
-                            try
-                            {
-                                var filter = assignmentRepository.CreateFilterBuilder();
-                                filter.Equal(t => t.FromId, assignment.FromId);
-                                filter.Equal(t => t.ToId, assignment.ToId);
-                                filter.Equal(t => t.RoleId, assignment.RoleId);
-                                await assignmentRepository.Delete(filter);
-
-                                if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
-                                {
-                                    await RemoveParent(assignment.FromId, cancellationToken);
-                                }
-
-                                Log.AssignmentSuccess(_logger, "removed", item.FromParty, item.ToParty, item.RoleIdentifier);
-                            }
-                            catch
-                            {
-                                Log.AssignmentFailed(_logger, "remove", item.FromParty, item.ToParty, item.RoleIdentifier);
-                            }
-                        }
-
-                        Interlocked.Increment(ref _executionCount);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        _logger.LogWarning(ex, "Failed to ingest assignment");
-                        throw;
+                        var filter = assignmentRepository.CreateFilterBuilder();
+                        filter.Equal(t => t.FromId, assignment.FromId);
+                        filter.Equal(t => t.ToId, assignment.ToId);
+                        filter.Equal(t => t.RoleId, assignment.RoleId);
+                        await assignmentRepository.Delete(filter);
+
+                        if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
+                        {
+                            await RemoveParent(assignment.FromId, cancellationToken);
+                        }
                     }
+
+                    Interlocked.Increment(ref _executionCount);
                 }
             }
 
@@ -219,7 +236,7 @@ public partial class RegisterHostedService(
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName);
-                    await Task.Delay(2000);
+                    throw new Exception(string.Format("Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName), ex);
                 }
                 finally
                 {
@@ -474,7 +491,7 @@ public partial class RegisterHostedService(
         } 
         catch (Exception ex)
         {
-            throw new Exception("Failed to convert model to Assignment");
+            throw new Exception(string.Format("Failed to convert model to Assignment. From:{0} To:{1} Role:{2}", model.FromParty, model.ToParty, model.RoleIdentifier));
         }
     }
     
@@ -544,6 +561,7 @@ public partial class RegisterHostedService(
             if (!page.IsSuccessful)
             {
                 Log.ResponseError(_logger, page.StatusCode);
+                throw new Exception("Stream page is not successful");
             }
             
             Guid batchId = Guid.NewGuid();
@@ -554,24 +572,15 @@ public partial class RegisterHostedService(
             {
                 foreach (var item in page.Content.Data)
                 {
-
-                    try
+                    var entity = ConvertPartyModel(item);
+                    
+                    if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
                     {
-                        var entity = ConvertPartyModel(item);
-
-                        if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
-                        {
-                            await Flush(batchId);
-                        }
-
-                        bulk.Add(entity);
-                        bulkLookup.AddRange(ConvertPartyModelToLookup(item));
+                        await Flush(batchId);
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to convert party to entity");
-                        //// _logger.LogTrace(JsonSerializer.Serialize(item));
-                    }
+
+                    bulk.Add(entity);
+                    bulkLookup.AddRange(ConvertPartyModelToLookup(item));
 
                     Interlocked.Increment(ref _executionCount);
                 }
@@ -633,12 +642,10 @@ public partial class RegisterHostedService(
 
     private Entity ConvertPartyModel(PartyModel model)
     {
-        //// source: src/Altinn.Register/src/Altinn.Register.Core/Parties/PartyType.cs
-
         if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
         {
             var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person") ?? throw new Exception(string.Format("Unable to find variant '{0}' for type '{1}'", "Person", type.Name));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person");
             if (variant == null)
             {
                 variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
@@ -663,7 +670,7 @@ public partial class RegisterHostedService(
         else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
         {
             var type = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)); // ?? throw new Exception(string.Format("Unable to find variant '{0}' for type '{1}'", model.UnitType, type.Name));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase));
             if (variant == null)
             {
                 variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
@@ -736,19 +743,15 @@ public partial class RegisterHostedService(
                 VariantId = variant.Id
             };
         }
+       
     }
 
     private List<EntityLookup> ConvertPartyModelToLookup(PartyModel model)
     {
-        //// source: src/Altinn.Register/src/Altinn.Register.Core/Parties/PartyType.cs
-
         var res = new List<EntityLookup>();
 
         if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person") ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", "Person", type.Name));
-
             res.Add(new EntityLookup()
             {
                 Id = Guid.NewGuid(),
@@ -775,9 +778,6 @@ public partial class RegisterHostedService(
         }
         else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.UnitType, type.Name));
-
             res.Add(new EntityLookup()
             {
                 Id = Guid.NewGuid(),
@@ -796,9 +796,6 @@ public partial class RegisterHostedService(
         }
         else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "SI") ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", "SI", type.Name));
-
             res.Add(new EntityLookup()
             {
                 Id = Guid.NewGuid(),
