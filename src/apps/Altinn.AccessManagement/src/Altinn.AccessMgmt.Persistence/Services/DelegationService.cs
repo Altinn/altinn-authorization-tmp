@@ -191,10 +191,10 @@ public class DelegationService(
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<Delegation>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid userId, Guid facilitatorPartyId, Guid performedBy)
+    public async Task<IEnumerable<Delegation>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid facilitatorPartyId, Guid performedBy)
     {
         // Find user : Fredrik
-        var user = (await entityRepository.Get(userId)) ?? throw new Exception(string.Format("Party not found '{0}' for user", userId));
+        var user = (await entityRepository.Get(performedBy)) ?? throw new Exception(string.Format("Party not found '{0}' for user", performedBy));
 
         // Find Facilitator : Regnskapsfolk
         var facilitator = (await entityRepository.Get(facilitatorPartyId)) ?? throw new Exception(string.Format("Party not found '{0}' for facilitator", facilitatorPartyId));

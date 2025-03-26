@@ -89,7 +89,7 @@ public class SystemUserClientDelegationController : ControllerBase
             return Unauthorized();
         }
 
-        var delegations = await delegationService.CreateClientDelegation(request, userId, party, userId);
+        var delegations = await delegationService.CreateClientDelegation(request, party, userId);
         var result = new List<ConnectionDto>();
         
         foreach (var delegation in delegations)
