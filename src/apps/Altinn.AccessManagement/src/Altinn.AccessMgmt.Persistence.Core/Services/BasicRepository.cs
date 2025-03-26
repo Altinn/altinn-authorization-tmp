@@ -252,7 +252,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, CancellationToken cancellationToken = default)
     {
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, value));
+        string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, null));
         return await executor.ExecuteCommand(query, [new GenericParameter("_id", id)], cancellationToken: cancellationToken);
     }
 
