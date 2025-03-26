@@ -616,9 +616,16 @@ public class DbDataMigrationService(
 
         var systemEntities = new List<Entity>()
         {
+            // The default entity stored on each table with default constraint
             new Entity() { Id = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"), Name = "Db-Default", RefId = "Db-Default", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            
+            // When an entity is deleted we replace the deleted id with this. The old id will still be in the history tables
             new Entity() { Id = Guid.Parse("7818FFC2-3682-44F3-8158-37BFFEB96A9F"), Name = "Db-Cascade", RefId = "Db-Cascade", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            
+            // A default entity used by AccessMgmt. If no other PerformedBy id is supplied this will be used from this application. 
             new Entity() { Id = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F"), Name = "AccessMgmt-Default", RefId = "AccessMgmt", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+
+            // The entity responsible for ingesting data from the Registry.
             new Entity() { Id = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A"), Name = "AccessMgmt-Register-Ingest", RefId = "AccessMgmt", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId }
         };
 
