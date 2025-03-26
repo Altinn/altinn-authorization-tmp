@@ -7,6 +7,7 @@ using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Core.Models.Consent;
+using Altinn.Authorization.Core.Models.Party;
 using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Enums;
@@ -20,12 +21,13 @@ namespace Altinn.AccessManagement.Core.Services
     /// <remarks>
     /// Service responsible for consent functionality
     /// </remarks>
-    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService, IResourceRegistryClient resourceRegistryClient) : IConsent
+    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService, IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
         private readonly IPartiesClient _partiesClient = partiesClient;
         private readonly ISingleRightsService _singleRightsService = singleRightsService;
         private readonly IResourceRegistryClient _resourceRegistryClient = resourceRegistryClient;
+        private readonly IAMPartyService _ampartyService = ampartyService;
 
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, CancellationToken cancellationToken = default)
@@ -156,24 +158,24 @@ namespace Altinn.AccessManagement.Core.Services
 
         private async Task<ConsentPartyUrn> GetInternalIdentifier(OrganizationNumber organizationNumber, CancellationToken cancellationToken = default)
         {
-            Party party = await _partiesClient.LookupPartyBySSNOrOrgNo(new PartyLookup { OrgNo = organizationNumber.ToString() }, cancellationToken);
-            if (party == null || party.PartyUuid == null)
+            MinimalParty party = await _ampartyService.GetByOrgNo(organizationNumber.ToString());
+            if (party == null)
             {
                 return null;
             }
 
-            return ConsentPartyUrn.PartyUuid.Create(party.PartyUuid.Value);
+            return ConsentPartyUrn.PartyUuid.Create(party.PartyUuid);
         }
 
         private async Task<ConsentPartyUrn> GetInternalIdentifier(PersonIdentifier personIdentifier, CancellationToken cancellationToken = default)
         {
-            Party party = await _partiesClient.LookupPartyBySSNOrOrgNo(new PartyLookup { Ssn = personIdentifier.ToString() }, cancellationToken);
-            if (party == null || party.PartyUuid == null)
+            MinimalParty party = await _ampartyService.GetByPersonNo(personIdentifier.ToString());
+            if (party == null)
             {
                 return null;
             }
 
-            return ConsentPartyUrn.PartyUuid.Create(party.PartyUuid.Value);
+            return ConsentPartyUrn.PartyUuid.Create(party.PartyUuid);
         }
 
         /// <summary>

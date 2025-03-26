@@ -5,30 +5,34 @@ using Altinn.Authorization.Core.Models.Party;
 namespace Altinn.AccessManagement.Core.Services
 {
     /// <summary>
-    /// Default constructor
+    /// Service to handle party operations for parties in AM database
     /// </summary>
     public class AMPartyService(IAmPartyRepository ampartyRepository) : IAMPartyService
     {
         private readonly IAmPartyRepository _amPartyRepository = ampartyRepository;
 
-        public Task<MinimalParty> GetByOrgNo(string orgNo)
+        /// <inheritdoc />
+        public async Task<MinimalParty> GetByOrgNo(string orgNo)
         {
-            throw new NotImplementedException();
+           return await _amPartyRepository.GetByOrgNo(orgNo);
         }
 
-        public Task<MinimalParty> GetByPartyId(int partyId)
+        /// <inheritdoc />
+        public async Task<MinimalParty> GetByPartyId(int partyId)
         {
-            throw new NotImplementedException();
+            return await _amPartyRepository.GetByPartyId(partyId);
         }
 
-        public Task<MinimalParty> GetByPersonNo(string personNo)
+        /// <inheritdoc />
+        public async Task<MinimalParty> GetByPersonNo(string personNo)
         {
-            throw new NotImplementedException();
+            return await _amPartyRepository.GetByPersonNo(personNo);
         }
 
-        public Task<MinimalParty> GetByUid(Guid partyUuid)
+        /// <inheritdoc />
+        public async Task<MinimalParty> GetByUid(Guid partyUuid)
         {
-            throw new NotImplementedException();
+            return await _amPartyRepository.GetByUid(partyUuid);
         }
     }
 }
