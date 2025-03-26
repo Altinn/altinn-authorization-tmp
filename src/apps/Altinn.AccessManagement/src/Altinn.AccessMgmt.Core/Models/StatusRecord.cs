@@ -33,12 +33,12 @@ public class StatusRecord
     /// <summary>
     /// A defineable limit (e.g. retryLimit)
     /// </summary>
-    public int Limit { get; set; }
+    public int RetryLimit { get; set; }
 
     /// <summary>
     /// A counter (e.g. retryAttempts)
     /// </summary>
-    public int Count { get; set; }
+    public int RetryCount { get; set; }
 
     /// <summary>
     /// Last update timestamp

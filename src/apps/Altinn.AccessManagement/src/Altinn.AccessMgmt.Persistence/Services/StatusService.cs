@@ -17,8 +17,8 @@ public class StatusService(IStatusRecordRepository statusRecordRepository) : ISt
             {
                 Id = id,
                 Name = name,
-                Limit = limit,
-                Count = 0,
+                RetryLimit = limit,
+                RetryCount = 0,
                 Message = "Initial",
                 Payload = "[]",
                 State = "RUNNING",
@@ -45,7 +45,7 @@ public class StatusService(IStatusRecordRepository statusRecordRepository) : ISt
         if (record.State != "RUNNING" || record.Timestamp.AddMinutes(15) < DateTimeOffset.Now)
         {
             record.State = "RUNNING";
-            record.Count = 0;
+            record.RetryCount = 0;
             record.Message = "Ok";
             record.Payload = "[]";
             record.Timestamp = DateTimeOffset.Now;
@@ -60,7 +60,7 @@ public class StatusService(IStatusRecordRepository statusRecordRepository) : ISt
             return false;
         }
 
-        if (record.Count >= record.Limit)
+        if (record.RetryCount >= record.RetryLimit)
         {
             record.State = "STOPPED";
             record.Timestamp = DateTimeOffset.Now;
@@ -70,7 +70,7 @@ public class StatusService(IStatusRecordRepository statusRecordRepository) : ISt
 
         if (record.State == "RETRY")
         {
-            record.Count += 1;
+            record.RetryCount += 1;
         }
 
         record.Timestamp = DateTimeOffset.Now;

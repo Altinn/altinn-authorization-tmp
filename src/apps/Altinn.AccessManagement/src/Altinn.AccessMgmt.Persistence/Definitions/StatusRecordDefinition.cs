@@ -24,8 +24,8 @@ public class StatusRecordDefinition : BaseDbDefinition<StatusRecord>, IDbDefinit
             def.RegisterProperty(t => t.State);
             def.RegisterProperty(t => t.Message);
             def.RegisterProperty(t => t.Payload);
-            def.RegisterProperty(t => t.Limit);
-            def.RegisterProperty(t => t.Count);
+            def.RegisterProperty(t => t.RetryLimit);
+            def.RegisterProperty(t => t.RetryCount);
             def.RegisterProperty(t => t.Timestamp);
         });
     }

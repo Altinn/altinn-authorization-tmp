@@ -874,7 +874,7 @@ public partial class RegisterHostedService(
         [LoggerMessage(EventId = 9, Level = LogLevel.Information, Message = "Error occured while fetching data from register, got {statusCode}")]
         internal static partial void ResponseError(ILogger logger, HttpStatusCode statusCode);
 
-        [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Processing party with uuid {partyUuid} from register. Count {count}")]
+        [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Processing party with uuid {partyUuid} from register. RetryCount {count}")]
         internal static partial void Party(ILogger logger, string partyUuid, int count);
 
         [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "An error occured while streaming data from register")]
