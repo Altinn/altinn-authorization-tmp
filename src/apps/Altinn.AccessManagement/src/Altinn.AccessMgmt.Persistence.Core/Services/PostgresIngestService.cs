@@ -85,21 +85,32 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
 
         var sb = new StringBuilder();
         sb.AppendLine($"MERGE INTO {tableName} AS target USING {ingestTableName} AS source ON {mergeMatchStatement}");
-        sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
-
+        
         if (performedBy.HasValue && performedBy.Value != Guid.Empty)
         {
-            sb.AppendLine($"UPDATE SET {mergeUpdateStatement}, PerformedBy = '{performedBy}'");
+            if (type.Name != "Assignment")
+            {
+                sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
+                sb.AppendLine($"UPDATE SET {mergeUpdateStatement}, PerformedBy = '{performedBy}'");
+            }
+            
             sb.AppendLine($"WHEN NOT MATCHED THEN ");
             sb.AppendLine($"INSERT ({insertColumns}, PerformedBy) VALUES ({insertValues}, '{performedBy}');");
         }
         else
         {
-            sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
+            if (type.Name != "Assignment")
+            {
+                sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
+                sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
+            }
+
             sb.AppendLine($"WHEN NOT MATCHED THEN ");
             sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
         }
 
+        sb.AppendLine($"WHEN NOT MATCHED THEN ");
+        sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
         string mergeStatement = sb.ToString();
 
         Console.WriteLine("Starting MERGE");

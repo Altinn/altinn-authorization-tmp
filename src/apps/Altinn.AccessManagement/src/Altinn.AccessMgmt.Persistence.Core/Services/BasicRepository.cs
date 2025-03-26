@@ -259,6 +259,23 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         param.Add(new GenericParameter(ExtractPropertyInfo(property).Name, value));
         param.Add(new GenericParameter("PerformedBy", GetPerformedBy(performedBy)));
         return await Update(id, param, cancellationToken);
+        if (value == null)
+        {
+            //TODO: Include PerformedBy
+            var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
+            string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, value));
+            return await executor.ExecuteCommand(query, [new GenericParameter("_id", id)], cancellationToken: cancellationToken);
+        }
+
+        return await Update(id, [new GenericParameter(ExtractPropertyInfo(property).Name, value)], cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, CancellationToken cancellationToken = default)
+    {
+        var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
+        string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, null));
+        return await executor.ExecuteCommand(query, [new GenericParameter("_id", id)], cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
