@@ -65,7 +65,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Create(T entity, CancellationToken cancellationToken = default);
+    Task<int> Create(T entity, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Inserts or updates an entity in the database. If the entity already exists, it will be updated.
@@ -75,7 +75,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Upsert(T entity, CancellationToken cancellationToken = default);
+    Task<int> Upsert(T entity, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Inserts or updates an entity in the database. If the entity already exists, it will be updated.
@@ -86,7 +86,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, CancellationToken cancellationToken = default);
+    Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Updates an existing entity in the database identified by its unique identifier.
@@ -97,7 +97,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Update(Guid id, T entity, CancellationToken cancellationToken = default);
+    Task<int> Update(Guid id, T entity, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Updates a single property on an existing entity in the database identified by its unique identifier.
@@ -109,7 +109,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, CancellationToken cancellationToken = default);
+    Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Updates specific properties of an existing entity in the database using a list of generic parameters.
@@ -120,7 +120,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Update(Guid id, List<GenericParameter> parameters, CancellationToken cancellationToken = default);
+    Task<int> Update(Guid id, List<GenericParameter> parameters, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Deletes an entity from the database identified by its unique identifier.
@@ -130,7 +130,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Delete(Guid id, CancellationToken cancellationToken = default);
+    Task<int> Delete(Guid id, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Deletes an entity from the database identified by its unique identifier.
@@ -140,7 +140,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Delete(IEnumerable<GenericFilter> filters, CancellationToken cancellationToken = default);
+    Task<int> Delete(IEnumerable<GenericFilter> filters, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Creates a translation entry for the specified entity in a different language.
@@ -151,7 +151,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> CreateTranslation(T obj, string language, CancellationToken cancellationToken = default);
+    Task<int> CreateTranslation(T obj, string language, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Updates the translation for an entity in a specified language.
@@ -163,7 +163,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> UpdateTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default);
+    Task<int> UpdateTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Update or insert translation for an entity in a specified language.
@@ -175,7 +175,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> UpsertTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default);
+    Task<int> UpsertTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Creates a new instance of a <see cref="GenericFilterBuilder{T}"/> for constructing filter criteria for queries.
