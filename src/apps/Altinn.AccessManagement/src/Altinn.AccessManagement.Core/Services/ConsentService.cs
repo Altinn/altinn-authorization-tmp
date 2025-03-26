@@ -37,7 +37,7 @@ namespace Altinn.AccessManagement.Core.Services
                 return result.Problem;
             }
 
-            ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(result.Value, cancellationToken);
+            ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(result.Value, Guid.NewGuid(), cancellationToken);
             requestDetails.From = consentRequest.From;
             requestDetails.To = consentRequest.To;
             return requestDetails;
@@ -98,7 +98,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc/>
         public async Task ApproveRequest(Guid id, Guid approvedByParty, CancellationToken cancellationToken = default)
         {
-            await _consentRepository.ApproveConsentRequest(id, cancellationToken);
+            await _consentRepository.ApproveConsentRequest(id, approvedByParty, cancellationToken);
         }
 
         /// <inheritdoc/>

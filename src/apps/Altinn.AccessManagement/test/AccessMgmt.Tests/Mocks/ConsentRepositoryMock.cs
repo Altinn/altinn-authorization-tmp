@@ -6,17 +6,17 @@ namespace AccessMgmt.Tests.Mocks
 {
     public class ConsentRepositoryMock : IConsentRepository
     {
-        public Task ApproveConsentRequest(Guid id, CancellationToken cancellationToken = default)
+        public Task ApproveConsentRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest, CancellationToken cancellationToken = default)
+        public Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest, Guid performedByParty, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task DeleteRequest(Guid id, CancellationToken cancellationToken = default)
+        public Task DeleteRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -43,12 +43,12 @@ namespace AccessMgmt.Tests.Mocks
             return Task.FromResult(result);
         }
 
-        public Task RejectConsentRequest(Guid id, CancellationToken cancellationToken = default)
+        public Task RejectConsentRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task Revoke(Guid id, CancellationToken cancellationToken = default)
+        public Task Revoke(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

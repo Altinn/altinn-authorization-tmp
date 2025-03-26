@@ -48,6 +48,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// - Have right for accessmanagement for the party that is requesting the consent
         /// - Have the right to delegate the requested rights. Either by having the right self or beeing the main administrator
         /// </summary>
+        [Authorize]
         [HttpPost]
         [Route("request/{requestId}/approve/")]
         public async Task<IActionResult> Approve(Guid requestId, CancellationToken cancellationToken = default)

@@ -22,13 +22,27 @@ namespace Altinn.AccessManagement.Persistence.Consent
         }
 
         /// <inheritdoc/>
-        public Task ApproveConsentRequest(Guid id, CancellationToken cancellationToken = default)
+        public async Task ApproveConsentRequest(Guid consentRequestId, Guid performedByParty,  CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            DateTime consentedTime = DateTime.UtcNow;
+
+            const string updateConsentRequestQuery = /*strpsql*/@"
+                    UPDATE consent.consentrequest set status = 'Approved', consented = @consentedTime  WHERE consentRequestId= @consentRequestId";
+
+            await using NpgsqlConnection conn = await _db.OpenConnectionAsync(default);
+
+            // Run all inserts in one transaction in case of failure
+            await using NpgsqlTransaction tx = await conn.BeginTransactionAsync();
+            await using NpgsqlCommand command = conn.CreateCommand();
+            command.CommandText = updateConsentRequestQuery;
+            command.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
+            command.Parameters.AddWithValue("consentedTime", NpgsqlDbType.TimestampTz, consentRequestId);
+            await command.ExecuteNonQueryAsync();
+            await tx.CommitAsync();
         }
 
         /// <inheritdoc/>
-        public async Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest, CancellationToken cancellationToken = default)
+        public async Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest, Guid performedByParty, CancellationToken cancellationToken = default)
         {
             const string consentRquestQuery = /*strpsql*/@"
                 INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, toPartyUuid, validTo, requestMessage)
@@ -133,7 +147,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
         }
 
         /// <inheritdoc/>
-        public Task DeleteRequest(Guid id, CancellationToken cancellationToken = default)
+        public Task DeleteRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -195,13 +209,13 @@ namespace Altinn.AccessManagement.Persistence.Consent
         }
 
         /// <inheritdoc/>
-        public Task RejectConsentRequest(Guid id, CancellationToken cancellationToken = default)
+        public Task RejectConsentRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
-        public Task Revoke(Guid id, CancellationToken cancellationToken = default)
+        public Task Revoke(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

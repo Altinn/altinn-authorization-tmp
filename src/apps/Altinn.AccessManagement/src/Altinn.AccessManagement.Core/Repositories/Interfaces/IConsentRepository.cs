@@ -10,12 +10,12 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         /// <summary>
         /// Creates a consent request
         /// </summary>
-        Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest, CancellationToken cancellationToken = default);
+        Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest, Guid performedByParty, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Deletes a consent request. Can only be performed by the party that created the request. Will be soft deleted.
         /// </summary>
-        Task DeleteRequest(Guid id, CancellationToken cancellationToken = default);
+        Task DeleteRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Returns a specific consent request based on the id
@@ -25,12 +25,12 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         /// <summary>
         /// Approves a consent request
         /// </summary>
-        Task ApproveConsentRequest(Guid id, CancellationToken cancellationToken = default);
+        Task ApproveConsentRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Rejects a consent request
         /// </summary>
-        Task RejectConsentRequest(Guid id, CancellationToken cancellationToken = default);
+        Task RejectConsentRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a consent
@@ -40,7 +40,7 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         /// <summary>
         /// Revokes a consent
         /// </summary>
-        Task Revoke(Guid id, CancellationToken cancellationToken = default);
+        Task Revoke(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all active and historical consents for a party
