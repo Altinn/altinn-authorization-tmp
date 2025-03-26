@@ -24,10 +24,10 @@ namespace Altinn.AccessManagement.Persistence.Consent
         /// <inheritdoc/>
         public async Task ApproveConsentRequest(Guid consentRequestId, Guid performedByParty,  CancellationToken cancellationToken = default)
         {
-            DateTime consentedTime = DateTime.UtcNow;
+            DateTimeOffset consentedTime = DateTime.UtcNow;
 
             const string updateConsentRequestQuery = /*strpsql*/@"
-                    UPDATE consent.consentrequest set status = 'Approved', consented = @consentedTime  WHERE consentRequestId= @consentRequestId";
+                    UPDATE consent.consentrequest set status = 'accepted', consented = @consentedTime  WHERE consentRequestId= @consentRequestId";
 
             await using NpgsqlConnection conn = await _db.OpenConnectionAsync(default);
 
@@ -36,7 +36,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             await using NpgsqlCommand command = conn.CreateCommand();
             command.CommandText = updateConsentRequestQuery;
             command.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
-            command.Parameters.AddWithValue("consentedTime", NpgsqlDbType.TimestampTz, consentRequestId);
+            command.Parameters.AddWithValue("consentedTime", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
             await command.ExecuteNonQueryAsync();
             await tx.CommitAsync();
         }

@@ -57,7 +57,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("00000000-0000-0000-0005-000000003899"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}");
-            string responseText = response.Content.ReadAsStringAsync().Result;
+            string responseText = await response.Content.ReadAsStringAsync();
             ConsentRequestDetailsExternal consentRequest = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsExternal>();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(requestId, consentRequest.Id);
@@ -65,6 +65,20 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             Assert.Equal("27099450067", consentRequest.From.ValueSpan);
             Assert.Equal("27099450067", consentRequest.To.ValueSpan);  // TODO FIx
             Assert.Equal("urn:altinn:resource", consentRequest.ConsentRights[0].Resource[0].Type);
+        }
+
+        [Fact]
+        public async Task ApproveRequest_Valid()
+        {
+            Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
+            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            await repositgo.CreateRequest(await GetRequest(requestId), default);
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("00000000-0000-0000-0005-000000003899"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/approve/", null);
+            string responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         private HttpClient GetTestClient()
