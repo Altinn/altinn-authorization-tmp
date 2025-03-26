@@ -109,8 +109,6 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
             sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
         }
 
-        sb.AppendLine($"WHEN NOT MATCHED THEN ");
-        sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
         string mergeStatement = sb.ToString();
 
         Console.WriteLine("Starting MERGE");
