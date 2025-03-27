@@ -1,35 +1,89 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
 /// <inheritdoc />
-public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository roleLookupRepository) : IRoleService
+public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository roleLookupRepository, IPackageRepository packageRepository) : IRoleService
 {
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IRoleLookupRepository roleLookupRepository = roleLookupRepository;
-    
+    private readonly IPackageRepository packageRepository = packageRepository;
+
     /// <inheritdoc />
-    public async Task<ExtRole> GetById(Guid id)
+    public async Task<RoleDto> GetById(Guid id)
     {
-        return await roleRepository.GetExtended(id);
+        ExtRole extRole = await roleRepository.GetExtended(id);
+        if (extRole == null)
+        {
+            return null;
+        }
+
+        return new RoleDto(extRole);
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<RoleDto>> GetAll()
+    {
+        var roles = await roleRepository.GetExtended(new RequestOptions());
+        if (roles == null)
+        { 
+            return null; 
+        }
+
+        var roleDtos = new List<RoleDto>();
+
+        foreach (var role in roles)
+        {
+            roleDtos.Add(new RoleDto(role));
+        }
+
+        return roleDtos;
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ExtRole>> GetByProvider(Guid providerId)
+    public async Task<IEnumerable<RoleDto>> GetByProvider(Guid providerId)
     {
-        return await roleRepository.GetExtended(t => t.ProviderId, providerId);
+        var roles = await roleRepository.GetExtended(t => t.ProviderId, providerId);
+        if (roles == null)
+        {
+            return null;
+        }
+
+        var roleDtos = new List<RoleDto>();
+
+        foreach (var role in roles)
+        {
+            roleDtos.Add(new RoleDto(role));
+        }
+
+        return roleDtos;
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<Role>> GetByCode(string code)
+    public async Task<IEnumerable<RoleDto>> GetByCode(string code)
     {
-        return await roleRepository.GetExtended(t => t.Code, code);
+        var roles = await roleRepository.GetExtended(t => t.Code, code);
+        if (roles == null)
+        {
+            return null;
+        }
+
+        var roleDtos = new List<RoleDto>();
+
+        foreach (var role in roles)
+        {
+            roleDtos.Add(new RoleDto(role));
+        }
+
+        return roleDtos;
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<Role>> GetByKeyValue(string key, string value)
+    public async Task<IEnumerable<RoleDto>> GetByKeyValue(string key, string value)
     {
         var filter = roleLookupRepository.CreateFilterBuilder();
         filter.Equal(t => t.Key, key);
@@ -40,6 +94,24 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
             return null;
         }
 
-        return res.Select(t => t.Role);
+        var roleDtos = new List<RoleDto>();
+
+        var roles = res.Select(t => t.Role);
+        foreach (var role in roles)
+        {
+            roleDtos.Add(new RoleDto(role));
+        }
+
+        return roleDtos;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<PackageDto>> GetPackagesForRole(Guid id)
+    {
+        var roles = await roleRepository.GetExtended(id);
+        var packageDtos = new List<PackageDto>();
+        var thing = await packageRepository.Get();
+
+        return null;
     }
 }
