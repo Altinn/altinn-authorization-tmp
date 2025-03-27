@@ -120,7 +120,7 @@ public interface IDbBasicRepository<T>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, CancellationToken cancellationToken = default);
+    Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, CancellationToken cancellationToken = default, Guid? performedBy = null);
 
     /// <summary>
     /// Updates specific properties of an existing entity in the database using a list of generic parameters.

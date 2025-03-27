@@ -35,6 +35,11 @@ public class MssqlQueryBuilder : IDbQueryBuilder
         throw new NotImplementedException();
     }
 
+    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters, Guid? performedBy = null)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <inheritdoc/>
     public string BuildExtendedSelectQuery(RequestOptions options, IEnumerable<GenericFilter> filters, DbCrossRelationDefinition crossDef = null)
     {
@@ -47,13 +52,28 @@ public class MssqlQueryBuilder : IDbQueryBuilder
         throw new NotImplementedException();
     }
 
+    public string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
+    {
+        throw new NotImplementedException();
+    }
+
     public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false)
+    {
+        throw new NotImplementedException();
+    }
+
+    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false, Guid? performedBy = null)
     {
         throw new NotImplementedException();
     }
 
     /// <inheritdoc/>
     public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false)
+    {
+        throw new NotImplementedException();
+    }
+
+    public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
     {
         throw new NotImplementedException();
     }
@@ -66,6 +86,16 @@ public class MssqlQueryBuilder : IDbQueryBuilder
 
     /// <inheritdoc/>
     public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
+    {
+        throw new NotImplementedException();
+    }
+
+    public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
+    {
+        throw new NotImplementedException();
+    }
+
+    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, Guid? performedBy = null)
     {
         throw new NotImplementedException();
     }

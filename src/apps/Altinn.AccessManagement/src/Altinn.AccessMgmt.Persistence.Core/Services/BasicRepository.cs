@@ -198,26 +198,12 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         return parameters;
     }
 
-    // AccessMgmt-Default
-    private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
-
-    private static Guid GetPerformedBy(Guid? performedBy = null)
-    {
-        if (!performedBy.HasValue || performedBy.Value == Guid.Empty)
-        {
-            return DefaultPerformedBy;
-        }
-
-        return performedBy.Value;
-    }
-
     /// <inheritdoc/>
     public async Task<int> Create(T entity, CancellationToken cancellationToken = default, Guid? performedBy = null)
     {
         var param = BuildParameters(entity);
-        param.Add(new GenericParameter("PerformedBy", GetPerformedBy(performedBy)));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildInsertQuery(param);
+        string query = queryBuilder.BuildInsertQuery(param, performedBy: performedBy);
 
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
@@ -226,9 +212,8 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     public async Task<int> Upsert(T entity, CancellationToken cancellationToken = default, Guid? performedBy = null)
     {
         var param = BuildParameters(entity);
-        param.Add(new GenericParameter("PerformedBy", GetPerformedBy(performedBy)));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpsertQuery(param);
+        string query = queryBuilder.BuildUpsertQuery(param, performedBy: performedBy);
 
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
@@ -237,9 +222,8 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     public async Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, CancellationToken cancellationToken = default, Guid? performedBy = null)
     {
         var param = BuildParameters(entity);
-        param.Add(new GenericParameter("PerformedBy", GetPerformedBy(performedBy)));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpsertQuery(param, mergeFilter);
+        string query = queryBuilder.BuildUpsertQuery(param, mergeFilter, performedBy: performedBy);
 
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
@@ -248,22 +232,16 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     public async Task<int> Update(Guid id, T entity, CancellationToken cancellationToken = default, Guid? performedBy = null)
     {
         var param = BuildParameters(entity);
-        param.Add(new GenericParameter("PerformedBy", GetPerformedBy(performedBy)));
-        return await Update(id: id, parameters: param, cancellationToken: cancellationToken);
+        return await Update(id: id, parameters: param, cancellationToken: cancellationToken, performedBy: performedBy);
     }
 
     /// <inheritdoc/>
     public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, CancellationToken cancellationToken = default, Guid? performedBy = null)
     {
-        var param = new List<GenericParameter>();
-        param.Add(new GenericParameter(ExtractPropertyInfo(property).Name, value));
-        param.Add(new GenericParameter("PerformedBy", GetPerformedBy(performedBy)));
-        return await Update(id, param, cancellationToken);
         if (value == null)
         {
-            //TODO: Include PerformedBy
             var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-            string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, value));
+            string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, value), performedBy: performedBy);
             return await executor.ExecuteCommand(query, [new GenericParameter("_id", id)], cancellationToken: cancellationToken);
         }
 
@@ -271,19 +249,18 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, CancellationToken cancellationToken = default)
+    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, CancellationToken cancellationToken = default, Guid? performedBy = null)
     {
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, null));
+        string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, null), performedBy: performedBy);
         return await executor.ExecuteCommand(query, [new GenericParameter("_id", id)], cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<int> Update(Guid id, List<GenericParameter> parameters, CancellationToken cancellationToken = default, Guid? performedBy = null)
     {
-        parameters.Add(new GenericParameter("PerformedBy", GetPerformedBy(performedBy)));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpdateQuery(parameters);
+        string query = queryBuilder.BuildUpdateQuery(parameters, performedBy: performedBy);
         parameters.Add(new GenericParameter("_id", id));
         return await executor.ExecuteCommand(query, parameters, cancellationToken: cancellationToken);
     }
@@ -300,7 +277,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         // TODO: Implement DeletedBy ... Somehow
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
         var param = BuildFilterParameters(filters, null);
-        string query = queryBuilder.BuildDeleteQuery(filters);
+        string query = queryBuilder.BuildDeleteQuery(filters, performedBy: performedBy);
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
@@ -314,9 +291,8 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
 
         var parameters = BuildTranslationParameters(obj);
         parameters.Add(new GenericParameter("Language", language));
-        parameters.Add(new GenericParameter("PerformedBy", GetPerformedBy(performedBy)));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildInsertQuery(parameters, forTranslation: true);
+        string query = queryBuilder.BuildInsertQuery(parameters, forTranslation: true, performedBy: performedBy);
 
         return await executor.ExecuteCommand(query, parameters, cancellationToken: cancellationToken);
     }
@@ -330,9 +306,8 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         }
 
         var parameters = BuildTranslationParameters(obj);
-        parameters.Add(new GenericParameter("PerformedBy", GetPerformedBy(performedBy)));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpdateQuery(parameters, forTranslation: true);
+        string query = queryBuilder.BuildUpdateQuery(parameters, forTranslation: true, performedBy: performedBy);
 
         parameters.Add(new GenericParameter("_language", language));
         parameters.Add(new GenericParameter("_id", id));
@@ -350,9 +325,8 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
 
         var parameters = BuildTranslationParameters(obj);
         parameters.Add(new GenericParameter("Language", language));
-        parameters.Add(new GenericParameter("PerformedBy", GetPerformedBy(performedBy)));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpsertQuery(parameters, forTranslation: true);
+        string query = queryBuilder.BuildUpsertQuery(parameters, forTranslation: true, performedBy: performedBy);
 
         parameters.Add(new GenericParameter("_language", language));
         parameters.Add(new GenericParameter("_id", id));
