@@ -71,7 +71,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 throw new InvalidDataException("Invalid fromPartyUuid");
             }
 
-            if (consentRequest.From.IsPartyUuid(out Guid toPartyGuid))
+            if (consentRequest.To.IsPartyUuid(out Guid toPartyGuid))
             {
                 command.Parameters.AddWithValue("toPartyUuid", NpgsqlDbType.Uuid, toPartyGuid);
             }

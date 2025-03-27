@@ -10,7 +10,7 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         /// <summary>
         /// Get party by party uuid
         /// </summary>
-        public Task<MinimalParty> GetByUid(Guid partyUuid);
+        public Task<MinimalParty> GetByUuid(Guid partyUuid);
 
         /// <summary>
         /// Get by party id

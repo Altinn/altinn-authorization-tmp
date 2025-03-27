@@ -12,6 +12,7 @@ using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
+using System.Diagnostics.Metrics;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -135,22 +136,21 @@ namespace Altinn.AccessManagement.Core.Services
 
         private async Task<ConsentPartyUrn> GetExternalIdentifier(Guid guid, CancellationToken cancellationToken = default)
         {
-            List<Party> parties = await _partiesClient.GetPartiesAsync(new List<Guid> { guid });
+            MinimalParty party = await _ampartyService.GetByUid(guid);
 
-            if (parties.Count == 0)
+            if (party == null)
             {
                 throw new ArgumentException($"Party with guid {guid} not found");
             }
 
-            Party party = parties.First();
-
-            if (party.PartyTypeName.Equals(PartyType.Organisation))
+            if (!string.IsNullOrEmpty(party.PersonId))
             {
-                return ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(party.OrgNumber));
+                return ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(party.PersonId));
             }
-            else if (party.PartyTypeName.Equals(PartyType.Person))
+
+            if (!string.IsNullOrEmpty(party.OrganizationId))
             {
-                return ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(party.SSN));
+                return ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(party.OrganizationId));
             }
 
             throw new ArgumentException($"Party with guid {guid} is not valid consent party");

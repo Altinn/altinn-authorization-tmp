@@ -90,7 +90,7 @@ public class MockDataService
         Entity carlOveJensen = new() { Id = Guid.Parse("829703B5-D9A0-4E89-AAFB-672BBE6DFC01"), Name = "Carl Ove Jensen", RefId = "PERS-010", TypeId = persType.Id, VariantId = variantPers.Id };
         Entity martinGrundt = new() { Id = Guid.Parse("01B55CE6-E206-4443-B56C-762698F62238"), Name = "Martin Grundt", RefId = "PERS-011", TypeId = persType.Id, VariantId = variantPers.Id };
         Entity edithTommesen = new() { Id = Guid.Parse("BDA6328F-CEA3-4DFD-A53A-8D5225F94A7E"), Name = "Edith Tommesen", RefId = "PERS-012", TypeId = persType.Id, VariantId = variantPers.Id };
-        Entity elenaFjær = new() { Id = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), Name = "Elena Fjær", RefId = "27099450067", TypeId = persType.Id, VariantId = variantPers.Id };
+        Entity elenaFjær = new() { Id = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), Name = "Elena Fjær", RefId = "01025161013", TypeId = persType.Id, VariantId = variantPers.Id };
 
         await entityRepository.Upsert(mariusThuen);
         await entityRepository.Upsert(fredrikJohnsen);

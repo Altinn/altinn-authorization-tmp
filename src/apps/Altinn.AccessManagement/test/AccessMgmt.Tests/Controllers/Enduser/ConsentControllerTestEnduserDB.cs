@@ -62,8 +62,8 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(requestId, consentRequest.Id);
             Assert.True(consentRequest.ConsentRights.Count > 0);
-            Assert.Equal("27099450067", consentRequest.From.ValueSpan);
-            Assert.Equal("27099450067", consentRequest.To.ValueSpan);  // TODO FIx
+            Assert.Equal("01025161013", consentRequest.From.ValueSpan);
+            Assert.Equal("810419512", consentRequest.To.ValueSpan);  // TODO FIx
             Assert.Equal("urn:altinn:resource", consentRequest.ConsentRights[0].Resource[0].Type);
         }
 

@@ -36,7 +36,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
             {
                 Name = extEntityLookup.Entity.Name,
                 PartyUuid = extEntityLookup.Entity.Id,
-                OrgNo = extEntityLookup.Value,
+                OrganizationId = extEntityLookup.Value,
             };
         }
 
@@ -69,13 +69,40 @@ namespace Altinn.AccessMgmt.Persistence.Services
             {
                 Name = extEntityLookup.Entity.Name,
                 PartyUuid = extEntityLookup.Entity.Id,
-                OrgNo = extEntityLookup.Value,
+                OrganizationId = extEntityLookup.Value,
             };
         }
 
-        public Task<MinimalParty> GetByUid(Guid partyUuid)
+        public async Task<MinimalParty> GetByUuid(Guid partyUuid)
         {
-            throw new NotImplementedException();
+            IEnumerable<ExtEntityLookup> parties = await entityLookupRepository.GetExtended(t => t.EntityId, partyUuid);
+            var res = parties.ToDictionary(t => t.Key, t => t.Value);
+
+            if (res == null || !res.Any())
+            {
+                return null;
+            }
+
+            MinimalParty party = new MinimalParty();
+            party.PartyUuid = partyUuid;
+            party.Name = parties.First().Entity.Name;
+
+            if (res.TryGetValue("OrganizationIdentifier", out string orgNo))
+            {
+                party.OrganizationId = orgNo;
+            }
+
+            if (res.TryGetValue("PersonIdentifier", out string personNo))
+            {
+                party.PersonId = personNo;
+            }
+
+            if (res.TryGetValue("Name", out string name))
+            {
+                party.Name = name;
+            }
+
+            return party;
         }
     }
 }

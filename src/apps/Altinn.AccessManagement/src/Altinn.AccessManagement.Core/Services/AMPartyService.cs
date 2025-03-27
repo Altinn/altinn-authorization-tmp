@@ -32,7 +32,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc />
         public async Task<MinimalParty> GetByUid(Guid partyUuid)
         {
-            return await _amPartyRepository.GetByUid(partyUuid);
+            return await _amPartyRepository.GetByUuid(partyUuid);
         }
     }
 }

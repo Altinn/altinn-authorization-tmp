@@ -20,11 +20,11 @@
         /// <summary>
         ///  The organization number of the party
         /// </summary>
-        public string? OrgNo { get; set; }
+        public string? OrganizationId { get; set; }
 
         /// <summary>
         /// The person number of the party
         /// </summary>
-        public string? PersonNo { get; set; }
+        public string? PersonId { get; set; }
     }
 }
