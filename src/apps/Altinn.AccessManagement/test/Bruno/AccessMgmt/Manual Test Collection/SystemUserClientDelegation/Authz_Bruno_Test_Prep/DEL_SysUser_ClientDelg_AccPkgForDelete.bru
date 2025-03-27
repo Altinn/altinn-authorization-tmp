@@ -1,7 +1,7 @@
 meta {
-  name: DEL_SystemUser_ClientDelegation
+  name: DEL_SysUser_ClientDelg_AccPkgForDelete
   type: http
-  seq: 3
+  seq: 6
 }
 
 delete {
@@ -22,18 +22,19 @@ headers {
 }
 
 script:pre-request {
-  const testdata = require(`./Testdata/rights-delegations/${bru.getEnvVar("tokenEnv")}testdata.json`);
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
+  const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("party", testdata.org_system.partyuuid);
-  bru.setVar("systemUser", testdata.org_system.systems[0]);
-  bru.setVar("clientId", testdata.org_system.partyuuid);
+  bru.setVar("requestName", "POST_SysUser_ClientEnkDelg_AccPkg");
+  bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
+  bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
+  bru.setVar("clientId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_WITHOUT_CLIENTDELEGATION.partyUuid);
   
   var getTokenParameters = {
-    auth_userId: testdata.org_system.dagl.userid,
-    auth_partyId: testdata.org_system.dagl.partyid,
-    auth_partyUuid: testdata.org_system.dagl.partyuuid,
-    auth_ssn: testdata.org_system.dagl.pid,
+    auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
+    auth_partyId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyId,
+    auth_partyUuid: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid,
+    auth_ssn: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid,
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.portalEnduser
   }

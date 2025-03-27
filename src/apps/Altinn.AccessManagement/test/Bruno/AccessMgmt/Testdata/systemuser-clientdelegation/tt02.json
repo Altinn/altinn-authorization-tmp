@@ -1,47 +1,7 @@
 {
     "env": "tt02",
-    "org": "ttd",
-    "app": "apps-test",
     "resources": {
         "clientDelgResourceId": "devtest_gar_bruno_client_resource"
-    },
-    "org1": {
-        "orgno": "910077511",
-        "partyid": 50128586,
-        "dagl": {
-            "pid": "05085301731",
-            "userid": 90864,
-            "partyid": 50018133
-        }
-    },
-    "org2": {
-        "orgno": "810028882",
-        "partyid": 50206415,
-        "dagl": {
-            "pid": "16035601159",
-            "userid": 91990,
-            "partyid": 50058973
-        },
-        "ecuser": {
-            "userid": 268728,
-            "partyid": 50206415
-        }
-    },
-    "org3": {
-        "orgno": "910049488",
-        "partyid": 50143276,
-        "dagl": {
-            "pid": "30124902114",
-            "userid": 92959,
-            "partyid": 50114202
-        },
-        "subunit": {
-            "orgno": "910057529",
-            "partyid": 50149061
-        }
-    },
-    "authorizationTests": {
-        "user": "msandstad"
     },
     "REGN_ULASTELIG_RETTFERDIG_TIGER": {
         "name": "ULASTELIG RETTFERDIG TIGER AS",
@@ -116,7 +76,11 @@
         },
         "systemuser": {
             "name": "Fiken",
-            "partyUuid": "4bfb037e-4ea2-4eac-b52f-fda063247a03"
+            "partyUuid": "4bfb037e-4ea2-4eac-b52f-fda063247a03",
+            "directPackageToDelegate": "urn:altinn:accesspackage:ansettelsesforhold",
+            "clientPackageToDelegate": "urn:altinn:accesspackage:regnskapsforer-med-signeringsrettighet",
+            "clientEnkPackageToDelegate": "urn:altinn:accesspackage:regnskapsforer-lonn",
+            "clientEnkPackageForDelete": "urn:altinn:accesspackage:regnskapsforer-uten-signeringsrettighet"
         },
         "subunit": {
             "name": "ULASTELIG RETTFERDIG TIGER AS",
