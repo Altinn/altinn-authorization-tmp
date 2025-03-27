@@ -139,6 +139,7 @@ public static class PersistenceDependencyInjectionExtensions
             .MapEnum<InstanceDelegationMode>("delegation.instancedelegationmode")
             .MapEnum<InstanceDelegationSource>("delegation.instancedelegationsource")
             .MapEnum<ConsentRequestStatusType>("consent.status_type")
+            .MapEnum<ConsentRequestEventType>("consent.event_type")
             .AddYuniqlMigrations(cfg =>
             {
                 cfg.Workspace = "/";

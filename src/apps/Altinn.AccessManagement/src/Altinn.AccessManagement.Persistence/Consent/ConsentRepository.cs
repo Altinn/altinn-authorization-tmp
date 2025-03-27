@@ -1,6 +1,10 @@
 ﻿using System.Data;
+using System.Security.Policy;
+using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.Authorization.Core.Models.Consent;
+using Azure.Core;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -38,6 +42,26 @@ namespace Altinn.AccessManagement.Persistence.Consent
             command.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
             command.Parameters.AddWithValue("consentedTime", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
             await command.ExecuteNonQueryAsync();
+
+            const string eventQuery = /*strpsql*/@"
+                INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
+                VALUES (
+                @consentEventId, 
+                @consentRequestId, 
+                @eventtype, 
+                @created, 
+                @performedByParty)
+                RETURNING consentEventId;
+                ";
+
+            await using NpgsqlCommand eventCommand = conn.CreateCommand();
+            eventCommand.CommandText = eventQuery;
+            eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.NewGuid());
+            eventCommand.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
+            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>("eventtype", ConsentRequestEventType.Created));
+            eventCommand.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
+            eventCommand.Parameters.AddWithValue("performedByParty", NpgsqlDbType.Uuid, performedByParty);
+            await eventCommand.ExecuteNonQueryAsync();
             await tx.CommitAsync();
         }
 

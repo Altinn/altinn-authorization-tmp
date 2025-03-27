@@ -54,7 +54,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId), default);
             HttpClient client = GetTestClient();
-            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("00000000-0000-0000-0005-000000003899"));
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}");
             string responseText = await response.Content.ReadAsStringAsync();
@@ -74,7 +74,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId), default);
             HttpClient client = GetTestClient();
-            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("00000000-0000-0000-0005-000000003899"));
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/approve/", null);
             string responseText = await response.Content.ReadAsStringAsync();
