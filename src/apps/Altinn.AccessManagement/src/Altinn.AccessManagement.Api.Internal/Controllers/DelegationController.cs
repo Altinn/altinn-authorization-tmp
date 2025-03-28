@@ -110,7 +110,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
 
             var res = await delegationRepository.Create(new Delegation()
             {
-                Id = Guid.CreateVersion7(),
                 FromId = request.FromAssignmentId,
                 ToId = request.ToAssignmentId,
                 FacilitatorId = Guid.Empty

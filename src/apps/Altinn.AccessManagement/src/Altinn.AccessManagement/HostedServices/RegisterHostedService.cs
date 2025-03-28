@@ -494,7 +494,6 @@ public partial class RegisterHostedService(
             var role = await GetOrCreateRole(model.RoleIdentifier, model.RoleSource);
             return new Assignment()
             {
-                Id = Guid.CreateVersion7(),
                 FromId = Guid.Parse(model.FromParty),
                 ToId = Guid.Parse(model.ToParty),
                 RoleId = role.Id
@@ -776,7 +775,6 @@ public partial class RegisterHostedService(
         {
             res.Add(new EntityLookup()
             {
-                Id = Guid.CreateVersion7(),
                 EntityId = Guid.Parse(model.PartyUuid),
                 Key = "DateOfBirth",
                 Value = model.DateOfBirth
@@ -784,7 +782,6 @@ public partial class RegisterHostedService(
 
             res.Add(new EntityLookup()
             {
-                Id = Guid.CreateVersion7(),
                 EntityId = Guid.Parse(model.PartyUuid),
                 Key = "PartyId",
                 Value = model.PartyId.ToString()
@@ -792,7 +789,6 @@ public partial class RegisterHostedService(
 
             res.Add(new EntityLookup()
             {
-                Id = Guid.CreateVersion7(),
                 EntityId = Guid.Parse(model.PartyUuid),
                 Key = "PersonIdentifier",
                 Value = model.PersonIdentifier
@@ -802,7 +798,6 @@ public partial class RegisterHostedService(
         {
             res.Add(new EntityLookup()
             {
-                Id = Guid.CreateVersion7(),
                 EntityId = Guid.Parse(model.PartyUuid),
                 Key = "PartyId",
                 Value = model.PartyId.ToString()
@@ -810,7 +805,6 @@ public partial class RegisterHostedService(
 
             res.Add(new EntityLookup()
             {
-                Id = Guid.CreateVersion7(),
                 EntityId = Guid.Parse(model.PartyUuid),
                 Key = "OrganizationIdentifier",
                 Value = model.OrganizationIdentifier
@@ -820,7 +814,6 @@ public partial class RegisterHostedService(
         {
             res.Add(new EntityLookup()
             {
-                Id = Guid.CreateVersion7(),
                 EntityId = Guid.Parse(model.PartyUuid),
                 Key = "PartyId",
                 Value = model.PartyId.ToString()
