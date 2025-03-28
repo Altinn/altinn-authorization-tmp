@@ -304,7 +304,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
 
             var dp = new AssignmentPackage()
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 AssignmentId = id,
                 PackageId = packageId
             };

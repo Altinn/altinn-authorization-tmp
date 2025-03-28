@@ -108,9 +108,9 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Ok(); // 302 Found?
             }
 
-            var res = await delegationRepository.Create(new AccessMgmt.Core.Models.Delegation()
+            var res = await delegationRepository.Create(new Delegation()
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 FromId = request.FromAssignmentId,
                 ToId = request.ToAssignmentId,
                 FacilitatorId = Guid.Empty
