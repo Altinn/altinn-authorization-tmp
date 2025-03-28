@@ -31,7 +31,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             DateTimeOffset consentedTime = DateTime.UtcNow;
 
             const string updateConsentRequestQuery = /*strpsql*/@"
-                    UPDATE consent.consentrequest set status = 'accepted', consented = @consentedTime  WHERE consentRequestId= @consentRequestId";
+                    UPDATE consent.consentrequest set status = 'accepted', consented = @consentedTime  WHERE consentRequestId= @consentRequestId and status = 'created'";
 
             await using NpgsqlConnection conn = await _db.OpenConnectionAsync(default);
 
@@ -41,7 +41,13 @@ namespace Altinn.AccessManagement.Persistence.Consent
             command.CommandText = updateConsentRequestQuery;
             command.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
             command.Parameters.AddWithValue("consentedTime", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
-            await command.ExecuteNonQueryAsync();
+            int rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken);
+
+            if (rowsAffected == 0)
+            {
+                // No rows were updated, meaning the consent request ID was not found or the status was not created 
+                throw new InvalidOperationException($"Consent request with ID {consentRequestId} not found or already updated.");
+            }
 
             const string eventQuery = /*strpsql*/@"
                 INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
