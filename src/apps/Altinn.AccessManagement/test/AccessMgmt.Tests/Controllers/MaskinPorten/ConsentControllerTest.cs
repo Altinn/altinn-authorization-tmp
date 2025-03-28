@@ -46,35 +46,6 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
-        /// <summary>
-        /// Test get consent. Expect a consent in response
-        /// </summary>
-        /// <returns></returns>
-        [Fact]
-        public async Task GetConsent()
-        {
-            Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
-            await repositgo.CreateRequest(await GetRequest(requestId), default);
-
-            HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";
-
-            ConsentLookup consentLookup = new ConsentLookup()
-                {   
-                    Id = requestId,
-                    From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                    To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512"))
-                };
-
-            HttpResponseMessage response = await client.PostAsJsonAsync(url,consentLookup);
-            string responseContent = await response.Content.ReadAsStringAsync();
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.NotNull(responseContent);
-            ConsentInfoMaskinporten consentInfo = JsonSerializer.Deserialize<ConsentInfoMaskinporten>(responseContent, _jsonOptions);
-            Assert.Single(consentInfo.ConsentRights);
-        }
-
         [Fact]
         public async Task GetConsent_CreatedExpired_BadRequest()
         {
@@ -101,6 +72,61 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             Assert.Equal(2, problemDetails.Errors.Count());
             Assert.Equal("AM.VLD-00017", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
             Assert.Equal("AM.VLD-00018", problemDetails.Errors.ToList()[1].ErrorCode.ToString());
+        }
+
+        [Fact]
+        public async Task GetConsent_Valid()
+        {
+            Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
+            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            ConsentRequest request = await GetRequest(requestId);
+            request.ValidTo = DateTime.UtcNow.AddDays(10);
+            await repositgo.CreateRequest(request, default); ;
+            await repositgo.ApproveConsentRequest(requestId, Guid.NewGuid(), default);
+
+            HttpClient client = GetTestClient();
+            string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";
+
+            ConsentLookup consentLookup = new ConsentLookup()
+            {
+                Id = requestId,
+                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512"))
+            };
+
+            HttpResponseMessage response = await client.PostAsJsonAsync(url, consentLookup);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            ConsentInfoMaskinporten consentInfo = JsonSerializer.Deserialize<ConsentInfoMaskinporten>(responseContent, _jsonOptions);
+            Assert.Equal(2, consentInfo.ConsentRights.Count());
+        }
+
+        [Fact]
+        public async Task GetConsent_Created_BadRequest()
+        {
+            Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
+            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            ConsentRequest request = await GetRequest(requestId);
+            request.ValidTo = DateTime.UtcNow.AddDays(10);
+            await repositgo.CreateRequest(request, default);
+
+            HttpClient client = GetTestClient();
+            string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";
+
+            ConsentLookup consentLookup = new ConsentLookup()
+            {
+                Id = requestId,
+                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512"))
+            };
+
+            HttpResponseMessage response = await client.PostAsJsonAsync(url, consentLookup);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.NotNull(responseContent);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
+            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
+            Assert.Single(problemDetails.Errors);
+            Assert.Equal("AM.VLD-00018", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
         }
 
         private HttpClient GetTestClient()
