@@ -19,6 +19,7 @@ public class DbDataMigrationService(
         IConfiguration configuration,
         IEntityTypeRepository entityTypeService,
         IEntityVariantRepository entityVariantService,
+        IEntityRepository entityRepository,
         IPackageRepository packageService,
         IRoleRepository roleService,
         IMigrationService migrationService,
@@ -30,11 +31,14 @@ public class DbDataMigrationService(
     private readonly IAreaGroupRepository areaGroupService = areaGroupService;
     private readonly IEntityTypeRepository entityTypeService = entityTypeService;
     private readonly IEntityVariantRepository entityVariantService = entityVariantService;
+    private readonly IEntityRepository entityRepository = entityRepository;
     private readonly IPackageRepository packageService = packageService;
     private readonly IRoleRepository roleService = roleService;
     private readonly IMigrationService migrationService = migrationService;
     private readonly IIngestService ingestService = ingestService;
     private readonly string iconBaseUrl = configuration["AltinnCDN:AccessPackageIconsBaseURL"];
+    
+    private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
 
     /// <summary>
     /// Ingest all static data
@@ -54,22 +58,28 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Provider>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<EntityType>(dataKey, 3))
+        if (migrationService.NeedMigration<EntityType>(dataKey, 4))
         {
             await IngestEntityType();
-            await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 3);
+            await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 4);
         }
 
-        if (migrationService.NeedMigration<EntityVariant>(dataKey, 3))
+        if (migrationService.NeedMigration<EntityVariant>(dataKey, 4))
         {
             await IngestEntityVariant();
-            await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 3);
+            await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 4);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 5))
+        if (migrationService.NeedMigration<Entity>(dataKey, 2))
+        {
+            await IngestEntity();
+            await migrationService.LogMigration<Entity>(dataKey, string.Empty, 2);
+        }
+
+        if (migrationService.NeedMigration<Role>(dataKey, 6))
         {
             await IngestRole();
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 5);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 6);
         }
 
         if (migrationService.NeedMigration<RoleMap>(dataKey, 3))
@@ -78,16 +88,16 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 3);
         }
 
-        if (migrationService.NeedMigration<AreaGroup>(dataKey, 3))
+        if (migrationService.NeedMigration<AreaGroup>(dataKey, 4))
         {
             await IngestAreaGroup();
-            await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 3);
+            await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 4);
         }
 
-        if (migrationService.NeedMigration<Area>(dataKey, 3))
+        if (migrationService.NeedMigration<Area>(dataKey, 4))
         {
             await IngestArea();
-            await migrationService.LogMigration<Area>(dataKey, string.Empty, 3);
+            await migrationService.LogMigration<Area>(dataKey, string.Empty, 4);
         }
 
         if (migrationService.NeedMigration<Package>(dataKey, 3))
@@ -375,6 +385,7 @@ public class DbDataMigrationService(
             new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerBR.Id },
             new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerFR.Id },
             new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembruker", ProviderId = providerDD.Id },
+            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Intern", ProviderId = providerDD.Id },
         };
 
         var entityTypesNno = new List<EntityType>()
@@ -382,6 +393,7 @@ public class DbDataMigrationService(
             new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerBR.Id },
             new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerFR.Id },
             new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembrukar", ProviderId = providerDD.Id },
+            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Intern", ProviderId = providerDD.Id },
         };
 
         var entityTypesEng = new List<EntityType>()
@@ -389,6 +401,7 @@ public class DbDataMigrationService(
             new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organization", ProviderId = providerBR.Id },
             new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerFR.Id },
             new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "SystemUser", ProviderId = providerDD.Id },
+            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Internal", ProviderId = providerDD.Id },
         };
 
         foreach (var item in entityTypes)
@@ -414,9 +427,11 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestEntityVariant(CancellationToken cancellationToken = default)
     {
-        var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found", "Organisasjon"));
-        var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found", "Person"));
-        var systemTypeId = (await entityTypeService.Get(t => t.Name, "Systembruker")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found", "System"));
+        var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Organisasjon"));
+        var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Person"));
+        var systemTypeId = (await entityTypeService.Get(t => t.Name, "Systembruker")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "System"));
+        var internalTypeId = (await entityTypeService.Get(t => t.Name, "Intern")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
+
         var entityVariants = new List<EntityVariant>()
         {
             new EntityVariant() { Id = Guid.Parse("d786bc0e-8e9e-4116-bfc2-0344207c9127"), TypeId = orgTypeId, Name = "SAM", Description = "Tingsrettslig sameie" },
@@ -466,6 +481,7 @@ public class DbDataMigrationService(
             new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId, Name = "Person", Description = "Person" },
             new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
             new EntityVariant() { Id = Guid.Parse("03D08113-40D0-48BD-85B6-BD4430CCC182"), TypeId = persTypeId, Name = "SI", Description = "Selvidentifisert bruker" },
+            new EntityVariant() { Id = Guid.Parse("CBE2834D-3DB0-4A14-BAA2-D32DE004D6D7"), TypeId = internalTypeId, Name = "Standard", Description = "Standard intern entitet" },
         };
 
         var entityVariantsEng = new List<EntityVariant>()
@@ -517,6 +533,7 @@ public class DbDataMigrationService(
             new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId, Name = "Person", Description = "Person" },
             new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
             new EntityVariant() { Id = Guid.Parse("03D08113-40D0-48BD-85B6-BD4430CCC182"), TypeId = persTypeId, Name = "SI", Description = "Self-identified user" },
+            new EntityVariant() { Id = Guid.Parse("CBE2834D-3DB0-4A14-BAA2-D32DE004D6D7"), TypeId = internalTypeId, Name = "Default", Description = "Default internal entity" },
         };
 
         var entityVariantsNno = new List<EntityVariant>()
@@ -568,6 +585,7 @@ public class DbDataMigrationService(
             new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId, Name = "PERS", Description = "Person" },
             new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
             new EntityVariant() { Id = Guid.Parse("03D08113-40D0-48BD-85B6-BD4430CCC182"), TypeId = persTypeId, Name = "SI", Description = "Sjølvidentifisert brukar" },
+            new EntityVariant() { Id = Guid.Parse("CBE2834D-3DB0-4A14-BAA2-D32DE004D6D7"), TypeId = internalTypeId, Name = "Standard", Description = "Standard intern entitet" },
         };
 
         foreach (var item in entityVariants)
@@ -583,6 +601,37 @@ public class DbDataMigrationService(
         foreach (var item in entityVariantsNno)
         {
             await entityVariantService.UpsertTranslation(item.Id, item, "nno", cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Ingest all static entity data
+    /// </summary>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
+    public async Task IngestEntity(CancellationToken cancellationToken = default)
+    {
+        var internalTypeId = (await entityTypeService.Get(t => t.Name, "Intern")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
+        var internalVariantId = (await entityVariantService.Get(t => t.TypeId, internalTypeId)).FirstOrDefault(t => t.Name.Equals("Standard", StringComparison.OrdinalIgnoreCase))?.Id ?? throw new KeyNotFoundException(string.Format("EntityVariant '{0}' not found", "Intern"));
+
+        var systemEntities = new List<Entity>()
+        {
+            // The default entity stored on each table with default constraint
+            new Entity() { Id = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"), Name = "Db-Default", RefId = "Db-Default", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            
+            // When an entity is deleted we replace the deleted id with this. The old id will still be in the history tables
+            new Entity() { Id = Guid.Parse("7818FFC2-3682-44F3-8158-37BFFEB96A9F"), Name = "Db-Cascade", RefId = "Db-Cascade", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            
+            // A default entity used by AccessMgmt. If no other PerformedBy id is supplied this will be used from this application. 
+            new Entity() { Id = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F"), Name = "AccessMgmt-Default", RefId = "AccessMgmt", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+
+            // The entity responsible for ingesting data from the Registry.
+            new Entity() { Id = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A"), Name = "AccessMgmt-Register-Ingest", RefId = "AccessMgmt", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId }
+        };
+
+        foreach (var item in systemEntities)
+        {
+            await entityRepository.Upsert(item, cancellationToken);
         }
     }
 
@@ -606,7 +655,7 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Hovedadministrator",           Code = "hovedadministrator",            Description = "Gir mulighet til å administrere alle tilganger for virksomheten", Urn = "urn:altinn:role:hovedadministrator", IsKeyRole = false },
             new Role() { Id = Guid.Parse("b3f5c1e8-4e3b-4d2a-8c3e-1f2b3d4e5f6a"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Maskinporten administrator",   Code = "maskinporten-administrator",    Description = "Gir bruker mulighet til å administrere tilgang til maskinporten scopes", Urn = "urn:altinn:role:maskinporten-administrator", IsKeyRole = false },
 
-            new Role() { Id = Guid.Parse("7f6c14f6-7809-4867-83ab-30c426b53d57"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Administrativ enhet - offentlig sektor",      /*"ADOS"*/  Code = "kontaktperson-ados",                    Description = "Administrativ enhet - offentlig sektor", Urn = "urn:altinn:external-role:ccr:kontaktperson-ados", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("66ad5542-4f4a-4606-996f-18690129ce00"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Administrativ enhet - offentlig sektor",      /*"ADOS"*/  Code = "administrativ-enhet-offentlig-sektor",  Description = "Administrativ enhet - offentlig sektor", Urn = "urn:altinn:external-role:ccr:administrativ-enhet-offentlig-sektor", IsKeyRole = false },
             new Role() { Id = Guid.Parse("29a24eab-a25f-445d-b56d-e3b914844853"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Nestleder",                                   /*"NEST"*/  Code = "nestleder",                             Description = "Styremedlem som opptrer som styreleder ved leders fravær", Urn = "urn:altinn:external-role:ccr:nestleder", IsKeyRole = false },
             new Role() { Id = Guid.Parse("8c1e91c2-a71c-4abf-a74e-a600a98be976"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Inngår i kontorfellesskap",                   /*"KTRF"*/  Code = "kontorfelleskapmedlem",                 Description = "Inngår i kontorfellesskap", Urn = "urn:altinn:external-role:ccr:kontorfelleskapmedlem", IsKeyRole = false },
             new Role() { Id = Guid.Parse("cfc41a92-2061-4ff4-97dc-658ffba2c00e"), EntityTypeId = orgEntityTypeId, ProviderId = brrProviderId, Name = "Organisasjonsledd i offentlig sektor",        /*"ORGL"*/  Code = "organisasjonsledd-offentlig-sektor",    Description = "Organisasjonsledd i offentlig sektor", Urn = "urn:altinn:external-role:ccr:organisasjonsledd-offentlig-sektor", IsKeyRole = false },
@@ -749,17 +798,17 @@ public class DbDataMigrationService(
 
         foreach (var item in roles)
         {
-            await roleService.Upsert(item, cancellationToken);
+            await roleService.Upsert(item, cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in rolesEng)
         {
-            await roleService.UpsertTranslation(item.Id, item, "eng", cancellationToken);
+            await roleService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in rolesNno)
         {
-            await roleService.UpsertTranslation(item.Id, item, "nno", cancellationToken);
+            await roleService.UpsertTranslation(item.Id, item, "nno", cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         await RoleLookup(roles, cancellationToken);
@@ -945,17 +994,17 @@ public class DbDataMigrationService(
 
         foreach (var item in areaGroups)
         {
-            await areaGroupService.Upsert(item, cancellationToken);
+            await areaGroupService.Upsert(item, cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in areaGroupsEng)
         {
-            await areaGroupService.UpsertTranslation(item.Id, item, "eng", cancellationToken);
+            await areaGroupService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in areaGroupsNno)
         {
-            await areaGroupService.UpsertTranslation(item.Id, item, "nno", cancellationToken);
+            await areaGroupService.UpsertTranslation(item.Id, item, "nno", cancellationToken, performedBy: DefaultPerformedBy);
         }
     }
 
@@ -1040,17 +1089,17 @@ public class DbDataMigrationService(
 
         foreach (var item in areas)
         {
-            await areaService.Upsert(item, cancellationToken);
+            await areaService.Upsert(item, cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in areasEng)
         {
-            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken);
+            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
         }
 
         foreach (var item in areasNno)
         {
-            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken);
+            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
         }
     }
 

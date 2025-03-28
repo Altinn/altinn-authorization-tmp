@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Microsoft.Extensions.Options;
+using static Npgsql.Replication.PgOutput.Messages.RelationMessage;
 
 namespace Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
 
@@ -95,28 +96,41 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return query;
     }
 
-    /// <inheritdoc/>
-    public string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false)
+    // AccessMgmt-Default
+    private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
+
+    private static Guid GetPerformedBy(Guid? performedBy = null)
     {
-        return $"INSERT INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})";
+        if (!performedBy.HasValue || performedBy.Value == Guid.Empty)
+        {
+            return DefaultPerformedBy;
+        }
+
+        return performedBy.Value;
     }
 
     /// <inheritdoc/>
-    public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false)
+    public string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
     {
-        return $"UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {UpdateSetStatement(parameters)} WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
+        return $"SET LOCAL x.performed_by = '{GetPerformedBy(performedBy)}'; INSERT INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})";
     }
 
     /// <inheritdoc/>
-    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false)
+    public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
     {
-        return $"UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {parameter.Key} = NULL WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
+        return $"SET LOCAL x.performed_by = '{GetPerformedBy(performedBy)}'; UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {UpdateSetStatement(parameters)} WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
     }
 
     /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false)
+    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false, Guid? performedBy = null)
     {
-        return BuildMergeQuery(parameters, [new GenericFilter("id", "id")], forTranslation);
+        return $"SET LOCAL x.performed_by = '{GetPerformedBy(performedBy)}'; UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {parameter.Key} = NULL WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
+    }
+
+    /// <inheritdoc/>
+    public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
+    {
+        return BuildMergeQuery(parameters, [new GenericFilter("id", "id")], forTranslation, performedBy);
 
         /*
         var sb = new StringBuilder();
@@ -128,19 +142,29 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
+    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, Guid? performedBy = null)
     {
-        return BuildMergeQuery(parameters, mergeFilter, forTranslation);
+        if (mergeFilter == null || !mergeFilter.Any())
+        {
+            mergeFilter.Add(new GenericFilter("id", "id"));
+        }
+
+        return BuildMergeQuery(parameters, mergeFilter, forTranslation, performedBy);
     }
 
-    private string BuildMergeQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
+    private string BuildMergeQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, Guid? performedBy = null)
     {
         if (mergeFilter == null || !mergeFilter.Any())
         {
             throw new ArgumentException("Missing mergefilter");
         }
 
+        var mergeUpdateUnMatchStatement = string.Join(" OR ", parameters.Where(t => mergeFilter.Count(y => y.PropertyName.Equals(t.Key, StringComparison.OrdinalIgnoreCase)) == 0).Select(t => $"T.{t.Key} <> @{t.Key}"));
+        var mergeUpdateStatement = string.Join(" , ", parameters.Where(t => mergeFilter.Count(y => y.PropertyName.Equals(t.Key, StringComparison.OrdinalIgnoreCase)) == 0).Select(t => $"{t.Key} = @{t.Key}"));
+
+
         var sb = new StringBuilder();
+        sb.AppendLine($"SET LOCAL x.performed_by = '{GetPerformedBy(performedBy)}';");
         sb.AppendLine("WITH N AS ( SELECT ");
         sb.AppendLine("@id as id");
         if (forTranslation)
@@ -151,18 +175,15 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine(")");
 
         var mergeStatementFilter = string.Join(" AND ", mergeFilter.Select(t => $"T.{t.PropertyName} = N.{t.PropertyName}"));
+
         sb.AppendLine($"MERGE INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} AS T USING N ON {mergeStatementFilter}");
         if (forTranslation)
         {
             sb.AppendLine(" AND T.language = N.language");
         }
 
-        sb.AppendLine("WHEN MATCHED");
-
-        sb.AppendLine($"AND ({MergeUpdateMatchStatement(parameters)})");
-
-        sb.AppendLine("THEN");
-        sb.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
+        sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN");
+        sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
         sb.AppendLine("WHEN NOT MATCHED THEN");
         sb.AppendLine($"INSERT ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)});");
 
@@ -170,10 +191,10 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
-    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters)
+    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters, Guid? performedBy = null)
     {
         var filterStatement = GenerateFilterStatement(_definition.ModelType.Name, filters);
-        return $"DELETE FROM {GetTableName(includeAlias: false)} {filterStatement}";
+        return $"SET LOCAL x.performed_by = '{GetPerformedBy(performedBy)}'; DELETE FROM {GetTableName(includeAlias: false)} {filterStatement}";
     }
 
     /// <inheritdoc />
@@ -505,10 +526,11 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     public DbMigrationScriptCollection GetMigrationScripts()
     {
         var scriptCollection = new DbMigrationScriptCollection(_definition.ModelType);
+        scriptCollection.Version = _definition.Version;
 
         if (_definition.IsView)
         {
-            scriptCollection.AddScripts(CreateView(_definition.ViewVersion));
+            scriptCollection.AddScripts(CreateView());
             foreach (var dep in _definition.ViewDependencies)
             {
                 scriptCollection.AddDependency(dep);
@@ -529,6 +551,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
             scriptCollection.AddScripts(CreateColumn(column));
         }
+
+        scriptCollection.AddScripts(CreateColumn(columnName: "PerformedBy", columnDataType: typeof(Guid), isNullable: false, defaultValue: "'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B'"));
+        scriptCollection.AddScripts(CreateHistoryColumn(columnName: "DeletedBy", columnDataType: typeof(Guid), isNullable: true));
 
         foreach (var fk in _definition.Relations)
         {
@@ -560,7 +585,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return scriptCollection;
     }
 
-    private OrderedDictionary<string, string> CreateView(int version = 1)
+    private OrderedDictionary<string, string> CreateView()
     {
         var scripts = new OrderedDictionary<string, string>();
 
@@ -569,7 +594,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         {_definition.ViewQuery}
         """;
 
-        scripts.Add($"CREATE VIEW {GetTableName(includeAlias: false)} {version}", query);
+        scripts.Add($"CREATE VIEW {GetTableName(includeAlias: false)}", query);
 
         return scripts;
     }
@@ -597,8 +622,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         string basicKey = $"CREATE TABLE {GetTableName(includeAlias: false)}";
         var basicTable = new StringBuilder();
-        basicTable.AppendLine($"CREATE TABLE {GetTableName(includeAlias: false)} (");
+        basicTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false)} (");
         basicTable.AppendLine(primaryKeyDefinition);
+        basicTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
         if (_definition.HasHistory)
         {
             basicTable.AppendLine(", validfrom timestamptz default now()");
@@ -613,13 +639,14 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         {
             string translationKey = $"CREATE TABLE {GetTableName(includeAlias: false, useTranslation: true)}";
             var translationTable = new StringBuilder();
-            translationTable.AppendLine($"CREATE TABLE {GetTableName(includeAlias: false, useTranslation: true)} (");
+            translationTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false, useTranslation: true)} (");
             translationTable.AppendLine(primaryKeyDefinition);
             if (_definition.HasHistory)
             {
                 translationTable.AppendLine(", validfrom timestamptz default now()");
             }
 
+            translationTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
             translationTable.AppendLine($", Language text NOT NULL");
             translationTable.AppendLine($", CONSTRAINT PK_{_definition.ModelType.Name} PRIMARY KEY ({string.Join(',', _definition.Constraints.First(t => t.IsPrimaryKey).Properties.Select(t => $"{t.Key}"))}, Language)");
             translationTable.AppendLine(");");
@@ -631,10 +658,12 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         {
             string historyKey = $"CREATE TABLE {GetTableName(includeAlias: false, useHistory: true)}";
             var historyTable = new StringBuilder();
-            historyTable.AppendLine($"CREATE TABLE {GetTableName(includeAlias: false, useHistory: true)}(");
+            historyTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false, useHistory: true)}(");
             historyTable.AppendLine(primaryKeyDefinition);
             historyTable.AppendLine(", validfrom timestamptz default now()");
             historyTable.AppendLine(", validto timestamptz default now()");
+            historyTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
+            historyTable.AppendLine(", deletedby uuid null");
             historyTable.AppendLine(");");
 
             scripts.Add(historyKey, historyTable.ToString());
@@ -643,10 +672,12 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             {
                 string historyTranslationKey = $"CREATE TABLE {GetTableName(includeAlias: false, useTranslation: true, useHistory: true)}";
                 var historyTranslationTable = new StringBuilder();
-                historyTranslationTable.AppendLine($"CREATE TABLE {GetTableName(includeAlias: false, useTranslation: true, useHistory: true)}(");
+                historyTranslationTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false, useTranslation: true, useHistory: true)}(");
                 historyTranslationTable.AppendLine(primaryKeyDefinition);
                 historyTranslationTable.AppendLine(", validfrom timestamptz default now()");
                 historyTranslationTable.AppendLine(", validto timestamptz default now()");
+                historyTranslationTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
+                historyTranslationTable.AppendLine(", deletedby uuid null");
                 historyTranslationTable.AppendLine(", Language text NOT NULL");
                 historyTranslationTable.AppendLine(");");
 
@@ -685,10 +716,56 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return scripts;
     }
 
+    public OrderedDictionary<string, string> CreateColumn(string columnName, Type columnDataType, bool isNullable, string defaultValue = null)
+    {
+        var scripts = new OrderedDictionary<string, string>();
+        var basic = CreateColumn(GetTableName(includeAlias: false), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), isNullable, defaultValue);
+        scripts.Add(basic.Key, basic.Query);
+
+        if (_definition.HasTranslation)
+        {
+            var translation = CreateColumn(GetTableName(includeAlias: false, useTranslation: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
+            scripts.Add(translation.Key, translation.Query);
+        }
+
+        if (_definition.HasHistory)
+        {
+            var history = CreateColumn(GetTableName(includeAlias: false, useHistory: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
+            scripts.Add(history.Key, history.Query);
+
+            if (_definition.HasTranslation)
+            {
+                var translationHistory = CreateColumn(GetTableName(includeAlias: false, useTranslation: true, useHistory: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
+                scripts.Add(translationHistory.Key, translationHistory.Query);
+            }
+        }
+
+        return scripts;
+    }
+
+    public OrderedDictionary<string, string> CreateHistoryColumn(string columnName, Type columnDataType, bool isNullable, string defaultValue = null)
+    {
+        var scripts = new OrderedDictionary<string, string>();
+        
+        if (_definition.HasHistory)
+        {
+            var history = CreateColumn(GetTableName(includeAlias: false, useHistory: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
+            scripts.Add(history.Key, history.Query);
+
+            if (_definition.HasTranslation)
+            {
+                var translationHistory = CreateColumn(GetTableName(includeAlias: false, useTranslation: true, useHistory: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
+                scripts.Add(translationHistory.Key, translationHistory.Query);
+            }
+        }
+
+        return scripts;
+    }
+
     private (string Key, string Query) CreateColumn(string tableName, string columnName, string columnDataType, bool isNullable, string defaultValue = null)
     {
         var key = $"ADD COLUMN {tableName}.{columnName}";
-        var query = $"ALTER TABLE {tableName} ADD {columnName} {columnDataType} {(isNullable ? "NULL" : "NOT NULL")}{(string.IsNullOrEmpty(defaultValue) ? string.Empty : $" DEFAULT {defaultValue}")};";
+        var query = $"ALTER TABLE {tableName} ADD IF NOT EXISTS {columnName} {columnDataType} {(isNullable ? "NULL" : "NOT NULL")}{(string.IsNullOrEmpty(defaultValue) ? string.Empty : $" DEFAULT {defaultValue}")};";
 
         return (key, query);
     }
@@ -710,7 +787,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         }
 
         string key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
-        string query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} UNIQUE ({string.Join(',', constraint.Properties.Keys)});";
+        string query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD IF NOT EXISTS CONSTRAINT {name} UNIQUE ({string.Join(',', constraint.Properties.Keys)});";
 
         res.Add(key, query);
 
@@ -746,7 +823,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string name = string.IsNullOrEmpty(foreignKey.Name) ? $"{_definition.ModelType.Name}_{foreignKey.BaseProperty}" : foreignKey.Name;
 
         var key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
-        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
+        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD IF NOT EXISTS CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
 
         res.Add(key, query);
 
@@ -767,7 +844,10 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string query = """
         CREATE OR REPLACE FUNCTION dbo.update_validfrom() RETURNS trigger AS
         $$
+        DECLARE performed_by UUID;
         BEGIN
+            SELECT COALESCE(current_setting('x.performed_by', true), 'efec83fc-deba-4f09-8073-b4dd19d0b16b')::uuid INTO performed_by;
+            NEW.performedby := performed_by;
             NEW.validfrom := NOW();
             RETURN NEW;
         END;
@@ -794,7 +874,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         string keyTriggerUpdateValidFrom = $"TRIGGER {_definition.ModelType.Name}_update_validfrom ON {tableName}";
         string queryTriggerUpdateValidFrom = $"""
-        CREATE OR REPLACE TRIGGER {_definition.ModelType.Name}_update_validfrom BEFORE UPDATE ON {tableName}
+        CREATE OR REPLACE TRIGGER {_definition.ModelType.Name}_update_validfrom BEFORE INSERT OR UPDATE ON {tableName}
         FOR EACH ROW EXECUTE FUNCTION dbo.update_validfrom();
         """;
 
@@ -802,25 +882,46 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         string copyToHistoryFuncName = $"{tableName}_copy_to_history()";
         string keyCopyToHistory = $"FUNCTION {copyToHistoryFuncName}";
-        string queryCopyToHistory = $"""
-        CREATE OR REPLACE FUNCTION {copyToHistoryFuncName} RETURNS TRIGGER AS $$ BEGIN
-        INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto) VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now());
-        RETURN NEW;
-        END; $$ LANGUAGE plpgsql;
-        CREATE OR REPLACE TRIGGER {_definition.ModelType.Name}_History AFTER UPDATE ON {tableName}
-        FOR EACH ROW EXECUTE FUNCTION {copyToHistoryFuncName};
-        """;
+      
+        var sb = new StringBuilder();
+        sb.AppendLine($"CREATE OR REPLACE FUNCTION {copyToHistoryFuncName}");
+        sb.AppendLine("RETURNS TRIGGER AS $$");
+        sb.AppendLine("DECLARE performed_by UUID;");
+        sb.AppendLine("BEGIN");
+        sb.AppendLine("SELECT COALESCE(current_setting('x.performed_by', true), 'efec83fc-deba-4f09-8073-b4dd19d0b16b')::uuid INTO performed_by;");
+
+        sb.AppendLine("IF TG_OP = 'UPDATE' THEN");
+        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto, performedby, deletedby)");
+        sb.AppendLine($"VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now(), OLD.performedby, NULL);");
+        sb.AppendLine("RETURN NEW;");
+        sb.AppendLine("END IF;");
+
+        sb.AppendLine("IF TG_OP = 'DELETE' THEN");
+        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto, performedby, deletedby)");
+        sb.AppendLine($"VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now(), OLD.performedby, performed_by);");
+        sb.AppendLine("RETURN OLD;");
+        sb.AppendLine("END IF;");
+
+        sb.AppendLine("RETURN NULL;");
+        sb.AppendLine("END;");
+        sb.AppendLine("$$ LANGUAGE plpgsql;");
+
+        sb.AppendLine($"CREATE OR REPLACE TRIGGER {_definition.ModelType.Name}_History AFTER UPDATE OR DELETE ON {tableName}");
+        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {copyToHistoryFuncName};");
+
+        var queryCopyToHistory = sb.ToString();
+
         scripts.Add(keyCopyToHistory, queryCopyToHistory);
 
         string viewKey = $"VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: forTranslationTable)}";
         string viewQuery = $"""
         CREATE OR REPLACE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: forTranslationTable)} AS
-        SELECT {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)} validfrom, validto
+        SELECT {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto, performedby, deletedby
         FROM  {GetTableName(useHistory: true, useTranslation: forTranslationTable)}
         WHERE validfrom <= coalesce(current_setting('x.asof', true)::timestamptz, now())
         AND validto > coalesce(current_setting('x.asof', true)::timestamptz, now())
         UNION ALL
-        SELECT  {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, now() AS validto
+        SELECT  {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, now() AS validto, performedby, null::uuid AS deletedby
         FROM {tableName}
         where validfrom <= coalesce(current_setting('x.asof', true)::timestamptz, now());
         """;
