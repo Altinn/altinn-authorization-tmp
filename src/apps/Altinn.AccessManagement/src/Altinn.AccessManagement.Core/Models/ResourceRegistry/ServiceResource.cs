@@ -123,6 +123,11 @@ namespace Altinn.AccessManagement.Core.Models.ResourceRegistry
         public List<AttributeMatch> AuthorizationReference { get; set; }
 
         /// <summary>
+        /// Defines consentmendtata for consent resources
+        /// </summary>
+        public Dictionary<string,ConsentMetadata> ConsentMetadata { get; set; }
+
+        /// <summary>
         /// Writes key information when this object is written to Log.
         /// </summary>
         /// <returns></returns>
