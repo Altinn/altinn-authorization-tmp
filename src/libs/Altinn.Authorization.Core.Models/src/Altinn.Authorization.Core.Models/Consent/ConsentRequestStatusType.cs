@@ -18,8 +18,16 @@ namespace Altinn.Authorization.Core.Models.Consent
         [PgName("rejected")]
         Rejected = 1,
 
-        [EnumMember(Value = "approved")]
-        [PgName("approved")]
-        Approved = 2
+        [EnumMember(Value = "accepted")]
+        [PgName("accepted")]
+        Accepted = 2,
+
+        [EnumMember(Value = "revoked")]
+        [PgName("revoked")]
+        Revoked = 3,
+
+        [EnumMember(Value = "deleted")]
+        [PgName("deleted")]
+        Deleted = 4
     }
 }

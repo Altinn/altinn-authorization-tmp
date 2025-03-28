@@ -10,9 +10,7 @@ using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Party;
 using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
-using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
-using System.Diagnostics.Metrics;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -53,37 +51,61 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Consent> GetConsent(Guid id, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken = default)
+        public async Task<Result<Consent>> GetConsent(Guid id, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken = default)
         {
-            Consent consent = new Consent
+            ValidationErrorBuilder errors = default;
+            ConsentRequestDetails consentRequest = await _consentRepository.GetRequest(id, cancellationToken);
+
+            // Map from external to internal identies 
+            from = await MapFromExternalIdenity(from);
+            to = await MapFromExternalIdenity(to);
+
+            if (consentRequest == null)
             {
-                Id = id,
-                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01014922047")),
-                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("910194143")),
-                ConcentRights = new List<ConsentRight>
-                {
-                    new ConsentRight()
-                    {
-                        Action = ["read"],
-                        Resource = new List<ConsentResourceAttribute>
-                        {
-                            new ConsentResourceAttribute
-                            {
-                                Type = "urn:altinn:resource",
-                                Value = "skd_inntektsnfo"
-                            }
-                        }
-                    }
-                }
+                errors.Add(ValidationErrors.ConsentNotFound, "From");
+            }
+
+            if (!to.Equals(consentRequest.To))
+            {
+                errors.Add(ValidationErrors.ConsentNotFound, "To");
+            }
+
+            if (!from.Equals(consentRequest.From))
+            {
+                errors.Add(ValidationErrors.MissMatchConsentParty, "From");
+            }
+
+            if (consentRequest.ValidTo < DateTime.UtcNow)
+            {
+                errors.Add(ValidationErrors.ConsentExpired, "ValidTo");
+            }
+
+            if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Created)
+            {
+                errors.Add(ValidationErrors.ConsentNotAccepted, "Status");
+            }
+            else if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
+            {
+                errors.Add(ValidationErrors.ConsentRevoked, "Status");
+            }
+            else if (consentRequest.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
+            {
+                errors.Add(ValidationErrors.ConsentNotAccepted, "Status");
+            }
+
+            if (errors.TryBuild(out var errorResult))
+            {
+                return errorResult;
+            }
+
+            Consent consent = new Consent()
+            {
+                Id = consentRequest.Id,
+                From = consentRequest.From,
+                To = consentRequest.To,
+                ValidTo = consentRequest.ValidTo,
+                ConsentRights = consentRequest.ConsentRights
             };
-            
-            consent.Consented = DateTime.UtcNow.AddDays(-100);
-            consent.ValidTo = DateTime.UtcNow.AddDays(100);
-
-            consent.ConcentRights[0].SetMetadataValues(new Dictionary<string, string> { { "skd_inntektsnfo", "2021" } });
-
-            consent.From = await MapToExternalIdenity(consent.From);
-            consent.To = await MapToExternalIdenity(consent.To);
 
             return consent;
         }

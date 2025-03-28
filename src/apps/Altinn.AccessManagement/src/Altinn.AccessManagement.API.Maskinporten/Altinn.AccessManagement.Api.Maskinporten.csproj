@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Altinn.Authorization.ProblemDetails" />
+    <PackageReference Include="Altinn.Authorization.ProblemDetails.Abstractions" />
     <PackageReference Include="Altinn.Urn" />
   </ItemGroup>
 

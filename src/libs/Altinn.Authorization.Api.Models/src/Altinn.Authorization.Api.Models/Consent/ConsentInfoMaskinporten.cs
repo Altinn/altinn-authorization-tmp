@@ -60,7 +60,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Models.Concent
                 To = to,
                 Consented = consent.Consented,
                 ValidTo = consent.ValidTo,
-                ConsentRights = consent.ConcentRights.Select(ConsentRightExternal.FromCore).ToList()
+                ConsentRights = consent.ConsentRights.Select(ConsentRightExternal.FromCore).ToList()
             };
         }
     }

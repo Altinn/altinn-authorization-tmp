@@ -33,6 +33,6 @@
         /// <summary>
         /// The consented rights.
         /// </summary>
-        public required List<ConsentRight> ConcentRights { get; set; }
+        public required List<ConsentRight> ConsentRights { get; set; }
     }
 }

@@ -33,11 +33,6 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         Task RejectConsentRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets a consent
-        /// </summary>
-        Task<Consent> GetConsent(Guid id, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Revokes a consent
         /// </summary>
         Task Revoke(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);

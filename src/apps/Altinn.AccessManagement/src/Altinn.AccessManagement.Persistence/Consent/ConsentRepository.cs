@@ -182,11 +182,6 @@ namespace Altinn.AccessManagement.Persistence.Consent
             throw new NotImplementedException();
         }
 
-        /// <inheritdoc/>
-        public Task<Altinn.Authorization.Core.Models.Consent.Consent> GetConsent(Guid id, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
 
         /// <inheritdoc/>
         public async Task<ConsentRequestDetails> GetRequest(Guid consentRequestId, CancellationToken cancellationToken = default)

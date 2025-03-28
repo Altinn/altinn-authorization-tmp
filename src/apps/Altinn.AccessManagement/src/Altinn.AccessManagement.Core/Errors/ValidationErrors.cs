@@ -95,4 +95,34 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor MissingAction { get; }
         = _factory.Create(14, $"Missing required actions for consent request");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor MissMatchConsentParty { get; }
+    = _factory.Create(15, $"The consented party does not match the party requested");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentNotFound { get; }
+    = _factory.Create(16, $"Incorrect consentId or wrong consent receiver");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentExpired { get; }
+    = _factory.Create(17, $"Consent is expired");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentNotAccepted { get; }
+    = _factory.Create(18, $"Consent is not accepted");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentRevoked { get; }
+    = _factory.Create(19, $"Consent is revoked");
 }

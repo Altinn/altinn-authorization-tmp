@@ -3,6 +3,7 @@ using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
+using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
@@ -38,14 +39,14 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
                 _ => throw new ArgumentException("Unknown consent party urn")
             };
 
-            Consent consent = await _consentService.GetConsent(consentLookup.Id, MapToCore(consentLookup.From), MapToCore(consentLookup.To));
+            Result<Consent> consent = await _consentService.GetConsent(consentLookup.Id, MapToCore(consentLookup.From), MapToCore(consentLookup.To));
 
-            if (consent == null)
+            if (consent.IsProblem)
             {
-                return NotFound();
+                return consent.Problem.ToActionResult(); // This line will now work with the extension method
             }
 
-            return Ok(ConsentInfoMaskinporten.Convert(consent));
+            return Ok(ConsentInfoMaskinporten.Convert(consent.Value));
         }
 
         private ConsentPartyUrn MapToCore(ConsentPartyUrnExternal consentPartyUrnExternal)
