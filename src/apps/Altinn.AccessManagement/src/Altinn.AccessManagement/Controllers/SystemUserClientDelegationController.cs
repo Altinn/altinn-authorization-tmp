@@ -81,7 +81,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <returns><seealso cref="ConnectionDto"/>List of connections</returns>
     [HttpPost]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
-    public async Task<ActionResult<ConnectionDto>> PostClientDelegation([FromQuery] Guid party, [FromBody] CreateSystemDelegationRequestDto request)
+    public async Task<ActionResult<Delegation>> PostClientDelegation([FromQuery] Guid party, [FromBody] CreateSystemDelegationRequestDto request)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)
@@ -90,15 +90,19 @@ public class SystemUserClientDelegationController : ControllerBase
         }
 
         var delegations = await delegationService.CreateClientDelegation(request, userId, party);
-        var result = new List<ConnectionDto>();
+
+        /*
+        Fjerner for testing av ytelse ref #1206
         
+        var result = new List<ConnectionDto>();
         foreach (var delegation in delegations)
         {
             result.Add(ConnectionConverter.ConvertToDto(await connectionRepository.GetExtended(delegation.Id)));
         }
+        */
 
         // Remark: Kan ikke garantere at det KUN er delegeringer som er opprettet i denne handlingen som blir returnert.
-        return Ok(result);
+        return Ok(delegations);
     }
 
     /// <summary>
