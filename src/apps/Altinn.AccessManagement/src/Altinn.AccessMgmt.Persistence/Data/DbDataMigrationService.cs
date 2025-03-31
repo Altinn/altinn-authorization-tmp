@@ -90,10 +90,10 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Area>(dataKey, string.Empty, 3);
         }
 
-        if (migrationService.NeedMigration<Package>(dataKey, 3))
+        if (migrationService.NeedMigration<Package>(dataKey, 4))
         {
             await IngestPackage();
-            await migrationService.LogMigration<Package>(dataKey, string.Empty, 3);
+            await migrationService.LogMigration<Package>(dataKey, string.Empty, 4);
         }
 
         if (migrationService.NeedMigration<RolePackage>(dataKey, 2))
