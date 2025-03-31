@@ -93,6 +93,27 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         }
 
         /// <summary>
+        /// Enables audit triggers for the current entity definition. When enabled, these triggers automatically record
+        /// user-related audit information for operations performed on the entity, such as who created, modified, or deleted it.
+        /// </summary>
+        /// <param name="performedBy">If set to true, enables the trigger that logs the user who performed the operation.</param>
+        /// <param name="createdBy">If set to true, enables the trigger that logs the user who created the entity.</param>
+        /// <param name="modifiedBy">If set to true, enables the trigger that logs the user who last modified the entity.</param>
+        /// <param name="deletedBy">If set to true, enables the trigger that logs the user who deleted the entity.</param>
+        /// <returns>
+        /// Returns the current instance of <see cref="DbDefinitionBuilder{T}"/>, allowing for fluent chaining of further configuration methods.
+        /// </returns>
+        public DbDefinitionBuilder<T> EnableTriggers(bool performedBy = true, bool createdBy = true, bool modifiedBy = true, bool deletedBy = true)
+        {
+            DbDefinition.EnablePerformedBy = performedBy;
+            DbDefinition.EnableCreatedBy = createdBy;
+            DbDefinition.EnableModifiedBy = modifiedBy;
+            DbDefinition.EnableDeletedBy = deletedBy;
+
+            return this;
+        }
+
+        /// <summary>
         /// Registers a property as a column in the database definition.
         /// </summary>
         /// <param name="column">An expression that identifies the property to register.</param>

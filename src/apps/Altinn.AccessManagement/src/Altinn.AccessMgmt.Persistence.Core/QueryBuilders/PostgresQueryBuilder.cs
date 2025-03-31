@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Microsoft.Extensions.Options;
+using Yuniql.PostgreSql;
 using static Npgsql.Replication.PgOutput.Messages.RelationMessage;
 
 namespace Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
@@ -541,6 +542,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         scriptCollection.AddScripts(CreateTable());
 
+        #region columns
         var pk = _definition.Constraints.FirstOrDefault(t => t.IsPrimaryKey);
         foreach (var column in _definition.Properties)
         {
@@ -552,8 +554,29 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             scriptCollection.AddScripts(CreateColumn(column));
         }
 
-        scriptCollection.AddScripts(CreateColumn(columnName: "PerformedBy", columnDataType: typeof(Guid), isNullable: false, defaultValue: "'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B'"));
-        scriptCollection.AddScripts(CreateHistoryColumn(columnName: "DeletedBy", columnDataType: typeof(Guid), isNullable: true));
+        if (_definition.EnablePerformedBy)
+        {
+            scriptCollection.AddScripts(CreateColumn(columnName: "PerformedBy", columnDataType: typeof(Guid), isNullable: false, defaultValue: "'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B'"));
+            //// Add FK?
+            scriptCollection.AddScripts(CreateFunctionsAndTriggers(false));
+        }
+
+        if (_definition.EnableCreatedBy)
+        {
+            scriptCollection.AddScripts(CreateColumn(columnName: "CreatedBy", columnDataType: typeof(Guid), isNullable: false, defaultValue: "'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B'"));
+        }
+
+        if (_definition.EnableModifiedBy)
+        {
+            scriptCollection.AddScripts(CreateColumn(columnName: "ModifiedBy", columnDataType: typeof(Guid), isNullable: true));
+        }
+
+        if (_definition.EnableDeletedBy)
+        {
+            scriptCollection.AddScripts(CreateHistoryColumn(columnName: "DeletedBy", columnDataType: typeof(Guid), isNullable: true));
+        }
+        #endregion
+
 
         foreach (var fk in _definition.Relations)
         {
@@ -857,6 +880,50 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         res.Add(key, query);
         return res;
     }
+
+    private OrderedDictionary<string, string> CreateFunctionsAndTriggers(bool forTranslationTable = false, bool performedBy = true, bool createdBy = true, bool modifiedBy = true, bool deletedBy = true)
+    {
+        var scripts = new OrderedDictionary<string, string>();
+
+        string tableName = GetTableName(includeAlias: false, useTranslation: forTranslationTable);
+        string columnDefinitions = string.Join(',', _definition.Properties.Select(t => t.Name));
+        string columnOldDefinitions = string.Join(',', _definition.Properties.Select(t => $"OLD.{t.Name}"));
+
+        string name = $"{tableName}_performed_by_func()";
+        string key = $"CREATE FUNCTION {name}";
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"CREATE OR REPLACE FUNCTION {name}");
+        sb.AppendLine("RETURNS TRIGGER AS $$");
+
+        sb.AppendLine("DECLARE performed_by UUID;");
+        
+        sb.AppendLine("BEGIN");
+        
+        sb.AppendLine("SELECT COALESCE(current_setting('x.performed_by', true), 'efec83fc-deba-4f09-8073-b4dd19d0b16b')::uuid INTO performed_by;");
+
+        sb.AppendLine("IF TG_OP = 'UPDATE' THEN");
+        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto, performedby, deletedby)");
+        sb.AppendLine($"VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now(), OLD.performedby, NULL);");
+        sb.AppendLine("RETURN NEW;");
+        sb.AppendLine("END IF;");
+
+        sb.AppendLine("IF TG_OP = 'DELETE' THEN");
+        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto, performedby, deletedby)");
+        sb.AppendLine($"VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now(), OLD.performedby, performed_by);");
+        sb.AppendLine("RETURN OLD;");
+        sb.AppendLine("END IF;");
+
+        sb.AppendLine("RETURN NULL;");
+        sb.AppendLine("END;");
+        sb.AppendLine("$$ LANGUAGE plpgsql;");
+
+        sb.AppendLine($"CREATE OR REPLACE TRIGGER {_definition.ModelType.Name}_History AFTER UPDATE OR DELETE ON {tableName}");
+        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {name};");
+
+        return scripts;
+    }
+
 
     private OrderedDictionary<string, string> CreateHistoryTriggersAndView(bool forTranslationTable)
     {
