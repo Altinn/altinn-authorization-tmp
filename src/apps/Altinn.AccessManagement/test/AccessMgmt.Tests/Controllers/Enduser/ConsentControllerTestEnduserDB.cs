@@ -81,6 +81,43 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
+        [Fact]
+        public async Task RejectRequest_Valid()
+        {
+            Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
+            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            await repositgo.CreateRequest(await GetRequest(requestId), default);
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/reject/", null);
+            string responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        /// <summary>
+        /// Test case: End user revokes a consent request that earlier has been accepted
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task RevokeRequest_Valid()
+        {
+            Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
+
+            Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
+            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            await repositgo.CreateRequest(await GetRequest(requestId), default);
+            await repositgo.ApproveConsentRequest(requestId, performedBy, default);
+
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, performedBy);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/reject/", null);
+            string responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+
         private HttpClient GetTestClient()
         {
             HttpClient client = Fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });

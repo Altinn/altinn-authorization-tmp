@@ -62,7 +62,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             await using NpgsqlCommand eventCommand = conn.CreateCommand();
             eventCommand.CommandText = eventQuery;
-            eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.CreateVersion7(), ());
+            eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.CreateVersion7());
             eventCommand.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
             eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>("eventtype", ConsentRequestEventType.Created));
             eventCommand.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
@@ -188,7 +188,6 @@ namespace Altinn.AccessManagement.Persistence.Consent
             throw new NotImplementedException();
         }
 
-
         /// <inheritdoc/>
         public async Task<ConsentRequestDetails> GetRequest(Guid consentRequestId, CancellationToken cancellationToken = default)
         {
@@ -234,15 +233,95 @@ namespace Altinn.AccessManagement.Persistence.Consent
         }
 
         /// <inheritdoc/>
-        public Task RejectConsentRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
+        public async Task RejectConsentRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            DateTimeOffset consentedTime = DateTime.UtcNow;
+
+            const string updateConsentRequestQuery = /*strpsql*/@"
+                    UPDATE consent.consentrequest set status = 'rejected', consented = @consentedTime  WHERE consentRequestId= @consentRequestId and status = 'accepted'";
+
+            await using NpgsqlConnection conn = await _db.OpenConnectionAsync(default);
+
+            // Run all inserts in one transaction in case of failure
+            await using NpgsqlTransaction tx = await conn.BeginTransactionAsync();
+            await using NpgsqlCommand command = conn.CreateCommand();
+            command.CommandText = updateConsentRequestQuery;
+            command.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
+            command.Parameters.AddWithValue("consentedTime", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
+            int rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken);
+
+            if (rowsAffected == 0)
+            {
+                // No rows were updated, meaning the consent request ID was not found or the status was not created 
+                throw new InvalidOperationException($"Consent request with ID {consentRequestId} not found or already updated.");
+            }
+
+            const string eventQuery = /*strpsql*/@"
+                INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
+                VALUES (
+                @consentEventId, 
+                @consentRequestId, 
+                @eventtype, 
+                @created, 
+                @performedByParty)
+                RETURNING consentEventId;
+                ";
+
+            await using NpgsqlCommand eventCommand = conn.CreateCommand();
+            eventCommand.CommandText = eventQuery;
+            eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.CreateVersion7());
+            eventCommand.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
+            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>("eventtype", ConsentRequestEventType.Rejected));
+            eventCommand.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
+            eventCommand.Parameters.AddWithValue("performedByParty", NpgsqlDbType.Uuid, performedByParty);
+            await eventCommand.ExecuteNonQueryAsync();
+            await tx.CommitAsync();
         }
 
         /// <inheritdoc/>
-        public Task Revoke(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
+        public async Task Revoke(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            DateTimeOffset consentedTime = DateTime.UtcNow;
+
+            const string updateConsentRequestQuery = /*strpsql*/@"
+                    UPDATE consent.consentrequest set status = 'revoked', consented = @consentedTime  WHERE consentRequestId= @consentRequestId and status = 'accepted'";
+
+            await using NpgsqlConnection conn = await _db.OpenConnectionAsync(default);
+
+            // Run all inserts in one transaction in case of failure
+            await using NpgsqlTransaction tx = await conn.BeginTransactionAsync();
+            await using NpgsqlCommand command = conn.CreateCommand();
+            command.CommandText = updateConsentRequestQuery;
+            command.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
+            command.Parameters.AddWithValue("consentedTime", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
+            int rowsAffected = await command.ExecuteNonQueryAsync(cancellationToken);
+
+            if (rowsAffected == 0)
+            {
+                // No rows were updated, meaning the consent request ID was not found or the status was not created 
+                throw new InvalidOperationException($"Consent request with ID {consentRequestId} not found or already updated.");
+            }
+
+            const string eventQuery = /*strpsql*/@"
+                INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
+                VALUES (
+                @consentEventId, 
+                @consentRequestId, 
+                @eventtype, 
+                @created, 
+                @performedByParty)
+                RETURNING consentEventId;
+                ";
+
+            await using NpgsqlCommand eventCommand = conn.CreateCommand();
+            eventCommand.CommandText = eventQuery;
+            eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.CreateVersion7());
+            eventCommand.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
+            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>("eventtype", ConsentRequestEventType.Revoked));
+            eventCommand.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
+            eventCommand.Parameters.AddWithValue("performedByParty", NpgsqlDbType.Uuid, performedByParty);
+            await eventCommand.ExecuteNonQueryAsync();
+            await tx.CommitAsync();
         }
 
         /// <summary>

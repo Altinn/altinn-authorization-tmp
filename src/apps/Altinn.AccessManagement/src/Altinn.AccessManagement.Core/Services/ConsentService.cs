@@ -45,9 +45,9 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public Task DenyRequest(Guid id, Guid performedBy, CancellationToken cancellationToken = default)
+        public async Task RejectRequest(Guid id, Guid performedBy, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+           await _consentRepository.RejectConsentRequest(id, performedBy, cancellationToken);
         }
 
         /// <inheritdoc/>
