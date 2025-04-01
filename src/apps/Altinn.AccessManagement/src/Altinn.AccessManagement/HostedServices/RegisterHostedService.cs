@@ -186,6 +186,12 @@ public partial class RegisterHostedService(
                 {
                     var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
 
+                    if (batchData.Any(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId))
+                    {
+                        // If changes on same assignment then execute as-is before continuing.
+                        await Flush(batchId);
+                    }
+
                     if (item.Type == "Added")
                     {
                         batchData.Add(assignment);
@@ -464,7 +470,7 @@ public partial class RegisterHostedService(
     {
         try
         {
-            await entityRepository.Update(t => t.ParentId, null, childId, cancellationToken);
+            await entityRepository.Update(t => t.ParentId, childId, cancellationToken);
         }
         catch (Exception ex)
         {
