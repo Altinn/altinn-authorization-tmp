@@ -577,7 +577,6 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         }
         #endregion
 
-
         foreach (var fk in _definition.Relations)
         {
             scriptCollection.AddScripts(CreateForeignKeyConstraint(fk));
@@ -883,13 +882,34 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
     private OrderedDictionary<string, string> CreateFunctionsAndTriggers(bool forTranslationTable = false, bool performedBy = true, bool createdBy = true, bool modifiedBy = true, bool deletedBy = true)
     {
+        bool useDefaultPerformedBy = false;
+
         var scripts = new OrderedDictionary<string, string>();
 
         string tableName = GetTableName(includeAlias: false, useTranslation: forTranslationTable);
         string columnDefinitions = string.Join(',', _definition.Properties.Select(t => t.Name));
         string columnOldDefinitions = string.Join(',', _definition.Properties.Select(t => $"OLD.{t.Name}"));
 
-        string name = $"{tableName}_performed_by_func()";
+        bool enableDeleteHistory = true;
+        bool enableUpdateHistory = true;
+        bool enableHistory = enableDeleteHistory || enableUpdateHistory;
+
+        var extraColumns = new[]
+        {
+            (enabled: enableHistory, name: "validfrom", insertValue: "", updateValue: "OLD.validfrom", deleteValue: "OLD.language"),
+            (enabled: enableHistory, name: "validto", insertValue: "", updateValue: "now()", deleteValue: "now()"),
+
+            (enabled: forTranslationTable, name: "language", insertValue: "", updateValue: "OLD.language", deleteValue: "OLD.language"),
+
+            (enabled: createdBy, name: "createby", insertValue: "", updateValue: "", deleteValue: ""),
+            (enabled: performedBy, name: "performedby", insertValue: "", updateValue: "", deleteValue: ""),
+            (enabled: deletedBy, name: "deletedby", insertValue: "", updateValue: "", deleteValue: ""),
+            (enabled: modifiedBy, name: "modifiedby", insertValue: "", updateValue: "", deleteValue: ""),
+        }
+        .Where(pair => pair.enabled)
+        .ToList();
+
+        string name = $"{tableName}_trigger_history_func()";
         string key = $"CREATE FUNCTION {name}";
 
         var sb = new StringBuilder();
@@ -899,11 +919,20 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine("DECLARE performed_by UUID;");
         
         sb.AppendLine("BEGIN");
-        
-        sb.AppendLine("SELECT COALESCE(current_setting('x.performed_by', true), 'efec83fc-deba-4f09-8073-b4dd19d0b16b')::uuid INTO performed_by;");
+
+        if (useDefaultPerformedBy)
+        {
+            string defaultPerformedBy = "efec83fc-deba-4f09-8073-b4dd19d0b16b";
+            sb.AppendLine($"SELECT COALESCE(current_setting('x.performed_by', true), '{defaultPerformedBy}')::uuid INTO performed_by;");
+        }
+        else
+        {
+            // Will raise error if not set
+            sb.AppendLine("SELECT current_setting('x.performed_by', false)::uuid INTO performed_by;");
+        }
 
         sb.AppendLine("IF TG_OP = 'UPDATE' THEN");
-        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto, performedby, deletedby)");
+        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {string.Join(",", extraColumns.Select(t => t.name))})");
         sb.AppendLine($"VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now(), OLD.performedby, NULL);");
         sb.AppendLine("RETURN NEW;");
         sb.AppendLine("END IF;");
