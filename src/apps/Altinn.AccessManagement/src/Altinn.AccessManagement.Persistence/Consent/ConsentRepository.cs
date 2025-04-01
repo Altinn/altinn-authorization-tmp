@@ -62,7 +62,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             await using NpgsqlCommand eventCommand = conn.CreateCommand();
             eventCommand.CommandText = eventQuery;
-            eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.NewGuid());
+            eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.CreateVersion7(), ());
             eventCommand.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
             eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>("eventtype", ConsentRequestEventType.Created));
             eventCommand.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
@@ -117,7 +117,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             foreach (ConsentRight consentRight in consentRequest.ConsentRights)
             {
-                Guid consentRightGuid = Guid.NewGuid();
+                Guid consentRightGuid = Guid.CreateVersion7();
 
                 const string rightsQuery = /*strpsql*/@"
                 INSERT INTO consent.consentright(consentRightId , consentRequestId , action)

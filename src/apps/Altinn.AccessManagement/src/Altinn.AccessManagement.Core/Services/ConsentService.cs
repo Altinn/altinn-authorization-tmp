@@ -38,7 +38,7 @@ namespace Altinn.AccessManagement.Core.Services
                 return result.Problem;
             }
 
-            ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(result.Value, Guid.NewGuid(), cancellationToken);
+            ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(result.Value, Guid.CreateVersion7(), cancellationToken);
             requestDetails.From = consentRequest.From;
             requestDetails.To = consentRequest.To;
             return requestDetails;
