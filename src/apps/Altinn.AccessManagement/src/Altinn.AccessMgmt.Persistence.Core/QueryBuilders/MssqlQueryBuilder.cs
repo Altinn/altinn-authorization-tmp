@@ -30,7 +30,7 @@ public class MssqlQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
-    public string BuildDeleteQuery()
+    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters)
     {
         throw new NotImplementedException();
     }
@@ -43,6 +43,11 @@ public class MssqlQueryBuilder : IDbQueryBuilder
 
     /// <inheritdoc/>
     public string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false)
+    {
+        throw new NotImplementedException();
+    }
+
+    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false)
     {
         throw new NotImplementedException();
     }

@@ -21,9 +21,9 @@ public class Area
     public string Description { get; set; }
 
     /// <summary>
-    /// IconName
+    /// IconUrl
     /// </summary>
-    public string IconName { get; set; }
+    public string IconUrl { get; set; }
 
     /// <summary>
     /// GroupId

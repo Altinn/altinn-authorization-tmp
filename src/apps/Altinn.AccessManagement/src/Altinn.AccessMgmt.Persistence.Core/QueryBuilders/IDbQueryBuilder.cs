@@ -37,7 +37,7 @@ public interface IDbQueryBuilder
     /// Builds a DELETE query
     /// </summary>
     /// <returns></returns>
-    string BuildDeleteQuery();
+    string BuildDeleteQuery(IEnumerable<GenericFilter> filters);
 
     /// <summary>
     /// Builds a UPDATE query
@@ -46,6 +46,14 @@ public interface IDbQueryBuilder
     /// <param name="forTranslation">Is this for a translation table</param>
     /// <returns></returns>
     string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false);
+
+    /// <summary>
+    /// Builds a UPDATE query
+    /// </summary>
+    /// <param name="parameter">Parameter</param>
+    /// <param name="forTranslation">Is this for a translation table</param>
+    /// <returns></returns>
+    string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false);
 
     /// <summary>
     /// Builds a UPSERT query

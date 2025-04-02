@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Data;
+using System.Text;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
@@ -107,6 +108,12 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
+    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false)
+    {
+        return $"UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {parameter.Key} = NULL WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
+    }
+
+    /// <inheritdoc/>
     public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false)
     {
         return BuildMergeQuery(parameters, [new GenericFilter("id", "id")], forTranslation);
@@ -120,7 +127,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         */
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
     {
         return BuildMergeQuery(parameters, mergeFilter, forTranslation);
@@ -143,14 +150,18 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         sb.AppendLine(")");
 
-        var mergeStatementFilter = string.Join(',', mergeFilter.Select(t => $"T.{t.PropertyName} = N.{t.PropertyName}"));
+        var mergeStatementFilter = string.Join(" AND ", mergeFilter.Select(t => $"T.{t.PropertyName} = N.{t.PropertyName}"));
         sb.AppendLine($"MERGE INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} AS T USING N ON {mergeStatementFilter}");
         if (forTranslation)
         {
             sb.AppendLine(" AND T.language = N.language");
         }
 
-        sb.AppendLine("WHEN MATCHED THEN");
+        sb.AppendLine("WHEN MATCHED");
+
+        sb.AppendLine($"AND ({MergeUpdateMatchStatement(parameters)})");
+
+        sb.AppendLine("THEN");
         sb.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
         sb.AppendLine("WHEN NOT MATCHED THEN");
         sb.AppendLine($"INSERT ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)});");
@@ -159,9 +170,10 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
-    public string BuildDeleteQuery()
+    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters)
     {
-        return $"DELETE FROM {GetTableName(includeAlias: false)} WHERE id = @_id";
+        var filterStatement = GenerateFilterStatement(_definition.ModelType.Name, filters);
+        return $"DELETE FROM {GetTableName(includeAlias: false)} {filterStatement}";
     }
 
     /// <inheritdoc />
@@ -266,11 +278,11 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     }
 
     /// <summary>
-    /// Generates an INNER JOIN SQL statement for a cross-reference relationship.
+    /// Generates an INNER JOIN SQL filterStatement for a cross-reference relationship.
     /// </summary>
     /// <param name="crossRef">The cross-reference definition.</param>
     /// <param name="options">Request options that may affect SQL generation.</param>
-    /// <returns>A formatted SQL INNER JOIN statement.</returns>
+    /// <returns>A formatted SQL INNER JOIN filterStatement.</returns>
     private string GenerateCrossReferenceJoin(DbCrossRelationDefinition crossRef, RequestOptions options)
     {
         bool useHistory = options.AsOf.HasValue;
@@ -298,7 +310,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         var conditions = new List<string>();
 
-        foreach (var filter in filters)
+        var multiple = filters.CountBy(t => t.PropertyName).Where(t => t.Value > 1).Select(t => t.Key);
+
+        foreach (var filter in filters.Where(t => !multiple.Contains(t.PropertyName)))
         {
             string condition = filter.Comparer switch
             {
@@ -315,6 +329,41 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             };
 
             conditions.Add(condition);
+        }
+
+        foreach (var m in multiple)
+        {
+            var inList = new List<string>();
+            var notInList = new List<string>();
+
+            int a = 1;
+            foreach (var filter in filters.Where(t => t.PropertyName == m))
+            {
+                if (filter.Comparer == FilterComparer.Equals)
+                {
+                    inList.Add($"@{m}_{a}");
+                }
+                else if (filter.Comparer == FilterComparer.NotEqual)
+                {
+                    notInList.Add($"@{m}_{a}");
+                }
+                else
+                {
+                    throw new Exception("Filter not supported");
+                }
+
+                a++;
+            }
+
+            if (inList.Any())
+            {
+                conditions.Add($"{tableAlias}.{m} IN ({string.Join(",", notInList)})");
+            }
+
+            if (notInList.Any())
+            {
+                conditions.Add($"{tableAlias}.{m} NOT IN ({string.Join(",", notInList)})");
+            }
         }
 
         return conditions.Count > 0 ? "WHERE " + string.Join(" AND ", conditions) : string.Empty;
@@ -439,6 +488,15 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return string.Join(',', values.OrderBy(t => t).Select(t => $"@{t}").ToList());
     }
 
+    private string MergeUpdateMatchStatement(List<GenericParameter> values)
+    {
+        return MergeUpdateMatchStatement(values.Select(t => t.Key));
+    }
+
+    private string MergeUpdateMatchStatement(IEnumerable<string> values)
+    {
+        return string.Join(" OR ", values.OrderBy(t => t).Select(t => $"T.{t} <> @{t}").ToList());
+    }
     #endregion
 
     #region Schema
@@ -450,7 +508,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         if (_definition.IsView)
         {
-            scriptCollection.AddScripts(CreateView());
+            scriptCollection.AddScripts(CreateView(_definition.ViewVersion));
             foreach (var dep in _definition.ViewDependencies)
             {
                 scriptCollection.AddDependency(dep);
@@ -502,7 +560,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return scriptCollection;
     }
 
-    private OrderedDictionary<string, string> CreateView()
+    private OrderedDictionary<string, string> CreateView(int version = 1)
     {
         var scripts = new OrderedDictionary<string, string>();
 
@@ -511,7 +569,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         {_definition.ViewQuery}
         """;
 
-        scripts.Add($"CREATE VIEW {GetTableName(includeAlias: false)}", query);
+        scripts.Add($"CREATE VIEW {GetTableName(includeAlias: false)} {version}", query);
 
         return scripts;
     }
@@ -635,8 +693,10 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return (key, query);
     }
 
-    private (string Key, string Query) CreateUniqueConstraint(DbConstraintDefinition constraint)
+    private OrderedDictionary<string, string> CreateUniqueConstraint(DbConstraintDefinition constraint)
     {
+        var res = new OrderedDictionary<string, string>();
+
         string name = string.IsNullOrEmpty(constraint.Name) ? _definition.ModelType.Name : constraint.Name;
 
         var props = _definition.ModelType.GetProperties();
@@ -652,11 +712,21 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
         string query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} UNIQUE ({string.Join(',', constraint.Properties.Keys)});";
 
-        return (key, query);
+        res.Add(key, query);
+
+        var idxName = $"uc_{_definition.ModelType.Name}_{string.Join('_', constraint.Properties.Keys)}_idx".ToLower();
+        var idxKey = $"CREATE INDEX {idxName}";
+        var idxQuery = $"CREATE UNIQUE INDEX IF NOT EXISTS {idxName} ON {GetTableName(includeAlias: false)} ({string.Join(',', constraint.Properties.Keys)}) {(constraint.IncludedProperties.Any() ? $"INCLUDE ({string.Join(',', constraint.IncludedProperties.Keys)})" : string.Empty)};";
+
+        res.Add(idxKey, idxQuery);
+
+        return res;
     }
 
-    private (string Key, string Query) CreateForeignKeyConstraint(DbRelationDefinition foreignKey)
+    private OrderedDictionary<string, string> CreateForeignKeyConstraint(DbRelationDefinition foreignKey)
     {
+        var res = new OrderedDictionary<string, string>();
+
         if (!_definition.ModelType.GetProperties().ToList().Exists(t => t.Name.Equals(foreignKey.BaseProperty, StringComparison.OrdinalIgnoreCase)))
         {
             throw new Exception($"{_definition.ModelType.Name} does not contain the property '{foreignKey.BaseProperty}'");
@@ -678,7 +748,15 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         var key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
         var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
 
-        return (key, query);
+        res.Add(key, query);
+
+        var idxName = $"fk_{_definition.ModelType.Name}_{foreignKey.BaseProperty}_{targetDef.ModelType.Name}_idx".ToLower();
+        var idxKey = $"CREATE INDEX {idxName}";
+        var idxQuery = $"CREATE INDEX IF NOT EXISTS {idxName} ON {GetTableName(includeAlias: false)} ({foreignKey.BaseProperty});";
+
+        res.Add(idxKey, idxQuery);
+
+        return res;
     }
 
     private OrderedDictionary<string, string> CreateSharedHistoryFunction()

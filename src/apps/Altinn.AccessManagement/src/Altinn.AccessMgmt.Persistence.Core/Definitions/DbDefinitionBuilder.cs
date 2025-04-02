@@ -30,11 +30,13 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// Sets whether the entity is a view.
         /// </summary>
         /// <param name="value">Default: true</param>
+        /// <param name="version">View version to trigger recreate (default: 1)</param>
         /// <returns></returns>
-        public DbDefinitionBuilder<T> IsView(bool value = true)
+        public DbDefinitionBuilder<T> IsView(bool value = true, int version = 1)
         {
             // Add view script??
             DbDefinition.IsView = value;
+            DbDefinition.ViewVersion = version;
             return this;
         }
 
@@ -45,7 +47,6 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// <returns></returns>
         public DbDefinitionBuilder<T> SetViewQuery(string query)
         {
-            // Add view script??
             DbDefinition.ViewQuery = query;
             return this;
         }
@@ -152,11 +153,13 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// </summary>
         /// <param name="properties">A collection of expressions identifying the properties.</param>
         /// <param name="isPrimaryKey">Specifies whether this is a primary key constraint.</param>
+        /// <param name="includedProperties">A collection of expressions identifying the properties to be included in an unique covering index</param>
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         /// <exception cref="Exception">Thrown if any of the specified properties does not exist on the model type.</exception>
-        private DbDefinitionBuilder<T> RegisterConstraint(IEnumerable<Expression<Func<T, object>>> properties, bool isPrimaryKey)
+        private DbDefinitionBuilder<T> RegisterConstraint(IEnumerable<Expression<Func<T, object>>> properties, bool isPrimaryKey, IEnumerable<Expression<Func<T, object>>> includedProperties)
         {
             var propertyDefinitions = new Dictionary<string, Type>();
+            var includedPropertyDefinitions = new Dictionary<string, Type>();
             var propertyInfos = typeof(T).GetProperties().ToDictionary(p => p.Name, p => p.PropertyType);
 
             foreach (var property in properties)
@@ -171,10 +174,26 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
                 propertyDefinitions[propertyInfo.Name] = propertyInfo.PropertyType;
             }
 
+            if (includedProperties != null)
+            {
+                foreach (var property in includedProperties)
+                {
+                    var propertyInfo = ExtractPropertyInfo(property);
+
+                    if (!propertyInfos.ContainsKey(propertyInfo.Name))
+                    {
+                        throw new Exception($"{typeof(T).Name} does not contain the property '{propertyInfo.Name}'");
+                    }
+
+                    includedPropertyDefinitions[propertyInfo.Name] = propertyInfo.PropertyType;
+                }
+            }
+
             var constraint = new DbConstraintDefinition()
             {
                 Properties = propertyDefinitions,
-                IsPrimaryKey = isPrimaryKey
+                IsPrimaryKey = isPrimaryKey,
+                IncludedProperties = includedPropertyDefinitions
             };
 
             if (isPrimaryKey)
@@ -197,15 +216,15 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// <param name="properties">A collection of expressions identifying the properties that form the primary key.</param>
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         public DbDefinitionBuilder<T> RegisterPrimaryKey(IEnumerable<Expression<Func<T, object>>> properties)
-            => RegisterConstraint(properties, isPrimaryKey: true);
+            => RegisterConstraint(properties, isPrimaryKey: true, includedProperties: null);
 
         /// <summary>
         /// Registers a unique constraint for the specified properties.
         /// </summary>
         /// <param name="properties">A collection of expressions identifying the properties that should have a unique constraint.</param>
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        public DbDefinitionBuilder<T> RegisterUniqueConstraint(IEnumerable<Expression<Func<T, object>>> properties)
-            => RegisterConstraint(properties, isPrimaryKey: false);
+        public DbDefinitionBuilder<T> RegisterUniqueConstraint(IEnumerable<Expression<Func<T, object>>> properties, IEnumerable<Expression<Func<T, object>>> includedProperties = null)
+            => RegisterConstraint(properties, isPrimaryKey: false, includedProperties: includedProperties);
 
         #endregion
 
@@ -226,7 +245,7 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         public DbDefinitionBuilder<T> RegisterExtendedProperty<TExtended, TJoin>(
             Expression<Func<T, object>> TProperty,
             Expression<Func<TJoin, object>> TJoinProperty,
-            Expression<Func<TExtended, object>> TExtendedProperty,
+            Expression<Func<TExtended, TJoin>> TExtendedProperty,
             bool optional = false,
             bool isList = false,
             bool cascadeDelete = false)
@@ -234,6 +253,12 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
             string baseProperty = ExtractPropertyInfo(TProperty).Name;
             string refProperty = ExtractPropertyInfo(TJoinProperty).Name;
             string extendedProperty = ExtractPropertyInfo(TExtendedProperty).Name;
+            string extendedPropertyType = ExtractPropertyInfo(TExtendedProperty).PropertyType.Name;
+
+            if (extendedPropertyType != typeof(TJoin).Name)
+            {
+                Console.WriteLine($"WARNING: Type missmatch on definition for '{typeof(T).Name}'");
+            }
 
             var join = new DbRelationDefinition()
             {
@@ -271,8 +296,8 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// </param>
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         public DbDefinitionBuilder<T> RegisterAsCrossReferenceExtended<TExtended, TA, TB>(
-            (Expression<Func<T, object>> Source, Expression<Func<TA, object>> Join, Expression<Func<TExtended, object>> Extended, bool? CascadeDelete) defineA,
-            (Expression<Func<T, object>> Source, Expression<Func<TB, object>> Join, Expression<Func<TExtended, object>> Extended, bool? CascadeDelete) defineB
+            (Expression<Func<T, object>> Source, Expression<Func<TA, object>> Join, Expression<Func<TExtended, TA>> Extended, bool? CascadeDelete) defineA,
+            (Expression<Func<T, object>> Source, Expression<Func<TB, object>> Join, Expression<Func<TExtended, TB>> Extended, bool? CascadeDelete) defineB
         )
         {
             RegisterExtendedProperty(defineA.Source, defineA.Join, defineA.Extended, defineA.CascadeDelete ?? false);
@@ -306,6 +331,26 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// <returns>The <see cref="PropertyInfo"/> corresponding to the property in the expression.</returns>
         /// <exception cref="ArgumentException">Thrown if the expression does not refer to a valid property.</exception>
         private PropertyInfo ExtractPropertyInfo<TLocal>(Expression<Func<TLocal, object>> expression)
+        {
+            MemberExpression memberExpression;
+
+            if (expression.Body is MemberExpression)
+            {
+                memberExpression = (MemberExpression)expression.Body;
+            }
+            else if (expression.Body is UnaryExpression unaryExpression && unaryExpression.Operand is MemberExpression)
+            {
+                memberExpression = (MemberExpression)unaryExpression.Operand;
+            }
+            else
+            {
+                throw new ArgumentException("Expression must refer to a property.");
+            }
+
+            return memberExpression.Member as PropertyInfo ?? throw new ArgumentException("Member is not a property.");
+        }
+
+        private PropertyInfo ExtractPropertyInfo<TLocal, TLocalJoin>(Expression<Func<TLocal, TLocalJoin>> expression)
         {
             MemberExpression memberExpression;
 
