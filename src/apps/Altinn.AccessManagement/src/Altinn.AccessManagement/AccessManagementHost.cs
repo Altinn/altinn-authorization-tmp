@@ -8,18 +8,7 @@ using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
-using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
-using Altinn.AccessMgmt.Persistence.Core.Executors;
-using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Services;
-using Altinn.AccessMgmt.Persistence.Core.Utilities;
-using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
 using Altinn.AccessMgmt.Persistence.Extensions;
-using Altinn.AccessMgmt.Persistence.Repositories;
-using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.AccessMgmt.Persistence.Services;
-using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Database;
@@ -118,7 +107,31 @@ internal static partial class AccessManagementHost
         builder.Services.AddAltinnPlatformIntegrationDefaults(() =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            return appsettings.Platform;
+            if (appsettings.Platform?.ResourceRegisterEndpoint == null)
+            {
+                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.ResourceRegisterEndpoint));
+                opts.Endpoint = default;
+            }
+            else
+            {
+                opts.Endpoint = appsettings.Platform.ResourceRegisterEndpoint;
+            }
+        });
+
+        builder.AddAltinnRegisterIntegration(opts =>
+        {
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            if (appsettings.Platform?.RegisterEndpoint == null)
+            {
+                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.RegisterEndpoint));
+                opts.Endpoint = default;
+            }
+            else
+            {
+                opts.Endpoint = appsettings.Platform.RegisterEndpoint;
+            }
+
+            opts.Endpoint = new Uri("http://localhost:5020/");
         });
 
         return builder;
@@ -287,6 +300,7 @@ internal static partial class AccessManagementHost
         {
             MaxAutoPrepare = 50,
             AutoPrepareMinUsages = 2,
+            IncludeErrorDetail = true
         };
 
         var serviceDescriptor = builder.Services.GetAltinnServiceDescriptor();

@@ -1,16 +1,15 @@
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
-using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Altinn.Authorization.Integration.Platform.ResourceRegister;
-using Azure;
-using Microsoft.Azure.Amqp.Framing;
 using Microsoft.FeatureManagement;
 
 namespace Altinn.Authorization.AccessManagement;
@@ -32,6 +31,7 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="entityTypeRepository">Repository for entity type data.</param>
 /// <param name="entityVariantRepository">Repository for entity variant data.</param>
 /// <param name="providerRepository">Repository for provider data.</param>
+/// <param name="resourceTypeRepository">Repository for resource type data.</param>
 public partial class RegisterHostedService(
     IAltinnLease lease,
     IAltinnRegister register,
@@ -46,7 +46,8 @@ public partial class RegisterHostedService(
     IAssignmentRepository assignmentRepository,
     IEntityTypeRepository entityTypeRepository,
     IEntityVariantRepository entityVariantRepository,
-    IProviderRepository providerRepository
+    IProviderRepository providerRepository,
+    IResourceTypeRepository resourceTypeRepository
     ) : IHostedService, IDisposable
 {
     private readonly IAltinnLease _lease = lease;
@@ -63,6 +64,7 @@ public partial class RegisterHostedService(
     private readonly IEntityTypeRepository entityTypeRepository = entityTypeRepository;
     private readonly IEntityVariantRepository entityVariantRepository = entityVariantRepository;
     private readonly IProviderRepository providerRepository = providerRepository;
+    private readonly IResourceTypeRepository resourceTypeRepository = resourceTypeRepository;
     private int _executionCount = 0;
     private Timer _timer = null;
     private readonly CancellationTokenSource _stop = new();
@@ -170,18 +172,20 @@ public partial class RegisterHostedService(
             return false;
         }
 
+        var resourceOwners = new List<Provider>();
         foreach (var serviceOwner in serviceOwners.Content.Orgs)
         {
-            var result = await providerRepository.Upsert(
-                new()
-                {
-                    Id = serviceOwner.Value.Id,
-                    LogoUrl = serviceOwner.Value.Logo,
-                    Name = serviceOwner.Value.Name.Nb,
-                    RefId = serviceOwner.Value.Orgnr,
-                },
-                cancellationToken);
+            resourceOwners.Add(new Provider()
+            {
+                Id = serviceOwner.Value.Id,
+                LogoUrl = serviceOwner.Value.Logo,
+                Name = serviceOwner.Value.Name.Nb,
+                RefId = serviceOwner.Value.Orgnr,
+            });
         }
+
+        // IngestService will map in Id property and update properties not matchaed
+        await ingestService.IngestAndMergeData(resourceOwners, ["Id"]);
 
         return true;
     }
@@ -196,21 +200,109 @@ public partial class RegisterHostedService(
                 return;
             }
 
+            var resourceTypes = await resourceTypeRepository.Get();
+            var resources = new List<Resource>();
+
             foreach (var updatedResource in page.Content.Data)
             {
-                var resource = await _resourceRegister.GetResource(updatedResource.ResourceUrn.Split(":").Last(), cancellationToken);
-                if (resource.IsSuccessful)
+                var resourceResponse = await _resourceRegister.GetResource(updatedResource.ResourceUrn.Split(":").Last(), cancellationToken);
+                if (!resourceResponse.IsSuccessful)
                 {
-                    return;
+                    continue;
                 }
 
-                await resourceRepository.Upsert(
-                    new()
+                var resource = resourceResponse.Content;
+
+                var res = (await resourceRepository.Get(t => t.RefId, resource.Identifier)).FirstOrDefault();
+
+                if (updatedResource.Deleted)
+                {
+                    if (res != null)
                     {
-                        Description = resource.Content.Description.Nb,
-                    },
-                    cancellationToken);
+                        await resourceRepository.Delete(res.Id);
+                    }
+
+                    continue;
+                }
+
+                /*
+                   "hasCompetentAuthority": {
+    "name": {
+      "nb": "Testdepartementet",
+      "en": "Test Ministry",
+      "nn": "Testdepartementet"
+    },
+    "organization": "991825827",
+    "orgcode": "ttd"
+  },
+                 */
+
+                /*
+                  
+                Provider:
+                + Code
+                + TypeId
+
+                Provider.EnableTranslations();
+
+                +ProviderType
+                +Id
+                +Name
+
+                 */
+
+                var provider = Providers.FirstOrDefault(t => t.RefId == resource.HasCompetentAuthority.Orgcode);
+                if (provider == null)
+                {
+                    if (resource.HasCompetentAuthority != null)
+                    {
+                        await providerRepository.Create(new Provider() 
+                        { 
+                            Name = resource.HasCompetentAuthority.Name.Nb,
+                            RefId = resource.HasCompetentAuthority.Orgcode
+                        });
+                    }
+                }
+
+                if (provider == null)
+                {
+                    if (resource.HasCompetentAuthority != null)
+                    {
+                        provider = new Provider()
+                        {
+                            Name = resource.HasCompetentAuthority.Name.Nb,
+                            RefId = resource.HasCompetentAuthority.Orgcode
+                        };
+                        await providerRepository.Create(provider);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+
+                var type = resourceTypes.FirstOrDefault(t => t.Name.Equals(resource.ResourceType, StringComparison.OrdinalIgnoreCase));
+                if (type == null)
+                {
+                    type = new ResourceType(MD5.HashData(Encoding.UTF8.GetBytes(resource.ResourceType)))
+                    {
+                        Name = resource.ResourceType
+                    };
+
+                    await resourceTypeRepository.Create(type);
+                }
+
+                resources.Add(new Resource()
+                {
+                    Name = resource.Title.Nb,
+                    Description = resource.Description.Nb,
+                    ProviderId = provider.Id,
+                    TypeId = type.Id,
+                    RefId = resource.Identifier,
+                });
             }
+
+            await ingestService.IngestAndMergeData(resources, ["RefId", "ProviderId"]);
 
             await UpdateLease(ls, data => data.ResourcesNextPageLink = page.Content.Links.Next, cancellationToken);
         }
@@ -546,12 +638,7 @@ public partial class RegisterHostedService(
         }
     }
 
-    private static readonly IReadOnlyList<GenericParameter> GetAssignmentMergeMatchFilter = new List<GenericParameter>()
-    {
-        new GenericParameter("fromid", "fromid"),
-        new GenericParameter("roleid", "roleid"),
-        new GenericParameter("toid", "toid")
-    }.AsReadOnly();
+    private static readonly IReadOnlyList<string> GetAssignmentMergeMatchFilter = new List<string>() { "fromid", "roleid", "toid" }.AsReadOnly();
 
     private List<Role> Roles { get; set; } = [];
 
@@ -706,16 +793,9 @@ public partial class RegisterHostedService(
         }
     }
 
-    private static readonly IReadOnlyList<GenericParameter> GetEntityMergeMatchFilter = new List<GenericParameter>()
-    {
-        new GenericParameter("id", "id")
-    }.AsReadOnly();
+    private static readonly IReadOnlyList<string> GetEntityMergeMatchFilter = new List<string>() { "id" }.AsReadOnly();
 
-    private static readonly IReadOnlyList<GenericParameter> GetEntityLookupMergeMatchFilter = new List<GenericParameter>()
-    {
-        new GenericParameter("entityid", "entityid"),
-        new GenericParameter("key", "key"),
-    }.AsReadOnly();
+    private static readonly IReadOnlyList<string> GetEntityLookupMergeMatchFilter = new List<string>() { "entityid", "key" }.AsReadOnly();
 
     private Entity ConvertPartyModel(PartyModel model, bool createTypeIfMissing = false)
     {
