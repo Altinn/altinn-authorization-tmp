@@ -97,31 +97,8 @@ public partial class RegisterHostedService(
 
         try
         {
-            var serviceOwners = await _resourceRegister.GetServiceOwners(cancellationToken);
-            if (!serviceOwners.IsSuccessful)
-            {
-                Log.ServiceOwnerError(_logger, serviceOwners.StatusCode);
-                return;
-            }
-
-            foreach (var serviceOwner in serviceOwners.Content.Orgs)
-            {
-                var result = await providerRepository.Upsert(
-                    new()
-                    {
-                        Id = serviceOwner.Value.Id,
-                        LogoUrl = serviceOwner.Value.Logo,
-                        Name = serviceOwner.Value.Name.Nb,
-                        RefId = serviceOwner.Value.Orgnr,
-                    },
-                    cancellationToken);
-            }
-
-            bool flowControl = await SyncResources(ls, cancellationToken);
-            if (!flowControl)
-            {
-                return;
-            }
+            await SyncResourceOwners(cancellationToken);
+            await SyncResources(ls, cancellationToken);
 
             var partyStatus = await statusService.GetOrCreateRecord(Guid.Parse("C18B67F6-B07E-482C-AB11-7FE12CD1F48D"), "accessmgmt-sync-register-party", 5);
             var roleStatus = await statusService.GetOrCreateRecord(Guid.Parse("84E9726D-E61B-4DFF-91D7-9E17C8BB41A6"), "accessmgmt-sync-register-role", 5);
@@ -182,6 +159,31 @@ public partial class RegisterHostedService(
         {
             await _lease.Release(ls, default);
         }
+    }
+
+    private async Task<bool> SyncResourceOwners(CancellationToken cancellationToken)
+    {
+        var serviceOwners = await _resourceRegister.GetServiceOwners(cancellationToken);
+        if (!serviceOwners.IsSuccessful)
+        {
+            Log.ServiceOwnerError(_logger, serviceOwners.StatusCode);
+            return false;
+        }
+
+        foreach (var serviceOwner in serviceOwners.Content.Orgs)
+        {
+            var result = await providerRepository.Upsert(
+                new()
+                {
+                    Id = serviceOwner.Value.Id,
+                    LogoUrl = serviceOwner.Value.Logo,
+                    Name = serviceOwner.Value.Name.Nb,
+                    RefId = serviceOwner.Value.Orgnr,
+                },
+                cancellationToken);
+        }
+
+        return true;
     }
 
     private async Task SyncResources(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
@@ -471,7 +473,6 @@ public partial class RegisterHostedService(
                         {
                             Log.AssignmentFailed(_logger, "remove", item.FromParty, item.ToParty, item.RoleIdentifier);
                         }
-
                     }
 
                     Interlocked.Increment(ref _executionCount);
@@ -566,7 +567,7 @@ public partial class RegisterHostedService(
                 RoleId = role.Id
             };
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw new Exception(string.Format("Failed to convert model to Assignment. From:{0} To:{1} Role:{2}", model.FromParty, model.ToParty, model.RoleIdentifier));
         }
@@ -830,7 +831,6 @@ public partial class RegisterHostedService(
                 throw new Exception(string.Format("Unable to find type '{0}' and variant '{1}'", model.PartyType, model.UnitType));
             }
         }
-
     }
 
     private List<EntityLookup> ConvertPartyModelToLookup(PartyModel model)
