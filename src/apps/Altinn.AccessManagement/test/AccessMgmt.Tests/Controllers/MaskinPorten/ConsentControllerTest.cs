@@ -82,7 +82,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             ConsentRequest request = await GetRequest(requestId);
             request.ValidTo = DateTime.UtcNow.AddDays(10);
             await repositgo.CreateRequest(request, default); ;
-            await repositgo.ApproveConsentRequest(requestId, Guid.NewGuid(), default);
+            await repositgo.AcceptConsentRequest(requestId, Guid.NewGuid(), default);
 
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";

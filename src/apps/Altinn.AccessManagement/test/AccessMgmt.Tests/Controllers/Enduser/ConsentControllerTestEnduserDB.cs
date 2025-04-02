@@ -12,12 +12,14 @@ using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Util;
 using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Consent;
+using Altinn.Authorization.ProblemDetails;
 using Altinn.Common.AccessToken.Services;
 using AltinnCore.Authentication.JwtCookie;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using static Altinn.Authorization.Integration.Platform.ResponseComposer;
 
 namespace AccessMgmt.Tests.Controllers.Enduser
 {
@@ -68,7 +70,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
         }
 
         [Fact]
-        public async Task ApproveRequest_Valid()
+        public async Task AcceptRequest_Valid()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
@@ -76,9 +78,30 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/approve/", null);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/accept/", null);
             string responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AcceptRequest_AlreadyRejected()
+        {
+            Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
+            Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
+            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            await repositgo.CreateRequest(await GetRequest(requestId), default);
+            await repositgo.RejectConsentRequest(requestId,performedBy, default);
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, performedBy);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/accept/", null);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
+            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
+            Assert.Single(problemDetails.Errors);
+            Assert.Equal("AM.VLD-00020", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("Consent is revoked", problemDetails.Errors.ToList()[0].Detail.ToString());
         }
 
         [Fact]
@@ -107,7 +130,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId), default);
-            await repositgo.ApproveConsentRequest(requestId, performedBy, default);
+            await repositgo.AcceptConsentRequest(requestId, performedBy, default);
 
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, performedBy);

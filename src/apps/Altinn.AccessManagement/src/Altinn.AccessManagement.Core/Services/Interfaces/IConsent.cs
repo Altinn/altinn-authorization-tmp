@@ -32,7 +32,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <summary>
         /// Approves a concent request. The request needs to be a valid request. 
         /// </summary>
-        Task ApproveRequest(Guid id, Guid approvedByParty, CancellationToken cancellationToken = default);
+        Task<Result<ConsentRequestDetails>> AcceptRequest(Guid id, Guid approvedByParty, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Revokes a concent. The concent needs to be valid.

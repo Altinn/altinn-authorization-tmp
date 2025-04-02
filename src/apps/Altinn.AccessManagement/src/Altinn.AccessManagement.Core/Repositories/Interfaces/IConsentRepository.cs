@@ -25,7 +25,7 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         /// <summary>
         /// Approves a consent request
         /// </summary>
-        Task ApproveConsentRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);
+        Task AcceptConsentRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Rejects a consent request

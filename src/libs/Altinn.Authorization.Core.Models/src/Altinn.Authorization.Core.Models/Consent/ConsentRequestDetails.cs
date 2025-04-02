@@ -44,5 +44,7 @@
         /// Defines when the consent was given.
         /// </summary>
         public DateTimeOffset? Consented { get; set; }
+
+
     }
 }

@@ -3,6 +3,8 @@
     <ItemGroup>
         <PackageReference Include="Altinn.Common.PEP" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+		<PackageReference Include="Altinn.Authorization.ProblemDetails" />
+		<PackageReference Include="Altinn.Authorization.ProblemDetails.Abstractions" />
     </ItemGroup>
 
     <ItemGroup>

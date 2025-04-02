@@ -11,6 +11,7 @@ using Altinn.Authorization.Core.Models.Party;
 using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Models;
+using System.Linq.Expressions;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -121,9 +122,52 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task ApproveRequest(Guid id, Guid approvedByParty, CancellationToken cancellationToken = default)
+        public async Task<Result<ConsentRequestDetails>> AcceptRequest(Guid id, Guid approvedByParty, CancellationToken cancellationToken = default)
         {
-            await _consentRepository.ApproveConsentRequest(id, approvedByParty, cancellationToken);
+            ValidationErrorBuilder errors = default;
+            ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
+            if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
+            {
+                return details;
+            }
+
+            if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
+            {
+                errors.Add(ValidationErrors.ConsentCantBeAccepted, "Status");
+            }
+
+            if (errors.TryBuild(out var beforeErrorREsult))
+            {
+                return beforeErrorREsult;
+            }
+
+            try
+            {
+                await _consentRepository.AcceptConsentRequest(id, approvedByParty, cancellationToken);
+            }
+            catch (Exception)
+            {
+                await _consentRepository.GetRequest(id, cancellationToken);
+
+                if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
+                {
+                    return details;
+                }
+
+                if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
+                {
+                    errors.Add(ValidationErrors.ConsentCantBeAccepted, "Status");
+                    if (errors.TryBuild(out var errorResult))
+                    {
+                        return errorResult;
+                    }
+                }
+
+                throw;
+            }
+
+            ConsentRequestDetails updated = await _consentRepository.GetRequest(id, cancellationToken);
+            return updated;
         }
 
         /// <inheritdoc/>

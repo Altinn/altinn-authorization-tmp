@@ -1,11 +1,10 @@
 ﻿using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
-using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Core.Models.Consent;
+using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Formats.Asn1;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers
 {
@@ -50,7 +49,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// </summary>
         [Authorize]
         [HttpPost]
-        [Route("request/{requestId}/approve/")]
+        [Route("request/{requestId}/accept/")]
         public async Task<IActionResult> Approve(Guid requestId, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);
@@ -59,13 +58,20 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
                 return Unauthorized();
             }
 
-            await _consentService.ApproveRequest(requestId, performedBy.Value, cancellationToken);
-            return Ok();
+            Result<ConsentRequestDetails> consentRequest = await _consentService.AcceptRequest(requestId, performedBy.Value, cancellationToken);
+
+            if (consentRequest.IsProblem)
+            {
+                return consentRequest.Problem.ToActionResult();
+            }
+
+            return Ok(consentRequest.Value);
         }
 
         /// <summary>
         /// Endpoint to deny a consent request
         /// </summary>
+        [Authorize]
         [HttpPost]
         [Route("request/{requestId}/reject/")]
         public async Task<IActionResult> Reject(Guid requestId, CancellationToken cancellationToken = default)
