@@ -54,7 +54,7 @@ dev:
 # Print connection string (accessmgmt db)
 dev-pgsql-connection-string:
   #!{{shebang}}
-  $port = podman inspect --format='{{"{{(index .NetworkSettings.Ports \"5432/tcp\" 0).HostPort}}"}}' altinn_authorization_postgres
+  $port = {{container-tool}} inspect --format='{{"{{(index .NetworkSettings.Ports \"5432/tcp\" 0).HostPort}}"}}' altinn_authorization_postgres
   if ($IsWindows) {
     Write-Output "Host=host.containers.internal;Port=$port;Username=admin;Password=admin;Database=accessmgmt"
   } else {
