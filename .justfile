@@ -2,7 +2,11 @@
 shebang := if os() == 'windows' { 'pwsh.exe' } else { '/usr/bin/env pwsh'}
 
 # Define the container runtime based on OS
-docker-runtime := if os() == 'windows' { 'podman' } else { 'docker' }
+container-tool := if os() == 'windows' {
+  'podman' 
+} else {
+  'docker'
+}
 
 # Set shell for non-Windows OSs:
 set shell := ["pwsh", "-c"]
@@ -45,7 +49,7 @@ db-cred:
 # Dispatches a set of containers that's used for local dev
 dev:
   #!{{shebang}}
-  {{docker-runtime}} compose up -d
+  {{container-tool}} compose up -d
 
 # Print connection string (accessmgmt db)
 dev-pgsql-connection-string:
@@ -61,5 +65,5 @@ dev-pgsql-connection-string:
 # Starts redis shell connected to docker composer redis instance
 dev-redis-cli:
   #!{{shebang}}
-  $port = {{docker-runtime}} inspect --format='{{"{{(index .NetworkSettings.Ports \"6379/tcp\" 0).HostPort}}"}}' altinn_authorization_redis
+  $port = {{container-tool}} inspect --format='{{"{{(index .NetworkSettings.Ports \"6379/tcp\" 0).HostPort}}"}}' altinn_authorization_redis
   redis-cli -h localhost -p $port

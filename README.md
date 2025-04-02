@@ -22,12 +22,14 @@ Ensure you have the following languages and tools installed before setting up yo
 
 #### Tools
 - [Just](https://github.com/casey/just?tab=readme-ov-file#installation)
-- [Docker Desktop (Windows)](http://docs.docker.com/desktop/setup/install/windows-install/)
-- [Docker Engine (Linux)](https://docs.docker.com/engine/install/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+- [Docker Desktop Windows](http://docs.docker.com/desktop/setup/install/windows-install/)
+- [Docker Engine Linux](https://docs.docker.com/engine/install/)
+- [Docker Compose Linux](https://docs.docker.com/compose/install/)
+- [Docker Compose Windows](https://podman-desktop.io/docs/compose/setting-up-compose)
 - [Azure CLI (az)](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [kubelogin](https://azure.github.io/kubelogin/install.html)
+- [powershell core](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.5)
 
 ### Setting Up the Environment
 
