@@ -1,9 +1,7 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Microsoft.Extensions.Configuration;
 
@@ -13,7 +11,8 @@ namespace Altinn.AccessMgmt.Repo.Data;
 /// Service for running data migrations
 /// </summary>
 public class DbDataMigrationService(
-        IProviderRepository providerService,
+        IProviderRepository providerRepository,
+        IProviderTypeRepository providerTypeRepository,
         IAreaRepository areaService,
         IAreaGroupRepository areaGroupService,
         IConfiguration configuration,
@@ -25,7 +24,8 @@ public class DbDataMigrationService(
         IIngestService ingestService
         )
 {
-    private readonly IProviderRepository providerService = providerService;
+    private readonly IProviderRepository providerRepository = providerRepository;
+    private readonly IProviderTypeRepository providerTypeRepository = providerTypeRepository;
     private readonly IAreaRepository areaService = areaService;
     private readonly IAreaGroupRepository areaGroupService = areaGroupService;
     private readonly IEntityTypeRepository entityTypeService = entityTypeService;
@@ -47,6 +47,12 @@ public class DbDataMigrationService(
         //// TODO: Add Activity logging
 
         string dataKey = "<data>";
+
+        if (migrationService.NeedMigration<ProviderType>(dataKey, 1))
+        {
+            await IngestProviderType();
+            await migrationService.LogMigration<ProviderType>(dataKey, string.Empty, 1);
+        }
 
         if (migrationService.NeedMigration<Provider>(dataKey, 2))
         {
@@ -109,6 +115,45 @@ public class DbDataMigrationService(
         }
     }
 
+    public async Task IngestProviderType(CancellationToken cancellationToken = default)
+    {
+        var data = new List<ProviderType>()
+        {
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), Name = "System" },
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Tjeneste" },
+            //// new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7005-a8db-1f6387b28a5e"), Name = "Andre" }
+        };
+
+        var dataEng = new List<ProviderType>()
+        {
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), Name = "System" },
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Service" },
+            //// new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7005-a8db-1f6387b28a5e"), Name = "Other" }
+        };
+
+        var dataNno = new List<ProviderType>()
+        {
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), Name = "System" },
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Teneste" },
+            //// new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7005-a8db-1f6387b28a5e"), Name = "Annan" }
+        };
+
+        foreach (var d in data)
+        {
+            await providerTypeRepository.Upsert(d, cancellationToken);
+        }
+
+        foreach (var d in dataEng)
+        {
+            await providerTypeRepository.UpdateTranslation(d.Id, d, "eng", cancellationToken);
+        }
+
+        foreach (var d in dataNno)
+        {
+            await providerTypeRepository.UpdateTranslation(d.Id, d, "nno", cancellationToken);
+        }
+    }
+
     /// <summary>
     /// Ingest all static provider data
     /// </summary>
@@ -116,247 +161,26 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestProvider(CancellationToken cancellationToken = default)
     {
-        var providers = new List<Provider>()
+        var systemType = (await providerTypeRepository.Get(t => t.Name, "System")).FirstOrDefault() ?? throw new Exception("Providertyp 'System' not found.");
+
+        var systemProviders = new List<Provider>()
         {
-            new Provider() { Id = Guid.Parse("F135FF74-0E93-4959-BCDF-0A86142481E9"), Name = "Arbeidstilsynet", RefId = "974761211", LogoUrl = "https://altinncdn.no/orgs/dat/arbeidstilsynet.png" },            
-            new Provider() { Id = Guid.Parse("46FAAC7B-7001-4328-8721-098C6012733F"), Name = "Arbeids- og velferdsetaten (NAV)", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nav/nav.png" },
-            new Provider() { Id = Guid.Parse("B42A025E-518E-45B7-A84E-10AFA41F20AA"), Name = "Avfall Sør AS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("BDB48686-C305-47E8-B641-0EA1EEE7E4F3"), Name = "Barne-, ungdoms- og familiedirektoratet", RefId = "986128433", LogoUrl = "https://altinncdn.no/orgs/buf/buf.png" },
-            new Provider() { Id = Guid.Parse("99B02980-2E1F-41B1-A129-1BBFADCAD6CD"), Name = "Bergen kommune", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("C45F525C-D6B1-45B7-8D75-10B5B7F453DA"), Name = "Brønnøysundregistrene", RefId = "974760673", LogoUrl = "https://altinncdn.no/orgs/brg/brreg.png" },
-            new Provider() { Id = Guid.Parse("DEAED068-8E89-40F8-8D7A-0C834B2F2A10"), Name = "Avinor AS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("083A3BC9-AFE0-4692-9EEE-135AF683A758"), Name = "Datatilsynet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("CA4DE1DC-8FC1-4F2C-BD67-199D497F756A"), Name = "Det norske veritas certification AS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("0900E42A-4396-4674-ADD3-1D33A268745B"), Name = "Digitaliseringsdirektoratet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("A72241EC-5D54-4680-8E80-25B0D9C00400"), Name = "Digitale Helgeland", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("723624E5-9801-4872-B96E-1D3896A5E5FF"), Name = "Direktoratet for byggkvalitet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/dibk/dibk.png" },
-            new Provider() { Id = Guid.Parse("085AEFE2-23A1-457A-83AF-21E9DD5866F2"), Name = "Direktoratet for e-helse", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("EE93B6E8-E196-4C99-A60A-2A27230F22A7"), Name = "Direktoratet for forvaltning og økonomistyring", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("4C7D5C3C-10BE-4098-9771-236EFC744C64"), Name = "Direktoratet for høyere utdanning og kompetanse", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("D94071F8-DC2E-4606-9756-23F4EDFCE842"), Name = "Direktoratet for medisinske produkter", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("8DEEE267-5917-4737-93DC-2618C3979D40"), Name = "Direktoratet for mineralforvaltning", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/dmf/dmf.png" },
-            new Provider() { Id = Guid.Parse("84F77677-E428-44B7-8C35-2D3176756EB8"), Name = "Direktoratet for samfunnssikkerhet og beredskap", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/dsb/dsb.png" },
-            new Provider() { Id = Guid.Parse("99C6EFD5-0090-47FA-97D3-324C7BB97329"), Name = "Direktoratet for strålevern og atomsikkerhet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("4B58A2A8-BF78-420B-9C51-33CB21443BB4"), Name = "Domstolene i Norge", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/din/din.jpg" },
-            new Provider() { Id = Guid.Parse("9B8D6F1E-700D-4124-BE54-3972422CD8D7"), Name = "Energidepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("CB19DB45-29C1-4F58-B93A-3BDF14C27574"), Name = "Enova SF", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("5BDA916B-F01A-4FAB-890F-3DFADB1B388B"), Name = "Fellesordningen for AFP", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("AF35BABC-673D-442A-BB82-4168B10BBD57"), Name = "Finanstilsynet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/krt/krt.png" },
-            new Provider() { Id = Guid.Parse("5AFD3C94-9BD1-4C65-93D5-41AA84760940"), Name = "Fiskeridirektoratet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/fd/fiskeridirektoratet.png" },
-            new Provider() { Id = Guid.Parse("11C5E332-0ACB-41CB-81B1-2B643DDF5C0D"), Name = "Fjellinjen AS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("5B7C249F-6B9D-414F-ADB3-435E42C67708"), Name = "Folkehelseinstituttet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/fhi/fhi.png" },
-            new Provider() { Id = Guid.Parse("55B49D16-787F-47B0-B1A1-44453F43AF95"), Name = "Forsvaret", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/fors/fors.png" },
-            new Provider() { Id = Guid.Parse("978CC854-3C06-499E-8407-450C2EC5EDEB"), Name = "Fylkeskommunene", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("38B5EFB6-1041-4217-8AEC-46F7D69FFCDE"), Name = "Garantikassen for fiskere", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("8C42CEFE-CBF9-4714-9420-350D3269BE46"), Name = "Gjenopptakelseskommisjonen", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/gk/gjenopptakelseskommisjonen.png" },
-            new Provider() { Id = Guid.Parse("092FAC8A-92CA-4B78-A192-46FA8D7CE019"), Name = "Helsedirektoratet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/hdir/helsedirektoratet.png" },
-            new Provider() { Id = Guid.Parse("003EDB1B-58CC-45E3-8A71-47546E18FB61"), Name = "Helsedirektoratet (godkjenning av utenlandske yrkeskvalifikasjoner)", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("DC12C823-A44D-4A00-AB86-3FDD403CF056"), Name = "Hemit HF", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/hemit/hemit.svg" },
-            new Provider() { Id = Guid.Parse("0150C4B2-6755-40EC-8027-40382E31ED1A"), Name = "Havforskningsinstituttet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/hi/havforskningsinstituttet.png" },
-            new Provider() { Id = Guid.Parse("5E5335BE-42C8-4AEA-AE80-430A0D048026"), Name = "Helse Møre og Romsdal", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/hmrhf/hmrhf.png" },
-            new Provider() { Id = Guid.Parse("50FF9A57-5750-46A7-B137-510EB32F4F30"), Name = "Høgskolen i Bergen", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("58FFE6FA-0223-4FA7-BD9A-54091612315D"), Name = "Høyesterett", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("27409CCF-5C23-468A-8A80-5425C9A5DDB5"), Name = "Husbanken", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("EA3A8C0E-6442-4D7C-9DC0-5B1D2D130250"), Name = "IKT Agder IKS", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/ikta/ikta.png" },
-            new Provider() { Id = Guid.Parse("7B05AD2C-34D6-43D6-8B48-848D1AD3B72D"), Name = "Indigo IKT IKS", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/indi/indi.png" },
-            new Provider() { Id = Guid.Parse("F94C497A-248F-4D15-A7A4-612F4A31FBB0"), Name = "Kartverket", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/kv/kartverket.png" },
-            new Provider() { Id = Guid.Parse("5E3B2E24-E54E-4391-AB9E-6AAE8823B684"), Name = "Klima- og miljødepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("23CB80DF-1CC0-42B1-B9AC-6C1F9508032F"), Name = "Kommunene", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("EE8E6E9D-2F70-47A1-9CE8-AE218EAEC7F8"), Name = "Kommuner/fylkeskommuner", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("2652353C-EAFA-4265-9C8E-708CEAD8732F"), Name = "Konkurransetilsynet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("EA1B2DE7-A211-4D22-A0FF-B7596ECD9175"), Name = "KS Digitale fellestjenester", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/ksdigi/ksdigi.png" },
-            new Provider() { Id = Guid.Parse("CBB78151-FEB3-4648-B734-72A0ACF62DD4"), Name = "Kultur- og likestillingsdepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("78D5B486-8C71-4E8C-BA35-76D456999352"), Name = "Kulturdirektoratet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("941D8C06-626C-43C8-BE5D-C6E7A131705A"), Name = "Kulturrådet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nkr/kulturradet.png" },
-            new Provider() { Id = Guid.Parse("8E0D00EE-73E4-44C2-800E-7B0290BAA1A7"), Name = "Kystverket", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/kyv/kyv.png" },
-            new Provider() { Id = Guid.Parse("4B74502E-74AD-401B-9078-7CFABD9A1EC9"), Name = "Landbruks- og matdepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("52F57B13-43AF-4BE7-924F-7D19884EC666"), Name = "Landbruksdirektoratet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("26E0032F-1504-456C-B6A1-D03653970F08"), Name = "Lillestrøm kommune", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("8578E370-4E48-4956-85E2-81DF091590E1"), Name = "Lotteri- og stiftelsestilsynet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/lts/lts.png" },
-            new Provider() { Id = Guid.Parse("88E11A2F-3E92-406A-829C-823A11BFF3CA"), Name = "Luftfartstilsynet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/lt/lt.png" },
-            new Provider() { Id = Guid.Parse("FDDF32C0-9208-41A0-949A-85F33635C460"), Name = "Mattilsynet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/mat/mat.png" },
-            new Provider() { Id = Guid.Parse("DA2F123D-AAAA-42D0-AFCC-86866E4AF595"), Name = "Medietilsynet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("76F283CD-074B-4384-B7D1-8CD2DED62E3F"), Name = "Mesterbrevnemnda ", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("E0EF8569-49C8-4694-A952-D2971BA2484E"), Name = "MIDTRE NAMDAL AVFALLSSELSKAP IKS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("45448EF0-04F8-419B-8FED-8F2819EF120A"), Name = "Miljødirektoratet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/mdir/mdir.png" },
-            new Provider() { Id = Guid.Parse("2388C03B-3317-4A76-B53E-959FA1DD17DA"), Name = "Nærings- og fiskeridepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("C8F05F5F-785C-45DC-96BD-982044144127"), Name = "Nasjonal kommunikasjonsmyndighet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nkom/nkom.png" },
-            new Provider() { Id = Guid.Parse("B447D5F1-B9A1-49D3-8647-E3ACC107655C"), Name = "Nasjonalt organ for kvalitet i utdanningen", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("2B5B11A3-696A-4FFE-99C9-991AA2CDD291"), Name = "Nasjonal sikkerhetsmyndighet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nsm/nsm.png" },
-            new Provider() { Id = Guid.Parse("12483654-2C7F-4BAD-B0DF-9BCF2AC877E5"), Name = "Nasjonalbiblioteket", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nbib/nasjonalbiblioteket.png" },
-            new Provider() { Id = Guid.Parse("79453CC7-F75D-4194-9FF6-E4C272E943E9"), Name = "Nordre Follo kommune", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nfk/nordre-follo-kommune-navnetrekk-bredde-2-linje-rgb.svg" },
-            new Provider() { Id = Guid.Parse("6CB46404-3440-45EA-B072-EC314868EE2E"), Name = "Norges Bank", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nb/norgesbank.png" },
-            new Provider() { Id = Guid.Parse("61D47D6A-73AC-4E42-B0AB-9D8A0B419E1B"), Name = "Norges geologiske undersøkelse", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("9293D3CC-3AE4-4135-8C55-A059BE82EBEA"), Name = "Norges Handelshøyskole", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("455F1E62-A3D1-48CF-A64F-A8DB5C6FC215"), Name = "Norges sjømatråd", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("F1A1416D-4321-4197-9F1C-AFCBCC1E8F4A"), Name = "Norges vassdrags- og energidirektorat", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("1AB7E982-A176-4977-A548-F9B2E2A534E0"), Name = "Norsk helsenett", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nhn/nhn.png" },
-            new Provider() { Id = Guid.Parse("5E804075-6C4D-431A-9894-B2055563DCA1"), Name = "Norsk pasientskadeerstatning", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/npe/npe.png" },
-            new Provider() { Id = Guid.Parse("27205C68-FE02-4962-885E-B4C6663E3F31"), Name = "Norsk rikskringkasting AS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("F5864BFE-F25D-46CB-A620-B6D496155956"), Name = "Olje- og energidepartementet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/oed/oed.png" },
-            new Provider() { Id = Guid.Parse("E9E25AEC-66AB-4C02-8737-21B79A5D9EB5"), Name = "Oslo kommune", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/ok/ok.png" },
-            new Provider() { Id = Guid.Parse("294FC942-8E37-4197-9A54-B7274803BE1F"), Name = "Patentstyret", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/pat/pat.png" },
-            new Provider() { Id = Guid.Parse("F64CFA1E-A145-4256-BC0E-BA93BB7E03AF"), Name = "Pensjonstrygden for sjømenn", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("7AD5692E-F1C0-46B3-9231-BAC2CE4F822F"), Name = "Petroleumstilsynet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("02EB2E56-3778-4768-A363-C130B92ABD4F"), Name = "Politiet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("0BE0982C-6650-49F2-9A1E-364AD879472C"), Name = "Politi- og lensmannsetaten", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("4DF8E4F7-C37A-4084-A3DE-C40FBD64B78C"), Name = "Reisegarantifondet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("C97C215F-C29A-4FD1-9851-C4846946F20C"), Name = "REK - Regionale komiteer for medisinsk og helsefaglig forskningsetikk", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("EE453078-9A2A-4997-969E-40F6663379AB"), Name = "Remidt IKS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("156AE2E3-D9E8-4DAA-BB3C-5859A31BE8C9"), Name = "ROMSDALSHALVØYA INTERKOMMUNALE RENOVASJONSSELSKAP IKS", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/rir/rir.svg" },
-            new Provider() { Id = Guid.Parse("8CB47C15-FA17-404D-A17D-C53CD78C4390"), Name = "Samferdselsdepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("26B1554E-F5E4-47C3-80D6-C9B345BB2293"), Name = "Sjøfartsdirektoratet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/sfd/sfd.png" },
-            new Provider() { Id = Guid.Parse("FD30474C-F54B-4FE9-A38B-CAFD54A47928"), Name = "Skatteetaten", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/skd/skd.png" },
-            new Provider() { Id = Guid.Parse("73FAC534-5DFF-4B7C-9897-D22896180835"), Name = "Skipsregistrene", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("A14D5CDD-A8C9-4E7B-AC90-5A008C0C6129"), Name = "Sokkeldirektoratet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/npd/npd.svg" },
-            new Provider() { Id = Guid.Parse("6976A784-A397-4C2D-93CD-D373F7B32911"), Name = "Statens arbeidsmiljøinstitutt", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/stami/stami.png" },
-            new Provider() { Id = Guid.Parse("ACD90AC5-4A9D-4AB1-A5D9-5D33D1684A45"), Name = "Statens havarikommisjon", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("23F703C7-ABC7-4A1B-8725-D7EA65C93C56"), Name = "Statens jernbanetilsyn", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("BFA050A6-25BB-4AF8-8DE3-651D0C6FDDC2"), Name = "Statens Lånekasse for utdanning", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("DBA64C8A-0902-4ED4-BC3C-DD8869CCC948"), Name = "Statens pensjonskasse", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("20D05032-AC09-4EA3-818E-DE730A936DC2"), Name = "Statens sivilrettsforvaltning", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/srf/srf.png" },
-            new Provider() { Id = Guid.Parse("360686FB-1676-4248-BA82-E40FE2861AE3"), Name = "Statens vegvesen", RefId = string.Empty, LogoUrl = "Statens vegvesen" },
-            new Provider() { Id = Guid.Parse("D1AA74F3-D1E5-4840-8E95-E66FD102F8C4"), Name = "Statistisk sentralbyrå", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/ssb/ssb_dark.png" },
-            new Provider() { Id = Guid.Parse("02EC003F-8EA5-4EC7-A20F-E81025853522"), Name = "Statsforvalterens fellestjenester", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/staf/staf.png" },
-            new Provider() { Id = Guid.Parse("E4A1253C-31C0-4E11-85BA-6E2E63627FB5"), Name = "Statsforvalteren i Vestfold og Telemark", RefId = string.Empty, LogoUrl = "https://www.statsforvalteren.no/nb/vestfold-og-telemark/" },
-            new Provider() { Id = Guid.Parse("177B7290-DAEA-4368-9A7A-71DBE1EB3B1B"), Name = "Stavanger kommune", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/k1103/k1103.png" },
-            new Provider() { Id = Guid.Parse("08AD2F58-27E4-477E-99BA-E86B97B34BBE"), Name = "Sysselmannen på Svalbard", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("920F602D-B82B-40EE-BFD2-856A1C6A26F2"), Name = "SØRE SUNNMØRE IKT KOMMUNALT OPPGÅVEFELLESSKAP", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/ssikt/ssikt.png" },
-            new Provider() { Id = Guid.Parse("3A9E145D-3CE6-4DF4-85D4-8901AFFAF347"), Name = "Testdepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("076BE6D8-A3AD-43F8-B8BB-E99E34E199AA"), Name = "Tilsynsrådet for advokatvirksomhet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/tra/tra.png" },
-            new Provider() { Id = Guid.Parse("A04CDC57-89E1-4247-B5B4-EB06D896E156"), Name = "Tolletaten", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/tad/tad.png" },
-            new Provider() { Id = Guid.Parse("92651683-36B2-4604-9CE9-B5B688F68696"), Name = "Trafikkforsikringsforeningen", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("B5136A2C-F48C-40A7-8276-B74E121AB4EB"), Name = "Trondheim kommune", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("88530A01-7EC5-4E33-8F48-EB221C5E86CE"), Name = "Utdanningsdirektoratet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/udir/udir.png" },
-            new Provider() { Id = Guid.Parse("643A6E08-C79F-4520-AAEE-EFBE638A848B"), Name = "Utenriksdepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("879EF4EE-BED6-476C-B90E-EFEA22973AAE"), Name = "Utlendingsdirektoratet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/udi/udi.png" },
-            new Provider() { Id = Guid.Parse("4B3AE668-5CAE-4416-9121-C20E81597B12"), Name = "Valgdirektoratet", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/valg/valg.png" },
-            new Provider() { Id = Guid.Parse("CDD312F9-8A6E-4184-9374-D4AE4BAABE3E"), Name = "VIGO IKS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("49F3ACFD-94B7-4819-A8BA-F0780F0C8255"), Name = "Folkeregisteret", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("F23B832A-CE0E-42F0-B314-E1B0751506F2"), Name = "Økokrim", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/oko/oko.png" },
+            new Provider() { Id = Guid.Parse("0195ea92-2080-7d8d-84a9-1e6cbfb037a4"), Name = "Digitaliseringsdirektoratet", Code = "digdir", RefId = "991825827", TypeId = systemType.Id },
+            new Provider() { Id = Guid.Parse("0195ea92-2080-777d-8626-69c91ea2a05d"), Name = "Altinn 2", Code = "altinn2", TypeId = systemType.Id },
+            new Provider() { Id = Guid.Parse("0195ea92-2080-7e7c-bbe3-bb0521c1e51a"), Name = "Altinn 3", Code = "altinn3", TypeId = systemType.Id },
+            new Provider() { Id = Guid.Parse("0195ea92-2080-79d8-9859-0b26375f145e"), Name = "Ressursregisteret", Code = "rreg", TypeId = systemType.Id },
+            new Provider() { Id = Guid.Parse("0195ea92-2080-758b-89db-7735c4f68320"), Name = "Enhetsregisteret", Code = "ereg", TypeId = systemType.Id },
+            new Provider() { Id = Guid.Parse("0195ea92-2080-7ca3-8e46-73db5043d1b8"), Name = "Folkeregisteret", Code = "freg", TypeId = systemType.Id }
+
+            /*
+            0195ea92-2080-7fde-ba86-64b95380b70f
+            0195ea92-2080-7b30-9030-5975cddb10fe
+            0195ea92-2080-7fc2-b13b-ac87e3c75fe5
+            0195ea92-2080-7e8f-bb57-e0b7b7112f1a
+            */
         };
 
-        var providersEng = new List<Provider>()
-        {
-            new Provider() { Id = Guid.Parse("F135FF74-0E93-4959-BCDF-0A86142481E9"), Name = "Norwegian Labour Inspection Authority", RefId = "974761211", LogoUrl = "https://altinncdn.no/orgs/dat/arbeidstilsynet.png" },
-            new Provider() { Id = Guid.Parse("46FAAC7B-7001-4328-8721-098C6012733F"), Name = "Norwegian Labour and Welfare Administration (NAV)", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nav/nav.png" },
-            new Provider() { Id = Guid.Parse("B42A025E-518E-45B7-A84E-10AFA41F20AA"), Name = "Avfall Sør AS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("BDB48686-C305-47E8-B641-0EA1EEE7E4F3"), Name = "The Norwegian Directorate for Children, Youth and Family Affairs", RefId = "986128433", LogoUrl = "https://altinncdn.no/orgs/buf/buf.png" },
-            new Provider() { Id = Guid.Parse("99B02980-2E1F-41B1-A129-1BBFADCAD6CD"), Name = "City of Bergen", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("C45F525C-D6B1-45B7-8D75-10B5B7F453DA"), Name = "Brønnøysund Register Centre", RefId = "974760673", LogoUrl = "https://altinncdn.no/orgs/brg/brreg.png" },
-            new Provider() { Id = Guid.Parse("DEAED068-8E89-40F8-8D7A-0C834B2F2A10"), Name = "Avinor AS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("083A3BC9-AFE0-4692-9EEE-135AF683A758"), Name = "Norwegian Data Protection Authority", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("CA4DE1DC-8FC1-4F2C-BD67-199D497F756A"), Name = "Det norske veritas certification AS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("0900E42A-4396-4674-ADD3-1D33A268745B"), Name = "Norwegian Digitalisation Agency", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("A72241EC-5D54-4680-8E80-25B0D9C00400"), Name = "Digital Helgeland", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("723624E5-9801-4872-B96E-1D3896A5E5FF"), Name = "Norwegian Building Authority", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/dibk/dibk.png" },
-            new Provider() { Id = Guid.Parse("085AEFE2-23A1-457A-83AF-21E9DD5866F2"), Name = "Direktoratet for e-helse", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("EE93B6E8-E196-4C99-A60A-2A27230F22A7"), Name = "The Norwegian Agency for Public and Financial Management (DFØ)", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("4C7D5C3C-10BE-4098-9771-236EFC744C64"), Name = "Direktoratet for høyere utdanning og kompetanse", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("D94071F8-DC2E-4606-9756-23F4EDFCE842"), Name = "The Norwegian Medical Products Agency", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("8DEEE267-5917-4737-93DC-2618C3979D40"), Name = "The Directorate of Mining", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/dmf/dmf.png" },
-            new Provider() { Id = Guid.Parse("84F77677-E428-44B7-8C35-2D3176756EB8"), Name = "The Norwegian Directorate for Civil Protection", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/dsb/dsb.png" },
-            new Provider() { Id = Guid.Parse("99C6EFD5-0090-47FA-97D3-324C7BB97329"), Name = "Direktoratet for strålevern og atomsikkerhet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("4B58A2A8-BF78-420B-9C51-33CB21443BB4"), Name = "The Norwegian Courts", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/din/din.jpg" },
-            new Provider() { Id = Guid.Parse("9B8D6F1E-700D-4124-BE54-3972422CD8D7"), Name = "Energidepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("CB19DB45-29C1-4F58-B93A-3BDF14C27574"), Name = "Enova SF", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("5BDA916B-F01A-4FAB-890F-3DFADB1B388B"), Name = "Fellesordningen for AFP", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("AF35BABC-673D-442A-BB82-4168B10BBD57"), Name = "The Financial Supervisory Authority of Norway", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/krt/krt.png" },
-            new Provider() { Id = Guid.Parse("5AFD3C94-9BD1-4C65-93D5-41AA84760940"), Name = "The Norwegian Directorate of Fisheries", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/fd/fiskeridirektoratet.png" },
-            new Provider() { Id = Guid.Parse("11C5E332-0ACB-41CB-81B1-2B643DDF5C0D"), Name = "Fjellinjen AS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("5B7C249F-6B9D-414F-ADB3-435E42C67708"), Name = "The Norwegian Institute of Public Health", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/fhi/fhi.png" },
-            new Provider() { Id = Guid.Parse("55B49D16-787F-47B0-B1A1-44453F43AF95"), Name = "The Norwegian Armed Forces", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/fors/fors.png" },
-            new Provider() { Id = Guid.Parse("978CC854-3C06-499E-8407-450C2EC5EDEB"), Name = "Fylkeskommunene", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("38B5EFB6-1041-4217-8AEC-46F7D69FFCDE"), Name = "Garantikassen for fiskere", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("8C42CEFE-CBF9-4714-9420-350D3269BE46"), Name = "The Criminal Cases Review Commission", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/gk/gjenopptakelseskommisjonen.png" },
-            new Provider() { Id = Guid.Parse("092FAC8A-92CA-4B78-A192-46FA8D7CE019"), Name = "Norwegian Directorate of Health", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/hdir/helsedirektoratet.png" },
-            new Provider() { Id = Guid.Parse("003EDB1B-58CC-45E3-8A71-47546E18FB61"), Name = "Helsedirektoratet (godkjenning av utenlandske yrkeskvalifikasjoner)", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("DC12C823-A44D-4A00-AB86-3FDD403CF056"), Name = "Central Norway Regional Health Authority's IT department", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/hemit/hemit.svg" },
-            new Provider() { Id = Guid.Parse("0150C4B2-6755-40EC-8027-40382E31ED1A"), Name = "Institute of Marine Research", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/hi/havforskningsinstituttet.png" },
-            new Provider() { Id = Guid.Parse("5E5335BE-42C8-4AEA-AE80-430A0D048026"), Name = "Helse Møre og Romsdal", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/hmrhf/hmrhf.png" },
-            new Provider() { Id = Guid.Parse("50FF9A57-5750-46A7-B137-510EB32F4F30"), Name = "Høgskolen i Bergen", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("58FFE6FA-0223-4FA7-BD9A-54091612315D"), Name = "Høyesterett", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("27409CCF-5C23-468A-8A80-5425C9A5DDB5"), Name = "Norwegian State Housing Bank", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("EA3A8C0E-6442-4D7C-9DC0-5B1D2D130250"), Name = "IKT Agder IKS", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/ikta/ikta.png" },
-            new Provider() { Id = Guid.Parse("7B05AD2C-34D6-43D6-8B48-848D1AD3B72D"), Name = "Indigo IKT IKS", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/indi/indi.png" },
-            new Provider() { Id = Guid.Parse("F94C497A-248F-4D15-A7A4-612F4A31FBB0"), Name = "Norwegian Mapping Authority", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/kv/kartverket.png" },
-            new Provider() { Id = Guid.Parse("5E3B2E24-E54E-4391-AB9E-6AAE8823B684"), Name = "Klima- og miljødepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("23CB80DF-1CC0-42B1-B9AC-6C1F9508032F"), Name = "Kommunene", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("EE8E6E9D-2F70-47A1-9CE8-AE218EAEC7F8"), Name = "Municipalities/County Municipalities", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("2652353C-EAFA-4265-9C8E-708CEAD8732F"), Name = "Norwegian Competition Authority", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("EA1B2DE7-A211-4D22-A0FF-B7596ECD9175"), Name = "KS Digital", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/ksdigi/ksdigi.png" },
-            new Provider() { Id = Guid.Parse("CBB78151-FEB3-4648-B734-72A0ACF62DD4"), Name = "Kultur- og likestillingsdepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("78D5B486-8C71-4E8C-BA35-76D456999352"), Name = "Kulturdirektoratet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("941D8C06-626C-43C8-BE5D-C6E7A131705A"), Name = "Arts Council Norway", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nkr/kulturradet.png" },
-            new Provider() { Id = Guid.Parse("8E0D00EE-73E4-44C2-800E-7B0290BAA1A7"), Name = "The Norwegian Coastal Administration", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/kyv/kyv.png" },
-            new Provider() { Id = Guid.Parse("4B74502E-74AD-401B-9078-7CFABD9A1EC9"), Name = "Landbruks- og matdepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("52F57B13-43AF-4BE7-924F-7D19884EC666"), Name = "Norwegian Agriculture Agency", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("26E0032F-1504-456C-B6A1-D03653970F08"), Name = "Lillestrøm Municipality", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("8578E370-4E48-4956-85E2-81DF091590E1"), Name = "Norwegian Gaming and Foundation Authority", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/lts/lts.png" },
-            new Provider() { Id = Guid.Parse("88E11A2F-3E92-406A-829C-823A11BFF3CA"), Name = "Civil Aviation Authority of Norway", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/lt/lt.png" },
-            new Provider() { Id = Guid.Parse("FDDF32C0-9208-41A0-949A-85F33635C460"), Name = "Norwegian Food Safety Authority", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/mat/mat.png" },
-            new Provider() { Id = Guid.Parse("DA2F123D-AAAA-42D0-AFCC-86866E4AF595"), Name = "Medietilsynet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("76F283CD-074B-4384-B7D1-8CD2DED62E3F"), Name = "Mesterbrevnemnda ", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("E0EF8569-49C8-4694-A952-D2971BA2484E"), Name = "MIDTRE NAMDAL AVFALLSSELSKAP IKS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("45448EF0-04F8-419B-8FED-8F2819EF120A"), Name = "Norwegian Environment Agency", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/mdir/mdir.png" },
-            new Provider() { Id = Guid.Parse("2388C03B-3317-4A76-B53E-959FA1DD17DA"), Name = "Nærings- og fiskeridepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("C8F05F5F-785C-45DC-96BD-982044144127"), Name = "The Norwegian Communications Authority", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nkom/nkom.png" },
-            new Provider() { Id = Guid.Parse("B447D5F1-B9A1-49D3-8647-E3ACC107655C"), Name = "The Norwegian Agency for Quality Assurance in Education", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("2B5B11A3-696A-4FFE-99C9-991AA2CDD291"), Name = "National Security Agency", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nsm/nsm.png" },
-            new Provider() { Id = Guid.Parse("12483654-2C7F-4BAD-B0DF-9BCF2AC877E5"), Name = "National Library of Norway", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nbib/nasjonalbiblioteket.png" },
-            new Provider() { Id = Guid.Parse("79453CC7-F75D-4194-9FF6-E4C272E943E9"), Name = "Nordre Follo kommune", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nfk/nordre-follo-kommune-navnetrekk-bredde-2-linje-rgb.svg" },
-            new Provider() { Id = Guid.Parse("6CB46404-3440-45EA-B072-EC314868EE2E"), Name = "Norges Bank", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nb/norgesbank.png" },
-            new Provider() { Id = Guid.Parse("61D47D6A-73AC-4E42-B0AB-9D8A0B419E1B"), Name = "Norges geologiske undersøkelse", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("9293D3CC-3AE4-4135-8C55-A059BE82EBEA"), Name = "Norges Handelshøyskole", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("455F1E62-A3D1-48CF-A64F-A8DB5C6FC215"), Name = "Norges sjømatråd", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("F1A1416D-4321-4197-9F1C-AFCBCC1E8F4A"), Name = "Norwegian Water Resources and Energy Directorate", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("1AB7E982-A176-4977-A548-F9B2E2A534E0"), Name = "Norwegian Health Network", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nhn/nhn.png" },
-            new Provider() { Id = Guid.Parse("5E804075-6C4D-431A-9894-B2055563DCA1"), Name = "Norwegian System of Patient Injury Compensation", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/npe/npe.png" },
-            new Provider() { Id = Guid.Parse("27205C68-FE02-4962-885E-B4C6663E3F31"), Name = "Norsk rikskringkasting AS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("F5864BFE-F25D-46CB-A620-B6D496155956"), Name = "Ministry of Petroleum and Energy", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/oed/oed.png" },
-            new Provider() { Id = Guid.Parse("E9E25AEC-66AB-4C02-8737-21B79A5D9EB5"), Name = "City of Oslo", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/ok/ok.png" },
-            new Provider() { Id = Guid.Parse("294FC942-8E37-4197-9A54-B7274803BE1F"), Name = "Norwegian Industrial Property Office", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/pat/pat.png" },
-            new Provider() { Id = Guid.Parse("F64CFA1E-A145-4256-BC0E-BA93BB7E03AF"), Name = "Pensjonstrygden for sjømenn", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("7AD5692E-F1C0-46B3-9231-BAC2CE4F822F"), Name = "Petroleumstilsynet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("02EB2E56-3778-4768-A363-C130B92ABD4F"), Name = "Police", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("0BE0982C-6650-49F2-9A1E-364AD879472C"), Name = "The Norwegian Police Service", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("4DF8E4F7-C37A-4084-A3DE-C40FBD64B78C"), Name = "Reisegarantifondet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("C97C215F-C29A-4FD1-9851-C4846946F20C"), Name = "REK - Regionale komiteer for medisinsk og helsefaglig forskningsetikk", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("EE453078-9A2A-4997-969E-40F6663379AB"), Name = "Remidt IKS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("156AE2E3-D9E8-4DAA-BB3C-5859A31BE8C9"), Name = "ROMSDALSHALVØYA INTERKOMMUNALE RENOVASJONSSELSKAP IKS", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/rir/rir.svg" },
-            new Provider() { Id = Guid.Parse("8CB47C15-FA17-404D-A17D-C53CD78C4390"), Name = "Samferdselsdepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("26B1554E-F5E4-47C3-80D6-C9B345BB2293"), Name = "Norwegian Maritime Authority", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/sfd/sfd.png" },
-            new Provider() { Id = Guid.Parse("FD30474C-F54B-4FE9-A38B-CAFD54A47928"), Name = "Norwegian Tax Administration", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/skd/skd.png" },
-            new Provider() { Id = Guid.Parse("73FAC534-5DFF-4B7C-9897-D22896180835"), Name = "Skipsregistrene", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("A14D5CDD-A8C9-4E7B-AC90-5A008C0C6129"), Name = "Norwegian Offshore Directorate", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/npd/npd.svg" },
-            new Provider() { Id = Guid.Parse("6976A784-A397-4C2D-93CD-D373F7B32911"), Name = "The National Institute of Occupational Health", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/stami/stami.png" },
-            new Provider() { Id = Guid.Parse("ACD90AC5-4A9D-4AB1-A5D9-5D33D1684A45"), Name = "Accident Investigation Board Norway", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("23F703C7-ABC7-4A1B-8725-D7EA65C93C56"), Name = "Statens jernbanetilsyn", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("BFA050A6-25BB-4AF8-8DE3-651D0C6FDDC2"), Name = "Norwegian State Educational Loan Fund", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("DBA64C8A-0902-4ED4-BC3C-DD8869CCC948"), Name = "Norwegian Public Service Pension Fund", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("20D05032-AC09-4EA3-818E-DE730A936DC2"), Name = "Norwegian Civil Affairs Authority", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/srf/srf.png" },
-            new Provider() { Id = Guid.Parse("360686FB-1676-4248-BA82-E40FE2861AE3"), Name = "The Norwegian Public Roads Administration", RefId = string.Empty, LogoUrl = "Statens vegvesen" },
-            new Provider() { Id = Guid.Parse("D1AA74F3-D1E5-4840-8E95-E66FD102F8C4"), Name = "Statistics Norway", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/ssb/ssb_dark.png" },
-            new Provider() { Id = Guid.Parse("02EC003F-8EA5-4EC7-A20F-E81025853522"), Name = "County Governor", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/staf/staf.png" },
-            new Provider() { Id = Guid.Parse("E4A1253C-31C0-4E11-85BA-6E2E63627FB5"), Name = "County Governor of Vestfold and Telemark", RefId = string.Empty, LogoUrl = "https://www.statsforvalteren.no/nb/vestfold-og-telemark/" },
-            new Provider() { Id = Guid.Parse("177B7290-DAEA-4368-9A7A-71DBE1EB3B1B"), Name = "The municipality of Stavanger", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/k1103/k1103.png" },
-            new Provider() { Id = Guid.Parse("08AD2F58-27E4-477E-99BA-E86B97B34BBE"), Name = "Sysselmannen på Svalbard", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("920F602D-B82B-40EE-BFD2-856A1C6A26F2"), Name = "SØRE SUNNMØRE IKT KOMMUNALT OPPGÅVEFELLESSKAP", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/ssikt/ssikt.png" },
-            new Provider() { Id = Guid.Parse("3A9E145D-3CE6-4DF4-85D4-8901AFFAF347"), Name = "Test Ministry", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("076BE6D8-A3AD-43F8-B8BB-E99E34E199AA"), Name = "The Supervisory Council for Legal Practice", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/tra/tra.png" },
-            new Provider() { Id = Guid.Parse("A04CDC57-89E1-4247-B5B4-EB06D896E156"), Name = "Norwegian Customs", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/tad/tad.png" },
-            new Provider() { Id = Guid.Parse("92651683-36B2-4604-9CE9-B5B688F68696"), Name = "Norwegian Motor Insurers’ Bureau", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("B5136A2C-F48C-40A7-8276-B74E121AB4EB"), Name = "Trondheim Municipality", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("88530A01-7EC5-4E33-8F48-EB221C5E86CE"), Name = "Norwegian Directorate for Education and Training", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/udir/udir.png" },
-            new Provider() { Id = Guid.Parse("643A6E08-C79F-4520-AAEE-EFBE638A848B"), Name = "Utenriksdepartementet", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("879EF4EE-BED6-476C-B90E-EFEA22973AAE"), Name = "The Norwegian Directorate of Immigration", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/udi/udi.png" },
-            new Provider() { Id = Guid.Parse("4B3AE668-5CAE-4416-9121-C20E81597B12"), Name = "Election Directorate", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/valg/valg.png" },
-            new Provider() { Id = Guid.Parse("CDD312F9-8A6E-4184-9374-D4AE4BAABE3E"), Name = "VIGO IKS", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("49F3ACFD-94B7-4819-A8BA-F0780F0C8255"), Name = "Folkeregisteret", RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("F23B832A-CE0E-42F0-B314-E1B0751506F2"), Name = "National Authority for Investigation and Prosecution of Economic and Environmental Crime", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/oko/oko.png" },
-        };
-
-        await ingestService.IngestAndMergeData(providers, null, cancellationToken);
+        await ingestService.IngestAndMergeData(systemProviders, new List<GenericParameter>() { new GenericParameter("code", "code") }, cancellationToken);
     }
 
     /// <summary>
@@ -366,9 +190,9 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestEntityType(CancellationToken cancellationToken = default)
     {
-        var providerDD = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault() ?? throw new KeyNotFoundException("Digitaliseringsdirektoratet not found");
-        var providerBR = (await providerService.Get(t => t.Name, "Brønnøysundregistrene")).FirstOrDefault() ?? throw new KeyNotFoundException("Digitaliseringsdirektoratet not found");
-        var providerFR = (await providerService.Get(t => t.Name, "Folkeregisteret")).FirstOrDefault() ?? throw new KeyNotFoundException("Digitaliseringsdirektoratet not found");
+        var providerDD = (await providerRepository.Get(t => t.Code, "digdir")).FirstOrDefault() ?? throw new KeyNotFoundException("Digitaliseringsdirektoratet not found");
+        var providerBR = (await providerRepository.Get(t => t.Code, "ereg")).FirstOrDefault() ?? throw new KeyNotFoundException("EReg not found");
+        var providerFR = (await providerRepository.Get(t => t.Code, "freg")).FirstOrDefault() ?? throw new KeyNotFoundException("FReg not found");
 
         var entityTypes = new List<EntityType>()
         {
@@ -595,8 +419,8 @@ public class DbDataMigrationService(
     {
         var orgEntityTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Organisasjon"));
         var persEntityTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Person"));
-        var brrProviderId = (await providerService.Get(t => t.Name, "Brønnøysundregistrene")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Brønnøysundregistrene"));
-        var digdirProviderId = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Digitaliseringsdirektoratet"));
+        var brrProviderId = (await providerRepository.Get(t => t.Code, "ereg")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Brønnøysundregistrene"));
+        var digdirProviderId = (await providerRepository.Get(t => t.Code, "digdir")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Digitaliseringsdirektoratet"));
 
         var roles = new List<Role>()
         {
@@ -1064,7 +888,7 @@ public class DbDataMigrationService(
     {
         //// TODO: Translate
 
-        var digdirProvider = (await providerService.Get(t => t.Name, "Digitaliseringsdirektoratet")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Digitaliseringsdirektoratet"));
+        var digdirProvider = (await providerRepository.Get(t => t.Code, "digdir")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Digitaliseringsdirektoratet"));
         var orgEntityType = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Organisasjon"));
 
         var areas = await areaService.Get();
