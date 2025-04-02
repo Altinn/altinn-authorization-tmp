@@ -46,5 +46,5 @@ public interface IRoleService
     /// </summary>
     /// <param name="id">Role identity</param>
     /// <returns></returns>
-    Task<IEnumerable<PackageDto>> GetPackagesForRole(Guid id);
+    Task<IEnumerable<RolePackageDto>> GetPackagesForRole(Guid id);
 }

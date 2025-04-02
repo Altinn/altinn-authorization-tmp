@@ -3,15 +3,16 @@ using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.AccessMgmt.Repo.Definitions;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
 /// <inheritdoc />
-public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository roleLookupRepository, IPackageRepository packageRepository) : IRoleService
+public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository roleLookupRepository, IRolePackageRepository rolePackageRepository) : IRoleService
 {
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IRoleLookupRepository roleLookupRepository = roleLookupRepository;
-    private readonly IPackageRepository packageRepository = packageRepository;
+    private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
 
     /// <inheritdoc />
     public async Task<RoleDto> GetById(Guid id)
@@ -75,7 +76,7 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
         var roleDtos = new List<RoleDto>();
 
         foreach (var role in roles)
-        {
+     {
             roleDtos.Add(new RoleDto(role));
         }
 
@@ -106,12 +107,23 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<PackageDto>> GetPackagesForRole(Guid id)
+    public async Task<IEnumerable<RolePackageDto>> GetPackagesForRole(Guid id)
     {
-        var roles = await roleRepository.GetExtended(id);
-        var packageDtos = new List<PackageDto>();
-        var thing = await packageRepository.Get();
+        var rolePackages = await rolePackageRepository.Get();
+        if (rolePackages == null)
+        {
+            return null;
+        }
+        
+        var rolePackageDtos = new List<RolePackageDto>();
+        foreach (var rolePackage in rolePackages)
+        {
+            if (rolePackage.RoleId == id)
+            {
+                rolePackageDtos.Add(new RolePackageDto(rolePackage));
+            }
+        }
 
-        return null;
+        return rolePackageDtos;
     }
 }

@@ -72,14 +72,13 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         }
 
         /// <summary>
-        /// Gets all <see cref="PackageDto"/> for <see cref="RoleDto"/>
+        /// Gets all <see cref="RolePackageDto"/> for <see cref="RoleDto"/>
         /// </summary>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-        [Route("{id}/packages")]
+        [Route("{id}/rolepackages")]
         [HttpGet]
-        public async Task<ActionResult<List<PackageDto>>> GetPackagesForRole(Guid id)
+        public async Task<ActionResult<List<RolePackageDto>>> GetPackagesForRole(Guid id)
         {
-            throw new NotImplementedException();
             var res = await roleService.GetById(id);
             if (res == null)
             {
