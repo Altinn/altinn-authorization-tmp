@@ -48,7 +48,7 @@ dev:
   {{docker-runtime}} compose up -d
 
 # Print connection string (accessmgmt db)
-dev-pgsql-connstring:
+dev-pgsql-connection-string:
   #!{{shebang}}
   $port = podman inspect --format='{{"{{(index .NetworkSettings.Ports \"5432/tcp\" 0).HostPort}}"}}' altinn_authorization_postgres
   if ($IsWindows) {
