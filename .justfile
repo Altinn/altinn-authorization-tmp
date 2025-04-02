@@ -33,14 +33,6 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-CommandWithArgs"]
   #!{{shebang}}
   node ./.github/scripts/update-sln-files.mts -- {{ARGS}}
 
-@dev:
-  #!{{shebang}}
-  if ($IsWindows) {
-    podman compose up -d
-  } else {
-    docker compose up -d
-  }
-
 # Print all projects metadata
 @get-metadata: install-script-packages-frozen
   #!{{shebang}}

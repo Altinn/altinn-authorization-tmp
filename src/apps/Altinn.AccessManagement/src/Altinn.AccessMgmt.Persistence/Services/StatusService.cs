@@ -7,7 +7,7 @@ namespace Altinn.AccessMgmt.Persistence.Services;
 public class StatusService(IStatusRecordRepository statusRecordRepository) : IStatusService
 {
     private readonly IStatusRecordRepository statusRecordRepository = statusRecordRepository;
-
+    
     public async Task<StatusRecord> GetOrCreateRecord(Guid id, string name, int limit = 5)
     {
         var status = await statusRecordRepository.Get(id);
@@ -15,14 +15,13 @@ public class StatusService(IStatusRecordRepository statusRecordRepository) : ISt
         {
             status = new StatusRecord()
             {
-                Id = id,
                 Name = name,
                 RetryLimit = limit,
                 RetryCount = 0,
                 Message = "Initial",
                 Payload = "[]",
                 State = "RUNNING",
-                Timestamp = DateTimeOffset.UtcNow
+                Timestamp = DateTimeOffset.Now
             };
 
             await statusRecordRepository.Upsert(status);
@@ -36,19 +35,19 @@ public class StatusService(IStatusRecordRepository statusRecordRepository) : ISt
         record.State = "RETRY";
         record.Message = exception.Message;
         record.Payload = "[]";
-        record.Timestamp = DateTimeOffset.UtcNow;
+        record.Timestamp = DateTimeOffset.Now;
         await statusRecordRepository.Upsert(record);
     }
 
     public async Task RunSuccess(StatusRecord record)
     {
-        if (record.State != "RUNNING" || record.Timestamp.AddMinutes(15) < DateTimeOffset.UtcNow)
+        if (record.State != "RUNNING" || record.Timestamp.AddMinutes(15) < DateTimeOffset.Now)
         {
             record.State = "RUNNING";
             record.RetryCount = 0;
             record.Message = "Ok";
             record.Payload = "[]";
-            record.Timestamp = DateTimeOffset.UtcNow;
+            record.Timestamp = DateTimeOffset.Now;
             await statusRecordRepository.Upsert(record);
         }
     }
@@ -63,7 +62,7 @@ public class StatusService(IStatusRecordRepository statusRecordRepository) : ISt
         if (record.RetryCount >= record.RetryLimit)
         {
             record.State = "STOPPED";
-            record.Timestamp = DateTimeOffset.UtcNow;
+            record.Timestamp = DateTimeOffset.Now;
             await statusRecordRepository.Upsert(record);
             return false;
         }
@@ -73,7 +72,7 @@ public class StatusService(IStatusRecordRepository statusRecordRepository) : ISt
             record.RetryCount += 1;
         }
 
-        record.Timestamp = DateTimeOffset.UtcNow;
+        record.Timestamp = DateTimeOffset.Now;
         await statusRecordRepository.Upsert(record);
 
         return true;

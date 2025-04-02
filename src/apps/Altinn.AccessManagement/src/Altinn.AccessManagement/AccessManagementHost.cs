@@ -118,7 +118,29 @@ internal static partial class AccessManagementHost
         builder.Services.AddAltinnPlatformIntegrationDefaults(() =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            return appsettings.Platform;
+            if (appsettings.Platform?.ResourceRegisterEndpoint == null)
+            {
+                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.ResourceRegisterEndpoint));
+                opts.Endpoint = default;
+            }
+            else
+            {
+                opts.Endpoint = appsettings.Platform.ResourceRegisterEndpoint;
+            }
+        });
+
+        builder.AddAltinnRegisterIntegration(opts =>
+        {
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            if (appsettings.Platform?.RegisterEndpoint == null)
+            {
+                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.RegisterEndpoint));
+                opts.Endpoint = default;
+            }
+            else
+            {
+                opts.Endpoint = appsettings.Platform.RegisterEndpoint;
+            }
         });
 
         return builder;

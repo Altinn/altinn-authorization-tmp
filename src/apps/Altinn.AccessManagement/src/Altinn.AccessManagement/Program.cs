@@ -9,7 +9,10 @@ domain.SetData("REGEX_DEFAULT_MATCH_TIMEOUT", TimeSpan.FromSeconds(2));
 
 WebApplication app = AccessManagementHost.Create(args);
 
-await app.UseAccessMgmtDb();
+if (await app.Services.GetRequiredService<FeatureManager>().IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
+{
+    await app.UseAccessMgmtDb();
+}
 
 app.AddDefaultAltinnMiddleware(errorHandlingPath: "/accessmanagement/api/v1/error");
 
