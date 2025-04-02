@@ -7,12 +7,12 @@ using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 namespace Altinn.AccessMgmt.Persistence.Repositories;
 
 /// <summary>
-/// Data service for Provider
+/// Data service for ProviderType
 /// </summary>
-public class ProviderRepository : ExtendedRepository<Provider, ExtProvider>, IProviderRepository
+public class ProviderTypeRepository : BasicRepository<ProviderType>, IProviderTypeRepository
 {
     /// <inheritdoc/>
-    public ProviderRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
+    public ProviderTypeRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
     {
     }
 }
