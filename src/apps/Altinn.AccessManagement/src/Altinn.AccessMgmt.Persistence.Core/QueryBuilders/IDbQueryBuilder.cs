@@ -23,7 +23,7 @@ public interface IDbQueryBuilder
     /// Gets table name
     /// </summary>
     /// <returns></returns>
-    string GetTableName(bool includeAlias = true, bool useHistory = false, bool useTranslation = false, bool useHistoryView = false);
+    string GetTableName(bool includeAlias = true, bool useHistory = false, bool useTranslation = false, bool useHistoryView = false, bool includeSchema = true);
 
     /// <summary>
     /// Builds a INSERT query
