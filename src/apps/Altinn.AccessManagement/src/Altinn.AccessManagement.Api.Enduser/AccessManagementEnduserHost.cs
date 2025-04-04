@@ -22,7 +22,7 @@ public static partial class AccessManagementEnduserHost
     public static IHostApplicationBuilder AddAccessManagementEnduser(this IHostApplicationBuilder builder)
     {
         Log.AddHost(Logger);
-        builder.Services.AddSingleton<IMapper<AssignmentApiModel, Assignment>, AssignmentApiModelMapper>();
+        builder.Services.AddSingleton<IMapper<AssignmentExternal, Assignment>, AssignmentExternalMapper>();
         return builder;
     }
 

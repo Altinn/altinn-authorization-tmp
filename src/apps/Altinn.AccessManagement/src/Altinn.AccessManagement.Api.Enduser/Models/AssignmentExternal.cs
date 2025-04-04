@@ -5,7 +5,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Models;
 /// <summary>
 /// Assignment Model
 /// </summary>
-public class AssignmentApiModel
+public class AssignmentExternal
 {
     /// <summary>
     /// Identity

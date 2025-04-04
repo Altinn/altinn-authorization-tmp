@@ -4,12 +4,12 @@ using Altinn.AccessMgmt.Core.Models;
 namespace Altinn.AccessManagement.Api.Enduser.Mappers;
 
 /// <summary>
-/// Maps between <see cref="AssignmentApiModel"/> and <see cref="Assignment"/>.
+/// Maps between <see cref="AssignmentExternal"/> and <see cref="Assignment"/>.
 /// </summary>
-public class AssignmentApiModelMapper : IMapper<AssignmentApiModel, Assignment>
+public class AssignmentExternalMapper : IMapper<AssignmentExternal, Assignment>
 {
     /// <inheritdoc/>
-    public AssignmentApiModel Map(Assignment from)
+    public AssignmentExternal Map(Assignment from)
     {
         return new()
         {

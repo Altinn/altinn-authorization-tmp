@@ -18,11 +18,11 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/access/parties")]
 [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerAccessParties)]
-public class AccessPartiesController(IAssignmentService assignmentService, IMapper<AssignmentApiModel, Assignment> mapper) : ControllerBase
+public class AccessPartiesController(IAssignmentService assignmentService, IMapper<AssignmentExternal, Assignment> mapper) : ControllerBase
 {
     private IAssignmentService AssignmentService { get; } = assignmentService;
 
-    private IMapper<AssignmentApiModel, Assignment> Mapper { get; } = mapper;
+    private IMapper<AssignmentExternal, Assignment> Mapper { get; } = mapper;
 
     /// <summary>
     /// Get access parties
@@ -43,7 +43,7 @@ public class AccessPartiesController(IAssignmentService assignmentService, IMapp
     [HttpPost]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
     [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
-    [ProducesResponseType<AssignmentApiModel>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AssignmentExternal>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
