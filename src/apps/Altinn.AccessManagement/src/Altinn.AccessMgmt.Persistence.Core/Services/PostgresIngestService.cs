@@ -48,7 +48,7 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
 
         string tableName = queryBuilder.GetTableName(includeAlias: false);
         var ingestName = ingestId.ToString().Replace("-", string.Empty);
-        string ingestTableName = tableName + "_" + ingestName;
+        string ingestTableName = "ingest." + queryBuilder.GetTableName(includeAlias: false, includeSchema: false) + "_" + ingestName;
 
         var createIngestTable = $"CREATE UNLOGGED TABLE IF NOT EXISTS {ingestTableName} AS SELECT {columnStatement} FROM {tableName} WITH NO DATA;";
         await dbExecutor.ExecuteMigrationCommand(createIngestTable, null, cancellationToken);
@@ -75,7 +75,7 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
 
         string tableName = queryBuilder.GetTableName(includeAlias: false);
         var ingestName = ingestId.ToString().Replace("-", string.Empty);
-        string ingestTableName = tableName + "_" + ingestName;
+        string ingestTableName = "ingest." + queryBuilder.GetTableName(includeAlias: false, includeSchema: false) + "_" + ingestName;
 
         var mergeMatchStatement = string.Join(" AND ", matchColumns.Select(t => $"target.{t.Key} = source.{t.Key}"));
         var mergeUpdateUnMatchStatement = string.Join(" OR ", ingestColumns.Where(t => matchColumns.Count(y => y.Key.Equals(t.Name, StringComparison.OrdinalIgnoreCase)) == 0).Select(t => $"target.{t.Name} <> source.{t.Name}"));

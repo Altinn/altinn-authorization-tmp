@@ -568,11 +568,11 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         //// Create history views
         if (_definition.EnableAudit)
         {
-            scriptCollection.AddScripts($"VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: false)}", CreateHistoryView(forTranslationTable: false));
+            scriptCollection.AddScripts($"VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: false)}", CreateHistoryView(isTranslation: false));
 
             if (_definition.EnableTranslation)
             {
-                scriptCollection.AddScripts($"VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: true)}", CreateHistoryView(forTranslationTable: true));
+                scriptCollection.AddScripts($"VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: true)}", CreateHistoryView(isTranslation: true));
             }
         }
 
@@ -764,7 +764,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         }
 
         string key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
-        string query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD IF NOT EXISTS CONSTRAINT {name} UNIQUE ({string.Join(',', constraint.Properties.Keys)});";
+        string query = $"ALTER TABLE {GetTableName(includeAlias: false)} DROP CONSTRAINT IF EXISTS {name}; ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} UNIQUE ({string.Join(',', constraint.Properties.Keys)});";
 
         res.Add(key, query);
 
@@ -800,7 +800,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string name = string.IsNullOrEmpty(foreignKey.Name) ? $"{_definition.ModelType.Name}_{foreignKey.BaseProperty}" : foreignKey.Name;
 
         var key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
-        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD IF NOT EXISTS CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
+        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
 
         res.Add(key, query);
 
@@ -813,20 +813,24 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return res;
     }
 
-    private string CreateHistoryView(string tableName, string columnDefinitions, bool forTranslationTable)
+    private string CreateHistoryView(bool isTranslation)
     {
-        if (forTranslationTable)
+
+        string tableName = GetTableName(includeAlias: true, useHistory: false, useTranslation: isTranslation);
+        string columnDefinitions = string.Join(',', _definition.Properties.Select(t => t.Name));
+
+        if (isTranslation)
         {
             columnDefinitions += ", language";
         }
 
         string historyColumns = $"{columnDefinitions}, audit_validfrom, audit_validto, audit_changedby, audit_changedbysystem, audit_changeoperation, audit_deletedby, audit_deletedbysystem, audit_deletedoperation";
-        string baseColumns = $"{columnDefinitions}, audit_validfrom, audit_validto, audit_changedby, audit_changedbysystem, audit_changeoperation, null::uuid AS audit_deletedby, null::uuid AS audit_deletedbysystem, null::uuid AS audit_deletedoperation";
+        string baseColumns = $"{columnDefinitions}, audit_validfrom, now() as audit_validto, audit_changedby, audit_changedbysystem, audit_changeoperation, null::uuid AS audit_deletedby, null::uuid AS audit_deletedbysystem, null::uuid AS audit_deletedoperation";
 
         string viewQuery = $"""
-        CREATE OR REPLACE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: forTranslationTable)} AS
+        CREATE OR REPLACE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: isTranslation)} AS
         SELECT {historyColumns}
-        FROM  {GetTableName(useHistory: true, useTranslation: forTranslationTable)}
+        FROM  {GetTableName(useHistory: true, useTranslation: isTranslation)}
         WHERE audit_validfrom <= coalesce(current_setting('app.asof', true)::timestamptz, now())
         AND audit_validto > coalesce(current_setting('app.asof', true)::timestamptz, now())
         UNION ALL
@@ -872,14 +876,14 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         string modelName = _definition.ModelType.Name;
         string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
-        string functionName = $"{schema}.audit_{modelName}_fn";
-        string tableName = GetTableName(includeAlias: true, useTranslation: isTranslation);
+        string functionName = $"set_audit_metadata_fn";
+        string tableName = GetTableName(includeAlias: false, useTranslation: isTranslation);
 
         var sb = new StringBuilder();
-        sb.AppendLine($"CREATE TRIGGER {_definition.ModelType.Name}_Meta BEFORE INSERT OR UPDATE ON {tableName}");
-        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION dbo.set_audit_metadata_fn();");
+        sb.AppendLine($"CREATE OR REPLACE TRIGGER {modelName}_Meta BEFORE INSERT OR UPDATE ON {tableName}");
+        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION dbo.{functionName}();");
 
-        scripts.Add($"CREATE TRIGGER {_definition.ModelType.Name}_Meta", sb.ToString());
+        scripts.Add($"CREATE TRIGGER {schema}.{modelName}_Meta", sb.ToString());
 
         return scripts;
     }
@@ -956,13 +960,14 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         string modelName = _definition.ModelType.Name;
         string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
-        string functionName = $"{schema}.audit_{modelName}_fn";
-        string tableName = GetTableName(includeAlias: true, useTranslation: isTranslation);
+        string functionName = $"audit_{modelName}_fn";
+        string tableName = GetTableName(includeAlias: false, useTranslation: isTranslation);
 
         var sb = new StringBuilder();
         sb.AppendLine($"CREATE OR REPLACE TRIGGER {modelName}_Audit AFTER UPDATE OR DELETE ON {tableName}");
-        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {schema}.{functionName};");
-        scripts.Add($"CREATE TRIGGER {modelName}_Audit", sb.ToString());
+        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {schema}.{functionName}();");
+
+        scripts.Add($"CREATE TRIGGER {schema}.{modelName}_Audit", sb.ToString());
 
         return scripts;
     }

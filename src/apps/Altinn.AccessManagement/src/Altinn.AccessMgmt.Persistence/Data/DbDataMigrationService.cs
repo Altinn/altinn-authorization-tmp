@@ -119,6 +119,14 @@ public class DbDataMigrationService(
         }
     }
 
+    public async Task PrepIngestForAudit(CancellationToken cancellationToken = default)
+    {
+        var internalTypeId = (await entityTypeService.Get(t => t.Name, "Intern")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
+        var internalVariantId = (await entityVariantService.Get(t => t.TypeId, internalTypeId)).FirstOrDefault(t => t.Name.Equals("Standard", StringComparison.OrdinalIgnoreCase))?.Id ?? throw new KeyNotFoundException(string.Format("EntityVariant '{0}' not found", "Intern"));
+
+        var systemEntity = new Entity() { Id = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"), Name = "AccessMgmt-Ingest", RefId = "AccessMgmt-Ingest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId };
+    }
+
     /// <summary>
     /// Ingest all static provider data
     /// </summary>
@@ -616,17 +624,11 @@ public class DbDataMigrationService(
 
         var systemEntities = new List<Entity>()
         {
-            // The default entity stored on each table with default constraint
-            new Entity() { Id = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"), Name = "Db-Default", RefId = "Db-Default", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
-            
-            // When an entity is deleted we replace the deleted id with this. The old id will still be in the history tables
-            new Entity() { Id = Guid.Parse("7818FFC2-3682-44F3-8158-37BFFEB96A9F"), Name = "Db-Cascade", RefId = "Db-Cascade", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
-            
-            // A default entity used by AccessMgmt. If no other PerformedBy id is supplied this will be used from this application. 
-            new Entity() { Id = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F"), Name = "AccessMgmt-Default", RefId = "AccessMgmt", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            // Static data ingest
+            new Entity() { Id = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"), Name = "AccessMgmt-Ingest", RefId = "AccessMgmt-Ingest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
 
             // The entity responsible for ingesting data from the Registry.
-            new Entity() { Id = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A"), Name = "AccessMgmt-Register-Ingest", RefId = "AccessMgmt", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId }
+            //// new Entity() { Id = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A"), Name = "AccessMgmt-Register-Ingest", RefId = "AccessMgmt", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId }
         };
 
         foreach (var item in systemEntities)
