@@ -61,43 +61,47 @@ public interface IDbBasicRepository<T>
     /// Inserts a new entity into the database.
     /// </summary>
     /// <param name="entity">The entity to create.</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Create(T entity, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> Create(T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Inserts or updates an entity in the database. If the entity already exists, it will be updated.
     /// </summary>
     /// <param name="entity">The entity to upsert.</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Upsert(T entity, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> Upsert(T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Inserts or updates an entity in the database. If the entity already exists, it will be updated.
     /// </summary>
     /// <param name="entity">The entity to upsert.</param>
     /// <param name="mergeFilter">Properties for merge statement</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates an existing entity in the database identified by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the entity to update.</param>
     /// <param name="entity">The updated entity data.</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Update(Guid id, T entity, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> Update(Guid id, T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates a single property on an existing entity in the database identified by its unique identifier.
@@ -105,64 +109,70 @@ public interface IDbBasicRepository<T>
     /// <param name="property">Property to update</param>
     /// <param name="value">Value for property</param>
     /// <param name="id">The unique identifier of the entity to update.</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates a single property to NULL on an existing entity in the database identified by its unique identifier.
     /// </summary>
     /// <param name="property">Property to update</param>
     /// <param name="id">The unique identifier of the entity to update.</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates specific properties of an existing entity in the database using a list of generic parameters.
     /// </summary>
     /// <param name="id">The unique identifier of the entity to update.</param>
     /// <param name="parameters">A list of generic parameters representing the properties to update.</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Update(Guid id, List<GenericParameter> parameters, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> Update(Guid id, List<GenericParameter> parameters, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes an entity from the database identified by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the entity to delete.</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Delete(Guid id, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> Delete(Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes an entity from the database identified by its unique identifier.
     /// </summary>
     /// <param name="filters">List of generic filters</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> Delete(IEnumerable<GenericFilter> filters, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> Delete(IEnumerable<GenericFilter> filters, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a translation entry for the specified entity in a different language.
     /// </summary>
     /// <param name="obj">The entity for which to create a translation.</param>
     /// <param name="language">The language code for the translation.</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> CreateTranslation(T obj, string language, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> CreateTranslation(T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates the translation for an entity in a specified language.
@@ -170,11 +180,12 @@ public interface IDbBasicRepository<T>
     /// <param name="id">The unique identifier of the entity whose translation is to be updated.</param>
     /// <param name="obj">The entity containing the updated translation data.</param>
     /// <param name="language">The language code for which the translation is to be updated.</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> UpdateTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> UpdateTranslation(Guid id, T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Update or insert translation for an entity in a specified language.
@@ -182,11 +193,12 @@ public interface IDbBasicRepository<T>
     /// <param name="id">The unique identifier of the entity whose translation is to be updated.</param>
     /// <param name="obj">The entity containing the updated translation data.</param>
     /// <param name="language">The language code for which the translation is to be updated.</param>
+    /// <param name="options">Options used for changing data</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
-    Task<int> UpsertTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default, Guid? performedBy = null);
+    Task<int> UpsertTranslation(Guid id, T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a new instance of a <see cref="GenericFilterBuilder{T}"/> for constructing filter criteria for queries.

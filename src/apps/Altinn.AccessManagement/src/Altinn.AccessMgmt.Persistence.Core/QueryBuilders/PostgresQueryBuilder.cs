@@ -3,6 +3,7 @@ using System.Text;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 using Yuniql.PostgreSql;
 using static Npgsql.Replication.PgOutput.Messages.RelationMessage;
@@ -38,7 +39,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         if (options.AsOf.HasValue)
         {
-            sb.AppendLine($"set local x.asof = '{options.AsOf.Value.ToUniversalTime()}';");
+            sb.AppendLine($"set local app.asof = '{options.AsOf.Value.ToUniversalTime()}';");
         }
 
         sb.AppendLine("SELECT ");
@@ -64,7 +65,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         // Apply session settings (e.g., as-of)
         if (options.AsOf.HasValue)
         {
-            sb.AppendLine($"set local x.asof = '{options.AsOf.Value.ToUniversalTime()}';");
+            sb.AppendLine($"set local app.asof = '{options.AsOf.Value.ToUniversalTime()}';");
         }
 
         sb.AppendLine("SELECT ");
@@ -97,63 +98,64 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return query;
     }
 
-    // AccessMgmt-Default
-    private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
-
-    private static Guid GetPerformedBy(Guid? performedBy = null)
+    private static string GetAuditVariables(ChangeRequestOptions options = null)
     {
-        if (!performedBy.HasValue || performedBy.Value == Guid.Empty)
+        /*
+        private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
+        
+        if (options.ChangedBySystem == Guid.Empty)
         {
-            return DefaultPerformedBy;
+            options.ChangedBySystem = DefaultPerformedBy;
         }
+        */
 
-        return performedBy.Value;
+        return string.Format("SET LOCAL app.changed_by = '{0}'; SET LOCAL app.changed_by_system = '{1}'; SET LOCAL app.change_operation_id = '{2}';", options.ChangedBy, options.ChangedBySystem, options.ChangeOperationId);
     }
 
     /// <inheritdoc/>
-    public string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
+    public string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
     {
-        return $"SET LOCAL x.performed_by = '{GetPerformedBy(performedBy)}'; INSERT INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})";
+        return $"{GetAuditVariables(options)} INSERT INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})";
     }
 
     /// <inheritdoc/>
-    public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
+    public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
     {
-        return $"SET LOCAL x.performed_by = '{GetPerformedBy(performedBy)}'; UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {UpdateSetStatement(parameters)} WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
+        return $"{GetAuditVariables(options)} UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {UpdateSetStatement(parameters)} WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
     }
 
     /// <inheritdoc/>
-    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false, Guid? performedBy = null)
+    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false, ChangeRequestOptions options = null)
     {
-        return $"SET LOCAL x.performed_by = '{GetPerformedBy(performedBy)}'; UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {parameter.Key} = NULL WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
+        return $"{GetAuditVariables(options)} UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {parameter.Key} = NULL WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
     }
 
     /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
+    public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
     {
-        return BuildMergeQuery(parameters, [new GenericFilter("id", "id")], forTranslation, performedBy);
+        return BuildMergeQuery(parameters, [new GenericFilter("id", "id")], forTranslation, options);
 
         /*
-        var triggerFunction = new StringBuilder();
-        triggerFunction.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})");
-        triggerFunction.AppendLine(" ON CONFLICT (id) DO ");
-        triggerFunction.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
-        return triggerFunction.ToString();
+        var sb = new StringBuilder();
+        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})");
+        sb.AppendLine(" ON CONFLICT (id) DO ");
+        sb.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
+        return sb.ToString();
         */
     }
 
     /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, Guid? performedBy = null)
+    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, ChangeRequestOptions options = null)
     {
         if (mergeFilter == null || !mergeFilter.Any())
         {
             mergeFilter.Add(new GenericFilter("id", "id"));
         }
 
-        return BuildMergeQuery(parameters, mergeFilter, forTranslation, performedBy);
+        return BuildMergeQuery(parameters, mergeFilter, forTranslation, options);
     }
 
-    private string BuildMergeQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, Guid? performedBy = null)
+    private string BuildMergeQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, ChangeRequestOptions options = null)
     {
         if (mergeFilter == null || !mergeFilter.Any())
         {
@@ -165,7 +167,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
 
         var sb = new StringBuilder();
-        sb.AppendLine($"SET LOCAL x.performed_by = '{GetPerformedBy(performedBy)}';");
+        sb.AppendLine($"{GetAuditVariables(options)}");
         sb.AppendLine("WITH N AS ( SELECT ");
         sb.AppendLine("@id as id");
         if (forTranslation)
@@ -192,10 +194,10 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
-    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters, Guid? performedBy = null)
+    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters, ChangeRequestOptions options = null)
     {
         var filterStatement = GenerateFilterStatement(_definition.ModelType.Name, filters);
-        return $"SET LOCAL x.performed_by = '{GetPerformedBy(performedBy)}'; DELETE FROM {GetTableName(includeAlias: false)} {filterStatement}";
+        return $"{GetAuditVariables(options)} DELETE FROM {GetTableName(includeAlias: false)} {filterStatement}";
     }
 
     /// <inheritdoc />
@@ -224,6 +226,12 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             : tableName;
     }
 
+    private string GetSchemaName(bool useHistory = false, bool useTranslation = false)
+    {
+        var config = _config.Value;
+        return useHistory ? (useTranslation ? config.TranslationHistorySchema : config.BaseHistorySchema) : (useTranslation ? config.TranslationSchema : config.BaseSchema);
+    }
+
     private string GetTableAlias()
     {
         return GetTableAlias(_definition);
@@ -237,7 +245,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     /*Basic*/
     private string GenerateColumns(RequestOptions options)
     {
-        bool useTranslation = !string.IsNullOrEmpty(options.Language) && _definition.HasTranslation;
+        bool useTranslation = !string.IsNullOrEmpty(options.Language) && _definition.EnableTranslation;
         var columns = new List<string>();
 
         foreach (var p in _definition.Properties.Select(t => t.Property))
@@ -264,7 +272,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
     private string GenerateSource(RequestOptions options)
     {
-        bool useTranslation = !string.IsNullOrEmpty(options.Language) && _definition.HasTranslation;
+        bool useTranslation = !string.IsNullOrEmpty(options.Language) && _definition.EnableTranslation;
         bool useHistory = options.AsOf.HasValue;
 
         if (useTranslation)
@@ -403,7 +411,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.Append($"{(join.IsOptional ? "LEFT OUTER" : "INNER")} JOIN {GetTableName(joinDef, includeAlias: false, useHistory: useHistory)} AS _{join.ExtendedProperty} ON {join.Base.Name}.{join.BaseProperty} = _{join.ExtendedProperty}.{join.RefProperty} {GetJoinPostgresFilterString(join)}");
 
         bool useTranslation = !string.IsNullOrEmpty(options.Language);
-        if (useTranslation && joinDef.HasTranslation)
+        if (useTranslation && joinDef.EnableTranslation)
         {
             sb.AppendLine();
             sb.Append($"LEFT JOIN LATERAL (SELECT * FROM {GetTableName(joinDef, useTranslation: true, includeAlias: false, useHistory: useHistory)} AS T ");
@@ -427,7 +435,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             var columns = new List<string>();
             foreach (var p in joinDef.Properties.Select(t => t.Property))
             {
-                if (joinDef.HasTranslation && useTranslation && p.PropertyType == typeof(string))
+                if (joinDef.EnableTranslation && useTranslation && p.PropertyType == typeof(string))
                 {
                     columns.Add($"coalesce(T_{join.ExtendedProperty}.{p.Name}, _{join.ExtendedProperty}.{p.Name}) AS {join.ExtendedProperty}_{p.Name}");
                 }
@@ -512,6 +520,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         var scriptCollection = new DbMigrationScriptCollection(_definition.ModelType);
         scriptCollection.Version = _definition.Version;
 
+        //// Create view
         if (_definition.IsView)
         {
             scriptCollection.AddScripts(CreateView());
@@ -523,9 +532,10 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             return scriptCollection;
         }
 
-        scriptCollection.AddScripts(CreateTable());
+        //// Create tables
+        scriptCollection.AddScripts(CreateTables());
 
-        #region columns
+        //// Create columns
         var pk = _definition.Constraints.FirstOrDefault(t => t.IsPrimaryKey);
         foreach (var column in _definition.Properties)
         {
@@ -537,37 +547,14 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             scriptCollection.AddScripts(CreateColumn(column));
         }
 
-        CreateTriggers(forTranslationTable: false);
-
-        if (_definition.EnablePerformedBy)
-        {
-            scriptCollection.AddScripts(CreateColumn(columnName: "PerformedBy", columnDataType: typeof(Guid), isNullable: false, defaultValue: "'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B'"));
-            //// Add FK?
-            scriptCollection.AddScripts(CreateFunctionsAndTriggers(false));
-        }
-
-        if (_definition.EnableCreatedBy)
-        {
-            scriptCollection.AddScripts(CreateColumn(columnName: "CreatedBy", columnDataType: typeof(Guid), isNullable: false, defaultValue: "'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B'"));
-        }
-
-        if (_definition.EnableModifiedBy)
-        {
-            scriptCollection.AddScripts(CreateColumn(columnName: "ModifiedBy", columnDataType: typeof(Guid), isNullable: true));
-        }
-
-        if (_definition.EnableDeletedBy)
-        {
-            scriptCollection.AddScripts(CreateHistoryColumn(columnName: "DeletedBy", columnDataType: typeof(Guid), isNullable: true));
-        }
-        #endregion
-
+        //// Create Foreign keys
         foreach (var fk in _definition.Relations)
         {
             scriptCollection.AddScripts(CreateForeignKeyConstraint(fk));
             scriptCollection.AddDependency(fk.Ref);
         }
 
+        //// Create unique constraints
         foreach (var uc in _definition.Constraints)
         {
             if (uc.IsPrimaryKey)
@@ -578,15 +565,30 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             scriptCollection.AddScripts(CreateUniqueConstraint(uc));
         }
 
-        if (_definition.HasHistory)
+        //// Create history views
+        if (_definition.EnableAudit)
         {
-            scriptCollection.AddScripts(CreateSharedHistoryFunction());
-            scriptCollection.AddScripts(CreateHistoryTriggersAndView(false));
+            scriptCollection.AddScripts($"VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: false)}", CreateHistoryView(forTranslationTable: false));
 
-            if (_definition.HasTranslation)
+            if (_definition.EnableTranslation)
             {
-                scriptCollection.AddScripts(CreateHistoryTriggersAndView(true));
+                scriptCollection.AddScripts($"VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: true)}", CreateHistoryView(forTranslationTable: true));
             }
+        }
+
+        //// Common meta function
+        scriptCollection.AddScripts(CreateAuditMetadataFunction()); // Move to Pre?
+
+        //// Create functions and triggers
+        scriptCollection.AddScripts(CreateMetaDataTrigger(isTranslation: false));
+        scriptCollection.AddScripts(CreateAuditFunction(isTranslation: false));
+        scriptCollection.AddScripts(CreateAuditTrigger(isTranslation: false));
+
+        if (_definition.EnableTranslation)
+        {
+            scriptCollection.AddScripts(CreateMetaDataTrigger(isTranslation: true));
+            scriptCollection.AddScripts(CreateAuditFunction(isTranslation: true));
+            scriptCollection.AddScripts(CreateAuditTrigger(isTranslation: true));
         }
 
         return scriptCollection;
@@ -606,7 +608,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return scripts;
     }
 
-    private OrderedDictionary<string, string> CreateTable()
+    private OrderedDictionary<string, string> CreateTables()
     {
         var scripts = new OrderedDictionary<string, string>();
 
@@ -627,87 +629,86 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         string primaryKeyDefinition = string.Join(',', pk.Properties.Select(t => $"{t.Key} {DbHelperMethods.GetPostgresType(t.Value)} NOT NULL "));
 
-        string basicKey = $"CREATE TABLE {GetTableName(includeAlias: false)}";
-        var basicTable = new StringBuilder();
-        basicTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false)} (");
-        basicTable.AppendLine(primaryKeyDefinition);
-        basicTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
-        if (_definition.HasHistory)
+        var dboName = GetTableName(includeAlias: false, useTranslation: false, useHistory: false);
+        var translationName = GetTableName(includeAlias: false, useTranslation: true, useHistory: false);
+        var dboHistoryName = GetTableName(includeAlias: false, useTranslation: false, useHistory: true);
+        var translationHistoryName = GetTableName(includeAlias: false, useTranslation: true, useHistory: true);
+
+        var dboScript = CreateTableScript(dboName, primaryKeyDefinition, _definition.EnableAudit, isHistory: false, isTranslation: false);
+        var translationScript = CreateTableScript(translationName, primaryKeyDefinition, _definition.EnableAudit, isHistory: false, isTranslation: true);
+        var basicHistoryScript = CreateTableScript(dboHistoryName, primaryKeyDefinition, _definition.EnableAudit, isHistory: true, isTranslation: false);
+        var translationHistoryScript = CreateTableScript(translationHistoryName, primaryKeyDefinition, _definition.EnableAudit, isHistory: true, isTranslation: true);
+
+        scripts.Add($"CREATE TABLE {dboName}", dboScript);
+        
+        if (_definition.EnableTranslation)
         {
-            basicTable.AppendLine(", validfrom timestamptz default now()");
+            scripts.Add($"CREATE TABLE {translationName}", translationScript);
         }
 
-        basicTable.AppendLine($", CONSTRAINT PK_{_definition.ModelType.Name} PRIMARY KEY ({string.Join(',', pk.Properties.Select(t => $"{t.Key}"))})");
-        basicTable.AppendLine(");");
-
-        scripts.Add(basicKey, basicTable.ToString());
-
-        if (_definition.HasTranslation)
+        if (_definition.EnableAudit)
         {
-            string translationKey = $"CREATE TABLE {GetTableName(includeAlias: false, useTranslation: true)}";
-            var translationTable = new StringBuilder();
-            translationTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false, useTranslation: true)} (");
-            translationTable.AppendLine(primaryKeyDefinition);
-            if (_definition.HasHistory)
+            scripts.Add($"CREATE TABLE {dboHistoryName}", basicHistoryScript);
+            if (_definition.EnableTranslation)
             {
-                translationTable.AppendLine(", validfrom timestamptz default now()");
-            }
-
-            translationTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
-            translationTable.AppendLine($", Language text NOT NULL");
-            translationTable.AppendLine($", CONSTRAINT PK_{_definition.ModelType.Name} PRIMARY KEY ({string.Join(',', _definition.Constraints.First(t => t.IsPrimaryKey).Properties.Select(t => $"{t.Key}"))}, Language)");
-            translationTable.AppendLine(");");
-
-            scripts.Add(translationKey, translationTable.ToString());
-        }
-
-        if (_definition.HasHistory)
-        {
-            string historyKey = $"CREATE TABLE {GetTableName(includeAlias: false, useHistory: true)}";
-            var historyTable = new StringBuilder();
-            historyTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false, useHistory: true)}(");
-            historyTable.AppendLine(primaryKeyDefinition);
-            historyTable.AppendLine(", validfrom timestamptz default now()");
-            historyTable.AppendLine(", validto timestamptz default now()");
-            historyTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
-            historyTable.AppendLine(", deletedby uuid null");
-            historyTable.AppendLine(");");
-
-            scripts.Add(historyKey, historyTable.ToString());
-
-            if (_definition.HasTranslation)
-            {
-                string historyTranslationKey = $"CREATE TABLE {GetTableName(includeAlias: false, useTranslation: true, useHistory: true)}";
-                var historyTranslationTable = new StringBuilder();
-                historyTranslationTable.AppendLine($"CREATE TABLE IF NOT EXISTS {GetTableName(includeAlias: false, useTranslation: true, useHistory: true)}(");
-                historyTranslationTable.AppendLine(primaryKeyDefinition);
-                historyTranslationTable.AppendLine(", validfrom timestamptz default now()");
-                historyTranslationTable.AppendLine(", validto timestamptz default now()");
-                historyTranslationTable.AppendLine(", performedby uuid default 'EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B' not null");
-                historyTranslationTable.AppendLine(", deletedby uuid null");
-                historyTranslationTable.AppendLine(", Language text NOT NULL");
-                historyTranslationTable.AppendLine(");");
-
-                scripts.Add(historyTranslationKey, historyTranslationTable.ToString());
+                scripts.Add($"CREATE TABLE {translationHistoryName}", translationHistoryScript);
             }
         }
 
         return scripts;
     }
 
-    private string CreateTableNew(string name, string primaryKeyDefinition)
+    private string CreateTableScript(string name, string primaryKeyDefinition, bool useAudit, bool isHistory, bool isTranslation)
     {
-        // name = GetTableName(includeAlias: false, useHistory: true)
-        string historyKey = $"CREATE TABLE {name}";
-        var historyTable = new StringBuilder();
-        historyTable.AppendLine($"CREATE TABLE IF NOT EXISTS {name}(");
-        historyTable.AppendLine(primaryKeyDefinition);
-        historyTable.AppendLine(", valid_from timestamptz default now()");
-        historyTable.AppendLine(", audit_changedby uuid not null");
-        historyTable.AppendLine(", audit_changedvia uuid not null");
-        historyTable.AppendLine(");");
+        var script = new StringBuilder();
+        script.AppendLine($"CREATE TABLE IF NOT EXISTS {name}(");
+        script.AppendLine(primaryKeyDefinition);
 
-        return historyTable.ToString();
+        if (isTranslation)
+        {
+            script.AppendLine(", language text not null");
+        }
+
+        if (useAudit)
+        {
+            if (!isHistory)
+            {
+                script.AppendLine(", audit_validfrom timestamptz not null default now()");
+            }
+            else
+            {
+                script.AppendLine(", audit_validfrom timestamptz not null");
+                script.AppendLine(", audit_validto timestamptz not null");
+            }
+
+            script.AppendLine(", audit_changedby uuid not null");
+            script.AppendLine(", audit_changedbysystem uuid not null");
+            script.AppendLine(", audit_changeoperation uuid not null");
+
+            if (isHistory)
+            {
+                script.AppendLine(", audit_deletedby uuid not null"); // History only
+                script.AppendLine(", audit_deletedbysystem uuid not null"); // History only
+                script.AppendLine(", audit_deletedoperation uuid not null"); // History only
+            }
+        }
+
+        if (!isHistory)
+        {
+            if (isTranslation)
+            {
+                script.AppendLine($", CONSTRAINT PK_{_definition.ModelType.Name} PRIMARY KEY ({string.Join(',', _definition.Constraints.First(t => t.IsPrimaryKey).Properties.Select(t => $"{t.Key}"))}, language)");
+            }
+            else
+            {
+                script.AppendLine($", CONSTRAINT PK_{_definition.ModelType.Name} PRIMARY KEY ({string.Join(',', _definition.Constraints.First(t => t.IsPrimaryKey).Properties.Select(t => $"{t.Key}"))})");
+            }
+        }
+
+
+        script.AppendLine(");");
+
+        return script.ToString();
     }
 
     private OrderedDictionary<string, string> CreateColumn(DbPropertyDefinition column)
@@ -717,66 +718,20 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         var basic = CreateColumn(GetTableName(includeAlias: false), column.Name, DbHelperMethods.GetPostgresType(column.Property).ToString(), column.IsNullable, column.DefaultValue);
         scripts.Add(basic.Key, basic.Query);
 
-        if (_definition.HasTranslation)
+        if (_definition.EnableTranslation)
         {
             var translation = CreateColumn(GetTableName(includeAlias: false, useTranslation: true), column.Name, DbHelperMethods.GetPostgresType(column.Property).ToString(), true, column.DefaultValue);
             scripts.Add(translation.Key, translation.Query);
         }
 
-        if (_definition.HasHistory)
+        if (_definition.EnableAudit)
         {
             var history = CreateColumn(GetTableName(includeAlias: false, useHistory: true), column.Name, DbHelperMethods.GetPostgresType(column.Property).ToString(), true, column.DefaultValue);
             scripts.Add(history.Key, history.Query);
 
-            if (_definition.HasTranslation)
+            if (_definition.EnableTranslation)
             {
                 var translationHistory = CreateColumn(GetTableName(includeAlias: false, useTranslation: true, useHistory: true), column.Name, DbHelperMethods.GetPostgresType(column.Property).ToString(), true, column.DefaultValue);
-                scripts.Add(translationHistory.Key, translationHistory.Query);
-            }
-        }
-
-        return scripts;
-    }
-
-    public OrderedDictionary<string, string> CreateColumn(string columnName, Type columnDataType, bool isNullable, string defaultValue = null)
-    {
-        var scripts = new OrderedDictionary<string, string>();
-        var basic = CreateColumn(GetTableName(includeAlias: false), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), isNullable, defaultValue);
-        scripts.Add(basic.Key, basic.Query);
-
-        if (_definition.HasTranslation)
-        {
-            var translation = CreateColumn(GetTableName(includeAlias: false, useTranslation: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
-            scripts.Add(translation.Key, translation.Query);
-        }
-
-        if (_definition.HasHistory)
-        {
-            var history = CreateColumn(GetTableName(includeAlias: false, useHistory: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
-            scripts.Add(history.Key, history.Query);
-
-            if (_definition.HasTranslation)
-            {
-                var translationHistory = CreateColumn(GetTableName(includeAlias: false, useTranslation: true, useHistory: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
-                scripts.Add(translationHistory.Key, translationHistory.Query);
-            }
-        }
-
-        return scripts;
-    }
-
-    public OrderedDictionary<string, string> CreateHistoryColumn(string columnName, Type columnDataType, bool isNullable, string defaultValue = null)
-    {
-        var scripts = new OrderedDictionary<string, string>();
-        
-        if (_definition.HasHistory)
-        {
-            var history = CreateColumn(GetTableName(includeAlias: false, useHistory: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
-            scripts.Add(history.Key, history.Query);
-
-            if (_definition.HasTranslation)
-            {
-                var translationHistory = CreateColumn(GetTableName(includeAlias: false, useTranslation: true, useHistory: true), columnName, DbHelperMethods.GetPostgresType(columnDataType).ToString(), true, defaultValue);
                 scripts.Add(translationHistory.Key, translationHistory.Query);
             }
         }
@@ -858,213 +813,156 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return res;
     }
 
-    private OrderedDictionary<string, string> CreateSharedHistoryFunction()
+    private string CreateHistoryView(string tableName, string columnDefinitions, bool forTranslationTable)
     {
-        var res = new OrderedDictionary<string, string>();
+        if (forTranslationTable)
+        {
+            columnDefinitions += ", language";
+        }
 
-        string key = "FUNCTION update_validfrom";
-        string query = """
-        CREATE OR REPLACE FUNCTION dbo.update_validfrom() RETURNS trigger AS
-        $$
-        DECLARE performed_by UUID;
-        BEGIN
-            SELECT COALESCE(current_setting('x.performed_by', true), 'efec83fc-deba-4f09-8073-b4dd19d0b16b')::uuid INTO performed_by;
-            NEW.performedby := performed_by;
-            NEW.validfrom := NOW();
-            RETURN NEW;
-        END;
-        $$ LANGUAGE plpgsql;
+        string historyColumns = $"{columnDefinitions}, audit_validfrom, audit_validto, audit_changedby, audit_changedbysystem, audit_changeoperation, audit_deletedby, audit_deletedbysystem, audit_deletedoperation";
+        string baseColumns = $"{columnDefinitions}, audit_validfrom, audit_validto, audit_changedby, audit_changedbysystem, audit_changeoperation, null::uuid AS audit_deletedby, null::uuid AS audit_deletedbysystem, null::uuid AS audit_deletedoperation";
+
+        string viewQuery = $"""
+        CREATE OR REPLACE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: forTranslationTable)} AS
+        SELECT {historyColumns}
+        FROM  {GetTableName(useHistory: true, useTranslation: forTranslationTable)}
+        WHERE audit_validfrom <= coalesce(current_setting('app.asof', true)::timestamptz, now())
+        AND audit_validto > coalesce(current_setting('app.asof', true)::timestamptz, now())
+        UNION ALL
+        SELECT {baseColumns}
+        FROM {tableName}
+        WHERE audit_validfrom <= coalesce(current_setting('app.asof', true)::timestamptz, now());
         """;
 
-        res.Add(key, query);
-        return res;
+        return viewQuery;
     }
 
-    private void CreateTriggers(bool forTranslationTable)
+    private OrderedDictionary<string, string> CreateAuditMetadataFunction()
     {
-        var triggerFunction = new StringBuilder();
-        triggerFunction.AppendLine("CREATE OR REPLACE FUNCTION dto.set_audit_metadata_fn()");
-        triggerFunction.AppendLine("RETURNS TRIGGER AS $$");
-        triggerFunction.AppendLine("DECLARE");
-        triggerFunction.AppendLine("current_user TEXT;");
-        triggerFunction.AppendLine("current_system TEXT;");
-        triggerFunction.AppendLine("BEGIN");
-        triggerFunction.AppendLine("SELECT COALESCE(current_setting('app.current_user', true), 'unknown_user') INTO current_user;");
-        triggerFunction.AppendLine("SELECT COALESCE(current_setting('app.current_system', true), 'unknown_system') INTO current_system;");
-        triggerFunction.AppendLine("NEW.audit_changedby := current_user;");
-        triggerFunction.AppendLine("NEW.audit_changedvia := current_system;");
-        triggerFunction.AppendLine("NEW.valid_from := now();");
-        triggerFunction.AppendLine("RETURN NEW;");
-        triggerFunction.AppendLine("END;");
-        triggerFunction.AppendLine("$$ LANGUAGE plpgsql;");
-
-        var triggerStatement = new StringBuilder();
-        string tableName = GetTableName(includeAlias: false, useTranslation: forTranslationTable);
-        triggerStatement.AppendLine($"CREATE TRIGGER set_audit_metadata_{tableName}_trigger");
-        triggerStatement.AppendLine($"BEFORE INSERT OR UPDATE ON dto.{tableName}");
-        triggerStatement.AppendLine("FOR EACH ROW");
-        triggerStatement.AppendLine("EXECUTE FUNCTION dto.set_audit_metadata_fn();");
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private OrderedDictionary<string, string> CreateFunctionsAndTriggers(bool forTranslationTable = false, bool performedBy = true, bool createdBy = true, bool modifiedBy = true, bool deletedBy = true)
-    {
-        bool useDefaultPerformedBy = false;
-
         var scripts = new OrderedDictionary<string, string>();
 
-        string tableName = GetTableName(includeAlias: false, useTranslation: forTranslationTable);
-        string columnDefinitions = string.Join(',', _definition.Properties.Select(t => t.Name));
-        string columnOldDefinitions = string.Join(',', _definition.Properties.Select(t => $"OLD.{t.Name}"));
-
-        bool enableDeleteHistory = true;
-        bool enableUpdateHistory = true;
-        bool enableHistory = enableDeleteHistory || enableUpdateHistory;
-
-        var extraColumns = new[]
-        {
-            (enabled: enableHistory, name: "validfrom", insertValue: "", updateValue: "OLD.validfrom", deleteValue: "OLD.language"),
-            (enabled: enableHistory, name: "validto", insertValue: "", updateValue: "now()", deleteValue: "now()"),
-
-            (enabled: forTranslationTable, name: "language", insertValue: "", updateValue: "OLD.language", deleteValue: "OLD.language"),
-
-            (enabled: createdBy, name: "createby", insertValue: "", updateValue: "", deleteValue: ""),
-            (enabled: performedBy, name: "performedby", insertValue: "", updateValue: "", deleteValue: ""),
-            (enabled: deletedBy, name: "deletedby", insertValue: "", updateValue: "", deleteValue: ""),
-            (enabled: modifiedBy, name: "modifiedby", insertValue: "", updateValue: "", deleteValue: ""),
-        }
-        .Where(pair => pair.enabled)
-        .ToList();
-
-        string name = $"{tableName}_trigger_history_func()";
-        string key = $"CREATE FUNCTION {name}";
-
         var sb = new StringBuilder();
-        sb.AppendLine($"CREATE OR REPLACE FUNCTION {name}");
+        sb.AppendLine("CREATE OR REPLACE FUNCTION dbo.set_audit_metadata_fn()");
         sb.AppendLine("RETURNS TRIGGER AS $$");
-
-        sb.AppendLine("DECLARE performed_by UUID;");
-        
+        sb.AppendLine("DECLARE");
+        sb.AppendLine("current_user UUID;");
+        sb.AppendLine("current_system UUID;");
+        sb.AppendLine("current_operation UUID;");
         sb.AppendLine("BEGIN");
-
-        if (useDefaultPerformedBy)
-        {
-            string defaultPerformedBy = "efec83fc-deba-4f09-8073-b4dd19d0b16b";
-            sb.AppendLine($"SELECT COALESCE(current_setting('x.performed_by', true), '{defaultPerformedBy}')::uuid INTO performed_by;");
-        }
-        else
-        {
-            // Will raise error if not set
-            sb.AppendLine("SELECT current_setting('x.performed_by', false)::uuid INTO performed_by;");
-        }
-
-        sb.AppendLine("IF TG_OP = 'UPDATE' THEN");
-        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {string.Join(",", extraColumns.Select(t => t.name))})");
-        sb.AppendLine($"VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now(), OLD.performedby, NULL);");
+        sb.AppendLine("SELECT current_setting('app.current_user', false) INTO current_user;");
+        sb.AppendLine("SELECT current_setting('app.current_system', false) INTO current_system;");
+        sb.AppendLine("SELECT current_setting('app.current_operation', false) INTO current_operation;");
+        sb.AppendLine("NEW.audit_changedby := current_user;");
+        sb.AppendLine("NEW.audit_changedbysystem := current_system;");
+        sb.AppendLine("NEW.audit_changeoperation := current_operation;");
+        sb.AppendLine("NEW.audit_validfrom := now();");
         sb.AppendLine("RETURN NEW;");
-        sb.AppendLine("END IF;");
-
-        sb.AppendLine("IF TG_OP = 'DELETE' THEN");
-        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto, performedby, deletedby)");
-        sb.AppendLine($"VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now(), OLD.performedby, performed_by);");
-        sb.AppendLine("RETURN OLD;");
-        sb.AppendLine("END IF;");
-
-        sb.AppendLine("RETURN NULL;");
         sb.AppendLine("END;");
         sb.AppendLine("$$ LANGUAGE plpgsql;");
 
-        sb.AppendLine($"CREATE OR REPLACE TRIGGER {_definition.ModelType.Name}_History AFTER UPDATE OR DELETE ON {tableName}");
-        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {name};");
+        scripts.Add($"CREATE FUNCTION dbo.set_audit_metadata_fn", sb.ToString());
 
         return scripts;
     }
 
-
-    private OrderedDictionary<string, string> CreateHistoryTriggersAndView(bool forTranslationTable)
+    private OrderedDictionary<string, string> CreateMetaDataTrigger(bool isTranslation)
     {
         var scripts = new OrderedDictionary<string, string>();
 
-        /*
-        var shared = CreateSharedHistoryFunction();
-        scripts.Add(shared.key, shared.query);
-        */
+        string modelName = _definition.ModelType.Name;
+        string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
+        string functionName = $"{schema}.audit_{modelName}_fn";
+        string tableName = GetTableName(includeAlias: true, useTranslation: isTranslation);
 
-        string tableName = GetTableName(includeAlias: false, useTranslation: forTranslationTable);
+        var sb = new StringBuilder();
+        sb.AppendLine($"CREATE TRIGGER {_definition.ModelType.Name}_Meta BEFORE INSERT OR UPDATE ON {tableName}");
+        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION dbo.set_audit_metadata_fn();");
 
+        scripts.Add($"CREATE TRIGGER {_definition.ModelType.Name}_Meta", sb.ToString());
+
+        return scripts;
+    }
+
+    private OrderedDictionary<string, string> CreateAuditFunction(bool isTranslation)
+    {
+        var scripts = new OrderedDictionary<string, string>();
+
+        string tableName = GetTableName(includeAlias: false, useTranslation: isTranslation);
         string columnDefinitions = string.Join(',', _definition.Properties.Select(t => t.Name));
         string columnOldDefinitions = string.Join(',', _definition.Properties.Select(t => $"OLD.{t.Name}"));
 
-        string keyTriggerUpdateValidFrom = $"TRIGGER {_definition.ModelType.Name}_update_validfrom ON {tableName}";
-        string queryTriggerUpdateValidFrom = $"""
-        CREATE OR REPLACE TRIGGER {_definition.ModelType.Name}_update_validfrom BEFORE INSERT OR UPDATE ON {tableName}
-        FOR EACH ROW EXECUTE FUNCTION dbo.update_validfrom();
-        """;
+        string modelName = _definition.ModelType.Name;
+        string historyTableName = GetTableName(includeAlias: false, useHistory: true, useTranslation: isTranslation);
+        string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
+        
+        if (isTranslation)
+        {
+            columnDefinitions += ", language";
+            columnOldDefinitions += ", OLD.language";
+        }
 
-        scripts.Add(keyTriggerUpdateValidFrom, queryTriggerUpdateValidFrom);
-
-        string copyToHistoryFuncName = $"{tableName}_copy_to_history()";
-        string keyCopyToHistory = $"FUNCTION {copyToHistoryFuncName}";
-      
         var sb = new StringBuilder();
-        sb.AppendLine($"CREATE OR REPLACE FUNCTION {copyToHistoryFuncName}");
+        sb.AppendLine($"CREATE OR REPLACE FUNCTION {schema}.audit_{modelName}_fn()");
         sb.AppendLine("RETURNS TRIGGER AS $$");
-        sb.AppendLine("DECLARE performed_by UUID;");
+        sb.AppendLine("DECLARE");
+        sb.AppendLine("current_user UUID;");
+        sb.AppendLine("current_system UUID;");
+        sb.AppendLine("current_operation UUID;");
         sb.AppendLine("BEGIN");
-        sb.AppendLine("SELECT COALESCE(current_setting('x.performed_by', true), 'efec83fc-deba-4f09-8073-b4dd19d0b16b')::uuid INTO performed_by;");
+        sb.AppendLine("SELECT current_setting('app.current_user', false) INTO current_user;");
+        sb.AppendLine("SELECT current_setting('app.current_system', false) INTO current_system;");
+        sb.AppendLine("SELECT current_setting('app.current_operation', false) INTO current_operation;");
 
         sb.AppendLine("IF TG_OP = 'UPDATE' THEN");
-        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto, performedby, deletedby)");
-        sb.AppendLine($"VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now(), OLD.performedby, NULL);");
+        sb.AppendLine($"INSERT INTO {historyTableName} (");
+        sb.AppendLine($"{columnDefinitions},");
+        sb.AppendLine("audit_validfrom, audit_validto,");
+        sb.AppendLine("audit_changedby, audit_changedbysystem, audit_changeoperation");
+        sb.AppendLine(") VALUES (");
+        sb.AppendLine($"{columnOldDefinitions},");
+        sb.AppendLine("OLD.audit_validfrom, now(),");
+        sb.AppendLine("OLD.audit_changedby, OLD.audit_changedbysystem, OLD.audit_changeoperation");
+        sb.AppendLine(");");
         sb.AppendLine("RETURN NEW;");
-        sb.AppendLine("END IF;");
-
-        sb.AppendLine("IF TG_OP = 'DELETE' THEN");
-        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useHistory: true, useTranslation: forTranslationTable)} ({columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto, performedby, deletedby)");
-        sb.AppendLine($"VALUES({columnOldDefinitions}, {(forTranslationTable ? "OLD.language, " : string.Empty)}OLD.validfrom, now(), OLD.performedby, performed_by);");
+        
+        sb.AppendLine("ELSIF TG_OP = 'DELETE' THEN");
+        sb.AppendLine($"INSERT INTO {historyTableName} (");
+        sb.AppendLine($"{columnDefinitions},");
+        sb.AppendLine("audit_validfrom, audit_validto,");
+        sb.AppendLine("audit_changedby, audit_changedbysystem, audit_changeoperation,");
+        sb.AppendLine("audit_deletedby, audit_deletedbysystem, audit_deleteoperation");
+        sb.AppendLine(") VALUES (");
+        sb.AppendLine($"{columnOldDefinitions},");
+        sb.AppendLine("OLD.audit_validfrom, now(),");
+        sb.AppendLine("OLD.audit_changedby, OLD.audit_changedbysystem, OLD.audit_changeoperation,");
+        sb.AppendLine("current_user, current_system, current_operation");
+        sb.AppendLine(");");
         sb.AppendLine("RETURN OLD;");
         sb.AppendLine("END IF;");
-
+        
         sb.AppendLine("RETURN NULL;");
         sb.AppendLine("END;");
         sb.AppendLine("$$ LANGUAGE plpgsql;");
 
-        sb.AppendLine($"CREATE OR REPLACE TRIGGER {_definition.ModelType.Name}_History AFTER UPDATE OR DELETE ON {tableName}");
-        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {copyToHistoryFuncName};");
+        scripts.Add($"CREATE FUNCTION {schema}.audit_{modelName}_fn", sb.ToString());
 
-        var queryCopyToHistory = sb.ToString();
+        return scripts;
+    }
 
-        scripts.Add(keyCopyToHistory, queryCopyToHistory);
+    private OrderedDictionary<string, string> CreateAuditTrigger(bool isTranslation)
+    {
+        var scripts = new OrderedDictionary<string, string>();
 
-        string viewKey = $"VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: forTranslationTable)}";
-        string viewQuery = $"""
-        CREATE OR REPLACE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: forTranslationTable)} AS
-        SELECT {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, validto, performedby, deletedby
-        FROM  {GetTableName(useHistory: true, useTranslation: forTranslationTable)}
-        WHERE validfrom <= coalesce(current_setting('x.asof', true)::timestamptz, now())
-        AND validto > coalesce(current_setting('x.asof', true)::timestamptz, now())
-        UNION ALL
-        SELECT  {columnDefinitions}, {(forTranslationTable ? "language, " : string.Empty)}validfrom, now() AS validto, performedby, null::uuid AS deletedby
-        FROM {tableName}
-        where validfrom <= coalesce(current_setting('x.asof', true)::timestamptz, now());
-        """;
-        scripts.Add(viewKey, viewQuery);
+        string modelName = _definition.ModelType.Name;
+        string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
+        string functionName = $"{schema}.audit_{modelName}_fn";
+        string tableName = GetTableName(includeAlias: true, useTranslation: isTranslation);
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"CREATE OR REPLACE TRIGGER {modelName}_Audit AFTER UPDATE OR DELETE ON {tableName}");
+        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {schema}.{functionName};");
+        scripts.Add($"CREATE TRIGGER {modelName}_Audit", sb.ToString());
 
         return scripts;
     }

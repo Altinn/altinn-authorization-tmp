@@ -1,7 +1,10 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Microsoft.Extensions.Options;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -67,9 +70,17 @@ public class DelegationService(
         return true;
     }
 
+    private static Guid DelegationServiceSystemId = Guid.Parse("");
+
     /// <inheritdoc/>
     public async Task<ExtDelegation> CreateDelgation(Guid userId, Guid fromAssignmentId, Guid toAssignmentId, Guid performedBy)
     {
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = performedBy,
+            ChangedBySystem = DelegationServiceSystemId
+        };
+
         var fromAssignment = await assignmentRepository.GetExtended(fromAssignmentId);
         var toAssignment = await assignmentRepository.GetExtended(toAssignmentId);
 
@@ -88,7 +99,7 @@ public class DelegationService(
             ToId = toAssignmentId
         };
 
-        var res = await delegationRepository.Create(delegation, performedBy: performedBy);
+        var res = await delegationRepository.Create(delegation, options: options);
         if (res == 0)
         {
             throw new Exception("Failed to create delegation");
@@ -106,6 +117,12 @@ public class DelegationService(
         [X] Check if the assignment role has the package
         [X] Check i Pacakge is Delegable
         */
+
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = performedBy,
+            ChangedBySystem = DelegationServiceSystemId
+        };
 
         var package = await packageRepository.Get(packageId);
 
@@ -132,8 +149,8 @@ public class DelegationService(
                 Id = Guid.NewGuid(),
                 DelegationId = delegationId,
                 PackageId = packageId
-            }, 
-            performedBy: performedBy
+            },
+            options: options
             );
 
         return res > 0;
@@ -153,6 +170,12 @@ public class DelegationService(
         [X] Check if the assignment role has the resource
         [X] Check if the assignment packages has the resource
         */
+
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = performedBy,
+            ChangedBySystem = DelegationServiceSystemId
+        };
 
         var resource = await resourceRepository.Get(resourceId);
 
@@ -185,7 +208,7 @@ public class DelegationService(
                 DelegationId = delegationId,
                 ResourceId = resourceId
             },
-            performedBy: performedBy);
+            options: options);
 
         return res > 0;
     }
@@ -193,6 +216,12 @@ public class DelegationService(
     /// <inheritdoc/>
     public async Task<IEnumerable<Delegation>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid facilitatorPartyId, Guid performedBy)
     {
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = performedBy,
+            ChangedBySystem = DelegationServiceSystemId
+        };
+
         // Find user : Fredrik
         var user = (await entityRepository.Get(performedBy)) ?? throw new Exception(string.Format("Party not found '{0}' for user", performedBy));
 
@@ -218,6 +247,12 @@ public class DelegationService(
 
     private async Task<IEnumerable<Delegation>> CreateClientDelegations(List<CreateSystemDelegationRolePackageDto> rolepackages, Entity client, Entity facilitator, Assignment agentAssignment, Guid performedBy)
     {
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = performedBy,
+            ChangedBySystem = DelegationServiceSystemId
+        };
+
         var result = new List<Delegation>();
 
         var rolepacks = new Dictionary<string, List<string>>();
@@ -274,6 +309,12 @@ public class DelegationService(
 
     private async Task<DelegationPackage> GetOrCreateDelegationPackage(Guid delegationId, Guid packageId, Guid performedBy)
     {
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = performedBy,
+            ChangedBySystem = DelegationServiceSystemId
+        };
+
         var delegationPackageFilter = delegationPackageRepository.CreateFilterBuilder();
         delegationPackageFilter.Equal(t => t.DelegationId, delegationId);
         delegationPackageFilter.Equal(t => t.PackageId, packageId);
@@ -287,7 +328,7 @@ public class DelegationService(
                     DelegationId = delegationId,
                     PackageId = packageId
                 }, 
-                performedBy: performedBy
+                options: options
                 );
             return (await delegationPackageRepository.Get(delegationPackageFilter)).FirstOrDefault();
         }
@@ -299,6 +340,12 @@ public class DelegationService(
 
     private async Task<Delegation> GetOrCreateDelegation(Assignment from, Assignment to, Entity facilitator, Guid performedBy)
     {
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = performedBy,
+            ChangedBySystem = DelegationServiceSystemId
+        };
+
         var delegationFilter = delegationRepository.CreateFilterBuilder();
         delegationFilter.Equal(t => t.FromId, from.Id);
         delegationFilter.Equal(t => t.ToId, to.Id);
@@ -314,7 +361,7 @@ public class DelegationService(
                     ToId = to.Id,
                     FacilitatorId = facilitator.Id
                 },
-                performedBy: performedBy
+                options: options
                 );
 
             return (await delegationRepository.Get(delegationFilter)).FirstOrDefault();
@@ -333,6 +380,12 @@ public class DelegationService(
             return entity;
         }
 
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = performedBy,
+            ChangedBySystem = DelegationServiceSystemId
+        };
+
         var entityType = (await entityTypeRepository.Get(t => t.Name, type)).First() ?? throw new Exception(string.Format("Type not found '{0}'", type));
         var variantFilter = entityVariantRepository.CreateFilterBuilder();
         variantFilter.Equal(t => t.TypeId, entityType.Id);
@@ -348,7 +401,7 @@ public class DelegationService(
                 TypeId = entityType.Id,
                 VariantId = entityVariant.Id
             },
-            performedBy: performedBy
+            options: options
             );
 
         return await entityRepository.Get(id);
@@ -368,6 +421,12 @@ public class DelegationService(
         }
         else
         {
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = performedBy,
+                ChangedBySystem = DelegationServiceSystemId
+            };
+
             var roleProvider = await providerRepository.Get(role.ProviderId);
             if (roleProvider.Name != "Digitaliseringsdirektoratet") // Get system from token
             {
@@ -382,7 +441,7 @@ public class DelegationService(
                     ToId = to.Id,
                     RoleId = role.Id
                 },
-                performedBy: performedBy
+                options: options
             );
         }
 

@@ -406,17 +406,17 @@ public class DbDataMigrationService(
 
         foreach (var item in entityTypes)
         {
-            await entityTypeService.Upsert(item, cancellationToken);
+            await entityTypeService.Upsert(item, cancellationToken: cancellationToken);
         }
 
         foreach (var item in entityTypesNno)
         {
-            await entityTypeService.UpdateTranslation(item.Id, item, "nno", cancellationToken);
+            await entityTypeService.UpdateTranslation(item.Id, item, "nno", cancellationToken: cancellationToken);
         }
 
         foreach (var item in entityTypesEng)
         {
-            await entityTypeService.UpdateTranslation(item.Id, item, "eng", cancellationToken);
+            await entityTypeService.UpdateTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
         }
     }
 
@@ -590,17 +590,17 @@ public class DbDataMigrationService(
 
         foreach (var item in entityVariants)
         {
-            await entityVariantService.Upsert(item, cancellationToken);
+            await entityVariantService.Upsert(item, cancellationToken: cancellationToken);
         }
 
         foreach (var item in entityVariantsEng)
         {
-            await entityVariantService.UpsertTranslation(item.Id, item, "eng", cancellationToken);
+            await entityVariantService.UpsertTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
         }
 
         foreach (var item in entityVariantsNno)
         {
-            await entityVariantService.UpsertTranslation(item.Id, item, "nno", cancellationToken);
+            await entityVariantService.UpsertTranslation(item.Id, item, "nno", cancellationToken: cancellationToken);
         }
     }
 
@@ -631,7 +631,7 @@ public class DbDataMigrationService(
 
         foreach (var item in systemEntities)
         {
-            await entityRepository.Upsert(item, cancellationToken);
+            await entityRepository.Upsert(item, cancellationToken: cancellationToken);
         }
     }
 
@@ -798,20 +798,20 @@ public class DbDataMigrationService(
 
         foreach (var item in roles)
         {
-            await roleService.Upsert(item, cancellationToken, performedBy: DefaultPerformedBy);
+            await roleService.Upsert(item, cancellationToken: cancellationToken);
         }
 
         foreach (var item in rolesEng)
         {
-            await roleService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
+            await roleService.UpsertTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
         }
 
         foreach (var item in rolesNno)
         {
-            await roleService.UpsertTranslation(item.Id, item, "nno", cancellationToken, performedBy: DefaultPerformedBy);
+            await roleService.UpsertTranslation(item.Id, item, "nno", cancellationToken: cancellationToken);
         }
 
-        await RoleLookup(roles, cancellationToken);
+        await RoleLookup(roles, cancellationToken: cancellationToken);
     }
 
     private async Task RoleLookup(List<Role> roles, CancellationToken cancellationToken = default)
@@ -994,17 +994,17 @@ public class DbDataMigrationService(
 
         foreach (var item in areaGroups)
         {
-            await areaGroupService.Upsert(item, cancellationToken, performedBy: DefaultPerformedBy);
+            await areaGroupService.Upsert(item, cancellationToken: cancellationToken);
         }
 
         foreach (var item in areaGroupsEng)
         {
-            await areaGroupService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
+            await areaGroupService.UpsertTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
         }
 
         foreach (var item in areaGroupsNno)
         {
-            await areaGroupService.UpsertTranslation(item.Id, item, "nno", cancellationToken, performedBy: DefaultPerformedBy);
+            await areaGroupService.UpsertTranslation(item.Id, item, "nno", cancellationToken: cancellationToken);
         }
     }
 
@@ -1089,17 +1089,17 @@ public class DbDataMigrationService(
 
         foreach (var item in areas)
         {
-            await areaService.Upsert(item, cancellationToken, performedBy: DefaultPerformedBy);
+            await areaService.Upsert(item, cancellationToken: cancellationToken);
         }
 
         foreach (var item in areasEng)
         {
-            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
+            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
         }
 
         foreach (var item in areasNno)
         {
-            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken, performedBy: DefaultPerformedBy);
+            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
         }
     }
 

@@ -199,92 +199,92 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Create(T entity, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> Create(T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
         var param = BuildParameters(entity);
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildInsertQuery(param, performedBy: performedBy);
+        string query = queryBuilder.BuildInsertQuery(param, options: options);
 
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Upsert(T entity, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> Upsert(T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
         var param = BuildParameters(entity);
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpsertQuery(param, performedBy: performedBy);
+        string query = queryBuilder.BuildUpsertQuery(param, options: options);
 
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
         var param = BuildParameters(entity);
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpsertQuery(param, mergeFilter, performedBy: performedBy);
+        string query = queryBuilder.BuildUpsertQuery(param, mergeFilter, options: options);
 
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update(Guid id, T entity, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> Update(Guid id, T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
         var param = BuildParameters(entity);
-        return await Update(id: id, parameters: param, cancellationToken: cancellationToken, performedBy: performedBy);
+        return await Update(id: id, parameters: param, cancellationToken: cancellationToken, options: options);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
         if (value == null)
         {
             var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-            string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, value), performedBy: performedBy);
+            string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, value), options: options);
             return await executor.ExecuteCommand(query, [new GenericParameter("_id", id)], cancellationToken: cancellationToken);
         }
 
-        return await Update(id, [new GenericParameter(ExtractPropertyInfo(property).Name, value)], cancellationToken);
+        return await Update(id, [new GenericParameter(ExtractPropertyInfo(property).Name, value)], cancellationToken: cancellationToken, options: options);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, null), performedBy: performedBy);
+        string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, null), options: options);
         return await executor.ExecuteCommand(query, [new GenericParameter("_id", id)], cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update(Guid id, List<GenericParameter> parameters, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> Update(Guid id, List<GenericParameter> parameters, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpdateQuery(parameters, performedBy: performedBy);
+        string query = queryBuilder.BuildUpdateQuery(parameters, options: options);
         parameters.Add(new GenericParameter("_id", id));
         return await executor.ExecuteCommand(query, parameters, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Delete(Guid id, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> Delete(Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
-        return await Delete([new GenericFilter("id", id)], cancellationToken, performedBy);
+        return await Delete([new GenericFilter("id", id)], cancellationToken: cancellationToken, options: options);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Delete(IEnumerable<GenericFilter> filters, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> Delete(IEnumerable<GenericFilter> filters, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
         // TODO: Implement DeletedBy ... Somehow
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
         var param = BuildFilterParameters(filters, null);
-        string query = queryBuilder.BuildDeleteQuery(filters, performedBy: performedBy);
+        string query = queryBuilder.BuildDeleteQuery(filters, options: options);
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> CreateTranslation(T obj, string language, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> CreateTranslation(T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
-        if (!Definition.HasTranslation)
+        if (!Definition.EnableTranslation)
         {
             return 0;
         }
@@ -292,22 +292,22 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         var parameters = BuildTranslationParameters(obj);
         parameters.Add(new GenericParameter("Language", language));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildInsertQuery(parameters, forTranslation: true, performedBy: performedBy);
+        string query = queryBuilder.BuildInsertQuery(parameters, forTranslation: true, options: options);
 
         return await executor.ExecuteCommand(query, parameters, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> UpdateTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> UpdateTranslation(Guid id, T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
-        if (!Definition.HasTranslation)
+        if (!Definition.EnableTranslation)
         {
             return 0;
         }
 
         var parameters = BuildTranslationParameters(obj);
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpdateQuery(parameters, forTranslation: true, performedBy: performedBy);
+        string query = queryBuilder.BuildUpdateQuery(parameters, forTranslation: true, options: options);
 
         parameters.Add(new GenericParameter("_language", language));
         parameters.Add(new GenericParameter("_id", id));
@@ -316,9 +316,9 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> UpsertTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default, Guid? performedBy = null)
+    public async Task<int> UpsertTranslation(Guid id, T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
-        if (!Definition.HasTranslation)
+        if (!Definition.EnableTranslation)
         {
             return 0;
         }
@@ -326,7 +326,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         var parameters = BuildTranslationParameters(obj);
         parameters.Add(new GenericParameter("Language", language));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpsertQuery(parameters, forTranslation: true, performedBy: performedBy);
+        string query = queryBuilder.BuildUpsertQuery(parameters, forTranslation: true, options: options);
 
         parameters.Add(new GenericParameter("_language", language));
         parameters.Add(new GenericParameter("_id", id));

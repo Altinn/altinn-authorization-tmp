@@ -39,6 +39,8 @@ public class DbSchemaMigrationService
         await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
         await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
         await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.IngestSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.ArchiveSchema};", new List<GenericParameter>(), cancellationToken);
     }
 
     private async Task PostMigration(CancellationToken cancellationToken = default)
@@ -46,18 +48,22 @@ public class DbSchemaMigrationService
         var config = this.options.Value;
 
         string schemaGrant = $"""
-        GRANT USAGE ON SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};
-        GRANT USAGE ON SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};
-        GRANT USAGE ON SCHEMA {config.BaseHistorySchema} TO {config.DatabaseReadUser};
-        GRANT USAGE ON SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};
+        GRANT USAGE ON SCHEMA {config.BaseSchema} TO {config.DatabaseAppUser};
+        GRANT USAGE ON SCHEMA {config.TranslationSchema} TO {config.DatabaseAppUser};
+        GRANT USAGE ON SCHEMA {config.BaseHistorySchema} TO {config.DatabaseAppUser};
+        GRANT USAGE ON SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseAppUser};
+        GRANT USAGE ON SCHEMA {config.IngestSchema} TO {config.DatabaseAppUser};
+        GRANT USAGE ON SCHEMA {config.ArchiveSchema} TO {config.DatabaseAppUser};
         """;
         await executor.ExecuteMigrationCommand(schemaGrant);
 
         string tableGrant = $"""
-        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseSchema} TO {config.DatabaseReadUser};
-        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationSchema} TO {config.DatabaseReadUser};
-        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseHistorySchema} TO {config.DatabaseReadUser};
-        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseReadUser};
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseSchema} TO {config.DatabaseAppUser};
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationSchema} TO {config.DatabaseAppUser};
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.BaseHistorySchema} TO {config.DatabaseAppUser};
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.TranslationHistorySchema} TO {config.DatabaseAppUser};
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.IngestSchema} TO {config.DatabaseAppUser};
+        GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA {config.ArchiveSchema} TO {config.DatabaseAppUser};
         """;
 
         await executor.ExecuteMigrationCommand(tableGrant);

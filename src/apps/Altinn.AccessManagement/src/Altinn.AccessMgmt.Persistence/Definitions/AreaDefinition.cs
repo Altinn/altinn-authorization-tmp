@@ -19,10 +19,8 @@ public class AreaDefinition : BaseDbDefinition<Area>, IDbDefinition
         {
             def.SetVersion(2);
 
-            def.EnableHistory();
+            def.EnableAudit();
             def.EnableTranslation();
-
-            def.EnableTriggers();
 
             def.RegisterPrimaryKey([t => t.Id]);
             def.RegisterProperty(t => t.Id);

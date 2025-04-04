@@ -17,7 +17,7 @@ public class ProviderDefinition : BaseDbDefinition<Provider>, IDbDefinition
     {
         definitionRegistry.Define<Provider>(def =>
         {
-            def.EnableHistory();
+            def.EnableAudit();
             def.RegisterPrimaryKey([t => t.Id]);
             def.RegisterProperty(t => t.Id);
 

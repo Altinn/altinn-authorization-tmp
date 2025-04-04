@@ -77,7 +77,7 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         public DbDefinitionBuilder<T> EnableTranslation(bool value = true)
         {
-            DbDefinition.HasTranslation = value;
+            DbDefinition.EnableTranslation = value;
             return this;
         }
 
@@ -86,30 +86,9 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// </summary>
         /// <param name="value">If set to <c>true</c>, history is enabled; otherwise, it is disabled.</param>
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        public DbDefinitionBuilder<T> EnableHistory(bool value = true)
+        public DbDefinitionBuilder<T> EnableAudit(bool value = true)
         {
-            DbDefinition.HasHistory = value;
-            return this;
-        }
-
-        /// <summary>
-        /// Enables audit triggers for the current entity definition. When enabled, these triggers automatically record
-        /// user-related audit information for operations performed on the entity, such as who created, modified, or deleted it.
-        /// </summary>
-        /// <param name="performedBy">If set to true, enables the trigger that logs the user who performed the operation.</param>
-        /// <param name="createdBy">If set to true, enables the trigger that logs the user who created the entity.</param>
-        /// <param name="modifiedBy">If set to true, enables the trigger that logs the user who last modified the entity.</param>
-        /// <param name="deletedBy">If set to true, enables the trigger that logs the user who deleted the entity.</param>
-        /// <returns>
-        /// Returns the current instance of <see cref="DbDefinitionBuilder{T}"/>, allowing for fluent chaining of further configuration methods.
-        /// </returns>
-        public DbDefinitionBuilder<T> EnableTriggers(bool performedBy = true, bool createdBy = true, bool modifiedBy = true, bool deletedBy = true)
-        {
-            DbDefinition.EnablePerformedBy = performedBy;
-            DbDefinition.EnableCreatedBy = createdBy;
-            DbDefinition.EnableModifiedBy = modifiedBy;
-            DbDefinition.EnableDeletedBy = deletedBy;
-
+            DbDefinition.EnableAudit = value;
             return this;
         }
 

@@ -23,91 +23,52 @@ public class MssqlQueryBuilder : IDbQueryBuilder
         _definitionRegistry = definitionRegistry;
     }
 
-    /// <inheritdoc/>
     public string BuildBasicSelectQuery(RequestOptions options, IEnumerable<GenericFilter> filters, DbCrossRelationDefinition crossDef = null)
     {
         throw new NotImplementedException();
     }
 
-    /// <inheritdoc/>
-    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters)
+    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters, ChangeRequestOptions options = null)
     {
         throw new NotImplementedException();
     }
 
-    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters, Guid? performedBy = null)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
     public string BuildExtendedSelectQuery(RequestOptions options, IEnumerable<GenericFilter> filters, DbCrossRelationDefinition crossDef = null)
     {
         throw new NotImplementedException();
     }
 
-    /// <inheritdoc/>
-    public string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false)
+    public string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
     {
         throw new NotImplementedException();
     }
 
-    public string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
+    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false, ChangeRequestOptions options = null)
     {
         throw new NotImplementedException();
     }
 
-    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false)
+    public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
     {
         throw new NotImplementedException();
     }
 
-    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false, Guid? performedBy = null)
+    public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
     {
         throw new NotImplementedException();
     }
 
-    /// <inheritdoc/>
-    public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false)
+    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, ChangeRequestOptions options = null)
     {
         throw new NotImplementedException();
     }
 
-    public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false)
-    {
-        throw new NotImplementedException();
-    }
-
-    public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null)
-    {
-        throw new NotImplementedException();
-    }
-
-    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, Guid? performedBy = null)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc/>
     public DbMigrationScriptCollection GetMigrationScripts()
     {
         throw new NotImplementedException();
     }
 
-    /// <inheritdoc/>
-    public string GetTableName(bool includeAlias = true, bool useHistory = false, bool useTranslation = false, bool useHistoryView = false)
+    public string GetTableName(bool includeAlias = true, bool useHistory = false, bool useTranslation = false, bool useHistoryView = false, bool includeSchema = true)
     {
         throw new NotImplementedException();
     }

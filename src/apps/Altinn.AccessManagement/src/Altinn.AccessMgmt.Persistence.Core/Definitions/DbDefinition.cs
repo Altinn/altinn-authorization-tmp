@@ -58,32 +58,12 @@ public class DbDefinition(Type type)
     public List<Type> ViewDependencies { get; set; } = new();
 
     /// <summary>
-    /// Indicates whether the entity supports translations.
+    /// Indicates whether the tables supports history tracking.
     /// </summary>
-    public bool HasTranslation { get; set; } = false;
+    public bool EnableAudit { get; set; } = false;
 
     /// <summary>
-    /// Indicates whether the entity supports history tracking.
+    /// Will create a translation table
     /// </summary>
-    public bool HasHistory { get; set; } = false;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the trigger for recording the user who performed an operation is enabled.
-    /// </summary>
-    public bool EnablePerformedBy { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the trigger for recording the user who created the entity is enabled.
-    /// </summary>
-    public bool EnableCreatedBy { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the trigger for recording the user who last modified the entity is enabled.
-    /// </summary>
-    public bool EnableModifiedBy { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the trigger for recording the user who deleted the entity is enabled.
-    /// </summary>
-    public bool EnableDeletedBy { get; set; }
+    public bool EnableTranslation { get; set; } = false;
 }

@@ -31,13 +31,13 @@ public interface IDbQueryBuilder
     /// <param name="parameters">Parameters</param>
     /// <param name="forTranslation">Is this for a translation table</param>
     /// <returns></returns>
-    string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null);
+    string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null);
 
     /// <summary>
     /// Builds a DELETE query
     /// </summary>
     /// <returns></returns>
-    string BuildDeleteQuery(IEnumerable<GenericFilter> filters, Guid? performedBy = null);
+    string BuildDeleteQuery(IEnumerable<GenericFilter> filters, ChangeRequestOptions options = null);
 
     /// <summary>
     /// Builds a UPDATE query
@@ -45,7 +45,7 @@ public interface IDbQueryBuilder
     /// <param name="parameters">Parameters</param>
     /// <param name="forTranslation">Is this for a translation table</param>
     /// <returns></returns>
-    string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null);
+    string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null);
 
     /// <summary>
     /// Builds a UPDATE query
@@ -53,7 +53,7 @@ public interface IDbQueryBuilder
     /// <param name="parameter">Parameter</param>
     /// <param name="forTranslation">Is this for a translation table</param>
     /// <returns></returns>
-    string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false, Guid? performedBy = null);
+    string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false, ChangeRequestOptions options = null);
 
     /// <summary>
     /// Builds a UPSERT query
@@ -61,7 +61,7 @@ public interface IDbQueryBuilder
     /// <param name="parameters">Parameters</param>
     /// <param name="forTranslation">Is this for a translation table</param>
     /// <returns></returns>
-    string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false, Guid? performedBy = null);
+    string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null);
 
     /// <summary>
     /// Builds a UPSERT query
@@ -70,7 +70,7 @@ public interface IDbQueryBuilder
     /// <param name="mergeFilter">Parameters for merge statement</param>
     /// <param name="forTranslation">Is this for a translation table</param>
     /// <returns></returns>
-    string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, Guid? performedBy = null);
+    string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, ChangeRequestOptions options = null);
 
     /// <summary>
     /// Generates mirgration scripts for the definition

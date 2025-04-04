@@ -6,7 +6,7 @@ namespace Altinn.AccessMgmt.Persistence.Audit;
 /// <summary>
 /// Extended Base DbAudit
 /// </summary>
-public class ExtBaseAudit : Core.Models.DbAudit
+public class ExtBaseAudit : DbAudit
 {
     /// <summary>
     /// Entity responsible for latest version
