@@ -61,9 +61,8 @@ internal static partial class AccessManagementHost
     {
         Log.CreateAltinnHost(Logger);
         var builder = AltinnHost.CreateWebApplicationBuilder("access-management", args);
-        builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
+        builder.ConfigureAppsettings();
         builder.ConfigureLibsHost();
-
         builder.Services.AddMemoryCache();
         builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.AddControllers();
@@ -116,32 +115,10 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureLibsIntegrations(this WebApplicationBuilder builder)
     {
-        builder.AddAltinnResourceRegisterIntegration(opts =>
+        builder.Services.AddAltinnPlatformIntegrationDefaults(() =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings.Platform?.ResourceRegisterEndpoint == null)
-            {
-                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.ResourceRegisterEndpoint));
-                opts.Endpoint = default;
-            }
-            else
-            {
-                opts.Endpoint = appsettings.Platform.ResourceRegisterEndpoint;
-            }
-        });
-
-        builder.AddAltinnRegisterIntegration(opts =>
-        {
-            var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings.Platform?.RegisterEndpoint == null)
-            {
-                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.RegisterEndpoint));
-                opts.Endpoint = default;
-            }
-            else
-            {
-                opts.Endpoint = appsettings.Platform.RegisterEndpoint;
-            }
+            return appsettings.Platform;
         });
 
         return builder;
@@ -230,7 +207,7 @@ internal static partial class AccessManagementHost
     private static void ConfigureAppsettings(this WebApplicationBuilder builder)
     {
         var config = builder.Configuration;
-
+        builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
         builder.Services.Configure<GeneralSettings>(config.GetSection("GeneralSettings"));
         builder.Services.Configure<PlatformSettings>(config.GetSection("PlatformSettings"));
         builder.Services.Configure<Altinn.Common.PEP.Configuration.PlatformSettings>(config.GetSection("PlatformSettings"));

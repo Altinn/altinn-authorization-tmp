@@ -8,6 +8,9 @@ using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
+using Altinn.Authorization.Integration.Platform.ResourceRegister;
+using Azure;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.FeatureManagement;
 
 namespace Altinn.Authorization.AccessManagement;
@@ -17,12 +20,14 @@ namespace Altinn.Authorization.AccessManagement;
 /// </summary>
 /// <param name="lease">Lease provider for distributed locking.</param>
 /// <param name="register">Register integration service.</param>
+/// <param name="resourceRegister">add resource register integration</param>
 /// <param name="logger">Logger for logging service activities.</param>
 /// <param name="featureManager">for reading feature flags</param>
 /// <param name="ingestService">Ingest service</param>
 /// <param name="statusService">Status service</param>
 /// <param name="entityRepository">Repository for entity data.</param>
 /// <param name="roleRepository">Repository for role data.</param>
+/// <param name="resourceRepository">Repository for writing resources</param>
 /// <param name="assignmentRepository">Repository for assignment data.</param>
 /// <param name="entityTypeRepository">Repository for entity type data.</param>
 /// <param name="entityVariantRepository">Repository for entity variant data.</param>
@@ -30,12 +35,14 @@ namespace Altinn.Authorization.AccessManagement;
 public partial class RegisterHostedService(
     IAltinnLease lease,
     IAltinnRegister register,
+    IAltinnResourceRegister resourceRegister,
     ILogger<RegisterHostedService> logger,
     IFeatureManager featureManager,
     IIngestService ingestService,
     IStatusService statusService,
     IEntityRepository entityRepository,
     IRoleRepository roleRepository,
+    IResourceRepository resourceRepository,
     IAssignmentRepository assignmentRepository,
     IEntityTypeRepository entityTypeRepository,
     IEntityVariantRepository entityVariantRepository,
@@ -44,12 +51,14 @@ public partial class RegisterHostedService(
 {
     private readonly IAltinnLease _lease = lease;
     private readonly IAltinnRegister _register = register;
+    private readonly IAltinnResourceRegister _resourceRegister = resourceRegister;
     private readonly ILogger<RegisterHostedService> _logger = logger;
     private readonly IFeatureManager _featureManager = featureManager;
     private readonly IIngestService ingestService = ingestService;
     private readonly IStatusService statusService = statusService;
     private readonly IEntityRepository entityRepository = entityRepository;
     private readonly IRoleRepository roleRepository = roleRepository;
+    private readonly IResourceRepository resourceRepository = resourceRepository;
     private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
     private readonly IEntityTypeRepository entityTypeRepository = entityTypeRepository;
     private readonly IEntityVariantRepository entityVariantRepository = entityVariantRepository;
@@ -88,6 +97,9 @@ public partial class RegisterHostedService(
 
         try
         {
+            await SyncResourceOwners(cancellationToken);
+            await SyncResources(ls, cancellationToken);
+
             var partyStatus = await statusService.GetOrCreateRecord(Guid.Parse("C18B67F6-B07E-482C-AB11-7FE12CD1F48D"), "accessmgmt-sync-register-party", 5);
             var roleStatus = await statusService.GetOrCreateRecord(Guid.Parse("84E9726D-E61B-4DFF-91D7-9E17C8BB41A6"), "accessmgmt-sync-register-role", 5);
 
@@ -148,7 +160,62 @@ public partial class RegisterHostedService(
             await _lease.Release(ls, default);
         }
     }
-    
+
+    private async Task<bool> SyncResourceOwners(CancellationToken cancellationToken)
+    {
+        var serviceOwners = await _resourceRegister.GetServiceOwners(cancellationToken);
+        if (!serviceOwners.IsSuccessful)
+        {
+            Log.ServiceOwnerError(_logger, serviceOwners.StatusCode);
+            return false;
+        }
+
+        foreach (var serviceOwner in serviceOwners.Content.Orgs)
+        {
+            var result = await providerRepository.Upsert(
+                new()
+                {
+                    Id = serviceOwner.Value.Id,
+                    LogoUrl = serviceOwner.Value.Logo,
+                    Name = serviceOwner.Value.Name.Nb,
+                    RefId = serviceOwner.Value.Orgnr,
+                },
+                cancellationToken);
+        }
+
+        return true;
+    }
+
+    private async Task SyncResources(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+    {
+        await foreach (var page in await _resourceRegister.StreamResources(ls.Data.ResourcesNextPageLink, cancellationToken))
+        {
+            if (!page.IsSuccessful)
+            {
+                Log.UpdatedResourceError(_logger, page.StatusCode);
+                return;
+            }
+
+            foreach (var updatedResource in page.Content.Data)
+            {
+                var resource = await _resourceRegister.GetResource(updatedResource.ResourceUrn.Split(":").Last(), cancellationToken);
+                if (resource.IsSuccessful)
+                {
+                    return;
+                }
+
+                await resourceRepository.Upsert(
+                    new()
+                    {
+                        Description = resource.Content.Description.Nb,
+                    },
+                    cancellationToken);
+            }
+
+            await UpdateLease(ls, data => data.ResourcesNextPageLink = page.Content.Links.Next, cancellationToken);
+        }
+    }
+
     private async Task PrepareSync()
     {
         EntityTypes = [.. await entityTypeRepository.Get()];
@@ -165,6 +232,11 @@ public partial class RegisterHostedService(
 
         await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
         {
+            if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
+            {
+                return;
+            }
+
             if (cancellationToken.IsCancellationRequested)
             {
                 return;
@@ -225,8 +297,7 @@ public partial class RegisterHostedService(
                 return;
             }
 
-            await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
-            await _lease.RefreshLease(ls, cancellationToken);
+            await UpdateLease(ls, data => data.RoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
 
             async Task Flush(Guid batchId)
             {
@@ -284,7 +355,7 @@ public partial class RegisterHostedService(
                     {
                         var res = await assignmentRepository.Create(assignment);
                         Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
-                    } 
+                    }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failed to add assignment");
@@ -302,7 +373,7 @@ public partial class RegisterHostedService(
                         filter.Equal(t => t.RoleId, assignment.RoleId);
                         var res = await assignmentRepository.Delete(filter);
                         Log.AssignmentSuccess(_logger, "removed", item.FromParty, item.ToParty, item.RoleIdentifier);
-                    } 
+                    }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failed to remove assignment");
@@ -319,8 +390,7 @@ public partial class RegisterHostedService(
                 return;
             }
 
-            await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
-            await _lease.RefreshLease(ls, cancellationToken);
+            await UpdateLease(ls, data => data.RoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
         }
 
         _logger.LogInformation("Role import failures;");
@@ -334,7 +404,7 @@ public partial class RegisterHostedService(
             _logger.LogInformation("Failed to {0} assingment from '{1}' to '{2}' with role '{3}'", "remove", ass.FromId, ass.ToId, ass.RoleId);
         }
     }
-    
+
     private async Task SyncRolesBatched(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
         int batchSize = 1000;
@@ -358,7 +428,7 @@ public partial class RegisterHostedService(
                 try
                 {
                     var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
-                    
+
                     if (batchData.Any(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId))
                     {
                         // If changes on same assignment then execute as-is before continuing.
@@ -403,7 +473,6 @@ public partial class RegisterHostedService(
                         {
                             Log.AssignmentFailed(_logger, "remove", item.FromParty, item.ToParty, item.RoleIdentifier);
                         }
-
                     }
 
                     Interlocked.Increment(ref _executionCount);
@@ -424,8 +493,7 @@ public partial class RegisterHostedService(
                 return;
             }
 
-            await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
-            await _lease.RefreshLease(ls, cancellationToken);
+            await UpdateLease(ls, data => data.RoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
         }
 
         if (batchData.Count > 0)
@@ -484,7 +552,7 @@ public partial class RegisterHostedService(
         new GenericParameter("roleid", "roleid"),
         new GenericParameter("toid", "toid")
     }.AsReadOnly();
-    
+
     private List<Role> Roles { get; set; } = [];
 
     private async Task<Assignment> ConvertRoleModel(RoleModel model)
@@ -498,13 +566,13 @@ public partial class RegisterHostedService(
                 ToId = Guid.Parse(model.ToParty),
                 RoleId = role.Id
             };
-        } 
-        catch (Exception ex)
+        }
+        catch (Exception)
         {
             throw new Exception(string.Format("Failed to convert model to Assignment. From:{0} To:{1} Role:{2}", model.FromParty, model.ToParty, model.RoleIdentifier));
         }
     }
-    
+
     private async Task<Role> GetOrCreateRole(string roleIdentifier, string roleSource)
     {
         if (Roles.Count(t => t.Code == roleIdentifier) == 1)
@@ -539,7 +607,7 @@ public partial class RegisterHostedService(
         Roles.Add(role);
         return role;
     }
-    
+
     private List<GenericFilter> assignmentMergeFilter = new List<GenericFilter>()
         {
             new GenericFilter("fromid", "fromid"),
@@ -557,7 +625,7 @@ public partial class RegisterHostedService(
     /// <param name="ls">The lease result containing the lease data and status.</param>
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     private async Task SyncParty(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
-    {        
+    {
         var bulk = new List<Entity>();
         var bulkLookup = new List<EntityLookup>();
 
@@ -573,7 +641,7 @@ public partial class RegisterHostedService(
                 Log.ResponseError(_logger, page.StatusCode);
                 throw new Exception("Stream page is not successful");
             }
-            
+
             Guid batchId = Guid.CreateVersion7();
             var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
             _logger.LogInformation("Starting proccessing party page '{0}'", batchName);
@@ -583,7 +651,7 @@ public partial class RegisterHostedService(
                 foreach (var item in page.Content.Data)
                 {
                     var entity = ConvertPartyModel(item);
-                    
+
                     if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
                     {
                         await Flush(batchId);
@@ -603,8 +671,7 @@ public partial class RegisterHostedService(
                 return;
             }
 
-            await _lease.Put(ls, new() { PartyStreamNextPageLink = page.Content.Links.Next, RoleStreamNextPageLink = ls.Data?.RoleStreamNextPageLink }, cancellationToken);
-            await _lease.RefreshLease(ls, cancellationToken);
+            await UpdateLease(ls, data => data.PartyStreamNextPageLink = page.Content.Links.Next, cancellationToken);
 
             async Task Flush(Guid batchId)
             {
@@ -764,7 +831,6 @@ public partial class RegisterHostedService(
                 throw new Exception(string.Format("Unable to find type '{0}' and variant '{1}'", model.PartyType, model.UnitType));
             }
         }
-       
     }
 
     private List<EntityLookup> ConvertPartyModelToLookup(PartyModel model)
@@ -832,6 +898,13 @@ public partial class RegisterHostedService(
 
     #region Base
 
+    private async Task UpdateLease(LeaseResult<LeaseContent> ls, Action<LeaseContent> configureLeaseContent, CancellationToken cancellationToken)
+    {
+        configureLeaseContent(ls.Data);
+        await _lease.Put(ls, ls.Data, cancellationToken);
+        await _lease.RefreshLease(ls, cancellationToken);
+    }
+
     /// <inheritdoc/>
     public Task StopAsync(CancellationToken cancellationToken)
     {
@@ -882,10 +955,21 @@ public partial class RegisterHostedService(
         /// The URL of the next page of AssignmentSuccess data.
         /// </summary>
         public string RoleStreamNextPageLink { get; set; }
+
+        /// <summary>
+        /// The URL of the next page of updates resourcs.
+        /// </summary>
+        public string ResourcesNextPageLink { get; set; }
     }
 
     private static partial class Log
     {
+        [LoggerMessage(EventId = 11, Level = LogLevel.Information, Message = "Failed to retrieve updated resources from resource register, got {statusCode}")]
+        internal static partial void UpdatedResourceError(ILogger logger, HttpStatusCode statusCode);
+
+        [LoggerMessage(EventId = 10, Level = LogLevel.Information, Message = "Failed to retrieve service owners from resource register, got {statusCode}")]
+        internal static partial void ServiceOwnerError(ILogger logger, HttpStatusCode statusCode);
+
         [LoggerMessage(EventId = 9, Level = LogLevel.Information, Message = "Error occured while fetching data from register, got {statusCode}")]
         internal static partial void ResponseError(ILogger logger, HttpStatusCode statusCode);
 
