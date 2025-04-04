@@ -41,7 +41,8 @@ public class AccessPartiesController(IAssignmentService assignmentService, IMapp
     /// <param name="to">The GUID identifying the target party to which the assignment should be created.</param>
     /// <returns>
     [HttpPost]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
     [ProducesResponseType<AssignmentExternal>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]

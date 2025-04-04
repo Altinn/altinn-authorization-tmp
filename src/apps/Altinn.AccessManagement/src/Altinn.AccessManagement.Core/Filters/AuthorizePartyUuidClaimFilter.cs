@@ -26,13 +26,8 @@ public partial class AuthorizePartyUuidClaimFilter(ILogger<AuthorizePartyUuidCla
         var claim = context.HttpContext.User?.Claims?
             .FirstOrDefault(c => c.Type.Equals(AltinnCoreClaimTypes.PartyUuid, StringComparison.OrdinalIgnoreCase));
 
-        if (claim != null && Guid.TryParse(claim.Value, out Guid userUuid))
+        if (claim != null && Guid.TryParse(claim.Value, out _))
         {
-            if (!context.HttpContext.Items.ContainsKey("user_uuid"))
-            {
-                context.HttpContext.Items.Add("user_uuid", userUuid);
-            }
-
             return;
         }
 

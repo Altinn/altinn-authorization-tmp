@@ -1,3 +1,4 @@
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Filters;
 using Microsoft.AspNetCore.Http;
 
@@ -23,9 +24,12 @@ public static class HttpContextAccessorExtensions
     /// </exception>
     public static Guid GetPartyUuid(this IHttpContextAccessor accessor)
     {
-        if (accessor.HttpContext.Items.TryGetValue("user_uuid", out var value) && value is Guid uuid)
+        var claim = accessor.HttpContext.User?.Claims?
+            .FirstOrDefault(c => c.Type.Equals(AltinnCoreClaimTypes.PartyUuid, StringComparison.OrdinalIgnoreCase));
+
+        if (claim != null && Guid.TryParse(claim.Value, out var result))
         {
-            return uuid;
+            return result;
         }
 
         throw new InvalidOperationException($"Failed to retrieve UUID. Is the '{nameof(AuthorizePartyUuidClaimFilter)}' ServiceFilter enabled for this action?");
