@@ -114,7 +114,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             {
                 if (_logger != null)
                 {
-                    _logger.LogError("Authinfo debug2 {Instance} - {ResAttr}", resourceAttributes.InstanceValue, JsonSerializer.Serialize(resourceAttributes.InstanceValue));
+                    _logger.LogError("Authinfo debug3 {Instance} - {ResAttr}", resourceAttributes.InstanceValue, JsonSerializer.Serialize(resourceAttributes));
                 }
 
                 Instance instanceData = null;
