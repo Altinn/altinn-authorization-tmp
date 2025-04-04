@@ -120,21 +120,21 @@ public class DbDataMigrationService(
         var data = new List<ProviderType>()
         {
             new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), Name = "System" },
-            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Tjeneste eier" },
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Tjenesteeier" },
             //// new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7005-a8db-1f6387b28a5e"), Name = "Andre" }
         };
 
         var dataEng = new List<ProviderType>()
         {
             new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), Name = "System" },
-            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Service owner" },
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "ServiceOwner" },
             //// new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7005-a8db-1f6387b28a5e"), Name = "Other" }
         };
 
         var dataNno = new List<ProviderType>()
         {
             new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), Name = "System" },
-            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Teneste eigar" },
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Tenesteeigar" },
             //// new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7005-a8db-1f6387b28a5e"), Name = "Annan" }
         };
 
