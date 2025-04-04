@@ -14,4 +14,9 @@ internal static class AccessManagementFeatureFlags
     /// Specifies if migration should be done.
     /// </summary>
     public const string MigrationDb = $"AccessManagement.MigrationDb";
+
+    /// <summary>
+    /// Feature Gate Access Parties for 
+    /// </summary>
+    public const string EndUserControllerAccessParties = "AccessManagement.Enduser.Controller.AccessParties";
 }
