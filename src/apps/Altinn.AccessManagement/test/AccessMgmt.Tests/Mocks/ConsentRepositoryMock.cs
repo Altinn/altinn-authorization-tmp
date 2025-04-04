@@ -11,7 +11,7 @@ namespace AccessMgmt.Tests.Mocks
             throw new NotImplementedException();
         }
 
-        public Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest, Guid performedByParty, CancellationToken cancellationToken = default)
+        public Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest,  ConsentPartyUrn performedByParty, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

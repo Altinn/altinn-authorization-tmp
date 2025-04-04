@@ -45,6 +45,9 @@
         /// </summary>
         public DateTimeOffset? Consented { get; set; }
 
-
+        /// <summary>
+        /// Defines when the consent was revoked.
+        /// </summary>
+        public required List<ConsentRequestEvent> ConsentRequestEvents { get; set; }
     }
 }

@@ -43,6 +43,11 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// </summary>
         public DateTimeOffset? Consented { get; set; }
 
+        /// <summary>
+        /// List all events related to consent request
+        /// </summary>
+        public required List<ConsentRequestEventExternal> ConsentRequestEvents { get; set; }
+
         public static ConsentRequestDetailsExternal FromCore(ConsentRequestDetails core)
         {
             ConsentPartyUrnExternal to = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(core.To.ValueSpan));
@@ -61,7 +66,8 @@ namespace Altinn.Authorization.Api.Models.Consent
                 To = to,
                 Consented = core.Consented,
                 ValidTo = core.ValidTo,
-                ConsentRights = core.ConsentRights.Select(ConsentRightExternal.FromCore).ToList()
+                ConsentRights = core.ConsentRights.Select(ConsentRightExternal.FromCore).ToList(),
+                ConsentRequestEvents = core.ConsentRequestEvents.Select(ConsentRequestEventExternal.FromCore).ToList()
             };
         }
     }

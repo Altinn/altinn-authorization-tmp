@@ -22,7 +22,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <summary>
         /// Creates a concent requests and return info about the created one.
         /// </summary>
-        Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, CancellationToken cancellationToken = default);
+        Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedBy,  CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Deletes a concent request
@@ -37,6 +37,6 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <summary>
         /// Revokes a concent. The concent needs to be valid.
         /// </summary>
-        Task RevokeConsent(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);
+        Task<Result<ConsentRequestDetails>> RevokeConsent(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);
     }
 }

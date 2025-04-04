@@ -85,5 +85,29 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
             await _consentService.RejectRequest(requestId, performedBy.Value, cancellationToken);
             return Ok();
         }
+
+        /// <summary>
+        /// Endpoint to deny a consent request
+        /// </summary>
+        [Authorize]
+        [HttpPost]
+        [Route("request/{requestId}/revoke/")]
+        public async Task<IActionResult> Revoke(Guid requestId, CancellationToken cancellationToken = default)
+        {
+            Guid? performedBy = UserUtil.GetUserUuid(User);
+            if (performedBy == null)
+            {
+                return Unauthorized();
+            }
+
+            Result<ConsentRequestDetails> result = await _consentService.RevokeConsent(requestId, performedBy.Value, cancellationToken);
+
+            if (result.IsProblem)
+            {
+                return result.Problem.ToActionResult();
+            }
+
+            return Ok(result.Value);
+        }
     }
 }

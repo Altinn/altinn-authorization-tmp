@@ -4,6 +4,7 @@ using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.ProblemDetails;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Enterprise.Controllers
@@ -20,6 +21,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         /// <summary>
         /// Endpoint to create a consent request
         /// </summary>
+        [Authorize]
         [HttpPost]
         [Route("request")]
         [Consumes(MediaTypeNames.Application.Json)]
@@ -29,9 +31,16 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> CreateRequest([FromBody] ConsentRequestExternal consentRequest)
+        public async Task<ActionResult> CreateRequest([FromBody] ConsentRequestExternal consentRequest, CancellationToken cancellationToken = default)
         {
-            Result<ConsentRequestDetails> consentRequestStatus = await _consentService.CreateRequest(ModelMapper.ToCore(consentRequest));
+            ConsentPartyUrn? consentPartyUrn = OrgUtil.GetAuthenticatedParty(User);
+
+            if (consentPartyUrn == null)
+            {
+                return Unauthorized();
+            }
+
+            Result<ConsentRequestDetails> consentRequestStatus = await _consentService.CreateRequest(ModelMapper.ToCore(consentRequest), consentPartyUrn, cancellationToken);
 
             if (consentRequestStatus.IsProblem)
             {

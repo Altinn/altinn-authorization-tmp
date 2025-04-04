@@ -11,6 +11,7 @@ using Altinn.Authorization.Core.Models.Party;
 using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Models;
+using Microsoft.Extensions.Caching.Memory;
 using System.Linq.Expressions;
 
 namespace Altinn.AccessManagement.Core.Services
@@ -21,16 +22,17 @@ namespace Altinn.AccessManagement.Core.Services
     /// <remarks>
     /// Service responsible for consent functionality
     /// </remarks>
-    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService, IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService) : IConsent
+    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService, IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
         private readonly IPartiesClient _partiesClient = partiesClient;
         private readonly ISingleRightsService _singleRightsService = singleRightsService;
         private readonly IResourceRegistryClient _resourceRegistryClient = resourceRegistryClient;
         private readonly IAMPartyService _ampartyService = ampartyService;
+        private readonly IMemoryCache _memoryCache = memoryCache;
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, CancellationToken cancellationToken = default)
+        public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedBy, CancellationToken cancellationToken = default)
         {
             Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest, cancellationToken);
 
@@ -39,9 +41,16 @@ namespace Altinn.AccessManagement.Core.Services
                 return result.Problem;
             }
 
-            ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(result.Value, Guid.CreateVersion7(), cancellationToken);
+            performedBy = await MapFromExternalIdenity(performedBy);
+
+            ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(result.Value, performedBy, cancellationToken);
             requestDetails.From = consentRequest.From;
             requestDetails.To = consentRequest.To;
+            foreach (ConsentRequestEvent consentRequestEvent in requestDetails.ConsentRequestEvents)
+            {
+                consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
+            }
+
             return requestDetails;
         }
 
@@ -118,6 +127,10 @@ namespace Altinn.AccessManagement.Core.Services
             bool isAuthorized = await AuthorizeUserForConsentRequest(userId, details);
             details.To = await MapToExternalIdenity(details.To, cancellationToken);
             details.From = await MapToExternalIdenity(details.From, cancellationToken);
+            foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)
+            {
+                consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
+            };
             return details;
         }
 
@@ -171,9 +184,52 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public Task RevokeConsent(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
+        public async Task<Result<ConsentRequestDetails>> RevokeConsent(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ValidationErrorBuilder errors = default;
+            ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
+            if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
+            {
+                return details;
+            }
+
+            if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
+            {
+                errors.Add(ValidationErrors.ConsentCantBeAccepted, "Status");
+            }
+
+            if (errors.TryBuild(out var beforeErrorREsult))
+            {
+                return beforeErrorREsult;
+            }
+
+            try
+            {
+                await _consentRepository.Revoke(id, performedByParty, cancellationToken);
+            }
+            catch (Exception)
+            {
+                await _consentRepository.GetRequest(id, cancellationToken);
+
+                if (details.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
+                {
+                    return details;
+                }
+
+                if (details.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
+                {
+                    errors.Add(ValidationErrors.ConsentCantBeAccepted, "Status");
+                    if (errors.TryBuild(out var errorResult))
+                    {
+                        return errorResult;
+                    }
+                }
+
+                throw;
+            }
+
+            ConsentRequestDetails updated = await _consentRepository.GetRequest(id, cancellationToken);
+            return updated;
         }
 
         private async Task<ConsentPartyUrn> MapFromExternalIdenity(ConsentPartyUrn consentPartyUrn)
@@ -194,7 +250,16 @@ namespace Altinn.AccessManagement.Core.Services
         {
             if (consentPartyUrn.IsPartyUuid(out Guid partyUuid))
             {
-                return await GetExternalIdentifier(partyUuid, cancellationToken);    
+                if (_memoryCache.TryGetValue(partyUuid, out ConsentPartyUrn consentPartyUrnCache))
+                {
+                    return consentPartyUrnCache;
+                }
+                else
+                {
+                    ConsentPartyUrn consentPartyUrnFromRegister = await GetExternalIdentifier(partyUuid, cancellationToken);
+                    _memoryCache.Set(partyUuid, consentPartyUrnFromRegister, TimeSpan.FromMinutes(5));
+                    return consentPartyUrnFromRegister;
+                }
             }
 
             return consentPartyUrn;
