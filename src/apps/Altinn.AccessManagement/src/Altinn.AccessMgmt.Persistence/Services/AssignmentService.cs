@@ -1,6 +1,9 @@
-﻿using Altinn.AccessMgmt.Core.Models;
+﻿using System.ClientModel.Primitives;
+using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.Authorization.Host.Operations;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -45,7 +48,7 @@ public class AssignmentService(
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, string roleCode)
     {
         var roleResult = await roleRepository.Get(t => t.Code, roleCode);
-        if (roleResult == null || !roleResult.Any()) 
+        if (roleResult == null || !roleResult.Any())
         {
             return null;
         }
@@ -72,18 +75,18 @@ public class AssignmentService(
         /* TODO: Future Sjekk om bruker er Tilgangsstyrer */
 
         var package = await packageRepository.Get(packageId);
-        
+
         var userAssignmentFilter = assignmentRepository.CreateFilterBuilder();
         userAssignmentFilter.Equal(t => t.FromId, assignment.FromId);
         userAssignmentFilter.Equal(t => t.ToId, userId);
         var userAssignments = await assignmentRepository.Get(userAssignmentFilter);
 
         bool hasPackage = false;
-        
-        foreach (var userAssignment in userAssignments) 
+
+        foreach (var userAssignment in userAssignments)
         {
             var assignmentPackages = await assignmentPackageRepository.GetB(userAssignment.Id);
-            if (assignmentPackages != null && assignmentPackages.Count(t => t.Id == packageId) > 0) 
+            if (assignmentPackages != null && assignmentPackages.Count(t => t.Id == packageId) > 0)
             {
                 hasPackage = true;
                 break;
@@ -96,7 +99,7 @@ public class AssignmentService(
             foreach (var roleId in userAssignments.Select(t => t.RoleId).Distinct())
             {
                 var rolePackResult = await rolePackageRepository.Get(t => t.RoleId, roleId);
-                if (rolePackResult != null && rolePackResult.Count(t => t.PackageId == packageId) > 0) 
+                if (rolePackResult != null && rolePackResult.Count(t => t.PackageId == packageId) > 0)
                 {
                     hasPackage = true;
                     break;
@@ -104,7 +107,7 @@ public class AssignmentService(
             }
         }
 
-        if (!hasPackage) 
+        if (!hasPackage)
         {
             throw new Exception(string.Format("User '{0}' does not have package '{1}'", user.Name, package.Name));
         }
@@ -121,15 +124,35 @@ public class AssignmentService(
     /// <inheritdoc/>
     public Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId)
     {
-      /*
-      [ ] Check if user is TS
-      [ ] Check if resource can be delegated
-      [ ] Check if user assignment.assignmentpackages has resources
-      [ ] Check if user assignment.roles has packages
-      [ ] Check if users has packages delegated?
-      */
+        /*
+        [ ] Check if user is TS
+        [ ] Check if resource can be delegated
+        [ ] Check if user assignment.assignmentpackages has resources
+        [ ] Check if user assignment.roles has packages
+        [ ] Check if users has packages delegated?
+        */
 
         throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public async Task<ServiceObjectResult<Assignment>> GetOrCreateAssignmenteTest(Guid fromEntityId, Guid toEntityId, string roleCode)
+    {
+        try
+        {
+            var roleResult = await roleRepository.Get(t => t.Name, roleCode);
+            if (roleResult == null || !roleResult.Any())
+            {
+                return ServiceResultFactory.CreateProblem<Assignment>(CoreErrors.MissingRoleCode(roleCode));
+            }
+
+            var assignments = await GetOrCreateAssignment(fromEntityId, toEntityId, roleResult.First().Id);
+            return ServiceResultFactory.CreateSuccess(assignments);
+        }
+        catch (Exception)
+        {
+            return ServiceResultFactory.CreateProblem<Assignment>(CoreErrors.MissingRoleCode(roleCode));
+        }
     }
 
     /// <inheritdoc/>

@@ -66,7 +66,7 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 3);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 5))
+        if (migrationService.NeedMigration<Role>(dataKey, 6))
         {
             await IngestRole();
             await migrationService.LogMigration<Role>(dataKey, string.Empty, 5);
@@ -118,7 +118,7 @@ public class DbDataMigrationService(
     {
         var providers = new List<Provider>()
         {
-            new Provider() { Id = Guid.Parse("F135FF74-0E93-4959-BCDF-0A86142481E9"), Name = "Arbeidstilsynet", RefId = "974761211", LogoUrl = "https://altinncdn.no/orgs/dat/arbeidstilsynet.png" },            
+            new Provider() { Id = Guid.Parse("F135FF74-0E93-4959-BCDF-0A86142481E9"), Name = "Arbeidstilsynet", RefId = "974761211", LogoUrl = "https://altinncdn.no/orgs/dat/arbeidstilsynet.png" },
             new Provider() { Id = Guid.Parse("46FAAC7B-7001-4328-8721-098C6012733F"), Name = "Arbeids- og velferdsetaten (NAV)", RefId = string.Empty, LogoUrl = "https://altinncdn.no/orgs/nav/nav.png" },
             new Provider() { Id = Guid.Parse("B42A025E-518E-45B7-A84E-10AFA41F20AA"), Name = "Avfall Sør AS", RefId = string.Empty },
             new Provider() { Id = Guid.Parse("BDB48686-C305-47E8-B641-0EA1EEE7E4F3"), Name = "Barne-, ungdoms- og familiedirektoratet", RefId = "986128433", LogoUrl = "https://altinncdn.no/orgs/buf/buf.png" },
@@ -600,6 +600,7 @@ public class DbDataMigrationService(
 
         var roles = new List<Role>()
         {
+            new Role() { Id = Guid.Parse("42CAE370-2DC1-4FDC-9C67-C2F4B0F0F829"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Rightholder",                  Code = "rightholder",                   Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten", Urn = "urn:altinn:role:rightholder", IsKeyRole = false },
             new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = persEntityTypeId, ProviderId = digdirProviderId, Name = "Agent",                       Code = "agent",                         Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten", Urn = "urn:altinn:role:agent", IsKeyRole = false },
             new Role() { Id = Guid.Parse("6795081e-e69c-4efd-8d42-2bfccd346777"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Klientadministrator",          Code = "klientadministrator",           Description = "Gir mulighet til å administrere tilgang til tjenester videre til ansatte på vegne av deres kunder", Urn = "urn:altinn:role:klientadministrator", IsKeyRole = false },
             new Role() { Id = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Tilgangsstyrer",               Code = "tilgangsstyrer",                Description = "Gir mulighet til å gi videre tilganger for virksomheten som man selv har mottatt", Urn = "urn:altinn:role:tilgangsstyrer", IsKeyRole = false },
@@ -673,6 +674,7 @@ public class DbDataMigrationService(
 
         var rolesEng = new List<Role>()
         {
+            new Role() { Id = Guid.Parse("42CAE370-2DC1-4FDC-9C67-C2F4B0F0F829"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId,    Name = "Rightholder",                     Code = "rightholder",                       Description = "Allows receiving delegated authorizations for the business", Urn = "urn:altinn:role:rightholder", IsKeyRole = false },
             new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = persEntityTypeId, ProviderId = digdirProviderId,   Name = "Agent",                        Code = "agent",                         Description = "Allows receiving delegated authorizations for the business", Urn = "digdir:role:agent" },
             new Role() { Id = Guid.Parse("6795081e-e69c-4efd-8d42-2bfccd346777"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId,    Name = "Client Administrator",         Code = "klientadministrator",           Description = "Allows managing access to services for employees on behalf of their clients", Urn = "urn:altinn:role:klientadministrator" },
             new Role() { Id = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId,    Name = "Access Manager",               Code = "tilgangsstyrer",                Description = "Allows granting further accesses for the business that have been received", Urn = "urn:altinn:role:tilgangsstyrer" },
@@ -711,6 +713,7 @@ public class DbDataMigrationService(
 
         var rolesNno = new List<Role>()
         {
+            new Role() { Id = Guid.Parse("42CAE370-2DC1-4FDC-9C67-C2F4B0F0F829"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId,  Name = "Rightholder",                   Code = "rightholder",                 Description = "Gjev høve til å motta delegerte fullmakter for verksemda", Urn = "urn:altinn:role:rightholder", IsKeyRole = false },
             new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = persEntityTypeId, ProviderId = digdirProviderId, Name = "Agent",                           Code = "agent",                         Description = "Gjev høve til å motta delegerte fullmakter for verksemda", Urn = "digdir:role:agent" },
             new Role() { Id = Guid.Parse("6795081e-e69c-4efd-8d42-2bfccd346777"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Klientadministrator",              Code = "klientadministrator",           Description = "Gjev høve til å administrere tilgang til tenester vidare til tilsette på vegne av kundane deira", Urn = "urn:altinn:role:klientadministrator" },
             new Role() { Id = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), EntityTypeId = orgEntityTypeId, ProviderId = digdirProviderId, Name = "Tilgangsstyrer",                   Code = "tilgangsstyrer",                Description = "Gjev høve til å vidareformidle tilgongar for verksemda som ein sjølv har motteke", Urn = "urn:altinn:role:tilgangsstyrer" },

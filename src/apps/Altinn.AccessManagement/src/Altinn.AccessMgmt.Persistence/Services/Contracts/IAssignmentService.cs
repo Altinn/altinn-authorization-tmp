@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.Authorization.Host.Operations;
 
 namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
 
@@ -7,6 +8,12 @@ namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
 /// </summary>
 public interface IAssignmentService
 {
+    /// <summary>
+    /// Gets assignment and creates if not exits
+    /// </summary>
+    /// <returns></returns>
+    Task<ServiceObjectResult<Assignment>> GetOrCreateAssignmenteTest(Guid fromEntityId, Guid toEntityId, string roleCode);
+
     /// <summary>
     /// Gets assignment and creates if not exits
     /// </summary>
@@ -32,10 +39,10 @@ public interface IAssignmentService
     Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId);
 
     Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId);
-    
+
     Task<Assignment> GetAssignment(Guid fromId, Guid toId, string roleCode);
 
     Task<IEnumerable<InheritedAssignment>> GetInheritedAssignment(Guid fromId, Guid toId, Guid roleId);
-    
+
     Task<IEnumerable<InheritedAssignment>> GetInheritedAssignment(Guid fromId, Guid toId, string roleCode);
 }
