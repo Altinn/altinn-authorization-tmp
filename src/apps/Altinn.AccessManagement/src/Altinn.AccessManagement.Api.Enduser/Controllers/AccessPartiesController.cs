@@ -47,6 +47,7 @@ public class AccessPartiesController(IAssignmentService assignmentService, IMapp
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ProblemDetails))]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, MediaTypeNames.Application.Json)]
     public async Task<IActionResult> PostAccessParty([FromQuery] Guid party, [FromQuery] Guid to)
     {
