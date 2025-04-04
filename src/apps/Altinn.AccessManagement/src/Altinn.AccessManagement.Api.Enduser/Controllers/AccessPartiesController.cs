@@ -1,10 +1,11 @@
 using System.Net.Mime;
-using System.Text.Json.Serialization;
+using Altinn.AccessManagement.Api.Enduser.Mappers;
+using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Filters;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
-using Altinn.Authorization.Host.Operations;
+using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
@@ -16,12 +17,12 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/access/parties")]
-[FeatureGate(EnduserFeatureFlags.ControllerAccessParties)]
-public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentService assignmentService) : ControllerBase
+[FeatureGate(AccessManagementEnduserFeatureFlags.ControllerAccessParties)]
+public class AccessPartiesController(IAssignmentService assignmentService, IMapper<AssignmentApiModel, Assignment> mapper) : ControllerBase
 {
-    private IHttpContextAccessor Accessor { get; } = accessor;
-
     private IAssignmentService AssignmentService { get; } = assignmentService;
+
+    private IMapper<AssignmentApiModel, Assignment> Mapper { get; } = mapper;
 
     /// <summary>
     /// Get access parties
@@ -34,15 +35,15 @@ public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentS
     }
 
     /// <summary>
-    /// Somestuff
+    /// Creates an assignment between the authenticated user's selected party and the specified target party.
     /// </summary>
-    /// <param name="party">Identifies the selected party the authenticated user is acting on behalf of.</param>
-    /// <param name="to">Identifies the party authenticated user waants to create an assignment to</param>
-    /// <returns></returns>
+    /// <param name="party">The GUID identifying the party the authenticated user is acting on behalf of.</param>
+    /// <param name="to">The GUID identifying the target party to which the assignment should be created.</param>
+    /// <returns>
     [HttpPost]
-    [Authorize(Policy = AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
     [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
-    [ProducesResponseType<Assignment2>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AssignmentApiModel>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -51,47 +52,13 @@ public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentS
     {
         // When history is enabled pass partyUuid downstream to GetOrCreateAssignment
         // var partyUuid = Accessor.GetPartyUuid();
-        var assignment = await AssignmentService.GetOrCreateAssignmenteTest(party, to, "rightholders");
+        var assignment = await AssignmentService.GetOrCreateAssignmen2(party, to, "rightholders");
 
-        return ServiceResultFactory.CreateActionResult(assignment.MapContent(MapAssignment))
-            .Convert();
-    }
-
-    public Assignment2 MapAssignment(Assignment assignment)
-    {
-        return new()
+        if (assignment.IsProblem)
         {
-            Id = assignment.Id,
-            ToId = assignment.ToId,
-            FromId = assignment.FromId,
-            RoleId = assignment.RoleId,
-        };
-    }
+            return assignment.Problem.ToActionResult();
+        }
 
-    public class Assignment2
-    {
-        /// <summary>
-        /// Identity
-        /// </summary>
-        [JsonPropertyName("id")]
-        public Guid Id { get; set; }
-
-        /// <summary>
-        /// RoleId
-        /// </summary>
-        [JsonPropertyName("roleId")]
-        public Guid RoleId { get; set; }
-
-        /// <summary>
-        /// FromId
-        /// </summary>
-        [JsonPropertyName("fromId")]
-        public Guid FromId { get; set; }
-
-        /// <summary>
-        /// ToId
-        /// </summary>
-        [JsonPropertyName("toId")]
-        public Guid ToId { get; set; }
+        return Ok(Mapper.Map(assignment.Value));
     }
 }

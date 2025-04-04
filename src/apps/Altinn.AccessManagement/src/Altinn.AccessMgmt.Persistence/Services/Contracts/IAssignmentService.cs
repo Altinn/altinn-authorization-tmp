@@ -1,5 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.Authorization.Host.Operations;
+using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
 
@@ -12,7 +12,7 @@ public interface IAssignmentService
     /// Gets assignment and creates if not exits
     /// </summary>
     /// <returns></returns>
-    Task<ServiceObjectResult<Assignment>> GetOrCreateAssignmenteTest(Guid fromEntityId, Guid toEntityId, string roleCode);
+    Task<Result<Assignment>> GetOrCreateAssignmen2(Guid fromEntityId, Guid toEntityId, string roleCode);
 
     /// <summary>
     /// Gets assignment and creates if not exits

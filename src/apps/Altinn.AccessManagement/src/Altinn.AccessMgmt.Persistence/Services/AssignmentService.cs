@@ -1,9 +1,8 @@
-﻿using System.ClientModel.Primitives;
-using Altinn.AccessManagement.Core.Errors;
+﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
-using Altinn.Authorization.Host.Operations;
+using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -136,23 +135,45 @@ public class AssignmentService(
     }
 
     /// <inheritdoc/>
-    public async Task<ServiceObjectResult<Assignment>> GetOrCreateAssignmenteTest(Guid fromEntityId, Guid toEntityId, string roleCode)
+    public async Task<Result<Assignment>> GetOrCreateAssignmen2(Guid fromEntityId, Guid toEntityId, string roleCode)
     {
-        try
+        var roleResult = await roleRepository.Get(t => t.Name, roleCode);
+        if (roleResult == null || !roleResult.Any())
         {
-            var roleResult = await roleRepository.Get(t => t.Name, roleCode);
-            if (roleResult == null || !roleResult.Any())
-            {
-                return ServiceResultFactory.CreateProblem<Assignment>(CoreErrors.MissingRoleCode(roleCode));
-            }
+            return CoreErrors.MissingRoleCode(roleCode);
+        }
 
-            var assignments = await GetOrCreateAssignment(fromEntityId, toEntityId, roleResult.First().Id);
-            return ServiceResultFactory.CreateSuccess(assignments);
-        }
-        catch (Exception)
+        return await GetOrCreateAssignment2(fromEntityId, toEntityId, roleResult.First().Id);
+    }
+
+    private async Task<Result<Assignment>> GetOrCreateAssignment2(Guid fromEntityId, Guid toEntityId, Guid roleId)
+    {
+        var assignment = await GetAssignment(fromEntityId, toEntityId, roleId);
+        if (assignment != null)
         {
-            return ServiceResultFactory.CreateProblem<Assignment>(CoreErrors.MissingRoleCode(roleCode));
+            return assignment;
         }
+
+        var role = await roleRepository.Get(roleId);
+        if (role == null)
+        {
+            return CoreErrors.MissingRoleId(roleId);
+        }
+
+        var inheritedAssignments = await GetInheritedAssignment(fromEntityId, toEntityId, role.Id);
+        if (inheritedAssignments != null && inheritedAssignments.Any())
+        {
+            return CoreErrors.AssignmentExists(fromEntityId, toEntityId, roleId);
+        }
+
+        await assignmentRepository.Create(new Assignment()
+        {
+            FromId = fromEntityId,
+            ToId = toEntityId,
+            RoleId = role.Id
+        });
+
+        throw new NotImplementedException();
     }
 
     /// <inheritdoc/>
