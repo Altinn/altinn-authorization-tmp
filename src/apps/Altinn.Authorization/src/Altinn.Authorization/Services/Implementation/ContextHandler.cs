@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -113,7 +114,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             {
                 if (_logger != null)
                 {
-                    _logger.LogError("Authinfo debug {ResAttr}", JsonSerializer.Serialize(resourceAttributes.InstanceValue));
+                    _logger.LogError("Authinfo debug2 {Instance} - {ResAttr}", resourceAttributes.InstanceValue, JsonSerializer.Serialize(resourceAttributes.InstanceValue));
                 }
 
                 Instance instanceData = null;
