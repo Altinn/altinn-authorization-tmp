@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Altinn.Authorization.ABAC.Constants;
@@ -36,6 +37,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
     {
         private readonly string _uidUserProfileCacheKeyPrefix = "profile:uid:";
         private readonly string _pidUserProfileCacheKeyPrefix = "profile:pid:";
+        private ILogger<ContextHandler> _logger;
 
 #pragma warning disable SA1401 // Fields should be private
 #pragma warning disable SA1600 // Elements should be documented
@@ -67,8 +69,9 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <param name="prp">service handling policy retireval</param>
         /// <param name="accessManagementWrapper">accessmanagement pip api wrapper</param>
         /// <param name="featureManager">Feature manager</param>
+        /// <param name="logger">the logger</param>
         public ContextHandler(
-            IInstanceMetadataRepository policyInformationRepository, IRoles rolesWrapper, IOedRoleAssignmentWrapper oedRolesWrapper, IParties partiesWrapper, IProfile profileWrapper, IMemoryCache memoryCache, IOptions<GeneralSettings> settings, IRegisterService registerService, IPolicyRetrievalPoint prp, IAccessManagementWrapper accessManagementWrapper, IFeatureManager featureManager)
+            IInstanceMetadataRepository policyInformationRepository, IRoles rolesWrapper, IOedRoleAssignmentWrapper oedRolesWrapper, IParties partiesWrapper, IProfile profileWrapper, IMemoryCache memoryCache, IOptions<GeneralSettings> settings, IRegisterService registerService, IPolicyRetrievalPoint prp, IAccessManagementWrapper accessManagementWrapper, IFeatureManager featureManager, ILogger<ContextHandler> logger)
         {
             _policyInformationRepository = policyInformationRepository;
             _rolesWrapper = rolesWrapper;
@@ -81,6 +84,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             _prp = prp;
             _accessManagementWrapper = accessManagementWrapper;
             _featureManager = featureManager;
+            _logger = logger;
         }
 
         /// <inheritdoc/>
@@ -107,6 +111,11 @@ namespace Altinn.Platform.Authorization.Services.Implementation
 
             if (!resourceAttributeComplete && !string.IsNullOrEmpty(resourceAttributes.InstanceValue))
             {
+                if (_logger != null)
+                {
+                    _logger.LogError("Authinfo debug {ResAttr}", JsonSerializer.Serialize(resourceAttributes.InstanceValue));
+                }
+
                 Instance instanceData = null;
                 if (!_generalSettings.UseStorageApiForInstanceAuthInfo)
                 {
