@@ -1,3 +1,4 @@
+using Altinn.AccessManagement.Api.Enduser;
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler;
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement;
 using Altinn.AccessManagement.Core.Configuration;
@@ -90,6 +91,7 @@ internal static partial class AccessManagementHost
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
         builder.ConfigureAccessManagementPersistence();
+        builder.AddAccessManagementEnduser();
 
         return builder.Build();
     }
