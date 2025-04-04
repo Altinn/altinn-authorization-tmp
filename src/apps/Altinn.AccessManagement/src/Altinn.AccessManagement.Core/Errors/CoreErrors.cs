@@ -38,4 +38,12 @@ public static class CoreErrors
     /// </returns>
     public static ProblemDescriptor AssignmentExists(Guid from, Guid to, Guid roleId) =>
         _factory.Create(3, HttpStatusCode.Conflict, $"Inherited assignment exists from party '{from}' to party '{to}' with role ID '{roleId}.'");
+
+    /// <summary>
+    /// Creates a ProblemDescriptor for a missing party.
+    /// </summary>
+    /// <param name="party">The unique identifier of the missing party.</param>
+    /// <returns>A ProblemDescriptor indicating that the specified party does not exist.</returns>
+    public static ProblemDescriptor MissingParty(Guid party) =>
+        _factory.Create(4, HttpStatusCode.BadRequest, $"Party with id {party} does not exist.");
 }

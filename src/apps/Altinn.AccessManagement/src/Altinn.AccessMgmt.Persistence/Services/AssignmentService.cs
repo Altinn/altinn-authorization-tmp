@@ -135,18 +135,24 @@ public class AssignmentService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<Assignment>> GetOrCreateAssignmen2(Guid fromEntityId, Guid toEntityId, string roleCode)
+    public async Task<Result<Assignment>> GetOrCreateAssignmen2(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default)
     {
-        var roleResult = await roleRepository.Get(t => t.Name, roleCode);
+        var toEntity = await entityRepository.Get(toEntityId, cancellationToken: cancellationToken);
+        if (toEntity is null)
+        {
+            return CoreErrors.MissingParty(fromEntityId);
+        }
+
+        var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
         if (roleResult == null || !roleResult.Any())
         {
             return CoreErrors.MissingRoleCode(roleCode);
         }
 
-        return await GetOrCreateAssignment2(fromEntityId, toEntityId, roleResult.First().Id);
+        return await GetOrCreateAssignment2(fromEntityId, toEntityId, roleResult.First().Id, cancellationToken);
     }
 
-    private async Task<Result<Assignment>> GetOrCreateAssignment2(Guid fromEntityId, Guid toEntityId, Guid roleId)
+    private async Task<Result<Assignment>> GetOrCreateAssignment2(Guid fromEntityId, Guid toEntityId, Guid roleId, CancellationToken cancellationToken = default)
     {
         var assignment = await GetAssignment(fromEntityId, toEntityId, roleId);
         if (assignment != null)
@@ -154,7 +160,7 @@ public class AssignmentService(
             return assignment;
         }
 
-        var role = await roleRepository.Get(roleId);
+        var role = await roleRepository.Get(roleId, cancellationToken: cancellationToken);
         if (role == null)
         {
             return CoreErrors.MissingRoleId(roleId);
@@ -166,14 +172,16 @@ public class AssignmentService(
             return CoreErrors.AssignmentExists(fromEntityId, toEntityId, roleId);
         }
 
-        await assignmentRepository.Create(new Assignment()
+        assignment = new Assignment
         {
             FromId = fromEntityId,
             ToId = toEntityId,
             RoleId = role.Id
-        });
+        };
 
-        throw new NotImplementedException();
+        await assignmentRepository.Create(assignment, cancellationToken);
+
+        return assignment;
     }
 
     /// <inheritdoc/>

@@ -49,7 +49,6 @@ public class AccessPartiesController(IAssignmentService assignmentService, IMapp
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ProblemDetails))]
-    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, MediaTypeNames.Application.Json)]
     public async Task<IActionResult> PostAccessParty([FromQuery] Guid party, [FromQuery] Guid to)
     {
         // When history is enabled pass partyUuid downstream to GetOrCreateAssignment
