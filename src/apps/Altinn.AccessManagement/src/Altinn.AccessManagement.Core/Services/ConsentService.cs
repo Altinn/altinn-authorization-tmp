@@ -75,8 +75,6 @@ namespace Altinn.AccessManagement.Core.Services
                 return beforeErrorREsult;
             }
 
-            await _consentRepository.RejectConsentRequest(id, performedBy, cancellationToken);
-
             try
             {
                 await _consentRepository.RejectConsentRequest(id, performedBy, cancellationToken);
