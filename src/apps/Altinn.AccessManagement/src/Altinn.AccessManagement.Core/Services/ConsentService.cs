@@ -55,9 +55,58 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task RejectRequest(Guid id, Guid performedBy, CancellationToken cancellationToken = default)
+        public async Task<Result<ConsentRequestDetails>> RejectRequest(Guid id, Guid performedBy, CancellationToken cancellationToken = default)
         {
-           await _consentRepository.RejectConsentRequest(id, performedBy, cancellationToken);
+            ValidationErrorBuilder errors = default;
+            ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
+            if (details.ConsentRequestStatus == ConsentRequestStatusType.Rejected)
+            {
+                await SetExternalIdentities(details);
+                return details;
+            }
+
+            if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
+            {
+                errors.Add(ValidationErrors.ConsentCantBeRejected, "Status");
+            }
+
+            if (errors.TryBuild(out var beforeErrorREsult))
+            {
+                return beforeErrorREsult;
+            }
+
+            await _consentRepository.RejectConsentRequest(id, performedBy, cancellationToken);
+
+            try
+            {
+                await _consentRepository.RejectConsentRequest(id, performedBy, cancellationToken);
+            }
+            catch (Exception)
+            {
+                await _consentRepository.GetRequest(id, cancellationToken);
+
+                if (details.ConsentRequestStatus == ConsentRequestStatusType.Rejected)
+                {
+                    await SetExternalIdentities(details);
+                    return details;
+                }
+
+                if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
+                {
+                    errors.Add(ValidationErrors.ConsentCantBeRejected, "Status");
+                    if (errors.TryBuild(out var errorResult))
+                    {
+                        return errorResult;
+                    }
+                }
+
+                throw;
+            }
+
+            ConsentRequestDetails updated = await _consentRepository.GetRequest(id, cancellationToken);
+            await SetExternalIdentities(updated);
+
+            return updated;
         }
 
         /// <inheritdoc/>

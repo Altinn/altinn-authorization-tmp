@@ -27,7 +27,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <summary>
         /// Deletes a concent request
         /// </summary>
-        Task RejectRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);
+        Task<Result<ConsentRequestDetails>> RejectRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Approves a concent request. The request needs to be a valid request. 
