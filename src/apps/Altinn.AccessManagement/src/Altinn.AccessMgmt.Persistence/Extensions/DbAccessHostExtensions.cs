@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Executors;
@@ -75,6 +76,9 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<DbDataMigrationService>();
         builder.Services.AddSingleton<MockDataService>();
 
+        // Core interfaces & implementations
+        builder.Services.AddSingleton<IAmPartyRepository, AMPartyService>();
+
         builder.Services.Add(Marker.ServiceDescriptor);
 
         return builder;
@@ -127,10 +131,10 @@ public static partial class DbAccessHostExtensions
         var dbIngest = host.Services.GetRequiredService<DbDataMigrationService>();
         await dbIngest.IngestAll();
 
-        //// TODO: Add FeatureFlag
-        //// var mockService = host.Services.GetRequiredService<MockDataService>();
-        //// await mockService.GenerateBasicData();
-        //// await mockService.GeneratePackageResources();
+        // TODO: Add FeatureFlag
+        var mockService = host.Services.GetRequiredService<MockDataService>();
+        await mockService.GenerateBasicData();
+        // await mockService.GeneratePackageResources();
 
         return host;
     }

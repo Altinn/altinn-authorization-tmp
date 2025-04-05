@@ -209,7 +209,14 @@ internal static partial class AccessManagementHost
             {
                 if (!t.IsNested)
                 {
-                    return originalIdSelector(t);
+                    var orig = originalIdSelector(t);
+
+                    if (t.Assembly == typeof(Altinn.Authorization.Core.Models.Register.OrganizationNumber).Assembly)
+                    {
+                        orig = $"AMCoreModels.{orig}";
+                    }
+
+                    return orig;
                 }
 
                 var chain = new List<string>();
