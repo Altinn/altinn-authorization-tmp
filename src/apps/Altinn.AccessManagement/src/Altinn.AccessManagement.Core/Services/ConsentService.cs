@@ -188,6 +188,7 @@ namespace Altinn.AccessManagement.Core.Services
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
             if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
             {
+                await SetExternalIdentities(details);
                 return details;
             }
 
@@ -207,10 +208,11 @@ namespace Altinn.AccessManagement.Core.Services
             }
             catch (Exception)
             {
-                await _consentRepository.GetRequest(id, cancellationToken);
+                details = await _consentRepository.GetRequest(id, cancellationToken);
 
                 if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
                 {
+                    await SetExternalIdentities(details);
                     return details;
                 }
 
@@ -227,6 +229,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             ConsentRequestDetails updated = await _consentRepository.GetRequest(id, cancellationToken);
+            await SetExternalIdentities(updated);
             return updated;
         }
 
@@ -257,7 +260,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
             catch (Exception)
             {
-                await _consentRepository.GetRequest(id, cancellationToken);
+                details = await _consentRepository.GetRequest(id, cancellationToken);
 
                 if (details.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
                 {
