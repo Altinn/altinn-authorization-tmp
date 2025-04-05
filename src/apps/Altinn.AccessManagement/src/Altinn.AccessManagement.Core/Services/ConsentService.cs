@@ -196,7 +196,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (details.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
             {
-                errors.Add(ValidationErrors.ConsentCantBeAccepted, "Status");
+                errors.Add(ValidationErrors.ConsentCantBeRevoked, "Status");
             }
 
             if (errors.TryBuild(out var beforeErrorREsult))

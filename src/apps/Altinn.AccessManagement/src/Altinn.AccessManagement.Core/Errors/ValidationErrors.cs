@@ -130,5 +130,11 @@ public static class ValidationErrors
     /// Gets a validation error descriptor
     /// </summary>
     public static ValidationErrorDescriptor ConsentCantBeAccepted { get; }
-    = _factory.Create(20, $"Consent is revoked");
+    = _factory.Create(20, $"Consent cant be accepted. Wrong status");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentCantBeRevoked { get; }
+    = _factory.Create(21, $"Consent cant be revoked. Wrong status");
 }
