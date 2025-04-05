@@ -103,7 +103,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
             Assert.Equal("AM.VLD-00020", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
-            Assert.Equal("Consent is revoked", problemDetails.Errors.ToList()[0].Detail.ToString());
+            Assert.Equal("Consent cant be accepted. Wrong status", problemDetails.Errors.ToList()[0].Detail.ToString());
         }
 
         [Fact]
