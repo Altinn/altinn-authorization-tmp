@@ -188,12 +188,13 @@ namespace Altinn.AccessManagement.Core.Services
         {
             ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
-            if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
+            if (details.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
             {
+                await SetExternalIdentities(details);
                 return details;
             }
 
-            if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
+            if (details.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
             {
                 errors.Add(ValidationErrors.ConsentCantBeAccepted, "Status");
             }
@@ -213,6 +214,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (details.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
                 {
+                    await SetExternalIdentities(details);
                     return details;
                 }
 
@@ -229,7 +231,18 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             ConsentRequestDetails updated = await _consentRepository.GetRequest(id, cancellationToken);
+            await SetExternalIdentities(updated);
             return updated;
+        }
+
+        private async Task SetExternalIdentities(ConsentRequestDetails details)
+        {
+            details.From = await MapToExternalIdenity(details.From);
+            details.To = await MapToExternalIdenity(details.To);
+            foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)
+            {
+                consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy);
+            }
         }
 
         private async Task<ConsentPartyUrn> MapFromExternalIdenity(ConsentPartyUrn consentPartyUrn)

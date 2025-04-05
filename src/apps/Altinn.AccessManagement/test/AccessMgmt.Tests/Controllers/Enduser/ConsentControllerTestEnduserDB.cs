@@ -12,6 +12,7 @@ using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Util;
 using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Consent;
+using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Common.AccessToken.Services;
 using AltinnCore.Authentication.JwtCookie;
@@ -137,8 +138,14 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, performedBy);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/revoke/", null);
-            string responseText = await response.Content.ReadAsStringAsync();
+            string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            Assert.Equal(3,consentInfo.ConsentRequestEvents.Count);
+            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventTypeExternal.Accepted, consentInfo.ConsentRequestEvents[1].EventType);
+            Assert.Equal(ConsentRequestEventTypeExternal.Revoked, consentInfo.ConsentRequestEvents[2].EventType);
         }
 
 

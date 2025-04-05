@@ -65,7 +65,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             eventCommand.CommandText = eventQuery;
             eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.CreateVersion7());
             eventCommand.Parameters.AddWithValue("consentRequestId", NpgsqlDbType.Uuid, consentRequestId);
-            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>("eventtype", ConsentRequestEventType.Created));
+            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>("eventtype", ConsentRequestEventType.Accepted));
             eventCommand.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
             eventCommand.Parameters.AddWithValue("performedByParty", NpgsqlDbType.Uuid, performedByParty);
             await eventCommand.ExecuteNonQueryAsync();
@@ -504,6 +504,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 performedByParty
                 FROM consent.consentevent 
                 WHERE consentRequestId = @consentRequestId
+                ORDER BY created
                 ";
 
             await using var pgcom = _db.CreateCommand(consentMetadataQuery);
