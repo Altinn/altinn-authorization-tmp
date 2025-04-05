@@ -167,7 +167,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 !string.IsNullOrEmpty(resourceAttributes.AppValue) &&
                 !string.IsNullOrEmpty(resourceAttributes.InstanceValue) &&
                 !string.IsNullOrEmpty(resourceAttributes.ResourcePartyValue) &&
-                !string.IsNullOrEmpty(resourceAttributes.TaskValue))
+                (!string.IsNullOrEmpty(resourceAttributes.TaskValue) || !string.IsNullOrEmpty(resourceAttributes.EndEventValue)))
             {
                 // The resource attributes are complete
                 resourceAttributeComplete = true;
@@ -288,6 +288,11 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 if (attribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.TaskAttribute))
                 {
                     resourceAttributes.TaskValue = attribute.AttributeValues.First().Value;
+                }
+
+                if (attribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.EndEventAttribute))
+                {
+                    resourceAttributes.EndEventValue = attribute.AttributeValues.First().Value;
                 }
 
                 if (attribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.AppResourceAttribute))
