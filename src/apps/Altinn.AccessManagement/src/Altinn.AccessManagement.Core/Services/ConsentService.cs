@@ -12,7 +12,6 @@ using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Models;
 using Microsoft.Extensions.Caching.Memory;
-using System.Linq.Expressions;
 
 namespace Altinn.AccessManagement.Core.Services
 {
