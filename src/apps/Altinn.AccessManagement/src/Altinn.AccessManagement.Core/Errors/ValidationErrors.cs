@@ -45,27 +45,20 @@ public static class ValidationErrors
         = _factory.Create(5, $"There is to many policy files to update. Must delete individual delegations.");
 
     /// <summary>
-    /// Missing role code in DB for assignments
-    /// </summary>
-    /// <returns></returns>
-    public static ValidationErrorDescriptor MissingRoleCodeInDb { get; }
-        = _factory.Create(6, $"Missing role code.");
-
-    /// <summary>
-    /// Party does not exists in DB.
+    /// Missing party.
     /// </summary>
     public static ValidationErrorDescriptor MissingPartyInDb { get; }
-        = _factory.Create(7, $"Missing party.");
+        = _factory.Create(6, $"Missing party.");
 
     /// <summary>
-    /// Party does not exists in DB.
+    /// Invalid party type.
     /// </summary>
     public static ValidationErrorDescriptor InvalidPartyType { get; }
-        = _factory.Create(8, $"Invalid party type.");
+        = _factory.Create(7, $"Invalid party type.");
 
     /// <summary>
-    /// Party does not exists in DB.
+    /// Assignment already exists.
     /// </summary>
     public static ValidationErrorDescriptor AssignmentAlreadyExists { get; }
-        = _factory.Create(9, $"Assignment already exists.");
+        = _factory.Create(8, $"Assignment already exists.");
 }
