@@ -94,7 +94,6 @@ public class DelegationService(
 
         var delegation = new Delegation()
         {
-            Id = Guid.NewGuid(),
             FromId = fromAssignmentId,
             ToId = toAssignmentId
         };
@@ -144,14 +143,12 @@ public class DelegationService(
         }
 
         var res = await delegationPackageRepository.Create(
-            new DelegationPackage() 
-            { 
-                Id = Guid.NewGuid(),
+            new DelegationPackage() { 
                 DelegationId = delegationId,
                 PackageId = packageId
             },
             options: options
-            );
+        );
 
         return res > 0;
     }
@@ -200,15 +197,11 @@ public class DelegationService(
             throw new Exception($"The source assignment does not have the resource '{resource.Name}'");
         }
 
-
-        var res = await delegationResourceRepository.Create(
-            new DelegationResource()
-            {
-                Id = Guid.NewGuid(),
-                DelegationId = delegationId,
-                ResourceId = resourceId
-            },
-            options: options);
+        var res = await delegationResourceRepository.Create(new DelegationResource()
+        {
+            DelegationId = delegationId,
+            ResourceId = resourceId
+        });
 
         return res > 0;
     }
@@ -321,15 +314,11 @@ public class DelegationService(
         var delegationPackage = (await delegationPackageRepository.Get(delegationPackageFilter)).FirstOrDefault();
         if (delegationPackage == null)
         {
-            var res = await delegationPackageRepository.Create(
-                new DelegationPackage()
-                {
-                    Id = Guid.CreateVersion7(),
-                    DelegationId = delegationId,
-                    PackageId = packageId
-                }, 
-                options: options
-                );
+            var res = await delegationPackageRepository.Create(new DelegationPackage()
+            {
+                DelegationId = delegationId,
+                PackageId = packageId
+            });
             return (await delegationPackageRepository.Get(delegationPackageFilter)).FirstOrDefault();
         }
         else
@@ -353,16 +342,12 @@ public class DelegationService(
         var delegation = (await delegationRepository.Get(delegationFilter)).FirstOrDefault();
         if (delegation == null)
         {
-            var res = await delegationRepository.Create(
-                new Delegation()
-                {
-                    Id = Guid.CreateVersion7(),
-                    FromId = from.Id,
-                    ToId = to.Id,
-                    FacilitatorId = facilitator.Id
-                },
-                options: options
-                );
+            var res = await delegationRepository.Create(new Delegation()
+            {
+                FromId = from.Id,
+                ToId = to.Id,
+                FacilitatorId = facilitator.Id
+            });
 
             return (await delegationRepository.Get(delegationFilter)).FirstOrDefault();
         }
@@ -433,16 +418,12 @@ public class DelegationService(
                 throw new Exception(string.Format("You cannot create assignment with the role '{0}' ({1})", role.Name, role.Code));
             }
 
-            var res = await assignmentRepository.Create(
-                new Assignment()
-                {
-                    Id = Guid.NewGuid(),
-                    FromId = from.Id,
-                    ToId = to.Id,
-                    RoleId = role.Id
-                },
-                options: options
-            );
+            var res = await assignmentRepository.Create(new Assignment()
+            {
+                FromId = from.Id,
+                ToId = to.Id,
+                RoleId = role.Id
+            });
         }
 
         return (await assignmentRepository.Get(filter)).FirstOrDefault();

@@ -1,5 +1,4 @@
 {
-  "image": {},
   "database": {
     "prefix": "register",
     "name": "register",
@@ -12,5 +11,6 @@
     "terraform": {
       "stateFile": "Altinn.Register.tfstate"
     }
-  }
+  },
+  "sonarcloud": false
 }
