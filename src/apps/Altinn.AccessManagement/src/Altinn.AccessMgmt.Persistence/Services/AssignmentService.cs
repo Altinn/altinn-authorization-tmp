@@ -205,21 +205,13 @@ public class AssignmentService(
             RoleId = roleId,
         };
 
-        try
+        var result = await assignmentRepository.Create(existingAssignment, cancellationToken);
+        if (result == 0)
         {
-            var result = await assignmentRepository.Create(existingAssignment, cancellationToken);
-            if (result == 0)
-            {
-                Unreachable();
-            }
+            Unreachable();
+        }
 
-            return assignment;
-        }
-        catch (NpgsqlException ex)
-        {
-            return CoreErrors.AssignmentCreateFailed
-                .Create([new("msg", ex.Message), new("fromId", fromEntityId.ToString()), new("toId", toEntityId.ToString()), new("roleId", roleId.ToString())]);
-        }
+        return assignment;
     }
 
     /// <inheritdoc/>

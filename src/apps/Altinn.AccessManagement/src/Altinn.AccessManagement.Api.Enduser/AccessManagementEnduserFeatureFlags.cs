@@ -8,5 +8,5 @@ internal static class AccessManagementEnduserFeatureFlags
     /// <summary>
     /// Feature flag for controlling access to parties in the Access Management Enduser module.
     /// </summary>
-    public const string ControllerAccessParties = "AccessManagement.Enduser.Controller.AccessParties";
+    public const string ControllerAccessParties = "AccessManagement.Enduser.AccessParties";
 }
