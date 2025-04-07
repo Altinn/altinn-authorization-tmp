@@ -1,8 +1,12 @@
-﻿using Altinn.AccessManagement.Core.Errors;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Http.Headers;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.ProblemDetails;
+using Microsoft.AspNetCore.Identity;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -13,18 +17,23 @@ public class AssignmentService(
     IPackageRepository packageRepository,
     IAssignmentPackageRepository assignmentPackageRepository,
     IAssignmentResourceRepository assignmentResourceRepository,
+    IEntityVariantRepository entityVariantRepository,
     IRoleRepository roleRepository,
     IRolePackageRepository rolePackageRepository,
-    IEntityRepository entityRepository
+    IEntityRepository entityRepository,
+    IEntityTypeRepository entityTypeRepository
     ) : IAssignmentService
 {
     private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
     private readonly IInheritedAssignmentRepository inheritedAssignmentRepository = inheritedAssignmentRepository;
     private readonly IPackageRepository packageRepository = packageRepository;
     private readonly IAssignmentPackageRepository assignmentPackageRepository = assignmentPackageRepository;
+    private readonly IAssignmentResourceRepository assignmentResourceRepository = assignmentResourceRepository;
+    private readonly IEntityVariantRepository entityVariantRepository = entityVariantRepository;
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
     private readonly IEntityRepository entityRepository = entityRepository;
+    private readonly IEntityTypeRepository entityTypeRepository = entityTypeRepository;
 
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId)
@@ -134,52 +143,73 @@ public class AssignmentService(
         throw new NotImplementedException();
     }
 
-    /// <inheritdoc/>
-    public async Task<Result<Assignment>> GetOrCreateAssignmen2(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default)
+    [DoesNotReturn]
+    private static void Unreachable()
     {
-        var toEntity = await entityRepository.Get(toEntityId, cancellationToken: cancellationToken);
-        if (toEntity is null)
+        throw new UnreachableException();
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<Assignment>> GetOrCreateAssignment2(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default)
+    {
+        ValidationErrorBuilder errors = default;
+        var fromEntityExt = await entityRepository.GetExtended(fromEntityId, cancellationToken: cancellationToken);
+        if (fromEntityExt is null)
         {
-            return CoreErrors.MissingParty(fromEntityId);
+            errors.Add(ValidationErrors.MissingPartyInDb, "/$QUERY/party", [new("partyId", fromEntityId.ToString())]);
+        }
+        else
+        {
+            if (!fromEntityExt.Type.Name.Equals("Organisasjon"))
+            {
+                errors.Add(ValidationErrors.InvalidPartyType, "/$QUERY/party", [new("partyId", $"expected party of type 'Organisasjon' got '{fromEntityExt.Type.Name}'.")]);
+            }
+        }
+
+        var toEntityExt = await entityRepository.GetExtended(toEntityId, cancellationToken: cancellationToken);
+        if (toEntityExt is null)
+        {
+            errors.Add(ValidationErrors.MissingPartyInDb, "/$QUERY/to", [new("partyId", toEntityExt.ToString())]);
+        }
+        else
+        {
+            if (!toEntityExt.Type.Name.Equals("Organisasjon"))
+            {
+                errors.Add(ValidationErrors.InvalidPartyType, "/$QUERY/to", [new("partyId", $"expected party of type 'Organisasjon' got '{fromEntityExt.Type.Name}'.")]);
+            }
         }
 
         var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
         if (roleResult == null || !roleResult.Any())
         {
-            return CoreErrors.MissingRoleCode(roleCode);
+            Unreachable();
         }
 
-        return await GetOrCreateAssignment2(fromEntityId, toEntityId, roleResult.First().Id, cancellationToken);
-    }
-
-    private async Task<Result<Assignment>> GetOrCreateAssignment2(Guid fromEntityId, Guid toEntityId, Guid roleId, CancellationToken cancellationToken = default)
-    {
-        var assignment = await GetAssignment(fromEntityId, toEntityId, roleId);
-        if (assignment != null)
+        var roleId = roleResult.First().Id;
+        var existingAssignment = await GetAssignment(fromEntityId, toEntityId, roleId);
+        if (existingAssignment != null)
         {
-            return assignment;
+            return existingAssignment;
         }
 
-        var role = await roleRepository.Get(roleId, cancellationToken: cancellationToken);
-        if (role == null)
+        if (errors.TryBuild(out var errorResult))
         {
-            return CoreErrors.MissingRoleId(roleId);
+            return errorResult;
         }
 
-        var inheritedAssignments = await GetInheritedAssignment(fromEntityId, toEntityId, role.Id);
-        if (inheritedAssignments != null && inheritedAssignments.Any())
-        {
-            return CoreErrors.AssignmentExists(fromEntityId, toEntityId, roleId);
-        }
-
-        assignment = new Assignment
+        var assignment = new Assignment
         {
             FromId = fromEntityId,
             ToId = toEntityId,
-            RoleId = role.Id
+            RoleId = roleId,
         };
 
-        await assignmentRepository.Create(assignment, cancellationToken);
+        var result = await assignmentRepository.Create(existingAssignment, cancellationToken);
+        if (result != 0)
+        {
+            return CoreErrors.AssignmentCreateFailed
+                .Create([new("fromId", fromEntityId.ToString()), new("toId", toEntityId.ToString()), new("roleId", roleId.ToString())]);
+        }
 
         return assignment;
     }

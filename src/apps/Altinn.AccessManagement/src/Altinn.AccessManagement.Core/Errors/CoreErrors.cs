@@ -12,38 +12,11 @@ public static class CoreErrors
         = ProblemDescriptorFactory.New("AM");
 
     /// <summary>
-    /// Missing role code in DB for assignments
-    /// </summary>
-    /// <param name="rolecode">role code</param>
-    /// <returns></returns>
-    public static ProblemDescriptor MissingRoleCode(string rolecode) =>
-        _factory.Create(1, HttpStatusCode.BadRequest, $"Missing role code '{rolecode}' in database.");
-
-    /// <summary>
-    /// Missing Role ID in database
-    /// </summary>
-    /// <param name="roleId">Role ID</param>
-    /// <returns></returns>
-    public static ProblemDescriptor MissingRoleId(Guid roleId) =>
-        _factory.Create(2, HttpStatusCode.BadRequest, $"Missing role ID '{roleId}' in database.");
-
-    /// <summary>
     /// Creates a problem descriptor describing that an inherited assignment already exists.
     /// </summary>
-    /// <param name="from">assignemnt from UUID.</param>
-    /// <param name="to">assignemnt to UUID.</param>
-    /// <param name="roleId">role UUID.</param>
     /// <returns>
     /// A <see cref="ProblemDescriptor"/> indicating a conflict due to an existing inherited assignment.
     /// </returns>
-    public static ProblemDescriptor AssignmentExists(Guid from, Guid to, Guid roleId) =>
-        _factory.Create(3, HttpStatusCode.Conflict, $"Inherited assignment exists from party '{from}' to party '{to}' with role ID '{roleId}.'");
-
-    /// <summary>
-    /// Creates a ProblemDescriptor for a missing party.
-    /// </summary>
-    /// <param name="party">The unique identifier of the missing party.</param>
-    /// <returns>A ProblemDescriptor indicating that the specified party does not exist.</returns>
-    public static ProblemDescriptor MissingParty(Guid party) =>
-        _factory.Create(4, HttpStatusCode.BadRequest, $"Party with id {party} does not exist.");
+    public static ProblemDescriptor AssignmentCreateFailed { get; }
+        = _factory.Create(1, HttpStatusCode.BadRequest, $"Failed to create assignment.");
 }

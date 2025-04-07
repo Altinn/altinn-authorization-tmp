@@ -12,6 +12,8 @@ public static class ValidationErrors
     private static readonly ValidationErrorDescriptorFactory _factory
         = ValidationErrorDescriptorFactory.New("AM");
 
+    public static ValidationErrorDescriptor Required => StdValidationErrors.Required;
+
     /// <summary>
     /// Gets a validation error descriptor for when an invalid party URN is provided.
     /// </summary>
@@ -41,4 +43,29 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor ToManyDelegationsToRevoke { get; }
         = _factory.Create(5, $"There is to many policy files to update. Must delete individual delegations.");
+
+    /// <summary>
+    /// Missing role code in DB for assignments
+    /// </summary>
+    /// <returns></returns>
+    public static ValidationErrorDescriptor MissingRoleCodeInDb { get; }
+        = _factory.Create(6, $"Missing role code.");
+
+    /// <summary>
+    /// Party does not exists in DB.
+    /// </summary>
+    public static ValidationErrorDescriptor MissingPartyInDb { get; }
+        = _factory.Create(7, $"Missing Party.");
+
+    /// <summary>
+    /// Party does not exists in DB.
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidPartyType { get; }
+        = _factory.Create(8, $"Missing Party.");
+
+    /// <summary>
+    /// Party does not exists in DB.
+    /// </summary>
+    public static ValidationErrorDescriptor AssignmentAlreadyExists { get; }
+        = _factory.Create(9, $"Assignment already exists.");
 }
