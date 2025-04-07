@@ -12,6 +12,9 @@ public static class ValidationErrors
     private static readonly ValidationErrorDescriptorFactory _factory
         = ValidationErrorDescriptorFactory.New("AM");
 
+    /// <summary>
+    /// The field is required.
+    /// </summary>
     public static ValidationErrorDescriptor Required => StdValidationErrors.Required;
 
     /// <summary>

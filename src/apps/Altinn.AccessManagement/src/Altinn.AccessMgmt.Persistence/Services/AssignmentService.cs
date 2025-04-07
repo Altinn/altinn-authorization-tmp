@@ -1,13 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Headers;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.ProblemDetails;
-using Microsoft.AspNetCore.Identity;
-using Npgsql;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -17,24 +14,18 @@ public class AssignmentService(
     IAssignmentRepository assignmentRepository,
     IPackageRepository packageRepository,
     IAssignmentPackageRepository assignmentPackageRepository,
-    IAssignmentResourceRepository assignmentResourceRepository,
-    IEntityVariantRepository entityVariantRepository,
     IRoleRepository roleRepository,
     IRolePackageRepository rolePackageRepository,
-    IEntityRepository entityRepository,
-    IEntityTypeRepository entityTypeRepository
+    IEntityRepository entityRepository
     ) : IAssignmentService
 {
     private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
     private readonly IInheritedAssignmentRepository inheritedAssignmentRepository = inheritedAssignmentRepository;
     private readonly IPackageRepository packageRepository = packageRepository;
     private readonly IAssignmentPackageRepository assignmentPackageRepository = assignmentPackageRepository;
-    private readonly IAssignmentResourceRepository assignmentResourceRepository = assignmentResourceRepository;
-    private readonly IEntityVariantRepository entityVariantRepository = entityVariantRepository;
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
     private readonly IEntityRepository entityRepository = entityRepository;
-    private readonly IEntityTypeRepository entityTypeRepository = entityTypeRepository;
 
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId)
@@ -170,7 +161,7 @@ public class AssignmentService(
         var toEntityExt = await entityRepository.GetExtended(toEntityId, cancellationToken: cancellationToken);
         if (toEntityExt is null)
         {
-            errors.Add(ValidationErrors.MissingPartyInDb, "/$QUERY/to", [new("partyId", toEntityExt.ToString())]);
+            errors.Add(ValidationErrors.MissingPartyInDb, "/$QUERY/to", [new("partyId", toEntityId.ToString())]);
         }
         else
         {

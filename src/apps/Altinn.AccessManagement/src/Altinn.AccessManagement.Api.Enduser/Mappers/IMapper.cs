@@ -5,7 +5,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Mappers;
 /// </summary>
 /// <typeparam name="TTo">The target type to map to.</typeparam>
 /// <typeparam name="TFrom">The source type to map from.</typeparam>
-public interface IMapper<TTo, TFrom>
+public interface IMapper<out TTo, in TFrom>
 {
     /// <summary>
     /// Maps an instance of <typeparamref name="TFrom"/> to an instance of <typeparamref name="TTo"/>.
