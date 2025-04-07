@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.ProblemDetails;
@@ -14,6 +15,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
     /// </summary>
     [Route("accessmanagement/api/v1/enduser/consent/")]
     [ApiController]
+    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     public class ConsentController(IConsent consentService, IPartiesClient partiesClient, ISingleRightsService singleRightsService) : ControllerBase
     {
         private readonly IConsent _consentService = consentService;
@@ -27,7 +29,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// User is authorized to delegated the rights that is requested. Either by having the right self or beeing the main administrator
         /// </summary>
         [HttpGet]
-        [Authorize]
         [Route("request/{requestId}")]
         public async Task<IActionResult> GetConsentRequest([FromRoute] Guid requestId, CancellationToken cancellationToken = default)
         {
@@ -47,7 +48,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// - Have right for accessmanagement for the party that is requesting the consent
         /// - Have the right to delegate the requested rights. Either by having the right self or beeing the main administrator
         /// </summary>
-        [Authorize]
         [HttpPost]
         [Route("request/{requestId}/accept/")]
         public async Task<IActionResult> Approve(Guid requestId, CancellationToken cancellationToken = default)
@@ -71,7 +71,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// <summary>
         /// Endpoint to deny a consent request
         /// </summary>
-        [Authorize]
         [HttpPost]
         [Route("request/{requestId}/reject/")]
         public async Task<IActionResult> Reject(Guid requestId, CancellationToken cancellationToken = default)
@@ -95,7 +94,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// <summary>
         /// Endpoint to deny a consent request
         /// </summary>
-        [Authorize]
         [HttpPost]
         [Route("request/{requestId}/revoke/")]
         public async Task<IActionResult> Revoke(Guid requestId, CancellationToken cancellationToken = default)

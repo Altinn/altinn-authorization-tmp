@@ -75,7 +75,7 @@ public class MockDataService
         await entityRepository.Upsert(norskRegnskap);
         await entityRepository.Upsert(smekkfullBank);
 
-        await entityLookupRepository.Upsert(new EntityLookup() { Id = Guid.Parse("967e0b67-165d-4b71-9727-a2dadaf81616"), EntityId = smekkfullBank.Id, Key = "OrganizationIdentifier", Value = smekkfullBank.RefId });
+        await entityLookupRepository.Upsert(new EntityLookup() { EntityId = smekkfullBank.Id, Key = "OrganizationIdentifier", Value = smekkfullBank.RefId });
 
         Entity mariusThuen = new() { Id = Guid.Parse("3ECA9413-F58C-4205-8ED4-2322E1C5E5C0"), Name = "Marius Thuen", RefId = "PERS-000", TypeId = persType.Id, VariantId = variantPers.Id };
         Entity fredrikJohnsen = new() { Id = Guid.Parse("B238C6ED-D186-410D-983F-2B4AA887F376"), Name = "Fredrik Johnsen", RefId = "PERS-001", TypeId = persType.Id, VariantId = variantPers.Id };
@@ -107,7 +107,7 @@ public class MockDataService
         await entityRepository.Upsert(edithTommesen);
         await entityRepository.Upsert(elenaFjær);
 
-        await entityLookupRepository.Upsert(new EntityLookup() { Id = Guid.Parse("eba0dfeb-6d8f-4f1e-8a67-8f820fd51132"), EntityId = elenaFjær.Id, Key = "PersonIdentifier", Value = elenaFjær.RefId });
+        await entityLookupRepository.Upsert(new EntityLookup() { EntityId = elenaFjær.Id, Key = "PersonIdentifier", Value = elenaFjær.RefId });
 
         await assignmentRepository.Upsert(new Assignment() { FromId = spirhAS.Id, ToId = mariusThuen.Id, RoleId = roleDagligLeder.Id });
         await assignmentRepository.Upsert(new Assignment() { FromId = spirhAS.Id, ToId = mariusThuen.Id, RoleId = roleStyreLeder.Id });
