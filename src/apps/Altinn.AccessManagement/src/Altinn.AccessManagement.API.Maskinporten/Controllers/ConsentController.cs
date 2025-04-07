@@ -49,7 +49,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
             return Ok(ConsentInfoMaskinporten.Convert(consent.Value));
         }
 
-        private ConsentPartyUrn MapToCore(ConsentPartyUrnExternal consentPartyUrnExternal)
+        private static ConsentPartyUrn MapToCore(ConsentPartyUrnExternal consentPartyUrnExternal)
         {
             ConsentPartyUrn consentPartyUrn = consentPartyUrnExternal switch
             {
