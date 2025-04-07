@@ -54,7 +54,7 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<ProviderType>(dataKey, string.Empty, 1);
         }
 
-        if (migrationService.NeedMigration<Provider>(dataKey, 2))
+        if (migrationService.NeedMigration<Provider>(dataKey, 3))
         {
             await IngestProvider();
             await migrationService.LogMigration<Provider>(dataKey, string.Empty, 2);
