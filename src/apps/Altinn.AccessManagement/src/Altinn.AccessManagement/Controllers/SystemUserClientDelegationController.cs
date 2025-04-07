@@ -91,7 +91,13 @@ public class SystemUserClientDelegationController : ControllerBase
             return Unauthorized();
         }
 
-        var delegations = await delegationService.CreateClientDelegation(request, userId, party);
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = userId,
+            ChangedBySystem = AuditDefaults.SystemBrukerSystem
+        };
+
+        var delegations = await delegationService.CreateClientDelegation(request, party, options);
 
         var result = new List<CreateDelegationResponse>();
         foreach (var delegation in delegations)
@@ -145,7 +151,7 @@ public class SystemUserClientDelegationController : ControllerBase
         var options = new ChangeRequestOptions()
         {
             ChangedBy = userId,
-            ChangedBySystem = AuditDefaults.DefaultSystem
+            ChangedBySystem = AuditDefaults.SystemBrukerSystem
         };
 
         await delegationRepository.Delete(delegation.Id, options: options);
@@ -210,7 +216,7 @@ public class SystemUserClientDelegationController : ControllerBase
         var options = new ChangeRequestOptions()
         {
             ChangedBy = userId,
-            ChangedBySystem = AuditDefaults.DefaultSystem
+            ChangedBySystem = AuditDefaults.SystemBrukerSystem
         };
 
         await assignmentRepository.Delete(assignment.Id, options: options);

@@ -90,11 +90,17 @@ public partial class RegisterHostedService(
 
         try
         {
-            var partyStatus = await statusService.GetOrCreateRecord(Guid.Parse("C18B67F6-B07E-482C-AB11-7FE12CD1F48D"), "accessmgmt-sync-register-party", 5);
-            var roleStatus = await statusService.GetOrCreateRecord(Guid.Parse("84E9726D-E61B-4DFF-91D7-9E17C8BB41A6"), "accessmgmt-sync-register-role", 5);
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = AuditDefaults.RegisterImportSystem,
+                ChangedBySystem = AuditDefaults.DefaultSystem
+            };
 
-            bool canRunPartySync = await statusService.TryToRun(partyStatus);
-            bool canRunRoleSync = await statusService.TryToRun(roleStatus);
+            var partyStatus = await statusService.GetOrCreateRecord(Guid.Parse("C18B67F6-B07E-482C-AB11-7FE12CD1F48D"), "accessmgmt-sync-register-party", options, 5);
+            var roleStatus = await statusService.GetOrCreateRecord(Guid.Parse("84E9726D-E61B-4DFF-91D7-9E17C8BB41A6"), "accessmgmt-sync-register-role", options, 5);
+
+            bool canRunPartySync = await statusService.TryToRun(partyStatus, options);
+            bool canRunRoleSync = await statusService.TryToRun(roleStatus, options);
 
             if (!canRunPartySync && !canRunRoleSync)
             {
@@ -116,13 +122,13 @@ public partial class RegisterHostedService(
                 if (canRunPartySync)
                 {
                     await SyncParty(ls, cancellationToken);
-                    await statusService.RunSuccess(partyStatus);
+                    await statusService.RunSuccess(partyStatus, options);
                 }
             }
             catch (Exception ex)
             {
                 Log.SyncError(_logger, ex);
-                await statusService.RunFailed(partyStatus, ex);
+                await statusService.RunFailed(partyStatus, ex, options);
             }
 
             try
@@ -130,13 +136,13 @@ public partial class RegisterHostedService(
                 if (canRunPartySync)
                 {
                     await SyncRoles(ls, cancellationToken);
-                    await statusService.RunSuccess(roleStatus);
+                    await statusService.RunSuccess(roleStatus, options);
                 }
             }
             catch (Exception ex)
             {
                 Log.SyncError(_logger, ex);
-                await statusService.RunFailed(partyStatus, ex);
+                await statusService.RunFailed(partyStatus, ex, options);
             }
 
             _logger.LogInformation("Register sync completed!");
@@ -165,6 +171,12 @@ public partial class RegisterHostedService(
     {
         var batchData = new List<Assignment>();
 
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = AuditDefaults.RegisterImportSystem,
+            ChangedBySystem = AuditDefaults.RegisterImportSystem
+        };
+
         await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
@@ -179,6 +191,7 @@ public partial class RegisterHostedService(
             }
 
             Guid batchId = Guid.CreateVersion7();
+            options.ChangeOperationId = batchId;
             var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
             _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
 
@@ -186,7 +199,7 @@ public partial class RegisterHostedService(
             {
                 foreach (var item in page.Content.Data)
                 {
-                    var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+                    var assignment = await ConvertRoleModel(item, options: options) ?? throw new Exception("Failed to convert RoleModel to Assignment");
 
                     if (batchData.Any(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId))
                     {
@@ -199,7 +212,7 @@ public partial class RegisterHostedService(
                         batchData.Add(assignment);
                         if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
                         {
-                            await SetParent(assignment.FromId, assignment.ToId, cancellationToken);
+                            await SetParent(assignment.FromId, assignment.ToId, options: options, cancellationToken: cancellationToken);
                         }
                     }
                     else
@@ -208,11 +221,11 @@ public partial class RegisterHostedService(
                         filter.Equal(t => t.FromId, assignment.FromId);
                         filter.Equal(t => t.ToId, assignment.ToId);
                         filter.Equal(t => t.RoleId, assignment.RoleId);
-                        await assignmentRepository.Delete(filter);
+                        await assignmentRepository.Delete(filter, options: options, cancellationToken: cancellationToken);
 
                         if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
                         {
-                            await RemoveParent(assignment.FromId, cancellationToken);
+                            await RemoveParent(assignment.FromId, options: options, cancellationToken: cancellationToken);
                         }
                     }
 
@@ -235,14 +248,14 @@ public partial class RegisterHostedService(
                 try
                 {
                     _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchName);
-                    var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
+                    var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, options: options, cancellationToken: cancellationToken);
 
                     if (ingested != batchData.Count)
                     {
                         _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
                     }
 
-                    var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken, performedBy: DefaultPerformedBy);
+                    var merged = await ingestService.MergeTempData<Assignment>(batchId, options: options, GetAssignmentMergeMatchFilter, cancellationToken: cancellationToken);
 
                     _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
                 }
@@ -262,6 +275,12 @@ public partial class RegisterHostedService(
 
     private async Task SyncRolesSingle(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = AuditDefaults.RegisterImportSystem,
+            ChangedBySystem = AuditDefaults.RegisterImportSystem
+        };
+
         var failedAdds = new List<Assignment>();
         var failedRemoves = new List<Assignment>();
 
@@ -279,12 +298,12 @@ public partial class RegisterHostedService(
 
             foreach (var item in page.Content.Data)
             {
-                var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+                var assignment = await ConvertRoleModel(item, options: options) ?? throw new Exception("Failed to convert RoleModel to Assignment");
                 if (item.Type == "Added")
                 {
                     try
                     {
-                        var res = await assignmentRepository.Create(assignment);
+                        var res = await assignmentRepository.Create(assignment, options: options, cancellationToken: cancellationToken);
                         Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
                     } 
                     catch (Exception ex)
@@ -302,7 +321,7 @@ public partial class RegisterHostedService(
                         filter.Equal(t => t.FromId, assignment.FromId);
                         filter.Equal(t => t.ToId, assignment.ToId);
                         filter.Equal(t => t.RoleId, assignment.RoleId);
-                        var res = await assignmentRepository.Delete(filter);
+                        var res = await assignmentRepository.Delete(filter, options: options, cancellationToken: cancellationToken);
                         Log.AssignmentSuccess(_logger, "removed", item.FromParty, item.ToParty, item.RoleIdentifier);
                     } 
                     catch (Exception ex)
@@ -339,8 +358,15 @@ public partial class RegisterHostedService(
     
     private async Task SyncRolesBatched(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = AuditDefaults.RegisterImportSystem,
+            ChangedBySystem = AuditDefaults.RegisterImportSystem
+        };
+
         int batchSize = 1000;
         Guid batchId = Guid.CreateVersion7();
+        options.ChangeOperationId = batchId;
         var batchData = new List<Assignment>();
 
         await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
@@ -359,7 +385,7 @@ public partial class RegisterHostedService(
             {
                 try
                 {
-                    var assignment = await ConvertRoleModel(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+                    var assignment = await ConvertRoleModel(item, options: options) ?? throw new Exception("Failed to convert RoleModel to Assignment");
                     
                     if (batchData.Any(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId))
                     {
@@ -374,7 +400,7 @@ public partial class RegisterHostedService(
                             batchData.Add(assignment);
                             if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
                             {
-                                await SetParent(assignment.FromId, assignment.ToId, cancellationToken);
+                                await SetParent(assignment.FromId, assignment.ToId, options: options, cancellationToken: cancellationToken);
                             }
 
                             Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
@@ -392,11 +418,11 @@ public partial class RegisterHostedService(
                             filter.Equal(t => t.FromId, assignment.FromId);
                             filter.Equal(t => t.ToId, assignment.ToId);
                             filter.Equal(t => t.RoleId, assignment.RoleId);
-                            await assignmentRepository.Delete(filter);
+                            await assignmentRepository.Delete(filter, options: options, cancellationToken: cancellationToken);
 
                             if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
                             {
-                                await RemoveParent(assignment.FromId, cancellationToken);
+                                await RemoveParent(assignment.FromId, options: options, cancellationToken: cancellationToken);
                             }
 
                             Log.AssignmentSuccess(_logger, "removed", item.FromParty, item.ToParty, item.RoleIdentifier);
@@ -440,10 +466,10 @@ public partial class RegisterHostedService(
             try
             {
                 Console.WriteLine("Write batchData to db");
-                await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
+                await ingestService.IngestTempData<Assignment>(batchData, batchId, options: options, cancellationToken);
 
                 Console.WriteLine("Merge batchData to db");
-                await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken);
+                await ingestService.MergeTempData<Assignment>(batchId, options: options, GetAssignmentMergeMatchFilter, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -456,11 +482,11 @@ public partial class RegisterHostedService(
         }
     }
 
-    private async Task SetParent(Guid childId, Guid parentId, CancellationToken cancellationToken = default)
+    private async Task SetParent(Guid childId, Guid parentId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         try
         {
-            await entityRepository.Update(t => t.ParentId, parentId, childId, cancellationToken: cancellationToken);
+            await entityRepository.Update(t => t.ParentId, parentId, childId, options: options, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
@@ -468,11 +494,11 @@ public partial class RegisterHostedService(
         }
     }
 
-    private async Task RemoveParent(Guid childId, CancellationToken cancellationToken = default)
+    private async Task RemoveParent(Guid childId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         try
         {
-            await entityRepository.Update(t => t.ParentId, childId, cancellationToken: cancellationToken);
+            await entityRepository.Update(t => t.ParentId, childId, options, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
@@ -489,11 +515,11 @@ public partial class RegisterHostedService(
     
     private List<Role> Roles { get; set; } = [];
 
-    private async Task<Assignment> ConvertRoleModel(RoleModel model)
+    private async Task<Assignment> ConvertRoleModel(RoleModel model, ChangeRequestOptions options)
     {
         try
         {
-            var role = await GetOrCreateRole(model.RoleIdentifier, model.RoleSource);
+            var role = await GetOrCreateRole(model.RoleIdentifier, model.RoleSource, options:options);
             return new Assignment()
             {
                 FromId = Guid.Parse(model.FromParty),
@@ -507,7 +533,7 @@ public partial class RegisterHostedService(
         }
     }
     
-    private async Task<Role> GetOrCreateRole(string roleIdentifier, string roleSource)
+    private async Task<Role> GetOrCreateRole(string roleIdentifier, string roleSource, ChangeRequestOptions options)
     {
         if (Roles.Count(t => t.Code == roleIdentifier) == 1)
         {
@@ -520,16 +546,19 @@ public partial class RegisterHostedService(
             var provider = Providers.FirstOrDefault(t => t.Name == (roleSource == "ccr" ? "Brønnøysundregistrene" : "Digitaliseringsdirektoratet")) ?? throw new Exception(string.Format("Provider '{0}' not found while creating new role.", roleSource));
             var entityType = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
 
-            await roleRepository.Create(new Role()
-            {
-                Id = Guid.CreateVersion7(),
-                Name = roleIdentifier,
-                Description = roleIdentifier,
-                Code = roleIdentifier,
-                Urn = roleIdentifier,
-                EntityTypeId = entityType.Id,
-                ProviderId = provider.Id,
-            });
+            await roleRepository.Create(
+                new Role()
+                {
+                    Id = Guid.CreateVersion7(),
+                    Name = roleIdentifier,
+                    Description = roleIdentifier,
+                    Code = roleIdentifier,
+                    Urn = roleIdentifier,
+                    EntityTypeId = entityType.Id,
+                    ProviderId = provider.Id,
+                },
+                options: options
+            );
 
             role = (await roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
             if (role == null)
@@ -591,7 +620,7 @@ public partial class RegisterHostedService(
             {
                 foreach (var item in page.Content.Data)
                 {
-                    var entity = ConvertPartyModel(item);
+                    var entity = ConvertPartyModel(item, options: options, cancellationToken: cancellationToken);
                     
                     if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
                     {
@@ -659,7 +688,7 @@ public partial class RegisterHostedService(
         new GenericParameter("key", "key"),
     }.AsReadOnly();
 
-    private Entity ConvertPartyModel(PartyModel model, bool createTypeIfMissing = false)
+    private Entity ConvertPartyModel(PartyModel model, ChangeRequestOptions options, bool createTypeIfMissing = false, CancellationToken cancellationToken = default)
     {
         if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
         {
@@ -668,7 +697,7 @@ public partial class RegisterHostedService(
             if (variant == null)
             {
                 variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                var res = entityVariantRepository.Create(variant).Result;
+                var res = entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
                 if (res == 0)
                 {
                     throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
@@ -693,7 +722,7 @@ public partial class RegisterHostedService(
             if (variant == null)
             {
                 variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                var res = entityVariantRepository.Create(variant).Result;
+                var res = entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
                 if (res == 0)
                 {
                     throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
@@ -718,7 +747,7 @@ public partial class RegisterHostedService(
             if (variant == null)
             {
                 variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                var res = entityVariantRepository.Create(variant).Result;
+                var res = entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
                 if (res == 0)
                 {
                     throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
@@ -750,7 +779,7 @@ public partial class RegisterHostedService(
                 if (variant == null)
                 {
                     variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                    var res = entityVariantRepository.Create(variant).Result;
+                    var res = entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
                     if (res == 0)
                     {
                         throw new Exception(string.Format("Unable to create variant '{0}' for type '{1}'", model.UnitType, type.Name));

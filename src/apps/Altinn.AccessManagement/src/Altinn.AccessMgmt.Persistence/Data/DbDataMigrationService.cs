@@ -9,8 +9,11 @@ namespace Altinn.AccessMgmt.Repo.Data;
 
 public static class AuditDefaults
 {
-    public static readonly Guid DefaultSystem = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E");
-    public static readonly Guid RegisterImportSystem = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E");
+    public static readonly Guid DefaultSystem = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E"); // AccessMgmt-Default
+    public static readonly Guid StaticDataIngest = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A"); // AccessMgmt-StaticDataIngest
+    public static readonly Guid RegisterImportSystem = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"); // AccessMgmt-RegisterIngest
+    public static readonly Guid SystemBrukerSystem = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E"); // AccessMgmt-SystemBruker-Integration
+    public static readonly Guid MockDataIngestSystem = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E"); // AccessMgmt-SystemBruker-Integration
 }
 
 /// <summary>
@@ -44,7 +47,6 @@ public class DbDataMigrationService(
     private readonly IIngestService ingestService = ingestService;
     private readonly string iconBaseUrl = configuration["AltinnCDN:AccessPackageIconsBaseURL"];
     
-
     /// <summary>
     /// Ingest all static data
     /// </summary>
@@ -55,11 +57,10 @@ public class DbDataMigrationService(
         //// TODO: Add featureflags
         //// TODO: Add Activity logging
         
-        var accessMgmtStaticDataIngestEntityId = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A");
         var options = new ChangeRequestOptions()
         {
-            ChangedBy = accessMgmtStaticDataIngestEntityId,
-            ChangedBySystem = accessMgmtStaticDataIngestEntityId
+            ChangedBy = AuditDefaults.StaticDataIngest,
+            ChangedBySystem = AuditDefaults.StaticDataIngest
         };
 
         string dataKey = "<data>";
@@ -197,7 +198,7 @@ public class DbDataMigrationService(
             new Provider() { Id = Guid.Parse("0195ea92-2080-758b-89db-7735c4f68320"), Name = "Enhetsregisteret", Code = "sys-ccr", TypeId = systemType.Id }
         };
 
-        await ingestService.IngestAndMergeData(systemProviders, new List<GenericParameter>() { new GenericParameter("code", "code") }, cancellationToken);
+        await ingestService.IngestAndMergeData(systemProviders, options: options, new List<GenericParameter>() { new GenericParameter("code", "code") }, cancellationToken);
     }
 
     /// <summary>
@@ -447,8 +448,9 @@ public class DbDataMigrationService(
         {
             // Static data ingest
             new Entity() { Id = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E"), Name = "AccessMgmt-Default", RefId = "AccessMgmt-Default", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
-            new Entity() { Id = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"), Name = "AccessMgmt-Ingest", RefId = "AccessMgmt-Ingest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
             new Entity() { Id = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A"), Name = "AccessMgmt-StaticDataIngest", RefId = "AccessMgmt-StaticDataIngest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            new Entity() { Id = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"), Name = "AccessMgmt-RegisterIngest", RefId = "AccessMgmt-RegisterIngest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            new Entity() { Id = Guid.Parse("74344CE4-3F95-41F1-A1DC-DEEAEF10810A"), Name = "AccessMgmt-SystemBruker-Integration", RefId = "AccessMgmt-SystemBruker-Integration", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
         };
 
         foreach (var item in systemEntities)
@@ -713,8 +715,8 @@ public class DbDataMigrationService(
             new GenericParameter("Key", "Key")
         };
 
-        await ingestService.IngestAndMergeData(erCodes, mergeFilter, cancellationToken);
-        await ingestService.IngestAndMergeData(urn, mergeFilter, cancellationToken);
+        await ingestService.IngestAndMergeData(erCodes, options: options, mergeFilter, cancellationToken);
+        await ingestService.IngestAndMergeData(urn, options: options, mergeFilter, cancellationToken);
     }
 
     /// <summary>
@@ -782,7 +784,7 @@ public class DbDataMigrationService(
             new RoleMap() { HasRoleId = roleKnuf, GetRoleId = roleMPA }
         };
 
-        await ingestService.IngestAndMergeData(roleMaps, null, cancellationToken);
+        await ingestService.IngestAndMergeData(roleMaps, options: options, null, cancellationToken);
     }
 
     /// <summary>
@@ -1086,7 +1088,7 @@ public class DbDataMigrationService(
             new Package() { Id = Guid.Parse("0e219609-02c6-44e6-9c80-fe2c1997940e"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_konkursbo, Urn = "urn:altinn:accesspackage:konkursbo-skrivetilgang", Name = "Konkursbo skrivetilgang", Description = "Denne fullmakten gir bostyrers medhjelper tilgang til å jobbe på vegne av bostyrer. Bostyrer delegerer denne fullmakten sammen med Konkursbo lesetilgang til medhjelper for hvert konkursbo.", IsDelegable = true, HasResources = true },
         };
 
-        await ingestService.IngestAndMergeData(packages, null, cancellationToken);
+        await ingestService.IngestAndMergeData(packages, options: options, null, cancellationToken);
     }
 
     /// <summary>
@@ -1989,7 +1991,7 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:post-til-virksomheten-med-taushetsbelagt-innhold"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
         };
 
-        await ingestService.IngestAndMergeData(rolePackages, null, cancellationToken);
+        await ingestService.IngestAndMergeData(rolePackages, options: options, null, cancellationToken);
     }
 
     /// <summary>
@@ -2386,6 +2388,6 @@ public class DbDataMigrationService(
             new EntityVariantRole() { Id = Guid.Parse("a3719e58-286d-4395-95b0-1a654f2eeafa"), VariantId = variants["VPFO"], RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"] },
         };
 
-        await ingestService.IngestAndMergeData(variantRoles, null, cancellationToken);
+        await ingestService.IngestAndMergeData(variantRoles, options: options, null, cancellationToken);
     }
 }

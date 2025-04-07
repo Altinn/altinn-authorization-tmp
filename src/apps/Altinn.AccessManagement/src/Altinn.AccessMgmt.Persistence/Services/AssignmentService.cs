@@ -1,6 +1,8 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.AccessMgmt.Repo.Data;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -20,6 +22,7 @@ public class AssignmentService(
     private readonly IInheritedAssignmentRepository inheritedAssignmentRepository = inheritedAssignmentRepository;
     private readonly IPackageRepository packageRepository = packageRepository;
     private readonly IAssignmentPackageRepository assignmentPackageRepository = assignmentPackageRepository;
+    private readonly IAssignmentResourceRepository assignmentResourceRepository = assignmentResourceRepository;
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
     private readonly IEntityRepository entityRepository = entityRepository;
@@ -54,7 +57,7 @@ public class AssignmentService(
     }
 
     /// <inheritdoc/>
-    public async Task<bool> AddPackageToAssignment(Guid userId, Guid assignmentId, Guid packageId)
+    public async Task<bool> AddPackageToAssignment(Guid userId, Guid assignmentId, Guid packageId, ChangeRequestOptions options)
     {
         /*
         [X] Check if user is TS
@@ -109,17 +112,22 @@ public class AssignmentService(
             throw new Exception(string.Format("User '{0}' does not have package '{1}'", user.Name, package.Name));
         }
 
-        await assignmentPackageRepository.Create(new AssignmentPackage()
-        {
-            AssignmentId = assignmentId,
-            PackageId = packageId
-        });
+
+
+        await assignmentPackageRepository.Create(
+            new AssignmentPackage()
+            {
+                AssignmentId = assignmentId,
+                PackageId = packageId
+            }, 
+            options: options
+        );
 
         return true;
     }
 
     /// <inheritdoc/>
-    public Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId)
+    public Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId, ChangeRequestOptions options)
     {
       /*
       [ ] Check if user is TS
@@ -133,7 +141,7 @@ public class AssignmentService(
     }
 
     /// <inheritdoc/>
-    public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode)
+    public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options)
     {
         var roleResult = await roleRepository.Get(t => t.Name, roleCode);
         if (roleResult == null || !roleResult.Any())
@@ -141,11 +149,11 @@ public class AssignmentService(
             throw new Exception(string.Format("Role '{0}' not found", roleCode));
         }
 
-        return await GetOrCreateAssignment(fromEntityId, toEntityId, roleResult.First().Id);
+        return await GetOrCreateAssignment(fromEntityId, toEntityId, roleResult.First().Id, options: options);
     }
 
     /// <inheritdoc/>
-    public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, Guid roleId)
+    public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, Guid roleId, ChangeRequestOptions options)
     {
         var assignment = await GetAssignment(fromEntityId, toEntityId, roleId);
         if (assignment != null)
@@ -170,12 +178,15 @@ public class AssignmentService(
             throw new Exception(string.Format("Multiple inheirited assignment exists. Use Force = true to create anyway."));
         }
 
-        await assignmentRepository.Create(new Assignment()
-        {
-            FromId = fromEntityId,
-            ToId = toEntityId,
-            RoleId = role.Id
-        });
+        await assignmentRepository.Create(
+            new Assignment()
+            {
+                FromId = fromEntityId,
+                ToId = toEntityId,
+                RoleId = role.Id
+            },
+            options: options
+        );
 
         throw new NotImplementedException();
     }

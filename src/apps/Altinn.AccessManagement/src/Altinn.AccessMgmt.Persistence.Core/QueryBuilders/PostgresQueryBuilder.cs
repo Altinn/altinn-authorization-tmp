@@ -109,6 +109,12 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         }
         */
 
+        /*
+        sb.AppendLine("SELECT current_setting('app.current_user', false) INTO current_user;");
+        sb.AppendLine("SELECT current_setting('app.current_system', false) INTO current_system;");
+        sb.AppendLine("SELECT current_setting('app.current_operation', false) INTO current_operation;");
+        */
+
         return string.Format("SET LOCAL app.changed_by = '{0}'; SET LOCAL app.changed_by_system = '{1}'; SET LOCAL app.change_operation_id = '{2}';", options.ChangedBy, options.ChangedBySystem, options.ChangeOperationId);
     }
 
@@ -687,9 +693,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
             if (isHistory)
             {
-                script.AppendLine(", audit_deletedby uuid not null"); // History only
-                script.AppendLine(", audit_deletedbysystem uuid not null"); // History only
-                script.AppendLine(", audit_deletedoperation uuid not null"); // History only
+                script.AppendLine(", audit_deletedby uuid null"); // History only
+                script.AppendLine(", audit_deletedbysystem uuid null"); // History only
+                script.AppendLine(", audit_deletedoperation uuid null"); // History only
             }
         }
 
@@ -850,16 +856,16 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine("CREATE OR REPLACE FUNCTION dbo.set_audit_metadata_fn()");
         sb.AppendLine("RETURNS TRIGGER AS $$");
         sb.AppendLine("DECLARE");
-        sb.AppendLine("current_user UUID;");
-        sb.AppendLine("current_system UUID;");
-        sb.AppendLine("current_operation UUID;");
+        sb.AppendLine("changed_by UUID;");
+        sb.AppendLine("changed_by_system UUID;");
+        sb.AppendLine("change_operation_id UUID;");
         sb.AppendLine("BEGIN");
-        sb.AppendLine("SELECT current_setting('app.current_user', false) INTO current_user;");
-        sb.AppendLine("SELECT current_setting('app.current_system', false) INTO current_system;");
-        sb.AppendLine("SELECT current_setting('app.current_operation', false) INTO current_operation;");
-        sb.AppendLine("NEW.audit_changedby := current_user;");
-        sb.AppendLine("NEW.audit_changedbysystem := current_system;");
-        sb.AppendLine("NEW.audit_changeoperation := current_operation;");
+        sb.AppendLine("SELECT current_setting('app.changed_by', false) INTO changed_by;");
+        sb.AppendLine("SELECT current_setting('app.changed_by_system', false) INTO changed_by_system;");
+        sb.AppendLine("SELECT current_setting('app.change_operation_id', false) INTO change_operation_id;");
+        sb.AppendLine("NEW.audit_changedby := changed_by;");
+        sb.AppendLine("NEW.audit_changedbysystem := changed_by_system;");
+        sb.AppendLine("NEW.audit_changeoperation := change_operation_id;");
         sb.AppendLine("NEW.audit_validfrom := now();");
         sb.AppendLine("RETURN NEW;");
         sb.AppendLine("END;");
@@ -910,13 +916,13 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine($"CREATE OR REPLACE FUNCTION {schema}.audit_{modelName}_fn()");
         sb.AppendLine("RETURNS TRIGGER AS $$");
         sb.AppendLine("DECLARE");
-        sb.AppendLine("current_user UUID;");
-        sb.AppendLine("current_system UUID;");
-        sb.AppendLine("current_operation UUID;");
+        sb.AppendLine("changed_by UUID;");
+        sb.AppendLine("changed_by_system UUID;");
+        sb.AppendLine("change_operation_id UUID;");
         sb.AppendLine("BEGIN");
-        sb.AppendLine("SELECT current_setting('app.current_user', false) INTO current_user;");
-        sb.AppendLine("SELECT current_setting('app.current_system', false) INTO current_system;");
-        sb.AppendLine("SELECT current_setting('app.current_operation', false) INTO current_operation;");
+        sb.AppendLine("SELECT current_setting('app.changed_by', false) INTO changed_by;");
+        sb.AppendLine("SELECT current_setting('app.changed_by_system', false) INTO changed_by_system;");
+        sb.AppendLine("SELECT current_setting('app.change_operation_id', false) INTO change_operation_id;");
 
         sb.AppendLine("IF TG_OP = 'UPDATE' THEN");
         sb.AppendLine($"INSERT INTO {historyTableName} (");
@@ -940,7 +946,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine($"{columnOldDefinitions},");
         sb.AppendLine("OLD.audit_validfrom, now(),");
         sb.AppendLine("OLD.audit_changedby, OLD.audit_changedbysystem, OLD.audit_changeoperation,");
-        sb.AppendLine("current_user, current_system, current_operation");
+        sb.AppendLine("changed_by, changed_by_system, change_operation_id");
         sb.AppendLine(");");
         sb.AppendLine("RETURN OLD;");
         sb.AppendLine("END IF;");
