@@ -67,7 +67,7 @@ public class AccessPartiesController(IAssignmentService assignmentService, IMapp
     /// </summary>
     /// <param name="party">The GUID identifying the party the authenticated user is acting on behalf of.</param>
     /// <param name="to">The GUID identifying the target party to which the assignment should be created.</param>
-    /// <param name="cascade">Must be set to true if enduser should delete all</param>
+    /// <param name="cascade">Must be set to true if enduser should delete active foreign connections.</param>
     /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
     [HttpDelete]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
