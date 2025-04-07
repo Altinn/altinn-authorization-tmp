@@ -205,7 +205,7 @@ public class AssignmentService(
         };
 
         var result = await assignmentRepository.Create(existingAssignment, cancellationToken);
-        if (result != 0)
+        if (result > 0)
         {
             return CoreErrors.AssignmentCreateFailed
                 .Create([new("fromId", fromEntityId.ToString()), new("toId", toEntityId.ToString()), new("roleId", roleId.ToString())]);
