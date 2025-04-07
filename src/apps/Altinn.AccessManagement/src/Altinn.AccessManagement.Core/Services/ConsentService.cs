@@ -414,9 +414,10 @@ namespace Altinn.AccessManagement.Core.Services
                         {
                             return false;
                         }
-
-                        return true;
                     }
+
+                    // We only support one action per consent  per now
+                    return true;
                 }
             }
 
@@ -495,38 +496,40 @@ namespace Altinn.AccessManagement.Core.Services
                     {
                         ServiceResource resourceDetails = await _resourceRegistryClient.GetResource(consentRight.Resource[0].Value, cancelactionToken);
                         if (resourceDetails == null)
-                        {
+                        {   
                             errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
                         }
                         else if (!resourceDetails.ResourceType.Equals(ResourceType.Consentresource))
                         {
                             errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
                         }
-
-                        if (consentRight.MetaData != null && consentRight.MetaData.Count > 0)
+                        else
                         {
-                            foreach (KeyValuePair<string, string> metaData in consentRight.MetaData)
+                            if (consentRight.MetaData != null && consentRight.MetaData.Count > 0)
                             {
-                                if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
+                                foreach (KeyValuePair<string, string> metaData in consentRight.MetaData)
                                 {
-                                    errors.Add(ValidationErrors.UnknownConsentMetadata, $"/consentRight/{rightIndex}/Metadata/{metaData.Key.ToLower()}");
-                                }
+                                    if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
+                                    {
+                                        errors.Add(ValidationErrors.UnknownConsentMetadata, $"/consentRight/{rightIndex}/Metadata/{metaData.Key.ToLower()}");
+                                    }
 
-                                if (string.IsNullOrEmpty(metaData.Value))
-                                {
-                                    errors.Add(ValidationErrors.MissingMetadataValue, $"/consentRight/{rightIndex}/Metadata");
+                                    if (string.IsNullOrEmpty(metaData.Value))
+                                    {
+                                        errors.Add(ValidationErrors.MissingMetadataValue, $"/consentRight/{rightIndex}/Metadata");
+                                    }
                                 }
                             }
-                        }
 
-                        if (resourceDetails.ConsentMetadata != null)
-                        {
-                            foreach (KeyValuePair<string, ConsentMetadata> consentMetadata in resourceDetails.ConsentMetadata)
+                            if (resourceDetails.ConsentMetadata != null)
                             {
-                                if (consentRight.MetaData == null || !consentRight.MetaData.ContainsKey(consentMetadata.Key))
+                                foreach (KeyValuePair<string, ConsentMetadata> consentMetadata in resourceDetails.ConsentMetadata)
                                 {
-                                    errors.Add(ValidationErrors.MissingMetadata, $"/consentRight/{rightIndex}/Metadata/{consentMetadata.Key}");
-                                    continue;
+                                    if (consentRight.MetaData == null || !consentRight.MetaData.ContainsKey(consentMetadata.Key))
+                                    {
+                                        errors.Add(ValidationErrors.MissingMetadata, $"/consentRight/{rightIndex}/Metadata/{consentMetadata.Key}");
+                                        continue;
+                                    }
                                 }
                             }
                         }
