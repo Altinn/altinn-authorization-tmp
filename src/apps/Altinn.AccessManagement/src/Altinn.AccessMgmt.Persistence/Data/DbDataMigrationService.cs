@@ -75,7 +75,7 @@ public class DbDataMigrationService(
         if (migrationService.NeedMigration<Role>(dataKey, 6))
         {
             await IngestRole();
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 5);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 6);
         }
 
         if (migrationService.NeedMigration<RoleMap>(dataKey, 3))
