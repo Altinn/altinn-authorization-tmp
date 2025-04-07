@@ -51,7 +51,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
-            await repositgo.CreateRequest(await GetRequest(requestId), default);
+            await repositgo.CreateRequest(await GetRequest(requestId), ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
 
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";
@@ -81,7 +81,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
             ConsentRequest request = await GetRequest(requestId);
             request.ValidTo = DateTime.UtcNow.AddDays(10);
-            await repositgo.CreateRequest(request, default); ;
+            await repositgo.CreateRequest(request, ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             await repositgo.AcceptConsentRequest(requestId, Guid.NewGuid(), default);
 
             HttpClient client = GetTestClient();
@@ -107,7 +107,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
             ConsentRequest request = await GetRequest(requestId);
             request.ValidTo = DateTime.UtcNow.AddDays(10);
-            await repositgo.CreateRequest(request, default);
+            await repositgo.CreateRequest(request, ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
 
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";
