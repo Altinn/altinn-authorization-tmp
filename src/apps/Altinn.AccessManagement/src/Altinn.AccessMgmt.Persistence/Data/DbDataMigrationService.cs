@@ -132,42 +132,40 @@ public class DbDataMigrationService(
 
         var systemEntity = new Entity() { Id = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"), Name = "AccessMgmt-Ingest", RefId = "AccessMgmt-Ingest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId };
     }
+
     public async Task IngestProviderType(CancellationToken cancellationToken = default)
     {
         var data = new List<ProviderType>()
         {
             new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), Name = "System" },
-            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Tjenesteeier" },
-            //// new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7005-a8db-1f6387b28a5e"), Name = "Andre" }
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Tjenesteeier" }
         };
 
         var dataEng = new List<ProviderType>()
         {
             new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), Name = "System" },
-            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "ServiceOwner" },
-            //// new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7005-a8db-1f6387b28a5e"), Name = "Other" }
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "ServiceOwner" }
         };
 
         var dataNno = new List<ProviderType>()
         {
             new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), Name = "System" },
-            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Tenesteeigar" },
-            //// new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7005-a8db-1f6387b28a5e"), Name = "Annan" }
+            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Tenesteeigar" }
         };
 
         foreach (var d in data)
         {
-            await providerTypeRepository.Upsert(d, cancellationToken);
+            await providerTypeRepository.Upsert(d, cancellationToken: cancellationToken);
         }
 
         foreach (var d in dataEng)
         {
-            await providerTypeRepository.UpdateTranslation(d.Id, d, "eng", cancellationToken);
+            await providerTypeRepository.UpdateTranslation(d.Id, d, "eng", cancellationToken: cancellationToken);
         }
 
         foreach (var d in dataNno)
         {
-            await providerTypeRepository.UpdateTranslation(d.Id, d, "nno", cancellationToken);
+            await providerTypeRepository.UpdateTranslation(d.Id, d, "nno", cancellationToken: cancellationToken);
         }
     }
 
@@ -202,26 +200,26 @@ public class DbDataMigrationService(
 
         var entityTypes = new List<EntityType>()
         {
-            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerBR.Id },
-            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerFR.Id },
-            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembruker", ProviderId = providerDD.Id },
-            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Intern", ProviderId = providerDD.Id },
+            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembruker", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Intern", ProviderId = providerA3.Id },
         };
 
         var entityTypesNno = new List<EntityType>()
         {
-            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerBR.Id },
-            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerFR.Id },
-            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembrukar", ProviderId = providerDD.Id },
-            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Intern", ProviderId = providerDD.Id },
+            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembrukar", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Intern", ProviderId = providerA3.Id },
         };
 
         var entityTypesEng = new List<EntityType>()
         {
-            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organization", ProviderId = providerBR.Id },
-            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerFR.Id },
-            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "SystemUser", ProviderId = providerDD.Id },
-            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Internal", ProviderId = providerDD.Id },
+            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organization", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "SystemUser", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Internal", ProviderId = providerA3.Id },
         };
 
         foreach (var item in entityTypes)

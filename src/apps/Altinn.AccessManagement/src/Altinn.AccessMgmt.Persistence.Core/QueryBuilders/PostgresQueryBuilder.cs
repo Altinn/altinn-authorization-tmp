@@ -98,7 +98,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return query;
     }
 
-    private static string GetAuditVariables(ChangeRequestOptions options = null)
+    private static string GetAuditVariables(ChangeRequestOptions options)
     {
         /*
         private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
@@ -113,27 +113,27 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
-    public string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
+    public string BuildInsertQuery(List<GenericParameter> parameters, ChangeRequestOptions options, bool forTranslation = false)
     {
         return $"{GetAuditVariables(options)} INSERT INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})";
     }
 
     /// <inheritdoc/>
-    public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
+    public string BuildUpdateQuery(List<GenericParameter> parameters, ChangeRequestOptions options, bool forTranslation = false)
     {
         return $"{GetAuditVariables(options)} UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {UpdateSetStatement(parameters)} WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
     }
 
     /// <inheritdoc/>
-    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false, ChangeRequestOptions options = null)
+    public string BuildSingleNullUpdateQuery(GenericParameter parameter, ChangeRequestOptions options, bool forTranslation = false)
     {
         return $"{GetAuditVariables(options)} UPDATE {GetTableName(includeAlias: false, useTranslation: forTranslation)} SET {parameter.Key} = NULL WHERE id = @_id{(forTranslation ? " AND language = @_language" : string.Empty)}";
     }
 
     /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
+    public string BuildUpsertQuery(List<GenericParameter> parameters, ChangeRequestOptions options, bool forTranslation = false)
     {
-        return BuildMergeQuery(parameters, [new GenericFilter("id", "id")], forTranslation, options);
+        return BuildMergeQuery(parameters, [new GenericFilter("id", "id")], options, forTranslation);
 
         /*
         var sb = new StringBuilder();
@@ -145,17 +145,17 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, ChangeRequestOptions options = null)
+    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, ChangeRequestOptions options, bool forTranslation = false)
     {
         if (mergeFilter == null || !mergeFilter.Any())
         {
             mergeFilter.Add(new GenericFilter("id", "id"));
         }
 
-        return BuildMergeQuery(parameters, mergeFilter, forTranslation, options);
+        return BuildMergeQuery(parameters, mergeFilter, options, forTranslation);
     }
 
-    private string BuildMergeQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, ChangeRequestOptions options = null)
+    private string BuildMergeQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, ChangeRequestOptions options, bool forTranslation = false)
     {
         if (mergeFilter == null || !mergeFilter.Any())
         {
@@ -194,7 +194,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
-    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters, ChangeRequestOptions options = null)
+    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters, ChangeRequestOptions options)
     {
         var filterStatement = GenerateFilterStatement(_definition.ModelType.Name, filters);
         return $"{GetAuditVariables(options)} DELETE FROM {GetTableName(includeAlias: false)} {filterStatement}";
