@@ -79,7 +79,7 @@ public class AccessPartiesController(IAssignmentService assignmentService, IMapp
     {
         // When history is enabled pass partyUuid downstream to GetOrCreateAssignment
         // var partyUuid = Accessor.GetPartyUuid();
-        var assignment = await AssignmentService.GetOrCreateAssignment(party, to, "rightholders", cancellationToken);
+        var assignment = await AssignmentService.DeleteAssignment(party, to, "rightholders", cancellationToken);
 
         if (assignment.IsProblem)
         {
