@@ -4,7 +4,9 @@ using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Filters;
 using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.AccessMgmt.Repo.Data;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +55,15 @@ public class AccessPartiesController(IAssignmentService assignmentService, IMapp
     {
         // When history is enabled pass partyUuid downstream to GetOrCreateAssignment
         // var partyUuid = Accessor.GetPartyUuid();
-        var assignment = await AssignmentService.GetOrCreateAssignment2(party, to, "rightholders");
+
+        // TODO: Andreas - Verify
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = party,
+            ChangedBySystem = AuditDefaults.DefaultSystem
+        };
+
+        var assignment = await AssignmentService.GetOrCreateAssignment2(party, to, "rightholders", options);
 
         if (assignment.IsProblem)
         {

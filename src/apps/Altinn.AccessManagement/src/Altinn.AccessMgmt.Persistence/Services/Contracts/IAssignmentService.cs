@@ -19,13 +19,7 @@ public interface IAssignmentService
     /// Gets assignment and creates if not exits
     /// </summary>
     /// <returns></returns>
-    Task<Result<Assignment>> GetOrCreateAssignment2(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Gets assignment and creates if not exits
-    /// </summary>
-    /// <returns></returns>
-    Task<Assignment> GetOrCreateAssignment(Guid fromId, Guid toId, string roleCode);
+    Task<Result<Assignment>> GetOrCreateAssignment2(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets assignment and creates if not exits

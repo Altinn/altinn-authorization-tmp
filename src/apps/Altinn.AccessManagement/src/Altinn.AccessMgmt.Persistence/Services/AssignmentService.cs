@@ -1,12 +1,12 @@
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
-using Altinn.AccessMgmt.Repo.Data;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.ProblemDetails;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
+using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -25,7 +25,6 @@ public class AssignmentService(
     private readonly IInheritedAssignmentRepository inheritedAssignmentRepository = inheritedAssignmentRepository;
     private readonly IPackageRepository packageRepository = packageRepository;
     private readonly IAssignmentPackageRepository assignmentPackageRepository = assignmentPackageRepository;
-    private readonly IAssignmentResourceRepository assignmentResourceRepository = assignmentResourceRepository;
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
     private readonly IEntityRepository entityRepository = entityRepository;
@@ -150,7 +149,7 @@ public class AssignmentService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<Assignment>> GetOrCreateAssignment2(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default)
+    public async Task<Result<Assignment>> GetOrCreateAssignment2(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errors = default;
         var fromEntityExt = await entityRepository.GetExtended(fromEntityId, cancellationToken: cancellationToken);
@@ -204,7 +203,7 @@ public class AssignmentService(
             RoleId = roleId,
         };
 
-        var result = await assignmentRepository.Create(existingAssignment, cancellationToken);
+        var result = await assignmentRepository.Create(existingAssignment, options:options, cancellationToken);
         if (result == 0)
         {
             Unreachable();
