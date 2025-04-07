@@ -28,7 +28,7 @@ public class MssqlQueryBuilder : IDbQueryBuilder
         throw new NotImplementedException();
     }
 
-    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters, ChangeRequestOptions options = null)
+    public string BuildDeleteQuery(IEnumerable<GenericFilter> filters, ChangeRequestOptions options)
     {
         throw new NotImplementedException();
     }
@@ -38,27 +38,27 @@ public class MssqlQueryBuilder : IDbQueryBuilder
         throw new NotImplementedException();
     }
 
-    public string BuildInsertQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
+    public string BuildInsertQuery(List<GenericParameter> parameters, ChangeRequestOptions options, bool forTranslation = false)
     {
         throw new NotImplementedException();
     }
 
-    public string BuildSingleNullUpdateQuery(GenericParameter parameter, bool forTranslation = false, ChangeRequestOptions options = null)
+    public string BuildSingleNullUpdateQuery(GenericParameter parameter, ChangeRequestOptions options, bool forTranslation = false)
     {
         throw new NotImplementedException();
     }
 
-    public string BuildUpdateQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
+    public string BuildUpdateQuery(List<GenericParameter> parameters, ChangeRequestOptions options, bool forTranslation = false)
     {
         throw new NotImplementedException();
     }
 
-    public string BuildUpsertQuery(List<GenericParameter> parameters, bool forTranslation = false, ChangeRequestOptions options = null)
+    public string BuildUpsertQuery(List<GenericParameter> parameters, ChangeRequestOptions options, bool forTranslation = false)
     {
         throw new NotImplementedException();
     }
 
-    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, bool forTranslation = false, ChangeRequestOptions options = null)
+    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, ChangeRequestOptions options, bool forTranslation = false)
     {
         throw new NotImplementedException();
     }
