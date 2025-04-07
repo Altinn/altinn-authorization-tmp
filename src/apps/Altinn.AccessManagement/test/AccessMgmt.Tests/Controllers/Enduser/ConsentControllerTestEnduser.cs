@@ -22,7 +22,7 @@ using Microsoft.Extensions.Options;
 
 namespace AccessMgmt.Tests.Controllers.Enduser
 {
-    public class ConsentControllerTestEnduserDB(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
+    public class ConsentControllerTestEnduser(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
     {
         private WebApplicationFactory<Program> Fixture { get; } = fixture.WithWebHostBuilder(builder =>
         {
