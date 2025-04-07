@@ -69,5 +69,11 @@ public static class ValidationErrors
     /// Assignment do not exists.
     /// </summary>
     public static ValidationErrorDescriptor AssignmentDoNotExists { get; }
-        = _factory.Create(8, $"Assignment do not exist.");
+        = _factory.Create(9, $"Assignment do not exist.");
+
+    /// <summary>
+    /// Assignment is active in one or more delegations.
+    /// </summary>
+    public static ValidationErrorDescriptor AssignmentIsActiveInOneOrMoreDelegations { get; }
+        = _factory.Create(10, $"Assignment is active in one or more delegations.");
 }

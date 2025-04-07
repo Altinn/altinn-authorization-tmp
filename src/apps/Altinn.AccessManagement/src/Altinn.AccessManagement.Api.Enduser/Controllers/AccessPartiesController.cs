@@ -67,6 +67,7 @@ public class AccessPartiesController(IAssignmentService assignmentService, IMapp
     /// </summary>
     /// <param name="party">The GUID identifying the party the authenticated user is acting on behalf of.</param>
     /// <param name="to">The GUID identifying the target party to which the assignment should be created.</param>
+    /// <param name="cascade">Must be set to true if enduser should delete all</param>
     /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
     [HttpDelete]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
@@ -75,11 +76,11 @@ public class AccessPartiesController(IAssignmentService assignmentService, IMapp
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> DeleteAccessParty([FromQuery] Guid party, [FromQuery] Guid to, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> DeleteAccessParty([FromQuery] Guid party, [FromQuery] Guid to, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
         // When history is enabled pass partyUuid downstream to GetOrCreateAssignment
         // var partyUuid = Accessor.GetPartyUuid();
-        var assignment = await AssignmentService.DeleteAssignment(party, to, "rightholders", cancellationToken);
+        var assignment = await AssignmentService.DeleteAssignment(party, to, "rightholders", cascade, cancellationToken);
 
         if (assignment.IsProblem)
         {

@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.ProblemDetails;
@@ -16,7 +17,8 @@ public class AssignmentService(
     IAssignmentPackageRepository assignmentPackageRepository,
     IRoleRepository roleRepository,
     IRolePackageRepository rolePackageRepository,
-    IEntityRepository entityRepository
+    IEntityRepository entityRepository,
+    IConnectionRepository connectionRepository
     ) : IAssignmentService
 {
     private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
@@ -26,6 +28,7 @@ public class AssignmentService(
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
     private readonly IEntityRepository entityRepository = entityRepository;
+    private readonly IConnectionRepository connectionRepository = connectionRepository;
 
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId)
@@ -142,7 +145,7 @@ public class AssignmentService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<Assignment>> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default)
+    public async Task<Result<Assignment>> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, bool cascade, CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errors = default;
         var fromEntityExt = await entityRepository.GetExtended(fromEntityId, cancellationToken: cancellationToken);
@@ -163,6 +166,21 @@ public class AssignmentService(
         if (existingAssignment == null)
         {
             errors.Add(ValidationErrors.AssignmentDoNotExists);
+        }
+        else
+        {
+            if (!cascade)
+            {
+                var filter = connectionRepository.CreateFilterBuilder();
+                filter.Equal(val => val.FromId, existingAssignment.Id);
+                var connections = await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
+                if (connections.Any())
+                {
+                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [
+                        new("id", string.Join(",", connections.Select(conn => conn.Id.ToString()))),
+                    ]);
+                }
+            }
         }
 
         if (errors.TryBuild(out var errorResult))
