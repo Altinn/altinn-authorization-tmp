@@ -55,13 +55,13 @@ public static class ValidationErrors
     /// Party does not exists in DB.
     /// </summary>
     public static ValidationErrorDescriptor MissingPartyInDb { get; }
-        = _factory.Create(7, $"Missing Party.");
+        = _factory.Create(7, $"Missing party.");
 
     /// <summary>
     /// Party does not exists in DB.
     /// </summary>
     public static ValidationErrorDescriptor InvalidPartyType { get; }
-        = _factory.Create(8, $"Missing Party.");
+        = _factory.Create(8, $"Invalid party type.");
 
     /// <summary>
     /// Party does not exists in DB.
