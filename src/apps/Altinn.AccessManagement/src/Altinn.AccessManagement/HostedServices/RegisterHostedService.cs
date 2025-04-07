@@ -6,9 +6,11 @@ using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.AccessMgmt.Repo.Data;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Microsoft.FeatureManagement;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace Altinn.Authorization.AccessManagement;
 
@@ -57,7 +59,6 @@ public partial class RegisterHostedService(
     private int _executionCount = 0;
     private Timer _timer = null;
     private readonly CancellationTokenSource _stop = new();
-    private static readonly Guid DefaultPerformedBy = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A");
 
     /// <inheritdoc/>
     public Task StartAsync(CancellationToken cancellationToken)
@@ -558,7 +559,13 @@ public partial class RegisterHostedService(
     /// <param name="ls">The lease result containing the lease data and status.</param>
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
     private async Task SyncParty(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
-    {        
+    {
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = AuditDefaults.RegisterImportSystem,
+            ChangedBySystem = AuditDefaults.RegisterImportSystem
+        };
+
         var bulk = new List<Entity>();
         var bulkLookup = new List<EntityLookup>();
 
@@ -576,6 +583,7 @@ public partial class RegisterHostedService(
             }
             
             Guid batchId = Guid.CreateVersion7();
+            options.ChangeOperationId = batchId;
             var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
             _logger.LogInformation("Starting proccessing party page '{0}'", batchName);
 
@@ -613,16 +621,16 @@ public partial class RegisterHostedService(
                 {
                     _logger.LogInformation("Ingest and Merge Entity and EntityLookup batch '{0}' to db", batchName);
 
-                    var ingestedEntities = await ingestService.IngestTempData<Entity>(bulk, batchId);
-                    var ingestedLookups = await ingestService.IngestTempData<EntityLookup>(bulkLookup, batchId);
+                    var ingestedEntities = await ingestService.IngestTempData<Entity>(bulk, batchId, options: options);
+                    var ingestedLookups = await ingestService.IngestTempData<EntityLookup>(bulkLookup, batchId, options: options);
 
                     if (ingestedEntities != bulk.Count || ingestedLookups != bulkLookup.Count)
                     {
                         _logger.LogWarning("Ingest partial complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", ingestedEntities, bulk.Count, ingestedLookups, bulkLookup.Count);
                     }
 
-                    var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, GetEntityMergeMatchFilter, performedBy: DefaultPerformedBy);
-                    var mergedLookups = await ingestService.MergeTempData<EntityLookup>(batchId, GetEntityLookupMergeMatchFilter, performedBy: DefaultPerformedBy);
+                    var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, options: options, GetEntityMergeMatchFilter);
+                    var mergedLookups = await ingestService.MergeTempData<EntityLookup>(batchId, options: options, GetEntityLookupMergeMatchFilter);
 
                     _logger.LogInformation("Merge complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", mergedEntities, ingestedEntities, mergedLookups, ingestedLookups);
                 }

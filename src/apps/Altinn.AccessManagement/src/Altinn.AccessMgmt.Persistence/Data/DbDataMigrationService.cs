@@ -7,6 +7,12 @@ using Microsoft.Extensions.Configuration;
 
 namespace Altinn.AccessMgmt.Repo.Data;
 
+public static class AuditDefaults
+{
+    public static readonly Guid DefaultSystem = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E");
+    public static readonly Guid RegisterImportSystem = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E");
+}
+
 /// <summary>
 /// Service for running data migrations
 /// </summary>
@@ -38,7 +44,6 @@ public class DbDataMigrationService(
     private readonly IIngestService ingestService = ingestService;
     private readonly string iconBaseUrl = configuration["AltinnCDN:AccessPackageIconsBaseURL"];
     
-    private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
 
     /// <summary>
     /// Ingest all static data
@@ -49,91 +54,96 @@ public class DbDataMigrationService(
     {
         //// TODO: Add featureflags
         //// TODO: Add Activity logging
+        
+        var accessMgmtStaticDataIngestEntityId = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A");
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = accessMgmtStaticDataIngestEntityId,
+            ChangedBySystem = accessMgmtStaticDataIngestEntityId
+        };
 
         string dataKey = "<data>";
 
         if (migrationService.NeedMigration<ProviderType>(dataKey, 1))
         {
-            await IngestProviderType();
+            await IngestProviderType(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<ProviderType>(dataKey, string.Empty, 1);
         }
 
         if (migrationService.NeedMigration<Provider>(dataKey, 2))
         {
-            await IngestProvider();
+            await IngestProvider(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<Provider>(dataKey, string.Empty, 2);
         }
 
         if (migrationService.NeedMigration<EntityType>(dataKey, 4))
         {
-            await IngestEntityType();
+            await IngestEntityType(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 4);
         }
 
         if (migrationService.NeedMigration<EntityVariant>(dataKey, 4))
         {
-            await IngestEntityVariant();
+            await IngestEntityVariant(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 4);
         }
 
         if (migrationService.NeedMigration<Entity>(dataKey, 2))
         {
-            await IngestEntity();
+            await IngestEntity(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<Entity>(dataKey, string.Empty, 2);
         }
 
         if (migrationService.NeedMigration<Role>(dataKey, 6))
         {
-            await IngestRole();
+            await IngestRole(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<Role>(dataKey, string.Empty, 6);
         }
 
         if (migrationService.NeedMigration<RoleMap>(dataKey, 3))
         {
-            await IngestRoleMap();
+            await IngestRoleMap(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 3);
         }
 
         if (migrationService.NeedMigration<AreaGroup>(dataKey, 4))
         {
-            await IngestAreaGroup();
+            await IngestAreaGroup(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 4);
         }
 
         if (migrationService.NeedMigration<Area>(dataKey, 4))
         {
-            await IngestArea();
+            await IngestArea(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<Area>(dataKey, string.Empty, 4);
         }
 
         if (migrationService.NeedMigration<Package>(dataKey, 4))
         {
-            await IngestPackage();
+            await IngestPackage(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<Package>(dataKey, string.Empty, 4);
         }
 
         if (migrationService.NeedMigration<RolePackage>(dataKey, 2))
         {
-            await IngestRolePackage();
+            await IngestRolePackage(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 2);
         }
 
         if (migrationService.NeedMigration<EntityVariantRole>(dataKey, 2))
         {
-            await IngestEntityVariantRole();
+            await IngestEntityVariantRole(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<EntityVariantRole>(dataKey, string.Empty, 2);
         }
     }
 
-    public async Task PrepIngestForAudit(CancellationToken cancellationToken = default)
-    {
-        var internalTypeId = (await entityTypeService.Get(t => t.Name, "Intern")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
-        var internalVariantId = (await entityVariantService.Get(t => t.TypeId, internalTypeId)).FirstOrDefault(t => t.Name.Equals("Standard", StringComparison.OrdinalIgnoreCase))?.Id ?? throw new KeyNotFoundException(string.Format("EntityVariant '{0}' not found", "Intern"));
-
-        var systemEntity = new Entity() { Id = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"), Name = "AccessMgmt-Ingest", RefId = "AccessMgmt-Ingest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId };
-    }
-
-    public async Task IngestProviderType(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Ingest all static providertype data
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task IngestProviderType(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var data = new List<ProviderType>()
         {
@@ -155,26 +165,27 @@ public class DbDataMigrationService(
 
         foreach (var d in data)
         {
-            await providerTypeRepository.Upsert(d, cancellationToken: cancellationToken);
+            await providerTypeRepository.Upsert(d, options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var d in dataEng)
         {
-            await providerTypeRepository.UpdateTranslation(d.Id, d, "eng", cancellationToken: cancellationToken);
+            await providerTypeRepository.UpdateTranslation(d.Id, d, "eng", options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var d in dataNno)
         {
-            await providerTypeRepository.UpdateTranslation(d.Id, d, "nno", cancellationToken: cancellationToken);
+            await providerTypeRepository.UpdateTranslation(d.Id, d, "nno", options: options, cancellationToken: cancellationToken);
         }
     }
 
     /// <summary>
     /// Ingest all static provider data
     /// </summary>
+    /// <param name="options"></param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestProvider(CancellationToken cancellationToken = default)
+    public async Task IngestProvider(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var systemType = (await providerTypeRepository.Get(t => t.Name, "System")).FirstOrDefault() ?? throw new Exception("Providertype 'System' not found.");
 
@@ -194,7 +205,7 @@ public class DbDataMigrationService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestEntityType(CancellationToken cancellationToken = default)
+    public async Task IngestEntityType(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var providerA3 = (await providerRepository.Get(t => t.Code, "sys-altinn3")).FirstOrDefault() ?? throw new KeyNotFoundException("Altinn3 provider not found");
 
@@ -224,17 +235,17 @@ public class DbDataMigrationService(
 
         foreach (var item in entityTypes)
         {
-            await entityTypeService.Upsert(item, cancellationToken: cancellationToken);
+            await entityTypeService.Upsert(item, options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var item in entityTypesNno)
         {
-            await entityTypeService.UpdateTranslation(item.Id, item, "nno", cancellationToken: cancellationToken);
+            await entityTypeService.UpdateTranslation(item.Id, item, "nno", options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var item in entityTypesEng)
         {
-            await entityTypeService.UpdateTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
+            await entityTypeService.UpdateTranslation(item.Id, item, "eng", options: options, cancellationToken: cancellationToken);
         }
     }
 
@@ -243,7 +254,7 @@ public class DbDataMigrationService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestEntityVariant(CancellationToken cancellationToken = default)
+    public async Task IngestEntityVariant(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Organisasjon"));
         var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Person"));
@@ -408,17 +419,17 @@ public class DbDataMigrationService(
 
         foreach (var item in entityVariants)
         {
-            await entityVariantService.Upsert(item, cancellationToken: cancellationToken);
+            await entityVariantService.Upsert(item, options:options, cancellationToken: cancellationToken);
         }
 
         foreach (var item in entityVariantsEng)
         {
-            await entityVariantService.UpsertTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
+            await entityVariantService.UpsertTranslation(item.Id, item, "eng", options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var item in entityVariantsNno)
         {
-            await entityVariantService.UpsertTranslation(item.Id, item, "nno", cancellationToken: cancellationToken);
+            await entityVariantService.UpsertTranslation(item.Id, item, "nno", options: options, cancellationToken: cancellationToken);
         }
     }
 
@@ -427,7 +438,7 @@ public class DbDataMigrationService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestEntity(CancellationToken cancellationToken = default)
+    public async Task IngestEntity(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var internalTypeId = (await entityTypeService.Get(t => t.Name, "Intern")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
         var internalVariantId = (await entityVariantService.Get(t => t.TypeId, internalTypeId)).FirstOrDefault(t => t.Name.Equals("Standard", StringComparison.OrdinalIgnoreCase))?.Id ?? throw new KeyNotFoundException(string.Format("EntityVariant '{0}' not found", "Intern"));
@@ -435,15 +446,14 @@ public class DbDataMigrationService(
         var systemEntities = new List<Entity>()
         {
             // Static data ingest
+            new Entity() { Id = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E"), Name = "AccessMgmt-Default", RefId = "AccessMgmt-Default", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
             new Entity() { Id = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"), Name = "AccessMgmt-Ingest", RefId = "AccessMgmt-Ingest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
-
-            // The entity responsible for ingesting data from the Registry.
-            //// new Entity() { Id = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A"), Name = "AccessMgmt-Register-Ingest", RefId = "AccessMgmt", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId }
+            new Entity() { Id = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A"), Name = "AccessMgmt-StaticDataIngest", RefId = "AccessMgmt-StaticDataIngest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
         };
 
         foreach (var item in systemEntities)
         {
-            await entityRepository.Upsert(item, cancellationToken: cancellationToken);
+            await entityRepository.Upsert(item, options: options, cancellationToken: cancellationToken);
         }
     }
 
@@ -452,7 +462,7 @@ public class DbDataMigrationService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestRole(CancellationToken cancellationToken = default)
+    public async Task IngestRole(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var orgEntityTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Organisasjon"));
         var persEntityTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Person"));
@@ -610,23 +620,23 @@ public class DbDataMigrationService(
 
         foreach (var item in roles)
         {
-            await roleService.Upsert(item, cancellationToken: cancellationToken);
+            await roleService.Upsert(item, options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var item in rolesEng)
         {
-            await roleService.UpsertTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
+            await roleService.UpsertTranslation(item.Id, item, "eng", options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var item in rolesNno)
         {
-            await roleService.UpsertTranslation(item.Id, item, "nno", cancellationToken: cancellationToken);
+            await roleService.UpsertTranslation(item.Id, item, "nno", options: options, cancellationToken: cancellationToken);
         }
 
-        await RoleLookup(roles, cancellationToken: cancellationToken);
+        await RoleLookup(roles, options: options, cancellationToken: cancellationToken);
     }
 
-    private async Task RoleLookup(List<Role> roles, CancellationToken cancellationToken = default)
+    private async Task RoleLookup(List<Role> roles, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var urn = new List<RoleLookup>
         {
@@ -712,7 +722,7 @@ public class DbDataMigrationService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestRoleMap(CancellationToken cancellationToken = default)
+    public async Task IngestRoleMap(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var roleDagl = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:daglig-leder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "daglig-leder"));
         var roleLede = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:styreleder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "styreleder"));
@@ -780,7 +790,7 @@ public class DbDataMigrationService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestAreaGroup(CancellationToken cancellationToken = default)
+    public async Task IngestAreaGroup(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var orgEntityTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Organisasjon"));
 
@@ -807,17 +817,17 @@ public class DbDataMigrationService(
 
         foreach (var item in areaGroups)
         {
-            await areaGroupService.Upsert(item, cancellationToken: cancellationToken);
+            await areaGroupService.Upsert(item, options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var item in areaGroupsEng)
         {
-            await areaGroupService.UpsertTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
+            await areaGroupService.UpsertTranslation(item.Id, item, "eng", options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var item in areaGroupsNno)
         {
-            await areaGroupService.UpsertTranslation(item.Id, item, "nno", cancellationToken: cancellationToken);
+            await areaGroupService.UpsertTranslation(item.Id, item, "nno", options: options, cancellationToken: cancellationToken);
         }
     }
 
@@ -826,7 +836,7 @@ public class DbDataMigrationService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestArea(CancellationToken cancellationToken = default)
+    public async Task IngestArea(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var areas = new List<Area>()
         {
@@ -902,17 +912,17 @@ public class DbDataMigrationService(
 
         foreach (var item in areas)
         {
-            await areaService.Upsert(item, cancellationToken: cancellationToken);
+            await areaService.Upsert(item, options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var item in areasEng)
         {
-            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
+            await areaService.UpsertTranslation(item.Id, item, "eng", options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var item in areasNno)
         {
-            await areaService.UpsertTranslation(item.Id, item, "eng", cancellationToken: cancellationToken);
+            await areaService.UpsertTranslation(item.Id, item, "eng", options: options, cancellationToken: cancellationToken);
         }
     }
 
@@ -921,7 +931,7 @@ public class DbDataMigrationService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestPackage(CancellationToken cancellationToken = default)
+    public async Task IngestPackage(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         //// TODO: Translate
 
@@ -1084,7 +1094,7 @@ public class DbDataMigrationService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestRolePackage(CancellationToken cancellationToken = default)
+    public async Task IngestRolePackage(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var packages = new Dictionary<string, Guid>();
         foreach (var pack in await packageService.Get())
@@ -1987,7 +1997,7 @@ public class DbDataMigrationService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestEntityVariantRole(CancellationToken cancellationToken = default)
+    public async Task IngestEntityVariantRole(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var roles = new Dictionary<string, Guid>();
         foreach (var role in await roleService.Get())

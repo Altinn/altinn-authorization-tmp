@@ -1,11 +1,13 @@
 ﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.AccessMgmt.Repo.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -140,7 +142,13 @@ public class SystemUserClientDelegationController : ControllerBase
             return BadRequest("Party does not match delegation assignments");
         }
 
-        await delegationRepository.Delete(delegation.Id);
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = userId,
+            ChangedBySystem = AuditDefaults.DefaultSystem
+        };
+
+        await delegationRepository.Delete(delegation.Id, options: options);
 
         return Ok();
     }
@@ -199,7 +207,13 @@ public class SystemUserClientDelegationController : ControllerBase
             }
         }
 
-        await assignmentRepository.Delete(assignment.Id);
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = userId,
+            ChangedBySystem = AuditDefaults.DefaultSystem
+        };
+
+        await assignmentRepository.Delete(assignment.Id, options: options);
 
         return Ok();
     }
@@ -269,7 +283,13 @@ public class SystemUserClientDelegationController : ControllerBase
             }
         }
 
-        await assignmentRepository.Delete(assignment.Id);
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = userId,
+            ChangedBySystem = AuditDefaults.DefaultSystem
+        };
+
+        await assignmentRepository.Delete(assignment.Id, options: options);
 
         return Ok();
     }
