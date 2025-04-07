@@ -64,4 +64,10 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor AssignmentAlreadyExists { get; }
         = _factory.Create(8, $"Assignment already exists.");
+
+    /// <summary>
+    /// Assignment do not exists.
+    /// </summary>
+    public static ValidationErrorDescriptor AssignmentDoNotExists { get; }
+        = _factory.Create(8, $"Assignment do not exist.");
 }

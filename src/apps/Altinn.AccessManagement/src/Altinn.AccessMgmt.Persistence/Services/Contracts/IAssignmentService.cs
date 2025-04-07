@@ -9,10 +9,16 @@ namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
 public interface IAssignmentService
 {
     /// <summary>
-    /// Gets assignment and creates if not exits
+    /// Gets assignment and creates if not exists.
     /// </summary>
     /// <returns></returns>
-    Task<Result<Assignment>> GetOrCreateAssignment2(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default);
+    Task<Result<Assignment>> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes and assignment.
+    /// </summary>
+    /// <returns></returns>
+    Task<Result<Assignment>> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets assignment and creates if not exits
