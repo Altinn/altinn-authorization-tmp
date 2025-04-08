@@ -98,6 +98,29 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return query;
     }
 
+    private static string GetAuditTempTable(ChangeRequestOptions options)
+    {
+        var sb = new StringBuilder();
+
+        // Opprett og fyll session_audit_context
+        sb.AppendLine("CREATE TEMP TABLE IF NOT EXISTS session_audit_context (");
+        sb.AppendLine("changed_by UUID,");
+        sb.AppendLine("changed_by_system UUID,");
+        sb.AppendLine("change_operation_id UUID");
+        sb.AppendLine(") ON COMMIT DROP;");
+
+        sb.AppendLine("TRUNCATE session_audit_context;");
+
+        sb.AppendFormat(
+            "INSERT INTO session_audit_context (changed_by, changed_by_system, change_operation_id)\n" +
+            "VALUES ('{0}', '{1}', '{2}');\n",
+            options.ChangedBy, 
+            options.ChangedBySystem, 
+            options.ChangeOperationId);
+
+        return sb.ToString();
+    }
+
     private static string GetAuditVariables(ChangeRequestOptions options)
     {
         /*
@@ -203,7 +226,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     public string BuildDeleteQuery(IEnumerable<GenericFilter> filters, ChangeRequestOptions options)
     {
         var filterStatement = GenerateFilterStatement(_definition.ModelType.Name, filters);
-        return $"{GetAuditVariables(options)} DELETE FROM {GetTableName(includeAlias: false)} {filterStatement}";
+        return $"BEGIN; {GetAuditTempTable(options)} DELETE FROM {GetTableName(includeAlias: false)} {filterStatement} COMMIT;";
     }
 
     /// <inheritdoc />
@@ -587,14 +610,18 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         //// Create functions and triggers
         scriptCollection.AddScripts(CreateMetaDataTrigger(isTranslation: false));
-        scriptCollection.AddScripts(CreateAuditFunction(isTranslation: false));
-        scriptCollection.AddScripts(CreateAuditTrigger(isTranslation: false));
+        scriptCollection.AddScripts(CreateAuditUpdateFunction(isTranslation: false));
+        scriptCollection.AddScripts(CreateAuditDeleteFunction(isTranslation: false));
+        scriptCollection.AddScripts(CreateAuditUpdateTrigger(isTranslation: false));
+        scriptCollection.AddScripts(CreateAuditDeleteTrigger(isTranslation: false));
 
         if (_definition.EnableTranslation)
         {
             scriptCollection.AddScripts(CreateMetaDataTrigger(isTranslation: true));
-            scriptCollection.AddScripts(CreateAuditFunction(isTranslation: true));
-            scriptCollection.AddScripts(CreateAuditTrigger(isTranslation: true));
+            scriptCollection.AddScripts(CreateAuditUpdateFunction(isTranslation: true));
+            scriptCollection.AddScripts(CreateAuditDeleteFunction(isTranslation: true));
+            scriptCollection.AddScripts(CreateAuditUpdateTrigger(isTranslation: true));
+            scriptCollection.AddScripts(CreateAuditDeleteTrigger(isTranslation: true));
         }
 
         return scriptCollection;
@@ -650,6 +677,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         if (_definition.EnableTranslation)
         {
             scripts.Add($"CREATE TABLE {translationName}", translationScript);
+            var translationForeignKey = $"ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} ADD CONSTRAINT FK_Translation_{_definition.ModelType.Name}_id FOREIGN KEY (id) REFERENCES {GetSchemaName()}.{GetTableName(includeAlias: false, includeSchema: false)} (id) ON DELETE CASCADE;";
+            scripts.Add($"ADD CONSTRAINT FK_Translation_{_definition.ModelType.Name}_id", translationForeignKey);
         }
 
         if (_definition.EnableAudit)
@@ -695,7 +724,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             {
                 script.AppendLine(", audit_deletedby uuid null"); // History only
                 script.AppendLine(", audit_deletedbysystem uuid null"); // History only
-                script.AppendLine(", audit_deletedoperation uuid null"); // History only
+                script.AppendLine(", audit_deleteoperation uuid null"); // History only
             }
         }
 
@@ -704,6 +733,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             if (isTranslation)
             {
                 script.AppendLine($", CONSTRAINT PK_{_definition.ModelType.Name} PRIMARY KEY ({string.Join(',', _definition.Constraints.First(t => t.IsPrimaryKey).Properties.Select(t => $"{t.Key}"))}, language)");
+                var query = $"ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} ADD CONSTRAINT FK_{_definition.ModelType.Name}_id FOREIGN KEY (id) REFERENCES {GetSchemaName()}.{GetTableName(includeAlias: false, includeSchema: false)} (id) ON DELETE CASCADE;";
+
             }
             else
             {
@@ -830,8 +861,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             columnDefinitions += ", language";
         }
 
-        string historyColumns = $"{columnDefinitions}, audit_validfrom, audit_validto, audit_changedby, audit_changedbysystem, audit_changeoperation, audit_deletedby, audit_deletedbysystem, audit_deletedoperation";
-        string baseColumns = $"{columnDefinitions}, audit_validfrom, now() as audit_validto, audit_changedby, audit_changedbysystem, audit_changeoperation, null::uuid AS audit_deletedby, null::uuid AS audit_deletedbysystem, null::uuid AS audit_deletedoperation";
+        string historyColumns = $"{columnDefinitions}, audit_validfrom, audit_validto, audit_changedby, audit_changedbysystem, audit_changeoperation, audit_deletedby, audit_deletedbysystem, audit_deleteoperation";
+        string baseColumns = $"{columnDefinitions}, audit_validfrom, now() as audit_validto, audit_changedby, audit_changedbysystem, audit_changeoperation, null::uuid AS audit_deletedby, null::uuid AS audit_deletedbysystem, null::uuid AS audit_deleteoperation";
 
         string viewQuery = $"""
         CREATE OR REPLACE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: isTranslation)} AS
@@ -894,6 +925,125 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return scripts;
     }
 
+    private OrderedDictionary<string, string> CreateAuditUpdateFunction(bool isTranslation)
+    {
+        var scripts = new OrderedDictionary<string, string>();
+
+        string tableName = GetTableName(includeAlias: false, useTranslation: isTranslation);
+        string historyTableName = GetTableName(includeAlias: false, useHistory: true, useTranslation: isTranslation);
+        string modelName = _definition.ModelType.Name;
+        string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
+
+        string columns = string.Join(',', _definition.Properties.Select(t => t.Name));
+        string oldColumns = string.Join(',', _definition.Properties.Select(t => $"OLD.{t.Name}"));
+        if (isTranslation)
+        {
+            columns += ", language";
+            oldColumns += ", OLD.language";
+        }
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"CREATE OR REPLACE FUNCTION {schema}.audit_{modelName}_update_fn()");
+        sb.AppendLine("RETURNS TRIGGER AS $$");
+        sb.AppendLine("BEGIN");
+        sb.AppendLine($"INSERT INTO {historyTableName} (");
+        sb.AppendLine($"{columns},");
+        sb.AppendLine("audit_validfrom, audit_validto,");
+        sb.AppendLine("audit_changedby, audit_changedbysystem, audit_changeoperation");
+        sb.AppendLine(") VALUES (");
+        sb.AppendLine($"{oldColumns},");
+        sb.AppendLine("OLD.audit_validfrom, now(),");
+        sb.AppendLine("OLD.audit_changedby, OLD.audit_changedbysystem, OLD.audit_changeoperation");
+        sb.AppendLine(");");
+        sb.AppendLine("RETURN NEW;");
+        sb.AppendLine("END;");
+        sb.AppendLine("$$ LANGUAGE plpgsql;");
+
+        scripts.Add($"CREATE FUNCTION {schema}.audit_{modelName}_update_fn", sb.ToString());
+
+        return scripts;
+    }
+
+    private OrderedDictionary<string, string> CreateAuditDeleteFunction(bool isTranslation)
+    {
+        var scripts = new OrderedDictionary<string, string>();
+
+        string tableName = GetTableName(includeAlias: false, useTranslation: isTranslation);
+        string historyTableName = GetTableName(includeAlias: false, useHistory: true, useTranslation: isTranslation);
+        string modelName = _definition.ModelType.Name;
+        string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
+
+        string columns = string.Join(',', _definition.Properties.Select(t => t.Name));
+        string oldColumns = string.Join(',', _definition.Properties.Select(t => $"OLD.{t.Name}"));
+        if (isTranslation)
+        {
+            columns += ", language";
+            oldColumns += ", OLD.language";
+        }
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"CREATE OR REPLACE FUNCTION {schema}.audit_{modelName}_delete_fn()");
+        sb.AppendLine("RETURNS TRIGGER AS $$");
+        sb.AppendLine("DECLARE ctx RECORD;");
+        sb.AppendLine("BEGIN");
+        sb.AppendLine("SELECT * INTO ctx FROM session_audit_context LIMIT 1;");
+        sb.AppendLine($"INSERT INTO {historyTableName} (");
+        sb.AppendLine($"{columns},");
+        sb.AppendLine("audit_validfrom, audit_validto,");
+        sb.AppendLine("audit_changedby, audit_changedbysystem, audit_changeoperation,");
+        sb.AppendLine("audit_deletedby, audit_deletedbysystem, audit_deleteoperation");
+        sb.AppendLine(") VALUES (");
+        sb.AppendLine($"{oldColumns},");
+        sb.AppendLine("OLD.audit_validfrom, now(),");
+        sb.AppendLine("OLD.audit_changedby, OLD.audit_changedbysystem, OLD.audit_changeoperation,");
+        sb.AppendLine("ctx.changed_by, ctx.changed_by_system, ctx.change_operation_id");
+        sb.AppendLine(");");
+        sb.AppendLine("RETURN OLD;");
+        sb.AppendLine("END;");
+        sb.AppendLine("$$ LANGUAGE plpgsql;");
+
+        scripts.Add($"CREATE FUNCTION {schema}.audit_{modelName}_delete_fn", sb.ToString());
+
+        return scripts;
+    }
+
+    private OrderedDictionary<string, string> CreateAuditUpdateTrigger(bool isTranslation)
+    {
+        var scripts = new OrderedDictionary<string, string>();
+
+        string modelName = _definition.ModelType.Name;
+        string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
+        string functionName = $"audit_{modelName}_update_fn";
+        string tableName = GetTableName(includeAlias: false, useTranslation: isTranslation);
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"CREATE TRIGGER {modelName}_Audit_Update AFTER UPDATE ON {tableName}");
+        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {schema}.{functionName}();");
+
+        scripts.Add($"CREATE TRIGGER {schema}.{modelName}_Audit_Update", sb.ToString());
+
+        return scripts;
+    }
+
+    private OrderedDictionary<string, string> CreateAuditDeleteTrigger(bool isTranslation)
+    {
+        var scripts = new OrderedDictionary<string, string>();
+
+        string modelName = _definition.ModelType.Name;
+        string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
+        string functionName = $"audit_{modelName}_delete_fn";
+        string tableName = GetTableName(includeAlias: false, useTranslation: isTranslation);
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"CREATE TRIGGER {modelName}_Audit_Delete AFTER DELETE ON {tableName}");
+        sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {schema}.{functionName}();");
+
+        scripts.Add($"CREATE TRIGGER {schema}.{modelName}_Audit_Delete", sb.ToString());
+
+        return scripts;
+    }
+
+    [Obsolete]
     private OrderedDictionary<string, string> CreateAuditFunction(bool isTranslation)
     {
         var scripts = new OrderedDictionary<string, string>();
@@ -920,9 +1070,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine("changed_by_system UUID;");
         sb.AppendLine("change_operation_id UUID;");
         sb.AppendLine("BEGIN");
-        sb.AppendLine("SELECT current_setting('app.changed_by', false) INTO changed_by;");
-        sb.AppendLine("SELECT current_setting('app.changed_by_system', false) INTO changed_by_system;");
-        sb.AppendLine("SELECT current_setting('app.change_operation_id', false) INTO change_operation_id;");
+        sb.AppendLine("SELECT current_setting('app.changed_by', false)::uuid INTO changed_by;");
+        sb.AppendLine("SELECT current_setting('app.changed_by_system', false)::uuid INTO changed_by_system;");
+        sb.AppendLine("SELECT current_setting('app.change_operation_id', false)::uuid INTO change_operation_id;");
 
         sb.AppendLine("IF TG_OP = 'UPDATE' THEN");
         sb.AppendLine($"INSERT INTO {historyTableName} (");
@@ -960,6 +1110,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         return scripts;
     }
 
+    [Obsolete]
     private OrderedDictionary<string, string> CreateAuditTrigger(bool isTranslation)
     {
         var scripts = new OrderedDictionary<string, string>();
