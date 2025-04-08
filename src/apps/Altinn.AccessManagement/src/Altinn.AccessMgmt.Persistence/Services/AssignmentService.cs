@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.ProblemDetails;
@@ -45,12 +44,6 @@ public class AssignmentService(
         }
 
         return result.First();
-    }
-
-    [DoesNotReturn]
-    private static void Unreachable()
-    {
-        throw new UnreachableException();
     }
 
     /// <inheritdoc/>
@@ -151,9 +144,9 @@ public class AssignmentService(
         var fromEntityExt = await entityRepository.GetExtended(fromEntityId, cancellationToken: cancellationToken);
         var toEntityExt = await entityRepository.GetExtended(toEntityId, cancellationToken: cancellationToken);
         ValidatePartyIsNotNull(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
-        ValidatePartyIsOrg(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
+        ValidatePartyIsOrg(fromEntityExt, ref errors, "$QUERY/party");
         ValidatePartyIsNotNull(toEntityId, toEntityExt, ref errors, "$QUERY/to");
-        ValidatePartyIsOrg(toEntityId, toEntityExt, ref errors, "$QUERY/to");
+        ValidatePartyIsOrg(toEntityExt, ref errors, "$QUERY/to");
 
         var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
         if (roleResult == null || !roleResult.Any())
@@ -204,9 +197,9 @@ public class AssignmentService(
         var fromEntityExt = await entityRepository.GetExtended(fromEntityId, cancellationToken: cancellationToken);
         var toEntityExt = await entityRepository.GetExtended(toEntityId, cancellationToken: cancellationToken);
         ValidatePartyIsNotNull(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
-        ValidatePartyIsOrg(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
+        ValidatePartyIsOrg(fromEntityExt, ref errors, "$QUERY/party");
         ValidatePartyIsNotNull(toEntityId, toEntityExt, ref errors, "$QUERY/to");
-        ValidatePartyIsOrg(toEntityId, toEntityExt, ref errors, "$QUERY/to");
+        ValidatePartyIsOrg(toEntityExt, ref errors, "$QUERY/to");
 
         var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
         if (roleResult == null || !roleResult.Any())
@@ -240,25 +233,6 @@ public class AssignmentService(
         }
 
         return assignment;
-    }
-
-    private void ValidatePartyIsNotNull(Guid id, ExtEntity entity, ref ValidationErrorBuilder errors, string param)
-    {
-        if (entity is null)
-        {
-            errors.Add(ValidationErrors.MissingPartyInDb, param, [new("partyId", id.ToString())]);
-        }
-    }
-
-    private void ValidatePartyIsOrg(Guid id, ExtEntity entity, ref ValidationErrorBuilder errors, string param)
-    {
-        if (entity is not null)
-        {
-            if (!entity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
-            {
-                errors.Add(ValidationErrors.InvalidPartyType, param, [new("partyId", $"expected party of type 'Organisasjon' got '{entity.Type.Name}'.")]);
-            }
-        }
     }
 
     /// <inheritdoc/>
@@ -331,5 +305,27 @@ public class AssignmentService(
 
         var roleId = roleResult.First().Id;
         return await GetInheritedAssignment(fromId, toId, roleId);
+    }
+
+    private static void ValidatePartyIsNotNull(Guid id, ExtEntity entity, ref ValidationErrorBuilder errors, string param)
+    {
+        if (entity is null)
+        {
+            errors.Add(ValidationErrors.MissingPartyInDb, param, [new("partyId", id.ToString())]);
+        }
+    }
+
+    private static void ValidatePartyIsOrg(ExtEntity entity, ref ValidationErrorBuilder errors, string param)
+    {
+        if (entity is not null && !entity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
+        {
+            errors.Add(ValidationErrors.InvalidPartyType, param, [new("partyId", $"expected party of type 'Organisasjon' got '{entity.Type.Name}'.")]);
+        }
+    }
+
+    [DoesNotReturn]
+    private static void Unreachable()
+    {
+        throw new UnreachableException();
     }
 }
