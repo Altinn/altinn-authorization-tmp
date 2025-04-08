@@ -169,7 +169,7 @@ public class AssignmentService(
             if (!cascade)
             {
                 var filter = connectionRepository.CreateFilterBuilder();
-                filter.Equal(val => val.FromId, existingAssignment.Id);
+                filter.Equal(val => val.FromId, fromEntityId);
                 var connections = await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
                 if (connections.Any())
                 {
