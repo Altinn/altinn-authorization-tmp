@@ -46,6 +46,11 @@ public class DbAudit
     public Guid DeleteOperation { get; set; }
 }
 
+public class TypedDbAudit<T> : DbAudit
+{
+    public T Object { get; set; }
+}
+
 /// <summary>
 /// Base interface for extending classes with audit information
 /// </summary>

@@ -58,6 +58,23 @@ public interface IDbBasicRepository<T>
     Task<IEnumerable<T>> Get(IEnumerable<GenericFilter> filters, RequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Get history records
+    /// </summary>
+    /// <param name="id">The unique identifier of the entity.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns></returns>
+    Task<IEnumerable<TypedDbAudit<T>>> GetFromHistory(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get valid version for a given point in time
+    /// </summary>
+    /// <param name="id">The unique identifier of the entity.</param>
+    /// <param name="asOf">Timestamp to set</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns></returns>
+    Task<TypedDbAudit<T>> GetFromHistory(Guid id, DateTimeOffset asOf, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Inserts a new entity into the database.
     /// </summary>
     /// <param name="entity">The entity to create.</param>
