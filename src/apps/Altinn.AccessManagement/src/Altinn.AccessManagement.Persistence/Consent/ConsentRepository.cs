@@ -431,23 +431,24 @@ namespace Altinn.AccessManagement.Persistence.Consent
             pgcom.Parameters.AddWithValue("@id", NpgsqlTypes.NpgsqlDbType.Uuid, consentRequestId);
 
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
-            Dictionary<Guid, List<ConsentResourceAttribute>> keyValuePairs = new Dictionary<Guid, List<ConsentResourceAttribute>>();
+            Dictionary<Guid, List<ConsentResourceAttribute>> keyValuePairs = [];
 
             while (reader.Read())
             {
                 Guid consentRightId = reader.GetFieldValue<Guid>("consentRightId");
-                ConsentResourceAttribute consentResourceAttribute = new ConsentResourceAttribute
+                ConsentResourceAttribute consentResourceAttribute = new()
                 {
                     Type = reader.GetFieldValue<string>("type"),
                     Value = reader.GetFieldValue<string>("value")
                 };
-                if (keyValuePairs.ContainsKey(consentRightId))
+
+                if (keyValuePairs.TryGetValue(consentRightId, out List<ConsentResourceAttribute> value))
                 {
-                    keyValuePairs[consentRightId].Add(consentResourceAttribute);
+                    value.Add(consentResourceAttribute);
                 }
                 else
                 {
-                    keyValuePairs.Add(consentRightId, new List<ConsentResourceAttribute> { consentResourceAttribute });
+                    keyValuePairs.Add(consentRightId, [consentResourceAttribute]);
                 }
             }
 
@@ -474,16 +475,16 @@ namespace Altinn.AccessManagement.Persistence.Consent
             while (reader.Read())
             {
                 Guid consentRightId = reader.GetFieldValue<Guid>("consentRightId");
-                string id = reader.GetFieldValue<string>("id");
-                string value = reader.GetFieldValue<string>("value");
+                string metadataId = reader.GetFieldValue<string>("id");
+                string metadataValue = reader.GetFieldValue<string>("value");
 
-                if (consentMetadata.ContainsKey(consentRightId))
+                if (consentMetadata.TryGetValue(consentRightId, out Dictionary<string, string> value))
                 {
-                    consentMetadata[consentRightId].Add(id, value);
+                    value.Add(metadataId, metadataValue);
                 }
                 else
                 {
-                    consentMetadata.Add(consentRightId, new Dictionary<string, string> { { id, value } });
+                    consentMetadata.Add(consentRightId, new Dictionary<string, string> { { metadataId, metadataValue } });
                 }
             }
 
@@ -492,7 +493,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
         private async Task<List<ConsentRequestEvent>> GetEvents(Guid consentRequestId, CancellationToken cancellationToken = default)
         {
-            List<ConsentRequestEvent> consentRequestEvents = new();
+            List<ConsentRequestEvent> consentRequestEvents = [];
             string consentMetadataQuery = /*strpsql*/@$"
                 SELECT
                 consentEventId,
@@ -513,7 +514,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             while (reader.Read())
             {
                 Guid performedBy = reader.GetFieldValue<Guid>("performedByParty");
-                ConsentRequestEvent consentRequestEvent = new ConsentRequestEvent
+                ConsentRequestEvent consentRequestEvent = new()
                 {
                     ConsentEventID = reader.GetFieldValue<Guid>("consentEventId"),
                     ConsentRequestID = reader.GetFieldValue<Guid>("consentRequestId"),
