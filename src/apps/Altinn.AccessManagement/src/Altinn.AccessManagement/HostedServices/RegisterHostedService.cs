@@ -169,6 +169,7 @@ public partial class RegisterHostedService(
     private async Task SyncRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
         var batchData = new List<Assignment>();
+        Guid batchId = Guid.CreateVersion7();
 
         var options = new ChangeRequestOptions()
         {
@@ -189,7 +190,6 @@ public partial class RegisterHostedService(
                 throw new Exception("Stream page is not successful");
             }
 
-            Guid batchId = Guid.CreateVersion7();
             options.ChangeOperationId = batchId.ToString();
             var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
             _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
@@ -241,8 +241,11 @@ public partial class RegisterHostedService(
 
             await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
             await _lease.RefreshLease(ls, cancellationToken);
+        }
 
-            async Task Flush(Guid batchId)
+        await Flush(batchId);
+
+        async Task Flush(Guid batchId)
             {
                 try
                 {
@@ -269,7 +272,6 @@ public partial class RegisterHostedService(
                     batchData.Clear();
                 }
             }
-        }
     }
 
     private async Task SetParent(Guid childId, Guid parentId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
