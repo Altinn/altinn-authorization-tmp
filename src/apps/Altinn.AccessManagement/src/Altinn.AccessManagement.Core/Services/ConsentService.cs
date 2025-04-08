@@ -122,33 +122,35 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 errors.Add(ValidationErrors.ConsentNotFound, "From");
             }
+            else
+            {
+                if (!to.Equals(consentRequest.To))
+                {
+                    errors.Add(ValidationErrors.ConsentNotFound, "To");
+                }
 
-            if (!to.Equals(consentRequest.To))
-            {
-                errors.Add(ValidationErrors.ConsentNotFound, "To");
-            }
+                if (!from.Equals(consentRequest.From))
+                {
+                    errors.Add(ValidationErrors.MissMatchConsentParty, "From");
+                }
 
-            if (!from.Equals(consentRequest.From))
-            {
-                errors.Add(ValidationErrors.MissMatchConsentParty, "From");
-            }
+                if (consentRequest.ValidTo < DateTime.UtcNow)
+                {
+                    errors.Add(ValidationErrors.ConsentExpired, "ValidTo");
+                }
 
-            if (consentRequest.ValidTo < DateTime.UtcNow)
-            {
-                errors.Add(ValidationErrors.ConsentExpired, "ValidTo");
-            }
-
-            if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Created)
-            {
-                errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
-            }
-            else if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
-            {
-                errors.Add(ValidationErrors.ConsentRevoked, _consentRequestStatus);
-            }
-            else if (consentRequest.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
-            {
-                errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
+                if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Created)
+                {
+                    errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
+                }
+                else if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
+                {
+                    errors.Add(ValidationErrors.ConsentRevoked, _consentRequestStatus);
+                }
+                else if (consentRequest.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
+                {
+                    errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
+                }
             }
 
             if (errors.TryBuild(out var errorResult))
@@ -178,7 +180,7 @@ namespace Altinn.AccessManagement.Core.Services
             foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)
             {
                 consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
-            };
+            }
 
             return details;
         }
@@ -551,6 +553,7 @@ namespace Altinn.AccessManagement.Core.Services
         private async Task<int> GetUserIdForParty(Guid partyId)
         {
             return 20001337;
+
             //List<Party> parties = await _partiesClient.GetPartiesAsync(new List<Guid> { partyId });
             //Party party = parties.First();
             //return party.PartyId;
