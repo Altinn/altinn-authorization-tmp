@@ -1,7 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.Core.Models.Party;
 
@@ -12,13 +11,13 @@ namespace Altinn.AccessMgmt.Persistence.Services
         private readonly IEntityRepository entityRepository = entityRepository;
         private readonly IEntityLookupRepository entityLookupRepository = entityLookupRepository;
 
-        public async Task<MinimalParty> GetByOrgNo(string orgNo)
+        public async Task<MinimalParty> GetByOrgNo(string orgNo, CancellationToken cancellationToken = default)
         {
             GenericFilterBuilder<AccessMgmt.Core.Models.EntityLookup> filter = entityLookupRepository.CreateFilterBuilder();
             filter.Add(t => t.Key, "OrganizationIdentifier", Core.Helpers.FilterComparer.Contains);
             filter.Equal(t => t.Value, orgNo);
 
-            IEnumerable<AccessMgmt.Core.Models.ExtEntityLookup> res = await entityLookupRepository.GetExtended(filter);
+            IEnumerable<AccessMgmt.Core.Models.ExtEntityLookup> res = await entityLookupRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
             if (res == null || !res.Any())
             {
@@ -40,18 +39,18 @@ namespace Altinn.AccessMgmt.Persistence.Services
             };
         }
 
-        public Task<MinimalParty> GetByPartyId(int partyId)
+        public Task<MinimalParty> GetByPartyId(int partyId, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<MinimalParty> GetByPersonNo(string personNo)
+        public async Task<MinimalParty> GetByPersonNo(string personNo, CancellationToken cancellationToken = default)
         {
             GenericFilterBuilder<AccessMgmt.Core.Models.EntityLookup> filter = entityLookupRepository.CreateFilterBuilder();
             filter.Add(t => t.Key, "PersonIdentifier", Core.Helpers.FilterComparer.Contains);
             filter.Equal(t => t.Value, personNo);
 
-            IEnumerable<AccessMgmt.Core.Models.ExtEntityLookup> res = await entityLookupRepository.GetExtended(filter);
+            IEnumerable<AccessMgmt.Core.Models.ExtEntityLookup> res = await entityLookupRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
             if (res == null || !res.Any())
             {
@@ -73,9 +72,9 @@ namespace Altinn.AccessMgmt.Persistence.Services
             };
         }
 
-        public async Task<MinimalParty> GetByUuid(Guid partyUuid)
+        public async Task<MinimalParty> GetByUuid(Guid partyUuid, CancellationToken cancellationToken = default)
         {
-            IEnumerable<ExtEntityLookup> parties = await entityLookupRepository.GetExtended(t => t.EntityId, partyUuid);
+            IEnumerable<ExtEntityLookup> parties = await entityLookupRepository.GetExtended(t => t.EntityId, partyUuid, cancellationToken: cancellationToken);
             var res = parties.ToDictionary(t => t.Key, t => t.Value);
 
             if (res == null || !res.Any())

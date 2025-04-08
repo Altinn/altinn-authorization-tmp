@@ -10,21 +10,21 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <summary>
         /// Get party by party uuid
         /// </summary>
-        public Task<MinimalParty> GetByUid(Guid partyUuid);
+        public Task<MinimalParty> GetByUid(Guid partyUuid, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get by party id
         /// </summary>
-        public Task<MinimalParty> GetByPartyId(int partyId);
+        public Task<MinimalParty> GetByPartyId(int partyId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get Party by org number
         /// </summary>
-        public Task<MinimalParty> GetByOrgNo(string orgNo);
+        public Task<MinimalParty> GetByOrgNo(string orgNo, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get Party by person number
         /// </summary>
-        public Task<MinimalParty> GetByPersonNo(string personNo);
+        public Task<MinimalParty> GetByPersonNo(string personNo, CancellationToken cancellationToken = default);
     }
 }

@@ -12,27 +12,27 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IAmPartyRepository _amPartyRepository = ampartyRepository;
 
         /// <inheritdoc />
-        public async Task<MinimalParty> GetByOrgNo(string orgNo)
+        public async Task<MinimalParty> GetByOrgNo(string orgNo, CancellationToken cancellationToken = default)
         {
-           return await _amPartyRepository.GetByOrgNo(orgNo);
+           return await _amPartyRepository.GetByOrgNo(orgNo, cancellationToken);
         }
 
         /// <inheritdoc />
-        public async Task<MinimalParty> GetByPartyId(int partyId)
+        public async Task<MinimalParty> GetByPartyId(int partyId, CancellationToken cancellationToken = default)
         {
-            return await _amPartyRepository.GetByPartyId(partyId);
+            return await _amPartyRepository.GetByPartyId(partyId, cancellationToken);
         }
 
         /// <inheritdoc />
-        public async Task<MinimalParty> GetByPersonNo(string personNo)
+        public async Task<MinimalParty> GetByPersonNo(string personNo, CancellationToken cancellationToken = default)
         {
-            return await _amPartyRepository.GetByPersonNo(personNo);
+            return await _amPartyRepository.GetByPersonNo(personNo, cancellationToken);
         }
 
         /// <inheritdoc />
-        public async Task<MinimalParty> GetByUid(Guid partyUuid)
+        public async Task<MinimalParty> GetByUid(Guid partyUuid, CancellationToken cancellationToken = default)
         {
-            return await _amPartyRepository.GetByUuid(partyUuid);
+            return await _amPartyRepository.GetByUuid(partyUuid, cancellationToken);
         }
     }
 }

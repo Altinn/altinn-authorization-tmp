@@ -334,7 +334,7 @@ namespace Altinn.AccessManagement.Core.Services
 
         private async Task<ConsentPartyUrn> GetExternalIdentifier(Guid guid, CancellationToken cancellationToken = default)
         {
-            MinimalParty party = await _ampartyService.GetByUid(guid);
+            MinimalParty party = await _ampartyService.GetByUid(guid, cancellationToken);
 
             if (party == null)
             {
