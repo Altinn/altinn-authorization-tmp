@@ -81,8 +81,7 @@ public class MockDataService
         await entityRepository.Upsert(norskRegnskap, options);
         await entityRepository.Upsert(smekkfullBank, options);
 
-        await entityLookupRepository.Upsert(new EntityLookup() { EntityId = smekkfullBank.Id, Key = "OrganizationIdentifier", Value = smekkfullBank.RefId });
-
+        await entityLookupRepository.Upsert(new EntityLookup() { EntityId = smekkfullBank.Id, Key = "OrganizationIdentifier", Value = smekkfullBank.RefId }, options);
 
         Entity mariusThuen = new() { Id = Guid.Parse("3ECA9413-F58C-4205-8ED4-2322E1C5E5C0"), Name = "Marius Thuen", RefId = "PERS-000", TypeId = persType.Id, VariantId = variantPers.Id };
         Entity fredrikJohnsen = new() { Id = Guid.Parse("B238C6ED-D186-410D-983F-2B4AA887F376"), Name = "Fredrik Johnsen", RefId = "PERS-001", TypeId = persType.Id, VariantId = variantPers.Id };
