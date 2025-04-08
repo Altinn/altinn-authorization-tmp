@@ -14,15 +14,10 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils
         {
             if (claimsPrincipal != null && claimsPrincipal.Claims != null)
             {
-                foreach (Claim claim in claimsPrincipal.Claims)
+                Claim partyClaim = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:party:uuid"));
+                if (partyClaim != null && Guid.TryParse(partyClaim.Value, out Guid partyUid))
                 {
-                    if (claim.Type.Equals("urn:altinn:party:uuid"))
-                    {
-                        if (Guid.TryParse(claim.Value, out Guid partyUid))
-                        {
-                            return partyUid;
-                        }
-                    }
+                    return partyUid;
                 }
             }
 
