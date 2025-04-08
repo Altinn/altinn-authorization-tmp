@@ -1,7 +1,7 @@
-﻿using Altinn.Authorization.Core.Models.Consent;
+﻿using System.Security.Claims;
+using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
 using Newtonsoft.Json.Linq;
-using System.Security.Claims;
 
 namespace Altinn.AccessManagement.Api.Enterprise.Utils
 {
@@ -23,16 +23,23 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
 
             JObject consumer = JObject.Parse(consumerJson);
 
-            string consumerAuthority = consumer["authority"].ToString();
-            if (!"iso6523-actorid-upis".Equals(consumerAuthority))
+            if (consumer["ID"] == null || consumer["authority"] == null)
             {
                 return null;
             }
+            else
+            {
+                string consumerAuthority = consumer["authority"]!.ToString();
+                if (!"iso6523-actorid-upis".Equals(consumerAuthority))
+                {
+                    return null;
+                }
 
-            string consumerId = consumer["ID"].ToString();
+                string consumerId = consumer["ID"]!.ToString();
 
-            string organisationNumber = consumerId.Split(":")[1];
-            return ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(organisationNumber));
+                string organisationNumber = consumerId.Split(":")[1];
+                return ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(organisationNumber));
+            }
         }
     }
 }
