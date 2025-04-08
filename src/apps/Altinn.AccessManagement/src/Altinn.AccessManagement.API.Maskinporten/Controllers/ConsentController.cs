@@ -11,21 +11,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
 {
     /// <summary>
-    /// Comcent controller for Maskinporten
+    /// Consent API for Maskinporten. Used to lookup consent information.
     /// </summary>
+    /// <remarks>
+    /// The default constructor taking in depencies. 
+    /// </remarks>
     [Route("accessmanagement/api/v1/maskinporten/consent/")]
     [ApiController]
-    public class ConsentController : ControllerBase
+    public class ConsentController(IConsent consentService) : ControllerBase
     {
-        private readonly IConsent _consentService;
-
-        /// <summary>
-        /// The default constructor taking in depencies. 
-        /// </summary>
-        public ConsentController(IConsent consentService)
-        {
-            _consentService = consentService;
-        }
+        private readonly IConsent _consentService = consentService;
 
         /// <summary>
         /// Returns a specific consent
