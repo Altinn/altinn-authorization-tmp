@@ -1,9 +1,11 @@
 ﻿using Altinn.AccessManagement.Api.Maskinporten.Models.Concent;
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
@@ -30,6 +32,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
         /// </summary>
         [HttpPost]
         [Route("lookup")]
+        [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSENT_READ)]
         public async Task<ActionResult<ConsentInfoMaskinporten>> GetConcent([FromBody] ConsentLookup consentLookup)
         {
             ConsentPartyUrn from = consentLookup.From switch
