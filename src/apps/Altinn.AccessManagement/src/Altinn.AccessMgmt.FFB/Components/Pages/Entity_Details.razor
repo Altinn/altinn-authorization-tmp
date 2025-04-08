@@ -1,5 +1,5 @@
 ﻿@page "/entity/{Id:guid}"
-@using Altinn.AccessMgmt.Repo.Data
+@using Altinn.AccessMgmt.Persistence.Data
 @inject IEntityRepository entityData
 @inject IAssignmentRepository assignmentData
 @inject IEntityRepository entityService
@@ -418,8 +418,8 @@
 
         var options = new ChangeRequestOptions()
         {
-            ChangedBy = AuditDefaults.DefaultSystem, // TODO: Get UserId
-            ChangedBySystem = AuditDefaults.DefaultSystem
+            ChangedBy = AuditDefaults.EnduserApi, // TODO: Get UserId
+            ChangedBySystem = AuditDefaults.EnduserApi
         };
 
         foreach (var role in CreateAssignmentRoles.Where(t => t.Value))

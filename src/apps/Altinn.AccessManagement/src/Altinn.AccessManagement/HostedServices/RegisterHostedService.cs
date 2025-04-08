@@ -4,13 +4,12 @@ using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
-using Altinn.AccessMgmt.Repo.Data;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Microsoft.FeatureManagement;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace Altinn.Authorization.AccessManagement;
 
@@ -93,7 +92,7 @@ public partial class RegisterHostedService(
             var options = new ChangeRequestOptions()
             {
                 ChangedBy = AuditDefaults.RegisterImportSystem,
-                ChangedBySystem = AuditDefaults.DefaultSystem
+                ChangedBySystem = AuditDefaults.RegisterImportSystem
             };
 
             var partyStatus = await statusService.GetOrCreateRecord(Guid.Parse("C18B67F6-B07E-482C-AB11-7FE12CD1F48D"), "accessmgmt-sync-register-party", options, 5);

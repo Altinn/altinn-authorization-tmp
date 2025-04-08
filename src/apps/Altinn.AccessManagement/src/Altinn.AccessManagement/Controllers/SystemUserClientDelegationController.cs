@@ -1,13 +1,11 @@
 ﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
-using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Persistence.Repositories;
+using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
-using Altinn.AccessMgmt.Repo.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -94,7 +92,7 @@ public class SystemUserClientDelegationController : ControllerBase
         var options = new ChangeRequestOptions()
         {
             ChangedBy = userId,
-            ChangedBySystem = AuditDefaults.SystemBrukerSystem
+            ChangedBySystem = AuditDefaults.EnduserApi
         };
 
         var delegations = await delegationService.CreateClientDelegation(request, party, options);
@@ -151,7 +149,7 @@ public class SystemUserClientDelegationController : ControllerBase
         var options = new ChangeRequestOptions()
         {
             ChangedBy = userId,
-            ChangedBySystem = AuditDefaults.SystemBrukerSystem
+            ChangedBySystem = AuditDefaults.EnduserApi
         };
 
         await delegationRepository.Delete(delegation.Id, options: options);
@@ -216,7 +214,7 @@ public class SystemUserClientDelegationController : ControllerBase
         var options = new ChangeRequestOptions()
         {
             ChangedBy = userId,
-            ChangedBySystem = AuditDefaults.SystemBrukerSystem
+            ChangedBySystem = AuditDefaults.EnduserApi
         };
 
         await assignmentRepository.Delete(assignment.Id, options: options);
@@ -292,7 +290,7 @@ public class SystemUserClientDelegationController : ControllerBase
         var options = new ChangeRequestOptions()
         {
             ChangedBy = userId,
-            ChangedBySystem = AuditDefaults.DefaultSystem
+            ChangedBySystem = AuditDefaults.EnduserApi
         };
 
         await assignmentRepository.Delete(assignment.Id, options: options);

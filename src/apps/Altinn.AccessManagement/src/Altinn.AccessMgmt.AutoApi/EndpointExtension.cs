@@ -2,7 +2,7 @@
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Repo.Data;
+using Altinn.AccessMgmt.Persistence.Data;
 using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
 
@@ -218,8 +218,8 @@ public static class EndpointExtension
     {
         var options = new ChangeRequestOptions()
         {
-            ChangedBy = AuditDefaults.DefaultSystem, // TODO: Get UserId
-            ChangedBySystem = AuditDefaults.DefaultSystem
+            ChangedBy = AuditDefaults.EnduserApi, // TODO: Get UserId
+            ChangedBySystem = AuditDefaults.EnduserApi
         };
         
         return options;

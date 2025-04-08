@@ -5,16 +5,7 @@ using Altinn.AccessMgmt.Persistence.Core.Services;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Microsoft.Extensions.Configuration;
 
-namespace Altinn.AccessMgmt.Repo.Data;
-
-public static class AuditDefaults
-{
-    public static readonly Guid DefaultSystem = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E"); // AccessMgmt-Default
-    public static readonly Guid StaticDataIngest = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A"); // AccessMgmt-StaticDataIngest
-    public static readonly Guid RegisterImportSystem = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"); // AccessMgmt-RegisterIngest
-    public static readonly Guid SystemBrukerSystem = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E"); // AccessMgmt-SystemBruker-Integration
-    public static readonly Guid MockDataIngestSystem = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E"); // AccessMgmt-SystemBruker-Integration
-}
+namespace Altinn.AccessMgmt.Persistence.Data;
 
 /// <summary>
 /// Service for running data migrations
@@ -447,10 +438,9 @@ public class DbDataMigrationService(
         var systemEntities = new List<Entity>()
         {
             // Static data ingest
-            new Entity() { Id = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E"), Name = "AccessMgmt-Default", RefId = "AccessMgmt-Default", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
-            new Entity() { Id = Guid.Parse("3296007F-F9EA-4BD0-B6A6-C8462D54633A"), Name = "AccessMgmt-StaticDataIngest", RefId = "AccessMgmt-StaticDataIngest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
-            new Entity() { Id = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B"), Name = "AccessMgmt-RegisterIngest", RefId = "AccessMgmt-RegisterIngest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
-            new Entity() { Id = Guid.Parse("74344CE4-3F95-41F1-A1DC-DEEAEF10810A"), Name = "AccessMgmt-SystemBruker-Integration", RefId = "AccessMgmt-SystemBruker-Integration", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            new Entity() { Id = AuditDefaults.StaticDataIngest, Name = "StaticDataIngest", RefId = "sys-static-data-ingest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            new Entity() { Id = AuditDefaults.RegisterImportSystem, Name = "RegisterImportSystem", RefId = "sys-register-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            new Entity() { Id = AuditDefaults.EnduserApi, Name = "EnduserApi", RefId = "accessmgmt-enduser-api", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
         };
 
         foreach (var item in systemEntities)

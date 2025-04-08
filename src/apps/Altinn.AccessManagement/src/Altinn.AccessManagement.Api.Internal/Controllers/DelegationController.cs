@@ -1,8 +1,8 @@
 ﻿using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.AccessMgmt.Repo.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -86,7 +86,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
             var options = new ChangeRequestOptions()
             {
                 ChangedBy = userId,
-                ChangedBySystem = AuditDefaults.DefaultSystem
+                ChangedBySystem = AuditDefaults.EnduserApi
             };
 
             var fromAssignment = await assignmentRepository.Get(request.FromAssignmentId);
@@ -151,7 +151,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
             var options = new ChangeRequestOptions()
             {
                 ChangedBy = userId,
-                ChangedBySystem = AuditDefaults.DefaultSystem
+                ChangedBySystem = AuditDefaults.EnduserApi
             };
 
             var userEntity = await entityRepository.Get(userId);

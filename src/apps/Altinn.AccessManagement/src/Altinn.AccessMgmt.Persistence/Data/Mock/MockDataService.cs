@@ -1,9 +1,7 @@
-﻿using Altinn.AccessMgmt.Core.Models;
+﻿using System;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.AccessMgmt.Repo.Data;
-using System;
 
 namespace Altinn.AccessMgmt.Persistence.Data.Mock;
 

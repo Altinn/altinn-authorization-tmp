@@ -1,5 +1,5 @@
 ﻿@page "/assignment/{id}"
-@using Altinn.AccessMgmt.Repo.Data
+@using Altinn.AccessMgmt.Persistence.Data
 @inject IAssignmentRepository assignmentService
 @inject IRoleRepository roleService
 @inject IRolePackageRepository rolePackageService
@@ -324,8 +324,8 @@
     {
         Options = new ChangeRequestOptions()
         {
-            ChangedBy = AuditDefaults.DefaultSystem, // TODO: Get UserId
-            ChangedBySystem = AuditDefaults.DefaultSystem
+                ChangedBy = Persistence.Data.AuditDefaults.EnduserApi, // TODO: Get UserId
+                ChangedBySystem = Persistence.Data.AuditDefaults.EnduserApi
         };
         await Load();
     }
