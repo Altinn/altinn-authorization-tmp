@@ -31,7 +31,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IMemoryCache _memoryCache = memoryCache;
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedBy, CancellationToken cancellationToken = default)
+        public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken = default)
         {
             Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest, cancellationToken);
 
@@ -40,9 +40,9 @@ namespace Altinn.AccessManagement.Core.Services
                 return result.Problem;
             }
 
-            performedBy = await MapFromExternalIdenity(performedBy);
+            performedByParty = await MapFromExternalIdenity(performedByParty);
 
-            ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(result.Value, performedBy, cancellationToken);
+            ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(result.Value, performedByParty, cancellationToken);
             requestDetails.From = consentRequest.From;
             requestDetails.To = consentRequest.To;
             foreach (ConsentRequestEvent consentRequestEvent in requestDetails.ConsentRequestEvents)
@@ -54,7 +54,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> RejectRequest(Guid id, Guid performedBy, CancellationToken cancellationToken = default)
+        public async Task<Result<ConsentRequestDetails>> RejectRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
         {
             ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
@@ -76,7 +76,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             try
             {
-                await _consentRepository.RejectConsentRequest(id, performedBy, cancellationToken);
+                await _consentRepository.RejectConsentRequest(id, performedByParty, cancellationToken);
             }
             catch (Exception)
             {
@@ -181,7 +181,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> AcceptRequest(Guid id, Guid approvedByParty, CancellationToken cancellationToken = default)
+        public async Task<Result<ConsentRequestDetails>> AcceptRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
         {
             ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
@@ -203,7 +203,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             try
             {
-                await _consentRepository.AcceptConsentRequest(id, approvedByParty, cancellationToken);
+                await _consentRepository.AcceptConsentRequest(id, performedByParty, cancellationToken);
             }
             catch (Exception)
             {
