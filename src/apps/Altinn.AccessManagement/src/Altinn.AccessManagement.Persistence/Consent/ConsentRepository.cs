@@ -376,12 +376,12 @@ namespace Altinn.AccessManagement.Persistence.Consent
             await using var pgcom = _db.CreateCommand(consentRightsQuery);
             pgcom.Parameters.AddWithValue("@consentRequestId", NpgsqlTypes.NpgsqlDbType.Uuid, consentRequestId);
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
-            List<ConsentRight> consentRights = new List<ConsentRight>();
+            List<ConsentRight> consentRights = [];
             while (await reader.ReadAsync())
             {
-                Guid consentRightId = reader.GetFieldValue<Guid>("consentRightId");
+                Guid consentRightId = await reader.GetFieldValueAsync<Guid>("consentRightId", cancellationToken: cancellationToken);
 
-                List<ConsentResourceAttribute> resourceAttributes = new List<ConsentResourceAttribute>();
+                List<ConsentResourceAttribute> resourceAttributes = [];
                 if (keyValuePairs.TryGetValue(consentRightId, out List<ConsentResourceAttribute> foundAttributes))
                 {
                     resourceAttributes = foundAttributes;
@@ -398,9 +398,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     metadata = null;
                 }
 
-                ConsentRight consentRight = new ConsentRight
+                ConsentRight consentRight = new()
                 {
-                    Action = reader.GetFieldValue<List<string>>("action"),
+                    Action = await reader.GetFieldValueAsync<List<string>>("action", cancellationToken: cancellationToken),
                     Resource = resourceAttributes
                 };
 
@@ -435,11 +435,11 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             while (reader.Read())
             {
-                Guid consentRightId = reader.GetFieldValue<Guid>("consentRightId");
+                Guid consentRightId = await reader.GetFieldValueAsync<Guid>("consentRightId", cancellationToken: cancellationToken);
                 ConsentResourceAttribute consentResourceAttribute = new()
                 {
-                    Type = reader.GetFieldValue<string>("type"),
-                    Value = reader.GetFieldValue<string>("value")
+                    Type = await reader.GetFieldValueAsync<string>("type", cancellationToken: cancellationToken),
+                    Value = await reader.GetFieldValueAsync<string>("value", cancellationToken: cancellationToken)
                 };
 
                 if (keyValuePairs.TryGetValue(consentRightId, out List<ConsentResourceAttribute> value))
@@ -474,9 +474,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
             while (reader.Read())
             {
-                Guid consentRightId = reader.GetFieldValue<Guid>("consentRightId");
-                string metadataId = reader.GetFieldValue<string>("id");
-                string metadataValue = reader.GetFieldValue<string>("value");
+                Guid consentRightId = await reader.GetFieldValueAsync<Guid>("consentRightId", cancellationToken: cancellationToken);
+                string metadataId = await reader.GetFieldValueAsync<string>("id", cancellationToken: cancellationToken);
+                string metadataValue = await reader.GetFieldValueAsync<string>("value", cancellationToken: cancellationToken);
 
                 if (consentMetadata.TryGetValue(consentRightId, out Dictionary<string, string> value))
                 {
@@ -513,13 +513,13 @@ namespace Altinn.AccessManagement.Persistence.Consent
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
             while (reader.Read())
             {
-                Guid performedBy = reader.GetFieldValue<Guid>("performedByParty");
+                Guid performedBy = await reader.GetFieldValueAsync<Guid>("performedByParty", cancellationToken: cancellationToken);
                 ConsentRequestEvent consentRequestEvent = new()
                 {
-                    ConsentEventID = reader.GetFieldValue<Guid>("consentEventId"),
-                    ConsentRequestID = reader.GetFieldValue<Guid>("consentRequestId"),
-                    EventType = reader.GetFieldValue<ConsentRequestEventType>("eventtype"),
-                    Created = reader.GetFieldValue<DateTimeOffset>("created"),
+                    ConsentEventID = await reader.GetFieldValueAsync<Guid>("consentEventId", cancellationToken: cancellationToken),
+                    ConsentRequestID = await reader.GetFieldValueAsync<Guid>("consentRequestId", cancellationToken: cancellationToken),
+                    EventType = await reader.GetFieldValueAsync<ConsentRequestEventType>("eventtype", cancellationToken: cancellationToken),
+                    Created = await reader.GetFieldValueAsync<DateTimeOffset>("created", cancellationToken: cancellationToken),
                     PerformedBy = ConsentPartyUrn.PartyUuid.Create(performedBy)
                 };
                 consentRequestEvents.Add(consentRequestEvent);
