@@ -116,6 +116,8 @@ public class MockDataService
         await entityRepository.Upsert(edithTommesen, options);
         await entityRepository.Upsert(elenaFjær, options);
 
+        await entityLookupRepository.Upsert(new EntityLookup() { EntityId = elenaFjær.Id, Key = "PersonIdentifier", Value = elenaFjær.RefId }, options);
+
         await assignmentRepository.Upsert(new Assignment() { FromId = spirhAS.Id, ToId = mariusThuen.Id, RoleId = roleDagligLeder.Id }, options);
         await assignmentRepository.Upsert(new Assignment() { FromId = spirhAS.Id, ToId = mariusThuen.Id, RoleId = roleStyreLeder.Id }, options);
         await assignmentRepository.Upsert(new Assignment() { FromId = bakerHansenAS.Id, ToId = fredrikJohnsen.Id, RoleId = roleDagligLeder.Id }, options);
