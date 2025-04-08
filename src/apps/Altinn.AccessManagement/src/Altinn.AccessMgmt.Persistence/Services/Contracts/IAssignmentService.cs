@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
@@ -11,32 +12,38 @@ public interface IAssignmentService
     /// <summary>
     /// Gets assignment and creates if not exists.
     /// </summary>
-    Task<Result<Assignment>> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Deletes and assignment.
-    /// </summary>
-    Task<Result<Assignment>> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, bool cascade, CancellationToken cancellationToken = default);
+    /// <returns></returns>
+    Task<Assignment> GetOrCreateAssignment(Guid fromId, Guid toId, string roleCode, ChangeRequestOptions options);
 
     /// <summary>
     /// Gets assignment and creates if not exits
     /// </summary>
-    Task<Assignment> GetOrCreateAssignment(Guid fromId, Guid toId, string roleCode);
+    /// <returns></returns>
+    Task<Result<Assignment>> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets assignment and creates if not exits
     /// </summary>
-    Task<Assignment> GetOrCreateAssignment(Guid fromId, Guid toId, Guid roleId);
+    /// <returns></returns>
+    Task<Result<Assignment>> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options, bool cascade = false, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets assignment and creates if not exits
+    /// </summary>
+    /// <returns></returns>
+    Task<Assignment> GetOrCreateAssignment(Guid fromId, Guid toId, Guid roleId, ChangeRequestOptions options);
 
     /// <summary>
     /// Adds a package to the delegation
     /// </summary>
-    Task<bool> AddPackageToAssignment(Guid userId, Guid assignmentId, Guid packageId);
+    /// <returns></returns>
+    Task<bool> AddPackageToAssignment(Guid userId, Guid assignmentId, Guid packageId, ChangeRequestOptions options);
 
     /// <summary>
     /// Adds a resource to the delegation
     /// </summary>
-    Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId);
+    /// <returns></returns>
+    Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId, ChangeRequestOptions options);
 
     /// <summary>
     /// Fetches assignment.

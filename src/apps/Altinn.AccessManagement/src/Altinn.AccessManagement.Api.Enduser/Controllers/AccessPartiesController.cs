@@ -2,8 +2,11 @@ using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Mappers;
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Extensions;
 using Altinn.AccessManagement.Core.Filters;
 using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
@@ -19,8 +22,10 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [Route("accessmanagement/api/v1/enduser/access/parties")]
 [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerAccessParties)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-public class AccessPartiesController(IAssignmentService assignmentService, IMapper<AssignmentExternal, Assignment> mapper) : ControllerBase
+public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentService assignmentService, IMapper<AssignmentExternal, Assignment> mapper) : ControllerBase
 {
+    private IHttpContextAccessor Accessor { get; } = accessor;
+
     private IAssignmentService AssignmentService { get; } = assignmentService;
 
     private IMapper<AssignmentExternal, Assignment> Mapper { get; } = mapper;
@@ -51,8 +56,14 @@ public class AccessPartiesController(IAssignmentService assignmentService, IMapp
     public async Task<IActionResult> PostAccessParty([FromQuery] Guid party, [FromQuery] Guid to, CancellationToken cancellationToken = default)
     {
         // When history is enabled pass partyUuid downstream to GetOrCreateAssignment
-        // var partyUuid = Accessor.GetPartyUuid();
-        var assignment = await AssignmentService.GetOrCreateAssignment(party, to, "rightholder", cancellationToken);
+        var partyUuid = Accessor.GetPartyUuid();
+        var audit = new ChangeRequestOptions()
+        {
+            ChangedBy = partyUuid,
+            ChangedBySystem = AuditDefaults.EnduserApi
+        };
+
+        var assignment = await AssignmentService.GetOrCreateAssignment(party, to, "rightholder", audit, cancellationToken);
 
         if (assignment.IsProblem)
         {
@@ -80,7 +91,13 @@ public class AccessPartiesController(IAssignmentService assignmentService, IMapp
     {
         // When history is enabled pass partyUuid downstream to GetOrCreateAssignment
         // var partyUuid = Accessor.GetPartyUuid();
-        var assignment = await AssignmentService.DeleteAssignment(party, to, "rightholder", cascade, cancellationToken);
+        var partyUuid = Accessor.GetPartyUuid();
+        var audit = new ChangeRequestOptions()
+        {
+            ChangedBy = partyUuid,
+            ChangedBySystem = AuditDefaults.EnduserApi
+        };
+        var assignment = await AssignmentService.DeleteAssignment(party, to, "rightholder", audit, cascade, cancellationToken);
 
         if (assignment.IsProblem)
         {

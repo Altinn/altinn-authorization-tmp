@@ -1,7 +1,8 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.ProblemDetails;
@@ -28,6 +29,104 @@ public class AssignmentService(
     private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
     private readonly IEntityRepository entityRepository = entityRepository;
     private readonly IConnectionRepository connectionRepository = connectionRepository;
+
+    /// <inheritdoc/>
+    public async Task<Result<Assignment>> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options, bool cascade = false, CancellationToken cancellationToken = default)
+    {
+        ValidationErrorBuilder errors = default;
+        var fromEntityExt = await entityRepository.GetExtended(fromEntityId, cancellationToken: cancellationToken);
+        var toEntityExt = await entityRepository.GetExtended(toEntityId, cancellationToken: cancellationToken);
+        ValidatePartyIsNotNull(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
+        ValidatePartyIsOrg(fromEntityExt, ref errors, "$QUERY/party");
+        ValidatePartyIsNotNull(toEntityId, toEntityExt, ref errors, "$QUERY/to");
+        ValidatePartyIsOrg(toEntityExt, ref errors, "$QUERY/to");
+
+        var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
+        if (roleResult == null || !roleResult.Any())
+        {
+            Unreachable();
+        }
+
+        var roleId = roleResult.First().Id;
+        var existingAssignment = await GetAssignment(fromEntityId, toEntityId, roleId, cancellationToken);
+        if (existingAssignment == null)
+        {
+            errors.Add(ValidationErrors.AssignmentDoNotExists);
+        }
+        else
+        {
+            if (!cascade)
+            {
+                var filter = connectionRepository.CreateFilterBuilder();
+                filter.Equal(val => val.FromId, existingAssignment.Id);
+                var connections = await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
+                if (connections.Any())
+                {
+                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [
+                        new("id", string.Join(",", connections.Select(conn => conn.Id.ToString()))),
+                    ]);
+                }
+            }
+        }
+
+        if (errors.TryBuild(out var errorResult))
+        {
+            return errorResult;
+        }
+
+        var result = await roleRepository.Delete(existingAssignment.Id, options, cancellationToken);
+        if (result == 0)
+        {
+            Unreachable();
+        }
+
+        return existingAssignment;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<Assignment>> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options, CancellationToken cancellationToken = default)
+    {
+        ValidationErrorBuilder errors = default;
+        var fromEntityExt = await entityRepository.GetExtended(fromEntityId, cancellationToken: cancellationToken);
+        var toEntityExt = await entityRepository.GetExtended(toEntityId, cancellationToken: cancellationToken);
+        ValidatePartyIsNotNull(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
+        ValidatePartyIsOrg(fromEntityExt, ref errors, "$QUERY/party");
+        ValidatePartyIsNotNull(toEntityId, toEntityExt, ref errors, "$QUERY/to");
+        ValidatePartyIsOrg(toEntityExt, ref errors, "$QUERY/to");
+
+        var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
+        if (roleResult == null || !roleResult.Any())
+        {
+            Unreachable();
+        }
+
+        var roleId = roleResult.First().Id;
+        var existingAssignment = await GetAssignment(fromEntityId, toEntityId, roleId, cancellationToken);
+        if (existingAssignment != null)
+        {
+            return existingAssignment;
+        }
+
+        if (errors.TryBuild(out var errorResult))
+        {
+            return errorResult;
+        }
+
+        var assignment = new Assignment
+        {
+            FromId = fromEntityId,
+            ToId = toEntityId,
+            RoleId = roleId,
+        };
+
+        var result = await assignmentRepository.Create(existingAssignment, options: options, cancellationToken);
+        if (result == 0)
+        {
+            Unreachable();
+        }
+
+        return assignment;
+    }
 
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default)
@@ -59,7 +158,7 @@ public class AssignmentService(
     }
 
     /// <inheritdoc/>
-    public async Task<bool> AddPackageToAssignment(Guid userId, Guid assignmentId, Guid packageId)
+    public async Task<bool> AddPackageToAssignment(Guid userId, Guid assignmentId, Guid packageId, ChangeRequestOptions options)
     {
         /*
         [X] Check if user is TS
@@ -114,17 +213,20 @@ public class AssignmentService(
             throw new Exception(string.Format("User '{0}' does not have package '{1}'", user.Name, package.Name));
         }
 
-        await assignmentPackageRepository.Create(new AssignmentPackage()
-        {
-            AssignmentId = assignmentId,
-            PackageId = packageId
-        });
+        await assignmentPackageRepository.Create(
+            new AssignmentPackage()
+            {
+                AssignmentId = assignmentId,
+                PackageId = packageId
+            },
+            options: options
+        );
 
         return true;
     }
 
     /// <inheritdoc/>
-    public Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId)
+    public Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId, ChangeRequestOptions options)
     {
         /*
         [ ] Check if user is TS
@@ -138,105 +240,7 @@ public class AssignmentService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<Assignment>> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, bool cascade, CancellationToken cancellationToken = default)
-    {
-        ValidationErrorBuilder errors = default;
-        var fromEntityExt = await entityRepository.GetExtended(fromEntityId, cancellationToken: cancellationToken);
-        var toEntityExt = await entityRepository.GetExtended(toEntityId, cancellationToken: cancellationToken);
-        ValidatePartyIsNotNull(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
-        ValidatePartyIsOrg(fromEntityExt, ref errors, "$QUERY/party");
-        ValidatePartyIsNotNull(toEntityId, toEntityExt, ref errors, "$QUERY/to");
-        ValidatePartyIsOrg(toEntityExt, ref errors, "$QUERY/to");
-
-        var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
-        if (roleResult == null || !roleResult.Any())
-        {
-            Unreachable();
-        }
-
-        var roleId = roleResult.First().Id;
-        var existingAssignment = await GetAssignment(fromEntityId, toEntityId, roleId, cancellationToken);
-        if (existingAssignment == null)
-        {
-            errors.Add(ValidationErrors.AssignmentDoNotExists);
-        }
-        else
-        {
-            if (!cascade)
-            {
-                var filter = connectionRepository.CreateFilterBuilder();
-                filter.Equal(val => val.FromId, existingAssignment.Id);
-                var connections = await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
-                if (connections.Any())
-                {
-                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [
-                        new("id", string.Join(",", connections.Select(conn => conn.Id.ToString()))),
-                    ]);
-                }
-            }
-        }
-
-        if (errors.TryBuild(out var errorResult))
-        {
-            return errorResult;
-        }
-
-        var result = await roleRepository.Delete(existingAssignment.Id, cancellationToken);
-        if (result == 0)
-        {
-            Unreachable();
-        }
-
-        return existingAssignment;
-    }
-
-    /// <inheritdoc/>
-    public async Task<Result<Assignment>> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default)
-    {
-        ValidationErrorBuilder errors = default;
-        var fromEntityExt = await entityRepository.GetExtended(fromEntityId, cancellationToken: cancellationToken);
-        var toEntityExt = await entityRepository.GetExtended(toEntityId, cancellationToken: cancellationToken);
-        ValidatePartyIsNotNull(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
-        ValidatePartyIsOrg(fromEntityExt, ref errors, "$QUERY/party");
-        ValidatePartyIsNotNull(toEntityId, toEntityExt, ref errors, "$QUERY/to");
-        ValidatePartyIsOrg(toEntityExt, ref errors, "$QUERY/to");
-
-        var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
-        if (roleResult == null || !roleResult.Any())
-        {
-            Unreachable();
-        }
-
-        var roleId = roleResult.First().Id;
-        var existingAssignment = await GetAssignment(fromEntityId, toEntityId, roleId, cancellationToken);
-        if (existingAssignment != null)
-        {
-            return existingAssignment;
-        }
-
-        if (errors.TryBuild(out var errorResult))
-        {
-            return errorResult;
-        }
-
-        var assignment = new Assignment
-        {
-            FromId = fromEntityId,
-            ToId = toEntityId,
-            RoleId = roleId,
-        };
-
-        var result = await assignmentRepository.Create(existingAssignment, cancellationToken);
-        if (result == 0)
-        {
-            Unreachable();
-        }
-
-        return assignment;
-    }
-
-    /// <inheritdoc/>
-    public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode)
+    public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options)
     {
         var roleResult = await roleRepository.Get(t => t.Name, roleCode);
         if (roleResult == null || !roleResult.Any())
@@ -244,11 +248,11 @@ public class AssignmentService(
             throw new Exception(string.Format("Role '{0}' not found", roleCode));
         }
 
-        return await GetOrCreateAssignment(fromEntityId, toEntityId, roleResult.First().Id);
+        return await GetOrCreateAssignment(fromEntityId, toEntityId, roleResult.First().Id, options: options);
     }
 
     /// <inheritdoc/>
-    public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, Guid roleId)
+    public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, Guid roleId, ChangeRequestOptions options)
     {
         var assignment = await GetAssignment(fromEntityId, toEntityId, roleId);
         if (assignment != null)
@@ -273,12 +277,15 @@ public class AssignmentService(
             throw new Exception(string.Format("Multiple inheirited assignment exists. Use Force = true to create anyway."));
         }
 
-        await assignmentRepository.Create(new Assignment()
-        {
-            FromId = fromEntityId,
-            ToId = toEntityId,
-            RoleId = role.Id
-        });
+        await assignmentRepository.Create(
+            new Assignment()
+            {
+                FromId = fromEntityId,
+                ToId = toEntityId,
+                RoleId = role.Id
+            },
+            options: options
+        );
 
         throw new NotImplementedException();
     }
