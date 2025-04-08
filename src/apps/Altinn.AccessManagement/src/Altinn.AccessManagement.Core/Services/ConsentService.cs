@@ -30,7 +30,6 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IAMPartyService _ampartyService = ampartyService;
         private readonly IMemoryCache _memoryCache = memoryCache;
 
-
         private const string _consentRequestStatus = "Status";
 
         /// <inheritdoc/>
@@ -180,6 +179,7 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
             };
+
             return details;
         }
 
