@@ -30,6 +30,9 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IAMPartyService _ampartyService = ampartyService;
         private readonly IMemoryCache _memoryCache = memoryCache;
 
+
+        private const string _consentRequestStatus = "Status";
+
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken = default)
         {
@@ -66,7 +69,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
             {
-                errors.Add(ValidationErrors.ConsentCantBeRejected, "Status");
+                errors.Add(ValidationErrors.ConsentCantBeRejected, _consentRequestStatus);
             }
 
             if (errors.TryBuild(out var beforeErrorREsult))
@@ -90,7 +93,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
                 {
-                    errors.Add(ValidationErrors.ConsentCantBeRejected, "Status");
+                    errors.Add(ValidationErrors.ConsentCantBeRejected, _consentRequestStatus);
                     if (errors.TryBuild(out var errorResult))
                     {
                         return errorResult;
@@ -138,15 +141,15 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Created)
             {
-                errors.Add(ValidationErrors.ConsentNotAccepted, "Status");
+                errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
             }
             else if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
             {
-                errors.Add(ValidationErrors.ConsentRevoked, "Status");
+                errors.Add(ValidationErrors.ConsentRevoked, _consentRequestStatus);
             }
             else if (consentRequest.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
             {
-                errors.Add(ValidationErrors.ConsentNotAccepted, "Status");
+                errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
             }
 
             if (errors.TryBuild(out var errorResult))
@@ -193,7 +196,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
             {
-                errors.Add(ValidationErrors.ConsentCantBeAccepted, "Status");
+                errors.Add(ValidationErrors.ConsentCantBeAccepted, _consentRequestStatus);
             }
 
             if (errors.TryBuild(out var beforeErrorREsult))
@@ -217,7 +220,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
                 {
-                    errors.Add(ValidationErrors.ConsentCantBeAccepted, "Status");
+                    errors.Add(ValidationErrors.ConsentCantBeAccepted, _consentRequestStatus);
                     if (errors.TryBuild(out var errorResult))
                     {
                         return errorResult;
@@ -245,7 +248,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (details.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
             {
-                errors.Add(ValidationErrors.ConsentCantBeRevoked, "Status");
+                errors.Add(ValidationErrors.ConsentCantBeRevoked, _consentRequestStatus);
             }
 
             if (errors.TryBuild(out var beforeErrorREsult))
@@ -269,7 +272,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (details.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
                 {
-                    errors.Add(ValidationErrors.ConsentCantBeAccepted, "Status");
+                    errors.Add(ValidationErrors.ConsentCantBeAccepted, _consentRequestStatus);
                     if (errors.TryBuild(out var errorResult))
                     {
                         return errorResult;
