@@ -55,7 +55,6 @@ public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentS
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> PostAccessParty([FromQuery] Guid party, [FromQuery] Guid to, CancellationToken cancellationToken = default)
     {
-        // When history is enabled pass partyUuid downstream to GetOrCreateAssignment
         var partyUuid = Accessor.GetPartyUuid();
         var audit = new ChangeRequestOptions()
         {
@@ -89,8 +88,6 @@ public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentS
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteAccessParty([FromQuery] Guid party, [FromQuery] Guid to, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
-        // When history is enabled pass partyUuid downstream to GetOrCreateAssignment
-        // var partyUuid = Accessor.GetPartyUuid();
         var partyUuid = Accessor.GetPartyUuid();
         var audit = new ChangeRequestOptions()
         {
