@@ -91,7 +91,7 @@ public class DbDataMigrationService(
 
         if (migrationService.NeedMigration<Entity>(dataKey, 2))
         {
-            await IngestEntity(options: options, cancellationToken: cancellationToken);
+            await IngestSystemEntity(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<Entity>(dataKey, string.Empty, 2);
         }
 
@@ -439,7 +439,7 @@ public class DbDataMigrationService(
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestEntity(ChangeRequestOptions options, CancellationToken cancellationToken = default)
+    public async Task IngestSystemEntity(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var internalTypeId = (await entityTypeService.Get(t => t.Name, "Intern")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
         var internalVariantId = (await entityVariantService.Get(t => t.TypeId, internalTypeId)).FirstOrDefault(t => t.Name.Equals("Standard", StringComparison.OrdinalIgnoreCase))?.Id ?? throw new KeyNotFoundException(string.Format("EntityVariant '{0}' not found", "Intern"));

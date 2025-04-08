@@ -19,5 +19,5 @@ public class ChangeRequestOptions
     /// <summary>
     /// Identify operation spanning multiple tables and cascades
     /// </summary>
-    public Guid ChangeOperationId { get; set; } = Guid.CreateVersion7();
+    public string ChangeOperationId { get; set; } = Guid.CreateVersion7().ToString();
 }

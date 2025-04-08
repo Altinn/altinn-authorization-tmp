@@ -191,7 +191,7 @@ public partial class RegisterHostedService(
             }
 
             Guid batchId = Guid.CreateVersion7();
-            options.ChangeOperationId = batchId;
+            options.ChangeOperationId = batchId.ToString();
             var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
             _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
 
@@ -270,215 +270,6 @@ public partial class RegisterHostedService(
                     batchData.Clear();
                 }
             }
-        }
-    }
-
-    private async Task SyncRolesSingle(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
-    {
-        var options = new ChangeRequestOptions()
-        {
-            ChangedBy = AuditDefaults.RegisterImportSystem,
-            ChangedBySystem = AuditDefaults.RegisterImportSystem
-        };
-
-        var failedAdds = new List<Assignment>();
-        var failedRemoves = new List<Assignment>();
-
-        await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-
-            if (!page.IsSuccessful || page.Content == null)
-            {
-                Log.ResponseError(_logger, page.StatusCode);
-            }
-
-            foreach (var item in page.Content.Data)
-            {
-                var assignment = await ConvertRoleModel(item, options: options) ?? throw new Exception("Failed to convert RoleModel to Assignment");
-                if (item.Type == "Added")
-                {
-                    try
-                    {
-                        var res = await assignmentRepository.Create(assignment, options: options, cancellationToken: cancellationToken);
-                        Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
-                    } 
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to add assignment");
-                        Log.AssignmentFailed(_logger, "add", assignment.FromId.ToString(), assignment.ToId.ToString(), assignment.RoleId.ToString());
-                        failedAdds.Add(assignment);
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        var filter = assignmentRepository.CreateFilterBuilder();
-                        filter.Equal(t => t.FromId, assignment.FromId);
-                        filter.Equal(t => t.ToId, assignment.ToId);
-                        filter.Equal(t => t.RoleId, assignment.RoleId);
-                        var res = await assignmentRepository.Delete(filter, options: options, cancellationToken: cancellationToken);
-                        Log.AssignmentSuccess(_logger, "removed", item.FromParty, item.ToParty, item.RoleIdentifier);
-                    } 
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to remove assignment");
-                        Log.AssignmentFailed(_logger, "remove", assignment.FromId.ToString(), assignment.ToId.ToString(), assignment.RoleId.ToString());
-                        failedRemoves.Add(assignment);
-                    }
-                }
-
-                Interlocked.Increment(ref _executionCount);
-            }
-
-            if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
-            {
-                return;
-            }
-
-            await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
-            await _lease.RefreshLease(ls, cancellationToken);
-        }
-
-        _logger.LogInformation("Role import failures;");
-        foreach (var ass in failedAdds)
-        {
-            _logger.LogInformation("Failed to {0} assingment from '{1}' to '{2}' with role '{3}'", "add", ass.FromId, ass.ToId, ass.RoleId);
-        }
-
-        foreach (var ass in failedRemoves)
-        {
-            _logger.LogInformation("Failed to {0} assingment from '{1}' to '{2}' with role '{3}'", "remove", ass.FromId, ass.ToId, ass.RoleId);
-        }
-    }
-    
-    private async Task SyncRolesBatched(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
-    {
-        var options = new ChangeRequestOptions()
-        {
-            ChangedBy = AuditDefaults.RegisterImportSystem,
-            ChangedBySystem = AuditDefaults.RegisterImportSystem
-        };
-
-        int batchSize = 1000;
-        Guid batchId = Guid.CreateVersion7();
-        options.ChangeOperationId = batchId;
-        var batchData = new List<Assignment>();
-
-        await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-
-            if (!page.IsSuccessful || page.Content == null)
-            {
-                Log.ResponseError(_logger, page.StatusCode);
-            }
-
-            foreach (var item in page.Content.Data)
-            {
-                try
-                {
-                    var assignment = await ConvertRoleModel(item, options: options) ?? throw new Exception("Failed to convert RoleModel to Assignment");
-                    
-                    if (batchData.Any(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId))
-                    {
-                        // If changes on same assignment then execute as-is before continuing.
-                        await FlushBatchAsync(cancellationToken);
-                    }
-
-                    if (item.Type == "Added")
-                    {
-                        try
-                        {
-                            batchData.Add(assignment);
-                            if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
-                            {
-                                await SetParent(assignment.FromId, assignment.ToId, options: options, cancellationToken: cancellationToken);
-                            }
-
-                            Log.AssignmentSuccess(_logger, "added", item.FromParty, item.ToParty, item.RoleIdentifier);
-                        }
-                        catch
-                        {
-                            Log.AssignmentFailed(_logger, "add", item.FromParty, item.ToParty, item.RoleIdentifier);
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            var filter = assignmentRepository.CreateFilterBuilder();
-                            filter.Equal(t => t.FromId, assignment.FromId);
-                            filter.Equal(t => t.ToId, assignment.ToId);
-                            filter.Equal(t => t.RoleId, assignment.RoleId);
-                            await assignmentRepository.Delete(filter, options: options, cancellationToken: cancellationToken);
-
-                            if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
-                            {
-                                await RemoveParent(assignment.FromId, options: options, cancellationToken: cancellationToken);
-                            }
-
-                            Log.AssignmentSuccess(_logger, "removed", item.FromParty, item.ToParty, item.RoleIdentifier);
-                        }
-                        catch
-                        {
-                            Log.AssignmentFailed(_logger, "remove", item.FromParty, item.ToParty, item.RoleIdentifier);
-                        }
-
-                    }
-
-                    Interlocked.Increment(ref _executionCount);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Faild to ingest assignments");
-                }
-            }
-
-            if (batchData.Count >= batchSize)
-            {
-                await FlushBatchAsync(cancellationToken);
-            }
-
-            if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
-            {
-                return;
-            }
-
-            await _lease.Put(ls, new() { RoleStreamNextPageLink = page.Content.Links.Next, PartyStreamNextPageLink = ls.Data?.PartyStreamNextPageLink }, cancellationToken);
-            await _lease.RefreshLease(ls, cancellationToken);
-        }
-
-        if (batchData.Count > 0)
-        {
-            await FlushBatchAsync(cancellationToken);
-        }
-
-        async Task FlushBatchAsync(CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                Console.WriteLine("Write batchData to db");
-                await ingestService.IngestTempData<Assignment>(batchData, batchId, options: options, cancellationToken);
-
-                Console.WriteLine("Merge batchData to db");
-                await ingestService.MergeTempData<Assignment>(batchId, options: options, GetAssignmentMergeMatchFilter, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to merge batchData '{batchId}'", batchId);
-                await Task.Delay(2000);
-            }
-
-            batchId = Guid.CreateVersion7();
-            batchData.Clear();
         }
     }
 
@@ -612,7 +403,7 @@ public partial class RegisterHostedService(
             }
             
             Guid batchId = Guid.CreateVersion7();
-            options.ChangeOperationId = batchId;
+            options.ChangeOperationId = batchId.ToString();
             var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
             _logger.LogInformation("Starting proccessing party page '{0}'", batchName);
 
@@ -620,6 +411,11 @@ public partial class RegisterHostedService(
             {
                 foreach (var item in page.Content.Data)
                 {
+                    if (item.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
                     var entity = ConvertPartyModel(item, options: options, cancellationToken: cancellationToken);
                     
                     if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)

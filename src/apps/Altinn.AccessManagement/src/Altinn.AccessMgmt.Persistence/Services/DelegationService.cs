@@ -3,8 +3,6 @@ using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
-using Altinn.AccessMgmt.Repo.Data;
-using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -369,7 +367,7 @@ public class DelegationService(
         else
         {
             var roleProvider = await providerRepository.Get(role.ProviderId);
-            if (roleProvider.Name != "Digitaliseringsdirektoratet") // Get system from token
+            if (roleProvider.Code != "sys-altinn3") // Get system from token
             {
                 throw new Exception(string.Format("You cannot create assignment with the role '{0}' ({1})", role.Name, role.Code));
             }
