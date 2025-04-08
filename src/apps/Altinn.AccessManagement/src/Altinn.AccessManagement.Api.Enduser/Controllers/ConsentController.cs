@@ -1,5 +1,4 @@
 ﻿using Altinn.AccessManagement.Api.Enduser.Utils;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Core.Models.Consent;
@@ -10,16 +9,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace Altinn.AccessManagement.Api.Enduser.Controllers
 {
     /// <summary>
-    /// Api for consent information for end users.
-    /// Most API is are only available from Altinn Portal. This to ensure that end user is web informed about details 
+    /// API controller for managing consent information for end users.
+    /// All endpoints are accessible only from the Altinn Portal to ensure that end users are properly informed about the details of their consents.
+    /// The controller enforces the portal scope for authorization to access its methods.
     /// </summary>
     [Route("accessmanagement/api/v1/enduser/consent/")]
     [ApiController]
     [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-    public class ConsentController(IConsent consentService, IPartiesClient partiesClient, ISingleRightsService singleRightsService) : ControllerBase
+    public class ConsentController(IConsent consentService) : ControllerBase
     {
         private readonly IConsent _consentService = consentService;
-        private readonly IPartiesClient _partiesClient = partiesClient;
 
         /// <summary>
         /// Get a specific consent. 
