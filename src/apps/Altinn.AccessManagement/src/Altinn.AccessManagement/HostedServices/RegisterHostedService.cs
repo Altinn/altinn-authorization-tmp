@@ -249,7 +249,7 @@ public partial class RegisterHostedService(
             {
                 try
                 {
-                    _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchName);
+                    _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchId.ToString());
                     var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, options: options, cancellationToken: cancellationToken);
 
                     if (ingested != batchData.Count)
@@ -263,8 +263,8 @@ public partial class RegisterHostedService(
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName);
-                    throw new Exception(string.Format("Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName), ex);
+                    _logger.LogError(ex, "Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchId.ToString());
+                    throw new Exception(string.Format("Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchId.ToString()), ex);
                 }
                 finally
                 {
