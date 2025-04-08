@@ -23,7 +23,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
         private readonly IConsent _consentService = consentService;
 
         /// <summary>
-        /// Returns a specific consent
+        /// Returns a specific consent based on consent id an from party
         /// </summary>
         [HttpPost]
         [Route("lookup")]
@@ -34,10 +34,10 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
             {
                 ConsentPartyUrnExternal.PersonId => ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(consentLookup.From.ValueSpan)),
                 ConsentPartyUrnExternal.OrganizationId => ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(consentLookup.From.ValueSpan)),
-                _ => throw new ArgumentException("Unknown consent party urn")
+                _ => throw new ArgumentException($"Unknown consent party urn: {consentLookup.From}")
             };
 
-            Result<Consent> consent = await _consentService.GetConsent(consentLookup.Id, MapToCore(consentLookup.From), MapToCore(consentLookup.To));
+            Result<Consent> consent = await _consentService.GetConsent(consentLookup.Id, from, MapToCore(consentLookup.To));
 
             if (consent.IsProblem)
             {
