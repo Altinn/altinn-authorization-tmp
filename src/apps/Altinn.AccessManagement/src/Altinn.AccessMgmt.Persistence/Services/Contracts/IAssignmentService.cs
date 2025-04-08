@@ -44,7 +44,7 @@ public interface IAssignmentService
     /// <returns></returns>
     Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId);
 
-    Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId);
+    Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default);
 
     Task<Assignment> GetAssignment(Guid fromId, Guid toId, string roleCode);
 

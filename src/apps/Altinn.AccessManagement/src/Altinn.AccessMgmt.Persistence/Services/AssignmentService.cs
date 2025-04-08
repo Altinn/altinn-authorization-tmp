@@ -31,14 +31,14 @@ public class AssignmentService(
     private readonly IConnectionRepository connectionRepository = connectionRepository;
 
     /// <inheritdoc/>
-    public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId)
+    public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default)
     {
         var filter = assignmentRepository.CreateFilterBuilder();
         filter.Equal(t => t.FromId, fromId);
         filter.Equal(t => t.ToId, toId);
         filter.Equal(t => t.RoleId, roleId);
 
-        var result = await assignmentRepository.Get(filter);
+        var result = await assignmentRepository.Get(filter, cancellationToken: cancellationToken);
         if (result == null || !result.Any())
         {
             return null;
@@ -153,7 +153,7 @@ public class AssignmentService(
         ValidatePartyIsNotNull(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
         ValidatePartyIsOrg(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
         ValidatePartyIsNotNull(toEntityId, toEntityExt, ref errors, "$QUERY/to");
-        ValidatePartyIsOrg(toEntityId, fromEntityExt, ref errors, "$QUERY/to");
+        ValidatePartyIsOrg(toEntityId, toEntityExt, ref errors, "$QUERY/to");
 
         var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
         if (roleResult == null || !roleResult.Any())
@@ -162,7 +162,7 @@ public class AssignmentService(
         }
 
         var roleId = roleResult.First().Id;
-        var existingAssignment = await GetAssignment(fromEntityId, toEntityId, roleId);
+        var existingAssignment = await GetAssignment(fromEntityId, toEntityId, roleId, cancellationToken);
         if (existingAssignment == null)
         {
             errors.Add(ValidationErrors.AssignmentDoNotExists);
@@ -206,7 +206,7 @@ public class AssignmentService(
         ValidatePartyIsNotNull(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
         ValidatePartyIsOrg(fromEntityId, fromEntityExt, ref errors, "$QUERY/party");
         ValidatePartyIsNotNull(toEntityId, toEntityExt, ref errors, "$QUERY/to");
-        ValidatePartyIsOrg(toEntityId, fromEntityExt, ref errors, "$QUERY/to");
+        ValidatePartyIsOrg(toEntityId, toEntityExt, ref errors, "$QUERY/to");
 
         var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
         if (roleResult == null || !roleResult.Any())
@@ -215,7 +215,7 @@ public class AssignmentService(
         }
 
         var roleId = roleResult.First().Id;
-        var existingAssignment = await GetAssignment(fromEntityId, toEntityId, roleId);
+        var existingAssignment = await GetAssignment(fromEntityId, toEntityId, roleId, cancellationToken);
         if (existingAssignment != null)
         {
             return existingAssignment;
