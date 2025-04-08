@@ -97,6 +97,7 @@ public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentS
             ChangedBy = partyUuid,
             ChangedBySystem = AuditDefaults.EnduserApi
         };
+
         var assignment = await AssignmentService.DeleteAssignment(party, to, "rightholder", audit, cascade, cancellationToken);
 
         if (assignment.IsProblem)
