@@ -142,7 +142,7 @@ public class AssignmentService(
     }
 
     /// <inheritdoc/>
-    public async Task<Result<Assignment>> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options, bool cascade = false, CancellationToken cancellationToken = default)
+    public async Task<ProblemInstance> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options, bool cascade = false, CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errors = default;
         var fromEntityExt = await entityRepository.GetExtended(fromEntityId, cancellationToken: cancellationToken);
@@ -162,7 +162,7 @@ public class AssignmentService(
         var existingAssignment = await GetAssignment(fromEntityId, toEntityId, roleId, cancellationToken);
         if (existingAssignment == null)
         {
-            errors.Add(ValidationErrors.AssignmentDoNotExists);
+            return null;
         }
         else
         {
@@ -191,7 +191,7 @@ public class AssignmentService(
             Unreachable();
         }
 
-        return existingAssignment;
+        return null;
     }
 
     /// <inheritdoc/>

@@ -95,13 +95,13 @@ public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentS
             ChangedBySystem = AuditDefaults.EnduserApi
         };
 
-        var assignment = await AssignmentService.DeleteAssignment(party, to, "rightholder", audit, cascade, cancellationToken);
+        var problem = await AssignmentService.DeleteAssignment(party, to, "rightholder", audit, cascade, cancellationToken);
 
-        if (assignment.IsProblem)
+        if (problem is { })
         {
-            return assignment.Problem.ToActionResult();
+            return problem.ToActionResult();
         }
 
-        return Ok(Mapper.Map(assignment.Value));
+        return NoContent();
     }
 }
