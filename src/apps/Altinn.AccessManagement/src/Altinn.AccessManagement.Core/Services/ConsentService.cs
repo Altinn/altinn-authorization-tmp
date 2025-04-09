@@ -126,6 +126,9 @@ namespace Altinn.AccessManagement.Core.Services
                 {
                     return errorResultStart;
                 }
+
+                // Should not be possible to get here
+                throw new ArgumentException($"Consent request with id {id} not found");
             }
             else
             {
@@ -156,23 +159,23 @@ namespace Altinn.AccessManagement.Core.Services
                 {
                     errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
                 }
+
+                if (errors.TryBuild(out var errorResult))
+                {
+                    return errorResult;
+                }
+
+                Consent consent = new()
+                {
+                    Id = consentRequest.Id,
+                    From = await MapToExternalIdenity(consentRequest.From, cancellationToken),
+                    To = await MapToExternalIdenity(consentRequest.To, cancellationToken),
+                    ValidTo = consentRequest.ValidTo,
+                    ConsentRights = consentRequest.ConsentRights
+                };
+
+                return consent;
             }
-
-            if (errors.TryBuild(out var errorResult))
-            {
-                return errorResult;
-            }
-
-            Consent consent = new Consent()
-            {
-                Id = consentRequest.Id,
-                From = await MapToExternalIdenity(consentRequest.From, cancellationToken),
-                To = await MapToExternalIdenity(consentRequest.To, cancellationToken),
-                ValidTo = consentRequest.ValidTo,
-                ConsentRights = consentRequest.ConsentRights
-            };
-
-            return consent;
         }
 
         /// <inheritdoc/>
