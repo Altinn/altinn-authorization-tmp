@@ -97,7 +97,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Single(consentInfo.ConsentRights[0].MetaData);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
-            Assert.Equal(consentRequest.ConsentRights[0].Action.Count(), consentInfo.ConsentRights[0].Action.Count());
+            Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
@@ -154,7 +154,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Null(consentInfo.ConsentRights[0].MetaData);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
-            Assert.Equal(consentRequest.ConsentRights[0].Action.Count(), consentInfo.ConsentRights[0].Action.Count());
+            Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
@@ -230,7 +230,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Single(consentInfo.ConsentRights[0].MetaData);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
-            Assert.Equal(consentRequest.ConsentRights[0].Action.Count(), consentInfo.ConsentRights[0].Action.Count());
+            Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
