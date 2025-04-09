@@ -10,7 +10,7 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         /// <summary>
         /// Creates a consent request
         /// </summary>
-        Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedBy, CancellationToken cancellationToken = default);
+        Task<ConsentRequestDetails> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Deletes a consent request. Can only be performed by the party that created the request. Will be soft deleted.
