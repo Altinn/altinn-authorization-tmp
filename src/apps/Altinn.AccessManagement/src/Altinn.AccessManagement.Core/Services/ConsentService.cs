@@ -33,7 +33,7 @@ namespace Altinn.AccessManagement.Core.Services
         private const string _consentRequestStatus = "Status";
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken = default)
+        public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken)
         {
             Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest, cancellationToken);
 
@@ -56,7 +56,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> RejectRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
+        public async Task<Result<ConsentRequestDetails>> RejectRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken)
         {
             ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
@@ -109,7 +109,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<Consent>> GetConsent(Guid id, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken = default)
+        public async Task<Result<Consent>> GetConsent(Guid id, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken)
         {
             ValidationErrorBuilder errors = default;
             ConsentRequestDetails consentRequest = await _consentRepository.GetRequest(id, cancellationToken);
@@ -176,7 +176,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ConsentRequestDetails> GetRequest(Guid id, Guid userId, CancellationToken cancellationToken = default)
+        public async Task<ConsentRequestDetails> GetRequest(Guid id, Guid userId, CancellationToken cancellationToken)
         {
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
             bool isAuthorized = await AuthorizeUserForConsentRequest(userId, details, cancellationToken);
@@ -191,7 +191,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> AcceptRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
+        public async Task<Result<ConsentRequestDetails>> AcceptRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken)
         {
             ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
@@ -294,7 +294,7 @@ namespace Altinn.AccessManagement.Core.Services
             return updated;
         }
 
-        private async Task SetExternalIdentities(ConsentRequestDetails details, CancellationToken cancellationToken = default)
+        private async Task SetExternalIdentities(ConsentRequestDetails details, CancellationToken cancellationToken)
         {
             details.From = await MapToExternalIdenity(details.From, cancellationToken);
             details.To = await MapToExternalIdenity(details.To, cancellationToken);

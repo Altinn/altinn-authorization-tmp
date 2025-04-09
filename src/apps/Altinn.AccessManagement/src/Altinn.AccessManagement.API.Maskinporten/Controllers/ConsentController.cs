@@ -28,7 +28,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
         [HttpPost]
         [Route("lookup")]
         [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSENT_READ)]
-        public async Task<ActionResult<ConsentInfoMaskinporten>> GetConcent([FromBody] ConsentLookup consentLookup)
+        public async Task<ActionResult<ConsentInfoMaskinporten>> GetConcent([FromBody] ConsentLookup consentLookup, CancellationToken cancellationToken = default)
         {
             ConsentPartyUrn from = consentLookup.From switch
             {
@@ -37,7 +37,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
                 _ => throw new ArgumentException($"Unknown consent party urn: {consentLookup.From}")
             };
 
-            Result<Consent> consent = await _consentService.GetConsent(consentLookup.Id, from, MapToCore(consentLookup.To));
+            Result<Consent> consent = await _consentService.GetConsent(consentLookup.Id, from, MapToCore(consentLookup.To), cancellationToken);
 
             if (consent.IsProblem)
             {
