@@ -137,7 +137,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 rightsCommand.Parameters.AddWithValue("consentRightId", consentRightGuid);
                 rightsCommand.Parameters.AddWithValue("consentRequestId", consentRequest.Id);
                 rightsCommand.Parameters.AddWithValue("action", consentRight.Action);
-                await rightsCommand.ExecuteNonQueryAsync();
+                await rightsCommand.ExecuteNonQueryAsync(cancellationToken);
 
                 // Bulding up the query for the resource attributes. Typical this is only one, but in theory it can be multiple attributes identifying a resource.
                 var values = new List<string>();
