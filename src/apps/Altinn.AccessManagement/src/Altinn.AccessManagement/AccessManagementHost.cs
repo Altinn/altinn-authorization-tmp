@@ -107,35 +107,26 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureLibsIntegrations(this WebApplicationBuilder builder)
     {
-        builder.Services.AddAltinnPlatformIntegrationDefaults(() =>
-        {
-            var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings.Platform?.ResourceRegisterEndpoint == null)
-            {
-                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.ResourceRegisterEndpoint));
-                opts.Endpoint = default;
-            }
-            else
-            {
-                opts.Endpoint = appsettings.Platform.ResourceRegisterEndpoint;
-            }
-        });
+        // TODO: Andreas?
 
-        builder.AddAltinnRegisterIntegration(opts =>
-        {
-            var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings.Platform?.RegisterEndpoint == null)
-            {
-                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.RegisterEndpoint));
-                opts.Endpoint = default;
-            }
-            else
-            {
-                opts.Endpoint = appsettings.Platform.RegisterEndpoint;
-            }
+        //builder.Services.AddAltinnPlatformIntegrationDefaults(
+        //{
+        //    new AccessManagementAppsettings(builder.Configuration);
+        //});
 
-            opts.Endpoint = new Uri("http://localhost:5020/");
-        });
+        //builder.AddAltinnRegisterIntegration(opts =>
+        //{
+        //    var appsettings = new AccessManagementAppsettings(builder.Configuration);
+        //    if (appsettings.Platform?.RegisterEndpoint == null)
+        //    {
+        //        Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.RegisterEndpoint));
+        //        opts.Endpoint = default;
+        //    }
+        //    else
+        //    {
+        //        opts.Endpoint = appsettings.Platform.RegisterEndpoint;
+        //    }
+        //});
 
         return builder;
     }

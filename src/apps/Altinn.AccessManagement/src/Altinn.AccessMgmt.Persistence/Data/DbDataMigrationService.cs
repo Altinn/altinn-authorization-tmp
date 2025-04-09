@@ -189,7 +189,7 @@ public class DbDataMigrationService(
             new Provider() { Id = Guid.Parse("0195ea92-2080-758b-89db-7735c4f68320"), Name = "Enhetsregisteret", Code = "sys-ccr", TypeId = systemType.Id }
         };
 
-        await ingestService.IngestAndMergeData(systemProviders, options: options, new List<GenericParameter>() { new GenericParameter("code", "code") }, cancellationToken);
+        await ingestService.IngestAndMergeData(systemProviders, options: options, ["code"], cancellationToken);
     }
 
     /// <summary>
@@ -706,10 +706,9 @@ public class DbDataMigrationService(
             new RoleLookup() { RoleId = roles.First(t => t.Code == "regnskapsforer").Id, Key = "ERCode", Value = "REGN" }
         };
 
-        var mergeFilter = new List<GenericParameter>()
+        var mergeFilter = new List<string>()
         {
-            new GenericParameter("RoleId", "RoleId"),
-            new GenericParameter("Key", "Key")
+            "RoleId", "Key"
         };
 
         await ingestService.IngestAndMergeData(erCodes, options: options, mergeFilter, cancellationToken);

@@ -180,6 +180,12 @@ public partial class RegisterHostedService(
             return false;
         }
 
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = AuditDefaults.RegisterImportSystem,
+            ChangedBySystem = AuditDefaults.RegisterImportSystem
+        };
+
         var resourceOwners = new List<Provider>();
         foreach (var serviceOwner in serviceOwners.Content.Orgs)
         {
@@ -193,13 +199,19 @@ public partial class RegisterHostedService(
         }
 
         // IngestService will map in Id property and update properties not matchaed
-        await ingestService.IngestAndMergeData(resourceOwners, ["Id"]);
+        await ingestService.IngestAndMergeData(resourceOwners, options: options, ["Id"]);
 
         return true;
     }
 
     private async Task SyncResources(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = AuditDefaults.RegisterImportSystem,
+            ChangedBySystem = AuditDefaults.RegisterImportSystem
+        };
+
         await foreach (var page in await _resourceRegister.StreamResources(ls.Data.ResourcesNextPageLink, cancellationToken))
         {
             if (!page.IsSuccessful)
@@ -227,7 +239,7 @@ public partial class RegisterHostedService(
                 {
                     if (res != null)
                     {
-                        await resourceRepository.Delete(res.Id);
+                        await resourceRepository.Delete(res.Id, options: options);
                     }
 
                     continue;
@@ -264,11 +276,14 @@ public partial class RegisterHostedService(
                 {
                     if (resource.HasCompetentAuthority != null)
                     {
-                        await providerRepository.Create(new Provider() 
-                        { 
-                            Name = resource.HasCompetentAuthority.Name.Nb,
-                            RefId = resource.HasCompetentAuthority.Orgcode
-                        });
+                        await providerRepository.Create(
+                            new Provider() 
+                            { 
+                                Name = resource.HasCompetentAuthority.Name.Nb,
+                                RefId = resource.HasCompetentAuthority.Orgcode
+                            }, 
+                            options: options
+                        );
                     }
                 }
 
@@ -281,7 +296,7 @@ public partial class RegisterHostedService(
                             Name = resource.HasCompetentAuthority.Name.Nb,
                             RefId = resource.HasCompetentAuthority.Orgcode
                         };
-                        await providerRepository.Create(provider);
+                        await providerRepository.Create(provider, options: options);
                     }
                     else
                     {
@@ -297,7 +312,7 @@ public partial class RegisterHostedService(
                         Name = resource.ResourceType
                     };
 
-                    await resourceTypeRepository.Create(type);
+                    await resourceTypeRepository.Create(type, options: options);
                 }
 
                 resources.Add(new Resource()
@@ -310,7 +325,7 @@ public partial class RegisterHostedService(
                 });
             }
 
-            await ingestService.IngestAndMergeData(resources, ["RefId", "ProviderId"]);
+            await ingestService.IngestAndMergeData(resources, options: options, ["RefId", "ProviderId"]);
 
             await UpdateLease(ls, data => data.ResourcesNextPageLink = page.Content.Links.Next, cancellationToken);
         }
@@ -406,9 +421,9 @@ public partial class RegisterHostedService(
 
             await UpdateLease(ls, data => data.RoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
 
-        await Flush(batchId);
+            await Flush(batchId);
 
-        async Task Flush(Guid batchId)
+            async Task Flush(Guid batchId)
             {
                 try
                 {
@@ -435,6 +450,7 @@ public partial class RegisterHostedService(
                     batchData.Clear();
                 }
             }
+        }
     }
 
     private async Task SetParent(Guid childId, Guid parentId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
