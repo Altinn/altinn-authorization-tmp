@@ -42,7 +42,7 @@ namespace Altinn.AccessManagement.Core.Services
                 return result.Problem;
             }
 
-            performedByParty = await MapFromExternalIdenity(performedByParty);
+            performedByParty = await MapFromExternalIdenity(performedByParty, cancellationToken);
 
             ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(result.Value, performedByParty, cancellationToken);
             requestDetails.From = consentRequest.From;
@@ -115,8 +115,8 @@ namespace Altinn.AccessManagement.Core.Services
             ConsentRequestDetails consentRequest = await _consentRepository.GetRequest(id, cancellationToken);
 
             // Map from external to internal identies 
-            from = await MapFromExternalIdenity(from);
-            to = await MapFromExternalIdenity(to);
+            from = await MapFromExternalIdenity(from, cancellationToken);
+            to = await MapFromExternalIdenity(to, cancellationToken);
 
             if (consentRequest == null)
             {
@@ -179,7 +179,7 @@ namespace Altinn.AccessManagement.Core.Services
         public async Task<ConsentRequestDetails> GetRequest(Guid id, Guid userId, CancellationToken cancellationToken = default)
         {
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
-            bool isAuthorized = await AuthorizeUserForConsentRequest(userId, details);
+            bool isAuthorized = await AuthorizeUserForConsentRequest(userId, details, cancellationToken);
             details.To = await MapToExternalIdenity(details.To, cancellationToken);
             details.From = await MapToExternalIdenity(details.From, cancellationToken);
             foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)
@@ -304,21 +304,21 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
-        private async Task<ConsentPartyUrn> MapFromExternalIdenity(ConsentPartyUrn consentPartyUrn)
+        private async Task<ConsentPartyUrn> MapFromExternalIdenity(ConsentPartyUrn consentPartyUrn, CancellationToken cancellationToken)
         {
             if (consentPartyUrn.IsPersonId(out PersonIdentifier personIdentifier))
             {
-                return await GetInternalIdentifier(personIdentifier);
+                return await GetInternalIdentifier(personIdentifier, cancellationToken);
             }
             else if (consentPartyUrn.IsOrganizationId(out OrganizationNumber organizationNumber))
             {
-                return await GetInternalIdentifier(organizationNumber);
+                return await GetInternalIdentifier(organizationNumber, cancellationToken);
             }
 
             return consentPartyUrn;
         }
 
-        private async Task<ConsentPartyUrn> MapToExternalIdenity(ConsentPartyUrn consentPartyUrn, CancellationToken cancellationToken = default)
+        private async Task<ConsentPartyUrn> MapToExternalIdenity(ConsentPartyUrn consentPartyUrn, CancellationToken cancellationToken)
         {
             if (consentPartyUrn.IsPartyUuid(out Guid partyUuid))
             {
@@ -337,7 +337,7 @@ namespace Altinn.AccessManagement.Core.Services
             return consentPartyUrn;
         }
 
-        private async Task<ConsentPartyUrn> GetExternalIdentifier(Guid guid, CancellationToken cancellationToken = default)
+        private async Task<ConsentPartyUrn> GetExternalIdentifier(Guid guid, CancellationToken cancellationToken)
         {
             MinimalParty party = await _ampartyService.GetByUid(guid, cancellationToken);
 
@@ -359,7 +359,7 @@ namespace Altinn.AccessManagement.Core.Services
             throw new ArgumentException($"Party with guid {guid} is not valid consent party");
         }
 
-        private async Task<ConsentPartyUrn> GetInternalIdentifier(OrganizationNumber organizationNumber, CancellationToken cancellationToken = default)
+        private async Task<ConsentPartyUrn> GetInternalIdentifier(OrganizationNumber organizationNumber, CancellationToken cancellationToken)
         {
             MinimalParty party = await _ampartyService.GetByOrgNo(organizationNumber.ToString(), cancellationToken);
             if (party == null)
@@ -370,7 +370,7 @@ namespace Altinn.AccessManagement.Core.Services
             return ConsentPartyUrn.PartyUuid.Create(party.PartyUuid);
         }
 
-        private async Task<ConsentPartyUrn> GetInternalIdentifier(PersonIdentifier personIdentifier, CancellationToken cancellationToken = default)
+        private async Task<ConsentPartyUrn> GetInternalIdentifier(PersonIdentifier personIdentifier, CancellationToken cancellationToken)
         {
             MinimalParty party = await _ampartyService.GetByPersonNo(personIdentifier.ToString(), cancellationToken);
             if (party == null)
@@ -386,18 +386,20 @@ namespace Altinn.AccessManagement.Core.Services
         /// Currently no sub resources is supported. Ignores sub resources in response.
         /// TODO: Verify when we have new delegation check with support for 
         /// </summary>
-        private async Task<bool> AuthorizeUserForConsentRequest(Guid userUuid, ConsentRequestDetails consentRequest)
+        private async Task<bool> AuthorizeUserForConsentRequest(Guid userUuid, ConsentRequestDetails consentRequest, CancellationToken cancellationToken)
         {
             Guid fromParty = consentRequest.From.IsPartyUuid(out Guid from) ? from : Guid.Empty;
-            List<Party> parties = await _partiesClient.GetPartiesAsync(new List<Guid> { fromParty });
+            List<Party> parties = await _partiesClient.GetPartiesAsync(new List<Guid> { fromParty }, cancellationToken: cancellationToken);
             Party party = parties.First();
 
             int userID = await GetUserIdForParty(userUuid);
 
             foreach (ConsentRight consentRight in consentRequest.ConsentRights)
             {
-                RightsDelegationCheckRequest rightsDelegationCheckRequest = new RightsDelegationCheckRequest();
-                rightsDelegationCheckRequest.From = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = party.PartyId.ToString() }];
+                RightsDelegationCheckRequest rightsDelegationCheckRequest = new()
+                {
+                    From = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = party.PartyId.ToString() }]
+                };
 
                 foreach (ConsentResourceAttribute resource in consentRight.Resource)
                 {
@@ -444,14 +446,14 @@ namespace Altinn.AccessManagement.Core.Services
         private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest, CancellationToken cancelactionToken)
         {
             ValidationErrorBuilder errors = default;
-            ConsentPartyUrn from = await MapFromExternalIdenity(consentRequest.From);
+            ConsentPartyUrn from = await MapFromExternalIdenity(consentRequest.From, cancelactionToken);
             if (from == null)
             {
-                if (consentRequest.From.IsOrganizationId(out OrganizationNumber organizationNumber))
+                if (consentRequest.From.IsOrganizationId(out _))
                 {
                     errors.Add(ValidationErrors.InvalidOrganizationIdentifier, "From");
                 }
-                else if (consentRequest.From.IsPersonId(out PersonIdentifier personIdentifier))
+                else if (consentRequest.From.IsPersonId(out _))
                 {
                     errors.Add(ValidationErrors.InvalidPersonIdentifier, "From");
                 }
@@ -461,14 +463,14 @@ namespace Altinn.AccessManagement.Core.Services
                 consentRequest.From = from;
             }
 
-            ConsentPartyUrn to = await MapFromExternalIdenity(consentRequest.To);
+            ConsentPartyUrn to = await MapFromExternalIdenity(consentRequest.To, cancelactionToken);
             if (to == null)
             {
-                if (consentRequest.To.IsOrganizationId(out OrganizationNumber organizationNumber))
+                if (consentRequest.To.IsOrganizationId(out _))
                 {
                     errors.Add(ValidationErrors.InvalidOrganizationIdentifier, "To");
                 }
-                else if (consentRequest.To.IsPersonId(out PersonIdentifier personIdentifier))
+                else if (consentRequest.To.IsPersonId(out _))
                 {
                     errors.Add(ValidationErrors.InvalidPersonIdentifier, "To");
                 }
