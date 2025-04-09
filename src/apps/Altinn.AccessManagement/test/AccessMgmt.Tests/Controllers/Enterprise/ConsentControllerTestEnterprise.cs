@@ -293,7 +293,6 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal("/consentRight/0/Metadata/inntektsaar", problemDetails.Errors.ToList()[0].Paths[0]);
         }
 
-
         /// <summary>
         /// T
         /// </summary>
@@ -400,7 +399,6 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                             { "INNTEKTSAAR", "ADSF" }
                         }
                     },
-                   
                 },
                 Requestmessage = new Dictionary<string, string>
                 {

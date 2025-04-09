@@ -205,7 +205,6 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             Assert.Equal("Status", problemDetails.Errors.ToList()[0].Paths[0]);
         }
 
-
         private HttpClient GetTestClient()
         {
             HttpClient client = Fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });

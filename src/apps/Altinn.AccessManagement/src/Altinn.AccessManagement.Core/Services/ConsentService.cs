@@ -62,7 +62,7 @@ namespace Altinn.AccessManagement.Core.Services
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
             if (details.ConsentRequestStatus == ConsentRequestStatusType.Rejected)
             {
-                await SetExternalIdentities(details);
+                await SetExternalIdentities(details, cancellationToken);
                 return details;
             }
 
@@ -86,7 +86,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (details.ConsentRequestStatus == ConsentRequestStatusType.Rejected)
                 {
-                    await SetExternalIdentities(details);
+                    await SetExternalIdentities(details, cancellationToken);
                     return details;
                 }
 
@@ -103,7 +103,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             ConsentRequestDetails updated = await _consentRepository.GetRequest(id, cancellationToken);
-            await SetExternalIdentities(updated);
+            await SetExternalIdentities(updated, cancellationToken);
 
             return updated;
         }
@@ -121,6 +121,11 @@ namespace Altinn.AccessManagement.Core.Services
             if (consentRequest == null)
             {
                 errors.Add(ValidationErrors.ConsentNotFound, "From");
+
+                if (errors.TryBuild(out var errorResultStart))
+                {
+                    return errorResultStart;
+                }
             }
             else
             {
@@ -192,7 +197,7 @@ namespace Altinn.AccessManagement.Core.Services
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
             if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
             {
-                await SetExternalIdentities(details);
+                await SetExternalIdentities(details, cancellationToken);
                 return details;
             }
 
@@ -216,7 +221,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
                 {
-                    await SetExternalIdentities(details);
+                    await SetExternalIdentities(details, cancellationToken);
                     return details;
                 }
 
@@ -233,7 +238,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             ConsentRequestDetails updated = await _consentRepository.GetRequest(id, cancellationToken);
-            await SetExternalIdentities(updated);
+            await SetExternalIdentities(updated, cancellationToken);
             return updated;
         }
 
@@ -244,7 +249,7 @@ namespace Altinn.AccessManagement.Core.Services
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
             if (details.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
             {
-                await SetExternalIdentities(details);
+                await SetExternalIdentities(details, cancellationToken);
                 return details;
             }
 
@@ -268,7 +273,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (details.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
                 {
-                    await SetExternalIdentities(details);
+                    await SetExternalIdentities(details, cancellationToken);
                     return details;
                 }
 
@@ -285,17 +290,17 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             ConsentRequestDetails updated = await _consentRepository.GetRequest(id, cancellationToken);
-            await SetExternalIdentities(updated);
+            await SetExternalIdentities(updated, cancellationToken);
             return updated;
         }
 
-        private async Task SetExternalIdentities(ConsentRequestDetails details)
+        private async Task SetExternalIdentities(ConsentRequestDetails details, CancellationToken cancellationToken = default)
         {
-            details.From = await MapToExternalIdenity(details.From);
-            details.To = await MapToExternalIdenity(details.To);
+            details.From = await MapToExternalIdenity(details.From, cancellationToken);
+            details.To = await MapToExternalIdenity(details.To, cancellationToken);
             foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)
             {
-                consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy);
+                consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
             }
         }
 
@@ -356,7 +361,7 @@ namespace Altinn.AccessManagement.Core.Services
 
         private async Task<ConsentPartyUrn> GetInternalIdentifier(OrganizationNumber organizationNumber, CancellationToken cancellationToken = default)
         {
-            MinimalParty party = await _ampartyService.GetByOrgNo(organizationNumber.ToString());
+            MinimalParty party = await _ampartyService.GetByOrgNo(organizationNumber.ToString(), cancellationToken);
             if (party == null)
             {
                 return null;
@@ -367,7 +372,7 @@ namespace Altinn.AccessManagement.Core.Services
 
         private async Task<ConsentPartyUrn> GetInternalIdentifier(PersonIdentifier personIdentifier, CancellationToken cancellationToken = default)
         {
-            MinimalParty party = await _ampartyService.GetByPersonNo(personIdentifier.ToString());
+            MinimalParty party = await _ampartyService.GetByPersonNo(personIdentifier.ToString(), cancellationToken);
             if (party == null)
             {
                 return null;

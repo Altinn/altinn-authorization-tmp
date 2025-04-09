@@ -11,6 +11,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
         private readonly IEntityRepository entityRepository = entityRepository;
         private readonly IEntityLookupRepository entityLookupRepository = entityLookupRepository;
 
+        /// <inheritdoc />
         public async Task<MinimalParty> GetByOrgNo(string orgNo, CancellationToken cancellationToken = default)
         {
             GenericFilterBuilder<AccessMgmt.Core.Models.EntityLookup> filter = entityLookupRepository.CreateFilterBuilder();
@@ -39,11 +40,13 @@ namespace Altinn.AccessMgmt.Persistence.Services
             };
         }
 
+        /// <inheritdoc />
         public Task<MinimalParty> GetByPartyId(int partyId, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public async Task<MinimalParty> GetByPersonNo(string personNo, CancellationToken cancellationToken = default)
         {
             GenericFilterBuilder<AccessMgmt.Core.Models.EntityLookup> filter = entityLookupRepository.CreateFilterBuilder();
@@ -72,6 +75,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
             };
         }
 
+        /// <inheritdoc />
         public async Task<MinimalParty> GetByUuid(Guid partyUuid, CancellationToken cancellationToken = default)
         {
             IEnumerable<ExtEntityLookup> parties = await entityLookupRepository.GetExtended(t => t.EntityId, partyUuid, cancellationToken: cancellationToken);
