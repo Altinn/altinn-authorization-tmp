@@ -246,7 +246,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> RevokeConsent(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
+        public async Task<Result<ConsentRequestDetails>> RevokeConsent(Guid id, Guid performedByParty, CancellationToken cancellationToken)
         {
             ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
