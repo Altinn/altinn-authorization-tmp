@@ -11,8 +11,7 @@
   "consentRights": [
     {
       "action": [
-        "read",
-        "write"
+        "read"
       ],
       "resource": [
         {
@@ -27,13 +26,12 @@
     },
     {
       "action": [
-        "read",
-        "write"
+        "read"
       ],
       "resource": [
         {
           "type": "urn:altinn:resource",
-          "value": "ttd_inntektsopplsninger"
+          "value": "ttd_inntektsopplysninger"
         }
       ],
       "metadata": {

@@ -74,8 +74,8 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Equal(2, problemDetails.Errors.Count());
-            Assert.Equal("AM.VLD-00017", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
-            Assert.Equal("AM.VLD-00018", problemDetails.Errors.ToList()[1].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00031", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00032", problemDetails.Errors.ToList()[1].ErrorCode.ToString());
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00018", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00032", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
         }
 
         private HttpClient GetTestClient()

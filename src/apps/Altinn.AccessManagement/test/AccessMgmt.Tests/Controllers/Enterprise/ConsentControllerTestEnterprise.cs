@@ -288,7 +288,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00013", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00027", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
             Assert.Equal("Missing required metadata for consentright", problemDetails.Errors.ToList()[0].Detail.ToString());
             Assert.Equal("/consentRight/0/Metadata/inntektsaar", problemDetails.Errors.ToList()[0].Paths[0]);
         }
@@ -361,10 +361,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Equal(2, problemDetails.Errors.Count);
-            Assert.Equal("AM.VLD-00011", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00025", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
             Assert.Equal("Unknown consent metaddata.", problemDetails.Errors.ToList()[0].Detail.ToString());
             Assert.Equal("/consentRight/1/Metadata/tilogmedwrong", problemDetails.Errors.ToList()[0].Paths[0]);
-            Assert.Equal("AM.VLD-00013", problemDetails.Errors.ToList()[1].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00027", problemDetails.Errors.ToList()[1].ErrorCode.ToString());
             Assert.Equal("Missing required metadata for consentright", problemDetails.Errors.ToList()[1].Detail.ToString());
             Assert.Equal("/consentRight/1/Metadata/tilogmed", problemDetails.Errors.ToList()[1].Paths[0]);
         }
@@ -420,7 +420,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00011", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00025", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
             Assert.Equal("Unknown consent metaddata.", problemDetails.Errors.ToList()[0].Detail.ToString());
             Assert.Equal("/consentRight/0/Metadata/inntektsaar", problemDetails.Errors.ToList()[0].Paths[0]);
         }
@@ -460,7 +460,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00009", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00023", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
         }
 
         [Fact]
@@ -510,7 +510,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00014", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00028", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
         }
 
         /// <summary>
@@ -566,7 +566,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00006", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00020", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
         }
 
         private HttpClient GetTestClient()

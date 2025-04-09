@@ -10,6 +10,7 @@ using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Party;
 using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
+using Altinn.Platform.Profile.Models;
 using Altinn.Platform.Register.Models;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -21,7 +22,7 @@ namespace Altinn.AccessManagement.Core.Services
     /// <remarks>
     /// Service responsible for consent functionality
     /// </remarks>
-    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService, IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache) : IConsent
+    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService, IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
         private readonly IPartiesClient _partiesClient = partiesClient;
@@ -29,6 +30,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IResourceRegistryClient _resourceRegistryClient = resourceRegistryClient;
         private readonly IAMPartyService _ampartyService = ampartyService;
         private readonly IMemoryCache _memoryCache = memoryCache;
+        private readonly IProfileClient _profileClient = profileClient;   
 
         private const string _consentRequestStatus = "Status";
 
@@ -194,10 +196,28 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> AcceptRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken)
+        public async Task<Result<ConsentRequestDetails>> AcceptRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken)
         {
             ValidationErrorBuilder errors = default;
-            ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
+            ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
+
+            if (details == null)
+            {
+                errors.Add(ValidationErrors.ConsentNotFound, "consentRequestId");
+            }
+
+            bool isAuthorized = await AuthorizeUserForConsentRequest(performedByParty, details, cancellationToken);
+
+            if (!isAuthorized)
+            {
+                errors.Add(ValidationErrors.NotAuthorizedForConsentRequest, "Not authoried to accept request");
+            }
+
+            if (errors.TryBuild(out var basicErrors))
+            {
+                return basicErrors;
+            }
+
             if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
             {
                 await SetExternalIdentities(details, cancellationToken);
@@ -216,11 +236,11 @@ namespace Altinn.AccessManagement.Core.Services
 
             try
             {
-                await _consentRepository.AcceptConsentRequest(id, performedByParty, cancellationToken);
+                await _consentRepository.AcceptConsentRequest(consentRequestId, performedByParty, cancellationToken);
             }
             catch (Exception)
             {
-                details = await _consentRepository.GetRequest(id, cancellationToken);
+                details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
 
                 if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
                 {
@@ -240,7 +260,7 @@ namespace Altinn.AccessManagement.Core.Services
                 throw;
             }
 
-            ConsentRequestDetails updated = await _consentRepository.GetRequest(id, cancellationToken);
+            ConsentRequestDetails updated = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
             await SetExternalIdentities(updated, cancellationToken);
             return updated;
         }
@@ -395,7 +415,11 @@ namespace Altinn.AccessManagement.Core.Services
             List<Party> parties = await _partiesClient.GetPartiesAsync(new List<Guid> { fromParty }, cancellationToken: cancellationToken);
             Party party = parties.First();
 
-            int userID = await GetUserIdForParty(userUuid);
+            UserProfile profile = await _profileClient.GetUser(new Models.Profile.UserProfileLookup() { UserUuid = userUuid }, cancellationToken);
+            if (profile == null)
+            {
+                return false;
+            }
 
             foreach (ConsentRight consentRight in consentRequest.ConsentRights)
             {
@@ -409,7 +433,7 @@ namespace Altinn.AccessManagement.Core.Services
                     rightsDelegationCheckRequest.Resource = [new AttributeMatch { Id = resource.Type, Value = resource.Value }];
                 }
 
-                DelegationCheckResponse response = await _singleRightsService.RightsDelegationCheck(userID, 3, rightsDelegationCheckRequest);
+                DelegationCheckResponse response = await _singleRightsService.RightsDelegationCheck(profile.UserId, 3, rightsDelegationCheckRequest);
              
                 if (response.RightDelegationCheckResults != null)
                 {
@@ -418,7 +442,7 @@ namespace Altinn.AccessManagement.Core.Services
                         bool actionMatch = false;
                         foreach (RightDelegationCheckResult result in response.RightDelegationCheckResults)
                         {
-                            if (result.Action.Equals(action) && result.Status.Equals(DelegableStatus.Delegable))
+                            if (result.Action.Value.Equals(action, StringComparison.InvariantCultureIgnoreCase) && result.Status.Equals(DelegableStatus.Delegable))
                             {
                                 actionMatch = true;
                                 break;
@@ -430,9 +454,10 @@ namespace Altinn.AccessManagement.Core.Services
                             return false;
                         }
                     }
-
-                    // We only support one action per consent  per now
-                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
 
@@ -584,15 +609,6 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             return errors;
-        }
-
-        private async Task<int> GetUserIdForParty(Guid partyId)
-        {
-            return 20001337;
-
-            //List<Party> parties = await _partiesClient.GetPartiesAsync(new List<Guid> { partyId });
-            //Party party = parties.First();
-            //return party.PartyId;
         }
     }
 }

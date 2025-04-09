@@ -34,6 +34,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
                 services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
                 services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
+                services.AddSingleton<IProfileClient, ProfileClientMock>();
             });
         });
 
@@ -104,7 +105,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00020", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00034", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
             Assert.Equal("Consent cant be accepted. Wrong status", problemDetails.Errors.ToList()[0].Detail.ToString());
         }
 
@@ -146,7 +147,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
 
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00022", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00036", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
             Assert.Equal("Consent cant be rejected. Wrong status", problemDetails.Errors.ToList()[0].Detail.ToString());
             Assert.Equal("Status", problemDetails.Errors.ToList()[0].Paths[0]);
         }
@@ -200,7 +201,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
 
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00021", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM.VLD-00035", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
             Assert.Equal("Consent cant be revoked. Wrong status", problemDetails.Errors.ToList()[0].Detail.ToString());
             Assert.Equal("Status", problemDetails.Errors.ToList()[0].Paths[0]);
         }
