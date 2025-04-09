@@ -1,8 +1,10 @@
+using Altinn.AccessManagement.Api.Enduser;
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler;
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
+using Altinn.AccessManagement.Core.Filters;
 using Altinn.AccessManagement.Health;
 using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
@@ -88,6 +90,7 @@ internal static partial class AccessManagementHost
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
         builder.ConfigureAccessManagementPersistence();
+        builder.AddAccessManagementEnduser();
 
         return builder.Build();
     }
@@ -285,6 +288,7 @@ internal static partial class AccessManagementHost
         builder.Services.AddScoped<IAuthorizationHandler, ResourceAccessHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, EndUserResourceAccessHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, ScopeAccessHandler>();
+        builder.Services.AddScoped<AuthorizePartyUuidClaimFilter>();
     }
 
     private static void ConfigurePostgreSqlConfiguration(this WebApplicationBuilder builder)

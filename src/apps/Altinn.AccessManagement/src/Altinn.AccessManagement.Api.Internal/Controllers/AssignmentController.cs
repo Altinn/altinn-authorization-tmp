@@ -1,5 +1,7 @@
 ﻿using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -113,12 +115,21 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Unauthorized(string.Format("User '{0}' is missing role '{1}' on '{2}'", userId, roleUrn, assignment.FromEntityId.ToString()));
             }
 
-            await assignmentRepository.Create(new Assignment()
+            var options = new ChangeRequestOptions()
             {
-                FromId = fromEntity.Id,
-                ToId = toEntity.Id,
-                RoleId = role.Id,
-            });
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
+
+            await assignmentRepository.Create(
+                new Assignment()
+                {
+                    FromId = fromEntity.Id,
+                    ToId = toEntity.Id,
+                    RoleId = role.Id,
+                }, 
+                options: options
+            );
 
             return Created();
         }
@@ -149,7 +160,13 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Problem("Not allowed to delete this assignment");
             }
 
-            await assignmentRepository.Delete(id);
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
+
+            await assignmentRepository.Delete(id, options);
             return Ok();
         }
 
@@ -314,7 +331,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
             }
 
             return Problem("Unable to add package to assignment");
-
         }
 
         /// <summary>
@@ -403,7 +419,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
             }
 
             return Problem("Unable to add package to assignment");
-
         }
 
         /// <summary>
@@ -423,7 +438,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
             var userEntity = await entityRepository.Get(userId);
 
             // If user has access
-
             var assignment = await assignmentRepository.Get(id);
             var package = await packageRepository.Get(packageId);
 
@@ -454,7 +468,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
             var userEntity = await entityRepository.Get(userId);
             
             // If user has access
-            
             var assignment = await assignmentRepository.Get(id);
             var resource = await resourceRepository.Get(resourceId);
 
