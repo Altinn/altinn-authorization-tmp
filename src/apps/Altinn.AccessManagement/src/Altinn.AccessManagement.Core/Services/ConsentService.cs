@@ -449,6 +449,101 @@ namespace Altinn.AccessManagement.Core.Services
         private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest, CancellationToken cancelactionToken)
         {
             ValidationErrorBuilder errors = default;
+            errors = await ValidateAndSetFromParty(consentRequest, errors, cancelactionToken);
+            errors = await ValidateAndSetToParty(consentRequest, errors, cancelactionToken);
+            errors = ValidateValidTo(consentRequest, errors);
+
+            if (consentRequest.ConsentRights == null || consentRequest.ConsentRights.Count == 0)
+            {
+                errors.Add(ValidationErrors.MissingConsentRight, "Resource");
+            }
+            else
+            {
+                for (int rightIndex = 0; rightIndex < consentRequest.ConsentRights.Count; rightIndex++)
+                {
+                    errors = await ValidateConsentRight(consentRequest, errors, rightIndex, cancelactionToken);
+                }
+            }
+
+            if (errors.TryBuild(out var errorResult))
+            {
+                return errorResult;
+            }
+
+            return consentRequest;
+        }
+
+        private async Task<ValidationErrorBuilder> ValidateConsentRight(ConsentRequest consentRequest, ValidationErrorBuilder errors, int rightIndex, CancellationToken cancelactionToken)
+        {
+            ConsentRight consentRight = consentRequest.ConsentRights[rightIndex];
+
+            if (consentRight.Action == null || consentRight.Action.Count == 0)
+            {
+                errors.Add(ValidationErrors.MissingAction, $"/consentRight/{rightIndex}/action");
+            }
+
+            if (consentRight.Resource == null || consentRight.Resource.Count == 0 || consentRight.Resource.Count > 1)
+            {
+                errors.Add(ValidationErrors.InvalidResource, "Resource");
+            }
+            else
+            {
+                ServiceResource resourceDetails = await _resourceRegistryClient.GetResource(consentRight.Resource[0].Value, cancelactionToken);
+                if (resourceDetails == null)
+                {
+                    errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
+                }
+                else if (!resourceDetails.ResourceType.Equals(ResourceType.Consentresource))
+                {
+                    errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
+                }
+                else
+                {
+                    if (consentRight.MetaData != null && consentRight.MetaData.Count > 0)
+                    {
+                        foreach (KeyValuePair<string, string> metaData in consentRight.MetaData)
+                        {
+                            if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
+                            {
+                                errors.Add(ValidationErrors.UnknownConsentMetadata, $"/consentRight/{rightIndex}/Metadata/{metaData.Key.ToLower()}");
+                            }
+
+                            if (string.IsNullOrEmpty(metaData.Value))
+                            {
+                                errors.Add(ValidationErrors.MissingMetadataValue, $"/consentRight/{rightIndex}/Metadata");
+                            }
+                        }
+                    }
+
+                    if (resourceDetails.ConsentMetadata != null)
+                    {
+                        foreach (KeyValuePair<string, ConsentMetadata> consentMetadata in resourceDetails.ConsentMetadata)
+                        {
+                            if (consentRight.MetaData == null || !consentRight.MetaData.ContainsKey(consentMetadata.Key))
+                            {
+                                errors.Add(ValidationErrors.MissingMetadata, $"/consentRight/{rightIndex}/Metadata/{consentMetadata.Key}");
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return errors;
+        }
+
+        private static ValidationErrorBuilder ValidateValidTo(ConsentRequest consentRequest, ValidationErrorBuilder errors)
+        {
+            if (consentRequest.ValidTo < DateTime.UtcNow)
+            {
+                errors.Add(ValidationErrors.InvalidValidToTime, "ValidTo");
+            }
+
+            return errors;
+        }
+
+        private async Task<ValidationErrorBuilder> ValidateAndSetFromParty(ConsentRequest consentRequest, ValidationErrorBuilder errors, CancellationToken cancelactionToken)
+        {
             ConsentPartyUrn from = await MapFromExternalIdenity(consentRequest.From, cancelactionToken);
             if (from == null)
             {
@@ -466,6 +561,11 @@ namespace Altinn.AccessManagement.Core.Services
                 consentRequest.From = from;
             }
 
+            return errors;
+        }
+
+        private async Task<ValidationErrorBuilder> ValidateAndSetToParty(ConsentRequest consentRequest, ValidationErrorBuilder errors, CancellationToken cancelactionToken)
+        {
             ConsentPartyUrn to = await MapFromExternalIdenity(consentRequest.To, cancelactionToken);
             if (to == null)
             {
@@ -483,81 +583,7 @@ namespace Altinn.AccessManagement.Core.Services
                 consentRequest.To = to;
             }
 
-            if (consentRequest.ValidTo < DateTime.UtcNow)
-            {
-                errors.Add(ValidationErrors.InvalidValidToTime, "ValidTo");
-            }
-
-            if (consentRequest.ConsentRights == null || consentRequest.ConsentRights.Count == 0)
-            {
-                errors.Add(ValidationErrors.MissingConsentRight, "Resource");
-            }
-            else
-            {
-                for (int rightIndex = 0; rightIndex < consentRequest.ConsentRights.Count; rightIndex++)
-                {
-                    ConsentRight consentRight = consentRequest.ConsentRights[rightIndex];
-
-                    if (consentRight.Action == null || consentRight.Action.Count == 0)
-                    {
-                        errors.Add(ValidationErrors.MissingAction, $"/consentRight/{rightIndex}/action");
-                    }
-
-                    if (consentRight.Resource == null || consentRight.Resource.Count == 0 || consentRight.Resource.Count > 1)
-                    {
-                        errors.Add(ValidationErrors.InvalidResource, "Resource");
-                    }
-                    else
-                    {
-                        ServiceResource resourceDetails = await _resourceRegistryClient.GetResource(consentRight.Resource[0].Value, cancelactionToken);
-                        if (resourceDetails == null)
-                        {   
-                            errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
-                        }
-                        else if (!resourceDetails.ResourceType.Equals(ResourceType.Consentresource))
-                        {
-                            errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
-                        }
-                        else
-                        {
-                            if (consentRight.MetaData != null && consentRight.MetaData.Count > 0)
-                            {
-                                foreach (KeyValuePair<string, string> metaData in consentRight.MetaData)
-                                {
-                                    if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
-                                    {
-                                        errors.Add(ValidationErrors.UnknownConsentMetadata, $"/consentRight/{rightIndex}/Metadata/{metaData.Key.ToLower()}");
-                                    }
-
-                                    if (string.IsNullOrEmpty(metaData.Value))
-                                    {
-                                        errors.Add(ValidationErrors.MissingMetadataValue, $"/consentRight/{rightIndex}/Metadata");
-                                    }
-                                }
-                            }
-
-                            if (resourceDetails.ConsentMetadata != null)
-                            {
-                                foreach (KeyValuePair<string, ConsentMetadata> consentMetadata in resourceDetails.ConsentMetadata)
-                                {
-                                    if (consentRight.MetaData == null || !consentRight.MetaData.ContainsKey(consentMetadata.Key))
-                                    {
-                                        errors.Add(ValidationErrors.MissingMetadata, $"/consentRight/{rightIndex}/Metadata/{consentMetadata.Key}");
-                                        continue;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (errors.TryBuild(out var errorResult))
-            {
-                return errorResult;
-            }
-
-            return consentRequest;
+            return errors;
         }
 
         private async Task<int> GetUserIdForParty(Guid partyId)
