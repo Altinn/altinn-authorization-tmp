@@ -235,7 +235,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
 
-            while (await reader.ReadAsync())
+            while (await reader.ReadAsync(cancellationToken))
             {
                 Guid from = await reader.GetFieldValueAsync<Guid>("fromPartyUuid", cancellationToken: cancellationToken);
                 Guid to = await reader.GetFieldValueAsync<Guid>("toPartyUuid", cancellationToken: cancellationToken);
@@ -308,7 +308,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             eventCommand.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
             eventCommand.Parameters.AddWithValue("performedByParty", NpgsqlDbType.Uuid, performedByParty);
             await eventCommand.ExecuteNonQueryAsync(cancellationToken);
-            await tx.CommitAsync();
+            await tx.CommitAsync(cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -377,7 +377,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             pgcom.Parameters.AddWithValue("@consentRequestId", NpgsqlTypes.NpgsqlDbType.Uuid, consentRequestId);
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
             List<ConsentRight> consentRights = [];
-            while (await reader.ReadAsync())
+            while (await reader.ReadAsync(cancellationToken))
             {
                 Guid consentRightId = await reader.GetFieldValueAsync<Guid>("consentRightId", cancellationToken: cancellationToken);
 
@@ -433,7 +433,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
             Dictionary<Guid, List<ConsentResourceAttribute>> keyValuePairs = [];
 
-            while (reader.Read())
+            while (await reader.ReadAsync(cancellationToken))
             {
                 Guid consentRightId = await reader.GetFieldValueAsync<Guid>("consentRightId", cancellationToken: cancellationToken);
                 ConsentResourceAttribute consentResourceAttribute = new()
@@ -472,7 +472,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             Dictionary<Guid, Dictionary<string, string>> consentMetadata = [];
 
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
-            while (reader.Read())
+            while (await reader.ReadAsync(cancellationToken))
             {
                 Guid consentRightId = await reader.GetFieldValueAsync<Guid>("consentRightId", cancellationToken: cancellationToken);
                 string metadataId = await reader.GetFieldValueAsync<string>("id", cancellationToken: cancellationToken);
@@ -511,7 +511,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             Dictionary<Guid, Dictionary<string, string>> consentMetadata = [];
 
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
-            while (reader.Read())
+            while (await reader.ReadAsync(cancellationToken))
             {
                 Guid performedBy = await reader.GetFieldValueAsync<Guid>("performedByParty", cancellationToken: cancellationToken);
                 ConsentRequestEvent consentRequestEvent = new()
