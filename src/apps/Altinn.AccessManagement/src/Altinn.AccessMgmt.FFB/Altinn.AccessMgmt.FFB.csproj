@@ -11,9 +11,5 @@
 		<PackageReference Include="Blazored.LocalStorage" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
 	</ItemGroup>
-
-	<PropertyGroup>
-		<SonarQubeExclude>true</SonarQubeExclude>
-	</PropertyGroup>
-
+	
 </Project>
