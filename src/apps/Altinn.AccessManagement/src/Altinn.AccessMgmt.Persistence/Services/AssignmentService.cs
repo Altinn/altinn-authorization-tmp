@@ -174,7 +174,7 @@ public class AssignmentService(
                     errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("packages", string.Join(",", packages.Select(p => p.Id.ToString())))]);
                 }
 
-                var delegations = await delegationRepository.Get(f => f.FromId, fromEntityId, cancellationToken: cancellationToken);
+                var delegations = await delegationRepository.Get(f => f.FromId, existingAssignment.Id, cancellationToken: cancellationToken);
                 if (delegations != null && delegations.Any())
                 {
                     errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegations.Select(p => p.Id.ToString())))]);
