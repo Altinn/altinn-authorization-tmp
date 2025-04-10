@@ -388,7 +388,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     resourceAttributes = foundAttributes;
                 }
 
-                Dictionary<string, string> metadata = [];
+                Dictionary<string, string> metadata;
                 Dictionary<Guid, Dictionary<string, string>> consentMetadata = await GetConsentRightMetadata(consentRequestId, cancellationToken);
                 if (consentMetadata.TryGetValue(consentRightId, out Dictionary<string, string> foundMetadata))
                 {
