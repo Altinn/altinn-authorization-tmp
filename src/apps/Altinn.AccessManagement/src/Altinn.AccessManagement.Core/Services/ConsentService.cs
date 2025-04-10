@@ -236,6 +236,12 @@ namespace Altinn.AccessManagement.Core.Services
                 return basicErrors;
             }
 
+            if (details == null)
+            {
+                // Should not be possible to get here since errors is already checked. How to prevent that roselyn belive this
+                throw new ArgumentException($"Consent request with id {consentRequestId} not found");
+            }
+
             if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
             {
                 await SetExternalIdentities(details, cancellationToken);
