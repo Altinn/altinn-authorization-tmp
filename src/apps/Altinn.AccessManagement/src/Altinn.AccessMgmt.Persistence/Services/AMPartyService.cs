@@ -6,6 +6,9 @@ using Altinn.Authorization.Core.Models.Party;
 
 namespace Altinn.AccessMgmt.Persistence.Services
 {
+    /// <summary>
+    /// Repository service to lookupp party information
+    /// </summary>
     public class AMPartyService(IEntityRepository entityRepository, IEntityLookupRepository entityLookupRepository) : IAmPartyRepository
     {
         private readonly IEntityRepository entityRepository = entityRepository;

@@ -111,10 +111,10 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<Consent>> GetConsent(Guid id, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken)
+        public async Task<Result<Consent>> GetConsent(Guid consentRequestId, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken)
         {
             ValidationErrorBuilder errors = default;
-            ConsentRequestDetails consentRequest = await _consentRepository.GetRequest(id, cancellationToken);
+            ConsentRequestDetails consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
 
             // Map from external to internal identies 
             from = await MapFromExternalIdenity(from, cancellationToken);
@@ -130,37 +130,11 @@ namespace Altinn.AccessManagement.Core.Services
                 }
 
                 // Should not be possible to get here
-                throw new ArgumentException($"Consent request with id {id} not found");
+                throw new ArgumentException($"Consent request with id {consentRequestId} not found");
             }
             else
             {
-                if (!to.Equals(consentRequest.To))
-                {
-                    errors.Add(ValidationErrors.ConsentNotFound, "To");
-                }
-
-                if (!from.Equals(consentRequest.From))
-                {
-                    errors.Add(ValidationErrors.MissMatchConsentParty, "From");
-                }
-
-                if (consentRequest.ValidTo < DateTime.UtcNow)
-                {
-                    errors.Add(ValidationErrors.ConsentExpired, "ValidTo");
-                }
-
-                if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Created)
-                {
-                    errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
-                }
-                else if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
-                {
-                    errors.Add(ValidationErrors.ConsentRevoked, _consentRequestStatus);
-                }
-                else if (consentRequest.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
-                {
-                    errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
-                }
+                errors = ValidateGetConsentRequest(from, to, errors, consentRequest);
 
                 if (errors.TryBuild(out var errorResult))
                 {
@@ -178,6 +152,39 @@ namespace Altinn.AccessManagement.Core.Services
 
                 return consent;
             }
+        }
+
+        private static ValidationErrorBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, ValidationErrorBuilder errors, ConsentRequestDetails consentRequest)
+        {
+            if (!to.Equals(consentRequest.To))
+            {
+                errors.Add(ValidationErrors.ConsentNotFound, "To");
+            }
+
+            if (!from.Equals(consentRequest.From))
+            {
+                errors.Add(ValidationErrors.MissMatchConsentParty, "From");
+            }
+
+            if (consentRequest.ValidTo < DateTime.UtcNow)
+            {
+                errors.Add(ValidationErrors.ConsentExpired, "ValidTo");
+            }
+
+            if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Created)
+            {
+                errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
+            }
+            else if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
+            {
+                errors.Add(ValidationErrors.ConsentRevoked, _consentRequestStatus);
+            }
+            else if (consentRequest.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
+            {
+                errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
+            }
+
+            return errors;
         }
 
         /// <inheritdoc/>
