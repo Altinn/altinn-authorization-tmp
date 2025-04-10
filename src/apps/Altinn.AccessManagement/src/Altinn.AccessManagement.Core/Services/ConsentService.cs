@@ -33,6 +33,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IProfileClient _profileClient = profileClient;   
 
         private const string _consentRequestStatus = "Status";
+        private const string ResourceParam = "Resource";
 
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken)
@@ -436,7 +437,7 @@ namespace Altinn.AccessManagement.Core.Services
         {
             Guid fromParty = consentRequest.From.IsPartyUuid(out Guid from) ? from : Guid.Empty;
             List<Party> parties = await _partiesClient.GetPartiesAsync(new List<Guid> { fromParty }, cancellationToken: cancellationToken);
-            Party party = parties.First();
+            Party party = parties[0];
 
             UserProfile profile = await _profileClient.GetUser(new Models.Profile.UserProfileLookup() { UserUuid = userUuid }, cancellationToken);
             if (profile == null)
@@ -523,7 +524,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (consentRequest.ConsentRights == null || consentRequest.ConsentRights.Count == 0)
             {
-                errors.Add(ValidationErrors.MissingConsentRight, "Resource");
+                errors.Add(ValidationErrors.MissingConsentRight, ResourceParam);
             }
             else
             {
@@ -552,18 +553,18 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (consentRight.Resource == null || consentRight.Resource.Count == 0 || consentRight.Resource.Count > 1)
             {
-                errors.Add(ValidationErrors.InvalidResource, "Resource");
+                errors.Add(ValidationErrors.InvalidResource, ResourceParam);
             }
             else
             {
                 ServiceResource resourceDetails = await _resourceRegistryClient.GetResource(consentRight.Resource[0].Value, cancelactionToken);
                 if (resourceDetails == null)
                 {
-                    errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
+                    errors.Add(ValidationErrors.InvalidConsentResource, ResourceParam);
                 }
                 else if (!resourceDetails.ResourceType.Equals(ResourceType.Consentresource))
                 {
-                    errors.Add(ValidationErrors.InvalidConsentResource, "Resource");
+                    errors.Add(ValidationErrors.InvalidConsentResource, ResourceParam);
                 }
                 else
                 {
