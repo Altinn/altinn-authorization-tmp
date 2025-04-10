@@ -4,7 +4,7 @@ using Altinn.Authorization.ProblemDetails;
 namespace Altinn.AccessManagement.Core.Services.Interfaces
 {
     /// <summary>
-    /// Interface for the concent service
+    /// Interface for the consent service
     /// </summary>
     public interface IConsent
     {
@@ -12,12 +12,12 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// Returns a specific concent based on the id
         /// </summary>
         /// <returns></returns>
-        Task<Result<Consent>> GetConsent(Guid id, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken);
+        Task<Result<Consent>> GetConsent(Guid consentRequestId, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken);
 
         /// <summary>
         /// Get a specific concent request. Requires the userId for the user that is requesting the concent.
         /// </summary>
-        Task<ConsentRequestDetails> GetRequest(Guid id, Guid userId, CancellationToken cancellationToken);
+        Task<ConsentRequestDetails> GetRequest(Guid consentRequestId, Guid userId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates a concent requests and return info about the created one.
@@ -27,16 +27,16 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <summary>
         /// Deletes a concent request
         /// </summary>
-        Task<Result<ConsentRequestDetails>> RejectRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken);
+        Task<Result<ConsentRequestDetails>> RejectRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken);
 
         /// <summary>
         /// Approves a concent request. The request needs to be a valid request. 
         /// </summary>
-        Task<Result<ConsentRequestDetails>> AcceptRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken);
+        Task<Result<ConsentRequestDetails>> AcceptRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken);
 
         /// <summary>
         /// Revokes a concent. The concent needs to be valid.
         /// </summary>
-        Task<Result<ConsentRequestDetails>> RevokeConsent(Guid id, Guid performedByParty, CancellationToken cancellationToken);
+        Task<Result<ConsentRequestDetails>> RevokeConsent(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken);
     }
 }

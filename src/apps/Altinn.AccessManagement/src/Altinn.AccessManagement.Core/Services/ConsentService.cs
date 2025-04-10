@@ -58,10 +58,10 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> RejectRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken)
+        public async Task<Result<ConsentRequestDetails>> RejectRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken)
         {
             ValidationErrorBuilder errors = default;
-            ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
+            ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
             if (details.ConsentRequestStatus == ConsentRequestStatusType.Rejected)
             {
                 await SetExternalIdentities(details, cancellationToken);
@@ -80,11 +80,11 @@ namespace Altinn.AccessManagement.Core.Services
 
             try
             {
-                await _consentRepository.RejectConsentRequest(id, performedByParty, cancellationToken);
+                await _consentRepository.RejectConsentRequest(consentRequestId, performedByParty, cancellationToken);
             }
             catch (Exception)
             {
-                await _consentRepository.GetRequest(id, cancellationToken);
+                await _consentRepository.GetRequest(consentRequestId, cancellationToken);
 
                 if (details.ConsentRequestStatus == ConsentRequestStatusType.Rejected)
                 {
@@ -104,7 +104,7 @@ namespace Altinn.AccessManagement.Core.Services
                 throw;
             }
 
-            ConsentRequestDetails updated = await _consentRepository.GetRequest(id, cancellationToken);
+            ConsentRequestDetails updated = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
             await SetExternalIdentities(updated, cancellationToken);
 
             return updated;
@@ -188,9 +188,9 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ConsentRequestDetails> GetRequest(Guid id, Guid userId, CancellationToken cancellationToken)
+        public async Task<ConsentRequestDetails> GetRequest(Guid consentRequestId, Guid userId, CancellationToken cancellationToken)
         {
-            ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
+            ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
             bool isAuthorized = await AuthorizeUserForConsentRequest(userId, details, cancellationToken);
             details.To = await MapToExternalIdenity(details.To, cancellationToken);
             details.From = await MapToExternalIdenity(details.From, cancellationToken);
@@ -273,10 +273,10 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> RevokeConsent(Guid id, Guid performedByParty, CancellationToken cancellationToken)
+        public async Task<Result<ConsentRequestDetails>> RevokeConsent(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken)
         {
             ValidationErrorBuilder errors = default;
-            ConsentRequestDetails details = await _consentRepository.GetRequest(id, cancellationToken);
+            ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
             if (details.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
             {
                 await SetExternalIdentities(details, cancellationToken);
@@ -295,11 +295,11 @@ namespace Altinn.AccessManagement.Core.Services
 
             try
             {
-                await _consentRepository.Revoke(id, performedByParty, cancellationToken);
+                await _consentRepository.Revoke(consentRequestId, performedByParty, cancellationToken);
             }
             catch (Exception)
             {
-                details = await _consentRepository.GetRequest(id, cancellationToken);
+                details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
 
                 if (details.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
                 {
@@ -319,7 +319,7 @@ namespace Altinn.AccessManagement.Core.Services
                 throw;
             }
 
-            ConsentRequestDetails updated = await _consentRepository.GetRequest(id, cancellationToken);
+            ConsentRequestDetails updated = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
             await SetExternalIdentities(updated, cancellationToken);
             return updated;
         }
