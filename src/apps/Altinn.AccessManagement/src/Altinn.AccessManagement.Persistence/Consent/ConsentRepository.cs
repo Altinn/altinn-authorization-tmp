@@ -23,6 +23,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
         private const string PARAM_CONSENT_REQUEST_ID = "consentRequestId";
         private const string PARAM_PERFORMED_BY_PARTY = "performedByParty";
+        private const string PARAM_CONSENT_EVENT_ID = "consentEventId";
+        private const string PARAM_EVENT_TYPE = "eventtype";
+        private const string PARAM_CREATED = "created";
 
         /// <inheritdoc/>
         public async Task AcceptConsentRequest(Guid consentRequestId, Guid performedByParty,  CancellationToken cancellationToken = default)
@@ -61,10 +64,10 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             await using NpgsqlCommand eventCommand = conn.CreateCommand();
             eventCommand.CommandText = eventQuery;
-            eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.CreateVersion7());
+            eventCommand.Parameters.AddWithValue(PARAM_CONSENT_EVENT_ID, NpgsqlDbType.Uuid, Guid.CreateVersion7());
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequestId);
-            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>("eventtype", ConsentRequestEventType.Accepted));
-            eventCommand.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
+            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>(PARAM_EVENT_TYPE, ConsentRequestEventType.Accepted));
+            eventCommand.Parameters.AddWithValue(PARAM_CREATED, NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
             eventCommand.Parameters.AddWithValue(PARAM_PERFORMED_BY_PARTY, NpgsqlDbType.Uuid, performedByParty);
             await eventCommand.ExecuteNonQueryAsync(cancellationToken);
             await tx.CommitAsync(cancellationToken);
@@ -185,10 +188,10 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             await using NpgsqlCommand eventCommand = conn.CreateCommand();
             eventCommand.CommandText = eventQuery;
-            eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.CreateVersion7());
+            eventCommand.Parameters.AddWithValue(PARAM_CONSENT_EVENT_ID, NpgsqlDbType.Uuid, Guid.CreateVersion7());
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequest.Id);
-            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>("eventtype", ConsentRequestEventType.Created));
-            eventCommand.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, createdTime.ToOffset(TimeSpan.Zero));
+            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>(PARAM_EVENT_TYPE, ConsentRequestEventType.Created));
+            eventCommand.Parameters.AddWithValue(PARAM_CREATED, NpgsqlDbType.TimestampTz, createdTime.ToOffset(TimeSpan.Zero));
             if (performedByParty.IsPartyUuid(out Guid performedByPartyGuid))
             {
                 eventCommand.Parameters.AddWithValue(PARAM_PERFORMED_BY_PARTY, NpgsqlDbType.Uuid, performedByPartyGuid);
@@ -300,10 +303,10 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             await using NpgsqlCommand eventCommand = conn.CreateCommand();
             eventCommand.CommandText = eventQuery;
-            eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.CreateVersion7());
+            eventCommand.Parameters.AddWithValue(PARAM_CONSENT_EVENT_ID, NpgsqlDbType.Uuid, Guid.CreateVersion7());
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequestId);
-            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>("eventtype", ConsentRequestEventType.Rejected));
-            eventCommand.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
+            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>(PARAM_EVENT_TYPE, ConsentRequestEventType.Rejected));
+            eventCommand.Parameters.AddWithValue(PARAM_CREATED, NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
             eventCommand.Parameters.AddWithValue(PARAM_PERFORMED_BY_PARTY, NpgsqlDbType.Uuid, performedByParty);
             await eventCommand.ExecuteNonQueryAsync(cancellationToken);
             await tx.CommitAsync(cancellationToken);
@@ -346,10 +349,10 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             await using NpgsqlCommand eventCommand = conn.CreateCommand();
             eventCommand.CommandText = eventQuery;
-            eventCommand.Parameters.AddWithValue("consentEventId", NpgsqlDbType.Uuid, Guid.CreateVersion7());
+            eventCommand.Parameters.AddWithValue(PARAM_CONSENT_EVENT_ID, NpgsqlDbType.Uuid, Guid.CreateVersion7());
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequestId);
-            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>("eventtype", ConsentRequestEventType.Revoked));
-            eventCommand.Parameters.AddWithValue("created", NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
+            eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>(PARAM_EVENT_TYPE, ConsentRequestEventType.Revoked));
+            eventCommand.Parameters.AddWithValue(PARAM_CREATED, NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
             eventCommand.Parameters.AddWithValue(PARAM_PERFORMED_BY_PARTY, NpgsqlDbType.Uuid, performedByParty);
             await eventCommand.ExecuteNonQueryAsync(cancellationToken);
             await tx.CommitAsync(cancellationToken);
@@ -514,10 +517,10 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 Guid performedBy = await reader.GetFieldValueAsync<Guid>("performedByParty", cancellationToken: cancellationToken);
                 ConsentRequestEvent consentRequestEvent = new()
                 {
-                    ConsentEventID = await reader.GetFieldValueAsync<Guid>("consentEventId", cancellationToken: cancellationToken),
-                    ConsentRequestID = await reader.GetFieldValueAsync<Guid>("consentRequestId", cancellationToken: cancellationToken),
-                    EventType = await reader.GetFieldValueAsync<ConsentRequestEventType>("eventtype", cancellationToken: cancellationToken),
-                    Created = await reader.GetFieldValueAsync<DateTimeOffset>("created", cancellationToken: cancellationToken),
+                    ConsentEventID = await reader.GetFieldValueAsync<Guid>(PARAM_CONSENT_EVENT_ID, cancellationToken: cancellationToken),
+                    ConsentRequestID = await reader.GetFieldValueAsync<Guid>(PARAM_CONSENT_REQUEST_ID, cancellationToken: cancellationToken),
+                    EventType = await reader.GetFieldValueAsync<ConsentRequestEventType>(PARAM_EVENT_TYPE, cancellationToken: cancellationToken),
+                    Created = await reader.GetFieldValueAsync<DateTimeOffset>(PARAM_CREATED, cancellationToken: cancellationToken),
                     PerformedBy = ConsentPartyUrn.PartyUuid.Create(performedBy)
                 };
                 consentRequestEvents.Add(consentRequestEvent);
