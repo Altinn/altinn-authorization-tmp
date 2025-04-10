@@ -64,4 +64,112 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor AssignmentAlreadyExists { get; }
         = _factory.Create(8, $"Assignment already exists.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor NotAuthorizedForConsentRequest { get; }
+        = _factory.Create(19, "Not Authorized for ");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidPersonIdentifier { get; }
+        = _factory.Create(20, "Invalid person identifier. No person with this identifier.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidOrganizationIdentifier { get; }
+        = _factory.Create(21, $"Invalid organization identifier. No organization with this identifier.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidValidToTime { get; }
+        = _factory.Create(22, $"The ValidTo time need to be in the future");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor MissingConsentRight { get; }
+        = _factory.Create(23, $"The consentrequest needs to include at least 1 right");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidConsentResource { get; }
+        = _factory.Create(24, $"Invalid resource for consent right.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor UnknownConsentMetadata { get; }
+        = _factory.Create(25, $"Unknown consent metaddata.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor MissingMetadataValue { get; }
+        = _factory.Create(26, $"Missing value for metadata");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor MissingMetadata { get; }
+        = _factory.Create(27, $"Missing required metadata for consentright");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor MissingAction { get; }
+        = _factory.Create(28, $"Missing required actions for consent request");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor MissMatchConsentParty { get; }
+    = _factory.Create(29, $"The consented party does not match the party requested");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentNotFound { get; }
+    = _factory.Create(30, $"Incorrect consentId or wrong consent receiver");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentExpired { get; }
+    = _factory.Create(31, $"Consent is expired");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentNotAccepted { get; }
+    = _factory.Create(32, $"Consent is not accepted");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentRevoked { get; }
+    = _factory.Create(33, $"Consent is revoked");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentCantBeAccepted { get; }
+    = _factory.Create(34, $"Consent cant be accepted. Wrong status");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentCantBeRevoked { get; }
+    = _factory.Create(35, $"Consent cant be revoked. Wrong status");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor ConsentCantBeRejected { get; }
+= _factory.Create(36, $"Consent cant be rejected. Wrong status");
 }
