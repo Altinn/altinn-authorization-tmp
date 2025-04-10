@@ -431,7 +431,6 @@ namespace Altinn.AccessManagement.Core.Services
         /// <summary>
         /// This method iterates throug the consent request and verifies that user is allowe to delegate all rights requested in consent
         /// Currently no sub resources is supported. Ignores sub resources in response.
-        /// TODO: Verify when we have new delegation check with support for 
         /// </summary>
         private async Task<bool> AuthorizeUserForConsentRequest(Guid userUuid, ConsentRequestDetails consentRequest, CancellationToken cancellationToken)
         {
@@ -447,32 +446,42 @@ namespace Altinn.AccessManagement.Core.Services
 
             foreach (ConsentRight consentRight in consentRequest.ConsentRights)
             {
-                DelegationCheckResponse response = await GetDelegatableRightsForConsentResource(party, profile, consentRight);
-
-                if (response.RightDelegationCheckResults != null)
-                {
-                    foreach (string action in consentRight.Action)
-                    {
-                        bool actionMatch = false;
-                        foreach (RightDelegationCheckResult result in response.RightDelegationCheckResults)
-                        {
-                            if (result.Action.Value.Equals(action, StringComparison.InvariantCultureIgnoreCase) && result.Status.Equals(DelegableStatus.Delegable))
-                            {
-                                actionMatch = true;
-                                break;
-                            }
-                        }
-
-                        if (!actionMatch)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                else
+                if (!await AuthorizeForConsentRight(party, profile, consentRight))
                 {
                     return false;
                 }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> AuthorizeForConsentRight(Party party, UserProfile profile, ConsentRight consentRight)
+        {
+            DelegationCheckResponse response = await GetDelegatableRightsForConsentResource(party, profile, consentRight);
+
+            if (response.RightDelegationCheckResults != null)
+            {
+                foreach (string action in consentRight.Action)
+                {
+                    bool actionMatch = false;
+                    foreach (RightDelegationCheckResult result in response.RightDelegationCheckResults)
+                    {
+                        if (result.Action.Value.Equals(action, StringComparison.InvariantCultureIgnoreCase) && result.Status.Equals(DelegableStatus.Delegable))
+                        {
+                            actionMatch = true;
+                            break;
+                        }
+                    }
+
+                    if (!actionMatch)
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                return false;
             }
 
             return true;
