@@ -840,8 +840,6 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestArea(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        var area_fullmakter_for_forretningsforer = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_forretningsforer")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Fullmakter for forretningsforer"));
-
         var areas = new List<Area>()
         {
             new Area() { Id = Guid.Parse("7d32591d-34b7-4afc-8afa-013722f8c05d"), Urn = "accesspackage:area:skatt_avgift_regnskap_og_toll", Name = "Skatt, avgift, regnskap og toll", Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til skatt, avgift, regnskap og toll.", IconUrl = $"{iconBaseUrl}Aksel_Money_SackKroner.svg", GroupId = Guid.Parse("7E2A3AF8-08CB-43A9-BDD7-7D5C7E377145") },
