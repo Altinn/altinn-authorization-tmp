@@ -28,6 +28,17 @@ namespace Altinn.AccessManagement.Persistence.Consent
         private const string PARAM_CREATED = "created";
         private const string PARAM_CONSENT_RIGHT_ID = "consentRightId";
 
+        private const string EventQuery = /*strpsql*/@"
+                INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
+                VALUES (
+                @consentEventId, 
+                @consentRequestId, 
+                @eventtype, 
+                @created, 
+                @performedByParty)
+                RETURNING consentEventId;
+                ";
+
         /// <inheritdoc/>
         public async Task AcceptConsentRequest(Guid consentRequestId, Guid performedByParty,  CancellationToken cancellationToken = default)
         {
@@ -52,19 +63,8 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 throw new InvalidOperationException($"Consent request with ID {consentRequestId} not found or already updated.");
             }
 
-            const string eventQuery = /*strpsql*/@"
-                INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
-                VALUES (
-                @consentEventId, 
-                @consentRequestId, 
-                @eventtype, 
-                @created, 
-                @performedByParty)
-                RETURNING consentEventId;
-                ";
-
             await using NpgsqlCommand eventCommand = conn.CreateCommand();
-            eventCommand.CommandText = eventQuery;
+            eventCommand.CommandText = EventQuery;
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_EVENT_ID, NpgsqlDbType.Uuid, Guid.CreateVersion7());
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequestId);
             eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>(PARAM_EVENT_TYPE, ConsentRequestEventType.Accepted));
@@ -175,19 +175,8 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 }
             }
 
-            const string eventQuery = /*strpsql*/@"
-                INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
-                VALUES (
-                @consentEventId, 
-                @consentRequestId, 
-                @eventtype, 
-                @created, 
-                @performedByParty)
-                RETURNING consentEventId;
-                ";
-
             await using NpgsqlCommand eventCommand = conn.CreateCommand();
-            eventCommand.CommandText = eventQuery;
+            eventCommand.CommandText = EventQuery;
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_EVENT_ID, NpgsqlDbType.Uuid, Guid.CreateVersion7());
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequest.Id);
             eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>(PARAM_EVENT_TYPE, ConsentRequestEventType.Created));
@@ -290,19 +279,8 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 throw new InvalidOperationException($"Consent request with ID {consentRequestId} not found or already updated.");
             }
 
-            const string eventQuery = /*strpsql*/@"
-                INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
-                VALUES (
-                @consentEventId, 
-                @consentRequestId, 
-                @eventtype, 
-                @created, 
-                @performedByParty)
-                RETURNING consentEventId;
-                ";
-
             await using NpgsqlCommand eventCommand = conn.CreateCommand();
-            eventCommand.CommandText = eventQuery;
+            eventCommand.CommandText = EventQuery;
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_EVENT_ID, NpgsqlDbType.Uuid, Guid.CreateVersion7());
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequestId);
             eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>(PARAM_EVENT_TYPE, ConsentRequestEventType.Rejected));
@@ -336,19 +314,8 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 throw new InvalidOperationException($"Consent request with ID {consentRequestId} not found or already updated.");
             }
 
-            const string eventQuery = /*strpsql*/@"
-                INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
-                VALUES (
-                @consentEventId, 
-                @consentRequestId, 
-                @eventtype, 
-                @created, 
-                @performedByParty)
-                RETURNING consentEventId;
-                ";
-
             await using NpgsqlCommand eventCommand = conn.CreateCommand();
-            eventCommand.CommandText = eventQuery;
+            eventCommand.CommandText = EventQuery;
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_EVENT_ID, NpgsqlDbType.Uuid, Guid.CreateVersion7());
             eventCommand.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequestId);
             eventCommand.Parameters.Add(new NpgsqlParameter<ConsentRequestEventType>(PARAM_EVENT_TYPE, ConsentRequestEventType.Revoked));
