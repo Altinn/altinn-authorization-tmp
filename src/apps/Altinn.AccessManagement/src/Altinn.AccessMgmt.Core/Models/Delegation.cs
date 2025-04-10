@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessMgmt.Core.Models;
+﻿using Altinn.AccessManagement.Core.Extensions;
+
+namespace Altinn.AccessMgmt.Core.Models;
 
 /// <summary>
 /// Delegation between two assignments
@@ -11,6 +13,20 @@ public class Delegation
     public Delegation()
     {
         Id = Guid.CreateVersion7();
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Delegation"/> class.
+    /// </summary>
+    /// <param name="id">Id</param>
+    public Delegation(Guid id)
+    {
+        if (!id.IsVersion7Uuid())
+        {
+            throw new ArgumentException("Id must be a version 7 UUID", nameof(id));
+        }
+
+        Id = id;
     }
 
     /// <summary>
