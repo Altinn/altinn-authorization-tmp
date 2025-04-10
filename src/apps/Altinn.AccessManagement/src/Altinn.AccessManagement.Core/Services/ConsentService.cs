@@ -602,11 +602,11 @@ namespace Altinn.AccessManagement.Core.Services
         {
             if (resourceDetails.ConsentMetadata != null)
             {
-                foreach (KeyValuePair<string, ConsentMetadata> consentMetadata in resourceDetails.ConsentMetadata)
+                foreach (string key in resourceDetails.ConsentMetadata.Keys.Select(consentMetadata => consentMetadata))
                 {
-                    if (consentRight.MetaData == null || !consentRight.MetaData.ContainsKey(consentMetadata.Key))
+                    if (consentRight.MetaData == null || !consentRight.MetaData.ContainsKey(key))
                     {
-                        errors.Add(ValidationErrors.MissingMetadata, $"/consentRight/{rightIndex}/Metadata/{consentMetadata.Key}");
+                        errors.Add(ValidationErrors.MissingMetadata, $"/consentRight/{rightIndex}/Metadata/{key}");
                     }
                 }
             }
