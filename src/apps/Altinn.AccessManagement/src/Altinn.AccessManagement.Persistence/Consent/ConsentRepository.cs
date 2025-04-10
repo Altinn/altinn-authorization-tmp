@@ -509,7 +509,6 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             await using var pgcom = _db.CreateCommand(consentMetadataQuery);
             pgcom.Parameters.AddWithValue("@consentRequestId", NpgsqlTypes.NpgsqlDbType.Uuid, consentRequestId);
-            Dictionary<Guid, Dictionary<string, string>> consentMetadata = [];
 
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
             while (await reader.ReadAsync(cancellationToken))
