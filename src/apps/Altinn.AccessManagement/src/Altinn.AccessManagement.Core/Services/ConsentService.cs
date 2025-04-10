@@ -188,10 +188,21 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<ConsentRequestDetails> GetRequest(Guid consentRequestId, Guid userId, CancellationToken cancellationToken)
+        public async Task<Result<ConsentRequestDetails>> GetRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken)
         {
+            ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
-            bool isAuthorized = await AuthorizeUserForConsentRequest(userId, details, cancellationToken);
+            bool isAuthorized = await AuthorizeUserForConsentRequest(performedByParty, details, cancellationToken);
+            if (!isAuthorized)
+            {
+                errors.Add(ValidationErrors.NotAuthorizedForConsentRequest, "Not authoried to accept request");
+            }
+
+            if (errors.TryBuild(out var basicErrors))
+            {
+                return basicErrors;
+            }
+
             details.To = await MapToExternalIdenity(details.To, cancellationToken);
             details.From = await MapToExternalIdenity(details.From, cancellationToken);
             foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)

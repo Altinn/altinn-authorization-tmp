@@ -15,17 +15,17 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<Result<Consent>> GetConsent(Guid consentRequestId, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Get a specific concent request. Requires the userId for the user that is requesting the concent.
+        /// Get a specific consent request. Requires the userId for the user that is requesting the concent.
         /// </summary>
-        Task<ConsentRequestDetails> GetRequest(Guid consentRequestId, Guid userId, CancellationToken cancellationToken);
+        Task<Result<ConsentRequestDetails>> GetRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Creates a concent requests and return info about the created one.
+        /// Creates a consent requests and return info about the created one. Available for enteprises. 
         /// </summary>
         Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty,  CancellationToken cancellationToken);
 
         /// <summary>
-        /// Deletes a concent request
+        /// Rejects a consent request. For end user
         /// </summary>
         Task<Result<ConsentRequestDetails>> RejectRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken);
 
@@ -35,7 +35,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<Result<ConsentRequestDetails>> AcceptRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Revokes a concent. The concent needs to be valid.
+        /// Revokes a consent. The consent needs to be in accepted state to be able to be revoked.
         /// </summary>
         Task<Result<ConsentRequestDetails>> RevokeConsent(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken);
     }

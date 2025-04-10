@@ -37,8 +37,13 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
                 return Unauthorized();
             }
 
-            ConsentRequestDetails consentRequest = await _consentService.GetRequest(requestId, performedBy.Value, cancellationToken);
-            return Ok(consentRequest);
+            Result<ConsentRequestDetails> consentRequest = await _consentService.GetRequest(requestId, performedBy.Value, cancellationToken);
+            if (consentRequest.IsProblem)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(consentRequest.Value);
         }
 
         /// <summary>
