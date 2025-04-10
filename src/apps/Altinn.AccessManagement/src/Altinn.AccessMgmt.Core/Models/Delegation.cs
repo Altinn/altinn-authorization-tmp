@@ -7,6 +7,8 @@ namespace Altinn.AccessMgmt.Core.Models;
 /// </summary>
 public class Delegation
 {
+    private Guid _id;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Delegation"/> class.
     /// </summary>
@@ -20,7 +22,7 @@ public class Delegation
     /// </summary>
     public Guid Id
     {
-        get => Id;
+        get => _id;
         set
         {
             if (!value.IsVersion7Uuid())
@@ -28,7 +30,7 @@ public class Delegation
                 throw new ArgumentException("Id must be a version 7 UUID", nameof(value));
             }
 
-            Id = value;
+            _id = value;
         }
     }
 
