@@ -12,6 +12,7 @@ namespace Altinn.AccessManagement.Tests.Helpers.Extensions
             {
                 Guid v7Uuid = Guid.CreateVersion7();
                 Assert.True(v7Uuid.IsVersion7Uuid());
+                Assert.False(v7Uuid.IsVersion4Uuid());
             }
         }
 
@@ -22,6 +23,7 @@ namespace Altinn.AccessManagement.Tests.Helpers.Extensions
             for (int i = 0; i < 100; i++)
             {
                 Guid v4Uuid = Guid.NewGuid();
+                Assert.True(v4Uuid.IsVersion4Uuid());
                 Assert.False(v4Uuid.IsVersion7Uuid());
             }
         }
