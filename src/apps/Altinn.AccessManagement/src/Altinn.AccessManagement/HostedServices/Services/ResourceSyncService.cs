@@ -1,36 +1,59 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using Altinn.AccessManagement.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
+using Altinn.Authorization.Integration.Platform.Register;
 using Altinn.Authorization.Integration.Platform.ResourceRegister;
-using static Altinn.Authorization.AccessManagement.RegisterHostedService;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.HostedServices.Services;
 
 /// <inheritdoc />
-public class ResourceSyncService(
+public class ResourceSyncService : BaseSyncService, IResourceSyncService
+{
+    private readonly ILogger<ResourceSyncService> _logger;
+    private readonly IAltinnLease _lease;
+    private readonly IAltinnResourceRegister _resourceRegister;
+    private readonly IIngestService _ingestService;
+
+    private readonly IResourceTypeRepository _resourceTypeRepository;
+    private readonly IResourceRepository _resourceRepository;
+    private readonly IProviderRepository _providerRepository;
+    private readonly IProviderTypeRepository _providerTypeRepository;
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    public ResourceSyncService(
         IAltinnLease lease,
+        IFeatureManager featureManager,
+        IAltinnRegister register,
         IAltinnResourceRegister resourceRegister,
         IIngestService ingestService,
         IResourceTypeRepository resourceTypeRepository,
         IResourceRepository resourceRepository,
         IProviderRepository providerRepository,
         IProviderTypeRepository providerTypeRepository,
-        ILogger<ResourceSyncService> logger) : IResourceSyncService
-{
-    private readonly IAltinnLease _lease = lease;
-    private readonly IAltinnResourceRegister _resourceRegister = resourceRegister;
-    private readonly IIngestService _ingestService =ingestService;
-    private readonly IResourceTypeRepository _resourceTypeRepository = resourceTypeRepository;
-    private readonly IResourceRepository _resourceRepository = resourceRepository;
-    private readonly IProviderRepository _providerRepository = providerRepository;
-    private readonly IProviderTypeRepository _providerTypeRepository = providerTypeRepository;
-    private readonly ILogger _logger = logger;
+        ILogger<ResourceSyncService> logger
+        ) : base(lease, featureManager, register)
+    {
+        _logger = logger;
+
+        _resourceRegister = resourceRegister;
+        _ingestService = ingestService;
+
+        _resourceRepository = resourceRepository;
+        _resourceTypeRepository = resourceTypeRepository;
+        _providerRepository = providerRepository;
+        _providerTypeRepository = providerTypeRepository;
+    }
 
     /// <inheritdoc />
     public async Task<bool> SyncResourceOwners(CancellationToken cancellationToken)
@@ -86,7 +109,7 @@ public class ResourceSyncService(
         var providers = (await _providerRepository.Get()).ToList();
         var resourceTypes = (await _resourceTypeRepository.Get()).ToList();
 
-        await foreach (var page in await _resourceRegister.StreamResources(ls.Data.ResourcesNextPageLink, cancellationToken))
+        await foreach (var page in await _resourceRegister.StreamResources(ls.Data?.ResourcesNextPageLink, cancellationToken))
         {
             if (!page.IsSuccessful)
             {
@@ -95,99 +118,158 @@ public class ResourceSyncService(
             }
 
             var resources = new List<Resource>();
+            var failed = new List<Failed>();
 
             foreach (var updatedResource in page.Content.Data)
             {
+                if (updatedResource.Deleted)
+                {
+                    // Flush and delete from db
+                    await Flush();
+
+                    var filter = _resourceRepository.CreateFilterBuilder();
+                    filter.Equal(t => t.RefId, updatedResource.ResourceUrn);
+                    filter.Equal(t => t.ProviderId, Guid.Empty); // Get provider...
+                    await _resourceRepository.Delete(filter, options: options, cancellationToken: cancellationToken);
+                }
+
                 var resourceResponse = await _resourceRegister.GetResource(updatedResource.ResourceUrn.Split(":").Last(), cancellationToken);
                 if (!resourceResponse.IsSuccessful)
                 {
-                    continue;
+                    throw new Exception(resourceResponse.StatusCode.ToString() + updatedResource.ResourceUrn.Split(":").Last());
                 }
 
-                var resource = resourceResponse.Content;
-
-                var res = (await _resourceRepository.Get(t => t.RefId, resource.Identifier)).FirstOrDefault();
-
-                if (updatedResource.Deleted)
+                try
                 {
-                    if (res != null)
-                    {
-                        await _resourceRepository.Delete(res.Id, options: options);
-                    }
+                    var resource = await ConvertToResource(resourceResponse.Content, options: options, cancellationToken: cancellationToken);
 
-                    continue;
-                }
-
-                var provider = providers.FirstOrDefault(t => t.RefId == resource.HasCompetentAuthority.Orgcode);
-                
-                if (provider == null)
-                {
-                    if (resource.HasCompetentAuthority != null)
+                    if (!resources.Any(t => t.Id.Equals(resource.Id)))
                     {
-                        provider = new Provider()
-                        {
-                            Name = resource.HasCompetentAuthority.Name.Nb,
-                            RefId = resource.HasCompetentAuthority.Orgcode
-                        };
-                        await _providerRepository.Create(provider, options: options);
-                        await _providerRepository.CreateTranslation(
-                            new Provider() { 
-                                    Id = provider.Id, 
-                                    Name = resource.HasCompetentAuthority.Name.En
-                                },
-                            "eng", 
-                            options: options,
-                            cancellationToken: cancellationToken
-                            );
-                        await _providerRepository.CreateTranslation(
-                            new Provider()
-                            {
-                                Id = provider.Id,
-                                Name = resource.HasCompetentAuthority.Name.Nn
-                            },
-                            "nno",
-                            options: options,
-                            cancellationToken: cancellationToken
-                            );
-                        providers.Add(provider);
-                    }
-                    else
-                    {
-                        continue;
+                        resources.Add(resource);
                     }
                 }
-
-                var type = resourceTypes.FirstOrDefault(t => t.Name.Equals(resource.ResourceType, StringComparison.OrdinalIgnoreCase));
-                if (type == null)
+                catch (Exception ex)
                 {
-                    type = new ResourceType(MD5.HashData(Encoding.UTF8.GetBytes(resource.ResourceType)))
+                    var f = new Failed();
+                    f.Exception = ex;
+                    f.UpdatedModel = updatedResource;
+                    f.RawResource = resourceResponse.Content;
+                    failed.Add(f);
+
+                    if (failed.Count > 10)
                     {
-                        Name = resource.ResourceType
-                    };
-                    resourceTypes.Add(type);
-                    await _resourceTypeRepository.Create(type, options: options);
+                        break;
+                    }
                 }
-
-                resources.Add(new Resource()
-                {
-                    Name = resource.Title.Nb,
-                    Description = resource.Description.Nb,
-                    ProviderId = provider.Id,
-                    TypeId = type.Id,
-                    RefId = resource.Identifier,
-                });
             }
 
-            await _ingestService.IngestAndMergeData(resources, options: options, ["RefId", "ProviderId"]);
+            foreach (var f in failed)
+            {
+                Console.WriteLine(f.UpdatedModel.ResourceUrn);
+                Console.WriteLine(f.Exception.Message);
+            }
+
+            await Flush();
 
             await UpdateLease(ls, data => data.ResourcesNextPageLink = page.Content.Links.Next, cancellationToken);
+
+            async Task Flush()
+            {
+                await _ingestService.IngestAndMergeData(resources, options: options, ["RefId", "ProviderId"]);
+                resources.Clear();
+            }
         }
     }
 
-    private async Task UpdateLease(LeaseResult<LeaseContent> ls, Action<LeaseContent> configureLeaseContent, CancellationToken cancellationToken)
+    public List<Provider> Providers { get; set; }
+
+    public List<ResourceType> ResourceTypes { get; set; }
+
+    private async Task<Resource> ConvertToResource(ResourceModel model, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
-        configureLeaseContent(ls.Data);
-        await _lease.Put(ls, ls.Data, cancellationToken);
-        await _lease.RefreshLease(ls, cancellationToken);
+        var res = (await _resourceRepository.Get(t => t.RefId, model.Identifier)).FirstOrDefault();
+
+        var provider = await GetOrCreateProvider(model, options, cancellationToken);
+        var resourceType = await GetOrCreateResourceType(model, options, cancellationToken);
+
+        return new Resource()
+        {
+            Id = res == null ? Guid.CreateVersion7() : res.Id,
+            Name = model.Title.Nb,
+            Description = model.Description?.Nb,
+            RefId = model.Identifier,
+            ProviderId = provider.Id,
+            TypeId = resourceType.Id
+        };
     }
+
+    private async Task<ResourceType> GetOrCreateResourceType(ResourceModel model, ChangeRequestOptions options, CancellationToken cancellationToken)
+    {
+        var type = ResourceTypes.FirstOrDefault(t => t.Name.Equals(model.ResourceType, StringComparison.OrdinalIgnoreCase));
+
+        if (type == null)
+        {
+            type = new ResourceType(MD5.HashData(Encoding.UTF8.GetBytes(model.ResourceType)))
+            {
+                Name = model.ResourceType
+            };
+
+            await _resourceTypeRepository.Create(type, options: options);
+            ResourceTypes.Add(type);
+        }
+
+        return type;
+    }
+
+    private async Task<Provider> GetOrCreateProvider(ResourceModel model, ChangeRequestOptions options, CancellationToken cancellationToken)
+    {
+        var provider = Providers.FirstOrDefault(t => t.Code.Equals(model.HasCompetentAuthority.Orgcode, StringComparison.OrdinalIgnoreCase));
+        if (provider == null)
+        {
+            if (model.HasCompetentAuthority != null)
+            {
+                provider = new Provider()
+                {
+                    Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.Nb,
+                    RefId = model.HasCompetentAuthority.Orgcode
+                };
+                await _providerRepository.Create(provider, options: options, cancellationToken: cancellationToken);
+
+                if (model.HasCompetentAuthority.Name != null && model.HasCompetentAuthority.Name.En != null)
+                {
+                    provider = new Provider()
+                    {
+                        Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.En,
+                        RefId = model.HasCompetentAuthority.Orgcode
+                    };
+
+                    await _providerRepository.CreateTranslation(provider, "eng", options: options, cancellationToken: cancellationToken);
+                }
+
+                if (model.HasCompetentAuthority.Name != null && model.HasCompetentAuthority.Name.Nn != null)
+                {
+                    provider = new Provider()
+                    {
+                        Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.Nn,
+                        RefId = model.HasCompetentAuthority.Orgcode
+                    };
+
+                    await _providerRepository.CreateTranslation(provider, "nno", options: options, cancellationToken: cancellationToken);
+                }
+
+                Providers.Add(provider);
+            }
+        }
+
+        return null;
+    }
+}
+
+internal class Failed
+{
+    internal ResourceUpdatedModel UpdatedModel { get; set; }
+    
+    internal ResourceModel RawResource { get; set; }
+    
+    internal Exception Exception { get; set; }
 }

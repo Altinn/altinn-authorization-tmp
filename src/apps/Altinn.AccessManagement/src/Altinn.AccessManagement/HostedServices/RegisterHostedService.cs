@@ -1,9 +1,10 @@
-using System.Net;
 using Altinn.AccessManagement;
 using Altinn.AccessManagement.HostedServices.Contracts;
+using Altinn.AccessManagement.HostedServices.Services;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
 using Microsoft.FeatureManagement;
 
@@ -103,33 +104,33 @@ public partial class RegisterHostedService(
                 await statusService.RunFailed(resourceStatus, ex, options);
             }
 
-            try
-            {
-                if (canRunPartySync)
-                {
-                    await partySyncService.SyncParty(ls, cancellationToken);
-                    await statusService.RunSuccess(partyStatus, options);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.SyncError(_logger, ex);
-                await statusService.RunFailed(partyStatus, ex, options);
-            }
+            //try
+            //{
+            //    if (canRunPartySync)
+            //    {
+            //        await partySyncService.SyncParty(ls, cancellationToken);
+            //        await statusService.RunSuccess(partyStatus, options);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.SyncError(_logger, ex);
+            //    await statusService.RunFailed(partyStatus, ex, options);
+            //}
 
-            try
-            {
-                if (canRunPartySync)
-                {
-                    await roleSyncService.SyncRoles(ls, cancellationToken);
-                    await statusService.RunSuccess(roleStatus, options);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.SyncError(_logger, ex);
-                await statusService.RunFailed(partyStatus, ex, options);
-            }
+            //try
+            //{
+            //    if (canRunPartySync)
+            //    {
+            //        await roleSyncService.SyncRoles(ls, cancellationToken);
+            //        await statusService.RunSuccess(roleStatus, options);
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.SyncError(_logger, ex);
+            //    await statusService.RunFailed(partyStatus, ex, options);
+            //}
 
             _logger.LogInformation("Register sync completed!");
         }
@@ -141,15 +142,6 @@ public partial class RegisterHostedService(
         {
             await _lease.Release(ls, default);
         }
-    }
-
-    #region Base
-
-    private async Task UpdateLease(LeaseResult<LeaseContent> ls, Action<LeaseContent> configureLeaseContent, CancellationToken cancellationToken)
-    {
-        configureLeaseContent(ls.Data);
-        await _lease.Put(ls, ls.Data, cancellationToken);
-        await _lease.RefreshLease(ls, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -187,57 +179,4 @@ public partial class RegisterHostedService(
             _stop?.Dispose();
         }
     }
-
-    /// <summary>
-    /// Represents lease content, including pagination link.
-    /// </summary>
-    public class LeaseContent()
-    {
-        /// <summary>
-        /// The URL of the next page of Party data.
-        /// </summary>
-        public string PartyStreamNextPageLink { get; set; }
-
-        /// <summary>
-        /// The URL of the next page of AssignmentSuccess data.
-        /// </summary>
-        public string RoleStreamNextPageLink { get; set; }
-
-        /// <summary>
-        /// The URL of the next page of updates resourcs.
-        /// </summary>
-        public string ResourcesNextPageLink { get; set; }
-    }
-
-    public static partial class Log
-    {
-        [LoggerMessage(EventId = 11, Level = LogLevel.Information, Message = "Failed to retrieve updated resources from resource register, got {statusCode}")]
-        internal static partial void UpdatedResourceError(ILogger logger, HttpStatusCode statusCode);
-
-        [LoggerMessage(EventId = 10, Level = LogLevel.Information, Message = "Failed to retrieve service owners from resource register, got {statusCode}")]
-        internal static partial void ServiceOwnerError(ILogger logger, HttpStatusCode statusCode);
-
-        [LoggerMessage(EventId = 9, Level = LogLevel.Information, Message = "Error occured while fetching data from register, got {statusCode}")]
-        internal static partial void ResponseError(ILogger logger, HttpStatusCode statusCode);
-
-        [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Processing party with uuid {partyUuid} from register. RetryCount {count}")]
-        internal static partial void Party(ILogger logger, string partyUuid, int count);
-
-        [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "An error occured while streaming data from register")]
-        internal static partial void SyncError(ILogger logger, Exception ex);
-
-        [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Starting register hosted service")]
-        internal static partial void StartRegisterSync(ILogger logger);
-
-        [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Quit register hosted service")]
-        internal static partial void QuitRegisterSync(ILogger logger);
-
-        [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Assignment {action} from '{from}' to '{to}' with role '{role}'")]
-        internal static partial void AssignmentSuccess(ILogger logger, string action, string from, string to, string role);
-
-        [LoggerMessage(EventId = 5, Level = LogLevel.Warning, Message = "Failed to {action} assingment from '{from}' to '{to}' with role '{role}'")]
-        internal static partial void AssignmentFailed(ILogger logger, string action, string from, string to, string role);
-    }
-
-    #endregion
 }

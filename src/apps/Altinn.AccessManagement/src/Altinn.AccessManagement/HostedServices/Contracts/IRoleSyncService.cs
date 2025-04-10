@@ -1,5 +1,5 @@
-﻿using Altinn.Authorization.Host.Lease;
-using static Altinn.Authorization.AccessManagement.RegisterHostedService;
+﻿using Altinn.Authorization.AccessManagement.HostedServices;
+using Altinn.Authorization.Host.Lease;
 
 namespace Altinn.AccessManagement.HostedServices.Contracts;
 

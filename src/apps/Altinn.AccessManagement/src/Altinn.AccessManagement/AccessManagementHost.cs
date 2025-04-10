@@ -110,6 +110,7 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
     {
+        builder.Services.AddHostedService<RegisterHostedService>();
         builder.Services.AddSingleton<IPartySyncService, PartySyncService>();
         builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
         builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
@@ -118,33 +119,17 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureLibsIntegrations(this WebApplicationBuilder builder)
     {
-        // TODO: Andreas?
-
-        //builder.Services.AddAltinnPlatformIntegrationDefaults(
-        //{
-        //    new AccessManagementAppsettings(builder.Configuration);
-        //});
-
-        //builder.AddAltinnRegisterIntegration(opts =>
-        //{
-        //    var appsettings = new AccessManagementAppsettings(builder.Configuration);
-        //    if (appsettings.Platform?.RegisterEndpoint == null)
-        //    {
-        //        Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.RegisterEndpoint));
-        //        opts.Endpoint = default;
-        //    }
-        //    else
-        //    {
-        //        opts.Endpoint = appsettings.Platform.RegisterEndpoint;
-        //    }
-        //});
-
+        builder.Services.AddAltinnPlatformIntegrationDefaults(() => 
+        {
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            appsettings.Platform.Token.TestTool.Environment = appsettings.Environment;
+            return appsettings.Platform;
+        });
         return builder;
     }
 
     private static WebApplicationBuilder ConfigureLibsHost(this WebApplicationBuilder builder)
     {
-        builder.Services.AddHostedService<RegisterHostedService>();
         builder.AddAzureAppConfigurationDefaults(opts =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);

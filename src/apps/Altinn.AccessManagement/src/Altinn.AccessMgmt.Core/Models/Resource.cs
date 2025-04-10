@@ -16,7 +16,7 @@ public class Resource
     /// <summary>
     /// Identity
     /// </summary>
-    public Guid Id { get; private set; }
+    public Guid Id { get; set; }
 
     /// <summary>
     /// ProviderId

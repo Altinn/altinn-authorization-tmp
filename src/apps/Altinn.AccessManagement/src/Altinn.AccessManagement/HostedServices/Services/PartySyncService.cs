@@ -5,30 +5,40 @@ using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.AccessManagement;
+using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
-using Altinn.Authorization.Integration.Platform.ResourceRegister;
 using Microsoft.FeatureManagement;
-using static Altinn.Authorization.AccessManagement.RegisterHostedService;
 
 namespace Altinn.AccessManagement.HostedServices.Services;
 
-public class PartySyncService(
-     IAltinnLease lease,
-     IAltinnRegister register,
-     IAltinnResourceRegister resourceRegister,
-     ILogger<RegisterHostedService> logger,
-     IFeatureManager featureManager,
-     IIngestService ingestService,
-     IEntityVariantRepository entityVariantRepository
-    ) : IPartySyncService
+/// <inheritdoc />
+public class PartySyncService : BaseSyncService, IPartySyncService
 {
-    private readonly IAltinnLease _lease = lease;
-    private readonly IAltinnRegister _register = register;
-    private readonly ILogger<RegisterHostedService> _logger = logger;
-    private readonly IFeatureManager featureManager = featureManager;
-    private readonly IIngestService ingestService = ingestService;
+    private readonly ILogger<RegisterHostedService> _logger;
+    private readonly IIngestService ingestService;
 
+    private readonly IEntityTypeRepository entityTypeRepository;
+    private readonly IEntityVariantRepository entityVariantRepository;
+
+    /// <summary>
+    /// PartySyncService Constructor
+    /// </summary>
+    public PartySyncService(
+        IAltinnLease lease,
+        IFeatureManager featureManager,
+        IAltinnRegister register,
+        ILogger<RegisterHostedService> logger,
+        IIngestService ingestService,
+        IEntityTypeRepository entityTypeRepository,
+        IEntityVariantRepository entityVariantRepository
+    ) : base(lease, featureManager, register)
+    {
+        _logger = logger;
+        this.ingestService = ingestService;
+        this.entityVariantRepository = entityVariantRepository;
+        this.entityTypeRepository = entityTypeRepository;
+    }
 
     /// <summary>
     /// Synchronizes register data by first acquiring a remote lease and streaming register entries.
@@ -47,13 +57,16 @@ public class PartySyncService(
         var bulk = new List<Entity>();
         var bulkLookup = new List<EntityLookup>();
 
-        await foreach (var page in await _register.StreamParties(RegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
+        EntityTypes = (await entityTypeRepository.Get(cancellationToken: cancellationToken)).ToList();
+        EntityVariants = (await entityVariantRepository.Get(cancellationToken: cancellationToken)).ToList();
+
+        await foreach (var page in await Register.StreamParties(RegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {
                 return;
             }
-
+            
             if (!page.IsSuccessful)
             {
                 Log.ResponseError(_logger, page.StatusCode);
@@ -303,15 +316,6 @@ public class PartySyncService(
 
         return res;
     }
-
-    private async Task UpdateLease(LeaseResult<LeaseContent> ls, Action<LeaseContent> configureLeaseContent, CancellationToken cancellationToken)
-    {
-        configureLeaseContent(ls.Data);
-        await _lease.Put(ls, ls.Data, cancellationToken);
-        await _lease.RefreshLease(ls, cancellationToken);
-    }
-
-    private List<Provider> Providers { get; set; } = [];
 
     private List<EntityType> EntityTypes { get; set; } = [];
 

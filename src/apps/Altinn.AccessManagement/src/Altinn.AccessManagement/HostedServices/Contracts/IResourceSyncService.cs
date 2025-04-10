@@ -1,6 +1,6 @@
 ﻿using Altinn.Authorization.AccessManagement;
+using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
-using static Altinn.Authorization.AccessManagement.RegisterHostedService;
 
 namespace Altinn.AccessManagement.HostedServices.Contracts;
 
