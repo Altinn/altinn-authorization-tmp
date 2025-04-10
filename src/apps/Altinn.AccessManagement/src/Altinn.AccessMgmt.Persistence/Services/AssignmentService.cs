@@ -18,7 +18,7 @@ public class AssignmentService(
     IRoleRepository roleRepository,
     IRolePackageRepository rolePackageRepository,
     IEntityRepository entityRepository,
-    IConnectionRepository connectionRepository
+    IDelegationRepository delegationRepository
     ) : IAssignmentService
 {
     private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
@@ -28,7 +28,7 @@ public class AssignmentService(
     private readonly IRoleRepository roleRepository = roleRepository;
     private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
     private readonly IEntityRepository entityRepository = entityRepository;
-    private readonly IConnectionRepository connectionRepository = connectionRepository;
+    private readonly IDelegationRepository delegationRepository = delegationRepository;
 
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default)
@@ -168,14 +168,16 @@ public class AssignmentService(
         {
             if (!cascade)
             {
-                var filter = connectionRepository.CreateFilterBuilder();
-                filter.Equal(val => val.FromId, fromEntityId);
-                var connections = await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
-                if (connections.Any())
+                var packages = await assignmentPackageRepository.Get(f => f.AssignmentId, existingAssignment.Id, cancellationToken: cancellationToken);
+                if (packages != null && packages.Any())
                 {
-                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [
-                        new("id", string.Join(",", connections.Select(conn => conn.Id.ToString()))),
-                    ]);
+                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("packages", string.Join(",", packages.Select(p => p.Id.ToString())))]);
+                }
+
+                var delegations = await delegationRepository.Get(f => f.FromId, fromEntityId, cancellationToken: cancellationToken);
+                if (delegations != null && delegations.Any())
+                {
+                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegations.Select(p => p.Id.ToString())))]);
                 }
             }
         }
