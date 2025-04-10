@@ -16,23 +16,21 @@ public class Delegation
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Delegation"/> class.
-    /// </summary>
-    /// <param name="id">Id</param>
-    public Delegation(Guid id)
-    {
-        if (!id.IsVersion7Uuid())
-        {
-            throw new ArgumentException("Id must be a version 7 UUID", nameof(id));
-        }
-
-        Id = id;
-    }
-
-    /// <summary>
     /// Identity
     /// </summary>
-    public Guid Id { get; private set; }
+    public Guid Id
+    {
+        get => Id;
+        set
+        {
+            if (!value.IsVersion7Uuid())
+            {
+                throw new ArgumentException("Id must be a version 7 UUID", nameof(value));
+            }
+
+            Id = value;
+        }
+    }
 
     /// <summary>
     /// Assignment to delegate from
