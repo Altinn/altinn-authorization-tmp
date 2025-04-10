@@ -593,6 +593,13 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             }
 
+            errors = ValidateRequiredMetadata(errors, rightIndex, consentRight, resourceDetails);
+
+            return errors;
+        }
+
+        private static ValidationErrorBuilder ValidateRequiredMetadata(ValidationErrorBuilder errors, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails)
+        {
             if (resourceDetails.ConsentMetadata != null)
             {
                 foreach (KeyValuePair<string, ConsentMetadata> consentMetadata in resourceDetails.ConsentMetadata)
