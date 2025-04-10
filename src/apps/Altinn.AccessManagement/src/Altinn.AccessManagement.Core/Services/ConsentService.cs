@@ -568,31 +568,38 @@ namespace Altinn.AccessManagement.Core.Services
                 }
                 else
                 {
-                    if (consentRight.MetaData != null && consentRight.MetaData.Count > 0)
-                    {
-                        foreach (KeyValuePair<string, string> metaData in consentRight.MetaData)
-                        {
-                            if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
-                            {
-                                errors.Add(ValidationErrors.UnknownConsentMetadata, $"/consentRight/{rightIndex}/Metadata/{metaData.Key.ToLower()}");
-                            }
+                    errors = ValidateConsentMetadata(errors, rightIndex, consentRight, resourceDetails);
+                }
+            }
 
-                            if (string.IsNullOrEmpty(metaData.Value))
-                            {
-                                errors.Add(ValidationErrors.MissingMetadataValue, $"/consentRight/{rightIndex}/Metadata");
-                            }
-                        }
+            return errors;
+        }
+
+        private static ValidationErrorBuilder ValidateConsentMetadata(ValidationErrorBuilder errors, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails)
+        {
+            if (consentRight.MetaData != null && consentRight.MetaData.Count > 0)
+            {
+                foreach (KeyValuePair<string, string> metaData in consentRight.MetaData)
+                {
+                    if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
+                    {
+                        errors.Add(ValidationErrors.UnknownConsentMetadata, $"/consentRight/{rightIndex}/Metadata/{metaData.Key.ToLower()}");
                     }
 
-                    if (resourceDetails.ConsentMetadata != null)
+                    if (string.IsNullOrEmpty(metaData.Value))
                     {
-                        foreach (KeyValuePair<string, ConsentMetadata> consentMetadata in resourceDetails.ConsentMetadata)
-                        {
-                            if (consentRight.MetaData == null || !consentRight.MetaData.ContainsKey(consentMetadata.Key))
-                            {
-                                errors.Add(ValidationErrors.MissingMetadata, $"/consentRight/{rightIndex}/Metadata/{consentMetadata.Key}");
-                            }
-                        }
+                        errors.Add(ValidationErrors.MissingMetadataValue, $"/consentRight/{rightIndex}/Metadata");
+                    }
+                }
+            }
+
+            if (resourceDetails.ConsentMetadata != null)
+            {
+                foreach (KeyValuePair<string, ConsentMetadata> consentMetadata in resourceDetails.ConsentMetadata)
+                {
+                    if (consentRight.MetaData == null || !consentRight.MetaData.ContainsKey(consentMetadata.Key))
+                    {
+                        errors.Add(ValidationErrors.MissingMetadata, $"/consentRight/{rightIndex}/Metadata/{consentMetadata.Key}");
                     }
                 }
             }
