@@ -1,7 +1,7 @@
 meta {
   name: POST_SysUser_ClientDele_AccPkg_Regn_ASHovedadministrator
   type: http
-  seq: 7
+  seq: 1
 }
 
 post {
@@ -34,7 +34,7 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   
   bru.setVar("party", testdata.regnskapsforer.partyuuid);
-  bru.setVar("systemUser", testdata.regnskapsforer.systemuserid);
+  bru.setVar("systemUser", testdata.regnskapsforer.systemuser.id);
   bru.setVar("clientId", testdata.regnskapsforer.client_org.partyuuid);
   
   var getTokenParameters = {
@@ -60,7 +60,7 @@ script:post-response {
 }
 
 tests {
-  test("Should return 200 OK", function() {
+  test("Access package delegation from client org to systemuser should return 200 ok with", function() {
     expect(res.status).to.equal(200);
   });
 }

@@ -39,7 +39,7 @@ script:pre-request {
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
   bru.setVar("party", testdata.regnskapsforer.partyuuid);
-  bru.setVar("systemUser", testdata.regnskapsforer.systemuserid);
+  bru.setVar("systemUser", testdata.regnskapsforer.systemuser.id);
   bru.setVar("clientId", testdata.regnskapsforer.client_org_other_Regn.partyuuid);
   
   
@@ -57,7 +57,7 @@ script:pre-request {
 }
 
 tests {
-  test("Should return 200 OK", function() {
-    expect(res.status).to.equal(200);
+  test("Access package delegation from client which is not connected to party regn org to systemuser ", function() {
+    expect(res.status).to.equal(500);
   });
 }

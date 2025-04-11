@@ -39,7 +39,7 @@ script:pre-request {
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
   bru.setVar("party", testdata.regnskapsforer.partyuuid);
-  bru.setVar("systemUser", testdata.regnskapsforer.systemuserid);
+  bru.setVar("systemUser", testdata.regnskapsforer.systemuser.id);
   bru.setVar("clientId", testdata.regnskapsforer.client_org.partyuuid);
   
   var getTokenParameters = {
@@ -56,7 +56,7 @@ script:pre-request {
 }
 
 tests {
-  test("Should return 403 FORBIDDEN", function() {
+  test("Delegation via unauthorized user should give 403 forbidden error", function() {
     expect(res.status).to.equal(403);
   });
 }

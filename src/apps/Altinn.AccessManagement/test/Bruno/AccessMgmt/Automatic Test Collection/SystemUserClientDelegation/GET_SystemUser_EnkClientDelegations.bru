@@ -1,7 +1,7 @@
 meta {
-  name: GET_SystemUser_ClientDelegations_Revi_org
+  name: GET_SystemUser_EnkClientDelegations
   type: http
-  seq: 6
+  seq: 9
 }
 
 get {
@@ -24,14 +24,14 @@ script:pre-request {
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   
-  bru.setVar("party", testdata.revisor.partyuuid);
-  bru.setVar("systemUser", testdata.revisor.systemuser.id);
+  bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
+  bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
   
   var getTokenParameters = {
-    auth_userId: testdata.revisor.dagl.userid,
-    auth_partyId: testdata.revisor.dagl.partyid,
-    auth_partyUuid: testdata.revisor.dagl.partyuuid,
-    auth_ssn: testdata.revisor.dagl.pid,
+    auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
+    auth_partyId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyId,
+    auth_partyUuid: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid,
+    auth_ssn: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid,
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.portalEnduser
   }
@@ -39,6 +39,14 @@ script:pre-request {
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
   bru.setVar("bearerToken",  token);
+}
+
+script:post-response {
+  let data = typeof res.body === "string" ? JSON.parse(res.body) : res.body;
+  if (Array.isArray(data) && data.length > 0) {
+   const toId = data[0].delegation.toId;
+   bru.setEnvVar("toId", toId);
+  }
 }
 
 tests {

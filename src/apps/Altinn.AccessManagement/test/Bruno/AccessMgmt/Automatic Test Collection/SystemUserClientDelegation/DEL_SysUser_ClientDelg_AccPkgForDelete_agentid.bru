@@ -1,11 +1,11 @@
 meta {
   name: DEL_SysUser_ClientDelg_AccPkgForDelete_agentid
   type: http
-  seq: 2
+  seq: 4
 }
 
 delete {
-  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation/deleteagentassignment?party={{party}}&agentId={{systemUser}}&cascade=false
+  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation/deleteagentassignment?party={{party}}&agentId={{systemUser}}&cascade=true
   body: json
   auth: inherit
 }
@@ -13,7 +13,7 @@ delete {
 params:query {
   party: {{party}}
   agentId: {{systemUser}}
-  cascade: false
+  cascade: true
 }
 
 headers {
@@ -26,7 +26,7 @@ script:pre-request {
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
   bru.setVar("party", testdata.regnskapsforer.partyuuid);
-  bru.setVar("systemUser", testdata.regnskapsforer.systemuserid);
+  bru.setVar("systemUser", testdata.regnskapsforer.systemuser.id);
   
   var getTokenParameters = {
     auth_userId: testdata.regnskapsforer.hovedadministrator.userid,

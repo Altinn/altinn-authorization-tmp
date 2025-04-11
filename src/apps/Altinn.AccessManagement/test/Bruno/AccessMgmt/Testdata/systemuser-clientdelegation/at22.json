@@ -107,10 +107,20 @@
       "partyid": 50257121,
       "partyuuid": "E7B6D1C5-8425-4FEF-BFF1-7881421DAD68"
     },
-    "systemuserid": "ec98747a-3360-4997-bad5-cd7d6cefa361",
+    "hovedadministrator": {
+      "name": "USIKKER LYD",
+      "pid": "23898496708",
+      "userid": 20013247,
+      "partyid": 50878140,
+      "partyuuid": "F0EEAB79-1E87-4BE1-AF45-545FC9F0D1D4"
+    },
+    "systemuser": {
+      "name": "TEST_SBS_KLIENT",
+      "id": "ad98adff-ecf5-4d16-820b-965956da25cc"
+    },
     "client_org": {
       "name": "ALFABETISK PASSIV TIGER AS",
-      "partyuuid": "acef4b54-d1b3-45cd-bd5f-5c30fa380118",
+      "partyuuid": "ACEF4B54-D1B3-45CD-BD5F-5C30FA380118",
       "orgno": "313248224",
       "dagl": {
         "name": "MOBIL PRESENTASJON",
@@ -139,7 +149,10 @@
       "partyid": 50817574,
       "partyuuid": "5C62777B-8457-42AA-A979-D871E891F331"
     },
-    "systemuserid": "09d28dff-81a5-4587-8965-eccec95c480d",
+    "systemuser": {
+      "name": "TEST_SBS_KLIENT",
+      "id": "a931f4fa-69ba-4f5b-bd3f-0fdb0fedcfed"
+    },
     "client_org": {
       "name": "SKRAVLETE PUSSIG KATT RETNINGSLINJE",
       "partyuuid": "023AF04E-E43D-4EE5-8D01-08F41A44D02B",
@@ -147,20 +160,21 @@
       "dagl": {
         "name": "SMIGRENDE ASSOSIASJON",
         "pid": "04815098051"
-
-      }, 
-      "non_systemuserid" : "A7515918-8E04-4118-B251-82278BC163FA"
-    },
-    "client_org_other_Regn" : {
-       "name" : "AKVATISK OVERBEVISENDE KATT ELEFANT",
-       "partyuuid" : "3177BD2C-3AE1-4A36-8CE9-FBF6DB714E5B",
-       "orgno" : "313628981",
-       "dagl" : {
-        "name" : "REDELIG HABITT",
-        "pid" : "28835096523"
-      
       }
-
+    },
+      "non_systemuser": {
+        "pid" : "24856298961",
+        "name": "ULIK GLEDE",
+        "partyuuid": "8e06e704-b446-4e7f-9a32-3ee971e5ab0e"
+      },
+    "client_org_other_Regn": {
+      "name": "AKVATISK OVERBEVISENDE KATT ELEFANT",
+      "partyuuid": "3177BD2C-3AE1-4A36-8CE9-FBF6DB714E5B",
+      "orgno": "313628981",
+      "dagl": {
+        "name": "REDELIG HABITT",
+        "pid": "28835096523"
+      }
     }
   }
 }
