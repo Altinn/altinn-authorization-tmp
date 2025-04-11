@@ -1,12 +1,8 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using Altinn.AccessManagement.HostedServices.Contracts;
+﻿using Altinn.AccessManagement.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
@@ -358,9 +354,18 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
 
 internal class Failed
 {
+    /// <summary>
+    /// Model from page
+    /// </summary>
     internal ResourceUpdatedModel UpdatedModel { get; set; }
     
+    /// <summary>
+    /// Single resource from Registry
+    /// </summary>
     internal ResourceModel RawResource { get; set; }
     
+    /// <summary>
+    /// Exception
+    /// </summary>
     internal Exception Exception { get; set; }
 }

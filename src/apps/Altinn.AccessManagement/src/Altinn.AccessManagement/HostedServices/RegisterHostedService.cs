@@ -93,8 +93,9 @@ public partial class RegisterHostedService(
             {
                 if (canRunResourceSync)
                 {
-                    await resourceSyncService.SyncResourceOwners(cancellationToken);
-                    await resourceSyncService.SyncResources(cancellationToken);
+                    //// await resourceSyncService.SyncResourceOwners(cancellationToken);
+                    //// await resourceSyncService.SyncResources(cancellationToken);
+                    //// await resourceSyncService.SyncResourceMapping(ls, cancellationToken);
                     await statusService.RunSuccess(resourceStatus, options);
                 }
             }
@@ -104,33 +105,33 @@ public partial class RegisterHostedService(
                 await statusService.RunFailed(resourceStatus, ex, options);
             }
 
-            //try
-            //{
-            //    if (canRunPartySync)
-            //    {
-            //        await partySyncService.SyncParty(ls, cancellationToken);
-            //        await statusService.RunSuccess(partyStatus, options);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    Log.SyncError(_logger, ex);
-            //    await statusService.RunFailed(partyStatus, ex, options);
-            //}
+            try
+            {
+                if (canRunPartySync)
+                {
+                    await partySyncService.SyncParty(ls, cancellationToken);
+                    await statusService.RunSuccess(partyStatus, options);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.SyncError(_logger, ex);
+                await statusService.RunFailed(partyStatus, ex, options);
+            }
 
-            //try
-            //{
-            //    if (canRunPartySync)
-            //    {
-            //        await roleSyncService.SyncRoles(ls, cancellationToken);
-            //        await statusService.RunSuccess(roleStatus, options);
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    Log.SyncError(_logger, ex);
-            //    await statusService.RunFailed(partyStatus, ex, options);
-            //}
+            try
+            {
+                if (canRunPartySync)
+                {
+                    await roleSyncService.SyncRoles(ls, cancellationToken);
+                    await statusService.RunSuccess(roleStatus, options);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.SyncError(_logger, ex);
+                await statusService.RunFailed(partyStatus, ex, options);
+            }
 
             _logger.LogInformation("Register sync completed!");
         }

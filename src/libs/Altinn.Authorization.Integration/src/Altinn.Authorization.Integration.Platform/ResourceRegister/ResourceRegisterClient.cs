@@ -50,7 +50,7 @@ public interface IAltinnResourceRegister
     Task<PlatformResponse<ResourceModel>> GetResource(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves details of a specific resource from the Altinn Resource Register.
+    /// Retrieves list of resource from the Altinn Resource Register.
     /// </summary>
     /// <param name="cancellationToken">Token for canceling the operation.</param>
     /// <returns>
