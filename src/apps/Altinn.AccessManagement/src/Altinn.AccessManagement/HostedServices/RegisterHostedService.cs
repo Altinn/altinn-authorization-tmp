@@ -94,7 +94,7 @@ public partial class RegisterHostedService(
                 if (canRunResourceSync)
                 {
                     await resourceSyncService.SyncResourceOwners(cancellationToken);
-                    await resourceSyncService.SyncResources(ls, cancellationToken);
+                    await resourceSyncService.SyncResources(cancellationToken);
                     await statusService.RunSuccess(resourceStatus, options);
                 }
             }

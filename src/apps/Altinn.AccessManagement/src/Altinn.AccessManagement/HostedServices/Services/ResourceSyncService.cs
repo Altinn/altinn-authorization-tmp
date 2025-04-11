@@ -6,6 +6,7 @@ using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
+using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
@@ -80,6 +81,7 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
         var resourceOwners = new List<Provider>();
         foreach (var serviceOwner in serviceOwners.Content.Orgs)
         {
+            // Check if exists without Id => RefId/Code
             resourceOwners.Add(new Provider()
             {
                 Id = serviceOwner.Value.Id,
@@ -98,7 +100,49 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
     }
 
     /// <inheritdoc />
-    public async Task SyncResources(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+    public async Task<bool> SyncResources(CancellationToken cancellationToken)
+    {
+        var response = await _resourceRegister.GetResources(cancellationToken);
+        if (!response.IsSuccessful)
+        {
+            Log.ServiceOwnerError(_logger, response.StatusCode);
+            return false;
+        }
+
+        var options = new ChangeRequestOptions()
+        {
+            ChangedBy = AuditDefaults.RegisterImportSystem,
+            ChangedBySystem = AuditDefaults.RegisterImportSystem
+        };
+
+        var resources = new List<Resource>();
+        var failed = new List<ResourceModel>();
+        foreach (var res in response.Content)
+        {
+            //if (res.Status.ToString().Equals("Disabled", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    Console.WriteLine($"Delete: {res.Identifier}");
+            //    continue;
+            //}
+
+            try
+            {
+                resources.Add(await ConvertToResource(res, options, cancellationToken));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                failed.Add(res);
+            }
+        }
+
+        await _ingestService.IngestAndMergeData(resources, options: options, ["Id"]);
+
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task SyncResourceMapping(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
         var options = new ChangeRequestOptions()
         {
@@ -106,8 +150,8 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
             ChangedBySystem = AuditDefaults.RegisterImportSystem
         };
 
-        var providers = (await _providerRepository.Get()).ToList();
-        var resourceTypes = (await _resourceTypeRepository.Get()).ToList();
+        Providers = (await _providerRepository.Get()).ToList();
+        ResourceTypes = (await _resourceTypeRepository.Get()).ToList();
 
         await foreach (var page in await _resourceRegister.StreamResources(ls.Data?.ResourcesNextPageLink, cancellationToken))
         {
@@ -181,87 +225,134 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
         }
     }
 
-    public List<Provider> Providers { get; set; }
+    public IEnumerable<Provider> Providers { get; set; }
 
-    public List<ResourceType> ResourceTypes { get; set; }
+    public IEnumerable<ResourceType> ResourceTypes { get; set; }
 
     private async Task<Resource> ConvertToResource(ResourceModel model, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
-        var res = (await _resourceRepository.Get(t => t.RefId, model.Identifier)).FirstOrDefault();
+        var provider = await GetOrCreateProvider(model, options, cancellationToken) ?? throw new Exception("Unable to get or create provider");
+        var resourceType = await GetOrCreateResourceType(model, options, cancellationToken) ?? throw new Exception("Unable to get or create resourcetype");
 
-        var provider = await GetOrCreateProvider(model, options, cancellationToken);
-        var resourceType = await GetOrCreateResourceType(model, options, cancellationToken);
+        var filter = _resourceRepository.CreateFilterBuilder();
+        filter.Equal(t => t.RefId, model.Identifier);
+        filter.Equal(t => t.ProviderId, provider.Id);
+        var res = (await _resourceRepository.Get(filter)).FirstOrDefault();
+
+        if (model.Title == null || string.IsNullOrEmpty(model.Title.Nb))
+        {
+            throw new Exception("Missing title");
+        }
 
         return new Resource()
         {
             Id = res == null ? Guid.CreateVersion7() : res.Id,
             Name = model.Title.Nb,
-            Description = model.Description?.Nb,
+            Description = "-",
             RefId = model.Identifier,
             ProviderId = provider.Id,
             TypeId = resourceType.Id
         };
     }
 
+    private async Task LoadResourceTypes()
+    {
+        ResourceTypes = await _resourceTypeRepository.Get();
+    }
+
     private async Task<ResourceType> GetOrCreateResourceType(ResourceModel model, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
+        if (ResourceTypes == null || !ResourceTypes.Any())
+        {
+            await LoadResourceTypes();
+        }
+
         var type = ResourceTypes.FirstOrDefault(t => t.Name.Equals(model.ResourceType, StringComparison.OrdinalIgnoreCase));
 
         if (type == null)
         {
-            type = new ResourceType(MD5.HashData(Encoding.UTF8.GetBytes(model.ResourceType)))
+            type = new ResourceType()
             {
+                Id = Guid.CreateVersion7(),
                 Name = model.ResourceType
             };
 
             await _resourceTypeRepository.Create(type, options: options);
-            ResourceTypes.Add(type);
+            await LoadResourceTypes();
         }
 
         return type;
     }
 
+    private async Task LoadProviders()
+    {
+        Providers = await _providerRepository.Get();
+    }
+
     private async Task<Provider> GetOrCreateProvider(ResourceModel model, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
-        var provider = Providers.FirstOrDefault(t => t.Code.Equals(model.HasCompetentAuthority.Orgcode, StringComparison.OrdinalIgnoreCase));
+        if (Providers == null || !Providers.Any())
+        {
+            await LoadProviders();
+        }
+
+        var orgNo = model.HasCompetentAuthority.Organization.ToString() ?? string.Empty;
+        var orgCode = model.HasCompetentAuthority.Orgcode.ToString() ?? string.Empty;
+
+        var provider = Providers.Where(t => !string.IsNullOrEmpty(t.RefId)).FirstOrDefault(t => t.RefId.Equals(orgNo, StringComparison.OrdinalIgnoreCase));
+
+        if (provider == null)
+        {
+            provider = Providers.Where(t => !string.IsNullOrEmpty(t.Code)).FirstOrDefault(t => t.Code.Equals(orgCode, StringComparison.OrdinalIgnoreCase));
+        }
+
         if (provider == null)
         {
             if (model.HasCompetentAuthority != null)
             {
+                var providerType = (await _providerTypeRepository.Get(t => t.Name, "Tjenesteeier")).FirstOrDefault();
+                if (providerType == null)
+                {
+                    throw new Exception("Provider type 'ServiceOwner' not found");
+                }
+
                 provider = new Provider()
                 {
+                    Id = Guid.CreateVersion7(),
                     Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.Nb,
-                    RefId = model.HasCompetentAuthority.Orgcode
+                    RefId = model.HasCompetentAuthority.Organization,
+                    Code = model.HasCompetentAuthority.Orgcode,
+                    TypeId = providerType.Id,
                 };
                 await _providerRepository.Create(provider, options: options, cancellationToken: cancellationToken);
 
-                if (model.HasCompetentAuthority.Name != null && model.HasCompetentAuthority.Name.En != null)
-                {
-                    provider = new Provider()
-                    {
-                        Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.En,
-                        RefId = model.HasCompetentAuthority.Orgcode
-                    };
+                //if (model.HasCompetentAuthority.Name != null && model.HasCompetentAuthority.Name.En != null)
+                //{
+                //    provider = new Provider()
+                //    {
+                //        Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.En,
+                //        RefId = model.HasCompetentAuthority.Orgcode
+                //    };
 
-                    await _providerRepository.CreateTranslation(provider, "eng", options: options, cancellationToken: cancellationToken);
-                }
+                //    await _providerRepository.CreateTranslation(provider, "eng", options: options, cancellationToken: cancellationToken);
+                //}
 
-                if (model.HasCompetentAuthority.Name != null && model.HasCompetentAuthority.Name.Nn != null)
-                {
-                    provider = new Provider()
-                    {
-                        Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.Nn,
-                        RefId = model.HasCompetentAuthority.Orgcode
-                    };
+                //if (model.HasCompetentAuthority.Name != null && model.HasCompetentAuthority.Name.Nn != null)
+                //{
+                //    provider = new Provider()
+                //    {
+                //        Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.Nn,
+                //        RefId = model.HasCompetentAuthority.Orgcode
+                //    };
 
-                    await _providerRepository.CreateTranslation(provider, "nno", options: options, cancellationToken: cancellationToken);
-                }
+                //    await _providerRepository.CreateTranslation(provider, "nno", options: options, cancellationToken: cancellationToken);
+                //}
 
-                Providers.Add(provider);
+                await LoadProviders();
             }
         }
 
-        return null;
+        return provider;
     }
 }
 

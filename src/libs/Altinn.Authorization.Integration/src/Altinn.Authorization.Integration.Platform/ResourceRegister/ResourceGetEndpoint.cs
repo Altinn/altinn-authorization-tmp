@@ -24,6 +24,22 @@ public partial class ResourceRegisterClient
             ResponseComposer.DeserializeResponseOnSuccess
         );
     }
+
+    public async Task<PlatformResponse<List<ResourceModel>>> GetResources(CancellationToken cancellationToken = default)
+    {
+        List<Action<HttpRequestMessage>> request = [
+            RequestComposer.WithHttpVerb(HttpMethod.Get),
+            RequestComposer.WithSetUri(ResourceRegisterOptions.Value.Endpoint, "/resourceregistry/api/v1/resource/resourcelist"),
+        ];
+
+        var response = await HttpClient.SendAsync(RequestComposer.New([.. request]), cancellationToken);
+
+        return ResponseComposer.Handle<List<ResourceModel>>(
+            response,
+            ResponseComposer.DeserializeProblemDetailsOnUnsuccessStatusCode,
+            ResponseComposer.DeserializeResponseOnSuccess
+        );
+    }
 }
 
 /// <summary>
@@ -172,12 +188,21 @@ public class ResourceDescription
 /// </summary>
 public class ResourceHasCompetentAuthority
 {
+    /// <summary>
+    /// E.g. Norwegian Tax Administration
+    /// </summary>
     [JsonPropertyName("name")]
     public CompetentAuthorityName Name { get; set; }
 
+    /// <summary>
+    /// E.g. 974761076
+    /// </summary>
     [JsonPropertyName("organization")]
     public string Organization { get; set; }
 
+    /// <summary>
+    /// E.g. skd
+    /// </summary>
     [JsonPropertyName("orgcode")]
     public string Orgcode { get; set; }
 
