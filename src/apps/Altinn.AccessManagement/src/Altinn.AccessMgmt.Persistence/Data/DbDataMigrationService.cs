@@ -619,11 +619,6 @@ public class DbDataMigrationService(
 
         await ingestService.IngestAndMergeData(roles, options, new List<GenericParameter>() { new GenericParameter("EntityTypeId", "EntityTypeId"), new GenericParameter("Code", "Code") }, cancellationToken);
 
-        //foreach (var item in roles)
-        //{
-        //    await roleService.Upsert(item, options: options, cancellationToken: cancellationToken);
-        //}
-
         foreach (var item in rolesEng)
         {
             await roleService.UpsertTranslation(item.Id, item, "eng", options: options, cancellationToken: cancellationToken);
