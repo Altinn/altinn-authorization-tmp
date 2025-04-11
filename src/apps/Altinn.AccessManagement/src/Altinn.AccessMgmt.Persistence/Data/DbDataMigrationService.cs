@@ -86,10 +86,10 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Entity>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 6))
+        if (migrationService.NeedMigration<Role>(dataKey, 7))
         {
             await IngestRole(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 6);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 7);
         }
 
         if (migrationService.NeedMigration<RoleMap>(dataKey, 3))
@@ -104,22 +104,22 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 4);
         }
 
-        if (migrationService.NeedMigration<Area>(dataKey, 4))
+        if (migrationService.NeedMigration<Area>(dataKey, 5))
         {
             await IngestArea(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Area>(dataKey, string.Empty, 4);
+            await migrationService.LogMigration<Area>(dataKey, string.Empty, 5);
         }
 
-        if (migrationService.NeedMigration<Package>(dataKey, 4))
+        if (migrationService.NeedMigration<Package>(dataKey, 5))
         {
             await IngestPackage(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Package>(dataKey, string.Empty, 4);
+            await migrationService.LogMigration<Package>(dataKey, string.Empty, 5);
         }
 
-        if (migrationService.NeedMigration<RolePackage>(dataKey, 2))
+        if (migrationService.NeedMigration<RolePackage>(dataKey, 3))
         {
             await IngestRolePackage(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 2);
+            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 3);
         }
 
         if (migrationService.NeedMigration<EntityVariantRole>(dataKey, 2))
@@ -488,7 +488,7 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("f045ffda-dbdc-41da-b674-b9b276ad5b01"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Styremedlem",                                 /*"MEDL"*/  Code = "styremedlem",                           Description = "Fysisk- eller juridisk person som inngår i et styre", Urn = "urn:altinn:external-role:ccr:styremedlem", IsKeyRole = false },
             new Role() { Id = Guid.Parse("9e5d3acf-cef7-4bbe-b101-8e9ab7b8b3e4"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Styrets leder",                               /*"LEDE"*/  Code = "styreleder",                            Description = "Fysisk- eller juridisk person som er styremedlem og leder et styre", Urn = "urn:altinn:external-role:ccr:styreleder", IsKeyRole = true },
             new Role() { Id = Guid.Parse("2e2fc06e-d9b7-4cd9-91bc-d5de766d20de"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Den personlige konkursen angår",              /*"KENK"*/  Code = "personlige-konkurs",                    Description = "Den personlige konkursen angår", Urn = "urn:altinn:external-role:ccr:personlige-konkurs", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("e852d758-e8dd-41ec-a1e2-4632deb6857d"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Norsk representant for utenlandsk enhet",     /*"REPR"*/  Code = "norsk-representant",                    Description = "Fysisk- eller juridisk person som har ansvaret for den daglige driften i Norge", Urn = "urn:altinn:external-role:ccr:norsk-representant", IsKeyRole = true },
+            new Role() { Id = Guid.Parse("e852d758-e8dd-41ec-a1e2-4632deb6857d"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Norsk representant for utenlandsk enhet",     /*"REPR"*/  Code = "norsk-representant",                    Description = "Fysisk- eller juridisk person som har ansvaret for den daglige driften i Norge", Urn = "urn:altinn:external-role:ccr:norsk-representant", IsKeyRole = false },
             new Role() { Id = Guid.Parse("db013059-4a8a-442d-bf90-b03539fe5dda"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Kontaktperson",                               /*"KONT"*/  Code = "kontaktperson",                         Description = "Fysisk person som representerer en virksomhet", Urn = "urn:altinn:external-role:ccr:kontaktperson", IsKeyRole = false },
             new Role() { Id = Guid.Parse("69c4397a-9e34-4e73-9f69-534bc1bb74c8"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Kontaktperson NUF",                           /*"KNUF"*/  Code = "kontaktperson-nuf",                     Description = "Fysisk person som representerer en virksomhet - NUF", Urn = "urn:altinn:external-role:ccr:kontaktperson-nuf", IsKeyRole = false },
             new Role() { Id = Guid.Parse("8f0cf433-954e-4680-a25d-a3cf9ffdf149"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Bestyrende reder",                            /*"BEST"*/  Code = "bestyrende-reder",                      Description = "Bestyrende reder", Urn = "urn:altinn:external-role:ccr:bestyrende-reder", IsKeyRole = true },
@@ -617,10 +617,7 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("46e27685-b3ba-423e-8b42-faab54de5817"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Reknskapsførar",                                      Code = "regnskapsforer",                        Description = "Reknskapsførar", Urn = "urn:altinn:external-role:ccr:regnskapsforer" }
         };
 
-        foreach (var item in roles)
-        {
-            await roleService.Upsert(item, options: options, cancellationToken: cancellationToken);
-        }
+        await ingestService.IngestAndMergeData(roles, options, new List<GenericParameter>() { new GenericParameter("EntityTypeId", "EntityTypeId"), new GenericParameter("Code", "Code") }, cancellationToken);
 
         foreach (var item in rolesEng)
         {
@@ -731,7 +728,6 @@ public class DbDataMigrationService(
         var roleDtpr = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:deltaker-delt-ansvar")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "deltaker-delt-ansvar"));
         var roleKomp = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:komplementar")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "komplementar"));
         var roleBest = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:bestyrende-reder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "bestyrende-reder"));
-        var roleRepr = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:norsk-representant")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "norsk-representant"));
         var roleBobe = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:bostyrer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "bostyrer"));
         var roleRegn = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:regnskapsforer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "regnskapsforer"));
         var roleRevi = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:revisor")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "revisor"));
@@ -777,7 +773,6 @@ public class DbDataMigrationService(
             new RoleMap() { HasRoleId = roleDtpr, GetRoleId = roleMPA },
             new RoleMap() { HasRoleId = roleKomp, GetRoleId = roleMPA },
             new RoleMap() { HasRoleId = roleBest, GetRoleId = roleMPA },
-            new RoleMap() { HasRoleId = roleRepr, GetRoleId = roleMPA },
             new RoleMap() { HasRoleId = roleBobe, GetRoleId = roleMPA },
             new RoleMap() { HasRoleId = roleKnuf, GetRoleId = roleMPA }
         };
@@ -862,6 +857,7 @@ public class DbDataMigrationService(
             new Area() { Id = Guid.Parse("64cbcdc8-01c9-448c-b3d2-eb9582beb3c2"), Urn = "accesspackage:area:fullmakter_for_regnskapsforer", Name = "Fullmakter for regnskapsfører", Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til fullmakter for regnskapsfører.", IconUrl = $"{iconBaseUrl}Aksel_Home_Calculator.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
             new Area() { Id = Guid.Parse("7df15290-f43c-4831-a1b4-3edfa43e526d"), Urn = "accesspackage:area:fullmakter_for_revisor", Name = "Fullmakter for revisor", Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til fullmakter for revisor.", IconUrl = $"{iconBaseUrl}Aksel_Files-and-application_FileSearch.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
             new Area() { Id = Guid.Parse("f3daddb7-6e21-455e-b6d2-65a281375b6b"), Urn = "accesspackage:area:fullmakter_for_konkursbo", Name = "Fullmakter for konkursbo", Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til fullmakter for konkursbo.", IconUrl = $"{iconBaseUrl}Aksel_Statistics-and-math_TrendDown.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
+            new Area() { Id = Guid.Parse("0195efb8-7c80-76b3-bb86-ae9dfd74bca2"), Urn = "accesspackage:area:fullmakter_for_forretningsforer", Name = "Fullmakter for forretningsfører", Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til fullmakter for forretningsfører.", IconUrl = $"{iconBaseUrl}Aksel_Statistics-and-math_TrendDown.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
         };
 
         var areasEng = new List<Area>()
@@ -886,6 +882,7 @@ public class DbDataMigrationService(
             new Area() { Id = Guid.Parse("64cbcdc8-01c9-448c-b3d2-eb9582beb3c2"), Urn = "accesspackage:area:fullmakter_for_regnskapsforer", Name = "Authorizations for Accountants", Description = "This authorization area includes access packages related to authorizations for accountants.", IconUrl = $"{iconBaseUrl}Aksel_Home_Calculator.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
             new Area() { Id = Guid.Parse("7df15290-f43c-4831-a1b4-3edfa43e526d"), Urn = "accesspackage:area:fullmakter_for_revisor", Name = "Authorizations for Auditors", Description = "This authorization area includes access packages related to authorizations for auditors.", IconUrl = $"{iconBaseUrl}Aksel_Files-and-application_FileSearch.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
             new Area() { Id = Guid.Parse("f3daddb7-6e21-455e-b6d2-65a281375b6b"), Urn = "accesspackage:area:fullmakter_for_konkursbo", Name = "Authorizations for Bankruptcy Estates", Description = "This authorization area includes access packages related to authorizations for bankruptcy estates.", IconUrl = $"{iconBaseUrl}Aksel_Statistics-and-math_TrendDown.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
+            new Area() { Id = Guid.Parse("0195efb8-7c80-76b3-bb86-ae9dfd74bca2"), Urn = "accesspackage:area:fullmakter_for_forretningsforer", Name = "Authorizations for Bussineses", Description = "This authorization area includes access packages related to authorizations for bussineses.", IconUrl = $"{iconBaseUrl}Aksel_Statistics-and-math_TrendDown.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
         };
 
         var areasNno = new List<Area>()
@@ -910,6 +907,7 @@ public class DbDataMigrationService(
             new Area() { Id = Guid.Parse("64cbcdc8-01c9-448c-b3d2-eb9582beb3c2"), Urn = "accesspackage:area:fullmakter_for_regnskapsforer", Name = "Fullmakter for rekneskapsførar", Description = "Dette fullmaktsområdet omfattar tilgangspakkar knytt til fullmakter for rekneskapsførar.", IconUrl = $"{iconBaseUrl}Aksel_Home_Calculator.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
             new Area() { Id = Guid.Parse("7df15290-f43c-4831-a1b4-3edfa43e526d"), Urn = "accesspackage:area:fullmakter_for_revisor", Name = "Fullmakter for revisor", Description = "Dette fullmaktsområdet omfattar tilgangspakkar knytt til fullmakter for revisor.", IconUrl = $"{iconBaseUrl}Aksel_Files-and-application_FileSearch.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
             new Area() { Id = Guid.Parse("f3daddb7-6e21-455e-b6d2-65a281375b6b"), Urn = "accesspackage:area:fullmakter_for_konkursbo", Name = "Fullmakter for konkursbo", Description = "Dette fullmaktsområdet omfattar tilgangspakkar knytt til fullmakter for konkursbo.", IconUrl = $"{iconBaseUrl}Aksel_Statistics-and-math_TrendDown.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
+            new Area() { Id = Guid.Parse("0195efb8-7c80-76b3-bb86-ae9dfd74bca2"), Urn = "accesspackage:area:fullmakter_for_forretningsforer", Name = "Fullmakter for forretningsfører", Description = "Dette fullmaktsområdet omfattar tilgangspakkar knytt til fullmakter for forretningsfører.", IconUrl = $"{iconBaseUrl}Aksel_Statistics-and-math_TrendDown.svg", GroupId = Guid.Parse("554F0321-53B8-4D97-BE12-6A585C507159") },
         };
 
         foreach (var item in areas)
@@ -963,6 +961,8 @@ public class DbDataMigrationService(
         var area_fullmakter_for_regnskapsforer = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_regnskapsforer")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Fullmakter for regnskapsfører")); /*64cbcdc8-01c9-448c-b3d2-eb9582beb3c2*/
         var area_fullmakter_for_revisor = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_revisor")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Fullmakter for revisor")); /*7df15290-f43c-4831-a1b4-3edfa43e526d*/
         var area_fullmakter_for_konkursbo = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_konkursbo")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Fullmakter for konkursbo")); /*f3daddb7-6e21-455e-b6d2-65a281375b6b*/
+        var area_fullmakter_for_forretningsforer = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_forretningsforer")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Fullmakter for forretningsforer")); /*0195efb8-7c80-76b3-bb86-ae9dfd74bca2*/
+
 
         var packages = new List<Package>()
         {
@@ -1087,6 +1087,8 @@ public class DbDataMigrationService(
             new Package() { Id = Guid.Parse("96120c32-389d-46eb-8212-0a6540540c25"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_revisor, Urn = "urn:altinn:accesspackage:revisormedarbeider", Name = "Revisormedarbeider", Description = "Denne fullmakten gir revisor tilgang til å opptre som revisormedarbeider for en kunde og utføre alle tjenester som krever denne fullmakten. Dette er tjenester som tjenestetilbyder har vurdert det som naturlig at en revisor utfører på vegne av sin kunde. Fullmakten gis kun til autoriserte revisorer. Fullmakt hos revisor oppstår når kunden registrerer revisor i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true },
             new Package() { Id = Guid.Parse("5ef836c7-69cc-4ea8-84d6-fb933cc4fc5c"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_konkursbo, Urn = "urn:altinn:accesspackage:konkursbo-lesetilgang", Name = "Konkursbo lesetilgang", Description = "Denne fullmakten delegeres til kreditorer og andre som skal ha lesetilgang til det enkelte konkursbo.", IsDelegable = true, HasResources = true },
             new Package() { Id = Guid.Parse("0e219609-02c6-44e6-9c80-fe2c1997940e"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_konkursbo, Urn = "urn:altinn:accesspackage:konkursbo-skrivetilgang", Name = "Konkursbo skrivetilgang", Description = "Denne fullmakten gir bostyrers medhjelper tilgang til å jobbe på vegne av bostyrer. Bostyrer delegerer denne fullmakten sammen med Konkursbo lesetilgang til medhjelper for hvert konkursbo.", IsDelegable = true, HasResources = true },
+            new Package() { Id = Guid.Parse("0195efb8-7c80-7642-b9b8-c748ee4fecd4"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_bygg_anlegg_og_eiendom, Urn = "urn:altinn:accesspackage:tinglysing-eiendom", Name = "Tinglysing eiendom", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til elektronisk tinglysing av rettigheter i eiendom.", IsDelegable = true, HasResources = true },
+            new Package() { Id = Guid.Parse("0195efb8-7c80-7cf2-bcc8-720a3fb39d44"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_fullmakter_for_forretningsforer, Urn = "urn:altinn:accesspackage:forretningsforer-eiendom", Name = "Forretningsforer eiendom", Description = "Denne fullmakten gir forretningsfører for Borettslag og Eierseksjonssameie tilgang til å opptre på vegne av kunde, og utføre alle tjenester som krever denne fullmakten. Dette er tjenester som tjenestetilbyder har vurdert det som naturlig at en forretningsfører utfører på vegne av sin kunde. Fullmakt hos forretningsfører oppstår når Borettslaget eller Eierseksjonssameiet registrerer forretningsfører i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true },
         };
 
         await ingestService.IngestAndMergeData(packages, options: options, null, cancellationToken);
@@ -1115,7 +1117,7 @@ public class DbDataMigrationService(
         var variants = new Dictionary<string, Guid>();
         foreach (var variant in await entityVariantService.Get())
         {
-            roles.Add(variant.Name, variant.Id);
+            variants.Add(variant.Name, variant.Id);
         }
 
         var rolePackages = new List<RolePackage>()
@@ -1990,7 +1992,19 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:folkeregister"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:folkeregister"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
 
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["ESEK"], CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["BBL"], CanDelegate = true, HasAccess = true },
+
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:post-til-virksomheten-med-taushetsbelagt-innhold"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:eksplisitt"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
         };
 
         await ingestService.IngestAndMergeData(rolePackages, options: options, null, cancellationToken);
