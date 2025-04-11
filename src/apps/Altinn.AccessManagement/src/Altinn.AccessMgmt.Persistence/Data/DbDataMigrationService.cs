@@ -617,10 +617,12 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("46e27685-b3ba-423e-8b42-faab54de5817"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Reknskapsførar",                                      Code = "regnskapsforer",                        Description = "Reknskapsførar", Urn = "urn:altinn:external-role:ccr:regnskapsforer" }
         };
 
-        foreach (var item in roles)
-        {
-            await roleService.Upsert(item, options: options, cancellationToken: cancellationToken);
-        }
+        await ingestService.IngestAndMergeData(roles, options, new List<GenericParameter>() { new GenericParameter("EntityTypeId", "EntityTypeId"), new GenericParameter("Code", "Code") }, cancellationToken);
+
+        //foreach (var item in roles)
+        //{
+        //    await roleService.Upsert(item, options: options, cancellationToken: cancellationToken);
+        //}
 
         foreach (var item in rolesEng)
         {
@@ -1122,7 +1124,7 @@ public class DbDataMigrationService(
         var variants = new Dictionary<string, Guid>();
         foreach (var variant in await entityVariantService.Get())
         {
-            roles.Add(variant.Name, variant.Id);
+            variants.Add(variant.Name, variant.Id);
         }
 
         var rolePackages = new List<RolePackage>()
