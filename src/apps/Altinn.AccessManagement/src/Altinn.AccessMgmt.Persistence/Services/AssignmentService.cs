@@ -18,7 +18,8 @@ public class AssignmentService(
     IRoleRepository roleRepository,
     IRolePackageRepository rolePackageRepository,
     IEntityRepository entityRepository,
-    IDelegationRepository delegationRepository
+    IDelegationRepository delegationRepository,
+    IConnectionRepository connectionRepository
     ) : IAssignmentService
 {
     private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
@@ -29,6 +30,7 @@ public class AssignmentService(
     private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
     private readonly IEntityRepository entityRepository = entityRepository;
     private readonly IDelegationRepository delegationRepository = delegationRepository;
+    private readonly IConnectionRepository connectionRepository = connectionRepository;
 
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default)
@@ -194,6 +196,23 @@ public class AssignmentService(
         }
 
         return null;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Connection>> GetAssignments(Guid fromEntityId, Guid toEntityId, CancellationToken cancellationToken = default)
+    {
+        var filter = connectionRepository.CreateFilterBuilder();
+        if (fromEntityId != Guid.Empty)
+        {
+            filter.Equal(f => f.FromId, fromEntityId);
+        }
+
+        if (toEntityId != Guid.Empty)
+        {
+            filter.Equal(f => f.ToId, toEntityId);
+        }
+
+        return await connectionRepository.Get(filter, default, cancellationToken);
     }
 
     /// <inheritdoc/>

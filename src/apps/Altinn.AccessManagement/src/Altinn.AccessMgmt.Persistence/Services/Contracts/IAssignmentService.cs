@@ -28,6 +28,11 @@ public interface IAssignmentService
     Task<ProblemInstance> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options, bool cascade = false, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets connections
+    /// </summary>
+    Task<IEnumerable<Connection>> GetAssignments(Guid fromEntityId, Guid toEntityId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets assignment and creates if not exits
     /// </summary>
     /// <returns></returns>
