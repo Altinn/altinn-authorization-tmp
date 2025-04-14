@@ -31,13 +31,28 @@ public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentS
     private IMapper<AssignmentExternal, Assignment> Mapper { get; } = mapper;
 
     /// <summary>
-    /// Get access parties
+    /// Gets an assignment between the authenticated user's selected party and the specified target party.
     /// </summary>
-    /// <returns></returns>
+    /// <param name="party">The GUID identifying the party the authenticated user is acting on behalf of.</param>
+    /// <param name="from">The GUID.</param>
+    /// <param name="to">The GUID created.</param>
+    /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
     [HttpGet]
-    public async Task<ActionResult> GetAccessParties()
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
+    [ProducesResponseType<AssignmentExternal>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult> GetAccessParties([FromQuery] Guid party, [FromQuery] Guid from, [FromQuery] Guid to, CancellationToken cancellationToken = default)
     {
-        return await Task.FromResult(Ok());
+        if (party != from && party != to)
+        {
+            return Forbid();
+        }
+
+        var assignment = await AssignmentService.GetAssignments(from, to, cancellationToken);
+
+        return Ok(assignment);
     }
 
     /// <summary>
@@ -55,10 +70,10 @@ public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentS
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> PostAccessParty([FromQuery] Guid party, [FromQuery] Guid to, CancellationToken cancellationToken = default)
     {
-        var partyUuid = Accessor.GetPartyUuid();
+        var authorizedUser = Accessor.GetPartyUuid();
         var audit = new ChangeRequestOptions()
         {
-            ChangedBy = partyUuid,
+            ChangedBy = authorizedUser,
             ChangedBySystem = AuditDefaults.EnduserApi
         };
 
@@ -88,10 +103,10 @@ public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentS
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteAccessParty([FromQuery] Guid party, [FromQuery] Guid to, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
-        var partyUuid = Accessor.GetPartyUuid();
+        var authorizedUser = Accessor.GetPartyUuid();
         var audit = new ChangeRequestOptions()
         {
-            ChangedBy = partyUuid,
+            ChangedBy = authorizedUser,
             ChangedBySystem = AuditDefaults.EnduserApi
         };
 
