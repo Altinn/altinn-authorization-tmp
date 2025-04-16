@@ -19,5 +19,15 @@ public class ChangeRequestOptions
     /// <summary>
     /// Identify operation spanning multiple tables and cascades
     /// </summary>
-    public string ChangeOperationId { get; set; } = Guid.CreateVersion7().ToString();
+    public Guid ChangeOperationId { get; set; } = Guid.CreateVersion7();
+
+    /// <summary>
+    /// Implicit conversion from ChangeRequestOptions to string (returns ChangeOperationId as string)
+    /// </summary>
+    public static implicit operator string(ChangeRequestOptions options)
+    {
+        return options?.ChangeOperationId.ToString();
+    }
+
+    public static implicit operator Guid(ChangeRequestOptions identifier) => identifier.ChangeOperationId;
 }

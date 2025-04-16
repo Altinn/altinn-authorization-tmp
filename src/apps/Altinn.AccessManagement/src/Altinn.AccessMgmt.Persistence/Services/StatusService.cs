@@ -57,7 +57,7 @@ public class StatusService(IStatusRecordRepository statusRecordRepository) : ISt
     }
 
     /// <inheritdoc />
-    public async Task<bool> TryToRun(StatusRecord record, ChangeRequestOptions options)
+    public async Task<bool> TryToRun(StatusRecord record, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         if (record.State == "STOPPED")
         {
@@ -68,7 +68,7 @@ public class StatusService(IStatusRecordRepository statusRecordRepository) : ISt
         {
             record.State = "STOPPED";
             record.Timestamp = DateTimeOffset.UtcNow;
-            await statusRecordRepository.Upsert(record, options);
+            await statusRecordRepository.Upsert(record, options, cancellationToken);
             return false;
         }
 
@@ -78,7 +78,7 @@ public class StatusService(IStatusRecordRepository statusRecordRepository) : ISt
         }
 
         record.Timestamp = DateTimeOffset.UtcNow;
-        await statusRecordRepository.Upsert(record, options);
+        await statusRecordRepository.Upsert(record, options, cancellationToken);
 
         return true;
     }
@@ -99,7 +99,7 @@ public interface IStatusService
     /// Try to run, checks state
     /// </summary>
     /// <returns></returns>
-    Task<bool> TryToRun(StatusRecord record, ChangeRequestOptions options);
+    Task<bool> TryToRun(StatusRecord record, ChangeRequestOptions options, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Log run success

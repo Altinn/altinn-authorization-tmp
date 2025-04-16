@@ -49,7 +49,7 @@ public class RoleSyncService(
         };
 
         OrgType = (await entityTypeRepository.Get(t => t.Name, "Organisasjon")).FirstOrDefault();
-        Provider =(await providerRepository.Get(t => t.Code, "ccr")).FirstOrDefault();
+        Provider = (await providerRepository.Get(t => t.Code, "ccr")).FirstOrDefault();
 
         await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
         {
@@ -69,7 +69,7 @@ public class RoleSyncService(
                 throw new Exception("Stream page is not successful");
             }
 
-            options.ChangeOperationId = batchId.ToString();
+            options.ChangeOperationId = batchId;
             var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
             _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
 

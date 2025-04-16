@@ -76,7 +76,7 @@ public class DelegationService(
         var toAssignment = await assignmentRepository.GetExtended(toAssignmentId);
 
         // Sjekk om from og to deler en felles entitet
-        if (fromAssignment.ToId != toAssignment.FromId) 
+        if (fromAssignment.ToId != toAssignment.FromId)
         {
             throw new InvalidOperationException("Assignments are not connected. FromAssignment.ToId != ToAssignment.FromId");
         }
@@ -122,14 +122,14 @@ public class DelegationService(
         var assignmentPackages = await assignmentPackageRepository.GetB(fromAssignment.Id);
         var rolePackages = await rolePackageRepository.Get(t => t.RoleId, fromAssignment.RoleId);
 
-        if (assignmentPackages.Count(t => t.Id == packageId) == 0 && rolePackages.Count(t => t.Id == packageId) == 0) 
+        if (assignmentPackages.Count(t => t.Id == packageId) == 0 && rolePackages.Count(t => t.Id == packageId) == 0)
         {
             throw new Exception($"The source assignment does not have the package '{package.Name}'");
         }
 
         var res = await delegationPackageRepository.Create(
-            new DelegationPackage() 
-            { 
+            new DelegationPackage()
+            {
                 DelegationId = delegationId,
                 PackageId = packageId
             },
@@ -169,7 +169,7 @@ public class DelegationService(
             rolePackageResources.Add(package.Id, [.. await roleResourceRepository.GetB(resourceId)]);
         }
 
-        if (assignmentResources.Count(t => t.Id == resourceId) == 0 
+        if (assignmentResources.Count(t => t.Id == resourceId) == 0
             && roleResources.Count(t => t.Id == resourceId) == 0
             && rolePackageResources.SelectMany(t => t.Value).Count(t => t.Id == resourceId) == 0
             )
@@ -205,7 +205,7 @@ public class DelegationService(
 
         // Find Agent
         var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "System", options) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
-        
+
         // Find ClientId : Bakeriet
         var client = (await entityRepository.Get(request.ClientId)) ?? throw new Exception(string.Format("Party not found '{0}' for client", request.ClientId));
 
@@ -378,7 +378,7 @@ public class DelegationService(
                     FromId = from.Id,
                     ToId = to.Id,
                     RoleId = role.Id
-                }, 
+                },
                 options: options
             );
         }

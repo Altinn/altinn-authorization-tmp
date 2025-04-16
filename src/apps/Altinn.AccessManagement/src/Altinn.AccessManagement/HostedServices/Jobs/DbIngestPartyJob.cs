@@ -1,82 +1,78 @@
-﻿using Altinn.AccessManagement.HostedServices.Contracts;
+using System.Diagnostics;
+using Altinn.AccessManagement.Core.Telemetry;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.Authorization.AccessManagement;
-using Altinn.Authorization.AccessManagement.HostedServices;
-using Altinn.Authorization.Host.Lease;
+using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.Authorization.Host.Job;
 using Altinn.Authorization.Integration.Platform.Register;
-using Microsoft.FeatureManagement;
 
-namespace Altinn.AccessManagement.HostedServices.Services;
+namespace Altinn.AccessManagement.HostedServices.Jobs;
 
-/// <inheritdoc />
-public class PartySyncService : BaseSyncService, IPartySyncService
-{
-    private readonly ILogger<RegisterHostedService> _logger;
-    private readonly IIngestService ingestService;
-
-    private readonly IEntityTypeRepository entityTypeRepository;
-    private readonly IEntityVariantRepository entityVariantRepository;
-
-    /// <summary>
-    /// PartySyncService Constructor
-    /// </summary>
-    public PartySyncService(
-        IAltinnLease lease,
-        IFeatureManager featureManager,
+public class DbIngestPartyJob(
         IAltinnRegister register,
-        ILogger<RegisterHostedService> logger,
+        IStatusService statusService,
         IIngestService ingestService,
         IEntityTypeRepository entityTypeRepository,
-        IEntityVariantRepository entityVariantRepository
-    ) : base(lease, featureManager, register)
+        IEntityVariantRepository entityVariantRepository) : IJob
+{
+    private IAltinnRegister Register { get; } = register;
+
+    private IStatusService StatusService { get; } = statusService;
+
+    private IIngestService IngestService { get; } = ingestService;
+
+    private IEntityTypeRepository EntityTypeRepository { get; } = entityTypeRepository;
+
+    private IEntityVariantRepository EntityVariantRepository { get; } = entityVariantRepository;
+
+    private static readonly IReadOnlyList<string> GetEntityMergeMatchFilter = new List<string>() { "id" }.AsReadOnly();
+
+    private static readonly IReadOnlyList<string> GetEntityLookupMergeMatchFilter = new List<string>() { "entityid", "key" }.AsReadOnly();
+
+    private ChangeRequestOptions Audit => new()
     {
-        _logger = logger;
-        this.ingestService = ingestService;
-        this.entityVariantRepository = entityVariantRepository;
-        this.entityTypeRepository = entityTypeRepository;
+        ChangedBy = AuditDefaults.RegisterImportSystem,
+        ChangedBySystem = AuditDefaults.RegisterImportSystem,
+    };
+
+    /// <inheritdoc/>
+    public async Task<bool> ShouldRun(JobContext context, CancellationToken cancellationToken = default)
+    {
+        using var activity = TelemetryConfig.ActivitySource.StartActivity("ShouldRun", ActivityKind.Internal);
+
+        var partyStatus = await StatusService.GetOrCreateRecord(Guid.Parse("C18B67F6-B07E-482C-AB11-7FE12CD1F48D"), "accessmgmt-sync-register-party", Audit, 5);
+        return await StatusService.TryToRun(partyStatus, Audit, cancellationToken);
     }
 
-    /// <summary>
-    /// Synchronizes register data by first acquiring a remote lease and streaming register entries.
-    /// Returns if lease is already taken.
-    /// </summary>
-    /// <param name="ls">The lease result containing the lease data and status.</param>
-    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-    public async Task SyncParty(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public async Task<JobResult> Run(JobContext context, CancellationToken cancellationToken = default)
     {
-        var options = new ChangeRequestOptions()
-        {
-            ChangedBy = AuditDefaults.RegisterImportSystem,
-            ChangedBySystem = AuditDefaults.RegisterImportSystem
-        };
+        var activity = TelemetryConfig.ActivitySource.StartActivity("Run", ActivityKind.Internal);
 
         var bulk = new List<Entity>();
         var bulkLookup = new List<EntityLookup>();
+        var options = Audit;
 
-        EntityTypes = (await entityTypeRepository.Get(cancellationToken: cancellationToken)).ToList();
-        EntityVariants = (await entityVariantRepository.Get(cancellationToken: cancellationToken)).ToList();
+        var entityTypes = (await EntityTypeRepository.Get(cancellationToken: cancellationToken)).ToList();
+        var entityVariants = (await EntityVariantRepository.Get(cancellationToken: cancellationToken)).ToList();
 
-        await foreach (var page in await Register.StreamParties(RegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await Register.StreamParties(RegisterClient.AvailableFields, null, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                return;
+                return JobResult.Success;
             }
 
             if (!page.IsSuccessful)
             {
-                Log.ResponseError(_logger, page.StatusCode);
-                throw new Exception("Stream page is not successful");
+                return JobResult.Failure;
             }
 
-            Guid batchId = Guid.CreateVersion7();
-            options.ChangeOperationId = batchId;
-            var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
-            _logger.LogInformation("Starting proccessing party page '{0}'", batchName);
+            var batchId = options.ChangeOperationId;
+            var batchName = options.ChangeOperationId.ToString().ToLower().Replace("-", string.Empty);
 
             if (page.Content != null)
             {
@@ -87,9 +83,9 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                         continue;
                     }
 
-                    var entity = ConvertPartyModel(item, options: options, cancellationToken: cancellationToken);
+                    var entity = await ConvertPartyModel(item, options: options, entityVariants, entityTypes, cancellationToken: cancellationToken);
 
-                    if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
+                    if (bulk.Any(t => t.Id.Equals(entity.Id)))
                     {
                         await Flush(batchId);
                     }
@@ -103,34 +99,32 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
             {
-                return;
+                return JobResult.Success;
             }
-
-            await UpdateLease(ls, data => data.PartyStreamNextPageLink = page.Content.Links.Next, cancellationToken);
 
             async Task Flush(Guid batchId)
             {
                 try
                 {
-                    _logger.LogInformation("Ingest and Merge Entity and EntityLookup batch '{0}' to db", batchName);
+                    // _logger.LogInformation("Ingest and Merge Entity and EntityLookup batch '{0}' to db", batchName);
 
-                    var ingestedEntities = await ingestService.IngestTempData<Entity>(bulk, batchId, options: options);
-                    var ingestedLookups = await ingestService.IngestTempData<EntityLookup>(bulkLookup, batchId, options: options);
+                    var ingestedEntities = await IngestService.IngestTempData(bulk, batchId, options: options, cancellationToken: cancellationToken);
+                    var ingestedLookups = await IngestService.IngestTempData(bulkLookup, batchId, options: options, cancellationToken: cancellationToken);
 
                     if (ingestedEntities != bulk.Count || ingestedLookups != bulkLookup.Count)
                     {
-                        _logger.LogWarning("Ingest partial complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", ingestedEntities, bulk.Count, ingestedLookups, bulkLookup.Count);
+                        // _logger.LogWarning("Ingest partial complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", ingestedEntities, bulk.Count, ingestedLookups, bulkLookup.Count);
                     }
 
-                    var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, options: options, GetEntityMergeMatchFilter);
-                    var mergedLookups = await ingestService.MergeTempData<EntityLookup>(batchId, options: options, GetEntityLookupMergeMatchFilter);
+                    var mergedEntities = await IngestService.MergeTempData<Entity>(batchId, options: options, GetEntityMergeMatchFilter, cancellationToken: cancellationToken);
+                    var mergedLookups = await IngestService.MergeTempData<EntityLookup>(batchId, options: options, GetEntityLookupMergeMatchFilter, cancellationToken: cancellationToken);
 
-                    _logger.LogInformation("Merge complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", mergedEntities, ingestedEntities, mergedLookups, ingestedLookups);
+                    // _logger.LogInformation("Merge complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", mergedEntities, ingestedEntities, mergedLookups, ingestedLookups);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to ingest and/or merge Entity and EntityLookup batch {0} to db", batchName);
-                    await Task.Delay(2000);
+                    // _logger.LogError(ex, "Failed to ingest and/or merge Entity and EntityLookup batch {0} to db", batchName);
+                    await Task.Delay(2000, cancellationToken);
                 }
                 finally
                 {
@@ -138,29 +132,29 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     bulkLookup.Clear();
                 }
             }
+
+            return JobResult.Success;
         }
+
+        return JobResult.Success;
     }
 
-    private static readonly IReadOnlyList<string> GetEntityMergeMatchFilter = new List<string>() { "id" }.AsReadOnly();
-
-    private static readonly IReadOnlyList<string> GetEntityLookupMergeMatchFilter = new List<string>() { "entityid", "key" }.AsReadOnly();
-
-    private Entity ConvertPartyModel(PartyModel model, ChangeRequestOptions options, bool createTypeIfMissing = false, CancellationToken cancellationToken = default)
+    private async Task<Entity> ConvertPartyModel(PartyModel model, ChangeRequestOptions options, List<EntityVariant> entityVariants, List<EntityType> entityTypes, bool createTypeIfMissing = false, CancellationToken cancellationToken = default)
     {
         if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person");
+            var type = entityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
+            var variant = entityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person");
             if (variant == null)
             {
                 variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                var res = entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
+                var res = await EntityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken);
                 if (res == 0)
                 {
                     throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
                 }
 
-                EntityVariants.Add(variant);
+                entityVariants.Add(variant);
             }
 
             return new Entity()
@@ -174,18 +168,18 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         }
         else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase));
+            var type = entityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
+            var variant = entityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase));
             if (variant == null)
             {
                 variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                var res = entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
+                var res = await EntityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken);
                 if (res == 0)
                 {
                     throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
                 }
 
-                EntityVariants.Add(variant);
+                entityVariants.Add(variant);
             }
 
             return new Entity()
@@ -199,18 +193,18 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         }
         else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "SI") ?? throw new Exception(string.Format("Unable to find variant '{0}' for type '{1}'", "SI", type.Name));
+            var type = entityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
+            var variant = entityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "SI") ?? throw new Exception(string.Format("Unable to find variant '{0}' for type '{1}'", "SI", type.Name));
             if (variant == null)
             {
                 variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                var res = entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
+                var res = await EntityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken);
                 if (res == 0)
                 {
                     throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
                 }
 
-                EntityVariants.Add(variant);
+                entityVariants.Add(variant);
             }
 
             return new Entity()
@@ -226,23 +220,25 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         {
             if (createTypeIfMissing)
             {
-                var type = EntityTypes.FirstOrDefault(t => t.Name.Equals(model.PartyType, StringComparison.OrdinalIgnoreCase));
+                var type = entityTypes.FirstOrDefault(t => t.Name.Equals(model.PartyType, StringComparison.OrdinalIgnoreCase));
                 if (type == null)
                 {
-                    type = EntityTypes.FirstOrDefault(t => t.Name.Equals("Ukjent", StringComparison.OrdinalIgnoreCase)) ?? throw new Exception("EntityType 'Ukjent' not found");
+                    type = entityTypes.FirstOrDefault(t => t.Name.Equals("Ukjent", StringComparison.OrdinalIgnoreCase)) ?? throw new Exception("EntityType 'Ukjent' not found");
                 }
 
-                var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, model.UnitType));
+                var variant = entityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase)) ??
+                    throw new Exception(string.Format("Unable to fint variant '{0}' for type '{1}'", model.PartyType, model.UnitType));
+
                 if (variant == null)
                 {
                     variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                    var res = entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
+                    var res = EntityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
                     if (res == 0)
                     {
                         throw new Exception(string.Format("Unable to create variant '{0}' for type '{1}'", model.UnitType, type.Name));
                     }
 
-                    EntityVariants.Add(variant);
+                    entityVariants.Add(variant);
                 }
 
                 return new Entity()
@@ -316,8 +312,4 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
         return res;
     }
-
-    private List<EntityType> EntityTypes { get; set; } = [];
-
-    private List<EntityVariant> EntityVariants { get; set; } = [];
 }

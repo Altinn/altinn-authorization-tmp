@@ -6,16 +6,15 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
 using Altinn.AccessManagement.Core.Filters;
 using Altinn.AccessManagement.Health;
-using Altinn.AccessManagement.HostedServices.Contracts;
-using Altinn.AccessManagement.HostedServices.Services;
+using Altinn.AccessManagement.HostedServices.Jobs;
 using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Persistence.Extensions;
-using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Database;
+using Altinn.Authorization.Host.Job;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Host.Startup;
 using Altinn.Authorization.Integration.Platform.Extensions;
@@ -110,10 +109,20 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
     {
-        builder.Services.AddHostedService<RegisterHostedService>();
-        builder.Services.AddSingleton<IPartySyncService, PartySyncService>();
-        builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
-        builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
+        builder.Services.AddJobs("DbIngest", jobs =>
+        {
+            jobs.Add<DbIngestPartyJob>(opts =>
+            {
+                opts.DependsOn = nameof(JobSample);
+                opts.RunAlways = true;
+            });
+            jobs.Add<JobSample>();
+        });
+
+        // builder.Services.AddHostedService<RegisterHostedService>();
+        // builder.Services.AddSingleton<IPartySyncService, PartySyncService>();
+        // builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
+        // builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
         return builder;
     }
 
