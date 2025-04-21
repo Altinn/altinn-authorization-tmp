@@ -10,17 +10,17 @@ public static class JobTelemetry
 
     private static readonly ConcurrentDictionary<string, Meter> _meters = new();
 
-    public static ActivitySource ActivitySource(string domain) =>
+    internal static ActivitySource ActivitySource(string domain) =>
         _sources.GetOrAdd(domain, d => new ActivitySource($"jobs.{d}"));
 
-    public static Meter Meter(string domain) =>
+    internal static Meter Meter(string domain) =>
         _meters.GetOrAdd($"jobs.{domain}", d => new(d));
 
-    public static class JobExecution
+    internal static class JobExecution
     {
         private static readonly ConcurrentDictionary<string, Counter<int>> _counters = new();
 
-        public static void Record(string domain, JobResult result)
+        internal static void Record(string domain, JobResult result)
         {
             var counter = _counters.GetOrAdd(domain, d =>
                 Meter(d).CreateCounter<int>(
@@ -41,44 +41,44 @@ public static class JobTelemetry
     }
 }
 
-public static class ActivityExtensions
+internal static class ActivityExtensions
 {
-    public static void SetJobNextSchedule(this Activity? activity, TimeSpan span)
+
+    internal static void SetAggregatedResults(this Activity? activity, JobStatus status)
     {
-        activity?.SetTag("job.schedule.utc", DateTime.UtcNow.Add(span));
-        activity?.SetTag("job.schedule.remaining_seconds", span.TotalSeconds);
+        activity?.SetTag($"jobs.results", status);
     }
 
-    public static void SetDispatchResultsRun(this Activity? activity, JobResult result)
+    internal static void SetLeaseLost(this Activity? activity, bool lost)
     {
-        activity?.SetTag("job.dispatch.results.run", result);
+        activity?.SetTag($"lease.lost", lost);
     }
 
-    public static void SetDispatchResultsShouldRun(this Activity? activity, bool shouldRun)
+    internal static void SetLeastStatus(this Activity? activity, string lockName, bool gotLease)
     {
-        activity?.SetTag($"job.dispatch.results.should_run", shouldRun);
+        activity?.SetTag($"lease.name", gotLease);
+        activity?.SetTag($"lease.got_lease", gotLease);
     }
 
-    public static void SetDispatchRunAlways(this Activity? activity, bool value)
+    internal static void SetNextSchedule(this Activity? activity, TimeSpan span)
     {
-        activity?.SetTag($"job.dispatch.run_always", value);
+        activity?.SetTag("schedule.utc", DateTime.UtcNow.Add(span));
+        activity?.SetTag("schedule.remaining_seconds", span.TotalSeconds);
     }
 
-    public static void SetDispatchStatus(this Activity? activity, string status)
+    internal static void SetResultsRun(this Activity? activity, JobResult result)
     {
-        activity?.SetTag("job.dispatch.status", status);
+        activity?.SetTag("results.run", result);
     }
 
-    public static void SetDispatchFeatureFlag(this Activity? activity, string featureflag, bool value)
+    internal static void SetResultsCanRun(this Activity? activity, bool canRun)
     {
-        activity?.SetTag($"job.dispatch.feature_management.{featureflag}", value);
+        activity?.SetTag($"results.can_run", canRun);
     }
 
-    public static void SetDispatchDependsOn(this Activity? activity, string? dependsOn)
+    internal static void SetFeatureFlag(this Activity? activity, string featureFlag, bool enabled)
     {
-        if (!string.IsNullOrEmpty(dependsOn))
-        {
-            activity?.SetTag("job.dispatch.depends_on", dependsOn);
-        }
+        activity?.SetTag($"feature_flag.name", featureFlag);
+        activity?.SetTag($"feature_flag.enabled", enabled);
     }
 }

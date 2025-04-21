@@ -109,20 +109,16 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
     {
-        builder.Services.AddJobs("DbIngest", jobs =>
+        builder.Services.AddJobs("AccessManagement.DbIngest", jobs =>
         {
-            jobs.Add<DbIngestPartyJob>(opts =>
-            {
-                opts.DependsOn = nameof(JobSample);
-                opts.RunAlways = true;
-            });
-            jobs.Add<JobSample>();
+            // jobs.FeatureFlag = "access_management_db_ingest";
+            jobs.EnableTelemetry = true;
+            jobs.Add<DbIngestResourceOwners>();
+            jobs.Add<DbIngestResourceJob>(opts => opts.DependsOn = [nameof(DbIngestResourceOwners)]);
+            jobs.Add<DbIngestPartyJob>(opts => opts.DependsOn = [nameof(DbIngestResourceJob)]);
+            jobs.Add<DbIngestRoleJob>(opts => opts.DependsOn = [nameof(DbIngestRoleJob)]);
         });
 
-        // builder.Services.AddHostedService<RegisterHostedService>();
-        // builder.Services.AddSingleton<IPartySyncService, PartySyncService>();
-        // builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
-        // builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
         return builder;
     }
 

@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Integr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Database", "..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host.Database\Altinn.Authorization.Host.Database.csproj", "{D0D5FB63-588D-4F8F-858E-347C3311C0A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Job", "..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host.Job\Altinn.Authorization.Host.Job.csproj", "{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,6 +123,18 @@ Global
 		{D0D5FB63-588D-4F8F-858E-347C3311C0A4}.Release|x64.Build.0 = Release|Any CPU
 		{D0D5FB63-588D-4F8F-858E-347C3311C0A4}.Release|x86.ActiveCfg = Release|Any CPU
 		{D0D5FB63-588D-4F8F-858E-347C3311C0A4}.Release|x86.Build.0 = Release|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Debug|x64.Build.0 = Debug|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Debug|x86.Build.0 = Debug|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Release|x64.ActiveCfg = Release|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Release|x64.Build.0 = Release|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Release|x86.ActiveCfg = Release|Any CPU
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -135,5 +149,6 @@ Global
 		{812E1E71-C7AB-47A0-B6C1-72223E5D4CB1} = {9637F1CF-5D13-4661-996F-955C48A357FF}
 		{AFC7AF26-688F-4E72-A32B-5E433694DEEA} = {812E1E71-C7AB-47A0-B6C1-72223E5D4CB1}
 		{D0D5FB63-588D-4F8F-858E-347C3311C0A4} = {2473309E-1C4A-4A8C-86EC-DA74D8594D4D}
+		{432CCFE6-AC77-4A8E-8942-927ED9CF7D54} = {2473309E-1C4A-4A8C-86EC-DA74D8594D4D}
 	EndGlobalSection
 EndGlobal

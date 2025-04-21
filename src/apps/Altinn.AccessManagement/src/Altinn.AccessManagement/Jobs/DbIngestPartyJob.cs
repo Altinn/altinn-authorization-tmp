@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using Altinn.AccessManagement.Core.Telemetry;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
@@ -39,36 +37,37 @@ public class DbIngestPartyJob(
     };
 
     /// <inheritdoc/>
-    public async Task<bool> ShouldRun(JobContext context, CancellationToken cancellationToken = default)
+    public async Task<bool> CanRun(JobContext context, CancellationToken cancellationToken)
     {
-        using var activity = TelemetryConfig.ActivitySource.StartActivity("ShouldRun", ActivityKind.Internal);
-
         var partyStatus = await StatusService.GetOrCreateRecord(Guid.Parse("C18B67F6-B07E-482C-AB11-7FE12CD1F48D"), "accessmgmt-sync-register-party", Audit, 5);
         return await StatusService.TryToRun(partyStatus, Audit, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<JobResult> Run(JobContext context, CancellationToken cancellationToken = default)
+    public async Task<JobResult> Run(JobContext context, CancellationToken cancellationToken)
     {
-        var activity = TelemetryConfig.ActivitySource.StartActivity("Run", ActivityKind.Internal);
-
         var bulk = new List<Entity>();
         var bulkLookup = new List<EntityLookup>();
         var options = Audit;
 
         var entityTypes = (await EntityTypeRepository.Get(cancellationToken: cancellationToken)).ToList();
         var entityVariants = (await EntityVariantRepository.Get(cancellationToken: cancellationToken)).ToList();
+        using var ls = await context.Lease.TryAquireNonBlocking<LeaseContent>("lease_name", cancellationToken);
+        if (!ls.HasLease)
+        {
+            return JobResult.Cancelled();
+        }
 
-        await foreach (var page in await Register.StreamParties(RegisterClient.AvailableFields, null, cancellationToken))
+        await foreach (var page in await Register.StreamParties(RegisterClient.AvailableFields, ls.Data.NextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                return JobResult.Success;
+                return JobResult.Success();
             }
 
             if (!page.IsSuccessful)
             {
-                return JobResult.Failure;
+                return JobResult.Failure();
             }
 
             var batchId = options.ChangeOperationId;
@@ -99,7 +98,7 @@ public class DbIngestPartyJob(
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
             {
-                return JobResult.Success;
+                return JobResult.Success(null);
             }
 
             async Task Flush(Guid batchId)
@@ -133,10 +132,10 @@ public class DbIngestPartyJob(
                 }
             }
 
-            return JobResult.Success;
+            return JobResult.Success(null);
         }
 
-        return JobResult.Success;
+        return JobResult.Success(null);
     }
 
     private async Task<Entity> ConvertPartyModel(PartyModel model, ChangeRequestOptions options, List<EntityVariant> entityVariants, List<EntityType> entityTypes, bool createTypeIfMissing = false, CancellationToken cancellationToken = default)
@@ -311,5 +310,13 @@ public class DbIngestPartyJob(
         }
 
         return res;
+    }
+
+    public class LeaseContent
+    {
+        /// <summary>
+        /// The URL of the next page of AssignmentSuccess data.
+        /// </summary>
+        public string NextPageLink { get; set; }
     }
 }

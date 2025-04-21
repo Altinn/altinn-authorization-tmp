@@ -38,22 +38,19 @@ public static class AltinnHostDatabase
             builder.Services.Add(Markers.AppSource.ServiceDescriptor);
         }
 
-        if (!builder.Services.Contains(Markers.ServiceDescriptor))
+        if (options.Telemetry.EnableTraces)
         {
-            if (options.Telemetry.EnableTraces)
-            {
-                builder.Services.AddOpenTelemetry()
-                    .WithTracing(builder => builder.AddNpgsql());
-            }
-
-            if (options.Telemetry.EnableMetrics)
-            {
-                builder.Services.AddOpenTelemetry()
-                    .WithMetrics(builder => builder.AddNpgsqlInstrumentation());
-            }
-
-            builder.Services.Add(Markers.ServiceDescriptor);
+            builder.Services.AddOpenTelemetry()
+                .WithTracing(builder => builder.AddNpgsql());
         }
+
+        if (options.Telemetry.EnableMetrics)
+        {
+            builder.Services.AddOpenTelemetry()
+                .WithMetrics(builder => builder.AddNpgsqlInstrumentation());
+        }
+
+        builder.Services.TryAddSingleton(Markers.ServiceDescriptor);
 
         return builder;
     }
