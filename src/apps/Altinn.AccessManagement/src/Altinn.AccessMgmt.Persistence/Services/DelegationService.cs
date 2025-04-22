@@ -337,12 +337,12 @@ public class DelegationService(
         {
             if (!entity.TypeId.Equals(entityType.Id))
             {
-                throw new Exception(string.Format("Entity is not of desired type '{0}'", type));
+                throw new ArgumentException(string.Format("Entity is not of desired type '{0}'", type), paramName: "Type");
             }
 
             if (!entity.VariantId.Equals(entityVariant.Id))
             {
-                throw new Exception(string.Format("Entity is not of desired variant '{0}'", variant));
+                throw new ArgumentException(string.Format("Entity is not of desired variant '{0}'", variant), paramName: "Variant");
             }
 
             return entity;
