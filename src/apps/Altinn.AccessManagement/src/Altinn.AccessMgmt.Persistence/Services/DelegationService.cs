@@ -192,6 +192,9 @@ public class DelegationService(
     /// <inheritdoc/>
     public async Task<IEnumerable<Delegation>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid facilitatorPartyId, ChangeRequestOptions options)
     {
+        // Check if role, package and rolepackage exists, throws on any error
+        await VerifyDelegationPackages(request.RolePackages);
+
         // Find user : Fredrik
         var user = (await entityRepository.Get(options.ChangedBy)) ?? throw new Exception(string.Format("Party not found '{0}' for user", options.ChangedBy));
 
@@ -213,6 +216,39 @@ public class DelegationService(
         var agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole, options) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
 
         return await CreateClientDelegations(request.RolePackages, client, facilitator, agentAssignment, options);
+    }
+
+    private async Task VerifyDelegationPackages(List<CreateSystemDelegationRolePackageDto> rolepackages)
+    {
+        // Create distinct role+packages dictionary
+        var rolepacks = new Dictionary<string, List<string>>();
+        foreach (var role in rolepackages.Select(t => t.RoleIdentifier).Distinct())
+        {
+            rolepacks.Add(role, rolepackages.Where(t => t.RoleIdentifier == role).Select(t => t.PackageUrn).ToList());
+        }
+
+        foreach (var rp in rolepacks)
+        {
+            // Get Role
+            var roleRes = await roleRepository.Get(t => t.Code, rp.Key);
+            if (roleRes == null || !roleRes.Any())
+            {
+                throw new Exception(string.Format("Role '{0}' not found", rp.Key));
+            }
+
+            var role = roleRes.First();
+
+            // Get RolePackages
+            var rolePackageResult = await rolePackageRepository.GetExtended(t => t.RoleId, role.Id);
+
+            foreach (var package in rp.Value)
+            {
+                if (rolePackageResult.Count(t => t.Package.Urn.Equals(package, StringComparison.OrdinalIgnoreCase)) == 0)
+                {
+                    throw new Exception(string.Format("Package '{0}' not found or not connected to role '{1}'", package, rp.Key));
+                }
+            }
+        }
     }
 
     private async Task<IEnumerable<Delegation>> CreateClientDelegations(List<CreateSystemDelegationRolePackageDto> rolepackages, Entity client, Entity facilitator, Assignment agentAssignment, ChangeRequestOptions options)
