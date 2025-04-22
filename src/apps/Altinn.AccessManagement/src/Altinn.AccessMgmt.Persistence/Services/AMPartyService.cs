@@ -9,9 +9,8 @@ namespace Altinn.AccessMgmt.Persistence.Services
     /// <summary>
     /// Repository service to lookupp party information
     /// </summary>
-    public class AMPartyService(IEntityRepository entityRepository, IEntityLookupRepository entityLookupRepository) : IAmPartyRepository
+    public class AMPartyService(IEntityLookupRepository entityLookupRepository) : IAmPartyRepository
     {
-        private readonly IEntityRepository entityRepository = entityRepository;
         private readonly IEntityLookupRepository entityLookupRepository = entityLookupRepository;
 
         /// <inheritdoc />
