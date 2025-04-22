@@ -233,7 +233,7 @@ public class DelegationService(
             var roleRes = await roleRepository.Get(t => t.Code, rp.Key);
             if (roleRes == null || !roleRes.Any())
             {
-                throw new Exception(string.Format("Role '{0}' not found", rp.Key));
+                throw new ArgumentException(string.Format("Role '{0}' not found", rp.Key), paramName: "Role");
             }
 
             var role = roleRes.First();
@@ -243,9 +243,9 @@ public class DelegationService(
 
             foreach (var package in rp.Value)
             {
-                if (rolePackageResult.Count(t => t.Package.Urn.Equals(package, StringComparison.OrdinalIgnoreCase)) == 0)
+                if (!rolePackageResult.Any(t => t.Package.Urn.Equals(package, StringComparison.OrdinalIgnoreCase)))
                 {
-                    throw new Exception(string.Format("Package '{0}' not found or not connected to role '{1}'", package, rp.Key));
+                    throw new ArgumentException(string.Format("Package '{0}' not found or not connected to role '{1}'", package, rp.Key), paramName: "RolePackage");
                 }
             }
         }
