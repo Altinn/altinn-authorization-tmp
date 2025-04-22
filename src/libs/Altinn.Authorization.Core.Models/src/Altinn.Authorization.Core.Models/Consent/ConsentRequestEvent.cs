@@ -18,7 +18,7 @@
         /// <summary>
         /// Who made the event happen
         /// </summary>
-        public ConsentPartyUrn PerformedBy { get; set; }
+        public required ConsentPartyUrn PerformedBy { get; set; }
 
         /// <summary>
         /// The type of event that happened.

@@ -21,7 +21,7 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// <summary>
         /// Who made the event happen
         /// </summary>
-        public ConsentPartyUrnExternal PerformedBy { get; set; }
+        public required ConsentPartyUrnExternal PerformedBy { get; set; }
 
         /// <summary>
         /// The type of event that happened.
@@ -35,7 +35,7 @@ namespace Altinn.Authorization.Api.Models.Consent
 
         public static ConsentRequestEventExternal FromCore(ConsentRequestEvent core)
         {
-            ConsentPartyUrnExternal toExternal = null;
+            ConsentPartyUrnExternal toExternal;
 
             if (core.PerformedBy.IsOrganizationId(out OrganizationNumber? organizationNumberTo))
             {
