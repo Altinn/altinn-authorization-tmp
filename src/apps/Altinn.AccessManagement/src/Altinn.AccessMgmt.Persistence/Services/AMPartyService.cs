@@ -83,7 +83,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
             IEnumerable<ExtEntityLookup> parties = await entityLookupRepository.GetExtended(t => t.EntityId, partyUuid, cancellationToken: cancellationToken);
             var res = parties.ToDictionary(t => t.Key, t => t.Value);
 
-            if (res == null || res.Count == 0)
+            if (res.Count == 0)
             {
                 return null;
             }

@@ -15,7 +15,6 @@ internal static class AccessManagementFeatureFlags
     /// </summary>
     public const string MigrationDb = $"AccessManagement.MigrationDb";
 
-
     /// <summary>
     /// Specifies if migration should be done and include basic data for testing.
     /// </summary>
