@@ -35,6 +35,7 @@ public class WebApplicationFixture : WebApplicationFactory<Program>, IAsyncLifet
                ["PostgreSQLSettings:EnableDBConnection"] = "true",
                ["Logging:LogLevel:*"] = "Error",
                ["FeatureManagement:AccessManagement.MigrationDb"] = "true",
+               ["FeatureManagement:AccessManagement.MigrationDbWithBasicData"] = "true",
            });
 
         builder.UseConfiguration(appsettings.Build());
