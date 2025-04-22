@@ -15,7 +15,7 @@
         /// <summary>
         /// The name of the party
         /// </summary>
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         /// <summary>
         ///  The organization number of the party

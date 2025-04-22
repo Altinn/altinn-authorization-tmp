@@ -30,7 +30,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
 
             if (res.Count() > 1)
             {
-                throw new Exception("Multiple matches");
+                throw new InvalidOperationException("Multiple matches found for the given criteria.Should never happen.");
             }
 
             ExtEntityLookup extEntityLookup = res.First();
@@ -65,7 +65,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
 
             if (res.Count() > 1)
             {
-                throw new Exception("Multiple matches");
+                throw new InvalidOperationException("Multiple matches found for the given criteria. Should never happen.");
             }
 
             ExtEntityLookup extEntityLookup = res.First();
@@ -84,14 +84,16 @@ namespace Altinn.AccessMgmt.Persistence.Services
             IEnumerable<ExtEntityLookup> parties = await entityLookupRepository.GetExtended(t => t.EntityId, partyUuid, cancellationToken: cancellationToken);
             var res = parties.ToDictionary(t => t.Key, t => t.Value);
 
-            if (res == null || !res.Any())
+            if (res == null || res.Count == 0)
             {
                 return null;
             }
 
-            MinimalParty party = new MinimalParty();
-            party.PartyUuid = partyUuid;
-            party.Name = parties.First().Entity.Name;
+            MinimalParty party = new()
+            {
+                PartyUuid = partyUuid,
+                Name = parties.First().Entity.Name
+            };
 
             if (res.TryGetValue("OrganizationIdentifier", out string orgNo))
             {
