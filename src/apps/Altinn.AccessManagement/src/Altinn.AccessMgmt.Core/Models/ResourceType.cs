@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessMgmt.Core.Models;
+﻿using Altinn.AccessManagement.Core.Extensions;
+
+namespace Altinn.AccessMgmt.Core.Models;
 
 /// <summary>
 /// ResourceType
@@ -6,17 +8,9 @@
 public class ResourceType
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ResourceType"/> class.
-    /// </summary>
-    public ResourceType()
-    {
-        Id = Guid.CreateVersion7();
-    }
-
-    /// <summary>
     /// Identity
     /// </summary>
-    public Guid Id { get; private set; }
+    public Guid Id { get; set; }
 
     /// <summary>
     /// Name

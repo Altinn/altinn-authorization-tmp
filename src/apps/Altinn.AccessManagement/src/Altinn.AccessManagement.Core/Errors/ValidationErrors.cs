@@ -66,6 +66,18 @@ public static class ValidationErrors
         = _factory.Create(8, $"Assignment already exists.");
 
     /// <summary>
+    /// Assignment do not exists.
+    /// </summary>
+    public static ValidationErrorDescriptor AssignmentDoNotExists { get; }
+        = _factory.Create(9, $"Assignment do not exist.");
+
+    /// <summary>
+    /// Assignment is active in one or more delegations.
+    /// </summary>
+    public static ValidationErrorDescriptor AssignmentIsActiveInOneOrMoreDelegations { get; }
+        = _factory.Create(10, $"Assignment is active in one or more delegations.");
+
+    /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
     public static ValidationErrorDescriptor NotAuthorizedForConsentRequest { get; }
