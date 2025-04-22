@@ -225,7 +225,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
 
-            while (await reader.ReadAsync(cancellationToken))
+            if (await reader.ReadAsync(cancellationToken))
             {
                 Guid from = await reader.GetFieldValueAsync<Guid>("fromPartyUuid", cancellationToken: cancellationToken);
                 Guid to = await reader.GetFieldValueAsync<Guid>("toPartyUuid", cancellationToken: cancellationToken);
