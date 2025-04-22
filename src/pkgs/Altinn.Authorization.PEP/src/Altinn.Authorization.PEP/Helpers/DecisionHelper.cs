@@ -150,7 +150,7 @@ namespace Altinn.Common.PEP.Helpers
 
             request.AccessSubject.Add(CreateSubjectCategory(context.User.Claims));
             request.Action.Add(CreateActionCategory(requirement.ActionType));
-            
+
             int? partyIid = TryParsePartyId(party);
             if (partyIid.HasValue)
             {
@@ -361,7 +361,7 @@ namespace Altinn.Common.PEP.Helpers
 
             if (partyUuid.HasValue) 
             {
-                resourceCategory.Attribute.Add(CreateXacmlJsonAttribute(AltinnXacmlUrns.PartyUuid, partyId.Value.ToString(), DefaultType, DefaultIssuer, includeResult));
+                resourceCategory.Attribute.Add(CreateXacmlJsonAttribute(AltinnXacmlUrns.PartyUuid, partyUuid.Value.ToString(), DefaultType, DefaultIssuer, includeResult));
             }
 
             return resourceCategory;
