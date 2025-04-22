@@ -140,10 +140,23 @@ namespace Altinn.Common.PEP.Helpers
             request.Action = new List<XacmlJsonCategory>();
             request.Resource = new List<XacmlJsonCategory>();
 
-            string party = routeData.Values[ParamParty] as string;
-            string partyUuid = routeData.Values[ParamPartyUuid] as string;
+            string party = null;
+            string partyUuid = null;
 
-            if (!string.IsNullOrEmpty(partyUuid) && !string.IsNullOrEmpty(party)) 
+            bool hasParamPartyId = routeData.Values.ContainsKey(ParamParty);
+            bool hasParamPartyUuid = routeData.Values.ContainsKey(ParamPartyUuid);
+
+            if (hasParamPartyId)
+            {
+                party = routeData.Values[ParamParty] as string;
+            }
+
+            if (hasParamPartyUuid)
+            {
+                partyUuid = routeData.Values[ParamPartyUuid] as string;
+            }
+
+            if (hasParamPartyId && hasParamPartyUuid)
             {
                 throw new ArgumentException("not allowed, both partyId and partyUuid " + party + " " + partyUuid);
             }
