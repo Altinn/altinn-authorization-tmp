@@ -55,9 +55,9 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, IDbConverter db
     /// </summary>
     public async Task<int> ExecuteMigrationCommand(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
     {
+        using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.Migration);
         try
         {
-            using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.Migration);
             var cmd = conn.CreateCommand();
             cmd.CommandText = query;
             if (parameters != null)

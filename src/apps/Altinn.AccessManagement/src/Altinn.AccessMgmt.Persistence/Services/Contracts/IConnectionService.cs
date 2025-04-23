@@ -8,14 +8,14 @@ namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
 public interface IConnectionService
 {
     /// <summary>
-    /// Gets the connections given by the specified entity.
+    /// Gets the connections given by the specified entity (Assignment.From).
     /// </summary>
     /// <param name="id">The identifier of the entity.</param>
     /// <returns>A collection of given connections.</returns>
     Task<IEnumerable<ExtConnection>> GetGiven(Guid id);
 
     /// <summary>
-    /// Gets the connections received by the specified entity.
+    /// Gets the connections received by the specified entity (Assignment.To).
     /// </summary>
     /// <param name="id">The identifier of the entity.</param>
     /// <returns>A collection of received connections.</returns>
