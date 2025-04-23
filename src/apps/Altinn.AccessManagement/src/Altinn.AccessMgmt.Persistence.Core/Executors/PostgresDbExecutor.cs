@@ -73,8 +73,7 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, IDbConverter db
         }
         catch (Exception ex)
         {
-            Console.WriteLine(query);
-            Console.WriteLine(ex.Message);
+            Logger.LogError(ex, "Failed to execute migration command. Query: {Query}, Parameters: {Parameters}", query, FormatParameters(parameters));
             throw;
         }
     }
@@ -99,8 +98,7 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, IDbConverter db
         }
         catch (Exception ex)
         {
-            Console.WriteLine(query);
-            Console.WriteLine(ex.Message);
+            Logger.LogError(ex, "Failed to execute command. Query: {Query}, Parameters: {Parameters}", query, FormatParameters(parameters));
             throw;
         }
     }
@@ -120,8 +118,7 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, IDbConverter db
         }
         catch (Exception ex)
         {
-            Console.WriteLine(query);
-            Console.WriteLine(ex.Message);
+            Logger.LogError(ex, "Failed to execute command. Query: {Query}", query);
             throw;
         }
     }
@@ -135,13 +132,22 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, IDbConverter db
         using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
         var cmd = conn.CreateCommand();
         cmd.CommandText = query;
-        conn.Open();
-        foreach (var parameter in parameters)
-        {
-            cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
-        }
 
-        return _dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
+        try
+        {
+            conn.Open();
+            foreach (var parameter in parameters)
+            {
+                cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
+            }
+
+            return _dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to execute query. Query: {Query}, Parameters: {Parameters}", query, FormatParameters(parameters));
+            throw;
+        }
     }
 
     /// <summary>
@@ -153,7 +159,16 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, IDbConverter db
         using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
         var cmd = conn.CreateCommand();
         cmd.CommandText = query;
-        conn.Open();
-        return _dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
+
+        try
+        {
+            conn.Open();
+            return _dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to execute query. Query: {Query}", query);
+            throw;
+        }
     }
 }
