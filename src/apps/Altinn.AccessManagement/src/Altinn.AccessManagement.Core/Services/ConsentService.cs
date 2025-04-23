@@ -528,9 +528,10 @@ namespace Altinn.AccessManagement.Core.Services
             }
             else
             {
+                string templateId = string.Empty;
                 for (int rightIndex = 0; rightIndex < consentRequest.ConsentRights.Count; rightIndex++)
                 {
-                    errors = await ValidateConsentRight(consentRequest, errors, rightIndex, cancelactionToken);
+                    (errors, templateId) = await ValidateConsentRight(consentRequest, errors, rightIndex, templateId, cancelactionToken);
                 }
             }
 
@@ -542,7 +543,7 @@ namespace Altinn.AccessManagement.Core.Services
             return consentRequest;
         }
 
-        private async Task<ValidationErrorBuilder> ValidateConsentRight(ConsentRequest consentRequest, ValidationErrorBuilder errors, int rightIndex, CancellationToken cancelactionToken)
+        private async Task<(ValidationErrorBuilder Errors, string TemplateId)> ValidateConsentRight(ConsentRequest consentRequest, ValidationErrorBuilder errors, int rightIndex, string templateId, CancellationToken cancelactionToken)
         {
             ConsentRight consentRight = consentRequest.ConsentRights[rightIndex];
 
@@ -570,9 +571,18 @@ namespace Altinn.AccessManagement.Core.Services
                 {
                     errors = ValidateConsentMetadata(errors, rightIndex, consentRight, resourceDetails);
                 }
+
+                if (string.IsNullOrEmpty(templateId))
+                {
+                    templateId = resourceDetails.ConsentTemplate;
+                }
+                else if (!templateId.Equals(resourceDetails.ConsentTemplate, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    errors.Add(ValidationErrors.InvalidResourceCombination, ResourceParam);
+                }
             }
 
-            return errors;
+            return (errors, templateId);
         }
 
         private static ValidationErrorBuilder ValidateConsentMetadata(ValidationErrorBuilder errors, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails)

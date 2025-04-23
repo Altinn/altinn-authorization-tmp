@@ -1,12 +1,12 @@
 {
-  "identifier": "ttd_skattegrunnlag",
+  "identifier": "ttd_skattegrunnlag2",
   "title": {
     "en": "Consent Income Resource ",
     "nb": "Generisk Tilgangslisteressurs",
     "nn": "Generisk Tilgongslisteressurs"
   },
   "description": {
-    "en": "Very nice generic accesslist resource",
+    "en": "Very nice generic accesslist resource to check template",
     "nb": "Veldig fin generisk tilgangslisteressurs",
     "nn": "Steikje fine generisk tilgongslisteressurs"
   },
@@ -46,5 +46,5 @@
       "value": "ttd_skattegrunnlag"
     }
   ],
-  "consentTemplate": "sblanesoknad"
+  "consentTemplate":  "sblanesoknad2"
 }

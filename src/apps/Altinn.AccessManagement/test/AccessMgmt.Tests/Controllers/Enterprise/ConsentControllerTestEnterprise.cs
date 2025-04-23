@@ -242,6 +242,79 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         }
 
         /// <summary>
+        /// Test get consent. Expect a consent in response
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task CreateConsentRequest_IncompatibleTemplates()
+        {
+            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            {
+                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                ValidTo = DateTimeOffset.UtcNow.AddDays(1),
+                ConsentRights = new List<ConsentRightExternal>
+                {
+                    new ConsentRightExternal
+                    {
+                        Action = new List<string> { "read" },
+                        Resource = new List<ConsentResourceAttributeExternal>
+                        {
+                            new ConsentResourceAttributeExternal
+                            {
+                                Type = "urn:altinn:resource",
+                                Value = "ttd_inntektsopplysninger"
+                            }
+                        },
+                        MetaData = new Dictionary<string, string>
+                        {
+                            { "INNTEKTSAAR", "ADSF" }
+                        }
+                    },
+                    new ConsentRightExternal
+                    {
+                        Action = new List<string> { "read" },
+                        Resource = new List<ConsentResourceAttributeExternal>
+                        {
+                            new ConsentResourceAttributeExternal
+                            {
+                                Type = "urn:altinn:resource",
+                                Value = "ttd_skattegrunnlag2"
+                            }
+                        },
+                        MetaData = new Dictionary<string, string>
+                        {
+                            { "fraOgMed", "ADSF" },
+                            { "tilOgMed", "ADSF" }
+                        }
+                    }
+                },
+                Requestmessage = new Dictionary<string, string>
+                {
+                    { "en", "Please approve this consent request" }
+                }
+            };
+
+            HttpClient client = GetTestClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.NotNull(responseContent);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
+
+            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
+            Assert.Single(problemDetails.Errors);
+            Assert.Equal("AM.VLD-00037", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("These resources cannot be combined.", problemDetails.Errors.ToList()[0].Detail.ToString());
+            Assert.Equal("Resource", problemDetails.Errors.ToList()[0].Paths[0]);
+        }
+
+        /// <summary>
         /// Scenario: Enterprise tries to add consentrequest with missing metadata for the resource
         /// </summary>
         /// <returns></returns>
