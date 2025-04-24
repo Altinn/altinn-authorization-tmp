@@ -1,10 +1,17 @@
-﻿using Altinn.Authorization.AccessManagement;
+﻿using System.Net;
+using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Repositories;
+using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.AltinnRole;
+using Altinn.Authorization.Integration.Platform.Register;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using Microsoft.Win32;
-using System.Net;
 
 namespace Altinn.AccessManagement.HostedServices
 {
@@ -15,15 +22,34 @@ namespace Altinn.AccessManagement.HostedServices
         IAltinnLease lease,
         IAltinnRole role,
         IFeatureManager featureManager,
-        ILogger<AltinnRoleHostedServices> logger) : IHostedService, IDisposable
+        ILogger<AltinnRoleHostedServices> logger,
+        IIngestService ingestService,
+        IStatusService statusService,
+        IEntityRepository entityRepository,
+        IRoleRepository roleRepository,
+        IAssignmentRepository assignmentRepository,
+        IEntityTypeRepository entityTypeRepository,
+        IEntityVariantRepository entityVariantRepository,
+        IProviderRepository providerRepository) : IHostedService, IDisposable
     {
         private readonly IAltinnLease _lease = lease;
         private readonly ILogger<AltinnRoleHostedServices> _logger = logger;
         private readonly IFeatureManager _featureManager = featureManager;
         private readonly IAltinnRole _role = role;
 
+        private readonly IIngestService ingestService = ingestService;
+        private readonly IStatusService statusService = statusService;
+        private readonly IEntityRepository entityRepository = entityRepository;
+        private readonly IRoleRepository roleRepository = roleRepository;
+        private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
+        private readonly IEntityTypeRepository entityTypeRepository = entityTypeRepository;
+        private readonly IEntityVariantRepository entityVariantRepository = entityVariantRepository;
+        private readonly IProviderRepository providerRepository = providerRepository;
+
         private int _executionCount = 0;
-        private Timer _timer = null;
+        private Timer _timerAltinnRoles = null;
+        private Timer _timerAdminRoles = null;
+        private Timer _timerClientRoles = null;
         private readonly CancellationTokenSource _stop = new();
 
         /// <inheritdoc />
@@ -31,17 +57,24 @@ namespace Altinn.AccessManagement.HostedServices
         {
             Log.StartAltinnRoleSync(_logger);
 
-            _timer = new Timer(async state => await SyncAltinnRoleDispatcher(state), _stop.Token, TimeSpan.Zero, TimeSpan.FromMinutes(2));
+            _timerAltinnRoles = new Timer(async state => await SyncAltinnRoleDispatcher(state), _stop.Token, TimeSpan.Zero, TimeSpan.FromMinutes(2));
+            //_timerAdminRoles = new Timer(async state => await SyncAdminRoleDispatcher(state), _stop.Token, TimeSpan.Zero, TimeSpan.FromMinutes(2));
+            //_timerClientRoles = new Timer(async state => await SyncClientRoleDispatcher(state), _stop.Token, TimeSpan.Zero, TimeSpan.FromMinutes(2));
 
             return Task.CompletedTask;
         }
 
         /// <summary>
-        /// Dispatches the register synchronization process in a separate task.
+        /// Dispatches the Altinn roles synchronization process in a separate task.
         /// </summary>
         /// <param name="state">Cancellation token for stopping execution.</param>
         private async Task SyncAltinnRoleDispatcher(object state)
         {
+            if (!await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesAltinnRoleSync))
+            {
+                return;
+            }
+
             var cancellationToken = (CancellationToken)state;
 
             await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("access_management_altinnrole_sync", cancellationToken);
@@ -52,12 +85,81 @@ namespace Altinn.AccessManagement.HostedServices
 
             try
             {
-                if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesAltinnRoleSync))
-                {
-                    //await PrepareSync(); // do db setup
-                    await SyncAllRoles(ls, cancellationToken);
+                await PrepareSync(); // do db setup
+                
+                await SyncAllRoles(ls, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.SyncError(_logger, ex);
+                return;
+            }
+            finally
+            {
+                await _lease.Release(ls, default);
+            }
+        }
 
-                }
+        /// <summary>
+        /// Dispatches the Client roles synchronization process in a separate task.
+        /// </summary>
+        /// <param name="state">Cancellation token for stopping execution.</param>
+        private async Task SyncClientRoleDispatcher(object state)
+        {
+            if (!await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesAltinnRoleSync))
+            {
+                return;
+            }
+
+            var cancellationToken = (CancellationToken)state;
+
+            await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("access_management_clientrole_sync", cancellationToken);
+            if (!ls.HasLease || cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            try
+            {
+                await PrepareSync(); // do db setup
+
+                await SyncClientRoles(ls, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.SyncError(_logger, ex);
+                return;
+            }
+            finally
+            {
+                await _lease.Release(ls, default);
+            }
+        }
+
+        /// <summary>
+        /// Dispatches the Admin roles synchronization process in a separate task.
+        /// </summary>
+        /// <param name="state">Cancellation token for stopping execution.</param>
+        private async Task SyncAdminRoleDispatcher(object state)
+        {
+            if (!await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesAltinnRoleSync))
+            {
+                return;
+            }
+
+            var cancellationToken = (CancellationToken)state;
+
+            await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("access_management_adminrole_sync", cancellationToken);
+            if (!ls.HasLease || cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            try
+            {
+                await PrepareSync(); // do db setup
+
+                await SyncAdminRoles(ls, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -76,9 +178,213 @@ namespace Altinn.AccessManagement.HostedServices
         /// </summary>
         /// <param name="ls">The lease result containing the lease data and status.</param>
         /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        private async Task SyncClientRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+        {
+            var batchData = new List<Assignment>();
+
+            var test = await _role.StreamRoles("11", ls.Data?.AltinnRoleStreamNextPageLink, cancellationToken);
+
+            await foreach (var page in test)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (!page.IsSuccessful)
+                {
+                    Log.ResponseError(_logger, page.StatusCode);
+                    throw new Exception("Stream page is not successful");
+                }
+
+                Guid batchId = Guid.NewGuid();
+                var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
+                _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
+
+                if (page.Content != null)
+                {
+                    foreach (var item in page.Content.Data)
+                    {
+                        var assignment = await ConvertRoleDelegationModelToAssignment(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+
+                        if (batchData.Any(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId))
+                        {
+                            // If changes on same assignment then execute as-is before continuing.
+                            await Flush(batchId);
+                        }
+
+                        if (item.DelegationAction == DelegationAction.Delegate)
+                        {
+                            if (item.ToUserType != UserType.EnterpriseIdentified)
+                            {
+                                batchData.Add(assignment);
+                            }
+                        }
+                        else
+                        {
+                            var filter = assignmentRepository.CreateFilterBuilder();
+                            filter.Equal(t => t.FromId, assignment.FromId);
+                            filter.Equal(t => t.ToId, assignment.ToId);
+                            filter.Equal(t => t.RoleId, assignment.RoleId);
+                            await assignmentRepository.Delete(filter);
+                        }
+
+                        Interlocked.Increment(ref _executionCount);
+                    }
+                }
+
+                await Flush(batchId);
+
+                if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
+                {
+                    return;
+                }
+
+                await _lease.Put(ls, new() { AltinnRoleStreamNextPageLink = page.Content.Links.Next }, cancellationToken);
+                await _lease.RefreshLease(ls, cancellationToken);
+
+                async Task Flush(Guid batchId)
+                {
+                    try
+                    {
+                        _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchName);
+                        var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
+
+                        if (ingested != batchData.Count)
+                        {
+                            _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
+                        }
+
+                        var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken);
+
+                        _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName);
+                        throw new Exception(string.Format("Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName), ex);
+                    }
+                    finally
+                    {
+                        batchId = Guid.NewGuid();
+                        batchData.Clear();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Synchronizes altinn role data by first acquiring a remote lease and streaming altinn role entries.
+        /// Returns if lease is already taken.
+        /// </summary>
+        /// <param name="ls">The lease result containing the lease data and status.</param>
+        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+        private async Task SyncAdminRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+        {
+            var batchData = new List<Assignment>();
+
+            var test = await _role.StreamRoles("11", ls.Data?.AltinnRoleStreamNextPageLink, cancellationToken);
+
+            await foreach (var page in test)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (!page.IsSuccessful)
+                {
+                    Log.ResponseError(_logger, page.StatusCode);
+                    throw new Exception("Stream page is not successful");
+                }
+
+                Guid batchId = Guid.NewGuid();
+                var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
+                _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
+
+                if (page.Content != null)
+                {
+                    foreach (var item in page.Content.Data)
+                    {
+                        var assignment = await ConvertRoleDelegationModelToAssignment(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+
+                        if (batchData.Any(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId))
+                        {
+                            // If changes on same assignment then execute as-is before continuing.
+                            await Flush(batchId);
+                        }
+
+                        if (item.DelegationAction == DelegationAction.Delegate)
+                        {
+                            if (item.ToUserType != UserType.EnterpriseIdentified)
+                            {
+                                batchData.Add(assignment);
+                            }
+                        }
+                        else
+                        {
+                            var filter = assignmentRepository.CreateFilterBuilder();
+                            filter.Equal(t => t.FromId, assignment.FromId);
+                            filter.Equal(t => t.ToId, assignment.ToId);
+                            filter.Equal(t => t.RoleId, assignment.RoleId);
+                            await assignmentRepository.Delete(filter);
+                        }
+
+                        Interlocked.Increment(ref _executionCount);
+                    }
+                }
+
+                await Flush(batchId);
+
+                if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
+                {
+                    return;
+                }
+
+                await _lease.Put(ls, new() { AltinnRoleStreamNextPageLink = page.Content.Links.Next }, cancellationToken);
+                await _lease.RefreshLease(ls, cancellationToken);
+
+                async Task Flush(Guid batchId)
+                {
+                    try
+                    {
+                        _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchName);
+                        var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
+
+                        if (ingested != batchData.Count)
+                        {
+                            _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
+                        }
+
+                        var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken);
+
+                        _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName);
+                        throw new Exception(string.Format("Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName), ex);
+                    }
+                    finally
+                    {
+                        batchId = Guid.NewGuid();
+                        batchData.Clear();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Synchronizes altinn role data by first acquiring a remote lease and streaming altinn role entries.
+        /// Returns if lease is already taken.
+        /// </summary>
+        /// <param name="ls">The lease result containing the lease data and status.</param>
+        /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
         private async Task SyncAllRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
         {
-            var test = await _role.StreamRoles("3", ls.Data?.AltinnRoleStreamNextPageLink, cancellationToken);
+            var batchData = new List<Assignment>();
+            
+            var test = await _role.StreamRoles("10", ls.Data?.AltinnRoleStreamNextPageLink, cancellationToken);
             
             await foreach (var page in test)
             {
@@ -90,15 +396,46 @@ namespace Altinn.AccessManagement.HostedServices
                 if (!page.IsSuccessful)
                 {
                     Log.ResponseError(_logger, page.StatusCode);
+                    throw new Exception("Stream page is not successful");
                 }
 
-                foreach (var item in page.Content.Data)
+                Guid batchId = Guid.NewGuid();
+                var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
+                _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
+
+                if (page.Content != null)
                 {
-                    // TODO: one for party, one for role
-                    Interlocked.Increment(ref _executionCount);
-                    //Log.Role(_logger, item.FromParty, item.ToParty, item.RoleIdentifier);
-                    //await WriteRolesToDb(item);
+                    foreach (var item in page.Content.Data)
+                    {
+                        var assignment = await ConvertRoleDelegationModelToAssignment(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+
+                        if (batchData.Any(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId))
+                        {
+                            // If changes on same assignment then execute as-is before continuing.
+                            await Flush(batchId);
+                        }
+
+                        if (item.DelegationAction == DelegationAction.Delegate)
+                        {
+                            if (item.ToUserType != UserType.EnterpriseIdentified)
+                            {
+                                batchData.Add(assignment);
+                            }
+                        }
+                        else
+                        {
+                            var filter = assignmentRepository.CreateFilterBuilder();
+                            filter.Equal(t => t.FromId, assignment.FromId);
+                            filter.Equal(t => t.ToId, assignment.ToId);
+                            filter.Equal(t => t.RoleId, assignment.RoleId);
+                            await assignmentRepository.Delete(filter);                                                        
+                        }
+
+                        Interlocked.Increment(ref _executionCount);
+                    }
                 }
+
+                await Flush(batchId);
 
                 if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
                 {
@@ -107,8 +444,43 @@ namespace Altinn.AccessManagement.HostedServices
 
                 await _lease.Put(ls, new() { AltinnRoleStreamNextPageLink = page.Content.Links.Next }, cancellationToken);
                 await _lease.RefreshLease(ls, cancellationToken);
+
+                async Task Flush(Guid batchId)
+                {
+                    try
+                    {
+                        _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchName);
+                        var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
+
+                        if (ingested != batchData.Count)
+                        {
+                            _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
+                        }
+
+                        var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken);
+
+                        _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName);
+                        throw new Exception(string.Format("Failed to ingest and/or merge Assignment and EntityLookup batch {0} to db", batchName), ex);
+                    }
+                    finally
+                    {
+                        batchId = Guid.NewGuid();
+                        batchData.Clear();
+                    }
+                }
             }
         }
+
+        private static readonly IReadOnlyList<GenericParameter> GetAssignmentMergeMatchFilter = new List<GenericParameter>()
+        {
+            new GenericParameter("fromid", "fromid"),
+            new GenericParameter("roleid", "roleid"),
+            new GenericParameter("toid", "toid")
+        }.AsReadOnly();
 
         /// <inheritdoc />
         public Task StopAsync(CancellationToken cancellationToken)
@@ -119,7 +491,7 @@ namespace Altinn.AccessManagement.HostedServices
             }
             finally
             {
-                _timer?.Change(Timeout.Infinite, 0);
+                _timerAltinnRoles?.Change(Timeout.Infinite, 0);
             }
 
             return Task.CompletedTask;
@@ -141,6 +513,110 @@ namespace Altinn.AccessManagement.HostedServices
             if (disposing)
             {
             }
+        }
+
+        private async Task<(List<Assignment> Roles, AssignmentPackage Package)> ConvertRoleDelegationModelToAdminAssignment(RoleDelegationModel model)
+        {
+            List<Assignment> roles = [];
+            AssignmentPackage package = null;
+
+            Guid roleId = await FetchRoleIdFromAdminRoleTypeCode(model.RoleTypeCode);
+
+            // TODO: Add both role assignment and package assignment
+            switch (model.RoleTypeCode)
+            {
+                case "APIADM":
+                    roles.Add(await ConvertRoleDelegationModelToAssignment(model)); 
+                    package = new AssignmentPackage()
+                    {
+                        Id = Guid.CreateVersion7(),
+                        AssignmentId = roles[0].Id,
+                        PackageId = Guid.CreateVersion7() // TODO fetch package id from somewhere
+                    };
+                    break;
+                case "APIADMNUF":
+                    roles.Add(await ConvertRoleDelegationModelToAssignment(model)); // TODO: Fix this to do it right
+                    package = new AssignmentPackage()
+                    {
+                        Id = Guid.CreateVersion7(),
+                        AssignmentId = roles[0].Id,
+                        PackageId = Guid.CreateVersion7() // TODO fetch package id from somewhere
+                    };
+                    break;
+                case "ADMAI" or "BOADM" or "HADM" or "KLADM":
+                    roles.Add(await ConvertRoleDelegationModelToAssignment(model)); // TODO: Fix this to do it right
+                    break;
+                default:
+                    throw new Exception(string.Format("Unknown role type code '{0}'", model.RoleTypeCode));
+            }
+
+            return (roles, package);
+        }
+
+        private async Task<Guid> FetchRoleIdFromAdminRoleTypeCode(string roleCode)
+        {
+            var role = await GetOrCreateRole(roleCode, "Altinn2"); // TODO: Fix fetch correct role based on roleTypeCode
+            return role.Id;
+        }
+
+        private async Task<Guid> FetchPackageIdFromAdminRoleTypeCode(string roleCode)
+        {
+            var role = await GetOrCreateRole(roleCode, "Altinn2"); //Todo: Fix fetch correct package based on roleTypeCode
+            return role.Id;
+        }
+
+        private async Task<Assignment> ConvertRoleDelegationModelToAssignment(RoleDelegationModel model)
+        {
+            try
+            {
+                var role = await GetOrCreateRole(model.RoleTypeCode, "Altinn2");
+                
+                //TODO: Fix Datetime for Role based on data from model if not known use now.
+                //TODO; Fix performedby When known actual performer when not known provider set as performer
+                return new Assignment()
+                {
+                    Id = Guid.CreateVersion7(),
+                    FromId = model.FromPartyUuid,
+                    ToId = model.ToUserPartyUuid.Value,
+                    RoleId = role.Id
+                };                
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(string.Format("Failed to convert model to Assignment. From:{0} To:{1} Role:{2}", model.FromPartyUuid, model.ToUserPartyUuid, model.RoleTypeCode));
+            }
+        }
+
+        private async Task<Role> GetOrCreateRole(string roleCode, string roleSource)
+        {
+            string roleIdentifier = $"urn:altinn:rolecode:{roleCode}";
+
+            var role = (await roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
+            if (role == null)
+            {
+                var provider = Providers.FirstOrDefault(t => t.Name == "Altinn2") ?? throw new Exception(string.Format("Provider '{0}' not found while creating new role.", roleSource));
+                var entityType = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
+
+                await roleRepository.Create(new Role()
+                {
+                    Id = Guid.CreateVersion7(),
+                    Name = roleIdentifier,
+                    Description = roleIdentifier,
+                    Code = roleIdentifier,
+                    Urn = roleIdentifier,
+                    EntityTypeId = entityType.Id,
+                    ProviderId = provider.Id,
+                });
+
+                role = (await roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
+                if (role == null)
+                {
+                    throw new Exception(string.Format("Unable to get or create role '{0}'", roleIdentifier));
+                }
+            }
+
+            Roles.Add(role);
+            return role;
         }
 
         private static partial class Log
@@ -168,5 +644,26 @@ namespace Altinn.AccessManagement.HostedServices
             /// </summary>
             public string AltinnRoleStreamNextPageLink { get; set; }            
         }
+
+        private async Task PrepareSync()
+        {
+            if (EntityTypes.Count > 0 || EntityVariants.Count > 0 || Roles.Count > 0 || Providers.Count > 0)
+            {
+                return;
+            }
+
+            EntityTypes = [.. await entityTypeRepository.Get()];
+            EntityVariants = [.. await entityVariantRepository.Get()];
+            Roles = [.. await roleRepository.Get()];
+            Providers = [.. await providerRepository.Get()];
+        }
+
+        private List<Provider> Providers { get; set; } = [];
+
+        private List<EntityType> EntityTypes { get; set; } = [];
+
+        private List<EntityVariant> EntityVariants { get; set; } = [];
+
+        private List<Role> Roles { get; set; } = [];
     }
 }

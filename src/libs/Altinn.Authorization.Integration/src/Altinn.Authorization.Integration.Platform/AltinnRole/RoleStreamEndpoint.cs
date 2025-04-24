@@ -79,6 +79,9 @@ public class RoleDelegationModel
     [JsonPropertyName("toUserPartyUuid")]
     public Guid? ToUserPartyUuid { get; set; }
 
+    [JsonPropertyName("toUserType")]
+    public UserType ToUserType { get; set; }
+
     /// <summary>
     /// Gets or sets the date and time when the delegation change occurred.
     /// </summary>
@@ -151,4 +154,53 @@ public enum DelegationAction : int
     /// </summary>
     [JsonStringEnumMemberName("DelegationSchemeCascadingDelete")]
     DelegationSchemeCascadingDelete = 3
+}
+
+/// <summary>
+///  User Type is used to specify the type of the user i.e whether SSN,Self,enterprise identified or agency User.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<UserType>))]
+public enum UserType : int
+{
+    /// <summary>
+    /// User type has not been specified
+    /// </summary>
+    [EnumMember]
+    None = 0,
+
+    /// <summary>
+    /// User Type is SSN Identified User.
+    /// </summary>
+    [EnumMember]
+    SSNIdentified = 1,
+
+    /// <summary>
+    /// User Type is Self Identified User.
+    /// </summary>
+    [EnumMember]
+    SelfIdentified = 2,
+
+    /// <summary>
+    /// User Type is EnterpriseIdentified Identified User.
+    /// </summary>
+    [EnumMember]
+    EnterpriseIdentified = 3,
+
+    /// <summary>
+    /// User Type is Agency User
+    /// </summary>
+    [EnumMember]
+    AgencyUser = 4,
+
+    /// <summary>
+    /// User Type is PSAN User
+    /// </summary>
+    [EnumMember]
+    PSAN = 5,
+
+    /// <summary>
+    /// User Type is PSA User
+    /// </summary>
+    [EnumMember]
+    PSA = 6
 }

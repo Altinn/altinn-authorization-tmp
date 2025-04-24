@@ -34,7 +34,6 @@ public class RoleDefinition : BaseDbDefinition<Role>, IDbDefinition
             def.RegisterExtendedProperty<ExtRole, EntityType>(t => t.EntityTypeId, t => t.Id, t => t.EntityType, cascadeDelete: false);
 
             def.RegisterUniqueConstraint([t => t.Urn]);
-            def.RegisterUniqueConstraint([t => t.EntityTypeId, t => t.Name]);
             def.RegisterUniqueConstraint([t => t.EntityTypeId, t => t.Code]);
         });
     }
