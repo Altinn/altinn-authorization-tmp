@@ -171,4 +171,18 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, IDbConverter db
             throw;
         }
     }
+
+    /// <summary>
+    /// Formats the parameters for App Insights logging
+    /// </summary>
+    private string FormatParameters(List<GenericParameter> parameters)
+    {
+        if (parameters == null || parameters.Count == 0)
+        {
+            return "None";
+        }
+
+        var formattedParameters = parameters.Select(p => $"{p.Key}: {p.Value}");
+        return string.Join(", ", formattedParameters);
+    }
 }
