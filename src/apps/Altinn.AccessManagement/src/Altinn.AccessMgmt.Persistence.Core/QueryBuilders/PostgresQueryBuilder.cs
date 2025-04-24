@@ -363,6 +363,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
                 FilterComparer.StartsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 FilterComparer.EndsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 FilterComparer.Contains => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
+                FilterComparer.Like => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 _ => throw new NotSupportedException($"Comparer '{filter.Comparer}' is not supported.")
             };
 
