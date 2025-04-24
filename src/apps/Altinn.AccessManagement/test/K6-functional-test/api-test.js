@@ -2,7 +2,7 @@ import http from "k6/http";
 import { sleep } from "k6";
 import { check, fail } from "k6";
 
-function doesThisRunInParallell() {
+function SmokeTestSystemRegister() {
   const url =
     "https://platform.at22.altinn.cloud/authentication/api/v1/systemregister";
 
@@ -18,5 +18,5 @@ function doesThisRunInParallell() {
 }
 
 export default function () {
-  doesThisRunInParallell();
+  SmokeTestSystemRegister();
 }
