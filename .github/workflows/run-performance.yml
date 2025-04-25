@@ -47,12 +47,10 @@ on:
             testSuitePath:
                 description: 'Path to test suite to run'
                 required: true
-                default: 'test/Altinn.Platform.Authentication.PerformanceTests/createAndConfirmSystemUser.js'
+                default: 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorize.js'
                 type: choice
                 options:
-                - 'test/Altinn.Platform.Authentication.PerformanceTests/createAndConfirmSystemUser.js'
-                - 'test/Altinn.Platform.Authentication.PerformanceTests/createClientDelegations.js'
-                - 'test/Altinn.Platform.Authentication.PerformanceTests/getSystemUser.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorize.js'
 
 permissions:
   id-token: write
