@@ -220,6 +220,10 @@ public class DelegationService(
             // Find ClientAssignment
             var clientAssignment = await GetAssignment(client.Id, facilitator.Id, clientRole.Id, options) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
 
+            // Find Agent Role
+            var agentRole = await GetRole(request.AgentRole) ?? throw new Exception(string.Format("Role not found '{0}'", request.AgentRole));
+
+            Assignment agentAssignment = null;
             Delegation delegation = null;
             foreach (var package in rp.Value)
             {
@@ -233,14 +237,14 @@ public class DelegationService(
 
                 if (delegation == null)
                 {
-                    // Find Agent Role
-                    var agentRole = await GetRole(request.AgentRole) ?? throw new Exception(string.Format("Role not found '{0}'", request.AgentRole));
+                    if (agentAssignment == null)
+                    {
+                        // Find or Create Agent Entity
+                        var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "System", options) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
 
-                    // Find or Create Agent
-                    var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "System", options) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
-
-                    // Find or Create Agent Assignment
-                    var agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole, options) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
+                        // Find or Create Agent Assignment
+                        agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole, options) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
+                    }
 
                     // Find or Create Delegation
                     delegation = await GetOrCreateDelegation(clientAssignment, agentAssignment, facilitator, options) ?? throw new Exception(string.Format("Could not find or create delegation '{0}' - {1} - {2}", client.Name, facilitator.Name, agentAssignment.Id));
