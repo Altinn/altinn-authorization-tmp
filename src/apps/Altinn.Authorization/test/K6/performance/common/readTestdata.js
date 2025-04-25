@@ -40,13 +40,14 @@ export const systemUsers = new SharedArray('systemUsers', function () {
   return readCsv(systemUsersFilename);
 });
 
-export const orgOwners = new SharedArray('orgOwners', function () {
-  const csv = readCsv(orgOwnersFilename);
-  let orgOwnersDict = new Map();
-  for (const row of csv) {
-    const orgNo = parseInt(row['OrgNr']);
-    orgOwnersDict[orgNo] = row;
-  }
-  return [orgOwnersDict];
-} );
+// export const orgOwners = new SharedArray('orgOwners', function () {
+//   const csv = readCsv(orgOwnersFilename);
+//   let orgOwnersDict = new Map();
+//   for (const row of csv) {
+//     const orgNo = parseInt(row['OrgNr']);
+  
+//     orgOwnersDict[orgNo] = row;
+//   }
+//   return [orgOwnersDict];
+// } );
 

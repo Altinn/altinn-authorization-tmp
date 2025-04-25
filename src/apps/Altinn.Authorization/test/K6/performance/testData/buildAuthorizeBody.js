@@ -31,7 +31,7 @@ export function buildAuthorizeBody(systemUserId, resourceId, customerOrgNo, acti
                             "Value": resourceId
                         },
                         {
-                            "AttributeId": "urn:altinn:organization:identifier-no",
+                            "AttributeId": "urn:altinn:party:uuid",
                             "Value": customerOrgNo,
                             "DataType": "http://www.w3.org/2001/XMLSchema#string"
                         }

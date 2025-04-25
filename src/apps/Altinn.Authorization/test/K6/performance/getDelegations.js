@@ -32,9 +32,11 @@ export function setup() {
 
 export default function (data) {
     const systemUser = randomItem(data);
-    console.log("SystemUser", systemUser);
     const facilitatorUuid = getOrgParty(systemUser.reporteeOrgNo)
-    getDelegations(facilitatorUuid, systemUser.id, systemUser.reporteeOrgNo);
+    const delegations = getDelegations(facilitatorUuid, systemUser.id, systemUser.reporteeOrgNo);
+    for (const delegation of delegations) {
+        console.log(`${systemUser.id},${delegation.from.id},${systemUser.reporteeOrgNo},${delegation.role.code}`);
+    }
 }
 
 function getSystems() {
@@ -102,23 +104,21 @@ function getOrgParty(orgNo) {
 function getDelegations(facilitatorUuid, systemUserId, orgno) {
     const params = getParams(getDelegationsLabel);
     const now = Date.now();
-    console.log(now);
     const key = parseInt(orgno);
-    console.log(key);
     const dagl = orgOwners[0][key]; //orgOwners.filter(item => item.OrgNr === orgno)[0];
-    console.log(dagl);
-    console.log(Date.now() - now);
     params.headers.Authorization = "Bearer " + getAmToken(facilitatorUuid, dagl.UserId);
 
     const url = new URL(getAmDelegationUrl);
     url.searchParams.append('party', facilitatorUuid);
     url.searchParams.append('systemUser', systemUserId);
+    let delegations = [];
     describe('Get delegations', () => {
         let r = http.get(url.toString(), params);
-        console.log("delegations", JSON.stringify(r.body, null, 2));
+        delegations = r.json();
         expectStatusFor(r).to.equal(200);
         expect(r, 'response').to.have.validJsonBody();
     });
+    return delegations;
 }
 
 function getSystemOwnerToken(systemOwner) {
