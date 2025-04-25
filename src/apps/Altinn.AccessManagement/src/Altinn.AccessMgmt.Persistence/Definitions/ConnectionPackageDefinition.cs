@@ -18,7 +18,7 @@ public class ConnectionPackageDefinition : BaseDbDefinition<ConnectionPackage>, 
     {
         definitionRegistry.Define<ConnectionPackage>(def =>
         {
-            def.SetVersion(2);
+            def.SetVersion(3);
             def.SetType(DbDefinitionType.Query);
 
             def.RegisterProperty(t => t.Id);
@@ -83,7 +83,7 @@ public class ConnectionPackageDefinition : BaseDbDefinition<ConnectionPackage>, 
             sb.AppendLine("SELECT * FROM a1");
 
             sb.AppendLine("UNION ALL");
-
+            
             sb.AppendLine("SELECT x.id, x.fromid, x.fromid AS viaid, x.roleid AS viaroleid, x.toid, rm.getroleid AS roleid, ");
             sb.AppendLine("x.source || 'MAP' AS source, x.isdirect, x.isparent, 1             AS isrolemap, x.iskeyrole");
             sb.AppendLine("FROM a1 x");
