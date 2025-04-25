@@ -226,6 +226,7 @@ module "postgres_server" {
   postgres_version    = "16"
   configurations = {
     "azure.extensions" : "HSTORE"
+    "max_locks_per_transaction" : "4096"
   }
 
   storage_tier = var.db_storage_tier
