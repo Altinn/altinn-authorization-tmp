@@ -209,9 +209,13 @@ public class DelegationService(
     {
         var result = new List<Delegation>();
 
+        // Find Agent Role
+        var agentRole = await GetRole(request.AgentRole) ?? throw new Exception(string.Format("Role not found '{0}'", request.AgentRole));
+
         // Verify Delegation Packages
         Dictionary<string, List<Package>> rolepacks = await VerifyDelegationPackages(request);
 
+        Assignment agentAssignment = null;
         foreach (var rp in rolepacks)
         {
             // Find ClientPartyId Role
@@ -220,10 +224,6 @@ public class DelegationService(
             // Find ClientAssignment
             var clientAssignment = await GetAssignment(client.Id, facilitator.Id, clientRole.Id, options) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
 
-            // Find Agent Role
-            var agentRole = await GetRole(request.AgentRole) ?? throw new Exception(string.Format("Role not found '{0}'", request.AgentRole));
-
-            Assignment agentAssignment = null;
             Delegation delegation = null;
             foreach (var package in rp.Value)
             {
