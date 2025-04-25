@@ -49,7 +49,7 @@ public class RoleSyncService(
         };
 
         OrgType = (await entityTypeRepository.Get(t => t.Name, "Organisasjon")).FirstOrDefault();
-        Provider =(await providerRepository.Get(t => t.Code, "ccr")).FirstOrDefault();
+        Provider = (await providerRepository.Get(t => t.Code, "ccr")).FirstOrDefault();
 
         await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
         {
@@ -152,8 +152,15 @@ public class RoleSyncService(
 
     private async Task UpdateLease(LeaseResult<LeaseContent> ls, Action<LeaseContent> configureLeaseContent, CancellationToken cancellationToken)
     {
-        configureLeaseContent(ls.Data);
-        await _lease.Put(ls, ls.Data, cancellationToken);
+        if (ls.Data == null)
+        {
+            await _lease.Put(ls, new LeaseContent(), cancellationToken);
+        }
+        else
+        {
+            configureLeaseContent(ls.Data);
+        }
+
         await _lease.RefreshLease(ls, cancellationToken);
     }
 
