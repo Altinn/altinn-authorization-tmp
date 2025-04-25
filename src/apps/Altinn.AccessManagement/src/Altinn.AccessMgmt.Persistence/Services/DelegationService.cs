@@ -222,7 +222,7 @@ public class DelegationService(
             var clientRole = (await roleRepository.Get(t => t.Code, rp.Key)).First() ?? throw new Exception(string.Format("Role not found '{0}'", rp.Key));
 
             // Find ClientAssignment
-            var clientAssignment = await GetAssignment(client.Id, facilitator.Id, clientRole.Id, options) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
+            var clientAssignment = await GetAssignment(client.Id, facilitator.Id, clientRole.Id) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
 
             Delegation delegation = null;
             foreach (var package in rp.Value)
@@ -371,7 +371,7 @@ public class DelegationService(
         return await entityRepository.Get(id);
     }
 
-    private async Task<Assignment> GetAssignment(Guid from, Guid to, Guid role, ChangeRequestOptions options)
+    private async Task<Assignment> GetAssignment(Guid from, Guid to, Guid role)
     {
         var filter = assignmentRepository.CreateFilterBuilder();
         filter.Equal(t => t.RoleId, role);
