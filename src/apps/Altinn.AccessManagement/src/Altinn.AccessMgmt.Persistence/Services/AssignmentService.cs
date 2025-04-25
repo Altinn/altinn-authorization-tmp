@@ -152,7 +152,7 @@ public class AssignmentService(
         ValidatePartyIsNotNull(toEntityId, toEntityExt, ref errors, "$QUERY/to");
         ValidatePartyIsOrg(toEntityExt, ref errors, "$QUERY/to");
 
-        var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
+        var roleResult = await roleRepository.Get(t => t.Code, roleCode, cancellationToken: cancellationToken);
         if (roleResult == null || !roleResult.Any())
         {
             Unreachable();
@@ -187,7 +187,7 @@ public class AssignmentService(
             return errorResult;
         }
 
-        var result = await roleRepository.Delete(existingAssignment.Id, options, cancellationToken);
+        var result = await assignmentRepository.Delete(existingAssignment.Id, options, cancellationToken);
         if (result == 0)
         {
             Unreachable();
@@ -207,7 +207,7 @@ public class AssignmentService(
         ValidatePartyIsNotNull(toEntityId, toEntityExt, ref errors, "$QUERY/to");
         ValidatePartyIsOrg(toEntityExt, ref errors, "$QUERY/to");
 
-        var roleResult = await roleRepository.Get(t => t.Name, roleCode, cancellationToken: cancellationToken);
+        var roleResult = await roleRepository.Get(t => t.Code, roleCode, cancellationToken: cancellationToken);
         if (roleResult == null || !roleResult.Any())
         {
             Unreachable();
@@ -232,7 +232,7 @@ public class AssignmentService(
             RoleId = roleId,
         };
 
-        var result = await assignmentRepository.Create(existingAssignment, options: options, cancellationToken);
+        var result = await assignmentRepository.Create(assignment, options: options, cancellationToken);
         if (result == 0)
         {
             Unreachable();

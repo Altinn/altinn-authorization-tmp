@@ -6,6 +6,8 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
 using Altinn.AccessManagement.Core.Filters;
 using Altinn.AccessManagement.Health;
+using Altinn.AccessManagement.HostedServices.Contracts;
+using Altinn.AccessManagement.HostedServices.Services;
 using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
@@ -52,9 +54,8 @@ internal static partial class AccessManagementHost
     {
         Log.CreateAltinnHost(Logger);
         var builder = AltinnHost.CreateWebApplicationBuilder("access-management", args);
-        builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
+        builder.ConfigureAppsettings();
         builder.ConfigureLibsHost();
-
         builder.Services.AddMemoryCache();
         builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.AddControllers();
@@ -91,6 +92,7 @@ internal static partial class AccessManagementHost
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
         builder.ConfigureAccessManagementPersistence();
+        builder.ConfigureHostedServices();
         builder.AddAccessManagementEnduser();
 
         return builder.Build();
@@ -106,34 +108,27 @@ internal static partial class AccessManagementHost
         return builder;
     }
 
+    private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddHostedService<RegisterHostedService>();
+        builder.Services.AddSingleton<IPartySyncService, PartySyncService>();
+        builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
+        builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
+        return builder;
+    }
+
     private static WebApplicationBuilder ConfigureLibsIntegrations(this WebApplicationBuilder builder)
     {
-        builder.AddAltinnResourceRegisterIntegration(opts =>
+        builder.Services.AddAltinnPlatformIntegrationDefaults(() =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings.Platform?.ResourceRegisterEndpoint == null)
+            appsettings.Platform.Token.TestTool.Environment = appsettings.Environment;
+            if (builder.Configuration.GetValue<Uri>("kvSetting:SecretUri") is var endpoint && endpoint != null)
             {
-                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.ResourceRegisterEndpoint));
-                opts.Endpoint = default;
+                appsettings.Platform.Token.KeyVault.Endpoint = endpoint;
             }
-            else
-            {
-                opts.Endpoint = appsettings.Platform.ResourceRegisterEndpoint;
-            }
-        });
 
-        builder.AddAltinnRegisterIntegration(opts =>
-        {
-            var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings.Platform?.RegisterEndpoint == null)
-            {
-                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.Platform.RegisterEndpoint));
-                opts.Endpoint = default;
-            }
-            else
-            {
-                opts.Endpoint = appsettings.Platform.RegisterEndpoint;
-            }
+            return appsettings.Platform;
         });
 
         return builder;
@@ -141,7 +136,6 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureLibsHost(this WebApplicationBuilder builder)
     {
-        builder.Services.AddHostedService<RegisterHostedService>();
         builder.AddAzureAppConfigurationDefaults(opts =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
@@ -222,7 +216,7 @@ internal static partial class AccessManagementHost
     private static void ConfigureAppsettings(this WebApplicationBuilder builder)
     {
         var config = builder.Configuration;
-
+        builder.Services.Configure<AccessManagementAppsettings>(builder.Configuration.Bind);
         builder.Services.Configure<GeneralSettings>(config.GetSection("GeneralSettings"));
         builder.Services.Configure<PlatformSettings>(config.GetSection("PlatformSettings"));
         builder.Services.Configure<Altinn.Common.PEP.Configuration.PlatformSettings>(config.GetSection("PlatformSettings"));
@@ -303,6 +297,7 @@ internal static partial class AccessManagementHost
         {
             MaxAutoPrepare = 50,
             AutoPrepareMinUsages = 2,
+            IncludeErrorDetail = true
         };
 
         var serviceDescriptor = builder.Services.GetAltinnServiceDescriptor();
