@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 
 namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
 
@@ -46,9 +47,52 @@ public interface IConnectionService
     /// <summary>
     /// Gets the packages associated with the specified entity.
     /// </summary>
-    /// <param name="id">The identifier of the entity.</param>
+    /// <param name="fromId">Assign from entity</param>
+    /// <param name="toId">Assign to entity</param>
     /// <returns>A collection of packages.</returns>
-    Task<IEnumerable<Package>> GetPackages(Guid id);
+    Task<IEnumerable<ConnectionPackage>> GetPackages(Guid? fromId, Guid? toId);
+
+    /// <summary>
+    /// Add package to connection (Assignment or Delegation)
+    /// </summary>
+    /// <param name="connectionId">Connection identifierr</param>
+    /// <param name="packageId">Package identifier</param>
+    /// <param name="options">Change request options</param>
+    /// <returns></returns>
+    Task<bool> AddPackage(Guid connectionId, Guid packageId, ChangeRequestOptions options);
+
+    /// <summary>
+    /// Add package to assignment matching from+to+role
+    /// Creates assignment if not exists
+    /// </summary>
+    /// <param name="fromId">Assign from entity</param>
+    /// <param name="toId">Assign to entity</param>
+    /// <param name="roleCode">Assignment role</param>
+    /// <param name="packageId">Package to add to assignment</param>
+    /// <param name="options">Change request options (audit)</param>
+    /// <returns></returns>
+    Task<bool> AddPackage(Guid fromId, Guid toId, string roleCode, Guid packageId, ChangeRequestOptions options);
+
+    /// <summary>
+    /// Remove package from connection (Assignment or Delegation)
+    /// </summary>
+    /// <param name="connectionId">Connection identifierr</param>
+    /// <param name="packageId">Package identifier</param>
+    /// <param name="options">Change request options</param>
+    /// <returns></returns>
+    Task<bool> RemovePackage(Guid connectionId, Guid packageId, ChangeRequestOptions options);
+
+    /// <summary>
+    /// Remove package from assignment matching from+to+role
+    /// Returns true if assignment is null, assignmentPackage is null or when able to delete assignmentPackage
+    /// </summary>
+    /// <param name="fromId">Assign from entity</param>
+    /// <param name="toId">Assign to entity</param>
+    /// <param name="roleCode">Assignment role</param>
+    /// <param name="packageId">Package to remove from assignment</param>
+    /// <param name="options">Change request options (audit)</param>
+    /// <returns></returns>
+    Task<bool> RemovePackage(Guid fromId, Guid toId, string roleCode, Guid packageId, ChangeRequestOptions options);
 
     /// <summary>
     /// Gets the resources associated with the specified entity.

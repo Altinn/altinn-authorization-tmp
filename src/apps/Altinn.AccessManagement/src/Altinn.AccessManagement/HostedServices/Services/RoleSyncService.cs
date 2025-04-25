@@ -152,8 +152,15 @@ public class RoleSyncService(
 
     private async Task UpdateLease(LeaseResult<LeaseContent> ls, Action<LeaseContent> configureLeaseContent, CancellationToken cancellationToken)
     {
-        configureLeaseContent(ls.Data);
-        await _lease.Put(ls, ls.Data, cancellationToken);
+        if (ls.Data == null)
+        {
+            await _lease.Put(ls, new LeaseContent(), cancellationToken);
+        }
+        else
+        {
+            configureLeaseContent(ls.Data);
+        }
+
         await _lease.RefreshLease(ls, cancellationToken);
     }
 

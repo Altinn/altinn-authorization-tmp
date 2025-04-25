@@ -19,47 +19,103 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         definitionRegistry.Define<Connection>(def =>
         {
             def.SetVersion(2);
-            def.IsView();
+            def.SetType(DbDefinitionType.Query);
 
             def.RegisterProperty(t => t.Id);
             def.RegisterProperty(t => t.FromId);
             def.RegisterProperty(t => t.RoleId);
-            def.RegisterProperty(t => t.FacilitatorId, nullable: true);
             def.RegisterProperty(t => t.ToId);
+            def.RegisterProperty(t => t.FacilitatorId, nullable: true);
             def.RegisterProperty(t => t.FacilitatorRoleId, nullable: true);
-            def.RegisterProperty(t => t.DelegationId, nullable: true);
+
+            def.RegisterProperty(t => t.Source);
+
+            def.RegisterProperty(t => t.IsDirect);
+            def.RegisterProperty(t => t.IsParent);
+            def.RegisterProperty(t => t.IsRoleMap);
+            def.RegisterProperty(t => t.IsKeyRole);
 
             def.RegisterExtendedProperty<ExtConnection, Entity>(t => t.FromId, t => t.Id, t => t.From);
             def.RegisterExtendedProperty<ExtConnection, Role>(t => t.RoleId, t => t.Id, t => t.Role);
-            def.RegisterExtendedProperty<ExtConnection, Entity>(t => t.FacilitatorId, t => t.Id, t => t.Facilitator, optional: true);
             def.RegisterExtendedProperty<ExtConnection, Entity>(t => t.ToId, t => t.Id, t => t.To);
+            def.RegisterExtendedProperty<ExtConnection, Entity>(t => t.FacilitatorId, t => t.Id, t => t.Facilitator, optional: true);
             def.RegisterExtendedProperty<ExtConnection, Role>(t => t.FacilitatorRoleId, t => t.Id, t => t.FacilitatorRole, optional: true);
-            def.RegisterExtendedProperty<ExtConnection, Delegation>(t => t.DelegationId, t => t.Id, t => t.Delegation, optional: true);
 
             var sb = new StringBuilder();
 
-            // Basic Assignment
-            sb.AppendLine($"SELECT a.{nameof(Assignment.Id)}, a.{nameof(Assignment.FromId)} AS {nameof(Connection.FromId)}, NULL::uuid AS {nameof(Connection.FacilitatorId)}, a.{nameof(Connection.ToId)}, a.{nameof(Assignment.RoleId)} AS {nameof(Connection.RoleId)}, NULL::uuid AS {nameof(Connection.FacilitatorRoleId)}, NULL::uuid AS {nameof(Connection.DelegationId)}");
-            sb.AppendLine("FROM dbo.assignment AS a");
+
+            sb.AppendLine("WITH a1 AS (");
+            
+            // DIRECT
+            sb.AppendLine("SELECT a.id, a.fromid, NULL::uuid AS viaid, NULL::uuid AS viaroleid, a.toid, a.roleid,");
+            sb.AppendLine("'DIRECT' AS source, 1 AS isdirect, 0 AS isparent, 0 AS isrolemap, 0 AS iskeyrole");
+            sb.AppendLine("FROM dbo.assignment a");
+            sb.AppendLine("WHERE a.fromid = COALESCE(@fromid::uuid, a.fromid)");
+            sb.AppendLine("AND a.toid   = COALESCE(@toid::uuid, a.toid)");
+
             sb.AppendLine("UNION ALL");
 
-            // Inheireted Roles from RoleMap
-            sb.AppendLine($"SELECT a.{nameof(Assignment.Id)}, a.{nameof(Assignment.FromId)}, NULL AS {nameof(Connection.FacilitatorId)}, a.{nameof(Connection.ToId)}, rm.{nameof(RoleMap.GetRoleId)} AS {nameof(Connection.RoleId)}, rm.{nameof(RoleMap.HasRoleId)} AS {nameof(Connection.FacilitatorRoleId)}, NULL::uuid AS {nameof(Connection.DelegationId)}");
-            sb.AppendLine("FROM dbo.assignment AS a");
-            sb.AppendLine($"INNER JOIN dbo.rolemap as rm on a.{nameof(Assignment.RoleId)} = rm.{nameof(RoleMap.HasRoleId)}");
+            // PARENT
+            sb.AppendLine("SELECT");
+            sb.AppendLine("a.id,");
+            sb.AppendLine("fe.id AS fromid,");
+            sb.AppendLine("a.fromid AS viaid,");
+            sb.AppendLine("NULL::uuid AS viaroleid,");
+            sb.AppendLine("a.toid,");
+            sb.AppendLine("a.roleid,");
+            sb.AppendLine("'PARENT' AS source,");
+            sb.AppendLine("0 AS isdirect,");
+            sb.AppendLine("1 AS isparent,");
+            sb.AppendLine("0 AS isrolemap,");
+            sb.AppendLine("0 AS iskeyrole");
+            sb.AppendLine("FROM dbo.assignment a");
+            sb.AppendLine("JOIN dbo.entity fe   ON a.fromid = fe.parentid");
+            sb.AppendLine("WHERE fe.id    = COALESCE(@fromid::uuid, fe.id)");
+            sb.AppendLine("AND a.toid   = COALESCE(@toid::uuid, a.toid)");
+
+            sb.AppendLine("),");
+
+            sb.AppendLine("a2 AS(");
+            sb.AppendLine("SELECT * FROM a1");
+
             sb.AppendLine("UNION ALL");
+            
+            sb.AppendLine("SELECT x.id, x.fromid, x.fromid AS viaid, x.roleid AS viaroleid, x.toid, rm.getroleid AS roleid, ");
+            sb.AppendLine("x.source || 'MAP' AS source, x.isdirect, x.isparent, 1             AS isrolemap, x.iskeyrole");
+            sb.AppendLine("FROM a1 x");
+            sb.AppendLine("JOIN dbo.rolemap rm ON x.roleid = rm.hasroleid");
+            sb.AppendLine("),");
 
-            // Delegations
-            sb.AppendLine($"SELECT d.{nameof(Delegation.Id)}, fa.{nameof(Assignment.FromId)} AS {nameof(Connection.FromId)}, fa.{nameof(Assignment.ToId)} AS {nameof(Connection.FacilitatorId)}, ta.{nameof(Assignment.ToId)} AS {nameof(Connection.ToId)}, fa.{nameof(Assignment.RoleId)} AS {nameof(Connection.RoleId)}, ta.{nameof(Assignment.RoleId)} AS {nameof(Connection.FacilitatorRoleId)}, d.id AS {nameof(Connection.DelegationId)}");
-            sb.AppendLine("FROM dbo.delegation AS d");
-            sb.AppendLine($"INNER JOIN dbo.assignment AS fa ON d.{nameof(Delegation.FromId)} = fa.{nameof(Assignment.Id)}");
-            sb.AppendLine($"INNER JOIN dbo.assignment AS ta ON d.{nameof(Delegation.ToId)} = ta.{nameof(Assignment.Id)};");
+            sb.AppendLine("a3 AS(");
+            sb.AppendLine("SELECT* FROM a2");
+            
+            sb.AppendLine("UNION ALL");
+            
+            sb.AppendLine("SELECT s.id, s.fromid, s.toid AS viaid, s.roleid AS viaroleid, a.toid, a.roleid, ");
+            sb.AppendLine("s.source || 'KEY' AS source, s.isdirect, s.isparent, s.isrolemap, 1 AS iskeyrole");
+            sb.AppendLine("FROM a2 s");
+            sb.AppendLine("JOIN dbo.assignment a ON s.toid = a.fromid");
+            sb.AppendLine("JOIN dbo.role r ON a.roleid = r.id");
+            sb.AppendLine("AND r.iskeyrole = TRUE");
+            sb.AppendLine(")");
 
-            def.SetViewQuery(sb.ToString());
+            sb.AppendLine("SELECT a.*");
+            sb.AppendLine("FROM a3 a");
+            // EXTENDED : sb.AppendLine("JOIN dbo.entity fe ON a.fromid = fe.id");
+            // EXTENDED : sb.AppendLine("JOIN dbo.entity te ON a.toid   = te.id");
+            // EXTENDED : sb.AppendLine("JOIN dbo.role r ON a.roleid = r.id");
+            // EXTENDED : sb.AppendLine("LEFT JOIN dbo.entity ve ON a.viaid = ve.id");
+            // EXTENDED : sb.AppendLine("LEFT JOIN dbo.role vr ON a.viaroleid = vr.id");
+            sb.AppendLine("WHERE a.fromid = COALESCE(@fromid::uuid, a.fromid)");
+            sb.AppendLine("AND a.toid = COALESCE(@toid::uuid, a.toid);");
 
-            def.AddViewDependency<Assignment>();
-            def.AddViewDependency<Delegation>();
-            def.AddViewDependency<RoleMap>();
+            def.SetQuery(sb.ToString());
+
+            def.AddManualDependency<Assignment>();
+            def.AddManualDependency<Delegation>();
+            def.AddManualDependency<Role>();
+            def.AddManualDependency<RoleMap>();
+            def.AddManualDependency<Entity>();
         });
     }
 }

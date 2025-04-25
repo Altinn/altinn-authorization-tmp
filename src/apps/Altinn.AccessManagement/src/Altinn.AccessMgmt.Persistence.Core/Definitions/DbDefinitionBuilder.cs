@@ -43,9 +43,21 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// </summary>
         /// <param name="value">Default: true</param>
         /// <returns></returns>
+        [Obsolete(message: "Use SetType")]
         public DbDefinitionBuilder<T> IsView(bool value = true)
         {
-            DbDefinition.IsView = value;
+            DbDefinition.DefinitionType = DbDefinitionType.View;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets whether the entity is a view.
+        /// </summary>
+        /// <param name="value">Default: true</param>
+        /// <returns></returns>
+        public DbDefinitionBuilder<T> SetType(DbDefinitionType value = DbDefinitionType.Table)
+        {
+            DbDefinition.DefinitionType = value;
             return this;
         }
 
@@ -54,9 +66,9 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// </summary>
         /// <param name="query">Sql Query</param>
         /// <returns></returns>
-        public DbDefinitionBuilder<T> SetViewQuery(string query)
+        public DbDefinitionBuilder<T> SetQuery(string query)
         {
-            DbDefinition.ViewQuery = query;
+            DbDefinition.Query = query;
             return this;
         }
 
@@ -64,9 +76,9 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// Sets whether the entity is a view.
         /// </summary>
         /// <returns></returns>
-        public DbDefinitionBuilder<T> AddViewDependency<TDep>()
+        public DbDefinitionBuilder<T> AddManualDependency<TDep>()
         {
-            DbDefinition.ViewDependencies.Add(typeof(TDep));
+            DbDefinition.ManualDependencies.Add(typeof(TDep));
             return this;
         }
 
