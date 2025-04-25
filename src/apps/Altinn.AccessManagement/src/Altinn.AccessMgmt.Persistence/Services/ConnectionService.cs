@@ -267,6 +267,7 @@ public class ConnectionService(
 
         var userPackages = await GetConnectionPackages(assignment.FromId, options.ChangedBy, packageId);
 
+        //// #568:AC:...
         if (!userPackages.Any())
         {
             throw new Exception("User does not have the package assigned on this entity");

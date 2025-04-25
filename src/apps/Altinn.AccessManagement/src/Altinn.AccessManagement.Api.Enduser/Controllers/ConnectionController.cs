@@ -1,16 +1,14 @@
 ﻿using System.Net.Mime;
-using Altinn.AccessManagement.Api.Enduser.Mappers;
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
 using Altinn.AccessManagement.Core.Filters;
-using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
-using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 
@@ -23,11 +21,9 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [Route("accessmanagement/api/v1/enduser/access/connection")]
 [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerAccessParties)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-public class ConnectionController(IHttpContextAccessor accessor, IConnectionService connectionService, IAssignmentService assignmentService) : ControllerBase
+public class ConnectionController(IHttpContextAccessor accessor, IConnectionService connectionService, IAssignmentService assignmentService, IEntityRepository entityRepository) : ControllerBase
 {
     private IHttpContextAccessor Accessor { get; } = accessor;
-
-    private IConnectionService ConnectionService { get; } = connectionService;
 
     /// <summary>
     /// Creates an assignment between the authenticated user's selected party and the specified target party.
@@ -79,14 +75,42 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     /// Add package to connection (assignment or delegation)
     /// </summary>
     [HttpPost]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
     [Route("")]
-    public async Task<IActionResult> AddConnection([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] Guid packageId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddConnection([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, CancellationToken cancellationToken = default)
     {
         var options = new ChangeRequestOptions()
         {
             ChangedBy = Accessor.GetPartyUuid(),
             ChangedBySystem = AuditDefaults.EnduserApi
         };
+
+        //// From must by Type:Organisasjon
+        //// #550:AC:From party må være en organisasjon (skal ikke være mulig å legge til rightholder for privatperson el. andre entitetstyper)
+        var fromEntity = await entityRepository.GetExtended(fromId);
+        if (fromEntity == null)
+        {
+            return Problem("From party not found");
+        }
+
+        if (!fromEntity.Type.Name.Equals("Organisasjon", StringComparison.OrdinalIgnoreCase))
+        {
+            return Problem("From must be of type 'Organisasjon'");
+        }
+
+        //// To must be Type:Organisasjon
+        //// #550:AC:Det skal bare være mulig å legge til Organisasjoner som ny Rightholder
+        var toEntity = await entityRepository.GetExtended(toId);
+        if (toEntity == null)
+        {
+            return Problem("To party not found");
+        }
+
+        if (!toEntity.Type.Name.Equals("Organisasjon", StringComparison.OrdinalIgnoreCase))
+        {
+            return Problem("To must be of type 'Organisasjon'");
+        }
 
         var res = await assignmentService.GetOrCreateAssignment(fromId: fromId, toId: toId, roleCode: "rettighetshaver", options);
 
@@ -95,7 +119,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             return Ok(res);
         }
 
-        return Problem("Unable to remove package");
+        return Problem("Unable add connection");
     }
 
     /// <summary>
@@ -103,25 +127,28 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     /// </summary>
     [HttpDelete]
     [Route("")]
-    public async Task<IActionResult> RemoveConnection([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] Guid packageId, CancellationToken cancellationToken = default)
+    public async Task<ProblemInstance> RemoveConnection([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
         var options = new ChangeRequestOptions()
         {
             ChangedBy = Accessor.GetPartyUuid(),
             ChangedBySystem = AuditDefaults.EnduserApi
         };
 
-        //var res = await assignmentService.RemoveAssignment(fromId: fromId, toId: toId, roleCode: "rettighetshaver", options);
-
-        var res = await connectionService.RemovePackage(fromId: fromId, toId: toId, roleCode: "rettighetshaver", packageId: packageId, options);
-
-        if (res)
+        //// From must by Type:Organisasjon
+        //// #550:AC:From party må være en organisasjon (skal ikke være mulig å legge til rightholder for privatperson el. andre entitetstyper)
+        var fromEntity = await entityRepository.GetExtended(fromId);
+        if (fromEntity == null)
         {
-            return Ok();
+            throw new Exception("From party not found");
         }
 
-        return Problem("Unable to remove package");
+        if (!fromEntity.Type.Name.Equals("Organisasjon", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new Exception("From must be of type 'Organisasjon'");
+        }
+
+        return await assignmentService.DeleteAssignment(fromId: fromId, toId: toId, roleCode: "rettighetshaver", options, cascade: cascade, cancellationToken);
     }
 
     /// <summary>
@@ -169,6 +196,32 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             ChangedBy = Accessor.GetPartyUuid(),
             ChangedBySystem = AuditDefaults.EnduserApi
         };
+
+        //// From must by Type:Organisasjon
+        //// #568:AC:From party må være en Organisasjon (skal ikke være mulig å delegere fra privatperson el. andre entitetstyper enda)
+        var fromEntity = await entityRepository.GetExtended(fromId);
+        if (fromEntity == null)
+        {
+            throw new Exception("From party not found");
+        }
+
+        if (!fromEntity.Type.Name.Equals("Organisasjon", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new Exception("From must be of type 'Organisasjon'");
+        }
+
+        //// To must be Type:Organisasjon
+        //// #568:AC:To party må være en Organisasjon (skal ikke være mulig å delegere fra privatperson el. andre entitetstyper enda)
+        var toEntity = await entityRepository.GetExtended(toId);
+        if (toEntity == null)
+        {
+            return Problem("To party not found");
+        }
+
+        if (!toEntity.Type.Name.Equals("Organisasjon", StringComparison.OrdinalIgnoreCase))
+        {
+            return Problem("To must be of type 'Organisasjon'");
+        }
 
         var res = await connectionService.AddPackage(fromId: fromId, toId: toId, roleCode: "rettighetshaver", packageId: packageId, options);
 

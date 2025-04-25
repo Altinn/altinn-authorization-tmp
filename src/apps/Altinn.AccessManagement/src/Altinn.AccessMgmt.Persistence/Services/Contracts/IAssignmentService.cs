@@ -25,7 +25,7 @@ public interface IAssignmentService
     /// Gets assignment and creates if not exits
     /// </summary>
     /// <returns></returns>
-    Task<ProblemInstance> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, ChangeRequestOptions options, bool cascade = false, CancellationToken cancellationToken = default);
+    Task<ProblemInstance> DeleteAssignment(Guid fromId, Guid toId, string roleCode, ChangeRequestOptions options, bool cascade = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets assignment and creates if not exits
