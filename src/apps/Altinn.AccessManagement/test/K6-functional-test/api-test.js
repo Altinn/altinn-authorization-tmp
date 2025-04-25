@@ -1,5 +1,4 @@
 import http from "k6/http";
-import { sleep } from "k6";
 import { check, fail } from "k6";
 
 function SmokeTestSystemRegister() {
