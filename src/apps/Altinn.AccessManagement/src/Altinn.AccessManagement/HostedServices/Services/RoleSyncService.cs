@@ -205,7 +205,7 @@ public class RoleSyncService(
             return Roles.First(t => t.Code == roleIdentifier);
         }
 
-        var role = (await roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
+        var role = (await roleRepository.Get(t => t.Code, roleIdentifier)).FirstOrDefault();
         if (role == null)
         {
             await roleRepository.Create(
