@@ -183,12 +183,12 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         sb.AppendLine("SELECT a.*, ");
 
         /*EXTENDED*/
-        sb.AppendLine(EntityColumns("fe", "From"));
-        sb.AppendLine(EntityColumns("te", "To"));
-        sb.AppendLine(RoleColumns("r", "Role"));
-        sb.AppendLine(EntityColumns("ve", "Facilitator"));
-        sb.AppendLine(RoleColumns("vr", "FacilitatorRole"));
-        //// sb.AppendLine(DelegationColumns("d", "Delegation"));
+        sb.AppendLine(EntityColumns("fe", "From") + ",");
+        sb.AppendLine(EntityColumns("te", "To") + ",");
+        sb.AppendLine(RoleColumns("r", "Role") + ",");
+        sb.AppendLine(EntityColumns("ve", "Facilitator") + ",");
+        sb.AppendLine(RoleColumns("vr", "FacilitatorRole") + " ");
+        //// sb.AppendLine(DelegationColumns("d", "Delegation") + " ");
 
         sb.AppendLine("FROM a3 a");
 
