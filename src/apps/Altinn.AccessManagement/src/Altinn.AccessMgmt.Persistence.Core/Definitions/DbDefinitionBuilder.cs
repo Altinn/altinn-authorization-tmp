@@ -65,10 +65,12 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// Sets whether the entity is a view.
         /// </summary>
         /// <param name="query">Sql Query</param>
+        /// <param name="extendedQuery">Sql Extended Query</param>
         /// <returns></returns>
-        public DbDefinitionBuilder<T> SetQuery(string query)
+        public DbDefinitionBuilder<T> SetQuery(string query, string extendedQuery = null)
         {
             DbDefinition.Query = query;
+            DbDefinition.ExtendedQuery = extendedQuery;
             return this;
         }
 
