@@ -178,7 +178,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     /// <param name="toId">The GUID identifying the target party to which the assignment should be created.</param>
     /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
     [HttpGet]
-    [Route("packages")]
+    [Route("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
     [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
     [ProducesResponseType<AssignmentExternal>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -213,7 +213,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     /// Add package to connection (assignment or delegation)
     /// </summary>
     [HttpPost]
-    [Route("packages")]
+    [Route("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
     public async Task<IActionResult> AddPackages([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] Guid? packageId, [FromQuery] string packageUrn, CancellationToken cancellationToken = default)
@@ -281,7 +281,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     /// Remove package from connection (assignment or delegation)
     /// </summary>
     [HttpDelete]
-    [Route("packages")]
+    [Route("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
     public async Task<IActionResult> RemovePackages([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] Guid packageId, CancellationToken cancellationToken = default)
