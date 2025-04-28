@@ -14,6 +14,7 @@ public class ConnectionService(
     IConnectionRepository connectionRepository,
     IConnectionPackageRepository connectionPackageRepository,
     IConnectionResourceRepository connectionResourceRepository,
+    IPackageRepository packageRepository,
     IAssignmentService assignmentService,
     IRoleRepository roleRepository,
     IAssignmentRepository assignmentRepository,
@@ -24,59 +25,59 @@ public class ConnectionService(
 {
     
     /// <inheritdoc />
-    public async Task<IEnumerable<ExtConnection>> GetGiven(Guid id)
+    public async Task<IEnumerable<ExtConnection>> GetGiven(Guid id, CancellationToken cancellationToken = default)
     {
         var filter = connectionRepository.CreateFilterBuilder();
         filter.Equal(t => t.FromId, id);
-        return await connectionRepository.GetExtended(filter);
+        return await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ExtConnection>> GetRecived(Guid id)
+    public async Task<IEnumerable<ExtConnection>> GetRecived(Guid id, CancellationToken cancellationToken = default)
     {
         var filter = connectionRepository.CreateFilterBuilder();
         filter.Equal(t => t.ToId, id);
-        return await connectionRepository.GetExtended(filter);
+        return await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ExtConnection>> GetFacilitated(Guid id)
+    public async Task<IEnumerable<ExtConnection>> GetFacilitated(Guid id, CancellationToken cancellationToken = default)
     {
         var filter = connectionRepository.CreateFilterBuilder();
         filter.Equal(t => t.FacilitatorId, id);
-        return await connectionRepository.GetExtended(filter);
+        return await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ExtConnection>> GetSpecific(Guid fromId, Guid toId)
+    public async Task<IEnumerable<ExtConnection>> GetSpecific(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
     {
         var filter = connectionRepository.CreateFilterBuilder();
         filter.Equal(t => t.FromId, fromId);
         filter.Equal(t => t.ToId, toId);
-        return await connectionRepository.GetExtended(filter);
+        return await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<ExtConnection> Get(Guid Id)
+    public async Task<ExtConnection> Get(Guid Id, CancellationToken cancellationToken = default)
     {
         var filter = connectionRepository.CreateFilterBuilder();
         filter.Equal(t => t.Id, Id);
-        var res = await connectionRepository.GetExtended(filter);
+        var res = await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
         return res.FirstOrDefault();
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ConnectionPackage>> GetPackages(Guid? fromId, Guid? toId)
+    public async Task<IEnumerable<ConnectionPackage>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default)
     {
-        return await GetConnectionPackages(fromId, toId);
+        return await GetConnectionPackages(fromId, toId, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<bool> AddPackage(Guid fromId, Guid toId, string roleCode, Guid packageId, ChangeRequestOptions options)
+    public async Task<bool> AddPackage(Guid fromId, Guid toId, string roleCode, Guid packageId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         //// Will create assignment even if GetOrCreateAssignmentPackage fails.
-        var assignment = await assignmentService.GetOrCreateAssignment(fromId, toId, roleCode, options);
-        var res = await GetOrCreateAssignmentPackage(assignment.Id, packageId, options);
+        var assignment = await assignmentService.GetOrCreateAssignmentInternal(fromId, toId, roleCode, options, cancellationToken: cancellationToken);
+        var res = await GetOrCreateAssignmentPackage(assignment.Id, packageId, options, cancellationToken: cancellationToken);
         if (res == null)
         {
             return false;
@@ -86,35 +87,52 @@ public class ConnectionService(
     }
 
     /// <inheritdoc />
-    public async Task<bool> RemovePackage(Guid fromId, Guid toId, string roleCode, Guid packageId, ChangeRequestOptions options)
+    public async Task<bool> AddPackage(Guid fromId, Guid toId, string roleCode, string packageUrn, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        var assignment = await assignmentService.GetAssignment(fromId, toId, roleCode);
+        var filter = packageRepository.CreateFilterBuilder();
+        filter.Add(t => t.Urn, packageUrn, Core.Helpers.FilterComparer.EndsWith);
+        var packageResult = await packageRepository.Get(filter);
+
+        if (packageResult == null || !packageResult.Any() || packageResult.Count() > 1)
+        {
+            throw new ArgumentException();
+        }
+
+        var package = packageResult.First();
+
+        return await AddPackage(fromId, toId, roleCode, package.Id, options, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> RemovePackage(Guid fromId, Guid toId, string roleCode, Guid packageId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
+    {
+        var assignment = await assignmentService.GetAssignment(fromId, toId, roleCode, cancellationToken: cancellationToken);
         if (assignment == null)
         {
             Console.WriteLine("Nothing to delete");
             return true;
         }
 
-        return await RemoveAssignmentPackage(assignment.Id, packageId, options);
+        return await RemoveAssignmentPackage(assignment.Id, packageId, options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<bool> AddPackage(Guid connectionId, Guid packageId, ChangeRequestOptions options)
+    public async Task<bool> AddPackage(Guid connectionId, Guid packageId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         //// Fix with new connection model
 
-        var assignment = assignmentRepository.Get(connectionId);
-        var delegation = delegationRepository.Get(connectionId);
+        var assignment = assignmentRepository.Get(connectionId, cancellationToken: cancellationToken);
+        var delegation = delegationRepository.Get(connectionId, cancellationToken: cancellationToken);
         
         if (assignment != null)
         {
-            var res = await GetOrCreateAssignmentPackage(connectionId, packageId, options);
+            var res = await GetOrCreateAssignmentPackage(connectionId, packageId, options, cancellationToken: cancellationToken);
             return true;
         }
         
         if (delegation != null)
         {
-            var res = await GetOrCreateDelegationPackage(connectionId, packageId, options);
+            var res = await GetOrCreateDelegationPackage(connectionId, packageId, options, cancellationToken: cancellationToken);
             return true;
         }
 
@@ -122,29 +140,29 @@ public class ConnectionService(
     }
 
     /// <inheritdoc />
-    public async Task<bool> RemovePackage(Guid connectionId, Guid packageId, ChangeRequestOptions options)
+    public async Task<bool> RemovePackage(Guid connectionId, Guid packageId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         //// Fix with new connection model
 
-        var assignment = assignmentRepository.Get(connectionId);
-        var delegation = delegationRepository.Get(connectionId);
+        var assignment = assignmentRepository.Get(connectionId, cancellationToken: cancellationToken);
+        var delegation = delegationRepository.Get(connectionId, cancellationToken: cancellationToken);
 
         if (assignment != null)
         {
-            var res = await RemoveAssignmentPackage(connectionId, packageId, options);
+            var res = await RemoveAssignmentPackage(connectionId, packageId, options, cancellationToken: cancellationToken);
             return true;
         }
 
         if (delegation != null)
         {
-            var res = await RemoveDelegationPackage(connectionId, packageId, options);
+            var res = await RemoveDelegationPackage(connectionId, packageId, options, cancellationToken: cancellationToken);
             return true;
         }
 
         return false;
     }
     
-    private async Task<IEnumerable<ConnectionPackage>> GetConnectionPackages(Guid? fromId, Guid? toId)
+    private async Task<IEnumerable<ConnectionPackage>> GetConnectionPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default)
     {
         /* Get packages assigned to entity from a specific entity, to see if entity can assign it to another entity */
 
@@ -157,11 +175,11 @@ public class ConnectionService(
         var filter = connectionPackageRepository.CreateFilterBuilder();
         filter.Equal(t => t.FromId, fromId);
         filter.Equal(t => t.ToId, toId);
-        return await connectionPackageRepository.Get(filter);
+        return await connectionPackageRepository.Get(filter, cancellationToken: cancellationToken);
 
     }
 
-    private async Task<IEnumerable<ExtConnectionPackage>> GetConnectionPackages(Guid fromId, Guid toId, Guid packageId)
+    private async Task<IEnumerable<ExtConnectionPackage>> GetConnectionPackages(Guid fromId, Guid toId, Guid packageId, CancellationToken cancellationToken = default)
     {
         /* Get packages assigned to entity from a specific entity, to see if entity can assign it to another entity */
 
@@ -169,20 +187,20 @@ public class ConnectionService(
         filter.Equal(t => t.FromId, fromId);
         filter.Equal(t => t.ToId, toId);
         filter.Equal(t => t.PackageId, packageId);
-        return await connectionPackageRepository.GetExtended(filter);
+        return await connectionPackageRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
     }
 
-    private async Task<bool> RemoveAssignmentPackage(Guid assignmentId, Guid packageId, ChangeRequestOptions options)
+    private async Task<bool> RemoveAssignmentPackage(Guid assignmentId, Guid packageId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        var assignment = await assignmentRepository.Get(assignmentId);
+        var assignment = await assignmentRepository.Get(assignmentId, cancellationToken: cancellationToken);
 
         if (assignment == null)
         {
             throw new Exception("Assignment not found");
         }
 
-        var userPackages = await GetConnectionPackages(assignment.FromId, options.ChangedBy, packageId);
+        var userPackages = await GetConnectionPackages(assignment.FromId, options.ChangedBy, packageId, cancellationToken: cancellationToken);
 
         if (!userPackages.Any())
         {
@@ -198,14 +216,14 @@ public class ConnectionService(
         var filter = assignmentPackageRepository.CreateFilterBuilder();
         filter.Equal(t => t.AssignmentId, assignmentId);
         filter.Equal(t => t.PackageId, packageId);
-        var checkResult = await assignmentPackageRepository.Get();
+        var checkResult = await assignmentPackageRepository.Get(filter, cancellationToken: cancellationToken);
         if (checkResult == null && !checkResult.Any())
         {
             Console.WriteLine("AssignmentPackage does not exist, nothing to delete.");
             return true;
         }
 
-        var deleteResult = await assignmentPackageRepository.DeleteCross(assignmentId, packageId, options);
+        var deleteResult = await assignmentPackageRepository.DeleteCross(assignmentId, packageId, options, cancellationToken: cancellationToken);
         if (deleteResult > 0)
         {
             return true;
@@ -214,9 +232,9 @@ public class ConnectionService(
         return false;
     }
 
-    private async Task<bool> RemoveDelegationPackage(Guid delegationId, Guid packageId, ChangeRequestOptions options)
+    private async Task<bool> RemoveDelegationPackage(Guid delegationId, Guid packageId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        var delegation = await delegationRepository.Get(delegationId);
+        var delegation = await delegationRepository.Get(delegationId, cancellationToken: cancellationToken);
 
         if (delegation == null)
         {
@@ -224,7 +242,7 @@ public class ConnectionService(
         }
 
         // other logic?
-        var userPackages = await GetConnectionPackages(delegation.FromId, options.ChangedBy, packageId);
+        var userPackages = await GetConnectionPackages(delegation.FromId, options.ChangedBy, packageId, cancellationToken: cancellationToken);
 
         if (!userPackages.Any())
         {
@@ -240,14 +258,14 @@ public class ConnectionService(
         var filter = delegationPackageRepository.CreateFilterBuilder();
         filter.Equal(t => t.DelegationId, delegationId);
         filter.Equal(t => t.PackageId, packageId);
-        var checkResult = await delegationPackageRepository.Get();
+        var checkResult = await delegationPackageRepository.Get(filter, cancellationToken: cancellationToken);
         if (checkResult == null && !checkResult.Any())
         {
             Console.WriteLine("DelegationPackage does not exist, nothing to delete.");
             return true;
         }
 
-        var deleteResult = await delegationPackageRepository.DeleteCross(delegationId, packageId, options);
+        var deleteResult = await delegationPackageRepository.DeleteCross(delegationId, packageId, options, cancellationToken: cancellationToken);
         if (deleteResult > 0)
         {
             return true;
@@ -256,16 +274,16 @@ public class ConnectionService(
         return false;
     }
 
-    private async Task<AssignmentPackage> GetOrCreateAssignmentPackage(Guid assignmentId, Guid packageId, ChangeRequestOptions options)
+    private async Task<AssignmentPackage> GetOrCreateAssignmentPackage(Guid assignmentId, Guid packageId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        var assignment = await assignmentRepository.Get(assignmentId);
+        var assignment = await assignmentRepository.Get(assignmentId, cancellationToken: cancellationToken);
 
         if (assignment == null)
         {
             throw new Exception("Assignment not found");
         }
 
-        var userPackages = await GetConnectionPackages(assignment.FromId, options.ChangedBy, packageId);
+        var userPackages = await GetConnectionPackages(assignment.FromId, options.ChangedBy, packageId, cancellationToken: cancellationToken);
 
         //// #568:AC:...
         if (!userPackages.Any())
@@ -286,13 +304,13 @@ public class ConnectionService(
         var filter = assignmentPackageRepository.CreateFilterBuilder();
         filter.Equal(t => t.AssignmentId, assignmentId);
         filter.Equal(t => t.PackageId, packageId);
-        var checkResult = await assignmentPackageRepository.Get();
+        var checkResult = await assignmentPackageRepository.Get(filter, cancellationToken: cancellationToken);
         if (checkResult != null && checkResult.Any())
         {
             return checkResult.First();
         }
 
-        var createResult = await assignmentPackageRepository.CreateCross(assignmentId, packageId, options);
+        var createResult = await assignmentPackageRepository.CreateCross(assignmentId, packageId, options, cancellationToken: cancellationToken);
         if (createResult > 0)
         {
             var createCheckResult = await assignmentPackageRepository.Get();
@@ -305,9 +323,9 @@ public class ConnectionService(
         throw new Exception(string.Format("Unable to add package to assignment ('{0}','{1}')", assignmentId, packageId));
     }
 
-    private async Task<DelegationPackage> GetOrCreateDelegationPackage(Guid delegationId, Guid packageId, ChangeRequestOptions options)
+    private async Task<DelegationPackage> GetOrCreateDelegationPackage(Guid delegationId, Guid packageId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        var delegation = await delegationRepository.Get(delegationId);
+        var delegation = await delegationRepository.Get(delegationId, cancellationToken: cancellationToken);
 
         if (delegation == null)
         {
@@ -315,7 +333,7 @@ public class ConnectionService(
         }
 
         // other logic?
-        var userPackages = await GetConnectionPackages(delegation.FromId, options.ChangedBy, packageId);
+        var userPackages = await GetConnectionPackages(delegation.FromId, options.ChangedBy, packageId, cancellationToken: cancellationToken);
 
         if (!userPackages.Any())
         {
@@ -336,16 +354,16 @@ public class ConnectionService(
         var filter = delegationPackageRepository.CreateFilterBuilder();
         filter.Equal(t => t.DelegationId, delegationId);
         filter.Equal(t => t.PackageId, packageId);
-        var checkResult = await delegationPackageRepository.Get();
+        var checkResult = await delegationPackageRepository.Get(filter, cancellationToken: cancellationToken);
         if (checkResult != null && checkResult.Any())
         {
             return checkResult.First();
         }
 
-        var createResult = await delegationPackageRepository.CreateCross(delegationId, packageId, options);
+        var createResult = await delegationPackageRepository.CreateCross(delegationId, packageId, options, cancellationToken: cancellationToken);
         if (createResult > 0)
         {
-            var createCheckResult = await delegationPackageRepository.Get();
+            var createCheckResult = await delegationPackageRepository.Get(filter, cancellationToken: cancellationToken);
             if (createCheckResult != null && createCheckResult.Any())
             {
                 return createCheckResult.First();
@@ -356,9 +374,9 @@ public class ConnectionService(
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<Resource>> GetResources(Guid id)
+    public async Task<IEnumerable<Resource>> GetResources(Guid id, CancellationToken cancellationToken = default)
     {
-        return await connectionResourceRepository.GetB(id);
+        return await connectionResourceRepository.GetB(id, cancellationToken: cancellationToken);
     }
 }
 

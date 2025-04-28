@@ -10,6 +10,7 @@ using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement.Mvc;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
@@ -43,6 +44,12 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     {
         if (!from.HasValue && !to.HasValue)
         {
+            return BadRequest();
+        }
+
+        if (!(from.HasValue && from.Value == party) && !(to.HasValue && to.Value == party))
+        {
+            // Party must match From or To
             return BadRequest();
         }
 
@@ -86,6 +93,11 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             ChangedBySystem = AuditDefaults.EnduserApi
         };
 
+        if (fromId != party)
+        {
+            throw new Exception("From party does not match from");
+        }
+
         //// From must by Type:Organisasjon
         //// #550:AC:From party må være en organisasjon (skal ikke være mulig å legge til rightholder for privatperson el. andre entitetstyper)
         var fromEntity = await entityRepository.GetExtended(fromId);
@@ -112,7 +124,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             return Problem("To must be of type 'Organisasjon'");
         }
 
-        var res = await assignmentService.GetOrCreateAssignment(fromId: fromId, toId: toId, roleCode: "rettighetshaver", options);
+        var res = await assignmentService.GetOrCreateAssignmentInternal(fromId: fromId, toId: toId, roleCode: "rettighetshaver", options, cancellationToken: cancellationToken);
 
         if (res != null)
         {
@@ -136,6 +148,11 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             ChangedBy = Accessor.GetPartyUuid(),
             ChangedBySystem = AuditDefaults.EnduserApi
         };
+
+        if (!(fromId == party) && !(toId == party))
+        {
+            throw new Exception("From party does not match from or to");
+        }
 
         //// From must by Type:Organisasjon
         //// #550:AC:From party må være en organisasjon (skal ikke være mulig å legge til rightholder for privatperson el. andre entitetstyper)
@@ -175,6 +192,12 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             return BadRequest();
         }
 
+        if (!(fromId.HasValue && fromId.Value == party) && !(toId.HasValue && toId.Value == party))
+        {
+            // Party must match From or To
+            return BadRequest();
+        }
+
         var audit = new ChangeRequestOptions()
         {
             ChangedBy = Accessor.GetPartyUuid(),
@@ -193,13 +216,19 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     [Route("packages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
-    public async Task<IActionResult> AddPackages([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] Guid packageId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddPackages([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] Guid? packageId, [FromQuery] string packageUrn, CancellationToken cancellationToken = default)
     {
         var options = new ChangeRequestOptions()
         {
             ChangedBy = Accessor.GetPartyUuid(),
             ChangedBySystem = AuditDefaults.EnduserApi
         };
+
+        if (fromId != party)
+        {
+            // Party must match From or To
+            return BadRequest();
+        }
 
         //// From must by Type:Organisasjon
         //// #568:AC:From party må være en Organisasjon (skal ikke være mulig å delegere fra privatperson el. andre entitetstyper enda)
@@ -227,11 +256,22 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             return Problem("To must be of type 'Organisasjon'");
         }
 
-        var res = await connectionService.AddPackage(fromId: fromId, toId: toId, roleCode: "rettighetshaver", packageId: packageId, options);
-
-        if (res)
+        if (packageId.HasValue)
         {
-            return Ok();
+            var res = await connectionService.AddPackage(fromId: fromId, toId: toId, roleCode: "rettighetshaver", packageId: packageId.Value, options);
+            if (res)
+            {
+                return Ok();
+            }
+        }
+        else
+        {
+            packageUrn = packageUrn.ToLower().StartsWith("urn:") ? packageUrn : ":" + packageUrn;
+            var res = await connectionService.AddPackage(fromId: fromId, toId: toId, roleCode: "rettighetshaver", packageUrn: packageUrn, options);
+            if (res)
+            {
+                return Ok();
+            }
         }
 
         return Problem("Unable to remove package");
@@ -251,6 +291,12 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             ChangedBy = Accessor.GetPartyUuid(),
             ChangedBySystem = AuditDefaults.EnduserApi
         };
+
+        if (!(fromId == party) && !(toId == party))
+        {
+            // Party must match From or To
+            return BadRequest();
+        }
 
         var res = await connectionService.RemovePackage(fromId: fromId, toId: toId, roleCode: "rettighetshaver", packageId: packageId, options);
 
