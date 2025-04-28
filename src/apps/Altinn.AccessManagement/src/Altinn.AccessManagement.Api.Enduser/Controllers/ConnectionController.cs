@@ -18,7 +18,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 /// Controller for en user api operations for connections
 /// </summary>
 [ApiController]
-[Route("accessmanagement/api/v1/enduser/access/connection")]
+[Route("accessmanagement/api/v1/enduser/access/connections")]
 [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class ConnectionController(IHttpContextAccessor accessor, IConnectionService connectionService, IAssignmentService assignmentService, IEntityRepository entityRepository) : ControllerBase
@@ -126,6 +126,8 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     /// Remove package from connection (assignment or delegation)
     /// </summary>
     [HttpDelete]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
     [Route("")]
     public async Task<ProblemInstance> RemoveConnection([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
@@ -189,6 +191,8 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     /// </summary>
     [HttpPost]
     [Route("packages")]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
     public async Task<IActionResult> AddPackages([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] Guid packageId, CancellationToken cancellationToken = default)
     {
         var options = new ChangeRequestOptions()
@@ -238,6 +242,8 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     /// </summary>
     [HttpDelete]
     [Route("packages")]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
     public async Task<IActionResult> RemovePackages([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] Guid packageId, CancellationToken cancellationToken = default)
     {
         var options = new ChangeRequestOptions()
