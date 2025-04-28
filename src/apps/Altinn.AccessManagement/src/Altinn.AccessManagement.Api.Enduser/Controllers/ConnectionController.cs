@@ -67,7 +67,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
 
         if (from.HasValue)
         {
-            return Ok(await connectionService.GetRecived(to.Value));
+            return Ok(await connectionService.GetRecived(from.Value));
         }
 
         if (to.HasValue)
