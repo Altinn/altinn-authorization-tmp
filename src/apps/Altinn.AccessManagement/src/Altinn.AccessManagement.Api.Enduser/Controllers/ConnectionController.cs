@@ -84,8 +84,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     [HttpPost]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
-    [Route("")]
-    public async Task<IActionResult> AddConnection([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddConnection([FromQuery] Guid party, [FromQuery] Guid from, [FromQuery] Guid to, CancellationToken cancellationToken = default)
     {
         var options = new ChangeRequestOptions()
         {
@@ -93,14 +92,14 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             ChangedBySystem = AuditDefaults.EnduserApi
         };
 
-        if (fromId != party)
+        if (from != party)
         {
             throw new Exception("From party does not match from");
         }
 
         //// From must by Type:Organisasjon
         //// #550:AC:From party må være en organisasjon (skal ikke være mulig å legge til rightholder for privatperson el. andre entitetstyper)
-        var fromEntity = await entityRepository.GetExtended(fromId);
+        var fromEntity = await entityRepository.GetExtended(from);
         if (fromEntity == null)
         {
             return Problem("From party not found");
@@ -113,7 +112,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
 
         //// To must be Type:Organisasjon
         //// #550:AC:Det skal bare være mulig å legge til Organisasjoner som ny Rightholder
-        var toEntity = await entityRepository.GetExtended(toId);
+        var toEntity = await entityRepository.GetExtended(to);
         if (toEntity == null)
         {
             return Problem("To party not found");
@@ -124,7 +123,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             return Problem("To must be of type 'Organisasjon'");
         }
 
-        var res = await assignmentService.GetOrCreateAssignmentInternal(fromId: fromId, toId: toId, roleCode: "rettighetshaver", options, cancellationToken: cancellationToken);
+        var res = await assignmentService.GetOrCreateAssignmentInternal(fromId: from, toId: to, roleCode: "rettighetshaver", options, cancellationToken: cancellationToken);
 
         if (res != null)
         {
@@ -140,8 +139,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     [HttpDelete]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
-    [Route("")]
-    public async Task<ProblemInstance> RemoveConnection([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
+    public async Task<ProblemInstance> RemoveConnection([FromQuery] Guid party, [FromQuery] Guid from, [FromQuery] Guid to, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
         var options = new ChangeRequestOptions()
         {
@@ -149,14 +147,14 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             ChangedBySystem = AuditDefaults.EnduserApi
         };
 
-        if (!(fromId == party) && !(toId == party))
+        if (!(from == party) && !(to == party))
         {
             throw new Exception("From party does not match from or to");
         }
 
         //// From must by Type:Organisasjon
         //// #550:AC:From party må være en organisasjon (skal ikke være mulig å legge til rightholder for privatperson el. andre entitetstyper)
-        var fromEntity = await entityRepository.GetExtended(fromId);
+        var fromEntity = await entityRepository.GetExtended(from);
         if (fromEntity == null)
         {
             throw new Exception("From party not found");
@@ -167,7 +165,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             throw new Exception("From must be of type 'Organisasjon'");
         }
 
-        return await assignmentService.DeleteAssignment(fromId: fromId, toId: toId, roleCode: "rettighetshaver", options, cascade: cascade, cancellationToken);
+        return await assignmentService.DeleteAssignment(fromId: from, toId: to, roleCode: "rettighetshaver", options, cascade: cascade, cancellationToken);
     }
 
     /// <summary>
@@ -185,14 +183,14 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetPackages([FromQuery] Guid party, [FromQuery] Guid? fromId, [FromQuery] Guid? toId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetPackages([FromQuery] Guid party, [FromQuery] Guid? from, [FromQuery] Guid? to, CancellationToken cancellationToken = default)
     {
-        if (!fromId.HasValue && !toId.HasValue)
+        if (!from.HasValue && !to.HasValue)
         {
             return BadRequest();
         }
 
-        if (!(fromId.HasValue && fromId.Value == party) && !(toId.HasValue && toId.Value == party))
+        if (!(from.HasValue && from.Value == party) && !(to.HasValue && to.Value == party))
         {
             // Party must match From or To
             return BadRequest();
@@ -204,7 +202,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             ChangedBySystem = AuditDefaults.EnduserApi
         };
 
-        var res = await connectionService.GetPackages(fromId: fromId, toId: toId);
+        var res = await connectionService.GetPackages(fromId: from, toId: to);
 
         return Ok(res);
     }
@@ -216,7 +214,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     [Route("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
-    public async Task<IActionResult> AddPackages([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] Guid? packageId, [FromQuery] string packageUrn, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddPackages([FromQuery] Guid party, [FromQuery] Guid from, [FromQuery] Guid to, [FromQuery] Guid? package, [FromQuery] string packageUrn, CancellationToken cancellationToken = default)
     {
         var options = new ChangeRequestOptions()
         {
@@ -224,7 +222,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             ChangedBySystem = AuditDefaults.EnduserApi
         };
 
-        if (fromId != party)
+        if (from != party)
         {
             // Party must match From or To
             return BadRequest();
@@ -232,7 +230,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
 
         //// From must by Type:Organisasjon
         //// #568:AC:From party må være en Organisasjon (skal ikke være mulig å delegere fra privatperson el. andre entitetstyper enda)
-        var fromEntity = await entityRepository.GetExtended(fromId);
+        var fromEntity = await entityRepository.GetExtended(from);
         if (fromEntity == null)
         {
             throw new Exception("From party not found");
@@ -245,7 +243,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
 
         //// To must be Type:Organisasjon
         //// #568:AC:To party må være en Organisasjon (skal ikke være mulig å delegere fra privatperson el. andre entitetstyper enda)
-        var toEntity = await entityRepository.GetExtended(toId);
+        var toEntity = await entityRepository.GetExtended(to);
         if (toEntity == null)
         {
             return Problem("To party not found");
@@ -256,9 +254,9 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             return Problem("To must be of type 'Organisasjon'");
         }
 
-        if (packageId.HasValue)
+        if (package.HasValue)
         {
-            var res = await connectionService.AddPackage(fromId: fromId, toId: toId, roleCode: "rettighetshaver", packageId: packageId.Value, options);
+            var res = await connectionService.AddPackage(fromId: from, toId: to, roleCode: "rettighetshaver", packageId: package.Value, options);
             if (res)
             {
                 return Ok();
@@ -267,7 +265,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
         else
         {
             packageUrn = packageUrn.ToLower().StartsWith("urn:") ? packageUrn : ":" + packageUrn;
-            var res = await connectionService.AddPackage(fromId: fromId, toId: toId, roleCode: "rettighetshaver", packageUrn: packageUrn, options);
+            var res = await connectionService.AddPackage(fromId: from, toId: to, roleCode: "rettighetshaver", packageUrn: packageUrn, options);
             if (res)
             {
                 return Ok();
@@ -284,7 +282,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     [Route("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
-    public async Task<IActionResult> RemovePackages([FromQuery] Guid party, [FromQuery] Guid fromId, [FromQuery] Guid toId, [FromQuery] Guid packageId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> RemovePackages([FromQuery] Guid party, [FromQuery] Guid from, [FromQuery] Guid to, [FromQuery] Guid package, CancellationToken cancellationToken = default)
     {
         var options = new ChangeRequestOptions()
         {
@@ -292,13 +290,13 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             ChangedBySystem = AuditDefaults.EnduserApi
         };
 
-        if (!(fromId == party) && !(toId == party))
+        if (!(from == party) && !(to == party))
         {
             // Party must match From or To
             return BadRequest();
         }
 
-        var res = await connectionService.RemovePackage(fromId: fromId, toId: toId, roleCode: "rettighetshaver", packageId: packageId, options);
+        var res = await connectionService.RemovePackage(fromId: from, toId: to, roleCode: "rettighetshaver", packageId: package, options);
 
         if (res)
         {
