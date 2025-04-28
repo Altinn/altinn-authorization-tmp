@@ -37,6 +37,11 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         [HttpGet]
         public async Task<ActionResult<ExtConnection>> GetSingleTesting(Guid? fromId, Guid? toId)
         {
+            if (!fromId.HasValue && !toId.HasValue)
+            {
+                return BadRequest();
+            }
+
             var filter = connectionRepository.CreateFilterBuilder();
             filter.Equal(t => t.FromId, fromId);
             filter.Equal(t => t.ToId, toId);
@@ -52,6 +57,11 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
         [HttpGet]
         public async Task<ActionResult<ConnectionPackage>> GetSingleTestingPackages(Guid? fromId, Guid? toId)
         {
+            if (!fromId.HasValue && !toId.HasValue)
+            {
+                return BadRequest();
+            }
+
             var res = await connectionService.GetPackages(fromId, toId);
 
             return Ok(res);
