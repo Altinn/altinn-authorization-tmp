@@ -11,7 +11,7 @@ const subscription_key =
 
 const baseUrl = env === "tt02" ? __ENV.BASE_URL_TT02 : __ENV.BASE_URL_AT;
 
-export function GetCustomerForPartyUuid(facilitatorPartyUuid) {
+export default function GetCustomerForPartyUuid(facilitatorPartyUuid) {
   var token = getToken();
 
   const url = `${baseUrl}/register/api/v1/internal/parties/${facilitatorPartyUuid}/customers/ccr/revisor`;
