@@ -1,8 +1,8 @@
 locals {
   app_settings = {
-    "Platform:SblBridge:Endpoint"        = var.platform_sbl_bridge_endpoint
-    "Platform:ResourceRegistry:Endpoint" = var.platform_resource_registry_endpoint
-    "Platform:Register:Endpoint"         = var.platform_register_endpoint
+    "Platform:SblBridge:Endpoint"        = var.appconfiguration.platform_sbl_bridge_endpoint
+    "Platform:ResourceRegistry:Endpoint" = var.appconfiguration.platform_resource_registry_endpoint
+    "Platform:Register:Endpoint"         = var.appconfiguration.platform_register_endpoint
     "Lease:StorageAccount:BlobEndpoint"  = azurerm_storage_account.storage.primary_blob_endpoint
   }
 }

@@ -15,7 +15,8 @@ service_bus_firewall = [
   "20.100.48.100/31" # platform-at22-02-prefix
 ]
 
-# app-configuration
-platform_resource_registry_endpoint = "http://altinn-resource-registry.default.svc.cluster.local"
-platform_register_endpoint          = "http://altinn-register.default.svc.cluster.local"
-platform_sbl_endpoint               = "https://at23.altinn.cloud/sblbridge/"
+appconfiguration = {
+  platform_resource_registry_endpoint = "http://altinn-resource-registry.default.svc.cluster.local"
+  platform_register_endpoint          = "http://altinn-register.default.svc.cluster.local"
+  platform_sbl_endpoint               = "https://at23.altinn.cloud/sblbridge/"
+}

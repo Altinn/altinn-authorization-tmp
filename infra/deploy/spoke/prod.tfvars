@@ -16,7 +16,8 @@ service_bus_firewall = [
   "51.13.20.210/31"
 ]
 
-# app-configuration
-platform_resource_registry_endpoint = "http://altinn-resource-registry.default.svc.cluster.local"
-platform_register_endpoint          = "http://altinn-register.default.svc.cluster.local"
-platform_sbl_endpoint               = "https://ai-pr-vip-sblbridge.ai.basefarm.net/sblbridge/"
+appconfiguration = {
+  platform_resource_registry_endpoint = "http://altinn-resource-registry.default.svc.cluster.local"
+  platform_register_endpoint          = "http://altinn-register.default.svc.cluster.local"
+  platform_sbl_endpoint               = "https://ai-pr-vip-sblbridge.ai.basefarm.net/sblbridge/"
+}
