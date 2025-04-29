@@ -8,8 +8,8 @@ function removeRevisorRole(organisasjonsnummer, knytningOrganisasjonsnummer) {
      <soapenv:Header/>
      <soapenv:Body>
         <ns:SubmitERDataBasic>
-           <ns:systemUserName>${__ENV.SYSTEM_USERNAME}</ns:systemUserName>
-           <ns:systemPassword>${__ENV.SYSTEM_PASSWORD}</ns:systemPassword>
+           <ns:systemUserName>${__ENV.SOAP_ER_USERNAME}</ns:systemUserName>
+           <ns:systemPassword>${__ENV.SOAP_ER_PASSWORD}</ns:systemPassword>
            <ns:ERData><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <batchAjourholdXML>
   <head avsender="BRG" dato="20170714" kjoerenr="00001" mottaker="ALT" type="A" />
