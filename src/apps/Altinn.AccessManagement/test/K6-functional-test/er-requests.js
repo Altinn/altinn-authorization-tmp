@@ -88,7 +88,7 @@ function addRevisorRole(organisasjonsnummer, knytningOrganisasjonsnummer) {
 // Run end to end test
 export default function removeAndAddRevisorRoleFromOrganization() {
   const orgnr = "213633082";
-  const facilitatorPartyUuidRevisor = "368f5a82-97f5-4f33-b372-ac998a4d6b22"; //Todo
+  const facilitatorPartyUuidRevisor = "368f5a82-97f5-4f33-b372-ac998a4d6b22"; 
   const knytningOrganisasjonsnummer = "314239458";
 
   //Look up role to make sure it has revisor in Register

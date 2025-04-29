@@ -1,9 +1,11 @@
 import http from "k6/http";
 import encoding from "k6/encoding";
+import { config } from './config.js';
+
 
 export function getToken() {
-  const tokenUsername = __ENV.TOKEN_GENERATOR_USERNAME;
-  const tokenPassword = __ENV.TOKEN_GENERATOR_PASSWORD;
+  const tokenUsername = config.tokenUsername;
+  const tokenPassword = config.tokenPassword;
 
   var scopes = "altinn:register/partylookup.admin";
 
@@ -13,6 +15,7 @@ export function getToken() {
     `&scopes=${scopes}` +
     `&pid=28914198757` + // `&partyuuid=${altinnPartyUuid}` +
     `&authLvl=3&ttl=3000`;
+
 
   const credentials = `${tokenUsername}:${tokenPassword}`;
   const encodedCredentials = encoding.b64encode(credentials);
