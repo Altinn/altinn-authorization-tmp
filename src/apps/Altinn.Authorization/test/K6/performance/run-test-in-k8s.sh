@@ -3,8 +3,9 @@
 API_VERSION=${API_VERSION:-v1}
 API_ENVIRONMENT=${API_ENVIRONMENT:-yt01}
 NUMBER_OF_ENDUSERS=${NUMBER_OF_ENDUSERS:-2799}
+namespace="authentication"
 failed=0
-kubectl config set-context --current --namespace=authentication
+kubectl config set-context --current --namespace=$namespace
 
 help() {
     echo "Usage: $0 [OPTIONS]"
@@ -124,7 +125,8 @@ if ! k6 archive $filename \
      -e API_VERSION="$API_VERSION" \
      -e API_ENVIRONMENT="$API_ENVIRONMENT" \
      -e NUMBER_OF_ENDUSERS="$NUMBER_OF_ENDUSERS" \
-     -e TESTID=$testid $archive_args; then
+     -e TESTID=$testid $archive_args \
+     --tag namespace=$namespace; then
     echo "Error: Failed to create k6 archive"
     exit 1
 fi
@@ -159,7 +161,7 @@ spec:
       - name: K6_PROMETHEUS_RW_SERVER_URL
         value: "http://kube-prometheus-stack-prometheus.monitoring:9090/api/v1/write"
       - name: K6_PROMETHEUS_RW_TREND_STATS
-        value: "avg,min,med,max,p(95),p(99),p(99.5),p(99.9),count"
+        value: "avg,min,med,max,p(95),p(99),count"
     envFrom:
     - secretRef:
         name: "token-generator-creds"
