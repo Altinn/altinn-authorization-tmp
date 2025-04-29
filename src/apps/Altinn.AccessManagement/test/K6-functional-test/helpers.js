@@ -14,7 +14,7 @@ export async function retry(fn, { retries = 5, intervalSeconds = 2 } = {}) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const result = fn();
-      return result; // ✅ success
+      return result;
     } catch (err) {
       console.warn(`Retry attempt ${attempt} failed: ${err.message}`);
       if (attempt === retries) {
