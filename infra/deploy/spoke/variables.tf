@@ -62,3 +62,15 @@ variable "service_bus_firewall" {
 variable "appsettings_key_value" {
   type = map(string)
 }
+
+variable "platform_resource_registry_endpoint" {
+  type = string
+}
+
+variable "platform_register_endpoint" {
+  type = string
+}
+
+variable "platform_sbl_bridge_endpoint" {
+  type = string
+}
