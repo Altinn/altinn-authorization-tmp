@@ -25,14 +25,7 @@ export default function GetCustomerForPartyUuid() {
     if (!ok) {
       fail(`${checkName} (got: ${res.status})`);
     }
-  
 
-  // Log the result (optional, for debugging)
-  console.log(`Status: ${res.status}`);
-  //console.log(`\nResponse: ${res.body}`);
-
-  //Return customer
-  //assert that partyuuid is present + org we're looking up
 }
 
 

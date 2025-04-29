@@ -81,8 +81,6 @@ function addRevisorRole(organisasjonsnummer, knytningOrganisasjonsnummer) {
     "status is 200 for add revisor": (r) => r.status === 200,
   });
 
-  console.log('Response body:');
-  console.log(res.body);
 }
 
 // Run end to end test
