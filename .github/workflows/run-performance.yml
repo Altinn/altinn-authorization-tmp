@@ -51,6 +51,7 @@ on:
                 type: choice
                 options:
                 - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorize.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRoleOrg.js'
 
 permissions:
   id-token: write
