@@ -27,7 +27,8 @@ if (!__ENV.API_ENVIRONMENT) {
   throw new Error('API_ENVIRONMENT must be set');
 }
 const systemUsersFilename = `../testData/customers.csv`;
-const orgOwnersFilename = `../testData/orgsInYt01.csv`;
+//const orgOwnersFilename = `../testData/orgsInYt01.csv`;
+const daglFilename = `../testData/OrgsDagl.csv`;
 
 /**
  * SharedArray variable that stores the service owners data.
@@ -38,6 +39,10 @@ const orgOwnersFilename = `../testData/orgsInYt01.csv`;
  */
 export const systemUsers = new SharedArray('systemUsers', function () {
   return readCsv(systemUsersFilename);
+});
+
+export const dagl = new SharedArray('dagl', function () {
+  return readCsv(daglFilename);
 });
 
 // export const orgOwners = new SharedArray('orgOwners', function () {

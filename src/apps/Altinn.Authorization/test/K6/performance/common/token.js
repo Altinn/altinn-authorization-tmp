@@ -14,6 +14,7 @@ const tokenRequestOptions = {
   headers: {
     Authorization: `Basic ${encodedCredentials}`,
   },
+  tags: {name: 'Token generator'},
 };
 
 let cachedTokens = {};
@@ -72,6 +73,15 @@ export function getEnterpriseTokenWithType(serviceOwner, type) {
         userId: endUser.userId
     }
     const url = `https://altinn-testtools-token-generator.azurewebsites.net/api/GetPersonalToken?env=${tokenGeneratorEnv}&userId=${tokenOptions.userId}&scopes=${tokenOptions.scopes}&ttl=${tokenTtl}`;
+    return fetchToken(url, tokenOptions, `personal token (userId:${tokenOptions.userId}, scopes:${tokenOptions.scopes}, tokenGeneratorEnv:${tokenGeneratorEnv})`);
+  }
+
+  export function getPersonalTokenSSN(endUser) {
+    const tokenOptions = {
+        scopes: endUser.scopes, 
+        ssn: endUser.ssn
+    }
+    const url = `https://altinn-testtools-token-generator.azurewebsites.net/api/GetPersonalToken?env=${tokenGeneratorEnv}&ssn=${tokenOptions.ssn}&scopes=${tokenOptions.scopes}&ttl=${tokenTtl}`;
     return fetchToken(url, tokenOptions, `personal token (userId:${tokenOptions.userId}, scopes:${tokenOptions.scopes}, tokenGeneratorEnv:${tokenGeneratorEnv})`);
   }
 

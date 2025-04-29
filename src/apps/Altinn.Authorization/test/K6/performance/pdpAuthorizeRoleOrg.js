@@ -2,10 +2,10 @@ import http from 'k6/http';
 import { randomItem, randomIntBetween, URL} from './common/k6-utils.js';
 import { expect, expectStatusFor } from "./common/testimports.js";
 import { describe } from './common/describe.js';
-import { getEnterpriseToken } from './common/token.js';
+import { getPersonalTokenSSN } from './common/token.js';
 import { postAuthorizeUrl } from './common/config.js';
-import { systemUsers } from './common/readTestdata.js';
-import { buildAuthorizeBody } from './testData/buildAuthorizeBody.js';
+import { dagl } from './common/readTestdata.js';
+import { buildRoleAuthorizeBody } from './testData/buildAuthorizeBody.js';
 import { getParams } from "./commonFunctions.js";
 
 const subscription_key = __ENV.subscription_key;
@@ -18,7 +18,7 @@ const pdpAuthorizeLabel = "PDP Authorize";
 const pdpAuthorizeLabelDenyPermit = "PDP Authorize Deny";
 const tokenGenLabel = "Token generator";
 const labels = [pdpAuthorizeLabel, pdpAuthorizeLabelDenyPermit];
-const regnResources = "ttd-performance-clientdelegation";
+const regnResource = "ttd-dialogporten-performance-test-02";
 const fforResource = "ttd-performance-clientdelegation-ffor";
 const revResource = "ttd-performance-clientdelegation-revisor";
 
@@ -26,7 +26,8 @@ export let options = {
     summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(95)', 'p(99)', 'count'],
     thresholds: {
         checks: ['rate>=1.0'],
-        
+        [`http_req_duration{name:${tokenGenLabel}}`]: [],
+        [`http_req_failed{name:${tokenGenLabel}}`]: ['rate<=0.0']
     }
 };
 if (breakpoint) {
@@ -46,15 +47,19 @@ else {
     }
 }
 
+options.thresholds[[`http_req_duration{name:${label}}`]] = [];
+options.thresholds[[`http_req_failed{name:${label}}`]] = ['rate<=0.0'];
+
+
 export default function() {
-    const client = randomItem(systemUsers);
-    const resource = getResource(client);
+    const client = randomItem(dagl);
+    const resource = regnResource;
     const [action, label, expectedResponse] = getActionLabelAndExpectedResponse(); 
     const token = getAuthorizeToken(client);
     const params = getParams(label);
     params.headers.Authorization = "Bearer " + token;
     params.headers['Ocp-Apim-Subscription-Key'] = subscription_key;
-    const body = buildAuthorizeBody(client.systemUserId, resource, client.customerOrgNo, action);
+    const body = buildRoleAuthorizeBody(client.SSN, resource, client.OrgNr, action);
     const url = new URL(postAuthorizeUrl);
     describe('PDP Authorize', () => {
         let r = http.post(url.toString(), JSON.stringify(body), params);
@@ -80,9 +85,9 @@ function getActionLabelAndExpectedResponse() {
 function getAuthorizeToken(client) {
     const tokenOpts = {
         scopes: "altinn:authorization/authorize.admin",
-        orgno: client.facilitatorOrgNo,
+        ssn: client.SSN,
     }
-    const token = getEnterpriseToken(tokenOpts);
+    const token = getPersonalTokenSSN(tokenOpts);
     return token;
 }
 
