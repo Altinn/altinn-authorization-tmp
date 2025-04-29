@@ -184,6 +184,31 @@ public class DelegationService(
         return res > 0;
     }
 
+    public async Task<IEnumerable<Delegation>> ImportClientDelegation(ImportClientDelegationRequestDto request)
+    {
+        // Find user : Fredrik
+        var user = (await entityRepository.Get(request.Delegater.Value)) ?? throw new Exception(string.Format("Party not found '{0}' for user", request.Delegater));
+
+        // Find Facilitator : Regnskapsfolk
+        var facilitator = (await entityRepository.Get(request.Facilitator.Value)) ?? throw new Exception(string.Format("Party not found '{0}' for facilitator", request.Facilitator));
+
+        // Find admin role : Tilgangstyrer eller KlientAdmin
+
+        // Find Agent Role : AGENT
+        var agentRole = await GetRole("agent") ?? throw new Exception(string.Format("Role not found '{0}'", "agent"));
+
+        // Find Agent
+        Entity agent = await entityRepository.Get(request.AgentId) ?? throw new Exception(string.Format("Party not found '{0}' for agent", request.AgentId));
+        
+        // Find ClientId : Bakeriet
+        var client = (await entityRepository.Get(request.ClientId)) ?? throw new Exception(string.Format("Party not found '{0}' for client", request.ClientId));
+
+        // Find or Create Agent Assignment : Regnskapsfolk - AGENT - SystemBruker01
+        var agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
+
+        return await CreateClientDelegations(request.RolePackages, client, facilitator, agentAssignment);
+    }
+
     /// <inheritdoc/>
     public async Task<IEnumerable<Delegation>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid userId, Guid facilitatorPartyId)
     {
@@ -199,14 +224,13 @@ public class DelegationService(
         var agentRole = await GetRole(request.AgentRole) ?? throw new Exception(string.Format("Role not found '{0}'", request.AgentRole));
 
         // Find Agent
-        var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "System") ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
+        Entity agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "System") ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));            
         
         // Find ClientId : Bakeriet
         var client = (await entityRepository.Get(request.ClientId)) ?? throw new Exception(string.Format("Party not found '{0}' for client", request.ClientId));
 
         // Find or Create Agent Assignment : Regnskapsfolk - AGENT - SystemBruker01
         var agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
-
 
         return await CreateClientDelegations(request.RolePackages, client, facilitator, agentAssignment);
     }
@@ -314,7 +338,7 @@ public class DelegationService(
         }
     }
 
-    private async Task<Entity> GetOrCreateEntity(Guid id, string name, string refId, string type, string variant)
+    private async Task<Entity> GetOrCreateEntity(Guid id, string name, string refId, string type, string variant, bool createAgent = true)
     {
         var entity = await entityRepository.Get(id);
         if (entity != null)
