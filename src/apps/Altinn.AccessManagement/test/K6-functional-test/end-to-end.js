@@ -30,7 +30,7 @@ export default function removeAndAddRevisorRoleFromOrganization() {
       }
       console.log("Revisor role successfully removed!");
     },
-    { retries: 10, intervalSeconds: 2 }
+    { retries: 100, intervalSeconds: 5 }
   );
 
   // 4. Add Revisor role back
@@ -52,6 +52,6 @@ export default function removeAndAddRevisorRoleFromOrganization() {
         `Revisor role added back successfully with organizationIdentifier: ${orgIdentifier}`
       );
     },
-    { retries: 10, intervalSeconds: 2 }
+    { retries: 100, intervalSeconds: 5 }
   );
 }
