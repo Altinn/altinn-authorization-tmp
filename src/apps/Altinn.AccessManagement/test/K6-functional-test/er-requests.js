@@ -28,27 +28,28 @@ function removeRevisorRole(organisasjonsnummer, knytningOrganisasjonsnummer) {
     "https://at22.altinn.cloud/RegisterExternal/RegisterERExternalBasic.svc",
     soapReqBody,
     {
-      headers: { "Content-Type": "text/xml" },
+      headers: {
+        "Content-Type": "text/xml",
+        "SOAPAction": '"http://www.altinn.no/services/Register/ER/2013/06/IRegisterERExternalBasic/SubmitERDataBasic"',
+      },
     }
   );
 
   // Check response
   check(res, {
-    "status is 200": (r) => r.status === 200,
-    "response logged": (r) => {
-      console.log(r.body);
-      return true;
-    },
+    "status is 200 for remove revisor": (r) => r.status === 200,
   });
 
-  sleep(1);
+  console.log('Response body:');
+  console.log(res.body);
+
 }
 
 function addRevisorRole(organisasjonsnummer, knytningOrganisasjonsnummer) {
   const soapBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.altinn.no/services/Register/ER/2013/06">
    <soapenv:Header/>
    <soapenv:Body>
-      <ns:SubmitERDataBasic>c
+      <ns:SubmitERDataBasic>
          <ns:systemUserName>${__ENV.SOAP_ER_USERNAME}</ns:systemUserName>
          <ns:systemPassword>${__ENV.SOAP_ER_PASSWORD}</ns:systemPassword>
          <ns:ERData><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
@@ -69,17 +70,19 @@ function addRevisorRole(organisasjonsnummer, knytningOrganisasjonsnummer) {
     "https://at22.altinn.cloud/RegisterExternal/RegisterERExternalBasic.svc",
     soapBody,
     {
-      headers: { "Content-Type": "text/xml" },
+      headers: {
+        "Content-Type": "text/xml",
+        "SOAPAction": '"http://www.altinn.no/services/Register/ER/2013/06/IRegisterERExternalBasic/SubmitERDataBasic"',
+      },
     }
   );
 
   check(res, {
-    "status is 200": (r) => r.status === 200,
-    "response logged": (r) => {
-      console.log(r.body);
-      return true;
-    },
+    "status is 200 for add revisor": (r) => r.status === 200,
   });
+
+  console.log('Response body:');
+  console.log(res.body);
 }
 
 // Run end to end test
