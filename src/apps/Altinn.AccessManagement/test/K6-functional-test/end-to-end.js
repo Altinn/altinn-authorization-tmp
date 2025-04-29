@@ -30,7 +30,7 @@ export default function removeAndAddRevisorRoleFromOrganization() {
       extractOrganizationIdentifier(lookupResponse.body); // Will throw if found
       throw new Error("Revisor role still exists");
     },
-    { retries: 10, intervalSeconds: 2 }
+    { retries: 10, intervalSeconds: 20 }
   ).catch(() => {
     console.log("Revisor role successfully removed!");
   });
@@ -53,6 +53,26 @@ export default function removeAndAddRevisorRoleFromOrganization() {
       );
       return orgIdentifier;
     },
-    { retries: 10, intervalSeconds: 2 }
+    { retries: 10, intervalSeconds: 20 }
   );
+}
+
+function extractOrganizationIdentifier(response) {
+  if (!response || response.status !== 200) {
+    throw new Error(`Bad HTTP response: ${response && response.status}`);
+  }
+
+  const contentType =
+    response.headers["Content-Type"] || response.headers["content-type"];
+  if (!contentType || !contentType.includes("application/json")) {
+    console.error("Response Content-Type is not JSON:", contentType);
+    console.error("Response body:", response.body);
+    throw new Error("Expected JSON but got something else");
+  }
+
+  const json = JSON.parse(response.body);
+  if (json.data && json.data.length > 0) {
+    return json.data[0].organizationIdentifier;
+  }
+  throw new Error("No organizationIdentifier found in response");
 }
