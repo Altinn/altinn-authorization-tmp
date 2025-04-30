@@ -47,11 +47,14 @@ on:
             testSuitePath:
                 description: 'Path to test suite to run'
                 required: true
-                default: 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorize.js'
+                default: 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeClientDelegations.js'
                 type: choice
                 options:
-                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorize.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRoleOrg.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeClientDelegations.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRoleDagl.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRoleDaglDeny.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRolePriv.js'
+
 
 permissions:
   id-token: write
