@@ -112,6 +112,7 @@ function getDelegations(facilitatorUuid, systemUserId, orgno) {
     url.searchParams.append('party', facilitatorUuid);
     url.searchParams.append('systemUser', systemUserId);
     let delegations = [];
+    console.log(url.toString());
     describe('Get delegations', () => {
         let r = http.get(url.toString(), params);
         delegations = r.json();

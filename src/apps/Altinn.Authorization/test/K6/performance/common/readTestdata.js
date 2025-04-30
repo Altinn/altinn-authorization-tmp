@@ -27,7 +27,7 @@ if (!__ENV.API_ENVIRONMENT) {
   throw new Error('API_ENVIRONMENT must be set');
 }
 const systemUsersFilename = `../testData/customers.csv`;
-//const orgOwnersFilename = `../testData/orgsInYt01.csv`;
+const orgOwnersFilename = `../testData/orgsInYt01.csv`;
 const daglFilename = `../testData/OrgsDagl.csv`;
 
 /**
@@ -45,14 +45,14 @@ export const dagl = new SharedArray('dagl', function () {
   return readCsv(daglFilename);
 });
 
-// export const orgOwners = new SharedArray('orgOwners', function () {
-//   const csv = readCsv(orgOwnersFilename);
-//   let orgOwnersDict = new Map();
-//   for (const row of csv) {
-//     const orgNo = parseInt(row['OrgNr']);
+export const orgOwners = new SharedArray('orgOwners', function () {
+  const csv = readCsv(orgOwnersFilename);
+  let orgOwnersDict = new Map();
+  for (const row of csv) {
+    const orgNo = parseInt(row['OrgNr']);
   
-//     orgOwnersDict[orgNo] = row;
-//   }
-//   return [orgOwnersDict];
-// } );
+    orgOwnersDict[orgNo] = row;
+  }
+  return [orgOwnersDict];
+} );
 

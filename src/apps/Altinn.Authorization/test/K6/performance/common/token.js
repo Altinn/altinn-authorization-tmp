@@ -55,6 +55,7 @@ export function getEnterpriseToken(serviceOwner) {
         orgNo: serviceOwner.orgno
     }
     const url = `https://altinn-testtools-token-generator.azurewebsites.net/api/GetEnterpriseToken?env=${tokenGeneratorEnv}&scopes=${encodeURIComponent(tokenOptions.scopes)}&orgNo=${tokenOptions.orgNo}&ttl=${tokenTtl}`;
+    //console.log(url)
     return fetchToken(url, tokenOptions, `enterprise token (orgno:${tokenOptions.orgNo}, scopes:${tokenOptions.scopes},  tokenGeneratorEnv:${tokenGeneratorEnv})`);
 }
 
@@ -82,7 +83,7 @@ export function getEnterpriseTokenWithType(serviceOwner, type) {
         ssn: endUser.ssn
     }
     const url = `https://altinn-testtools-token-generator.azurewebsites.net/api/GetPersonalToken?env=${tokenGeneratorEnv}&ssn=${tokenOptions.ssn}&scopes=${tokenOptions.scopes}&ttl=${tokenTtl}`;
-    return fetchToken(url, tokenOptions, `personal token (userId:${tokenOptions.userId}, scopes:${tokenOptions.scopes}, tokenGeneratorEnv:${tokenGeneratorEnv})`);
+    return fetchToken(url, tokenOptions, `personal token (userId:${tokenOptions.ssn}, scopes:${tokenOptions.scopes}, tokenGeneratorEnv:${tokenGeneratorEnv})`);
   }
 
   export function getAmToken(organization, userId) {
@@ -97,6 +98,7 @@ export function getEnterpriseTokenWithType(serviceOwner, type) {
     url.searchParams.append('partyuuid', tokenOptions.partyuuid);
     url.searchParams.append('scopes', tokenOptions.scopes);
     url.searchParams.append('ttl', tokenTtl);
+    console.log(url.toString())
     return fetchToken(url.toString(), tokenOptions, `personal token (userId:${tokenOptions.userid}, partyuuid:${tokenOptions.partyuuid}, scopes:${tokenOptions.scopes}, tokenGeneratorEnv:${tokenGeneratorEnv})`);
   }
   
