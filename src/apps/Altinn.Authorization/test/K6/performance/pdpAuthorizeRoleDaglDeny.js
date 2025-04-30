@@ -5,7 +5,7 @@ import { expect, expectStatusFor } from "./common/testimports.js";
 import { describe } from './common/describe.js';
 import { postAuthorizeUrl } from './common/config.js';
 import { dagl } from './common/readTestdata.js';
-import { buildOrgAuthorizeBody } from './testData/buildAuthorizeBody.js';
+import { buildDaglAuthorizeBody } from './testData/buildAuthorizeBody.js';
 import { buildOptions, getAuthorizeParams, getAuthorizeClientToken, getActionLabelAndExpectedResponseForDaglDeny } from "./commonFunctions.js";
 
 const resource = "ttd-dialogporten-performance-test-02";
@@ -21,7 +21,7 @@ export default function() {
     const [action, label, expectedResponse] = getActionLabelAndExpectedResponseForDaglDeny(orgIndex, clientIndex); 
     const token = getAuthorizeClientToken(client);
     const params = getAuthorizeParams(label, token);
-    const body = buildOrgAuthorizeBody(client.SSN, resource, org.OrgNr, action);
+    const body = buildDaglAuthorizeBody(client.SSN, resource, org.OrgNr, action);
     const url = new URL(postAuthorizeUrl);
     describe('PDP Authorize', () => {
         let r = http.post(url.toString(), JSON.stringify(body), params);

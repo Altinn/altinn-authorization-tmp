@@ -5,7 +5,7 @@ import { expect, expectStatusFor } from "./common/testimports.js";
 import { describe } from './common/describe.js';
 import { postAuthorizeUrl } from './common/config.js';
 import { dagl } from './common/readTestdata.js';
-import { buildOrgAuthorizeBody } from './testData/buildAuthorizeBody.js';
+import { buildDaglAuthorizeBody } from './testData/buildAuthorizeBody.js';
 import { buildOptions, getAuthorizeParams, getActionLabelAndExpectedResponse, getAuthorizeClientToken} from "./commonFunctions.js";
 
 // resource with read/write for PRIV and DAGL
@@ -27,7 +27,7 @@ export default function() {
 
     // Get params, token, request body and url
     const params = getAuthorizeParams(label, getAuthorizeClientToken(client));
-    const body = buildOrgAuthorizeBody(client.SSN, resource, client.OrgNr, action);
+    const body = buildDaglAuthorizeBody(client.SSN, resource, client.OrgNr, action);
     const url = new URL(postAuthorizeUrl);
 
     // Run request and check response

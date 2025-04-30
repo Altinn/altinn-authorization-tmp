@@ -4,7 +4,7 @@ import { expect, expectStatusFor } from "./common/testimports.js";
 import { describe } from './common/describe.js';
 import { postAuthorizeUrl } from './common/config.js';
 import { systemUsers } from './common/readTestdata.js';
-import { buildAuthorizeBody } from './testData/buildAuthorizeBody.js';
+import { buildClientDelegationAuthorizeBody } from './testData/buildAuthorizeBody.js';
 import { buildOptions, getAuthorizeParams, getActionLabelAndExpectedResponse, getAuthorizeToken } from "./commonFunctions.js";
 
 const regnResources = "ttd-performance-clientdelegation";
@@ -23,7 +23,7 @@ export default function() {
     const [action, label, expectedResponse] = getActionLabelAndExpectedResponse(); 
     const token = getAuthorizeToken(client);
     const params = getAuthorizeParams(label, token);
-    const body = buildAuthorizeBody(client.systemUserId, resource, client.customerOrgNo, action);
+    const body = buildClientDelegationAuthorizeBody(client.systemUserId, resource, client.customerOrgNo, action);
     const url = new URL(postAuthorizeUrl);
     describe('PDP Authorize', () => {
         let r = http.post(url.toString(), JSON.stringify(body), params);
