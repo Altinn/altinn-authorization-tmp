@@ -37,5 +37,6 @@ namespace Altinn.AccessManagement.Core.Clients.Interfaces
         /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
         /// <returns>Dictionary of all resources per subject, having policy rules with the subject</returns>
         Task<IDictionary<string, IEnumerable<BaseAttribute>>> GetSubjectResources(IEnumerable<string> subjects, CancellationToken cancellationToken = default);
+
     }
 }

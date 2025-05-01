@@ -1,10 +1,12 @@
 ﻿using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers
 {
@@ -54,7 +56,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// </summary>
         [HttpPost]
         [Route("request/{requestId}/accept/")]
-        public async Task<IActionResult> Approve(Guid requestId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> Approve(Guid requestId, [FromBody] ConsentContextExternal context, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);
             if (performedBy == null)
@@ -62,7 +64,14 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
                 return Unauthorized();
             }
 
-            Result<ConsentRequestDetails> consentRequest = await _consentService.AcceptRequest(requestId, performedBy.Value, cancellationToken);
+            if (context == null)
+            {
+                return BadRequest("Consent context is required");
+            }
+
+            ConsentContext consentContext = context.ToCore();
+
+            Result<ConsentRequestDetails> consentRequest = await _consentService.AcceptRequest(requestId, performedBy.Value, consentContext, cancellationToken);
 
             if (consentRequest.IsProblem)
             {

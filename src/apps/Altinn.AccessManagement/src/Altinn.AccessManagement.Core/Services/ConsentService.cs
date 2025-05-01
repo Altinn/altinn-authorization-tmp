@@ -30,7 +30,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IResourceRegistryClient _resourceRegistryClient = resourceRegistryClient;
         private readonly IAMPartyService _ampartyService = ampartyService;
         private readonly IMemoryCache _memoryCache = memoryCache;
-        private readonly IProfileClient _profileClient = profileClient;   
+        private readonly IProfileClient _profileClient = profileClient;
 
         private const string _consentRequestStatus = "Status";
         private const string ResourceParam = "Resource";
@@ -215,7 +215,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> AcceptRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken)
+        public async Task<Result<ConsentRequestDetails>> AcceptRequest(Guid consentRequestId, Guid performedByParty, ConsentContext context, CancellationToken cancellationToken)
         {
             ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
@@ -254,6 +254,8 @@ namespace Altinn.AccessManagement.Core.Services
                 errors.Add(ValidationErrors.ConsentCantBeAccepted, _consentRequestStatus);
             }
 
+            ValidateContext(details, context, errors);
+
             if (errors.TryBuild(out var beforeErrorREsult))
             {
                 return beforeErrorREsult;
@@ -261,7 +263,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             try
             {
-                await _consentRepository.AcceptConsentRequest(consentRequestId, performedByParty, cancellationToken);
+                await _consentRepository.AcceptConsentRequest(consentRequestId, performedByParty, context, cancellationToken);
             }
             catch (Exception)
             {
@@ -522,13 +524,15 @@ namespace Altinn.AccessManagement.Core.Services
             errors = await ValidateAndSetToParty(consentRequest, errors, cancelactionToken);
             errors = ValidateValidTo(consentRequest, errors);
 
+            string templateId = string.Empty;
+
             if (consentRequest.ConsentRights == null || consentRequest.ConsentRights.Count == 0)
             {
                 errors.Add(ValidationErrors.MissingConsentRight, ResourceParam);
             }
             else
             {
-                string templateId = string.Empty;
+                templateId = string.Empty;
                 for (int rightIndex = 0; rightIndex < consentRequest.ConsentRights.Count; rightIndex++)
                 {
                     (errors, templateId) = await ValidateConsentRight(consentRequest, errors, rightIndex, templateId, cancelactionToken);
@@ -540,7 +544,34 @@ namespace Altinn.AccessManagement.Core.Services
                 return errorResult;
             }
 
+            ConsentTemplate consentTemplate = await GetTemplate(templateId, cancelactionToken);
+
+            consentRequest.TemplateId = consentTemplate.Version;
+
             return consentRequest;
+        }
+
+        private void ValidateContext(ConsentRequestDetails consentRequest, ConsentContext context, ValidationErrorBuilder errors)
+        {
+            if (context == null)
+            {
+                errors.Add(ValidationErrors.MissingContext, "Context");
+            }
+       
+            if (consentRequest.ConsentRights.Count != context.ConsentContextResources.Count)
+            {
+                errors.Add(ValidationErrors.InvalidResourceContext, "Context");
+            }
+
+            foreach (ConsentRight consentRight in consentRequest.ConsentRights)
+            {
+                ConsentResourceAttribute attribute = consentRight.Resource[0];
+                string resourceId = $"{attribute.Type}:{attribute.Value}";
+                if (context.ConsentContextResources.All(x => x.ResourceId != resourceId))
+                {
+                    errors.Add(ValidationErrors.InvalidResourceContext, ResourceParam);
+                }
+            }
         }
 
         private async Task<(ValidationErrorBuilder Errors, string TemplateId)> ValidateConsentRight(ConsentRequest consentRequest, ValidationErrorBuilder errors, int rightIndex, string templateId, CancellationToken cancelactionToken)
@@ -676,6 +707,19 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             return errors;
+        }
+
+        private async Task<ConsentTemplate> GetTemplate(string templateId, CancellationToken cancellationToken)
+        {
+            return new ConsentTemplate()
+            {
+                Version = Guid.CreateVersion7(),
+                Id = templateId,
+                Texts = new ConsentTemplateTexts() // Ensure the required 'Texts' property is initialized  
+                {
+                    // Initialize the properties of ConsentTemplateTexts as needed  
+                }
+            };
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
@@ -77,8 +78,36 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             await repositgo.CreateRequest(await GetRequest(requestId), ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
+
+            ConsentContextExternal consentContextExternal = new ConsentContextExternal
+            {
+                Language = "nb",
+                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
+                ConsentContextResources = new List<ResourceContextExternal>
+               {
+                   new() 
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   },
+                   new() 
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   }
+               }
+            };
+
+            // Serialize the object to JSON
+            string jsonContent = JsonSerializer.Serialize(consentContextExternal);
+
+            // Create HttpContent from the JSON string
+            HttpContent httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/accept/", null);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/accept/", httpContent);
             string responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             ConsentRequestDetailsExternal consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsExternal>();

@@ -6,7 +6,7 @@ namespace AccessMgmt.Tests.Mocks
 {
     public class ConsentRepositoryMock : IConsentRepository
     {
-        public Task AcceptConsentRequest(Guid id, Guid performedByParty, CancellationToken cancellationToken = default)
+        public Task AcceptConsentRequest(Guid id, Guid performedByParty,  ConsentContext context, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

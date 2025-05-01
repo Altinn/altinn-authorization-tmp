@@ -27,6 +27,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
         private const string PARAM_EVENT_TYPE = "eventtype";
         private const string PARAM_CREATED = "created";
         private const string PARAM_CONSENT_RIGHT_ID = "consentRightId";
+        private const string PARAM_CONSENT_CONTEXT_ID = "contextId";
+        private const string PARAM_CONTEXT = "context";
+        private const string PARAM_LANGAUGE = "language";
 
         private const string EventQuery = /*strpsql*/@"
                 INSERT INTO consent.consentevent (consentEventId, consentRequestId, eventtype, created, performedByParty)
@@ -40,7 +43,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 ";
 
         /// <inheritdoc/>
-        public async Task AcceptConsentRequest(Guid consentRequestId, Guid performedByParty,  CancellationToken cancellationToken = default)
+        public async Task AcceptConsentRequest(Guid consentRequestId, Guid performedByParty,  ConsentContext context, CancellationToken cancellationToken = default)
         {
             DateTimeOffset consentedTime = DateTime.UtcNow;
 
@@ -71,6 +74,48 @@ namespace Altinn.AccessManagement.Persistence.Consent
             eventCommand.Parameters.AddWithValue(PARAM_CREATED, NpgsqlDbType.TimestampTz, consentedTime.ToOffset(TimeSpan.Zero));
             eventCommand.Parameters.AddWithValue(PARAM_PERFORMED_BY_PARTY, NpgsqlDbType.Uuid, performedByParty);
             await eventCommand.ExecuteNonQueryAsync(cancellationToken);
+
+            string contextQuery = /*strpsql*/@"
+                INSERT INTO consent.context (contextId, consentRequestId, context, language)
+                VALUES (
+                @contextId,
+                @consentRequestId, 
+                @context,
+                @language)
+                RETURNING consentRequestId;
+                ";
+            Guid contextId = Guid.CreateVersion7();
+            await using NpgsqlCommand contextCommand = conn.CreateCommand();
+            contextCommand.CommandText = contextQuery;
+            contextCommand.Parameters.AddWithValue(PARAM_CONSENT_CONTEXT_ID, NpgsqlDbType.Uuid, contextId);
+            contextCommand.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid, consentRequestId);
+            contextCommand.Parameters.AddWithValue(PARAM_CONTEXT, NpgsqlDbType.Text, context.Context);
+            contextCommand.Parameters.AddWithValue("language", NpgsqlDbType.Text, context.Language);
+            await contextCommand.ExecuteNonQueryAsync(cancellationToken);
+
+            foreach (ResourceContext resourceContext in context.ConsentContextResources)
+            {
+                string contextResourceQuery = /*strpsql*/@"
+                INSERT INTO consent.resourcecontext (Id, contextId, resourceId, language, context)
+                VALUES (
+                @contextResourceId,
+                @contextId,
+                @resourceId, 
+                @language,
+                @context)
+                RETURNING Id;
+                ";
+                await using NpgsqlCommand contextResourceCommand = conn.CreateCommand();
+                contextResourceCommand.CommandText = contextResourceQuery;
+
+                contextResourceCommand.Parameters.AddWithValue("contextResourceId", NpgsqlDbType.Uuid, Guid.CreateVersion7());
+                contextResourceCommand.Parameters.AddWithValue(PARAM_CONSENT_CONTEXT_ID, NpgsqlDbType.Uuid, contextId);
+                contextResourceCommand.Parameters.AddWithValue("resourceId", NpgsqlDbType.Text, resourceContext.ResourceId);
+                contextResourceCommand.Parameters.AddWithValue(PARAM_CONTEXT, NpgsqlDbType.Text, resourceContext.Context);
+                contextResourceCommand.Parameters.AddWithValue("language", NpgsqlDbType.Text, resourceContext.Language);
+                await contextResourceCommand.ExecuteNonQueryAsync(cancellationToken);
+            }
+
             await tx.CommitAsync(cancellationToken);
         }
 
@@ -80,13 +125,14 @@ namespace Altinn.AccessManagement.Persistence.Consent
             DateTimeOffset createdTime = DateTime.UtcNow;
 
             const string consentRquestQuery = /*strpsql*/@"
-                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, toPartyUuid, validTo, requestMessage)
+                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, toPartyUuid, validTo, requestMessage, templateId)
                 VALUES (
                 @consentRequestId, 
                 @fromPartyUuid, 
                 @toPartyUuid, 
                 @validTo, 
-                @requestMessage)
+                @requestMessage,
+                @templateId)
                 RETURNING consentRequestId;
                 ";
 
@@ -97,6 +143,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             await using NpgsqlCommand command = conn.CreateCommand();
             command.CommandText = consentRquestQuery;
             command.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid,  consentRequest.Id);
+            command.Parameters.AddWithValue("templateId", NpgsqlDbType.Uuid, consentRequest.TemplateId);
             if (consentRequest.From.IsPartyUuid(out Guid fromPartyGuid))
             {
                 command.Parameters.AddWithValue("fromPartyUuid", NpgsqlDbType.Uuid, fromPartyGuid);

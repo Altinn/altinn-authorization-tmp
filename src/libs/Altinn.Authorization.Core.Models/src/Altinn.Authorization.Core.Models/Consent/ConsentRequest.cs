@@ -34,5 +34,10 @@
         /// The request message
         /// </summary>
         public Dictionary<string, string>? Requestmessage { get; set; }
+
+        /// <summary>
+        /// The consent template id.
+        /// </summary>
+        public Guid TemplateId { get; set; }
     }
 }

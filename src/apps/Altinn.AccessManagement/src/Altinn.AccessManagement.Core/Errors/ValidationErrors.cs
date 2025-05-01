@@ -190,4 +190,16 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor InvalidResourceCombination { get; }
     = _factory.Create(37, $"These resources cannot be combined.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor MissingContext { get; }
+    = _factory.Create(38, $"Missing consent context.");
+
+    /// <summary>
+    /// Gets a validation error descriptor
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidResourceContext { get; }
+    = _factory.Create(39, $"Resource context does not match consent request rights");
 }
