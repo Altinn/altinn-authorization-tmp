@@ -128,7 +128,34 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, performedBy, AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/accept/", null);
+
+            ConsentContextExternal consentContextExternal = new ConsentContextExternal
+            {
+                Language = "nb",
+                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
+                ConsentContextResources = new List<ResourceContextExternal>
+               {
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   },
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   }
+               }
+            };
+
+            // Serialize the object to JSON
+            string jsonContent = JsonSerializer.Serialize(consentContextExternal);
+
+            // Create HttpContent from the JSON string
+            HttpContent httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/accept/", httpContent);
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
@@ -164,7 +191,27 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId), ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
-            await repositgo.AcceptConsentRequest(requestId, performedBy, default);
+            ConsentContextExternal consentContextExternal = new ConsentContextExternal
+            {
+                Language = "nb",
+                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
+                ConsentContextResources = new List<ResourceContextExternal>
+               {
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   },
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   }
+               }
+            };
+            await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToCore());
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -194,7 +241,27 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId), ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
-            await repositgo.AcceptConsentRequest(requestId, performedBy, default);
+            ConsentContextExternal consentContextExternal = new ConsentContextExternal
+            {
+                Language = "nb",
+                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
+                ConsentContextResources = new List<ResourceContextExternal>
+               {
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   },
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   }
+               }
+            };
+            await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToCore());
 
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, performedBy, AuthzConstants.SCOPE_PORTAL_ENDUSER);
