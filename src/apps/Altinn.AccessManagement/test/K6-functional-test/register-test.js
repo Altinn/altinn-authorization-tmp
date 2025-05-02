@@ -1,11 +1,11 @@
-import { check, fail, group } from "k6";
+import { check, fail } from "k6";
 
 import http from 'k6/http';
 import { config } from './config.js';
-import { getToken } from './token.js';  // if you have a token helper
+import { getPersonalToken } from './token.js'; 
 
-export default function GetCustomerForPartyUuid(facilitatorPartyUuid) {
-  const token = getToken();
+export default function getCustomerForPartyUuid(facilitatorPartyUuid) {
+  const token = getPersonalToken();
 
   const url = `${config.baseUrl}/register/api/v1/internal/parties/${facilitatorPartyUuid}/customers/ccr/revisor`;
   console.log(url);
@@ -17,7 +17,6 @@ export default function GetCustomerForPartyUuid(facilitatorPartyUuid) {
     },
   });
 
-  console.log(`Response status: ${res.status}`);
   var checkName = "Register customer list for revisor should respond 200 OK";
 
   const ok = check(res, { [checkName]: (r) => r.status == 200 });
@@ -25,9 +24,8 @@ export default function GetCustomerForPartyUuid(facilitatorPartyUuid) {
     fail(`${checkName} (got: ${res.status})`);
   }
   const body = JSON.parse(res.body);
-  // Extract organizationIdentifier
   const organizationIdentifier = body.data[0].organizationIdentifier;
-  console.log(organizationIdentifier);
+  console.log("Returning this customer org id: " + organizationIdentifier);
   return organizationIdentifier;
 }
 
