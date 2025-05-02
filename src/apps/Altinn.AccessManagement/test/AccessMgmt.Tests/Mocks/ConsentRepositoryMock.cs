@@ -31,6 +31,11 @@ namespace AccessMgmt.Tests.Mocks
             throw new NotImplementedException();
         }
 
+        public Task<ConsentContext> GetConsentContext(Guid consentRequestId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<ConsentRequestDetails> GetRequest(Guid id, CancellationToken cancellationToken = default)
         {
             Stream dataStream = File.OpenRead($"Data/Consent/consent_request_{id.ToString()}.json");

@@ -229,6 +229,55 @@ namespace AccessMgmt.Tests.Controllers.Enduser
         }
 
         /// <summary>
+        /// Test case: End user rejects a consent request that earlier has been accepted
+        /// Expected result: The consent request is rejected and the consent request event is created. Total 3 events
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task GetConsent_Valid()
+        {
+            Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
+            Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
+            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            await repositgo.CreateRequest(await GetRequest(requestId), ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
+            ConsentContextExternal consentContextExternal = new ConsentContextExternal
+            {
+                Language = "nb",
+                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
+                ConsentContextResources = new List<ResourceContextExternal>
+               {
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   },
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   }
+               }
+            };
+            await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToCore());
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/enduser/consent/{requestId.ToString()}");
+            string responseContent = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Consent consentRequest = await response.Content.ReadFromJsonAsync<Consent>();
+            Assert.Equal(requestId, consentRequest.Id);
+            Assert.True(consentRequest.ConsentRights.Count > 0);
+            Assert.Equal("01025161013", consentRequest.From.ValueSpan);
+            Assert.Equal("810419512", consentRequest.To.ValueSpan);  // TODO FIx
+            Assert.Equal("urn:altinn:resource", consentRequest.ConsentRights[0].Resource[0].Type);
+            Assert.Equal(consentContextExternal.Context, consentRequest.Context.Context);
+        }
+
+        /// <summary>
         /// Test case: End user revokes a consent request that earlier has been accepted
         /// Expected result: The consent request is revoked and the consent request event is created. Total 3 events
         /// </summary>

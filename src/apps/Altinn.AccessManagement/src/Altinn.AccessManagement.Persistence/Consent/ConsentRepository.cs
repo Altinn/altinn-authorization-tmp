@@ -541,5 +541,71 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             return consentRequestEvents;
         }
+
+        public async Task<ConsentContext> GetConsentContext(Guid consentRequestId, CancellationToken cancellationToken)
+        {
+            string consentContextQuery = /*strpsql*/@$"
+                SELECT 
+                contextId,
+                consentRequestId,
+                context,
+                language 
+                FROM consent.context 
+                WHERE consentRequestId = @consentRequestId
+                ";
+            await using var pgcom = _db.CreateCommand(consentContextQuery);
+            pgcom.Parameters.AddWithValue("@consentRequestId", NpgsqlTypes.NpgsqlDbType.Uuid, consentRequestId);
+            using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
+
+            ConsentContext consentContext = null;
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                consentContext = new()
+                {
+                    Context = await reader.GetFieldValueAsync<string>(PARAM_CONTEXT, cancellationToken: cancellationToken),
+                    Language = await reader.GetFieldValueAsync<string>(PARAM_LANGAUGE, cancellationToken: cancellationToken),
+                    ContextId = await reader.GetFieldValueAsync<Guid>(PARAM_CONSENT_CONTEXT_ID, cancellationToken: cancellationToken)
+                };
+            }
+
+            if (consentContext == null)
+            {
+                return null;
+            }
+
+            consentContext.ConsentContextResources = await GetResourceContext(consentContext.ContextId.Value, cancellationToken);
+
+            return consentContext;      
+        }
+
+        private async Task<List<ResourceContext>> GetResourceContext(Guid contextId, CancellationToken cancellationToken)
+        {
+            string consentContextQuery = /*strpsql*/@$"
+                SELECT 
+                Id,
+                contextId,
+                resourceId,
+                language,
+                context 
+                FROM consent.resourcecontext 
+                WHERE contextId = @contextId
+                ";
+            await using var pgcom = _db.CreateCommand(consentContextQuery);
+            pgcom.Parameters.AddWithValue("@contextId", NpgsqlTypes.NpgsqlDbType.Uuid, contextId);
+            using NpgsqlDataReader reader = await pgcom.ExecuteReaderAsync(cancellationToken);
+            List<ResourceContext> resourceContexts = [];
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                ResourceContext resourceContext = new()
+                {
+                    ResourceId = await reader.GetFieldValueAsync<string>("resourceId", cancellationToken: cancellationToken),
+                    Language = await reader.GetFieldValueAsync<string>(PARAM_LANGAUGE, cancellationToken: cancellationToken),
+                    Context = await reader.GetFieldValueAsync<string>(PARAM_CONTEXT, cancellationToken: cancellationToken)
+                };
+                resourceContexts.Add(resourceContext);
+            }
+
+            return resourceContexts;
+        }
     }
 }

@@ -41,5 +41,10 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         /// Gets all active and historical consents for a party
         /// </summary>
         Task<List<Consent>> GetAllConsents(Guid partyUid, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the consent consenxt
+        /// </summary>
+        Task<ConsentContext> GetConsentContext(Guid consentRequestId, CancellationToken cancellationToken = default);
     }
 }

@@ -155,6 +155,41 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
+        public async Task<Result<Consent>> GetConsent(Guid consentRequestId, CancellationToken cancellationToken)
+        {
+            ValidationErrorBuilder errors = default;
+            ConsentRequestDetails consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
+
+            // TODO Authorize user for consent request
+            if (consentRequest == null)
+            {
+                errors.Add(ValidationErrors.ConsentNotFound, "From");
+
+                if (errors.TryBuild(out var errorResultStart))
+                {
+                    return errorResultStart;
+                }
+
+                // Should not be possible to get here
+                throw new ArgumentException($"Consent request with id {consentRequestId} not found");
+            }
+            else
+            {
+                Consent consent = new()
+                {
+                    Id = consentRequest.Id,
+                    From = await MapToExternalIdenity(consentRequest.From, cancellationToken),
+                    To = await MapToExternalIdenity(consentRequest.To, cancellationToken),
+                    ValidTo = consentRequest.ValidTo,
+                    ConsentRights = consentRequest.ConsentRights
+                };
+
+                consent.Context = await _consentRepository.GetConsentContext(consentRequestId, cancellationToken);
+
+                return consent;
+            }
+        }
+
         private static ValidationErrorBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, ValidationErrorBuilder errors, ConsentRequestDetails consentRequest)
         {
             if (!to.Equals(consentRequest.To))

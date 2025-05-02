@@ -49,6 +49,32 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         }
 
         /// <summary>
+        /// Get a specific consent. 
+        /// Requires the following.
+        /// User is authenticated
+        /// User is have write access to access management for the party that is requestesd to consent (from party)
+        /// User is authorized to delegated the rights that is requested. Either by having the right self or beeing the main administrator
+        /// </summary>
+        [HttpGet]
+        [Route("{requestId}/")]
+        public async Task<IActionResult> GetConsent([FromRoute] Guid requestId, CancellationToken cancellationToken = default)
+        {
+            Guid? performedBy = UserUtil.GetUserUuid(User);
+            if (performedBy == null)
+            {
+                return Unauthorized();
+            }
+
+            Result<Consent> consent = await consentService.GetConsent(requestId, cancellationToken);
+            if (consent.IsProblem)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(consent.Value);
+        }
+
+        /// <summary>
         /// Endpoint to approve a consent request
         /// The authenticated user must fullfill the requirements to approve the request.
         /// - Have right for accessmanagement for the party that is requesting the consent

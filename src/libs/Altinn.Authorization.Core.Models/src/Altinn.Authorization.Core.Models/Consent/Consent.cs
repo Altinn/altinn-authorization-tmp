@@ -34,5 +34,10 @@
         /// The consented rights.
         /// </summary>
         public required List<ConsentRight> ConsentRights { get; set; }
+
+        /// <summary>
+        /// The consent context
+        /// </summary>
+        public ConsentContext? Context { get; set; }
     }
 }

@@ -15,6 +15,12 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<Result<Consent>> GetConsent(Guid consentRequestId, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Returns a specific concent based on the id. For end user
+        /// </summary>
+        /// <returns></returns>
+        Task<Result<Consent>> GetConsent(Guid consentRequestId, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Get a specific consent request. Requires the userId for the user that is requesting the concent.
         /// </summary>
         Task<Result<ConsentRequestDetails>> GetRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken);

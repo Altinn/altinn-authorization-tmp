@@ -13,6 +13,11 @@
         public required string Context { get; set; }
 
         /// <summary>
+        /// ContextIxtentifier. This is a unique identifier for the context. It is used to identify the context in the system.
+        /// </summary>
+        public Guid? ContextId { get; set; }
+
+        /// <summary>
         /// The consent context of reasources. Containes the consent 
         /// </summary>
         public List<ResourceContext> ConsentContextResources { get; set; } = new List<ResourceContext>();
