@@ -115,9 +115,11 @@ public class ConnectionPackageDefinition : BaseDbDefinition<ConnectionPackage>, 
         sb.AppendLine("AND r.iskeyrole = TRUE");
         sb.AppendLine(")");
         sb.AppendLine(",result AS(");
+
         sb.AppendLine("SELECT Source.*, AP.PackageId, 1::bool AS HasAccess, 1::bool AS CanAssign, 'DIRECT' AS PackageSource");
         sb.AppendLine("FROM a3 AS Source");
         sb.AppendLine("JOIN dbo.AssignmentPackage AS AP ON AP.AssignmentId = Source.Id");
+
         sb.AppendLine("UNION ALL");
         sb.AppendLine("SELECT Source.*, AP.PackageId, AP.HasAccess, AP.CanDelegate AS CanAssign, 'ROLE' AS PackageSource");
         sb.AppendLine("FROM a3 AS Source");

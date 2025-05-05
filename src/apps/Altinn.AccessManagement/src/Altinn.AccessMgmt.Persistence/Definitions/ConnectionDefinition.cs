@@ -106,9 +106,9 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         sb.AppendLine("UNION ALL");
 
         sb.AppendLine("SELECT x.id, x.fromid, x.fromid AS viaid, x.roleid AS viaroleid, x.toid, rm.getroleid AS roleid, ");
-        sb.AppendLine("x.source || 'MAP' AS source, x.isdirect, x.isparent, 1             AS isrolemap, x.iskeyrole");
-        sb.AppendLine("FROM a1 x");
-        sb.AppendLine("JOIN dbo.rolemap rm ON x.roleid = rm.hasroleid");
+        sb.AppendLine("x.source || 'MAP' AS source, x.isdirect, x.isparent, 1 AS isrolemap, x.iskeyrole");
+        sb.AppendLine("FROM a1 as x");
+        sb.AppendLine("JOIN dbo.rolemap as rm ON x.roleid = rm.hasroleid");
         sb.AppendLine("),");
 
         sb.AppendLine("a3 AS(");
