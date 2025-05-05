@@ -63,7 +63,7 @@ public class PackageDto
         Urn = package.Urn;
         Description = package.Description;
         IsDelegable = package.IsDelegable;
-        //// IsAssignable = package.IsAssignable; // TODO: waiting for change from other branch
+        IsAssignable = package.IsAssignable; // TODO: waiting for change from other branch
     }
 
     /// <summary>
@@ -77,6 +77,6 @@ public class PackageDto
         Urn = package.Urn;
         Description = package.Description;
         IsDelegable = package.IsDelegable;
-        //// IsAssignable = package.IsAssignable; // TODO: waiting for change from other branch
+        IsAssignable = package.IsAssignable; // TODO: waiting for change from other branch
     }
 }
