@@ -13,7 +13,7 @@ public class Connection
     /// <summary>
     /// The entity identity the connection is from (origin, client, source etc) 
     /// </summary>
-    public Guid FromId { get; set; }
+    public Guid? FromId { get; set; }
 
     /// <summary>
     /// The role To identifies as
@@ -23,7 +23,7 @@ public class Connection
     /// <summary>
     /// The entity identity the connection is to (destination, agent, etc)
     /// </summary>
-    public Guid ToId { get; set; }
+    public Guid? ToId { get; set; }
 
     /// <summary>
     /// The entity betweeen from and to. When connection is delegated.
@@ -36,21 +36,36 @@ public class Connection
     public Guid? FacilitatorRoleId { get; set; }
 
     /// <summary>
-    /// Delegation identifier
+    /// Text hint for reason
     /// </summary>
-    public Guid? DelegationId { get; set; }
+    public string Source { get; set; }
+
+    /// <summary>
+    /// Indicate that connection is a direct assignment
+    /// </summary>
+    public bool IsDirect { get; set; }
+
+    /// <summary>
+    /// Indicate that connection is from a parent/child relation
+    /// </summary>
+    public bool IsParent { get; set; }
+
+    /// <summary>
+    /// Indicate that connection is a result of a role to role mapping
+    /// </summary>
+    public bool IsRoleMap { get; set; }
+
+    /// <summary>
+    /// Indicate that connection is a inheirited with a keyrole
+    /// </summary>
+    public bool IsKeyRole { get; set; }
 }
 
 /// <summary>
 /// Extended Connection
 /// </summary>
-public class ExtConnection //// : Connection
+public class ExtConnection : Connection
 {
-    /// <summary>
-    /// Identity, either assignment og delegation
-    /// </summary>
-    public Guid Id { get; set; }
-
     /// <summary>
     /// The delegation connecting the assignments
     /// </summary>
