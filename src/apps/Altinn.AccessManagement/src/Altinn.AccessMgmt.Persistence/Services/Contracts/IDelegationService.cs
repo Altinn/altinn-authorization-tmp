@@ -40,6 +40,7 @@ public interface IDelegationService
     /// Import client delegation and required assignments for A2 client delegations
     /// </summary>
     /// <param name="request">The delegation to import</param>
+    /// <param name="options">ChangeRequestOptions</param>
     /// <returns></returns>
-    Task<IEnumerable<Delegation>> ImportClientDelegation(ImportClientDelegationRequestDto request);
+    Task<IEnumerable<Delegation>> ImportClientDelegation(ImportClientDelegationRequestDto request, ChangeRequestOptions options);
 }

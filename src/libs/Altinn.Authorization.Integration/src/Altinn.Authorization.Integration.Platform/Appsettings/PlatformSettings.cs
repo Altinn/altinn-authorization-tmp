@@ -25,6 +25,15 @@ namespace Altinn.Authorization.Integration.Platform.Appsettings
         public EndpointOptions Register { get; set; } = new();
 
         /// <summary>
+        /// Gets or sets the endpoint URI for the Register service.
+        /// This service is used for managing organizational and individual registry data within Altinn.
+        /// </summary>
+        /// <remarks>
+        /// The endpoint should be a valid URI, typically pointing to an API service.
+        /// </remarks>
+        public EndpointOptions AltinnRole { get; set; } = new();
+
+        /// <summary>
         /// Gets or sets the token-related configuration options.
         /// This includes settings for key vault and test tools.
         /// </summary>

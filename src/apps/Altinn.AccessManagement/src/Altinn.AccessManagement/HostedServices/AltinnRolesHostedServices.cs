@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
@@ -78,7 +79,7 @@ namespace Altinn.AccessManagement.HostedServices
 
             var cancellationToken = (CancellationToken)state;
 
-            await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("access_management_altinnrole_sync", cancellationToken);
+            await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("ral_access_management_altinnrole_sync", cancellationToken);
             if (!ls.HasLease || cancellationToken.IsCancellationRequested)
             {
                 return;
@@ -137,6 +138,7 @@ namespace Altinn.AccessManagement.HostedServices
             }
         }
 
+        /*
         /// <summary>
         /// Dispatches the Admin roles synchronization process in a separate task.
         /// </summary>
@@ -172,10 +174,10 @@ namespace Altinn.AccessManagement.HostedServices
                 await _lease.Release(ls, default);
             }
         }
+        */
 
         private async Task<ImportClientDelegationRequestDto> CreateClientDelegationRequest(RoleDelegationModel delegationModel)
         {
-            Guid? userId = delegationModel.PerformedByUserUuid;
             Guid? facilitatorPartyId = delegationModel.PerformedByPartyUuid;
 
             var request = new ImportClientDelegationRequestDto()
@@ -184,7 +186,6 @@ namespace Altinn.AccessManagement.HostedServices
                 AgentId = delegationModel.ToUserPartyUuid ?? throw new Exception($"'delegationModel.ToUserPartyUuid' does not have value"),
                 AgentRole = string.Empty, // TODO: Fix this to use the correct role 
                 RolePackages = new List<CreateSystemDelegationRolePackageDto>(),
-                Delegater = userId,
                 Facilitator = facilitatorPartyId,
                 DelegatedDateTimeOffset = delegationModel.DelegationChangeDateTime ?? throw new Exception($"'delegationModel.DelegatedDateTimeOffset' does not have value"),
             };
@@ -277,15 +278,13 @@ namespace Altinn.AccessManagement.HostedServices
                             continue; // When we do not have a facilitator party id we should not create the delegation
                         }
 
-                        Guid delegater;
-
-                        if (delegationData.Delegater == null)
+                        ChangeRequestOptions options = new ChangeRequestOptions()
                         {
-                            //TODO: Fetch A2 ClientDelegationImport as delegater
-                            delegationData.Delegater = Providers.FirstOrDefault(t => t.Name == "Altinn2")?.Id ?? throw new Exception(string.Format("Provider '{0}' not found while creating new role.", "Altinn2"));
-                        }
+                            ChangedBy = item.PerformedByUserUuid ?? AuditDefaults.Altinn2ClientImportSystem,
+                            ChangedBySystem = AuditDefaults.Altinn2ClientImportSystem,
+                        };
 
-                        IEnumerable<Delegation> delegations = await delegationService.ImportClientDelegation(delegationData);
+                        IEnumerable<Delegation> delegations = await delegationService.ImportClientDelegation(delegationData, options);
 
                         Interlocked.Increment(ref _executionCount);
                     }
@@ -301,6 +300,7 @@ namespace Altinn.AccessManagement.HostedServices
             }
         }
 
+        /*
         /// <summary>
         /// Synchronizes altinn role data by first acquiring a remote lease and streaming altinn role entries.
         /// Returns if lease is already taken.
@@ -401,6 +401,7 @@ namespace Altinn.AccessManagement.HostedServices
                 }
             }
         }
+        */
 
         /// <summary>
         /// Synchronizes altinn role data by first acquiring a remote lease and streaming altinn role entries.
@@ -431,32 +432,46 @@ namespace Altinn.AccessManagement.HostedServices
                 var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
                 _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
 
+                ChangeRequestOptions previousOptions = null;
+
                 if (page.Content != null)
-                {
+                {                   
                     foreach (var item in page.Content.Data)
                     {
-                        var assignment = await ConvertRoleDelegationModelToAssignment(item) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+                        var assignment = await ConvertRoleDelegationModelToAssignment(item);
+                        if (assignment.Asignment == null)
+                        {
+                            throw new Exception("Failed to convert RoleModel to Assignment");
+                        }
 
-                        if (batchData.Any(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId))
+                        if (batchData.Any(t => t.FromId == assignment.Asignment.FromId && t.ToId == assignment.Asignment.ToId && t.RoleId == assignment.Asignment.RoleId))
                         {
                             // If changes on same assignment then execute as-is before continuing.
                             await Flush(batchId);
                         }
 
+                        if (previousOptions != null && assignment.Options.ChangedBy != previousOptions.ChangedBy)
+                        {
+                            // if performer changes flush batch
+                            await Flush(batchId);
+                        }
+
+                        previousOptions = assignment.Options;
+
                         if (item.DelegationAction == DelegationAction.Delegate)
                         {
                             if (item.ToUserType != UserType.EnterpriseIdentified)
                             {
-                                batchData.Add(assignment);
+                                batchData.Add(assignment.Asignment);
                             }
                         }
                         else
                         {
                             var filter = assignmentRepository.CreateFilterBuilder();
-                            filter.Equal(t => t.FromId, assignment.FromId);
-                            filter.Equal(t => t.ToId, assignment.ToId);
-                            filter.Equal(t => t.RoleId, assignment.RoleId);
-                            await assignmentRepository.Delete(filter);                                                        
+                            filter.Equal(t => t.FromId, assignment.Asignment.FromId);
+                            filter.Equal(t => t.ToId, assignment.Asignment.ToId);
+                            filter.Equal(t => t.RoleId, assignment.Asignment.RoleId);
+                            await assignmentRepository.Delete(filter, previousOptions);
                         }
 
                         Interlocked.Increment(ref _executionCount);
@@ -478,14 +493,14 @@ namespace Altinn.AccessManagement.HostedServices
                     try
                     {
                         _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchName);
-                        var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
+                        var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, previousOptions, cancellationToken);
 
                         if (ingested != batchData.Count)
                         {
                             _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
                         }
 
-                        var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken);
+                        var merged = await ingestService.MergeTempData<Assignment>(batchId, previousOptions, cancellationToken: cancellationToken);
 
                         _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
                     }
@@ -543,6 +558,7 @@ namespace Altinn.AccessManagement.HostedServices
             }
         }
 
+        /*
         private async Task<(List<Assignment> Roles, AssignmentPackage Package)> ConvertRoleDelegationModelToAdminAssignment(RoleDelegationModel model)
         {
             List<Assignment> roles = [];
@@ -580,6 +596,7 @@ namespace Altinn.AccessManagement.HostedServices
 
             return (roles, package);
         }
+        */
 
         private async Task<Guid> FetchRoleIdFromAdminRoleTypeCode(string roleCode)
         {
@@ -587,27 +604,38 @@ namespace Altinn.AccessManagement.HostedServices
             return role.Id;
         }
 
+        /*
         private async Task<Guid> FetchPackageIdFromAdminRoleTypeCode(string roleCode)
         {
             var role = await GetOrCreateRole(roleCode, "Altinn2"); //Todo: Fix fetch correct package based on roleTypeCode
             return role.Id;
         }
+        */
 
-        private async Task<Assignment> ConvertRoleDelegationModelToAssignment(RoleDelegationModel model)
+        private async Task<(Assignment Asignment, ChangeRequestOptions Options)> ConvertRoleDelegationModelToAssignment(RoleDelegationModel model)
         {
             try
             {
                 var role = await GetOrCreateRole(model.RoleTypeCode, "Altinn2");
-                
+
+
                 // TODO: Fix Datetime for Role based on data from model if not known use now.
                 // TODO; Fix performedby When known actual performer when not known provider set as performer
-                return new Assignment()
+                Assignment assignment = new Assignment()
                 {
                     Id = Guid.CreateVersion7(),
                     FromId = model.FromPartyUuid,
                     ToId = model.ToUserPartyUuid.Value,
                     RoleId = role.Id
-                };                
+                };
+
+                ChangeRequestOptions options = new ChangeRequestOptions()
+                {
+                    ChangedBy = model.PerformedByUserUuid ?? AuditDefaults.Altinn2ClientImportSystem,
+                    ChangedBySystem = AuditDefaults.Altinn2ClientImportSystem,
+                };
+
+                return (assignment, options);
             }
             catch (Exception ex)
             {
@@ -625,16 +653,22 @@ namespace Altinn.AccessManagement.HostedServices
                 var provider = Providers.FirstOrDefault(t => t.Name == "Altinn2") ?? throw new Exception(string.Format("Provider '{0}' not found while creating new role.", roleSource));
                 var entityType = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
 
-                await roleRepository.Create(new Role()
-                {
-                    Id = Guid.CreateVersion7(),
-                    Name = roleIdentifier,
-                    Description = roleIdentifier,
-                    Code = roleIdentifier,
-                    Urn = roleIdentifier,
-                    EntityTypeId = entityType.Id,
-                    ProviderId = provider.Id,
-                });
+                await roleRepository.Create(
+                    new Role()
+                    {
+                        Id = Guid.CreateVersion7(),
+                        Name = roleIdentifier,
+                        Description = roleIdentifier,
+                        Code = roleIdentifier,
+                        Urn = roleIdentifier,
+                        EntityTypeId = entityType.Id,
+                        ProviderId = provider.Id,
+                    },
+                    new ChangeRequestOptions()
+                    {
+                        ChangedBy = AuditDefaults.Altinn2ClientImportSystem,
+                        ChangedBySystem = AuditDefaults.Altinn2ClientImportSystem,
+                    });
 
                 role = (await roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
                 if (role == null)

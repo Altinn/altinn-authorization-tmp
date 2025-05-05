@@ -3,6 +3,7 @@ using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -189,29 +190,105 @@ public class DelegationService(
         return res > 0;
     }
 
-    public async Task<IEnumerable<Delegation>> ImportClientDelegation(ImportClientDelegationRequestDto request)
+    /// <inheritdoc />
+    public async Task<IEnumerable<Delegation>> ImportClientDelegation(ImportClientDelegationRequestDto request, ChangeRequestOptions options)
     {
-        // Find user : Fredrik
-        var user = (await entityRepository.Get(request.Delegater.Value)) ?? throw new Exception(string.Format("Party not found '{0}' for user", request.Delegater));
+        // Find user
+        var user = (await entityRepository.Get(options.ChangedBy)) ?? throw new Exception(string.Format("Party not found '{0}' for user", options.ChangedBy));
 
-        // Find Facilitator : Regnskapsfolk
+        // Find Facilitator
         var facilitator = (await entityRepository.Get(request.Facilitator.Value)) ?? throw new Exception(string.Format("Party not found '{0}' for facilitator", request.Facilitator));
 
-        // Find admin role : Tilgangstyrer eller KlientAdmin
-
-        // Find Agent Role : AGENT
-        var agentRole = await GetRole("agent") ?? throw new Exception(string.Format("Role not found '{0}'", "agent"));
-
-        // Find Agent
-        Entity agent = await entityRepository.Get(request.AgentId) ?? throw new Exception(string.Format("Party not found '{0}' for agent", request.AgentId));
-        
-        // Find ClientId : Bakeriet
+        // Find ClientId
         var client = (await entityRepository.Get(request.ClientId)) ?? throw new Exception(string.Format("Party not found '{0}' for client", request.ClientId));
 
-        // Find or Create Agent Assignment : Regnskapsfolk - AGENT - SystemBruker01
-        var agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
+        // Create Delegation and DelegationPackage(s)
+        return await ImportClientDelegations(request, client, facilitator, options);
+    }
 
-        return await CreateClientDelegations(request.RolePackages, client, facilitator, agentAssignment);
+    private async Task<IEnumerable<Delegation>> ImportClientDelegations(ImportClientDelegationRequestDto request, Entity client, Entity facilitator, ChangeRequestOptions options)
+    {
+        var result = new List<Delegation>();
+
+        // Find Agent Role
+        var agentRole = await GetRole(request.AgentRole) ?? throw new Exception(string.Format("Role not found '{0}'", request.AgentRole));
+
+        // Verify Delegation Packages
+        Dictionary<string, List<Package>> rolepacks = await VerifyDelegationPackages(request);
+
+        Assignment agentAssignment = null;
+        foreach (var rp in rolepacks)
+        {
+            // Find ClientPartyId Role
+            var clientRole = (await roleRepository.Get(t => t.Code, rp.Key)).First() ?? throw new Exception(string.Format("Role not found '{0}'", rp.Key));
+
+            // Find ClientAssignment
+            var clientAssignment = await GetAssignment(client.Id, facilitator.Id, clientRole.Id) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
+
+            Delegation delegation = null;
+            foreach (var package in rp.Value)
+            {
+                // Find AssignmentPackage from Client
+                var clientPackages = await connectionPackageRepository.GetB(clientAssignment.Id);
+                var assignmentPackage = clientPackages.FirstOrDefault(t => t.Id == package.Id);
+                if (assignmentPackage == null)
+                {
+                    throw new Exception(string.Format("ClientPartyId assignment does not have the package '{0}'", package.Urn));
+                }
+
+                if (delegation == null)
+                {
+                    if (agentAssignment == null)
+                    {
+                        // Find Agent
+                        Entity agent = await entityRepository.Get(request.AgentId) ?? throw new Exception(string.Format("Party not found '{0}' for agent", request.AgentId));
+
+                        // Find or Create Agent Assignment
+                        agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole, options) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
+                    }
+
+                    // Find or Create Delegation
+                    delegation = await GetOrCreateDelegation(clientAssignment, agentAssignment, facilitator, options) ?? throw new Exception(string.Format("Could not find or create delegation '{0}' - {1} - {2}", client.Name, facilitator.Name, agentAssignment.Id));
+                }
+
+                // Find or Create DelegationPackage
+                var delegationPackage = await GetOrCreateDelegationPackage(delegation.Id, package.Id, options);
+                if (delegationPackage == null)
+                {
+                    throw new Exception("Unable to add package to delegation");
+                }
+            }
+
+            result.Add(delegation);
+        }
+
+        return result;
+    }
+
+    private async Task<Dictionary<string, List<Package>>> VerifyDelegationPackages(ImportClientDelegationRequestDto request)
+    {
+        var rolepacks = new Dictionary<string, List<Package>>();
+        foreach (var role in request.RolePackages.Select(t => t.RoleIdentifier).Distinct())
+        {
+            rolepacks.Add(role, new List<Package>());
+            foreach (var package in request.RolePackages.Where(t => t.RoleIdentifier == role).Select(t => t.PackageUrn))
+            {
+                // Find Package (check if exists)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+                var packageFilter = packageRepository.CreateFilterBuilder();
+                packageFilter.Equal(t => t.Urn, package);
+                var packages = await packageRepository.Get(packageFilter);
+                if (packages == null || !packages.Any())
+                {
+                    throw new Exception(string.Format("Package not found '{0}'", package));
+                }
+
+                var repoPackage = packages.First();
+
+                rolepacks[role].Add(repoPackage);
+            }
+        }
+
+        return rolepacks;
     }
 
     /// <inheritdoc/>

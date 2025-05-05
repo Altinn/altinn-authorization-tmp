@@ -115,6 +115,9 @@ internal static partial class AccessManagementHost
         builder.Services.AddSingleton<IPartySyncService, PartySyncService>();
         builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
         builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
+
+        builder.Services.AddHostedService<AltinnRoleHostedServices>();        
+
         return builder;
     }
 
@@ -132,6 +135,7 @@ internal static partial class AccessManagementHost
             return appsettings.Platform;
         });
 
+        /*
         builder.AddAltinnRoleIntegration(opts =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
@@ -145,6 +149,7 @@ internal static partial class AccessManagementHost
                 opts.Endpoint = appsettings.SblBridge.BaseApiUrl;
             }
         });        
+        */
 
         return builder;
     }

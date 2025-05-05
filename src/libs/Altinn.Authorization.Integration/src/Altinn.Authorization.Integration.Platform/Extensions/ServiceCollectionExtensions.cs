@@ -3,6 +3,7 @@ using Altinn.Authorization.Host.Startup;
 using Altinn.Authorization.Integration.Platform.Appsettings;
 using Altinn.Authorization.Integration.Platform.Register;
 using Altinn.Authorization.Integration.Platform.ResourceRegister;
+using Altinn.Authorization.Integration.Platform.AltinnRole;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -56,6 +57,10 @@ public static partial class ServiceCollectionExtensions
         .AddResourceRegister(opts =>
         {
             opts.Endpoint = appsettings.ResourceRegister.Endpoint;
+        })
+        .AddAltinnRole(opts =>
+        {
+            opts.Endpoint = appsettings.AltinnRole.Endpoint;
         });
 
         return services;
@@ -166,6 +171,23 @@ public static partial class ServiceCollectionExtensions
             return this;
         }
 
+        public PlatformBuilder AddAltinnRole(Action<AltinnRoleOptions> configureOptions)
+        {
+            if (Services.Contains(AltinnRole.ServiceDescriptor))
+            {
+                return this;
+            }
+
+            Services.AddOptions<AltinnRoleOptions>()
+                .Validate(opts => opts.Endpoint != null, $"Can't add AltinnRole as '{nameof(AltinnRoleOptions.Endpoint)}' is not specified")
+                .Configure(configureOptions);
+
+            Services.TryAddSingleton<IAltinnRole, AltinnRoleClient>();
+            Services.TryAddSingleton(AltinnRole.ServiceDescriptor);
+
+            return this;
+        }
+
         /// <summary>
         /// Adds Altinn Resource Register services to the service collection.
         /// </summary>
@@ -191,6 +213,11 @@ public static partial class ServiceCollectionExtensions
         private sealed class Register
         {
             public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Register, Register>();
+        }
+
+        private sealed class AltinnRole
+        {
+            public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<AltinnRole, AltinnRole>();
         }
 
         private sealed class ResourceRegister

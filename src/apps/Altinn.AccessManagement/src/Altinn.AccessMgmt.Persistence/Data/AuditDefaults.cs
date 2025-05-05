@@ -19,4 +19,9 @@ public static class AuditDefaults
     /// EnduserApi
     /// </summary>
     public static readonly Guid EnduserApi = Guid.Parse("ED771364-42A8-4934-801E-B482ED20EC3E");
+
+    /// <summary>
+    /// Altinn2ClientImportSystem
+    /// </summary>
+    public static readonly Guid Altinn2ClientImportSystem = Guid.Parse("46CFA478-971F-446E-9BC1-AF57469361D0");
 }

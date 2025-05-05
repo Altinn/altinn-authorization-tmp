@@ -62,7 +62,7 @@ public partial class RegisterHostedService(
         }
 
         var cancellationToken = (CancellationToken)state;
-        await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("ral_access_management_register_sync", cancellationToken);
+        await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("ral2_access_management_register_sync", cancellationToken);
         if (!ls.HasLease || cancellationToken.IsCancellationRequested)
         {
             return;
@@ -121,7 +121,7 @@ public partial class RegisterHostedService(
 
             try
             {
-                if (canRunPartySync)
+                if (canRunRoleSync)
                 {
                     await roleSyncService.SyncRoles(ls, cancellationToken);
                     await statusService.RunSuccess(roleStatus, options);

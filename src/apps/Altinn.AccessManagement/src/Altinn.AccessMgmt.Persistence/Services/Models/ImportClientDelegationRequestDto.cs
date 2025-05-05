@@ -25,11 +25,6 @@ namespace Altinn.AccessMgmt.Persistence.Services.Models
         public string AgentRole { get; set; } = string.Empty;
 
         /// <summary>
-        /// The user that performed the delegation
-        /// </summary>
-        public Guid? Delegater { get; set; }
-
-        /// <summary>
         /// The Service unit that performed the delegation
         /// </summary>
         public Guid? Facilitator { get; set; }
