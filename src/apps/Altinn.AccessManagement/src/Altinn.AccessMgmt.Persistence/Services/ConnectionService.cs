@@ -174,10 +174,26 @@ public class ConnectionService(
         */
 
         var filter = connectionPackageRepository.CreateFilterBuilder();
-        filter.Equal(t => t.FromId, fromId);
-        filter.Equal(t => t.ToId, toId);
-        return await connectionPackageRepository.Get(filter, cancellationToken: cancellationToken);
 
+        if (fromId.HasValue)
+        {
+            filter.Equal(t => t.FromId, fromId.Value);
+        }
+        else
+        {
+            filter.IsNull(t => fromId);
+        }
+
+        if (toId.HasValue)
+        {
+            filter.Equal(t => t.ToId, toId.Value);
+        }
+        else
+        {
+            filter.IsNull(t => t.ToId);
+        }
+
+        return await connectionPackageRepository.Get(filter, cancellationToken: cancellationToken);
     }
 
     private async Task<IEnumerable<ExtConnectionPackage>> GetConnectionPackages(Guid fromId, Guid toId, Guid packageId, CancellationToken cancellationToken = default)
