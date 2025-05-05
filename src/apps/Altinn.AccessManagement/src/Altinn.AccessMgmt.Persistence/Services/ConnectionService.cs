@@ -23,20 +23,21 @@ public class ConnectionService(
     IDelegationPackageRepository delegationPackageRepository
     ) : IConnectionService
 {
-    
     /// <inheritdoc />
-    public async Task<IEnumerable<ExtConnection>> GetGiven(Guid id, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ExtConnection>> GetGiven(Guid toId, CancellationToken cancellationToken = default)
     {
         var filter = connectionRepository.CreateFilterBuilder();
-        filter.Equal(t => t.FromId, id);
+        filter.Equal(t => t.ToId, toId);
+        filter.IsNull(t => t.FromId);
         return await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ExtConnection>> GetRecived(Guid id, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ExtConnection>> GetReceived(Guid fromId, CancellationToken cancellationToken = default)
     {
         var filter = connectionRepository.CreateFilterBuilder();
-        filter.Equal(t => t.ToId, id);
+        filter.Equal(t => t.FromId, fromId);
+        filter.IsNull(t => t.ToId);
         return await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
     }
 
@@ -173,10 +174,26 @@ public class ConnectionService(
         */
 
         var filter = connectionPackageRepository.CreateFilterBuilder();
-        filter.Equal(t => t.FromId, fromId);
-        filter.Equal(t => t.ToId, toId);
-        return await connectionPackageRepository.Get(filter, cancellationToken: cancellationToken);
 
+        if (fromId.HasValue)
+        {
+            filter.Equal(t => t.FromId, fromId.Value);
+        }
+        else
+        {
+            filter.IsNull(t => fromId);
+        }
+
+        if (toId.HasValue)
+        {
+            filter.Equal(t => t.ToId, toId.Value);
+        }
+        else
+        {
+            filter.IsNull(t => t.ToId);
+        }
+
+        return await connectionPackageRepository.Get(filter, cancellationToken: cancellationToken);
     }
 
     private async Task<IEnumerable<ExtConnectionPackage>> GetConnectionPackages(Guid fromId, Guid toId, Guid packageId, CancellationToken cancellationToken = default)

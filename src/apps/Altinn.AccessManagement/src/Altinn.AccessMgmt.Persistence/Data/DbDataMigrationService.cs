@@ -749,7 +749,7 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("af338fd5-3f1d-4ab5-8326-9dfecad26f71"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Energi, miljø og klima",                    Code = "UTOMR",               Description = "Tilgang til tenester relatert til energi, miljø og klima. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir", Urn = "urn:altinn:rolecode:UTOMR" },
         };
 
-        await ingestService.IngestAndMergeData(roles, options,["EntityTypeId", "Code"], cancellationToken);
+        await ingestService.IngestAndMergeData(roles, options, cancellationToken: cancellationToken);
 
         foreach (var item in rolesEng)
         {

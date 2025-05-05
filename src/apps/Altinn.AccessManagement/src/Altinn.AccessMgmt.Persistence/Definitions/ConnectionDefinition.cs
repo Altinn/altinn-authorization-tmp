@@ -131,8 +131,8 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         sb.AppendLine("SELECT a.id, a.fromid, NULL::uuid AS viaid, NULL::uuid AS viaroleid, a.toid, a.roleid,");
         sb.AppendLine("'DIRECT' AS source, 1 AS isdirect, 0 AS isparent, 0 AS isrolemap, 0 AS iskeyrole");
         sb.AppendLine("FROM dbo.assignment a");
-        sb.AppendLine("WHERE a.fromid = COALESCE(@fromid::uuid, a.fromid)");
-        sb.AppendLine("AND a.toid   = COALESCE(@toid::uuid, a.toid)");
+        sb.AppendLine("WHERE a.fromid = COALESCE(@fromid, a.fromid)::uuid");
+        sb.AppendLine("AND a.toid   = COALESCE(@toid, a.toid)::uuid");
 
         sb.AppendLine("UNION ALL");
 
@@ -151,8 +151,8 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         sb.AppendLine("0 AS iskeyrole");
         sb.AppendLine("FROM dbo.assignment a");
         sb.AppendLine("JOIN dbo.entity fe   ON a.fromid = fe.parentid");
-        sb.AppendLine("WHERE fe.id    = COALESCE(@fromid::uuid, fe.id)");
-        sb.AppendLine("AND a.toid   = COALESCE(@toid::uuid, a.toid)");
+        sb.AppendLine("WHERE fe.id    = COALESCE(@fromid, fe.id)::uuid");
+        sb.AppendLine("AND a.toid   = COALESCE(@toid, a.toid)::uuid");
 
         sb.AppendLine("),");
 
@@ -199,8 +199,8 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         sb.AppendLine("LEFT JOIN dbo.entity ve ON a.viaid = ve.id");
         sb.AppendLine("LEFT JOIN dbo.role vr ON a.viaroleid = vr.id");
         
-        sb.AppendLine("WHERE a.fromid = COALESCE(@fromid::uuid, a.fromid)");
-        sb.AppendLine("AND a.toid = COALESCE(@toid::uuid, a.toid);");
+        sb.AppendLine("WHERE a.fromid = COALESCE(@fromid, a.fromid)::uuid");
+        sb.AppendLine("AND a.toid = COALESCE(@toid, a.toid)::uuid;");
 
         return sb.ToString();
     }

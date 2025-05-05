@@ -1,7 +1,7 @@
 meta {
-  name: GET_SystemUser_EnkClientDelegations
+  name: GET_SysUser_ClientDelg_Invalid_AccPkg_Regn_org
   type: http
-  seq: 9
+  seq: 7
 }
 
 get {
@@ -24,21 +24,23 @@ script:pre-request {
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   
-  bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-  bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
+  bru.setVar("party", testdata.revisor.partyuuid);
+  bru.setVar("systemUser", testdata.revisor.invalid_pkg_systemuser.id);
+  bru.setVar("clientId", testdata.revisor.client_org.partyuuid);
   
   var getTokenParameters = {
-    auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
-    auth_partyId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyId,
-    auth_partyUuid: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid,
-    auth_ssn: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid,
+    auth_userId: testdata.revisor.klientadministrator.userid,
+    auth_partyId: testdata.revisor.klientadministrator.partyid,
+    auth_partyUuid: testdata.revisor.klientadministrator.partyuuid,
+    auth_ssn: testdata.revisor.klientadministrator.pid,
     auth_tokenType: sharedtestdata.authTokenType.personal,
     auth_scopes: sharedtestdata.auth_scopes.portalEnduser
   }
   
-  
   const token = await testTokenGenerator.getToken(getTokenParameters);
   bru.setVar("bearerToken",  token);
+  
+  
 }
 
 script:post-response {
@@ -50,14 +52,12 @@ script:post-response {
 }
 
 tests {
-  test("Access package delegation from client org to systemuser ", function() {
+  test("Client org has delegated to systembruker", function() {
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
       const data = res.getBody();
       var delegationId = bru.getEnvVar("delegationId");
       expect(res.status).to.equal(200);
-    expect(data[0].role).to.have.property('code', "regnskapsforer");
-    expect(data[0].facilitator).to.have.property('name', "ULASTELIG RETTFERDIG TIGER AS");
-    expect(data[0].facilitatorRole).to.have.property('code', "agent");
+      expect(res.body).to.empty
       
     });
 }
