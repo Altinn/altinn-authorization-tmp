@@ -56,6 +56,10 @@ public static partial class DbAccessHostExtensions
             }
         }
 
+        builder.Services.AddSingleton<AuditMiddleware>();
+        builder.Services.AddSingleton<IDbAudit, AuditFactory>();
+        builder.Services.AddSingleton<IDbAuditService, AuditFactory>();
+
         builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddSingleton(typeof(ISearchCache<>), typeof(SearchCache<>));
 

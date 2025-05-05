@@ -9,9 +9,9 @@ namespace Altinn.AccessManagement.Core.Filters;
 /// Verifies that user uuid claim exists in token and adds the value to http context items bag.
 /// If claim is not present it will return cancel pipeline and return 401 unauthorized.
 /// </summary>
-public partial class AuthorizePartyUuidClaimFilter(ILogger<AuthorizePartyUuidClaimFilter> logger) : IAuthorizationFilter
+public partial class SetEnduserAudit(ILogger<SetEnduserAudit> logger) : IAuthorizationFilter
 {
-    private ILogger<AuthorizePartyUuidClaimFilter> Logger { get; } = logger;
+    private ILogger<SetEnduserAudit> Logger { get; } = logger;
 
     /// <inheritdoc/>
     public void OnAuthorization(AuthorizationFilterContext context)

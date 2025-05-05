@@ -272,7 +272,7 @@ public static class ValidationRules
 
         public static FuncExpression PartyIsEntityType(ExtEntity party, string entityType, string paramName = "party") => () =>
         {
-            if (party is null)
+            if (party is { })
             {
                 if (party.Type.Name.Equals(entityType, StringComparison.InvariantCultureIgnoreCase))
                 {

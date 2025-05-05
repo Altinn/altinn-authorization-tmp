@@ -48,7 +48,7 @@ public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentS
     /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
     [HttpPost]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
+    [ServiceFilter(typeof(SetEnduserAudit))]
     [ProducesResponseType<AssignmentExternal>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -81,7 +81,7 @@ public class AccessPartiesController(IHttpContextAccessor accessor, IAssignmentS
     /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
     [HttpDelete]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ServiceFilter(typeof(AuthorizePartyUuidClaimFilter))]
+    [ServiceFilter(typeof(SetEnduserAudit))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

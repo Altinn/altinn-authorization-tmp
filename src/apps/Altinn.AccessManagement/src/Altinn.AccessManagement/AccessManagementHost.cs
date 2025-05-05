@@ -281,7 +281,7 @@ internal static partial class AccessManagementHost
         builder.Services.AddScoped<IAuthorizationHandler, ResourceAccessHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, EndUserResourceAccessHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, ScopeAccessHandler>();
-        builder.Services.AddScoped<AuthorizePartyUuidClaimFilter>();
+        builder.Services.AddScoped<SetEnduserAudit>();
     }
 
     private static void ConfigurePostgreSqlConfiguration(this WebApplicationBuilder builder)

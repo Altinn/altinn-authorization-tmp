@@ -20,7 +20,7 @@ public static class HttpContextAccessorExtensions
     /// <returns>The party UUID if found.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown if the UUID is not present in the context. Ensure that the 
-    /// <see cref="AuthorizePartyUuidClaimFilter"/> is enabled for the controller action.
+    /// <see cref="SetEnduserAudit"/> is enabled for the controller action.
     /// </exception>
     public static Guid GetPartyUuid(this IHttpContextAccessor accessor)
     {
@@ -34,6 +34,6 @@ public static class HttpContextAccessorExtensions
 
         return Guid.Parse("a5eb95db-97fc-4bd4-a6f6-b9214bc24549");
 
-        throw new InvalidOperationException($"Failed to retrieve UUID. Is the '{nameof(AuthorizePartyUuidClaimFilter)}' ServiceFilter enabled for this action?");
+        throw new InvalidOperationException($"Failed to retrieve UUID. Is the '{nameof(SetEnduserAudit)}' ServiceFilter enabled for this action?");
     }
 }

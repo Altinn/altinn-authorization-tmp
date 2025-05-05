@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Enduser.Services;
@@ -11,6 +12,7 @@ namespace Altinn.AccessManagement.Enduser.Services;
 /// Service for managing connections.
 /// </summary>
 public class ConnectionService(
+    IDbAudit dbAudit,
     IConnectionRepository connectionRepository,
     IConnectionPackageRepository connectionPackageRepository,
     IPackageRepository packageRepository,
@@ -21,6 +23,9 @@ public class ConnectionService(
     IEntityRepository entityRepository
     ) : IEnduserConnectionService
 {
+
+    private IDbAudit DbAudit { get; } = dbAudit;
+
     private IConnectionRepository ConnectionRepository { get; } = connectionRepository;
 
     private IConnectionPackageRepository ConnectionPackageRepository { get; } = connectionPackageRepository;
@@ -88,7 +93,7 @@ public class ConnectionService(
             RoleId = roleId,
         };
 
-        var result = await AssignmentRepository.Create(assignment, options: null, cancellationToken: cancellationToken);
+        var result = await AssignmentRepository.Create(assignment, DbAudit.Value, cancellationToken);
         if (result == 0)
         {
             Unreachable();
@@ -113,7 +118,7 @@ public class ConnectionService(
             .Equal(t => t.RoleId, roleId);
 
         var existingAssignments = await AssignmentRepository.Get(filter, cancellationToken: cancellationToken);
-        if (existingAssignments != null && existingAssignments.Any())
+        if (existingAssignments != null && !existingAssignments.Any())
         {
             return null;
         }
@@ -135,7 +140,7 @@ public class ConnectionService(
             }
         }
 
-        var result = await AssignmentRepository.Delete(existingAssignment.Id, null, cancellationToken: cancellationToken);
+        var result = await AssignmentRepository.Delete(existingAssignment.Id, DbAudit.Value, cancellationToken: cancellationToken);
         if (result == 0)
         {
             Unreachable();
@@ -228,13 +233,13 @@ public class ConnectionService(
             return existingPackageAssignment.First();
         }
 
-        var createResult = await AssignmentPackageRepository.CreateCross(assignment.Value.Id, packageId, null, cancellationToken: cancellationToken);
+        var createResult = await AssignmentPackageRepository.CreateCross(assignment.Value.Id, packageId, DbAudit.Value, cancellationToken: cancellationToken);
         if (createResult == 0)
         {
             Unreachable();
         }
 
-        var createCheckResult = await AssignmentPackageRepository.Get(null, cancellationToken: cancellationToken);
+        var createCheckResult = await AssignmentPackageRepository.Get(null, cancellationToken);
         if (createCheckResult == null || !createCheckResult.Any())
         {
             Unreachable();
@@ -287,7 +292,7 @@ public class ConnectionService(
             return null;
         }
 
-        var deleteResult = await AssignmentPackageRepository.DeleteCross(assignment.Id, packageId, null, cancellationToken: cancellationToken);
+        var deleteResult = await AssignmentPackageRepository.DeleteCross(assignment.Id, packageId, DbAudit.Value, cancellationToken: cancellationToken);
         if (deleteResult == 0)
         {
             return null;
@@ -312,8 +317,8 @@ public class ConnectionService(
         var problem = ValidationRules.Validate(
             ValidationRules.QueryParameters.PartyExists(entityFrom, "from"),
             ValidationRules.QueryParameters.PartyExists(entityTo, "to"),
-            ValidationRules.QueryParameters.PartyIsEntityType(entityFrom, "from", "Organisasjon"),
-            ValidationRules.QueryParameters.PartyIsEntityType(entityTo, "to", "Organisasjon")
+            ValidationRules.QueryParameters.PartyIsEntityType(entityFrom, "Organisasjon", "from"),
+            ValidationRules.QueryParameters.PartyIsEntityType(entityTo, "Organisasjon", "to")
         );
 
         if (problem is { })
