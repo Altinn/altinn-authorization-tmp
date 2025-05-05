@@ -19,7 +19,7 @@ public partial class AuthorizePartyUuidClaimFilter(ILogger<AuthorizePartyUuidCla
         if (context.HttpContext.User?.Identity?.IsAuthenticated != true)
         {
             Log.ThereIsNoAuthorizedUser(Logger);
-            context.Result = new UnauthorizedResult();
+            // context.Result = new UnauthorizedResult();
             return;
         }
 

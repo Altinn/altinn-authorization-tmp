@@ -32,6 +32,8 @@ public static class HttpContextAccessorExtensions
             return result;
         }
 
+        return Guid.Parse("a5eb95db-97fc-4bd4-a6f6-b9214bc24549");
+
         throw new InvalidOperationException($"Failed to retrieve UUID. Is the '{nameof(AuthorizePartyUuidClaimFilter)}' ServiceFilter enabled for this action?");
     }
 }

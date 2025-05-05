@@ -7,6 +7,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Swashbuckle.AspNetCore" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
         <ProjectReference Include="..\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj" />
         <ProjectReference Include="..\Altinn.AccessMgmt.Persistence\Altinn.AccessMgmt.Persistence.csproj" />
     </ItemGroup>

@@ -9,7 +9,12 @@ namespace Altinn.AccessMgmt.Persistence.Core.Helpers;
 /// <typeparam name="T">The entity type for which the filters are being built.</typeparam>
 public class GenericFilterBuilder<T> : IEnumerable<GenericFilter>
 {
-    private readonly List<GenericFilter> _filters = new();
+    private readonly List<GenericFilter> _filters = [];
+
+    /// <summary>
+    /// Returns true if any filters are specified in list.
+    /// </summary>
+    public bool Empty => _filters.Count == 0;
 
     /// <summary>
     /// Adds a filter condition to the builder using the specified property expression, value, and comparer.
