@@ -4,11 +4,9 @@ import http from 'k6/http';
 import { config } from './config.js';
 import { getPersonalToken } from './token.js'; 
 
-export default function getCustomerForPartyUuid(facilitatorPartyUuid) {
+export function getRevisorCustomerIdentifiersForParty(facilitatorPartyUuid) {
   const token = getPersonalToken();
-
   const url = `${config.baseUrl}/register/api/v1/internal/parties/${facilitatorPartyUuid}/customers/ccr/revisor`;
-  console.log(url);
 
   const res = http.get(url, {
     headers: {
@@ -17,16 +15,13 @@ export default function getCustomerForPartyUuid(facilitatorPartyUuid) {
     },
   });
 
-  var checkName = "Register customer list for revisor should respond 200 OK";
+  check(res, {
+    "Register customer list for revisor should respond 200 OK": (r) => r.status === 200
+  });
 
-  const ok = check(res, { [checkName]: (r) => r.status == 200 });
-  if (!ok) {
-    fail(`${checkName} (got: ${res.status})`);
-  }
   const body = JSON.parse(res.body);
-  const organizationIdentifier = body.data[0].organizationIdentifier;
-  console.log("Returning this customer org id: " + organizationIdentifier);
-  return organizationIdentifier;
+  return (body.data ?? []).map((entry) => entry.organizationIdentifier);
 }
+
 
 

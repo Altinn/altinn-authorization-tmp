@@ -17,7 +17,7 @@ export function getPersonalToken() {
   const tokenPassword = config.tokenPassword;
 
   const scopes = "altinn:register/partylookup.admin";
-  const pid = "28914198757";
+  const pid = "22877497392";
 
   const cacheKey = getCacheKey(scopes, pid);
   const currentTime = Math.floor(Date.now() / 1000);

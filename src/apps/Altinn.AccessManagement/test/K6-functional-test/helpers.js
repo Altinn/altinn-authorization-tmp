@@ -9,32 +9,36 @@ import { sleep, check } from "k6";
  * @param {Object} options - Retry settings.
  * @param {number} options.retries - How many times to retry (default 5).
  * @param {number} options.intervalSeconds - Seconds between attempts (default 2).
- * @param {string} options.name - Check label prefix for reporting (default: "retry check").
+ * @param {string} options.testscenario - Check label prefix for reporting (default: "retry check").
  * @returns {*} - Result of `fn()` on success, or null if all retries fail.
  */
-export function retry(fn, { retries = 5, intervalSeconds = 2, name = "retry check" } = {}) {
-  let lastError = null;
+export async function retry(conditionFn, options = {}) {
+  const {
+    retries = 10,
+    intervalSeconds = 5,
+    testscenario = "unnamed scenario",
+  } = options;
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const result = fn();
-      check(null, {
-        [`${name} succeeded at attempt ${attempt}`]: () => true,
-      });
-      return result;
-    } catch (err) {
-      lastError = err;
-      console.warn(`Retry attempt ${attempt} failed: ${err.message}`);
+      const result = await conditionFn();
 
-      if (attempt < retries) {
-        sleep(intervalSeconds);
+      if (result) {
+        console.log(`${testscenario}] Condition met on attempt ${attempt}`);
+        return true;
       }
+
+      console.log(`${testscenario}] Attempt ${attempt}/${retries} — condition not met, retrying...`);
+    } catch (err) {
+      const msg = err?.message ?? JSON.stringify(err) ?? "Unknown error";
+      console.warn(`${testscenario}] Error on attempt ${attempt}: ${msg}`);
+    }
+
+    if (attempt < retries) {
+      await new Promise((resolve) => setTimeout(resolve, intervalSeconds * 1000));
     }
   }
 
-  check(null, {
-    [`${name} failed after ${retries} attempts: ${lastError?.message}`]: () => false,
-  });
-
-  return null;
+  console.error(`${testscenario}] Condition not met after ${retries} attempts.`);
+  return false;
 }
