@@ -1,14 +1,11 @@
 ﻿using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
-using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Extensions;
-using Altinn.AccessManagement.Core.Filters;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Enduser.Services;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.Authorization.ProblemDetails;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
