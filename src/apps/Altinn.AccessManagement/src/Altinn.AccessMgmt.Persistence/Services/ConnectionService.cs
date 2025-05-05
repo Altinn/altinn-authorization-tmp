@@ -64,6 +64,11 @@ public class ConnectionService(
             filter.IsNull(t => t.FacilitatorId);
         }
 
+        if (!filter.Any())
+        {
+            throw new ArgumentException("You need to define a filter");
+        }
+
         return await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
     }
 
