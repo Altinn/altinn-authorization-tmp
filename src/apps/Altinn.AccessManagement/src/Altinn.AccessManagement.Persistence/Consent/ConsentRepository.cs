@@ -542,6 +542,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
             return consentRequestEvents;
         }
 
+        /// <summary>
+        /// Gets the consent context if consented
+        /// </summary>
         public async Task<ConsentContext> GetConsentContext(Guid consentRequestId, CancellationToken cancellationToken)
         {
             string consentContextQuery = /*strpsql*/@$"

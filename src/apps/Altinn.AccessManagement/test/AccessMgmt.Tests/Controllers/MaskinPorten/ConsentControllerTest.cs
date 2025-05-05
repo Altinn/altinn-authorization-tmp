@@ -86,7 +86,27 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             ConsentRequest request = await GetRequest(requestId);
             request.ValidTo = DateTime.UtcNow.AddDays(10);
             await repositgo.CreateRequest(request, ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
-            await repositgo.AcceptConsentRequest(requestId, Guid.NewGuid(), default);
+            ConsentContextExternal consentContextExternal = new ConsentContextExternal
+            {
+                Language = "nb",
+                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
+                ConsentContextResources = new List<ResourceContextExternal>
+               {
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   },
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   }
+               }
+            };
+            await repositgo.AcceptConsentRequest(requestId, Guid.NewGuid(), consentContextExternal.ToCore());
 
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";
