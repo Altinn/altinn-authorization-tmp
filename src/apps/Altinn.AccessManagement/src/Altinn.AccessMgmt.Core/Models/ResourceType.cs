@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessMgmt.Core.Models;
+﻿using Altinn.AccessManagement.Core.Extensions;
+
+namespace Altinn.AccessMgmt.Core.Models;
 
 /// <summary>
 /// ResourceType
@@ -6,7 +8,7 @@
 public class ResourceType
 {
     /// <summary>
-    /// Id
+    /// Identity
     /// </summary>
     public Guid Id { get; set; }
 

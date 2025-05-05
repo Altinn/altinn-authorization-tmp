@@ -18,6 +18,7 @@ public class ConnectionResourceDefinition : BaseDbDefinition<ConnectionResource>
     {
         definitionRegistry.Define<ConnectionResource>(def =>
         {
+            def.SetVersion(2);
             def.IsView();
 
             def.RegisterProperty(t => t.ConnectionId);
@@ -36,10 +37,10 @@ public class ConnectionResourceDefinition : BaseDbDefinition<ConnectionResource>
             sb.AppendLine($"SELECT dp.{nameof(DelegationResource.DelegationId)} AS {nameof(ConnectionResource.ConnectionId)}, dp.{nameof(DelegationResource.ResourceId)} AS {nameof(ConnectionResource.ResourceId)}");
             sb.AppendLine("FROM dbo.delegationResource AS dp");
 
-            def.SetViewQuery(sb.ToString());
+            def.SetQuery(sb.ToString());
 
-            def.AddViewDependency<Connection>();
-            def.AddViewDependency<Resource>();
+            def.AddManualDependency<Connection>();
+            def.AddManualDependency<Resource>();
         });
     }
 }

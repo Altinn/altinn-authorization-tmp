@@ -17,9 +17,9 @@ public class InheritedAssignmentDefinition : BaseDbDefinition<InheritedAssignmen
     {
         definitionRegistry.Define<InheritedAssignment>(def =>
         {
+            def.SetVersion(2);
             def.IsView();
-            //// def.EnableHistory();
-            //// def.EnableTranslation();
+
             def.RegisterProperty(t => t.Id);
             def.RegisterProperty(t => t.FromId);
             def.RegisterProperty(t => t.ToId);
@@ -32,9 +32,9 @@ public class InheritedAssignmentDefinition : BaseDbDefinition<InheritedAssignmen
             def.RegisterExtendedProperty<ExtInheritedAssignment, Role>(t => t.RoleId, t => t.Id, t => t.Role);
             def.RegisterExtendedProperty<ExtInheritedAssignment, Role>(t => t.ViaRoleId!, t => t.Id, t => t.ViaRole!, optional: true);
 
-            def.AddViewDependency<RoleMap>();
+            def.AddManualDependency<RoleMap>();
 
-            def.SetViewQuery($"""
+            def.SetQuery($"""
             select a.id, a.fromid, a.toid, a.roleid, null as viaroleid, 'Direct' as type
             from dbo.assignment as a
             union all

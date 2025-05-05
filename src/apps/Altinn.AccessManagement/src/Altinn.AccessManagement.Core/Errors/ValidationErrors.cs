@@ -13,6 +13,11 @@ public static class ValidationErrors
         = ValidationErrorDescriptorFactory.New("AM");
 
     /// <summary>
+    /// The field is required.
+    /// </summary>
+    public static ValidationErrorDescriptor Required => StdValidationErrors.Required;
+
+    /// <summary>
     /// Gets a validation error descriptor for when an invalid party URN is provided.
     /// </summary>
     public static ValidationErrorDescriptor InvalidPartyUrn { get; }
@@ -41,4 +46,34 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor ToManyDelegationsToRevoke { get; }
         = _factory.Create(5, $"There is to many policy files to update. Must delete individual delegations.");
+
+    /// <summary>
+    /// Missing party.
+    /// </summary>
+    public static ValidationErrorDescriptor MissingPartyInDb { get; }
+        = _factory.Create(6, $"Missing party.");
+
+    /// <summary>
+    /// Invalid party type.
+    /// </summary>
+    public static ValidationErrorDescriptor InvalidPartyType { get; }
+        = _factory.Create(7, $"Invalid party type.");
+
+    /// <summary>
+    /// Assignment already exists.
+    /// </summary>
+    public static ValidationErrorDescriptor AssignmentAlreadyExists { get; }
+        = _factory.Create(8, $"Assignment already exists.");
+
+    /// <summary>
+    /// Assignment do not exists.
+    /// </summary>
+    public static ValidationErrorDescriptor AssignmentDoNotExists { get; }
+        = _factory.Create(9, $"Assignment do not exist.");
+
+    /// <summary>
+    /// Assignment is active in one or more delegations.
+    /// </summary>
+    public static ValidationErrorDescriptor AssignmentIsActiveInOneOrMoreDelegations { get; }
+        = _factory.Create(10, $"Assignment is active in one or more delegations.");
 }

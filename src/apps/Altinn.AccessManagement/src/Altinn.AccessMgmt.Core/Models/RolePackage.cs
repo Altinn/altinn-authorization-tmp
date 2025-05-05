@@ -1,14 +1,38 @@
-﻿namespace Altinn.AccessMgmt.Core.Models;
+﻿using Altinn.AccessManagement.Core.Extensions;
+
+namespace Altinn.AccessMgmt.Core.Models;
 
 /// <summary>
 /// RolePackage
 /// </summary>
 public class RolePackage
 {
+    private Guid _id;
+
     /// <summary>
-    /// Id
+    /// Initializes a new instance of the <see cref="RolePackage"/> class.
     /// </summary>
-    public Guid Id { get; set; }
+    public RolePackage()
+    {
+        Id = Guid.CreateVersion7();
+    }
+
+    /// <summary>
+    /// Identity
+    /// </summary>
+    public Guid Id
+    {
+        get => _id;
+        set
+        {
+            if (!value.IsVersion7Uuid())
+            {
+                throw new ArgumentException("Id must be a version 7 UUID", nameof(value));
+            }
+
+            _id = value;
+        }
+    }
 
     /// <summary>
     /// RoleId
@@ -29,6 +53,11 @@ public class RolePackage
     /// HasAccess
     /// </summary>
     public bool HasAccess { get; set; }
+
+    /// <summary>
+    /// CanAssign
+    /// </summary>
+    public bool CanAssign { get; set; }
 
     /// <summary>
     /// CanDelegate

@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.23.0"
+      version = "4.26.0"
     }
     static = {
       source  = "tiwood/static"
@@ -192,6 +192,11 @@ module "appsettings" {
       key   = "Altinn:MassTransit:register:AzureServiceBus:Endpoint"
       value = "sb://sb${local.spoke_suffix}.servicebus.windows.net"
       label = "${var.environment}-register"
+    },
+    {
+      key   = "A2PartyImport:BridgeApiEndpoint"
+      value = var.sbl_endpoint
+      label = "${var.environment}-register"
     }
   ]
 
@@ -226,6 +231,7 @@ module "postgres_server" {
   postgres_version    = "16"
   configurations = {
     "azure.extensions" : "HSTORE"
+    "max_locks_per_transaction" : "4096"
   }
 
   storage_tier = var.db_storage_tier
