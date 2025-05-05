@@ -201,7 +201,7 @@ public class ConnectionPackageDefinition : BaseDbDefinition<ConnectionPackage>, 
         sb.AppendLine("JOIN dbo.RolePackage AS AP ON AP.RoleId = Source.RoleId");
         sb.AppendLine(")");
 
-        sb.AppendLine("SELECT result.*");
+        sb.AppendLine("SELECT result.*, ");
 
         sb.AppendLine(PackageColumns("pck", "Package") + ",");
         sb.AppendLine(EntityColumns("fe", "From") + ",");
