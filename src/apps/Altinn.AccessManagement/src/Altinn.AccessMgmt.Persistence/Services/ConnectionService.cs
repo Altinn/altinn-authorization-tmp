@@ -30,6 +30,7 @@ public class ConnectionService(
         filter.Equal(t => t.Id, Id);
         filter.IsNull(t => t.FromId);
         filter.IsNull(t => t.ToId);
+        filter.IsNull(t => t.FacilitatorId);
         var res = await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
         return res.FirstOrDefault();
     }
