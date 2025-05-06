@@ -8,6 +8,8 @@ export function getRevisorCustomerIdentifiersForParty(facilitatorPartyUuid) {
   const token = getPersonalToken();
   const url = `${config.baseUrl}/register/api/v1/internal/parties/${facilitatorPartyUuid}/customers/ccr/revisor`;
 
+  console.log(url);
+
   const res = http.get(url, {
     headers: {
       Authorization: `Bearer ${token}`,
