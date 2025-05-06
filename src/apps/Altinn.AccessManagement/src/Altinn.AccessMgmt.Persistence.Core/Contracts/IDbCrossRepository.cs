@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Utilities;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Contracts;
 
@@ -27,7 +28,7 @@ public interface IDbCrossRepository<T, TExtended, TA, TB> : IDbExtendedRepositor
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the collection of related entities of type <typeparamref name="TA"/>.
     /// </returns>
-    Task<IEnumerable<TA>> GetA(Guid id, RequestOptions options = null, List<GenericFilter> filters = null, CancellationToken cancellationToken = default);
+    Task<QueryResponse<TA>> GetA(Guid id, RequestOptions options = null, List<GenericFilter> filters = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a collection of related entities of type <typeparamref name="TA"/> that are associated 
@@ -39,7 +40,7 @@ public interface IDbCrossRepository<T, TExtended, TA, TB> : IDbExtendedRepositor
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the collection of related entities of type <typeparamref name="TA"/>.
     /// </returns>
-    Task<IEnumerable<TA>> GetA(List<GenericFilter> filters, RequestOptions options = null, CancellationToken cancellationToken = default);
+    Task<QueryResponse<TA>> GetA(List<GenericFilter> filters, RequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a collection of related entities of type <typeparamref name="TB"/> that are associated 
@@ -52,7 +53,7 @@ public interface IDbCrossRepository<T, TExtended, TA, TB> : IDbExtendedRepositor
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the collection of related entities of type <typeparamref name="TB"/>.
     /// </returns>
-    Task<IEnumerable<TB>> GetB(Guid id, RequestOptions options = null, List<GenericFilter> filters = null, CancellationToken cancellationToken = default);
+    Task<QueryResponse<TB>> GetB(Guid id, RequestOptions options = null, List<GenericFilter> filters = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a collection of related entities of type <typeparamref name="TB"/> that are associated 
@@ -64,7 +65,7 @@ public interface IDbCrossRepository<T, TExtended, TA, TB> : IDbExtendedRepositor
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the collection of related entities of type <typeparamref name="TB"/>.
     /// </returns>
-    Task<IEnumerable<TB>> GetB(List<GenericFilter> filters, RequestOptions options = null, CancellationToken cancellationToken = default);
+    Task<QueryResponse<TB>> GetB(List<GenericFilter> filters, RequestOptions options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Create a cross-reference between two entities.

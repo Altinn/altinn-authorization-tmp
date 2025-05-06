@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
+using Altinn.AccessMgmt.Persistence.Core.Utilities;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Contracts;
 
@@ -43,7 +44,7 @@ public interface IDbExecutor
     /// <param name="parameters">Parameters</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    Task<IEnumerable<T>> ExecuteQuery<T>(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
+    Task<QueryResponse<T>> ExecuteQuery<T>(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
     where T : new();
 
     /// <summary>
@@ -52,7 +53,7 @@ public interface IDbExecutor
     /// <param name="query">Query to execute</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    Task<IEnumerable<T>> ExecuteQuery<T>(string query, CancellationToken cancellationToken = default)
+    Task<QueryResponse<T>> ExecuteQuery<T>(string query, CancellationToken cancellationToken = default)
     where T : new();
 
     /// <summary>
