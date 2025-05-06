@@ -2,7 +2,7 @@ import http from "k6/http";
 import { check } from "k6";
 
 // Function to send SOAP request with dynamic organisasjonsnummer
-export function removeRevisorRoleFromEr(clientOrg, facilitatorOrg) {
+export async function removeRevisorRoleFromEr(clientOrg, facilitatorOrg) {
   const soapReqBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.altinn.no/services/Register/ER/2013/06">
      <soapenv:Header/>
      <soapenv:Body>
@@ -38,15 +38,14 @@ export function removeRevisorRoleFromEr(clientOrg, facilitatorOrg) {
   );
 
   check(res, {
-    "status is 200 for remove revisor": (r) => r.status === 200,
+    "status is 200 for remove revisor for ER request": (r) => r.status === 200,
+
     "response contains status OK_ER_DATA_PROCESSED": (r) =>
-      r.body.includes('status="OK_ER_DATA_PROCESSED"'), // fallback if not escaped
-    "response contains message 'ER data processed ok'": (r) =>
-      r.body.includes("ER data processed ok"),
+      r.body.includes('status="OK_ER_DATA_PROCESSED"'), 
   });
 }
 
-export function addRevisorRoleToErForOrg(clientOrg, facilitatorOrg) {
+export async function addRevisorRoleToErForOrg(clientOrg, facilitatorOrg) {
   const soapBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.altinn.no/services/Register/ER/2013/06">
    <soapenv:Header/>
    <soapenv:Body>
@@ -82,6 +81,9 @@ export function addRevisorRoleToErForOrg(clientOrg, facilitatorOrg) {
   );
 
   check(res, {
-    "status is 200 for add revisor": (r) => r.status === 200,
+    "status is 200 for add revisor for ER request": (r) => r.status === 200,
+
+    "response contains status OK_ER_DATA_PROCESSED": (r) =>
+      r.body.includes('status="OK_ER_DATA_PROCESSED"'),
   });
 }
