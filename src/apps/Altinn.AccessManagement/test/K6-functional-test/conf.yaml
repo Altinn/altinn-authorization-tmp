@@ -1,25 +1,15 @@
 namespace: authentication
 test_definitions:
-  - test_file: src/apps/Altinn.AccessManagement/test/K6-functional-test/api-test.js
+  - test_file: src/apps/Altinn.AccessManagement/test/K6-functional-test/end-to-end.js
     # env_file: <path to where you have your env vars that are common to all environments>
     contexts:
       - environment: at22
         test_run:
           env:
-            - name: ENV_SPECIFIC_VAR
-              value: "AAA"
+            - name: ENVIRONMENT
+              value: "at22"
           secrets:
             - soap-er-creds
             - token-generator-creds
             - authorization-subscription-key-at22
             - register-subscription-key-at22
-      - environment: tt02
-        test_run:
-          env:
-            - name: ENV_SPECIFIC_VAR
-              value: "BBB"
-          secrets:
-            - soap-er-creds
-            - token-generator-creds
-            - authorization-subscription-key-tt02
-            - register-subscription-key-tt02
