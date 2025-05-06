@@ -470,7 +470,7 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("42CAE370-2DC1-4FDC-9C67-C2F4B0F0F829"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Rettighetshaver",              Code = "rettighetshaver",               Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten", Urn = "urn:altinn:role:rettighetshaver", IsKeyRole = false, IsAssignable = true },
             new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = persEntityTypeId, ProviderId = a3ProviderId, Name = "Agent",                       Code = "agent",                         Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten", Urn = "urn:altinn:role:agent", IsKeyRole = false, IsAssignable = true },
             new Role() { Id = Guid.Parse("6795081e-e69c-4efd-8d42-2bfccd346777"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Klientadministrator",          Code = "klientadministrator",           Description = "Gir mulighet til å administrere tilgang til tjenester videre til ansatte på vegne av deres kunder", Urn = "urn:altinn:role:klientadministrator", IsKeyRole = false, IsAssignable = true },
-            new Role() { Id = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Tilgangsstyrer",               Code = "tilgangsstyrer",                Description = "Gir mulighet til å gi videre tilganger for virksomheten som man selv har mottatt", Urn = "urn:altinn:role:tilgangsstyrer", IsKeyRole = false, IsAssignable = false },
+            new Role() { Id = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Tilgangsstyrer",               Code = "tilgangsstyrer",                Description = "Gir mulighet til å gi videre tilganger for virksomheten som man selv har mottatt", Urn = "urn:altinn:role:tilgangsstyrer", IsKeyRole = false, IsAssignable = true },
             new Role() { Id = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Hovedadministrator",           Code = "hovedadministrator",            Description = "Gir mulighet til å administrere alle tilganger for virksomheten", Urn = "urn:altinn:role:hovedadministrator", IsKeyRole = false, IsAssignable = true },
             new Role() { Id = Guid.Parse("b3f5c1e8-4e3b-4d2a-8c3e-1f2b3d4e5f6a"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Maskinporten administrator",   Code = "maskinporten-administrator",    Description = "Gir bruker mulighet til å administrere tilgang til maskinporten scopes", Urn = "urn:altinn:role:maskinporten-administrator", IsKeyRole = false, IsAssignable = true },
 
@@ -961,7 +961,6 @@ public class DbDataMigrationService(
         var area_fullmakter_for_revisor = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_revisor")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Fullmakter for revisor")); /*7df15290-f43c-4831-a1b4-3edfa43e526d*/
         var area_fullmakter_for_konkursbo = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_konkursbo")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Fullmakter for konkursbo")); /*f3daddb7-6e21-455e-b6d2-65a281375b6b*/
         var area_fullmakter_for_forretningsforer = areas.FirstOrDefault(t => t.Urn == "accesspackage:area:fullmakter_for_forretningsforer")?.Id ?? throw new KeyNotFoundException(string.Format("Area not found '{0}'", "Fullmakter for forretningsforer")); /*0195efb8-7c80-76b3-bb86-ae9dfd74bca2*/
-
 
         var packages = new List<Package>()
         {
@@ -2005,7 +2004,10 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:post-til-virksomheten-med-taushetsbelagt-innhold"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:eksplisitt"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
-            new RolePackage() { RoleId = roles["urn:altinn:role:bo"]},
+            new RolePackage()
+            {
+                RoleId = roles["urn:altinn:role:bo"]
+            },
         };
 
         await ingestService.IngestAndMergeData(rolePackages, options: options, null, cancellationToken);
