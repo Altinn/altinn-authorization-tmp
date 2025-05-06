@@ -1,13 +1,18 @@
 namespace: authentication
 test_definitions:
   - test_file: src/apps/Altinn.AccessManagement/test/K6-functional-test/end-to-end.js
-    # env_file: <path to where you have your env vars that are common to all environments>
     contexts:
       - environment: at22
         test_run:
           env:
             - name: ENVIRONMENT
               value: "at22"
+            - name: K6_SUMMARY_MODE
+              value: full
+            - name: K6_ITERATIONS      <----------- This 
+              value: 1
+            - name: K6_VUS             <----------- and this
+              value: 1
           secrets:
             - soap-er-creds
             - token-generator-creds
