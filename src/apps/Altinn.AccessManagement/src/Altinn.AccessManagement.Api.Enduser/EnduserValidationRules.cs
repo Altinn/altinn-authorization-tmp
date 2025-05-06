@@ -181,10 +181,19 @@ public static class ValidationRules
     {
         private static IEnumerable<string> ParamKeywords { get; } = ["me", "all"];
 
-        private static string ParamKeywordsToString = "<me, all | unspecified>";
+        private static string ParamKeywordsToString { get; } = "<me, all | unspecified>";
 
+        /// <summary>
+        /// Checks if any packages exist with given ID.
+        /// </summary>
+        /// <param name="packages">Lists of packages</param>
+        /// <param name="paramName">name of query parameter</param>
+        /// <returns></returns>
         public static FuncExpression AnyPackages(IEnumerable<ConnectionPackage> packages, string paramName = "packageId") => () =>
         {
+            ArgumentNullException.ThrowIfNull(packages);
+            ArgumentException.ThrowIfNullOrEmpty(paramName);
+
             if (packages.Any())
             {
                 return null;
@@ -194,8 +203,17 @@ public static class ValidationRules
                 errors.Add(ValidationErrors.InvalidResource, $"QUERY/{paramName}", [new("Packages", $"No packages found.")]);
         };
 
+        /// <summary>
+        /// Checks the list of packages all <see cref="Package.IsAssignable"/> is set to true.
+        /// </summary>
+        /// <param name="packages">list of packages</param>
+        /// <param name="paramName">name of the query parameter</param>
+        /// <returns></returns>
         public static FuncExpression PackageIsAssignableByDefinition(IEnumerable<ExtConnectionPackage> packages, string paramName = "packageId") => () =>
         {
+            ArgumentNullException.ThrowIfNull(packages);
+            ArgumentException.ThrowIfNullOrEmpty(paramName);
+
             if (packages.All(t => t.Package.IsAssignable))
             {
                 return null;
@@ -209,8 +227,17 @@ public static class ValidationRules
                 errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("Packages", $"{string.Join(",", packagesNotAssignable)} are not assignable.")]);
         };
 
+        /// <summary>
+        /// Checks is packages can be asigned by checking <see cref="ConnectionPackage.CanAssign"/> is set to to true.
+        /// </summary>
+        /// <param name="packages">List of packages.</param>
+        /// <param name="paramName">name of the query parameter.</param>
+        /// <returns></returns>
         public static FuncExpression PackageIsAssignableByUser(IEnumerable<ConnectionPackage> packages, string paramName = "packageId") => () =>
         {
+            ArgumentNullException.ThrowIfNull(packages);
+            ArgumentException.ThrowIfNullOrEmpty(paramName);
+
             if (packages.All(t => t.CanAssign))
             {
                 return null;
@@ -224,8 +251,17 @@ public static class ValidationRules
                 errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("Packages", $"Packages with IDs {string.Join(",", packagesNotAssignableByUser)} can't be assigned by user.")]);
         };
 
+        /// <summary>
+        /// Used to check if package exists by check URN and resulkt of the DB lookup.
+        /// </summary>
+        /// <param name="packages">List of packags</param>
+        /// <param name="paramName">name of the query URN parameter.</param>
+        /// <returns></returns>
         public static FuncExpression PackageUrnLookup(IEnumerable<Package> packages, string paramName = "packageUrn") => () =>
         {
+            ArgumentNullException.ThrowIfNull(packages);
+            ArgumentException.ThrowIfNullOrEmpty(paramName);
+
             if (packages?.Count() == 1)
             {
                 return null;
@@ -235,18 +271,30 @@ public static class ValidationRules
                 errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, $"QUERY/{paramName}", [new("packages", string.Join(",", packages.Select(p => p.Id.ToString())))]);
         };
 
+        /// <summary>
+        /// Checks if any packages are assigned. Used along with cascade delete
+        /// </summary>
+        /// <param name="packages">List of packages.</param>
+        /// <param name="paramName">name of the query parameter.</param>
         public static FuncExpression HasPackagesAssigned(IEnumerable<AssignmentPackage> packages, string paramName = "cascade") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
+            ArgumentException.ThrowIfNullOrEmpty(paramName);
+
             if (packages.Any())
             {
                 return (ref ValidationErrorBuilder errors) =>
-                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, $"QUERY/{paramName}", [new("packages", string.Join(",", packages.Select(p => p.Id.ToString())))]);
+                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, $"QUERY/{paramName}", [new("packages", $"following packages has active assignments [{string.Join(",", packages.Select(p => p.Id.ToString()))}].")]);
             }
 
             return null;
         };
 
+        /// <summary>
+        /// Checks if any delegations are given assigned. Used along with cascade delete
+        /// </summary>
+        /// <param name="packages">List of packages.</param>
+        /// <param name="paramName">name of the query parameter.</param>
         public static FuncExpression HasDelegationsAssigned(IEnumerable<Delegation> delegations, string paramName = "cascade") => () =>
         {
             ArgumentNullException.ThrowIfNull(delegations);

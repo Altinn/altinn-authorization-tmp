@@ -23,7 +23,6 @@ public class ConnectionService(
     IEntityRepository entityRepository
     ) : IEnduserConnectionService
 {
-
     private IDbAudit DbAudit { get; } = dbAudit;
 
     private IConnectionRepository ConnectionRepository { get; } = connectionRepository;
