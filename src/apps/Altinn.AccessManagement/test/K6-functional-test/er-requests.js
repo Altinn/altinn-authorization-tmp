@@ -9,16 +9,18 @@ export function removeRevisorRoleFromEr(clientOrg, facilitatorOrg) {
         <ns:SubmitERDataBasic>
            <ns:systemUserName>${__ENV.SOAP_ER_USERNAME}</ns:systemUserName>
            <ns:systemPassword>${__ENV.SOAP_ER_PASSWORD}</ns:systemPassword>
-           <ns:ERData><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<batchAjourholdXML>
-  <head avsender="BRG" dato="20170714" kjoerenr="00001" mottaker="ALT" type="A" />
-  <enhet organisasjonsnummer="${clientOrg}" organisasjonsform="AS" hovedsakstype="N" undersakstype="NY" foersteOverfoering="N" datoFoedt="20210315" datoSistEndret="20210315">
-    <samendringer felttype="REVI" endringstype="U" type="K" data="D">
-      <knytningOrganisasjonsnummer>${facilitatorOrg}</knytningOrganisasjonsnummer>
-    </samendringer> 
-  </enhet>
-  <trai antallEnheter="1" avsender="BRG" />
-</batchAjourholdXML>]]></ns:ERData>
+           <ns:ERData>
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+              <batchAjourholdXML>
+                <head avsender="BRG" dato="20170714" kjoerenr="00001" mottaker="ALT" type="A" />
+                <enhet organisasjonsnummer="${clientOrg}" organisasjonsform="AS" hovedsakstype="N" undersakstype="NY" foersteOverfoering="N" datoFoedt="20210315" datoSistEndret="20210315">
+                  <samendringer felttype="REVI" endringstype="U" type="K" data="D">
+                    <knytningOrganisasjonsnummer>${facilitatorOrg}</knytningOrganisasjonsnummer>
+                  </samendringer> 
+                </enhet>
+                <trai antallEnheter="1" avsender="BRG" />
+              </batchAjourholdXML>]]
+          </ns:ERData>
         </ns:SubmitERDataBasic>
      </soapenv:Body>
   </soapenv:Envelope>`;
@@ -42,7 +44,6 @@ export function removeRevisorRoleFromEr(clientOrg, facilitatorOrg) {
     "response contains message 'ER data processed ok'": (r) =>
       r.body.includes("ER data processed ok"),
   });
-
 }
 
 export function addRevisorRoleToErForOrg(clientOrg, facilitatorOrg) {
@@ -52,16 +53,18 @@ export function addRevisorRoleToErForOrg(clientOrg, facilitatorOrg) {
       <ns:SubmitERDataBasic>
          <ns:systemUserName>${__ENV.SOAP_ER_USERNAME}</ns:systemUserName>
          <ns:systemPassword>${__ENV.SOAP_ER_PASSWORD}</ns:systemPassword>
-         <ns:ERData><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<batchAjourholdXML>
-  <head avsender="BRG" dato="20170714" kjoerenr="00001" mottaker="ALT" type="A" />
-  <enhet organisasjonsnummer="${clientOrg}" organisasjonsform="AS" hovedsakstype="N" undersakstype="NY" foersteOverfoering="N" datoFoedt="20210315" datoSistEndret="20210315">
-    <samendringer felttype="REVI" endringstype="N" type="K" data="D">
-      <knytningOrganisasjonsnummer>${facilitatorOrg}</knytningOrganisasjonsnummer>
-    </samendringer>
-  </enhet>
-  <trai antallEnheter="1" avsender="BRG" />
-</batchAjourholdXML>]]></ns:ERData>
+         <ns:ERData>
+         <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+          <batchAjourholdXML>
+            <head avsender="BRG" dato="20170714" kjoerenr="00001" mottaker="ALT" type="A" />
+            <enhet organisasjonsnummer="${clientOrg}" organisasjonsform="AS" hovedsakstype="N" undersakstype="NY" foersteOverfoering="N" datoFoedt="20210315" datoSistEndret="20210315">
+              <samendringer felttype="REVI" endringstype="N" type="K" data="D">
+                <knytningOrganisasjonsnummer>${facilitatorOrg}</knytningOrganisasjonsnummer>
+              </samendringer>
+            </enhet>
+            <trai antallEnheter="1" avsender="BRG" />
+          </batchAjourholdXML>]]>
+        </ns:ERData>
       </ns:SubmitERDataBasic>
    </soapenv:Body>
 </soapenv:Envelope>`;
