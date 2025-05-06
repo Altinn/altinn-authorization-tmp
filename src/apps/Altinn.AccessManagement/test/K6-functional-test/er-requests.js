@@ -2,7 +2,7 @@ import http from "k6/http";
 import { check, fail } from "k6";
 
 // Function to send SOAP request with dynamic organisasjonsnummer
-export async function removeRevisorRoleFromEr(clientOrg, facilitatorOrg) {
+export function removeRevisorRoleFromEr(clientOrg, facilitatorOrg) {
   const soapReqBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.altinn.no/services/Register/ER/2013/06">
       <soapenv:Header/>
       <soapenv:Body>
@@ -40,20 +40,16 @@ export async function removeRevisorRoleFromEr(clientOrg, facilitatorOrg) {
       "status code MUST be 200": (res) => res.status == 200,
     })
   ) {
-    fail("status code was *not* 200 with response body:  " + res.body);
+    fail(`status code was not 200 with response body: ${res.body}`);
   }
 
   check(res, {
     "response contains status OK_ER_DATA_PROCESSED": (r) =>
       r.body.includes('status="OK_ER_DATA_PROCESSED"'),
   });
-
-  check(res, {
-    "response code was 200": (res) => res.status == 200,
-  });
 }
 
-export async function addRevisorRoleToErForOrg(clientOrg, facilitatorOrg) {
+export function addRevisorRoleToErForOrg(clientOrg, facilitatorOrg) {
   const soapBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://www.altinn.no/services/Register/ER/2013/06">
     <soapenv:Header/>
     <soapenv:Body>
@@ -90,7 +86,7 @@ export async function addRevisorRoleToErForOrg(clientOrg, facilitatorOrg) {
       "status code MUST be 200": (res) => res.status == 200,
     })
   ) {
-    "status code was *not* 200 with response body:  " + res.body;
+    fail(`status code was not 200 with response body: ${res.body}`);
   }
 
   check(res, {

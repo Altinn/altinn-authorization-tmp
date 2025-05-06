@@ -5,40 +5,47 @@ import { sleep, check } from "k6";
  *
  * Uses `check()` to report pass/fail instead of throwing.
  *
- * @param {Function} fn - Function that throws an Error if the condition is not met.
+ * @param {Function} conditionFn - Function that returns true on success, false otherwise.
  * @param {Object} options - Retry settings.
- * @param {number} options.retries - How many times to retry (default 5).
- * @param {number} options.intervalSeconds - Seconds between attempts (default 2).
- * @param {string} options.testscenario - Check label prefix for reporting (default: "retry check").
- * @returns {*} - Result of `fn()` on success, or null if all retries fail.
+ * @param {number} options.retries - How many times to retry (default 10).
+ * @param {number} options.intervalSeconds - Seconds between attempts (default 5).
+ * @param {string} options.testscenario - Prefix used in log/check output.
+ * @returns {boolean} - true if success within retry limit, false otherwise.
  */
-export async function retry(conditionFn, options = {}) {
+export function retry(conditionFn, options = {}) {
   const {
     retries = 10,
     intervalSeconds = 5,
-    testscenario = "unnamed scenario",
+    testscenario = "retry check",
   } = options;
+
+  let success = false;
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const result = await conditionFn();
+      const result = conditionFn();
 
       if (result) {
-        console.log(`${testscenario}] Condition met on attempt ${attempt}`);
-        return true;
+        console.log(`${testscenario}] condition met on attempt ${attempt}`);
+        success = true;
+        break;
       }
 
-      console.log(`${testscenario}] Attempt ${attempt}/${retries} — condition not met, retrying...`);
+      console.log(
+        `[… ${testscenario}] Attempt ${attempt}/${retries} — condition not met, retrying...`
+      );
     } catch (err) {
-      const msg = err?.message ?? JSON.stringify(err) ?? "Unknown error";
-      console.warn(`${testscenario}] Error on attempt ${attempt}: ${msg}`);
+      console.warn(`${testscenario}: Error on attempt ${attempt}:`);
     }
 
     if (attempt < retries) {
-      await new Promise((resolve) => setTimeout(resolve, intervalSeconds * 1000));
+      sleep(intervalSeconds);
     }
   }
 
-  console.error(`${testscenario}] Condition not met after ${retries} attempts.`);
-  return false;
+  check(success, {
+    [`${testscenario} succeeded within ${retries} retries`]: (s) => s === true,
+  });
+
+  return success;
 }
