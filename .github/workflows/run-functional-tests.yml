@@ -56,12 +56,7 @@ jobs:
         with:
           config_file: "${{ inputs.configFilePath || 'src/apps/Altinn.AccessManagement/test/K6-functional-test/conf.yaml' }}" # No inputs when running as a cron
 
-      - name: tree
+      - name: Apply k8s manifests
         shell: bash
         run: |
-            tree .dist
-
-    #   - name: Apply k8s manifests
-    #     shell: bash
-    #     run: |
-    #       kubectl apply -f .dist/ -R
+           kubectl apply -f .dist/ -R
