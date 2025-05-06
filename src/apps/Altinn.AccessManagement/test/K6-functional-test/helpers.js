@@ -32,7 +32,7 @@ export function retry(conditionFn, options = {}) {
       }
 
       console.log(
-        `[… ${testscenario}] Attempt ${attempt}/${retries} — condition not met, retrying...`
+        `${testscenario}] Attempt ${attempt}/${retries} — condition not met, retrying...`
       );
     } catch (err) {
       console.warn(`${testscenario}: Error on attempt ${attempt}:`);
