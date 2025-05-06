@@ -1,10 +1,10 @@
 import { group, check } from "k6";
-import { getRevisorCustomerIdentifiersForParty } from "./register-test.js";
+import { getRevisorCustomerIdentifiersForParty } from "./helpers/register-test.js";
 import {
   removeRevisorRoleFromEr,
   addRevisorRoleToErForOrg,
-} from "./er-requests.js";
-import { retry } from "./helpers.js";
+} from "./helpers/er-requests.js";
+import { retry } from "./helpers/helpers.js";
 
 const facilitatorPartyUuidRevisor = "7c1170ec-8232-4998-a277-0ba224808541";
 const facilitatorOrg = "314239458";
