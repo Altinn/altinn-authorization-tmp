@@ -1,3 +1,4 @@
+using Altinn.AccessManagement.Api.Enduser.Controllers;
 using Altinn.AccessManagement.Api.Enduser.Mappers;
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Enduser.Services;

@@ -181,7 +181,7 @@ public static class ValidationRules
     {
         private static IEnumerable<string> ParamKeywords { get; } = ["me", "all"];
 
-        private static string ParamKeywordsToString { get; } = "<me, all | unspecified>";
+        private static string ParamKeywordsToString { get; } = "<me, all | blank, uuid>";
 
         /// <summary>
         /// Checks if any packages exist with given ID.
@@ -293,7 +293,7 @@ public static class ValidationRules
         /// <summary>
         /// Checks if any delegations are given assigned. Used along with cascade delete
         /// </summary>
-        /// <param name="packages">List of packages.</param>
+        /// <param name="delegations">List of delegations.</param>
         /// <param name="paramName">name of the query parameter.</param>
         public static FuncExpression HasDelegationsAssigned(IEnumerable<Delegation> delegations, string paramName = "cascade") => () =>
         {
@@ -307,6 +307,12 @@ public static class ValidationRules
             return null;
         };
 
+        /// <summary>
+        /// Checks if party exists
+        /// </summary>
+        /// <param name="party"></param>
+        /// <param name="paramName"></param>
+        /// <returns></returns>
         public static FuncExpression PartyExists(Entity party, string paramName = "party") => () =>
         {
             if (party is { })
@@ -332,6 +338,9 @@ public static class ValidationRules
                 errors.Add(ValidationErrors.EntityNotExists, $"QUERY/{paramName}", [new("party", $"Entity do not exists or entity is not of type '{entityType}'.")]);
         };
 
+        /// <summary>
+        /// Validates combination of input parameters
+        /// </summary>
         public static FuncExpression EnduserCreateCombination(Guid useruuid, string party, string from, string to) => () =>
         {
             if (!string.IsNullOrEmpty(party) && party.Equals("me", StringComparison.InvariantCultureIgnoreCase))
@@ -414,6 +423,14 @@ public static class ValidationRules
             };
         };
 
+        /// <summary>
+        /// Delete combination
+        /// </summary>
+        /// <param name="useruuid"></param>
+        /// <param name="party"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
         public static FuncExpression EnduserDeleteCombination(Guid useruuid, string party, string from, string to) => () =>
         {
             if (!string.IsNullOrEmpty(party) && party.Equals("me", StringComparison.InvariantCultureIgnoreCase))

@@ -189,6 +189,7 @@ internal static partial class AccessManagementHost
                 Type = SecuritySchemeType.ApiKey
             });
             options.OperationFilter<SecurityRequirementsOperationFilter>();
+            options.EnableAnnotations();
 
             var originalIdSelector = options.SchemaGeneratorOptions.SchemaIdSelector;
             options.SchemaGeneratorOptions.SchemaIdSelector = (Type t) =>

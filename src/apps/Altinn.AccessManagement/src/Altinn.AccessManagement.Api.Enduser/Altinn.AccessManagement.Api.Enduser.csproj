@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
     <ItemGroup>
         <PackageReference Include="Altinn.Common.PEP" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
