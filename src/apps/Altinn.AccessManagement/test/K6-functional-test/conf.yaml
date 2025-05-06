@@ -9,9 +9,9 @@ test_definitions:
               value: "at22"
             - name: K6_SUMMARY_MODE
               value: full
-            - name: K6_ITERATIONS      <----------- This 
+            - name: K6_ITERATIONS      
               value: 1
-            - name: K6_VUS             <----------- and this
+            - name: K6_VUS            
               value: 1
           secrets:
             - soap-er-creds
