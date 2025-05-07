@@ -26,6 +26,9 @@ public class ConnectionService(
     {
         var filter = connectionRepository.CreateFilterBuilder();
         filter.Equal(t => t.Id, Id);
+        filter.IsNull(t => t.FromId);
+        filter.IsNull(t => t.ToId);
+        filter.IsNull(t => t.FacilitatorId);
         var res = await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
         return res.FirstOrDefault();
     }
@@ -67,7 +70,8 @@ public class ConnectionService(
             throw new ArgumentException("You need to define a filter");
         }
 
-        return (await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken)).Data;
+        filter.IsNull(t => t.Id);
+        return await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -432,6 +436,18 @@ public static class ConnectionConverter
         {
             DelegationId = connection.Id,
             FromEntityId = connection.FromId
+        };
+    }
+
+    /// <summary>
+    /// Convert database model to response model
+    /// </summary>
+    public static CreateDelegationResponse ConvertToResponseModel(ExtDelegation delegation)
+    {
+        return new CreateDelegationResponse()
+        {
+            DelegationId = delegation.Id,
+            FromEntityId = delegation.From.FromId
         };
     }
 
