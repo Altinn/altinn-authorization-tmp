@@ -290,8 +290,20 @@ public class AssignmentService(
             options: options,
             cancellationToken: cancellationToken
         );
+        assignment = new Assignment()
+        {
+            FromId = fromEntityId,
+            ToId = toEntityId,
+            RoleId = role.Id
+        };
 
-        throw new NotImplementedException();
+        var result = await assignmentRepository.Create(assignment, options: options, cancellationToken: cancellationToken);
+        if (result == 0)
+        {
+            Unreachable();
+        }
+
+        return assignment;
     }
 
     /// <inheritdoc/>

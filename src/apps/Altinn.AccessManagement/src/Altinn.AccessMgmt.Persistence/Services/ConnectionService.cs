@@ -1,6 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
@@ -16,7 +15,6 @@ public class ConnectionService(
     IConnectionResourceRepository connectionResourceRepository,
     IPackageRepository packageRepository,
     IAssignmentService assignmentService,
-    IRoleRepository roleRepository,
     IAssignmentRepository assignmentRepository,
     IDelegationRepository delegationRepository,
     IAssignmentPackageRepository assignmentPackageRepository,
@@ -28,6 +26,9 @@ public class ConnectionService(
     {
         var filter = connectionRepository.CreateFilterBuilder();
         filter.Equal(t => t.Id, Id);
+        filter.IsNull(t => t.FromId);
+        filter.IsNull(t => t.ToId);
+        filter.IsNull(t => t.FacilitatorId);
         var res = await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
         return res.FirstOrDefault();
     }
@@ -69,6 +70,7 @@ public class ConnectionService(
             throw new ArgumentException("You need to define a filter");
         }
 
+        filter.IsNull(t => t.Id);
         return await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
     }
 
@@ -216,14 +218,7 @@ public class ConnectionService(
             filter.NotSet(t => t.ToId);
         }
 
-        //var options = new RequestOptions()
-        //{
-        //    PageNumber = 1,
-        //    PageSize = 50,
-        //    UsePaging = true
-        //};
-
-        return await connectionPackageRepository.Get(filter, cancellationToken: cancellationToken);
+        return (await connectionPackageRepository.Get(filter, cancellationToken: cancellationToken)).Data;
     }
 
     private async Task<IEnumerable<ExtConnectionPackage>> GetConnectionPackages(Guid fromId, Guid toId, Guid packageId, CancellationToken cancellationToken = default)
@@ -234,7 +229,7 @@ public class ConnectionService(
         filter.Equal(t => t.FromId, fromId);
         filter.Equal(t => t.ToId, toId);
         filter.Equal(t => t.PackageId, packageId);
-        return await connectionPackageRepository.GetExtended(filter, cancellationToken: cancellationToken);
+        return (await connectionPackageRepository.GetExtended(filter, cancellationToken: cancellationToken)).Data;
 
     }
 
@@ -354,7 +349,7 @@ public class ConnectionService(
         var checkResult = await assignmentPackageRepository.Get(filter, cancellationToken: cancellationToken);
         if (checkResult != null && checkResult.Any())
         {
-            return checkResult.First();
+            return checkResult.Data.First();
         }
 
         var createResult = await assignmentPackageRepository.CreateCross(assignmentId, packageId, options, cancellationToken: cancellationToken);
@@ -423,7 +418,7 @@ public class ConnectionService(
     /// <inheritdoc />
     public async Task<IEnumerable<Resource>> GetResources(Guid id, CancellationToken cancellationToken = default)
     {
-        return await connectionResourceRepository.GetB(id, cancellationToken: cancellationToken);
+        return (await connectionResourceRepository.GetB(id, cancellationToken: cancellationToken)).Data;
     }
 }
 
@@ -441,6 +436,18 @@ public static class ConnectionConverter
         {
             DelegationId = connection.Id,
             FromEntityId = connection.FromId
+        };
+    }
+
+    /// <summary>
+    /// Convert database model to response model
+    /// </summary>
+    public static CreateDelegationResponse ConvertToResponseModel(ExtDelegation delegation)
+    {
+        return new CreateDelegationResponse()
+        {
+            DelegationId = delegation.Id,
+            FromEntityId = delegation.From.FromId
         };
     }
 
