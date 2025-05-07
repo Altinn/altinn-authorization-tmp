@@ -220,7 +220,7 @@ public static class ValidationRules
             }
 
             var packagesNotAssignable = packages
-                .Where(p => p.CanAssign)
+                .Where(p => p.Package.IsAssignable)
                 .Select(p => p.Id);
 
             return (ref ValidationErrorBuilder errors) =>

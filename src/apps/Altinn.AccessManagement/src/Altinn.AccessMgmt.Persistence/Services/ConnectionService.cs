@@ -43,7 +43,7 @@ public class ConnectionService(
         }
         else
         {
-            filter.IsNull(t => t.FromId);
+            filter.NotSet(t => t.FromId);
         }
 
         if (toId.HasValue)
@@ -52,7 +52,7 @@ public class ConnectionService(
         }
         else
         {
-            filter.IsNull(t => t.ToId);
+            filter.NotSet(t => t.ToId);
         }
 
         if (facilitatorId.HasValue)
@@ -61,7 +61,7 @@ public class ConnectionService(
         }
         else
         {
-            filter.IsNull(t => t.FacilitatorId);
+            filter.NotSet(t => t.FacilitatorId);
         }
 
         if (!filter.Any())
@@ -204,7 +204,7 @@ public class ConnectionService(
         }
         else
         {
-            filter.IsNull(t => fromId);
+            filter.NotSet(t => fromId);
         }
 
         if (toId.HasValue)
@@ -213,7 +213,7 @@ public class ConnectionService(
         }
         else
         {
-            filter.IsNull(t => t.ToId);
+            filter.NotSet(t => t.ToId);
         }
 
         //var options = new RequestOptions()

@@ -49,7 +49,7 @@ public class GenericFilterBuilder<T> : IEnumerable<GenericFilter>
     /// <typeparam name="TProperty">The type of the property.</typeparam>
     /// <param name="property">An expression selecting the property to filter on.</param>
     /// <returns>The current instance of <see cref="GenericFilterBuilder{T}"/>, enabling a fluent API.</returns>
-    public GenericFilterBuilder<T> IsNull<TProperty>(Expression<Func<T, TProperty>> property)
+    public GenericFilterBuilder<T> NotSet<TProperty>(Expression<Func<T, TProperty>> property)
     {
         var propertyInfo = ExtractPropertyInfo(property);
         _filters.Add(new GenericFilter(propertyInfo.Name, null, FilterComparer.Equals));
