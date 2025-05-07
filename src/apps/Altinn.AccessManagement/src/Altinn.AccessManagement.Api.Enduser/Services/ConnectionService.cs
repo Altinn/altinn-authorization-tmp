@@ -238,13 +238,13 @@ public class ConnectionService(
             Unreachable();
         }
 
-        var createCheckResult = await AssignmentPackageRepository.Get(null, cancellationToken);
-        if (createCheckResult == null || !createCheckResult.Any())
+        var createCheckResult = await AssignmentPackageRepository.Get(assignment.Value.Id, null, cancellationToken);
+        if (createCheckResult == null)
         {
             Unreachable();
         }
 
-        return createCheckResult.First();
+        return createCheckResult;
     }
 
     /// <inheritdoc/>

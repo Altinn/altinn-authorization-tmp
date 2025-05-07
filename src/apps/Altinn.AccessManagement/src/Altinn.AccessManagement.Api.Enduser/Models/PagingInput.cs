@@ -26,14 +26,6 @@ public class PagingInput : IExamplesProvider<PagingInput>
     [SwaggerSchema(Description = "Page Number", Format = "[0, ∞)")]
     public uint PageNumber { get; set; } = 0;
 
-    /// <summary>
-    /// Which Lanauage
-    /// </summary>
-    [DefaultValue("nb")]
-    [FromHeader(Name = "X-Language")]
-    [SwaggerSchema(Description = "Language", Format = "(nb,nn,en)")]
-    public string Language { get; set; }
-
     /// <inheritdoc/>
     public PagingInput GetExamples()
     {
@@ -41,7 +33,6 @@ public class PagingInput : IExamplesProvider<PagingInput>
         {
             PageNumber = 2,
             PageSize = 56,
-            Language = "en",
         };
     }
 }
