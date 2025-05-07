@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
@@ -43,60 +44,45 @@ public class ConnectionService(
     private IEntityRepository EntityRepository { get; } = entityRepository;
 
     /// <inheritdoc />
-    public async Task<Result<List<ExtConnection>>> Get(Guid? from = null, Guid? to = null, Guid? facilitator = null, CancellationToken cancellationToken = default)
+    public async Task<Result<List<ExtConnection>>> Get(Guid? from = null, Guid? to = null, CancellationToken cancellationToken = default)
     {
         var filter = ConnectionRepository.CreateFilterBuilder();
+        static bool SetFrom(Guid? from, GenericFilterBuilder<Connection> filter)
+        {
+            if (from != null && from.HasValue && from.Value != Guid.Empty)
+            {
+                filter.Equal(t => t.FromId, from);
+                return true;
+            }
 
-        if (from != null && from.HasValue && from.Value != Guid.Empty)
-        {
-            filter.Equal(t => t.FromId, from);
-        }
-        else
-        {
             filter.NotSet(t => t.FromId);
+            return false;
         }
 
-        if (to != null && to.HasValue && to.Value != Guid.Empty)
+        static bool SetTo(Guid? to, GenericFilterBuilder<Connection> filter)
         {
-            filter.Equal(t => t.ToId, to);
-        }
-        else
-        {
+            if (to != null && to.HasValue && to.Value != Guid.Empty)
+            {
+                filter.Equal(t => t.ToId, to);
+                return true;
+            }
+
             filter.NotSet(t => t.ToId);
+            return false;
         }
 
-        if (facilitator != null && facilitator.HasValue && facilitator.Value != Guid.Empty)
+        if (SetFrom(from, filter) || SetTo(to, filter))
         {
-            filter.Equal(t => t.FacilitatorId, facilitator);
-        }
-        else
-        {
+            filter.NotSet(t => t.Id);
             filter.NotSet(t => t.FacilitatorId);
         }
-
-        if (filter.Empty)
+        else
         {
             Unreachable();
         }
 
-        filter.NotSet(t => t.Id);
         var result = await ConnectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
         return result?.ToList() ?? [];
-    }
-
-    /// <inheritdoc />
-    public async Task<Result<ExtConnection>> Get(Guid id, CancellationToken cancellationToken = default)
-    {
-        var filter = ConnectionRepository.CreateFilterBuilder();
-
-        filter.Equal(t => t.Id, id);
-
-        filter.NotSet(t => t.FromId);
-        filter.NotSet(t => t.ToId);
-        filter.NotSet(t => t.FacilitatorId);
-        
-        var result = await ConnectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
-        return result.FirstOrDefault();
     }
 
     /// <inheritdoc />
@@ -189,25 +175,36 @@ public class ConnectionService(
     public async Task<Result<List<ConnectionPackage>>> GetPackages(Guid? from, Guid? to, CancellationToken cancellationToken = default)
     {
         var filter = ConnectionPackageRepository.CreateFilterBuilder();
-        if (from.HasValue && from.Value != Guid.Empty)
+        static bool SetFrom(Guid? from, GenericFilterBuilder<ConnectionPackage> filter)
         {
-            filter.Equal(t => t.FromId, from);
-        }
-        else
-        {
+            if (from != null && from.HasValue && from.Value != Guid.Empty)
+            {
+                filter.Equal(t => t.FromId, from);
+                return true;
+            }
+
             filter.NotSet(t => t.FromId);
+            return false;
         }
 
-        if (to.HasValue && to.Value != Guid.Empty)
+        static bool SetTo(Guid? to, GenericFilterBuilder<ConnectionPackage> filter)
         {
-            filter.Equal(t => t.ToId, to);
+            if (to != null && to.HasValue && to.Value != Guid.Empty)
+            {
+                filter.Equal(t => t.ToId, to);
+                return true;
+            }
+
+            filter.NotSet(t => t.ToId);
+            return false;
+        }
+
+        if (SetFrom(from, filter) || SetTo(to, filter))
+        {
+            filter.NotSet(t => t.Id);
+            filter.NotSet(t => t.FacilitatorId);
         }
         else
-        {
-            filter.NotSet(t => t.ToId);
-        }
-
-        if (filter.Empty)
         {
             Unreachable();
         }

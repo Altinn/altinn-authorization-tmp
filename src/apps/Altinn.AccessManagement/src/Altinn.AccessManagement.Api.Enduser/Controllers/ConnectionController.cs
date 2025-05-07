@@ -43,42 +43,19 @@ public class ConnectionController(IHttpContextAccessor accessor, IEnduserConnect
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetConnections([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
-        var userUuid = Audit.Value;
-        if (ValidationRules.EnduserGetConnection(userUuid.ChangedBy, connection.Party, connection.From, connection.To) is var problem && problem is { })
+        var user = Audit.Value;
+        if (ValidationRules.EnduserGetConnection(user.ChangedBy, connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
 
-        var result = await ConnectionService.Get(from: connection.From.ConvertToUuid(userUuid.ChangedBy), to: connection.To.ConvertToUuid(userUuid.ChangedBy), cancellationToken: cancellationToken);
+        var result = await ConnectionService.Get(from: connection.From.TryConvertToUuid(user.ChangedBy), to: connection.To.TryConvertToUuid(user.ChangedBy), cancellationToken: cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
         }
 
         return Ok(PaginatedResult.Create(result.Value, null));
-    }
-
-    /// <summary>
-    /// Get connections between the authenticated user's selected party and the specified target party.
-    /// </summary>
-    [HttpGet("{id}")]
-    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
-    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-    [ProducesResponseType<ExtConnection>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
-    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetConnection([FromQuery] Guid party, [FromRoute] Guid id, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
-    {
-        var userUuid = Audit.Value;
-        
-        var result = await ConnectionService.Get(id, cancellationToken: cancellationToken);
-        if (result.Value.FromId == party || result.Value.ToId == party || result.Value.FacilitatorId == party)
-        {
-            return Ok(result.Value);
-        }
-
-        return NotFound();
     }
 
     /// <summary>
@@ -93,13 +70,13 @@ public class ConnectionController(IHttpContextAccessor accessor, IEnduserConnect
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddAssignment([FromQuery] ConnectionInput connection, CancellationToken cancellationToken = default)
     {
-        var audit = Audit.Value;
-        if (ValidationRules.EnduserAddConnection(audit.ChangedBy, connection.Party, connection.From, connection.To) is var problem && problem is { })
+        var user = Audit.Value;
+        if (ValidationRules.EnduserAddConnection(user.ChangedBy, connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
 
-        var result = await ConnectionService.AddAssignment(connection.From.ConvertToUuid(audit.ChangedBy), connection.To.ConvertToUuid(audit.ChangedBy), "rettighetshaver", cancellationToken);
+        var result = await ConnectionService.AddAssignment(connection.From.TryConvertToUuid(user.ChangedBy), connection.To.TryConvertToUuid(user.ChangedBy), "rettighetshaver", cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -120,13 +97,13 @@ public class ConnectionController(IHttpContextAccessor accessor, IEnduserConnect
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemoveAssignment([FromQuery] ConnectionInput connection, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
-        var audit = Audit.Value;
-        if (ValidationRules.EnduserRemoveConnection(audit.ChangedBy, connection.Party, connection.From, connection.To) is var problem && problem is { })
+        var user = Audit.Value;
+        if (ValidationRules.EnduserRemoveConnection(user.ChangedBy, connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
 
-        problem = await ConnectionService.RemoveAssignment(connection.From.ConvertToUuid(audit.ChangedBy), connection.To.ConvertToUuid(audit.ChangedBy), "rettighetshaver", cascade, cancellationToken);
+        problem = await ConnectionService.RemoveAssignment(connection.From.TryConvertToUuid(user.ChangedBy), connection.To.TryConvertToUuid(user.ChangedBy), "rettighetshaver", cascade, cancellationToken);
         if (problem is { })
         {
             problem.ToActionResult();
@@ -140,19 +117,20 @@ public class ConnectionController(IHttpContextAccessor accessor, IEnduserConnect
     /// </summary>
     [HttpGet("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
     [ProducesResponseType<PaginatedResult<ConnectionPackage>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetPackages([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
-        var partyUuid = Accessor.GetPartyUuid();
-        if (ValidationRules.EnduserGetConnection(partyUuid, connection.Party, connection.From, connection.To) is var problem && problem is { })
+        var user = Audit.Value;
+        if (ValidationRules.EnduserGetConnection(user.ChangedBy, connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
 
-        var result = await ConnectionService.GetPackages(connection.From.ConvertToUuid(partyUuid), connection.To.ConvertToUuid(partyUuid), cancellationToken);
+        var result = await ConnectionService.GetPackages(connection.From.TryConvertToUuid(user.ChangedBy), connection.To.TryConvertToUuid(user.ChangedBy), cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -173,8 +151,6 @@ public class ConnectionController(IHttpContextAccessor accessor, IEnduserConnect
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddPackages([FromQuery] ConnectionInput connection, [FromQuery] Guid? packageId, [FromQuery] string packageUrn, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-
         var useruuid = Accessor.GetPartyUuid();
         if (ValidationRules.EnduserAddConnection(useruuid, connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
@@ -185,10 +161,10 @@ public class ConnectionController(IHttpContextAccessor accessor, IEnduserConnect
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.AddPackage(connection.From.ConvertToUuid(useruuid), connection.To.ConvertToUuid(useruuid), "rettighetshaver", packageId.Value, cancellationToken);
+                return await ConnectionService.AddPackage(connection.From.TryConvertToUuid(useruuid), connection.To.TryConvertToUuid(useruuid), "rettighetshaver", packageId.Value, cancellationToken);
             }
 
-            return await ConnectionService.AddPackage(connection.From.ConvertToUuid(useruuid), connection.To.ConvertToUuid(useruuid), "rettighetshaver", packageUrn, cancellationToken);
+            return await ConnectionService.AddPackage(connection.From.TryConvertToUuid(useruuid), connection.To.TryConvertToUuid(useruuid), "rettighetshaver", packageUrn, cancellationToken);
         }
 
         var result = await AddPackage();
@@ -212,15 +188,13 @@ public class ConnectionController(IHttpContextAccessor accessor, IEnduserConnect
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemovePackages([FromQuery] ConnectionInput connection, [FromQuery] Guid package, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
-
         var useruuid = Accessor.GetPartyUuid();
         if (ValidationRules.EnduserAddConnection(useruuid, connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
 
-        problem = await ConnectionService.RemovePackage(connection.From.ConvertToUuid(useruuid), connection.To.ConvertToUuid(useruuid), "rettighetshaver", package, cancellationToken);
+        problem = await ConnectionService.RemovePackage(connection.From.TryConvertToUuid(useruuid), connection.To.TryConvertToUuid(useruuid), "rettighetshaver", package, cancellationToken);
         if (problem is { })
         {
             return problem.ToActionResult();

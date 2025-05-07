@@ -6,9 +6,9 @@ internal static class StringExtensions
     /// Add support for me
     /// </summary>
     /// <param name="value"></param>
-    /// <param name="party"></param>
+    /// <param name="fallback"></param>
     /// <returns></returns>
-    internal static Guid ConvertToUuid(this string value, Guid party)
+    internal static Guid TryConvertToUuid(this string value, Guid fallback)
     {
         if (string.IsNullOrEmpty(value) || value.Equals("all", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -17,7 +17,7 @@ internal static class StringExtensions
 
         if (value.Equals("me", StringComparison.InvariantCultureIgnoreCase))
         {
-            return party;
+            return fallback;
         }
 
         return Guid.Parse(value);
