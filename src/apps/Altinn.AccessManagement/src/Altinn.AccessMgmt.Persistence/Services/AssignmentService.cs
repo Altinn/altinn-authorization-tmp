@@ -290,8 +290,6 @@ public class AssignmentService(
             options: options, 
             cancellationToken: cancellationToken
         );
-
-        throw new NotImplementedException();
     }
 
     /// <inheritdoc/>
