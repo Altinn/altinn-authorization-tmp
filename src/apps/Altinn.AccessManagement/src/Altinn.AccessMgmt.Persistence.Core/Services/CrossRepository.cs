@@ -2,7 +2,6 @@
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Utilities;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Services;
 

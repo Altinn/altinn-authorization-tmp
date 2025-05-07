@@ -2,7 +2,6 @@
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
-using Altinn.AccessMgmt.Persistence.Core.Utilities;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Contracts;
 

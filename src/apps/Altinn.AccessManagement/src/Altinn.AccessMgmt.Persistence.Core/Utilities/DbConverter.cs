@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using Altinn.AccessMgmt.Persistence.Core.Models;
+using System.Collections.Concurrent;
 using System.Data;
 using System.Reflection;
 using System.Text.Json;
