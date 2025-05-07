@@ -2003,11 +2003,6 @@ public class DbDataMigrationService(
 
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:post-til-virksomheten-med-taushetsbelagt-innhold"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:eksplisitt"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
-
-            new RolePackage()
-            {
-                RoleId = roles["urn:altinn:role:bo"]
-            },
         };
 
         await ingestService.IngestAndMergeData(rolePackages, options: options, null, cancellationToken);
