@@ -129,10 +129,8 @@ public static class ValidationRules
     /// </returns>
     public static ValidationProblemInstance EnduserAddConnection(Guid userUuid, string party, string from, string to) => Validate(
         QueryParameters.Party(party),
-        Any(
-            QueryParameters.PartyFrom(from),
-            QueryParameters.PartyTo(to)
-        ),
+        QueryParameters.PartyFrom(from),
+        QueryParameters.PartyTo(to),
         QueryParameters.EnduserCreateCombination(userUuid, party, from, to)
     );
 
@@ -167,10 +165,8 @@ public static class ValidationRules
     /// </returns>
     public static ValidationProblemInstance EnduserRemoveConnection(Guid userUuid, string party, string from, string to) => Validate(
         QueryParameters.Party(party),
-        Any(
-            QueryParameters.PartyFrom(from),
-            QueryParameters.PartyTo(to)
-        ),
+        QueryParameters.PartyFrom(from),
+        QueryParameters.PartyTo(to),
         QueryParameters.EnduserDeleteCombination(userUuid, party, from, to)
     );
 
