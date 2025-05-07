@@ -86,10 +86,10 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Entity>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 8))
+        if (migrationService.NeedMigration<Role>(dataKey, 9))
         {
             await IngestRole(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 8);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 9);
         }
 
         if (migrationService.NeedMigration<RoleMap>(dataKey, 3))
