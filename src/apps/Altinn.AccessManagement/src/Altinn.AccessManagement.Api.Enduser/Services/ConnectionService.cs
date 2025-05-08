@@ -70,7 +70,10 @@ public class ConnectionService(
             return false;
         }
 
-        if (SetFrom(from, filter) || SetTo(to, filter))
+        var setFrom = SetFrom(from, filter);
+        var setTo = SetTo(to, filter);
+
+        if (setFrom || setTo)
         {
             filter.NotSet(t => t.Id);
             filter.NotSet(t => t.FacilitatorId);
@@ -198,7 +201,10 @@ public class ConnectionService(
             return false;
         }
 
-        if (SetFrom(from, filter) || SetTo(to, filter))
+        var setFrom = SetFrom(from, filter);
+        var setTo = SetTo(to, filter);
+
+        if (setFrom || setTo)
         {
             filter.NotSet(t => t.Id);
             filter.NotSet(t => t.FacilitatorId);

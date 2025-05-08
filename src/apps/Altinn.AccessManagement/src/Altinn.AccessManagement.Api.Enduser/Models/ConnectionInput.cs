@@ -6,7 +6,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Models;
 /// <summary>
 /// Input for connection controller.
 /// </summary>
-[ModelBinder(BinderType = typeof(ConnectionInput))]
 public class ConnectionInput
 {
     /// <summary>
