@@ -26,9 +26,9 @@ public class ConnectionService(
     {
         var filter = connectionRepository.CreateFilterBuilder();
         filter.Equal(t => t.Id, Id);
-        filter.IsNull(t => t.FromId);
-        filter.IsNull(t => t.ToId);
-        filter.IsNull(t => t.FacilitatorId);
+        filter.NotSet(t => t.FromId);
+        filter.NotSet(t => t.ToId);
+        filter.NotSet(t => t.FacilitatorId);
         var res = await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
         return res.FirstOrDefault();
     }
@@ -70,7 +70,7 @@ public class ConnectionService(
             throw new ArgumentException("You need to define a filter");
         }
 
-        filter.IsNull(t => t.Id);
+        filter.NotSet(t => t.Id);
         return await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
     }
 
@@ -149,13 +149,13 @@ public class ConnectionService(
 
         var assignment = assignmentRepository.Get(connectionId, cancellationToken: cancellationToken);
         var delegation = delegationRepository.Get(connectionId, cancellationToken: cancellationToken);
-        
+
         if (assignment != null)
         {
             var res = await GetOrCreateAssignmentPackage(connectionId, packageId, options, cancellationToken: cancellationToken);
             return true;
         }
-        
+
         if (delegation != null)
         {
             var res = await GetOrCreateDelegationPackage(connectionId, packageId, options, cancellationToken: cancellationToken);
@@ -187,7 +187,7 @@ public class ConnectionService(
 
         return false;
     }
-    
+
     private async Task<IEnumerable<ConnectionPackage>> GetConnectionPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default)
     {
         /* Get packages assigned to entity from a specific entity, to see if entity can assign it to another entity */
