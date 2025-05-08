@@ -67,10 +67,10 @@ public class SystemUserClientDelegationController : ControllerBase
     /// </summary>
     /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
     /// <param name="systemUser">The system user the authenticated user is delegating access to</param>
-    /// <returns><seealso cref="ConnectionDto"/>List of connections</returns>
+    /// <returns><seealso cref="DelegationDto"/>List of connections</returns>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
-    public async Task<ActionResult<ConnectionDto>> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser)
+    public async Task<ActionResult<DelegationDto>> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)
@@ -78,14 +78,9 @@ public class SystemUserClientDelegationController : ControllerBase
             return Unauthorized();
         }
 
-        var dbResult = await connectionService.Get(fromId: null, toId: systemUser, facilitatorId: party);
-        var res = new List<ConnectionDto>();
-        foreach (var r in dbResult)
-        {
-            res.Add(ConnectionConverter.ConvertToDto(r));
-        }
-       
-        return Ok(res);
+        var result = await delegationService.Get(fromId: null, toId: systemUser, facilitatorId: party);
+
+        return Ok(result);
     }
 
     /// <summary>
