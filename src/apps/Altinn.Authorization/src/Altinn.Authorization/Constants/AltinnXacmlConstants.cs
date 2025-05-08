@@ -105,6 +105,11 @@ namespace Altinn.Platform.Authorization.Constants
             /// SystemUserId Attribute match identifier
             /// </summary>
             public const string SystemUserIdAttribute = "urn:altinn:systemuser:uuid";
+
+            /// <summary>
+            /// AccessPackage Attribute match identifier
+            /// </summary>
+            public const string AccessListAttribute = "urn:altinn:access-list";
         }
 
         /// <summary>

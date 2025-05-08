@@ -99,5 +99,10 @@ namespace Altinn.Platform.Authorization.Constants
         /// xacml attribute urn prefix that represents system user id
         /// </summary>
         public const string SystemUserIdAttribute = "urn:altinn:systemuser:uuid";
+
+        /// <summary>
+        /// xacml attribute urn prefix that represents the access list
+        /// </summary>
+        public const string AccessListAttribute = "urn:altinn:access-list";
     }
 }
