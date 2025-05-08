@@ -20,8 +20,8 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/connections")]
-// [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
-// [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+[FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
+[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class ConnectionController(IEnduserConnectionService connectionService) : ControllerBase
 {
     private IEnduserConnectionService ConnectionService { get; } = connectionService;
@@ -30,7 +30,7 @@ public class ConnectionController(IEnduserConnectionService connectionService) :
     /// Get connections between the authenticated user's selected party and the specified target party.
     /// </summary>
     [HttpGet]
-    // [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
     [ProducesResponseType<PaginatedResult<AssignmentExternal>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -58,7 +58,7 @@ public class ConnectionController(IEnduserConnectionService connectionService) :
     /// </summary>
     [HttpPost]
     [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
-    // [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<Assignment>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
