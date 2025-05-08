@@ -25,8 +25,6 @@ internal class AuditMiddleware(IDbAuditService auditService) : IMiddleware
                 var claim = context.User?.Claims?
                     .FirstOrDefault(c => c.Type.Equals(attr.Claim, StringComparison.OrdinalIgnoreCase));
 
-                claim = new Claim("test", "a5eb95db-97fc-4bd4-a6f6-b9214bc24549");
-
                 if (claim != null && Guid.TryParse(claim.Value, out var uuid))
                 {
                     AuditService.Set(new()
