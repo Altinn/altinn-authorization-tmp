@@ -60,7 +60,6 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
         }
 
         return roles.Select(t => new RoleDto(t));
-
     }
 
     /// <inheritdoc />

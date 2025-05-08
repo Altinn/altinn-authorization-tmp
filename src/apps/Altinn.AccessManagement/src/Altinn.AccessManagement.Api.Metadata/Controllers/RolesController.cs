@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Api.Metadata.Controllers
 {
+    /// <summary>
+    /// Metadata endpoints for Roles 
+    /// </summary>
     [Route("/accessmanagement/api/v1/meta/info/roles/")]
     [ApiController]
     public class RolesController : ControllerBase

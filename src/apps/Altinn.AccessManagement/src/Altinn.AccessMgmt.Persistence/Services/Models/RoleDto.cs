@@ -73,8 +73,5 @@ public class RoleDto
     /// <summary>
     /// Construct from Role
     /// </summary>
-    public RoleDto()
-    {
-        
-    }
+    public RoleDto() { }
 }

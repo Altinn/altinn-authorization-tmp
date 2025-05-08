@@ -1,5 +1,4 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
-using System;
 
 namespace Altinn.AccessMgmt.Persistence.Services.Models;
 
@@ -50,6 +49,5 @@ public class RolePackageDto
         EntityVariant = rolePackage.EntityVariant;
         HasAccess = rolePackage.HasAccess;
         CanDelegate = rolePackage.CanDelegate;
-
     }
 }
