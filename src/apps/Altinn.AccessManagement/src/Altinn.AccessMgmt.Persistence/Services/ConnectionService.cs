@@ -446,7 +446,8 @@ public static class ConnectionConverter
         return new CreateDelegationResponse()
         {
             DelegationId = delegation.Id,
-            FromEntityId = delegation.From.FromId
+            FromEntityId = delegation.From.FromId,
+            Delegation = ConvertToDto(delegation)
         };
     }
 
