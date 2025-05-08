@@ -35,6 +35,12 @@ public interface IRoleService
     Task<IEnumerable<RoleDto>> GetByKeyValue(string key, string value);
 
     /// <summary>
+    /// Get possible lookup keys
+    /// </summary>
+    /// <returns></returns>
+    Task<IEnumerable<string>> GetLookupKeys();
+
+    /// <summary>
     /// Get role for provider
     /// </summary>
     /// <param name="providerId">Provider identity</param>

@@ -77,6 +77,18 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
         return res.Select(t => new RoleDto(t.Role));
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<string>> GetLookupKeys()
+    {
+        var res = await roleLookupRepository.Get();
+        if (res == null || !res.Any())
+        {
+            return null;
+        }
+
+        return res.Select(t => t.Key).Distinct();
+    }
+
     /// <inheritdoc/>
     public async Task<IEnumerable<RolePackageDto>> GetPackagesForRole(Guid id)
     {

@@ -75,6 +75,23 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         }
 
         /// <summary>
+        /// Gets possible lookup keys for roles
+        /// </summary>
+        /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
+        [Route("lookup/keys")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<string>>> GetKeys()
+        {
+            var res = await roleService.GetLookupKeys();
+            if (res == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(res);
+        }
+
+        /// <summary>
         /// Gets all <see cref="RolePackageDto"/> for <see cref="RoleDto"/>
         /// </summary>
         /// <returns>A <see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
