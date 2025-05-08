@@ -39,19 +39,32 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             sb.AppendLine($"set local app.asof = '{options.AsOf.Value.ToUniversalTime()}';");
         }
 
-        sb.AppendLine("SELECT ");
-        sb.AppendLine(GenerateColumns(options));
-        sb.AppendLine("FROM " + GenerateSource(options));
-
-        if (crossDef != null)
+        if (_definition.DefinitionType == DbDefinitionType.Query)
         {
-            sb.AppendLine(GenerateCrossReferenceJoin(crossDef, options));
+            if (string.IsNullOrEmpty(_definition.Query))
+            {
+                throw new MissingMemberException($"Query not defined for '{_definition.ModelType.Name}'");
+            }
+
+            sb.AppendLine(_definition.Query);
+        }
+        else
+        {
+            sb.AppendLine("SELECT ");
+            sb.AppendLine(GenerateColumns(options));
+            sb.AppendLine("FROM " + GenerateSource(options));
+
+            if (crossDef != null)
+            {
+                sb.AppendLine(GenerateCrossReferenceJoin(crossDef, options));
+            }
+
+            sb.AppendLine(GenerateFilterStatement(_definition.ModelType.Name, filters));
         }
 
-        sb.AppendLine(GenerateFilterStatement(_definition.ModelType.Name, filters));
+        string query = AddPagingToQuery(sb.ToString(), options);
 
-        string query = sb.ToString();
-        return AddPagingToQuery(query, options);
+        return query;
     }
 
     /// <inheritdoc/>
@@ -65,32 +78,43 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             sb.AppendLine($"set local app.asof = '{options.AsOf.Value.ToUniversalTime()}';");
         }
 
-        sb.AppendLine("SELECT ");
-        sb.AppendLine(GenerateColumns(options));
-
-        foreach (var relation in _definition.Relations)
+        if (_definition.DefinitionType == DbDefinitionType.Query)
         {
-            sb.Append(',');
-            sb.AppendLine(GenerateJoinPostgresColumns(relation, options));
+            if (string.IsNullOrEmpty(_definition.ExtendedQuery))
+            {
+                throw new MissingMemberException($"Extended query not defined for '{_definition.ModelType.Name}'");
+            }
+
+            sb.AppendLine(_definition.ExtendedQuery);
         }
-
-        sb.AppendLine("FROM " + GenerateSource(options));
-
-        if (crossDef != null)
+        else
         {
-            sb.AppendLine(GenerateCrossReferenceJoin(crossDef, options));
-        }
+            sb.AppendLine("SELECT ");
+            sb.AppendLine(GenerateColumns(options));
 
-        foreach (var j in _definition.Relations.Where(t => !t.IsList))
-        {
-            var joinStatement = GetJoinPostgresStatement(j, options);
-            sb.AppendLine(joinStatement);
-        }
+            foreach (var relation in _definition.Relations)
+            {
+                sb.Append(',');
+                sb.AppendLine(GenerateJoinPostgresColumns(relation, options));
+            }
 
-        sb.AppendLine(GenerateFilterStatement(_definition.ModelType.Name, filters));
+            sb.AppendLine("FROM " + GenerateSource(options));
+
+            if (crossDef != null)
+            {
+                sb.AppendLine(GenerateCrossReferenceJoin(crossDef, options));
+            }
+
+            foreach (var j in _definition.Relations.Where(t => !t.IsList))
+            {
+                var joinStatement = GetJoinPostgresStatement(j, options);
+                sb.AppendLine(joinStatement);
+            }
+
+            sb.AppendLine(GenerateFilterStatement(_definition.ModelType.Name, filters));
+        }
 
         string query = AddPagingToQuery(sb.ToString(), options);
-        Console.WriteLine(query);
 
         return query;
     }
@@ -120,21 +144,6 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
     private static string GetAuditVariables(ChangeRequestOptions options)
     {
-        /*
-        private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
-        
-        if (options.ChangedBySystem == Guid.Empty)
-        {
-            options.ChangedBySystem = DefaultPerformedBy;
-        }
-        */
-
-        /*
-        sb.AppendLine("SELECT current_setting('app.current_user', false) INTO current_user;");
-        sb.AppendLine("SELECT current_setting('app.current_system', false) INTO current_system;");
-        sb.AppendLine("SELECT current_setting('app.current_operation', false) INTO current_operation;");
-        */
-
         return string.Format("SET LOCAL app.changed_by = '{0}'; SET LOCAL app.changed_by_system = '{1}'; SET LOCAL app.change_operation_id = '{2}';", options.ChangedBy, options.ChangedBySystem, options.ChangeOperationId);
     }
 
@@ -363,6 +372,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
                 FilterComparer.StartsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 FilterComparer.EndsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 FilterComparer.Contains => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
+                FilterComparer.Like => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 _ => throw new NotSupportedException($"Comparer '{filter.Comparer}' is not supported.")
             };
 
@@ -419,7 +429,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine(query);
         sb.AppendLine(")");
         sb.AppendLine("SELECT *");
-        sb.AppendLine("FROM pagedresult, (SELECT MAX(pagedresult._rownum) AS totalitems FROM pagedresult) AS pageinfo");
+        sb.AppendLine($"FROM pagedresult, (SELECT MAX(pagedresult._rownum) AS _totalItemCount, {options.PageSize} as _pageSize, {options.PageNumber} as _pageNumber FROM pagedresult) AS _totalItemCount");
         sb.AppendLine($"ORDER BY _rownum OFFSET {options.PageSize * (options.PageNumber - 1)} ROWS FETCH NEXT {options.PageSize} ROWS ONLY");
 
         return sb.ToString();
@@ -546,14 +556,20 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         scriptCollection.Version = _definition.Version;
 
         //// Create view
-        if (_definition.IsView)
+        if (_definition.DefinitionType == DbDefinitionType.View)
         {
             scriptCollection.AddScripts(CreateView());
-            foreach (var dep in _definition.ViewDependencies)
+            foreach (var dep in _definition.ManualDependencies)
             {
                 scriptCollection.AddDependency(dep);
             }
 
+            return scriptCollection;
+        }
+
+        if (_definition.DefinitionType == DbDefinitionType.Query)
+        {
+            // TODO: PREPARE STATEMENT
             return scriptCollection;
         }
 
@@ -629,10 +645,10 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         var query = $"""
         CREATE OR REPLACE VIEW {GetTableName(includeAlias: false)} AS
-        {_definition.ViewQuery}
+        {_definition.Query}
         """;
 
-        scripts.Add($"CREATE VIEW {GetTableName(includeAlias: false)}", query);
+        scripts.Add($"CREATE VIEW {GetTableName(includeAlias: false)} v{_definition.Version}", query);
 
         return scripts;
     }
