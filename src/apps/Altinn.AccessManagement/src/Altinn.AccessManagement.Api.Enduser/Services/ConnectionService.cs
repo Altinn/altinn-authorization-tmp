@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.Authorization.ProblemDetails;
@@ -213,57 +212,11 @@ public class ConnectionService(
         return result.ToList();
     }
 
-    public async Task<Result<AssignmentPackage>> AddAssignmentPackage(Guid assignmentId, string packageUrn, CancellationToken cancellationToken = default)
-    {
-        /* Add : prefix */
-        var filter = PackageRepository.CreateFilterBuilder().Add(t => t.Urn, packageUrn, AccessMgmt.Persistence.Core.Helpers.FilterComparer.EndsWith);
-        var package = await PackageRepository.Get(filter);
-
-        return await AddAssignmentPackage(assignmentId, package.First(), cancellationToken);
-    }
-
-    public async Task<Result<AssignmentPackage>> AddAssignmentPackage(Guid assignmentId, Guid packageId, CancellationToken cancellationToken = default)
-    {
-        var package = await PackageRepository.Get(packageId);
-
-        return await AddAssignmentPackage(assignmentId, package, cancellationToken);
-    }
-
-    private async Task<Result<AssignmentPackage>> AddAssignmentPackage(Guid assignmentId, Package package, CancellationToken cancellationToken = default)
-    {
-        var assignment = await AssignmentRepository.Get(assignmentId);
-
-        var assignmentPackageFilter = AssignmentPackageRepository
-            .CreateFilterBuilder()
-            .Equal(t => t.AssignmentId, assignmentId)
-            .Equal(t => t.PackageId, package.Id);
-
-        var existingPackageAssignment = await AssignmentPackageRepository.Get(assignmentPackageFilter, cancellationToken: cancellationToken);
-        if (existingPackageAssignment != null && existingPackageAssignment.Any())
-        {
-            return existingPackageAssignment.First();
-        }
-
-        var createResult = await AssignmentPackageRepository.Create(new AssignmentPackage() { AssignmentId = assignmentId, PackageId = package.Id }, DbAudit.Value, cancellationToken: cancellationToken);
-        if (createResult == 0)
-        {
-            Unreachable();
-        }
-
-        var createCheckResult = await AssignmentPackageRepository.Get(t => t.AssignmentId, assignmentId, cancellationToken: cancellationToken);
-        if (createCheckResult == null || !existingPackageAssignment.Any())
-        {
-            Unreachable();
-        }
-
-        return createCheckResult.First();
-    }
-
     /// <inheritdoc />
-    public async Task<Result<AssignmentPackage>> AddPackage(Guid fromId, Guid toId, string roleCode, string packageUrn, CancellationToken cancellationToken = default)
+    public async Task<Result<AssignmentPackage>> AddPackage(Guid from, Guid to, string roleCode, string packageUrn, CancellationToken cancellationToken = default)
     {
         var filter = PackageRepository.CreateFilterBuilder()
-            .Add(t => t.Urn, packageUrn, AccessMgmt.Persistence.Core.Helpers.FilterComparer.EndsWith);
+            .Add(t => t.Urn, packageUrn, FilterComparer.EndsWith);
 
         var packages = await PackageRepository.Get(filter, cancellationToken: cancellationToken);
         var problem = ValidationRules.Validate(ValidationRules.QueryParameters.PackageUrnLookup(packages));
@@ -273,34 +226,46 @@ public class ConnectionService(
         }
 
         var package = packages.First();
-        return await AddPackage(fromId, toId, roleCode, package.Id, "packgeUrn", cancellationToken);
+        return await AddPackage(from, to, roleCode, package.Id, "packgeUrn", cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<AssignmentPackage>> AddPackage(Guid fromId, Guid toId, string roleCode, Guid packageId, CancellationToken cancellationToken = default)
+    public async Task<Result<AssignmentPackage>> AddPackage(Guid from, Guid to, string roleCode, Guid packageId, CancellationToken cancellationToken = default)
     {
-        return await AddPackage(fromId, toId, roleCode, packageId, "packageId", cancellationToken);
+        return await AddPackage(from, to, roleCode, packageId, "packageId", cancellationToken);
     }
 
-    private async Task<Result<AssignmentPackage>> AddPackage(Guid fromId, Guid toId, string roleCode, Guid packageId, string queryParamName, CancellationToken cancellationToken)
+    private async Task<Result<AssignmentPackage>> AddPackage(Guid from, Guid to, string roleCode, Guid packageId, string queryParamName, CancellationToken cancellationToken)
     {
-        var res = await Get(from: fromId, to: toId);
-        res.Value.Where(t => t.Role.Code.Equals(roleCode));
-
-        var assignment = await AddAssignment(fromId, toId, roleCode, cancellationToken);
-        if (assignment.IsProblem)
+        var dependencies = await GetAssignmentDependencies(from, to, roleCode, cancellationToken);
+        if (ValidateAssignmentData(dependencies.EntityFrom, dependencies.EntityTo, dependencies.Roles) is var problem && problem is { })
         {
-            return assignment.Problem;
+            return problem;
         }
 
+        var roleId = dependencies.Roles.First().Id;
+        var filter = AssignmentRepository.CreateFilterBuilder()
+            .Equal(t => t.FromId, from)
+            .Equal(t => t.ToId, to)
+            .Equal(t => t.RoleId, roleId);
+
+        var existingAssignments = await AssignmentRepository.Get(filter, cancellationToken: cancellationToken);
+        problem = ValidationRules.Validate(ValidationRules.QueryParameters.VerifyAssignmentRoleExists(existingAssignments, roleCode));
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        var assignment = existingAssignments.First();
+
         var connectionPackageFilter = ConnectionPackageRepository.CreateFilterBuilder()
-            .Equal(t => t.FromId, fromId)
-            .Equal(t => t.ToId, toId)
+            .Equal(t => t.FromId, from)
+            .Equal(t => t.ToId, to)
             .Equal(t => t.PackageId, packageId);
 
         var connectionPackages = await ConnectionPackageRepository.GetExtended(connectionPackageFilter, cancellationToken: cancellationToken);
 
-        var problem = ValidationRules.Validate(
+        problem = ValidationRules.Validate(
             ValidationRules.QueryParameters.AnyPackages(connectionPackages, queryParamName),
             ValidationRules.QueryParameters.PackageIsAssignableByUser(connectionPackages, queryParamName),
             ValidationRules.QueryParameters.PackageIsAssignableByDefinition(connectionPackages, queryParamName)
@@ -313,7 +278,7 @@ public class ConnectionService(
 
         var assignmentPackageFilter = AssignmentPackageRepository
             .CreateFilterBuilder()
-            .Equal(t => t.AssignmentId, assignment.Value.Id)
+            .Equal(t => t.AssignmentId, assignment.Id)
             .Equal(t => t.PackageId, packageId);
 
         var existingPackageAssignment = await AssignmentPackageRepository.Get(assignmentPackageFilter, cancellationToken: cancellationToken);
@@ -322,13 +287,13 @@ public class ConnectionService(
             return existingPackageAssignment.First();
         }
 
-        var createResult = await AssignmentPackageRepository.Create(new AssignmentPackage() { AssignmentId = assignment.Value.Id, PackageId = packageId }, DbAudit.Value, cancellationToken: cancellationToken);
+        var createResult = await AssignmentPackageRepository.Create(new AssignmentPackage() { AssignmentId = assignment.Id, PackageId = packageId }, DbAudit.Value, cancellationToken: cancellationToken);
         if (createResult == 0)
         {
             Unreachable();
         }
 
-        var createCheckResult = await AssignmentPackageRepository.Get(t => t.AssignmentId, assignment.Value.Id, cancellationToken: cancellationToken);
+        var createCheckResult = await AssignmentPackageRepository.Get(t => t.AssignmentId, assignment.Id, cancellationToken: cancellationToken);
         if (createCheckResult == null || !existingPackageAssignment.Any())
         {
             Unreachable();
@@ -390,18 +355,7 @@ public class ConnectionService(
         return null;
     }
 
-    private async Task<IEnumerable<ExtConnectionPackage>> GetConnectionPackages(Guid fromId, Guid toId, Guid packageId, CancellationToken cancellationToken = default)
-    {
-        /* Get packages assigned to entity from a specific entity, to see if entity can assign it to another entity */
-
-        var filter = ConnectionPackageRepository.CreateFilterBuilder();
-        filter.Equal(t => t.FromId, fromId);
-        filter.Equal(t => t.ToId, toId);
-        filter.Equal(t => t.PackageId, packageId);
-        return await ConnectionPackageRepository.GetExtended(filter, cancellationToken: cancellationToken);
-    }
-
-    private ValidationProblemInstance ValidateAssignmentData(ExtEntity entityFrom, ExtEntity entityTo, IEnumerable<Role> roles)
+    private ValidationProblemInstance? ValidateAssignmentData(ExtEntity entityFrom, ExtEntity entityTo, IEnumerable<Role> roles)
     {
         var problem = ValidationRules.Validate(
             ValidationRules.QueryParameters.PartyExists(entityFrom, "from"),
@@ -443,9 +397,7 @@ public class ConnectionService(
 /// </summary>
 public interface IEnduserConnectionService
 {
-    Task<Result<ExtConnection>> Get(Guid id, CancellationToken cancellationToken = default);
-
-    Task<Result<List<ExtConnection>>> Get(Guid? from = null, Guid? to = null, Guid? facilitator = null, CancellationToken cancellationToken = default);
+    Task<Result<List<ExtConnection>>> Get(Guid? from = null, Guid? to = null, CancellationToken cancellationToken = default);
 
     Task<Result<Assignment>> AddAssignment(Guid from, Guid to, string roleCode, CancellationToken cancellationToken = default);
 

@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Persistence.Extensions;
-using Altinn.AccessMgmt.Persistence.Services;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Logging;
 
@@ -29,7 +28,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<AuditMiddleware>();
+app.UseDbAudit();
 
 app.MapControllers();
 app.MapDefaultAltinnEndpoints();

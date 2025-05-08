@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
@@ -35,4 +36,10 @@ public class PagingInput : IExamplesProvider<PagingInput>
             PageSize = 56,
         };
     }
+
+    internal string ToOpaqueToken() =>
+        Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(this));
+
+    static internal PagingInput CreateFromToken(string token) =>
+        JsonSerializer.Deserialize<PagingInput>(Convert.FromBase64String(token));
 }

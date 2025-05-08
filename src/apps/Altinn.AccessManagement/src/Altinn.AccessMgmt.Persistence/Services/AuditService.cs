@@ -3,10 +3,18 @@ using Microsoft.AspNetCore.Http;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
-public class AuditMiddleware(IDbAuditService auditService) : IMiddleware
+/// <summary>
+/// Middleware that sets Audit state
+/// </summary>
+internal class AuditMiddleware(IDbAuditService auditService) : IMiddleware
 {
-    public IDbAuditService AuditService { get; } = auditService;
+    private IDbAuditService AuditService { get; } = auditService;
 
+    /// <summary>
+    /// Middleware that creates change request object
+    /// </summary>
+    /// <param name="context"><see cref="HttpContext"/></param>
+    /// <param name="next"><see cref="RequestDelegate"/></param>
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         if (context.GetEndpoint() is var endpoint && endpoint != null)
@@ -16,17 +24,15 @@ public class AuditMiddleware(IDbAuditService auditService) : IMiddleware
                 var claim = context.User?.Claims?
                     .FirstOrDefault(c => c.Type.Equals(attr.Claim, StringComparison.OrdinalIgnoreCase));
 
-                var uuid = Guid.Parse("066148fe-7077-4484-b7ea-44b5ede0014e");
-
-                // if (claim != null && Guid.TryParse(claim.Value, out var _))
-                // {
-                AuditService.Set(new()
+                if (claim != null && Guid.TryParse(claim.Value, out var uuid))
                 {
-                    ChangedBy = uuid,
-                    ChangedBySystem = Guid.Parse(attr.System),
-                    ChangeOperationId = context.TraceIdentifier,
-                });
-                // }
+                    AuditService.Set(new()
+                    {
+                        ChangedBy = uuid,
+                        ChangedBySystem = Guid.Parse(attr.System),
+                        ChangeOperationId = context.TraceIdentifier,
+                    });
+                }
             }
         }
 
@@ -34,34 +40,61 @@ public class AuditMiddleware(IDbAuditService auditService) : IMiddleware
     }
 }
 
+/// <summary>
+/// Attribute to decorate actions
+/// </summary>
 [AttributeUsage(AttributeTargets.Method)]
 public class DbAuditAttribute : Attribute
 {
+    /// <summary>
+    /// Token claim that gets set to ChangedBy. Claim must be UUID.
+    /// </summary>
     public string Claim { get; set; }
 
+    /// <summary>
+    /// Which system that initiates the request.
+    /// </summary>
     public string System { get; set; }
 }
 
 /// <inheritdoc/>
-public class AuditFactory(IHttpContextAccessor accessor) : IDbAudit, IDbAuditService
+internal class AuditFactory(IHttpContextAccessor accessor) : IDbAudit, IDbAuditService
 {
-    public IHttpContextAccessor Accessor { get; } = accessor;
+    private IHttpContextAccessor Accessor { get; } = accessor;
 
+    /// <summary>
+    /// Gets the <see cref="ChangeRequestOptions"/> 
+    /// </summary>
     public ChangeRequestOptions Value =>
         Accessor.HttpContext.Items.TryGetValue(nameof(AuditFactory), out var result) ?
             result as ChangeRequestOptions :
-            throw new InvalidOperationException("");
+            throw new InvalidOperationException($"Failed to retrieve {nameof(ChangeRequestOptions)} from HttpContext. Is action decorated with attribute {nameof(DbAuditAttribute)}?");
 
+    /// <summary>
+    /// Sets the <see cref="ChangeRequestOptions"/> 
+    /// </summary>
     public void Set(ChangeRequestOptions options) =>
         Accessor.HttpContext.Items.Add(nameof(AuditFactory), options);
 }
 
+/// <summary>
+/// Factory for getting <see cref="ChangeRequestOptions"/> 
+/// </summary>
 public interface IDbAudit
 {
+    /// <summary>
+    /// Value
+    /// </summary>
     public ChangeRequestOptions Value { get; }
 }
 
-public interface IDbAuditService
+/// <summary>
+/// Sets the Audit service
+/// </summary>
+internal interface IDbAuditService
 {
+    /// <summary>
+    /// Sets the ChangeRequestOptions 
+    /// </summary>
     void Set(ChangeRequestOptions options);
 }

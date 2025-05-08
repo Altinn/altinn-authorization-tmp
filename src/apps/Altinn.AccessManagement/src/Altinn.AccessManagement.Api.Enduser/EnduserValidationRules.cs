@@ -120,18 +120,17 @@ public static class ValidationRules
     /// <summary>
     /// Validates the default query parameters for an end user.
     /// </summary>
-    /// <param name="userUuid">The UUID of the user performing the action (current user).</param>
     /// <param name="party">The UUID of the acting party (the user acting on behalf). Can also be "me".</param>
     /// <param name="from">The UUID of the 'from' party (could be a person or an organization).</param>
     /// <param name="to">The UUID of the 'to' party (could be a person or an organization).</param>
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
-    public static ValidationProblemInstance EnduserAddConnection(Guid userUuid, string party, string from, string to) => Validate(
+    public static ValidationProblemInstance EnduserAddConnection(string party, string from, string to) => Validate(
         QueryParameters.Party(party),
         QueryParameters.PartyFrom(from),
         QueryParameters.PartyTo(to),
-        QueryParameters.EnduserCreateCombination(userUuid, party, from, to)
+        QueryParameters.EnduserAddCombination(party, from, to)
     );
 
     /// <summary>
@@ -144,9 +143,9 @@ public static class ValidationRules
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
-    public static ValidationProblemInstance EnduserGetConnection(Guid userUuid, string party, string from, string to) => Validate(
+    public static ValidationProblemInstance EnduserReadConnection(string party, string from, string to) => Validate(
         QueryParameters.Party(party),
-        QueryParameters.EnduserReadInputCombination(userUuid, party, from, to),
+        QueryParameters.EnduserReadInputCombination(party, from, to),
         Any(
             QueryParameters.PartyFrom(from),
             QueryParameters.PartyTo(to)
@@ -156,18 +155,17 @@ public static class ValidationRules
     /// <summary>
     /// Validates the default query parameters for an end user.
     /// </summary>
-    /// <param name="userUuid">The UUID of the user performing the action (current user).</param>
     /// <param name="party">The UUID of the acting party (the user acting on behalf). Can also be "me".</param>
     /// <param name="from">The UUID of the 'from' party (could be a person or an organization).</param>
     /// <param name="to">The UUID of the 'to' party (could be a person or an organization).</param>
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
-    public static ValidationProblemInstance EnduserRemoveConnection(Guid userUuid, string party, string from, string to) => Validate(
+    public static ValidationProblemInstance EnduserRemoveConnection(string party, string from, string to) => Validate(
         QueryParameters.Party(party),
         QueryParameters.PartyFrom(from),
         QueryParameters.PartyTo(to),
-        QueryParameters.EnduserDeleteCombination(userUuid, party, from, to)
+        QueryParameters.EnduserRemoveCombination(party, from, to)
     );
 
     /// <summary>
@@ -287,6 +285,27 @@ public static class ValidationRules
         };
 
         /// <summary>
+        /// Checks whether any packages are assigned. Used in conjunction with cascade delete.
+        /// </summary>
+        /// <param name="packages">List of role assignments.</param>
+        /// <param name="roleCode">The name of the role to verify.</param>
+        /// <param name="paramNameFrom">The name of the source query parameter.</param>
+        /// <param name="paramNameTo">The name of the target query parameter.</param>
+        public static FuncExpression VerifyAssignmentRoleExists(IEnumerable<Assignment> packages, string roleCode, string paramNameFrom = "from", string paramNameTo = "to") => () =>
+        {
+            if (packages is { } && packages.Any())
+            {
+                return null;
+            }
+
+            return (ref ValidationErrorBuilder errors) =>
+            {
+                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNameFrom}",
+                    [new("packages", $"No active role assignments of type '{roleCode}' were found from the value in query parameter '{paramNameFrom}' to the value in query parameter '{paramNameTo}'.")]);
+            };
+        };
+
+        /// <summary>
         /// Checks if any delegations are given assigned. Used along with cascade delete
         /// </summary>
         /// <param name="delegations">List of delegations.</param>
@@ -337,33 +356,35 @@ public static class ValidationRules
         /// <summary>
         /// Validates combination of input parameters
         /// </summary>
-        public static FuncExpression EnduserCreateCombination(Guid useruuid, string party, string from, string to) => () =>
+        public static FuncExpression EnduserAddCombination(string party, string from, string to) => () =>
         {
-            if (!string.IsNullOrEmpty(party) && party.Equals("me", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return EnduserDeleteCombination(useruuid, useruuid.ToString(), from, to)();
-            }
-
-            if (!string.IsNullOrEmpty(from) && from.Equals("me", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return EnduserDeleteCombination(useruuid, party, useruuid.ToString(), to)();
-            }
-
-            if (!Guid.TryParse(party, out var partyUuid))
+            if (!Guid.TryParse(party, out var partyUuid) || partyUuid == Guid.Empty)
             {
                 return (ref ValidationErrorBuilder errors) =>
-                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("party", $"The 'party' parameter is not valid.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("party", $"Paramater is not a valid a UUID.")]);
             }
 
-            if (!string.IsNullOrEmpty(from) && Guid.TryParse(from, out var fromUuid) && fromUuid == partyUuid)
+            if (!Guid.TryParse(to, out var fromUuid) || fromUuid == Guid.Empty)
             {
-                return null;
+                return (ref ValidationErrorBuilder errors) =>
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("from", $"Parameter is not a valid UUID.")]);
             }
 
-            return (ref ValidationErrorBuilder errors) =>
+            if (!Guid.TryParse(to, out var toUuid) || toUuid == Guid.Empty)
             {
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "must match the 'party' UUID.")]);
-            };
+                return (ref ValidationErrorBuilder errors) =>
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("to", $"Parameter is not a valid UUID.")]);
+            }
+
+            if (partyUuid != fromUuid)
+            {
+                return (ref ValidationErrorBuilder errors) =>
+                {
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "must match the 'party' UUID.")]);
+                };
+            }
+
+            return null;
         };
 
         /// <summary>
@@ -379,23 +400,8 @@ public static class ValidationRules
         /// A validation rule that adds an error if any UUID is invalid or empty, 
         /// or if the party does not match either the 'from' or 'to' UUID.
         /// </returns>
-        public static FuncExpression EnduserReadInputCombination(Guid useruuid, string party, string from, string to) => () =>
+        public static FuncExpression EnduserReadInputCombination(string party, string from, string to) => () =>
         {
-            if (!string.IsNullOrEmpty(party) && party.Equals("me", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return EnduserReadInputCombination(useruuid, useruuid.ToString(), from, to)();
-            }
-
-            if (!string.IsNullOrEmpty(from) && from.Equals("me", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return EnduserReadInputCombination(useruuid, party, useruuid.ToString(), to)();
-            }
-
-            if (!string.IsNullOrEmpty(to) && to.Equals("me", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return EnduserReadInputCombination(useruuid, party, from, useruuid.ToString())();
-            }
-
             if (!Guid.TryParse(party, out var partyUuid))
             {
                 return (ref ValidationErrorBuilder errors) =>
@@ -427,18 +433,8 @@ public static class ValidationRules
         /// <param name="from"></param>
         /// <param name="to"></param>
         /// <returns></returns>
-        public static FuncExpression EnduserDeleteCombination(Guid useruuid, string party, string from, string to) => () =>
+        public static FuncExpression EnduserRemoveCombination(string party, string from, string to) => () =>
         {
-            if (!string.IsNullOrEmpty(party) && party.Equals("me", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return EnduserDeleteCombination(useruuid, useruuid.ToString(), from, to)();
-            }
-
-            if (!string.IsNullOrEmpty(from) && from.Equals("me", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return EnduserDeleteCombination(useruuid, party, useruuid.ToString(), to)();
-            }
-
             if (!Guid.TryParse(party, out var partyUuid))
             {
                 return (ref ValidationErrorBuilder errors) =>
