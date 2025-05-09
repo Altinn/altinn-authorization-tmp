@@ -262,17 +262,16 @@ public class ConnectionService(
 
         var assignment = existingAssignments.First();
 
-        var connectionPackageFilter = ConnectionPackageRepository.CreateFilterBuilder()
-            .Equal(t => t.FromId, from)
-            .Equal(t => t.ToId, to)
+        var userPackageFilter = ConnectionPackageRepository.CreateFilterBuilder()
+            .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
             .Equal(t => t.PackageId, packageId);
 
-        var connectionPackages = await ConnectionPackageRepository.GetExtended(connectionPackageFilter, cancellationToken: cancellationToken);
+        var userPackages = await ConnectionPackageRepository.GetExtended(userPackageFilter, cancellationToken: cancellationToken);
 
         problem = ValidationRules.Validate(
-            ValidationRules.QueryParameters.AnyPackages(connectionPackages, queryParamName),
-            ValidationRules.QueryParameters.PackageIsAssignableByUser(connectionPackages, queryParamName),
-            ValidationRules.QueryParameters.PackageIsAssignableByDefinition(connectionPackages, queryParamName)
+            ValidationRules.QueryParameters.AnyPackages(userPackages, queryParamName),
+            ValidationRules.QueryParameters.PackageIsAssignableByUser(userPackages, queryParamName),
+            ValidationRules.QueryParameters.PackageIsAssignableByDefinition(userPackages, queryParamName)
         );
 
         if (problem is { })
