@@ -103,7 +103,7 @@ public class ConnectionController(IEnduserConnectionService connectionService) :
         problem = await ConnectionService.RemoveAssignment(fromUuid, toUuid, "rettighetshaver", cascade, cancellationToken);
         if (problem is { })
         {
-            problem.ToActionResult();
+            return problem.ToActionResult();
         }
 
         return NoContent();
@@ -169,7 +169,7 @@ public class ConnectionController(IEnduserConnectionService connectionService) :
         var result = await AddPackage();
         if (result.IsProblem)
         {
-            result.Problem.ToActionResult();
+            return result.Problem.ToActionResult();
         }
 
         return Ok(result.Value);
@@ -187,7 +187,7 @@ public class ConnectionController(IEnduserConnectionService connectionService) :
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemovePackages([FromQuery] ConnectionInput connection, [FromQuery] Guid package, CancellationToken cancellationToken = default)
     {
-        if (ValidationRules.EnduserAddConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
+        if (ValidationRules.EnduserRemoveConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }

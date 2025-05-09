@@ -300,8 +300,7 @@ public static class ValidationRules
 
             return (ref ValidationErrorBuilder errors) =>
             {
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNameFrom}",
-                    [new("packages", $"No active role assignments of type '{roleCode}' were found from the value in query parameter '{paramNameFrom}' to the value in query parameter '{paramNameTo}'.")]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNameFrom}", [new("packages", $"No active role assignments of type '{roleCode}' were found from the value in query parameter '{paramNameFrom}' to the value in query parameter '{paramNameTo}'.")]);
             };
         };
 
@@ -392,7 +391,6 @@ public static class ValidationRules
         /// and ensures that none of the provided UUIDs are invalid or empty. If any UUID is 
         /// set to "me", it will be replaced by the user's UUID.
         /// </summary>
-        /// <param name="useruuid">The UUID of the user performing the action (current user).</param>
         /// <param name="party">The UUID of the acting party (the user acting on behalf). Can also be "me".</param>
         /// <param name="from">The UUID of the 'from' party (could be a person or an organization).</param>
         /// <param name="to">The UUID of the 'to' party (could be a person or an organization).</param>
@@ -428,10 +426,9 @@ public static class ValidationRules
         /// <summary>
         /// Delete combination
         /// </summary>
-        /// <param name="useruuid"></param>
-        /// <param name="party"></param>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
+        /// <param name="party">The UUID of the acting party (the user acting on behalf). Can also be "me".</param>
+        /// <param name="from">The UUID of the 'from' party (could be a person or an organization).</param>
+        /// <param name="to">The UUID of the 'to' party (could be a person or an organization).</param>
         /// <returns></returns>
         public static FuncExpression EnduserRemoveCombination(string party, string from, string to) => () =>
         {
@@ -441,15 +438,28 @@ public static class ValidationRules
                     errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("party", $"The 'party' parameter is not valid.")]);
             }
 
-            if (!string.IsNullOrEmpty(from) && Guid.TryParse(from, out var fromUuid) && fromUuid == partyUuid)
+            if (!Guid.TryParse(from, out var fromUuid) || fromUuid == Guid.Empty)
             {
-                return null;
+                return (ref ValidationErrorBuilder errors) =>
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", $"Parameter is not a valid UUID.")]);
             }
 
-            return (ref ValidationErrorBuilder errors) =>
+            if (!Guid.TryParse(to, out var toUuid) || toUuid == Guid.Empty)
             {
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "must match the 'party' UUID.")]);
-            };
+                return (ref ValidationErrorBuilder errors) =>
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/to", [new("to", $"Parameter is not a valid UUID.")]);
+            }
+
+            if (partyUuid != fromUuid || partyUuid != toUuid)
+            {
+                return (ref ValidationErrorBuilder errors) =>
+                {
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "Either the 'from' UUID or the 'to' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/to", [new("to", "Either the 'to' UUID or the 'from' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
+                };
+            }
+
+            return null;
         };
 
         /// <summary>
