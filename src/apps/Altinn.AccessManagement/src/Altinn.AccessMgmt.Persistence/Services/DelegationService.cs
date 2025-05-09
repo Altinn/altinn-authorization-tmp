@@ -226,7 +226,6 @@ public class DelegationService(
             var clientAssignment = await GetAssignment(client.Id, facilitator.Id, clientRole.Id) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
             var clientPackages = await GetConnectionPackages(client.Id, facilitator.Id);
 
-
             Delegation delegation = null;
             foreach (var package in rp.Value)
             {
@@ -441,5 +440,59 @@ public class DelegationService(
     private async Task<Role> GetRole(string code)
     {
         return (await roleRepository.Get(t => t.Code, code)).FirstOrDefault();
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<DelegationDto>> Get(Guid? fromId, Guid? toId, Guid? facilitatorId, CancellationToken cancellationToken = default)
+    {
+        var filter = delegationRepository.CreateFilterBuilder();
+
+        if (fromId != null && fromId.HasValue)
+        {
+            filter.Equal(t => t.FromId, fromId);
+        }
+
+        if (toId != null && toId.HasValue)
+        {
+            filter.Equal(t => t.ToId, toId);
+        }
+
+        if (facilitatorId != null && facilitatorId.HasValue)
+        {
+            filter.Equal(t => t.FacilitatorId, facilitatorId);
+        }
+
+        if (!filter.Any())
+        {
+            throw new ArgumentException();
+        }
+
+        var dbResult = await delegationRepository.GetExtended(filter);
+
+        var result = new List<DelegationDto>();
+        foreach (var delegation in dbResult)
+        {
+            result.Add(ConnectionConverter.ConvertToDto(delegation));
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<DelegationDto> Get(Guid fromId, Guid toId, Guid facilitatorId, CancellationToken cancellationToken = default)
+    {
+        var filter = delegationRepository.CreateFilterBuilder();
+        filter.Equal(t => t.FromId, fromId);
+        filter.Equal(t => t.ToId, toId);
+        filter.Equal(t => t.FacilitatorId, facilitatorId);
+        var dbResult = await delegationRepository.GetExtended(filter);
+
+        var result = new List<DelegationDto>();
+        foreach (var delegation in dbResult)
+        {
+            result.Add(ConnectionConverter.ConvertToDto(delegation));
+        }
+
+        return result.FirstOrDefault();
     }
 }

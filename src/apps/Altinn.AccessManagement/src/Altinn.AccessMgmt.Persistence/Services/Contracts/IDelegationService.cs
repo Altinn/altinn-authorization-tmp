@@ -10,6 +10,26 @@ namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
 public interface IDelegationService
 {
     /// <summary>
+    /// Gets the connections facilitated by the specified entity.
+    /// </summary>
+    /// <param name="fromId">The identifier of the entity, access has been provided from.</param>
+    /// <param name="toId">The identifier of the entity access has been provided to.</param>
+    /// <param name="facilitatorId">The identifier of the entity, access has been facilitated by.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+    /// <returns>A collection of facilitated connections.</returns>
+    Task<IEnumerable<DelegationDto>> Get(Guid? fromId, Guid? toId, Guid? facilitatorId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the connections facilitated by the specified entity.
+    /// </summary>
+    /// <param name="fromId">The identifier of the entity, access has been provided from.</param>
+    /// <param name="toId">The identifier of the entity access has been provided to.</param>
+    /// <param name="facilitatorId">The identifier of the entity, access has been facilitated by.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+    /// <returns>A collection of facilitated connections.</returns>
+    Task<DelegationDto> Get(Guid fromId, Guid toId, Guid facilitatorId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Create a new delegation betweeen two assignments
     /// </summary>
     /// <param name="userId">User</param>
