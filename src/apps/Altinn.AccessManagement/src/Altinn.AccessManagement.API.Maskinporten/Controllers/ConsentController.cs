@@ -1,4 +1,4 @@
-﻿using Altinn.AccessManagement.Api.Maskinporten.Models.Concent;
+﻿using Altinn.AccessManagement.Api.Maskinporten.Models.Consent;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Api.Models.Consent;
