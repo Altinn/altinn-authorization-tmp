@@ -41,6 +41,12 @@ namespace Altinn.Platform.Authorization.Constants
         public const string PartyAttribute = "urn:altinn:partyid";
 
         /// <summary>
+        /// xacml string that represents party type
+        /// </summary>
+        public const string PartyTypeAttribute = "urn:altinn:partytype";
+
+
+        /// <summary>
         /// xacml string that represents party uuid
         /// </summary>
         public const string PartyUuidAttribute = "urn:altinn:party:uuid";

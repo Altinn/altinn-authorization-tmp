@@ -15,6 +15,7 @@ using Altinn.Platform.Authorization.Repositories.Interface;
 using Altinn.Platform.Authorization.Services.Interface;
 using Altinn.Platform.Authorization.Services.Interfaces;
 using Altinn.Platform.Profile.Models;
+using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Altinn.Platform.Storage.Interface.Models;
 using Altinn.ResourceRegistry.Models;
@@ -501,6 +502,12 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 }
             }
 
+            if (policySubjectAttributes.ContainsKey(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyTypeAttribute) && subjectPartyUuid != Guid.Empty)
+            {
+                List<Party> partyList = await _registerService.GetPartiesAsync([subjectPartyUuid],false,  cancellationToken);
+                subjectContextAttributes.Attributes.Add(GetPartyTypeAttribute(partyList[0].PartyTypeName));
+            }
+
             // Further enrichment of roles can/must be skipped if no subject userId or resource partyId exists
             if (subjectUserId == 0 || resourcePartyId == 0)
             {
@@ -628,6 +635,20 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 attribute.AttributeValues.Add(new XacmlAttributeValue(new Uri(XacmlConstants.DataTypes.XMLString), memberShip.Urn.ValueSpan.ToString()));
             }
 
+            return attribute;
+        }
+
+        /// <summary>
+        /// Gets a XacmlAttribute model for a list of party ids
+        /// </summary>
+        /// <param name="partyType">The partyType</param>
+        /// <returns>XacmlAttribute</returns>
+        protected XacmlAttribute GetPartyTypeAttribute(PartyType partyType)
+        {
+            XacmlAttribute attribute = new XacmlAttribute(new Uri(XacmlRequestAttribute.PartyTypeAttribute), false);
+           
+            attribute.AttributeValues.Add(new XacmlAttributeValue(new Uri(XacmlConstants.DataTypes.XMLString), partyType.ToString().ToLowerInvariant()));
+           
             return attribute;
         }
 

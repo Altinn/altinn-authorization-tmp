@@ -77,6 +77,11 @@ namespace Altinn.Platform.Authorization.Constants
             public const string PartyAttribute = "urn:altinn:partyid";
 
             /// <summary>
+            /// Party type attribute match indentifier 
+            /// </summary>
+            public const string PartyTypeAttribute = "urn:altinn:partytype";
+
+            /// <summary>
             /// User Id attribute match indentifier 
             /// </summary>>
             public const string UserAttribute = "urn:altinn:userid";
