@@ -263,7 +263,7 @@ public class ConnectionService(
         var assignment = existingAssignments.First();
 
         var userPackageFilter = ConnectionPackageRepository.CreateFilterBuilder()
-            .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
+            .Equal(t => t.ToId, from)
             .Equal(t => t.PackageId, packageId);
 
         var userPackages = await ConnectionPackageRepository.GetExtended(userPackageFilter, cancellationToken: cancellationToken);
