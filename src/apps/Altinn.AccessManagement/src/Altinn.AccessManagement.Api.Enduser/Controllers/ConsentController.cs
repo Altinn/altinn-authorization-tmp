@@ -26,8 +26,8 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// Get a specific consent. 
         /// Requires the following.
         /// User is authenticated
-        /// User is have write access to access management for the party that is requestesd to consent (from party)
-        /// User is authorized to delegated the rights that is requested. Either by having the right self or beeing the main administrator
+        /// User has write access to access management for the party that is requested to consent (from party)
+        /// User is authorized to delegate the rights that are requested. Either by having the right themselves or being the main administrator
         /// </summary>
         [HttpGet]
         [Route("request/{requestId}")]
