@@ -11,7 +11,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils
     public static class ModelMapper
     {
         /// <summary>
-        /// Converts external consent request to internam model
+        /// Converts external consent request to internal model
         /// </summary>
         public static ConsentRequest ToCore(ConsentRequestExternal consentRequestExternal)
         {
