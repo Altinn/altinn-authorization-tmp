@@ -230,7 +230,7 @@ public class ConnectionService(
         }
 
         var package = packages.First();
-        return await AddPackage(from, to, roleCode, package.Id, "packgeUrn", cancellationToken);
+        return await AddPackage(from, to, roleCode, package.Id, "packageUrn", cancellationToken);
     }
 
     /// <inheritdoc />
