@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Microsoft.AspNetCore.Http;
 
