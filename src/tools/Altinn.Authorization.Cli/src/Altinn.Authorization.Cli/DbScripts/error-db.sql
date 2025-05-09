@@ -1,0 +1,6 @@
+CREATE SCHEMA IF NOT EXISTS msg;
+
+CREATE TABLE IF NOT EXISTS msg.error
+(
+
+);
