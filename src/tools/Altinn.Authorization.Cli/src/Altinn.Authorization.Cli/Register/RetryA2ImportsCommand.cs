@@ -1,11 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading.Channels;
 using Altinn.Authorization.Cli.Database;
+using Altinn.Authorization.Cli.Register.Messages;
 using Altinn.Authorization.Cli.ServiceBus.MassTransit;
 using Altinn.Authorization.Cli.ServiceBus.Utils;
 using Altinn.Authorization.Cli.Utils;
@@ -38,6 +38,18 @@ public sealed class RetryA2ImportsCommand(CancellationToken ct)
     /// <inheritdoc/>
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(settings.Database))
+        {
+            AnsiConsole.MarkupLine("[red]Database connection string is required.[/]");
+            return 1;
+        }
+
+        if (string.IsNullOrWhiteSpace(settings.ServiceBus))
+        {
+            AnsiConsole.MarkupLine("[red]Service bus connection string is required.[/]");
+            return 1;
+        }
+
         await using var db = await DbHelper.Create(settings.Database, cancellationToken);
         var sb = ServiceBusHandle.Create(settings.ServiceBus);
 
@@ -103,34 +115,9 @@ public sealed class RetryA2ImportsCommand(CancellationToken ct)
         ProgressContext ctx,
         CancellationToken cancellationToken)
     {
-        var queueStats = await sb.AdministrationClient.GetQueueRuntimePropertiesAsync(queueName, cancellationToken);
+        var task = ctx.AddTask($"Dead-letter {queueName} messages", autoStart: true, maxValue: 0);
 
-        var expected = (int)queueStats.Value.ActiveMessageCount;
-        var task = ctx.AddTask($"Dead-letter {queueName} messages", autoStart: true, maxValue: expected);
-        using var dqlTask = task.Run();
-
-        if (expected == 0)
-        {
-            task.MaxValue = 1;
-            task.Value = 1;
-            return;
-        }
-
-        await using var receiver = sb.Client.CreateReceiver(queueName, new ServiceBusReceiverOptions
-        {
-            ReceiveMode = ServiceBusReceiveMode.PeekLock,
-            PrefetchCount = Math.Clamp((int)expected, 100, 10_000),
-            SubQueue = SubQueue.None,
-        });
-
-        await ProcessMessages(
-            receiver,
-            async (msg, cancellationToken) =>
-            {
-                await receiver.DeadLetterMessageAsync(msg, cancellationToken: cancellationToken);
-                task.Increment(1);
-            },
-            cancellationToken);
+        await sb.DeadLetterMessages(queueName, task, cancellationToken);
     }
 
     private async Task RetryDeadLetters(
@@ -141,119 +128,22 @@ public sealed class RetryA2ImportsCommand(CancellationToken ct)
         ProgressContext ctx,
         CancellationToken cancellationToken)
     {
-        var queueStats = await sb.AdministrationClient.GetQueueRuntimePropertiesAsync(queueName, cancellationToken);
+        var task = ctx.AddTask($"Retry {queueName} messages", autoStart: true, maxValue: 0);
 
-        var expected = (int)queueStats.Value.DeadLetterMessageCount;
-        var task = ctx.AddTask($"Retry {queueName} messages", autoStart: true, maxValue: expected);
-        using var retryTask = task.Run();
-
-        if (expected == 0)
-        {
-            task.MaxValue = 1;
-            task.Value = 1;
-            return;
-        }
-
-        await using var receiver = sb.Client.CreateReceiver(queueName, new ServiceBusReceiverOptions
-        {
-            ReceiveMode = ServiceBusReceiveMode.PeekLock,
-            PrefetchCount = Math.Clamp((int)expected, 100, 10_000),
-            SubQueue = SubQueue.DeadLetter,
-        });
-
-        await ProcessMessages(
-            receiver,
+        await sb.ProcessDeadLetterMessages(
+            queueName,
+            task,
             async (msg, cancellationToken) =>
             {
                 if (queue.GetHandler(msg, out var handler)
                     && await handler.Handle(msg, context, cancellationToken))
                 {
-                    await receiver.CompleteMessageAsync(msg, cancellationToken);
-                    task.Increment(1);
-                    return;
+                    return true;
                 }
 
-                task.Increment(1);
-                task.State.Update<double>("task.skipped", static s => s + 1);
+                return false;
             },
             cancellationToken);
-    }
-
-    private async Task ProcessMessages(ServiceBusReceiver receiver, Func<ServiceBusReceivedMessage, CancellationToken, ValueTask> process, CancellationToken cancellationToken)
-    {
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cancellationToken = cts.Token;
-
-        var channel = Channel.CreateBounded<ServiceBusReceivedMessage>(100);
-
-        var workersTask = Parallel.ForEachAsync(
-            channel.Reader.ReadAllAsync(cancellationToken),
-            cancellationToken,
-            process);
-
-        var readerTask = Task.Run(
-            async () =>
-            {
-                try
-                {
-                    var unqueued = new Queue<ServiceBusReceivedMessage>(receiver.PrefetchCount);
-                    while (true)
-                    {
-                        if (unqueued.Count == 0)
-                        {
-                            var newMessages = await receiver.ReceiveMessagesAsync(receiver.PrefetchCount, maxWaitTime: TimeSpan.FromSeconds(5), cancellationToken: cancellationToken);
-                            if (newMessages.Count == 0)
-                            {
-                                break;
-                            }
-
-                            foreach (var message in newMessages)
-                            {
-                                unqueued.Enqueue(message);
-                            }
-                        }
-
-                        await WriteAll(receiver, unqueued, channel.Writer, cancellationToken);
-                    }
-                }
-                finally
-                {
-                    channel.Writer.Complete();
-                }
-            },
-            cancellationToken);
-
-        try
-        {
-            await Task.WhenAll(workersTask, readerTask);
-        }
-        catch
-        {
-            await cts.CancelAsync();
-            throw;
-        }
-
-        static async Task WriteAll(ServiceBusReceiver receiver, Queue<ServiceBusReceivedMessage> queue, ChannelWriter<ServiceBusReceivedMessage> writer, CancellationToken cancellationToken)
-        {
-            while (queue.TryDequeue(out var msg))
-            {
-                var lockExpiry = msg.LockedUntil;
-                var renewAt = lockExpiry - TimeSpan.FromMinutes(1);
-                var duration = renewAt - DateTimeOffset.UtcNow;
-
-                if (duration <= TimeSpan.Zero)
-                {
-                    await RenewLocks(receiver, queue, cancellationToken);
-                }
-
-                await writer.WriteAsync(msg, cancellationToken);
-            }
-        }
-
-        static Task RenewLocks(ServiceBusReceiver receiver, Queue<ServiceBusReceivedMessage> messages, CancellationToken cancellationToken)
-        {
-            return Parallel.ForEachAsync(messages, cancellationToken, (msg, ct) => new(receiver.RenewMessageLockAsync(msg, ct)));
-        }
     }
 
     private abstract class ErrorQueueMessageHandler(Utf8String messageUrn)
@@ -415,24 +305,6 @@ public sealed class RetryA2ImportsCommand(CancellationToken ct)
                 return true;
             }
         }
-
-        private sealed record ResolveAndUpsertA2CCRRoleAssignmentsCommand
-            : IFakeMassTransitMessage<ResolveAndUpsertA2CCRRoleAssignmentsCommand>
-        {
-            static Utf8String IFakeMassTransitMessage<ResolveAndUpsertA2CCRRoleAssignmentsCommand>.MessageUrn
-                => "urn:message:Altinn.Register.PartyImport.A2:ResolveAndUpsertA2CCRRoleAssignmentsCommand"u8;
-
-            static Guid IFakeMassTransitMessage<ResolveAndUpsertA2CCRRoleAssignmentsCommand>.MessageId(ResolveAndUpsertA2CCRRoleAssignmentsCommand message)
-                => message.CommandId;
-
-            public Guid CommandId { get; } = Guid.CreateVersion7();
-
-            public JobTrackig Tracking { get; init; }
-
-            public Guid FromPartyUuid { get; init; }
-
-            public int FromPartyId { get; init; }
-        }
     }
 
     private sealed class ImportBatchErrorQueueHandler()
@@ -499,54 +371,6 @@ public sealed class RetryA2ImportsCommand(CancellationToken ct)
                 return true;
             }
         }
-
-        private sealed record UpsertValidatedPartyCommand
-            : IFakeMassTransitMessage<UpsertValidatedPartyCommand>
-        {
-            static Utf8String IFakeMassTransitMessage<UpsertValidatedPartyCommand>.MessageUrn
-                => "urn:message:Altinn.Register.PartyImport:UpsertValidatedPartyCommand"u8;
-
-            static Guid IFakeMassTransitMessage<UpsertValidatedPartyCommand>.MessageId(UpsertValidatedPartyCommand message)
-                => message.CommandId;
-
-            public Guid CommandId { get; } = Guid.CreateVersion7();
-
-            public JobTrackig Tracking { get; init; }
-
-            public PartialParty Party { get; init; }
-        }
-
-        private sealed record UpsertExternalRoleAssignmentsCommand
-            : IFakeMassTransitMessage<UpsertExternalRoleAssignmentsCommand>
-        {
-            static Utf8String IFakeMassTransitMessage<UpsertExternalRoleAssignmentsCommand>.MessageUrn
-                => "urn:message:Altinn.Register.PartyImport:UpsertExternalRoleAssignmentsCommand"u8;
-
-            static Guid IFakeMassTransitMessage<UpsertExternalRoleAssignmentsCommand>.MessageId(UpsertExternalRoleAssignmentsCommand message)
-                => message.CommandId;
-
-            public Guid CommandId { get; } = Guid.CreateVersion7();
-
-            /// <summary>
-            /// Gets the party from which to upsert the external roles from.
-            /// </summary>
-            public Guid FromPartyUuid { get; init; }
-
-            /// <summary>
-            /// Gets the party ID that the role assignments are from.
-            /// </summary>
-            /// <remarks>
-            /// This was added later to make dealing with errors easier, as such, older messages
-            /// does not contain this value and will default to 0. This is why this property is
-            /// not marked as required as of now.
-            /// </remarks>
-            public int FromPartyId { get; init; }
-
-            /// <summary>
-            /// Gets the tracking information for the upsert.
-            /// </summary>
-            public JobTrackig Tracking { get; init; }
-        }
     }
 
     private sealed class ImportValidationQueueHandler()
@@ -582,22 +406,6 @@ public sealed class RetryA2ImportsCommand(CancellationToken ct)
                 await sender.Send(command, cancellationToken);
                 return true;
             }
-        }
-
-        private sealed record UpsertPartyComand
-            : IFakeMassTransitMessage<UpsertPartyComand>
-        {
-            static Utf8String IFakeMassTransitMessage<UpsertPartyComand>.MessageUrn
-                => "urn:message:Altinn.Register.PartyImport:UpsertPartyCommand"u8;
-
-            static Guid IFakeMassTransitMessage<UpsertPartyComand>.MessageId(UpsertPartyComand message)
-                => message.CommandId;
-
-            public Guid CommandId { get; } = Guid.CreateVersion7();
-
-            public JobTrackig Tracking { get; init; }
-
-            public PartialParty Party { get; init; }
         }
     }
 
@@ -672,85 +480,6 @@ public sealed class RetryA2ImportsCommand(CancellationToken ct)
         }
     }
 
-    private sealed record ImportA2PartyCommand
-        : IFakeMassTransitMessage<ImportA2PartyCommand>
-    {
-        static Utf8String IFakeMassTransitMessage<ImportA2PartyCommand>.MessageUrn
-            => "urn:message:Altinn.Register.PartyImport.A2:ImportA2PartyCommand"u8;
-
-        static Guid IFakeMassTransitMessage<ImportA2PartyCommand>.MessageId(ImportA2PartyCommand message)
-            => message.CommandId;
-
-        public Guid CommandId { get; } = Guid.CreateVersion7();
-
-        /// <summary>
-        /// Gets the party UUID.
-        /// </summary>
-        public required Guid PartyUuid { get; init; }
-
-        /// <summary>
-        /// Gets the change ID.
-        /// </summary>
-        public required uint ChangeId { get; init; }
-
-        /// <summary>
-        /// Gets when the change was registered.
-        /// </summary>
-        public required DateTimeOffset ChangedTime { get; init; }
-    }
-
-    private sealed record ImportA2CCRRolesCommand
-        : IFakeMassTransitMessage<ImportA2CCRRolesCommand>
-    {
-        static Utf8String IFakeMassTransitMessage<ImportA2CCRRolesCommand>.MessageUrn
-            => "urn:message:Altinn.Register.PartyImport.A2:ImportA2CCRRolesCommand"u8;
-
-        static Guid IFakeMassTransitMessage<ImportA2CCRRolesCommand>.MessageId(ImportA2CCRRolesCommand message)
-            => message.CommandId;
-
-        public Guid CommandId { get; } = Guid.CreateVersion7();
-
-        /// <summary>
-        /// Gets the party ID.
-        /// </summary>
-        /// <remarks>
-        /// It's the callers responsibility to ensure that <see cref="PartyId"/> and <see cref="PartyUuid"/>
-        /// is for the same party. Failing to do so will result in undefined behavior.
-        /// </remarks>
-        public required int PartyId { get; init; }
-
-        /// <summary>
-        /// Gets the party UUID.
-        /// </summary>
-        /// <remarks>
-        /// It's the callers responsibility to ensure that <see cref="PartyId"/> and <see cref="PartyUuid"/>
-        /// is for the same party. Failing to do so will result in undefined behavior.
-        /// </remarks>
-        public required Guid PartyUuid { get; init; }
-
-        /// <summary>
-        /// Gets the change ID.
-        /// </summary>
-        public required uint ChangeId { get; init; }
-
-        /// <summary>
-        /// Gets when the change was registered.
-        /// </summary>
-        public required DateTimeOffset ChangedTime { get; init; }
-    }
-
-    private sealed record JobTrackig
-    {
-        public string JobName { get; init; }
-
-        public uint Progress { get; init; }
-    }
-
-    private sealed record PartialParty
-    {
-        public Guid PartyUuid { get; init; }
-    }
-
     private sealed class Context(ServiceBusSender sender, DbHelper db)
     {
         public async Task Send(ImportA2PartyCommand command, CancellationToken cancellationToken)
@@ -795,19 +524,6 @@ public sealed class RetryA2ImportsCommand(CancellationToken ct)
             }
 
             return reader.GetInt32(0);
-        }
-    }
-
-    private sealed class SkippedColumn
-        : ProgressColumn
-    {
-        public override IRenderable Render(RenderOptions options, ProgressTask task, TimeSpan deltaTime)
-        {
-            var skipped = task.State.Get<double>("task.skipped");
-            var total = task.Value;
-            var notSkipped = total - skipped;
-
-            return Markup.FromInterpolated($"[green]{notSkipped:F0}[/]/[yellow]{skipped:F0}[/]/[blue]{task.MaxValue:F0}[/]");
         }
     }
 
