@@ -450,7 +450,7 @@ public static class ValidationRules
                     errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/to", [new("to", $"Parameter is not a valid UUID.")]);
             }
 
-            if (partyUuid != fromUuid || partyUuid != toUuid)
+            if (partyUuid != fromUuid && partyUuid != toUuid)
             {
                 return (ref ValidationErrorBuilder errors) =>
                 {
