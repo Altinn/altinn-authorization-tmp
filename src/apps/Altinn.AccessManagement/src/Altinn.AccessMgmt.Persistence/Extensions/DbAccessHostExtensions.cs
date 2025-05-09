@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Executors;
@@ -75,6 +76,9 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<DbDataMigrationService>();
         builder.Services.AddSingleton<MockDataService>();
 
+        // Core interfaces & implementations
+        builder.Services.AddSingleton<IAmPartyRepository, AMPartyService>();
+
         builder.Services.Add(Marker.ServiceDescriptor);
 
         return builder;
@@ -107,8 +111,9 @@ public static partial class DbAccessHostExtensions
     /// Initializes and applies database migrations and data ingestion processes.
     /// </summary>
     /// <param name="host">The application host.</param>
+    /// <param name="generateBasicData">Optional flag to generate basic data for test</param>
     /// <returns>The updated host after applying database changes.</returns>
-    public static async Task<IHost> UseAccessMgmtDb(this IHost host)
+    public static async Task<IHost> UseAccessMgmtDb(this IHost host, bool? generateBasicData = false)
     {
         // Make sure migration don't run if DB is not enabled
         if (host.Services.GetService(Marker.Type) == null)
@@ -127,12 +132,13 @@ public static partial class DbAccessHostExtensions
         var dbIngest = host.Services.GetRequiredService<DbDataMigrationService>();
         await dbIngest.IngestAll();
 
-        /*
-        //// TODO: Add FeatureFlag
-        // var mockService = host.Services.GetRequiredService<MockDataService>();
-        // await mockService.GenerateBasicData();
-        // await mockService.GeneratePackageResources();
-        */
+        if (generateBasicData == true)
+        {
+            var mockService = host.Services.GetRequiredService<MockDataService>();
+            await mockService.GenerateBasicData();
+
+            // await mockService.GeneratePackageResources();
+        }
 
         return host;
     }
