@@ -280,16 +280,6 @@ public class AssignmentService(
             throw new Exception(string.Format("Multiple inheirited assignment exists. Use Force = true to create anyway."));
         }
 
-        await assignmentRepository.Create(
-            new Assignment()
-            {
-                FromId = fromEntityId,
-                ToId = toEntityId,
-                RoleId = role.Id
-            },
-            options: options,
-            cancellationToken: cancellationToken
-        );
         assignment = new Assignment()
         {
             FromId = fromEntityId,
