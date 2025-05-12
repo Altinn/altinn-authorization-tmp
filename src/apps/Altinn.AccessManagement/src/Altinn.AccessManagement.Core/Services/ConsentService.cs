@@ -257,25 +257,14 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (details == null)
             {
-                errors.Add(ValidationErrors.ConsentNotFound, "consentRequestId");
+                return Problems.ConsentNotFound;
             }
 
             bool isAuthorized = await AuthorizeUserForConsentRequest(performedByParty, details, cancellationToken);
 
             if (!isAuthorized)
             {
-                errors.Add(ValidationErrors.NotAuthorizedForConsentRequest, "Not authoried to accept request");
-            }
-
-            if (errors.TryBuild(out var basicErrors))
-            {
-                return basicErrors;
-            }
-
-            if (details == null)
-            {
-                // Should not be possible to get here since errors is already checked. How to prevent that roselyn belive this
-                throw new ArgumentException($"Consent request with id {consentRequestId} not found");
+                return Problems.NotAuthorizedForConsentRequest;
             }
 
             if (details.ConsentRequestStatus == ConsentRequestStatusType.Accepted)
@@ -286,7 +275,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
             {
-                errors.Add(ValidationErrors.ConsentCantBeAccepted, _consentRequestStatus);
+                return Problems.ConsentCantBeAccepted;
             }
 
             ValidateContext(details, context, errors);
@@ -312,11 +301,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
                 {
-                    errors.Add(ValidationErrors.ConsentCantBeAccepted, _consentRequestStatus);
-                    if (errors.TryBuild(out var errorResult))
-                    {
-                        return errorResult;
-                    }
+                    return Problems.ConsentCantBeAccepted;
                 }
 
                 throw;

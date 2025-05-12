@@ -159,10 +159,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
-            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
-            Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00034", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
-            Assert.Equal("Consent cant be accepted. Wrong status", problemDetails.Errors.ToList()[0].Detail.ToString());
+            Assert.Equal("AM-00002", problemDetails.ErrorCode.ToString());
         }
 
         [Fact]
