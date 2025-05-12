@@ -207,7 +207,7 @@ public class ConnectionService(
         }
         else
         {
-            filter.IsNull(t => fromId);
+            filter.IsNull(t => t.FromId);
         }
 
         if (toId.HasValue)
