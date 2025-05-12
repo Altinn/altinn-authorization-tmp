@@ -47,7 +47,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 return consentRequestStatus.Problem.ToActionResult(); // This line will now work with the extension method
             }
 
-            return Created($"/accessmanagement/api/v1/enterprice/concent/request/{consentRequestStatus.Value.Id}", consentRequestStatus.Value);
+            return Created($"/accessmanagement/api/v1/enterprise/consent/request/{consentRequestStatus.Value.Id}", consentRequestStatus.Value);
         }
     }
 }
