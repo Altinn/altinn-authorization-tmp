@@ -1,8 +1,7 @@
-﻿using Altinn.Authorization.Api.Models.Consent;
-using Altinn.Authorization.Core.Models.Consent;
+﻿using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
 
-namespace Altinn.AccessManagement.Api.Maskinporten.Models.Concent
+namespace Altinn.Authorization.Api.Models.Consent
 {
     /// <summary>
     /// Represents the consent information for Maskinporten.
@@ -42,7 +41,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Models.Concent
         /// <summary>
         /// Maps from internal consent to external consent
         /// </summary>
-        public static ConsentInfoMaskinporten Convert(Consent consent)
+        public static ConsentInfoMaskinporten Convert(Altinn.Authorization.Core.Models.Consent.Consent consent)
         {
             ConsentPartyUrnExternal to = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(consent.To.ValueSpan));
 
