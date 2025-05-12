@@ -28,7 +28,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
         [HttpPost]
         [Route("lookup")]
         [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSENT_READ)]
-        public async Task<ActionResult<ConsentInfoMaskinporten>> GetConcent([FromBody] ConsentLookup consentLookup, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<ConsentInfoMaskinporten>> GetConsent([FromBody] ConsentLookup consentLookup, CancellationToken cancellationToken = default)
         {
             ConsentPartyUrn from = consentLookup.From switch
             {
