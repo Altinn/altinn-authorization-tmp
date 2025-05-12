@@ -363,7 +363,7 @@ public static class ValidationRules
                     errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("party", $"Paramater is not a valid a UUID.")]);
             }
 
-            if (!Guid.TryParse(to, out var fromUuid) || fromUuid == Guid.Empty)
+            if (!Guid.TryParse(from, out var fromUuid) || fromUuid == Guid.Empty)
             {
                 return (ref ValidationErrorBuilder errors) =>
                     errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("from", $"Parameter is not a valid UUID.")]);

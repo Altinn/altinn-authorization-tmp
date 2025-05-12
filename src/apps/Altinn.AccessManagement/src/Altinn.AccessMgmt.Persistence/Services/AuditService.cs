@@ -74,7 +74,7 @@ internal class AuditFactory(IHttpContextAccessor accessor) : IDbAudit, IDbAuditS
     /// Sets the <see cref="ChangeRequestOptions"/> 
     /// </summary>
     public void Set(ChangeRequestOptions options) =>
-        Accessor.HttpContext.Items.Add(nameof(AuditFactory), options);
+        Accessor.HttpContext.Items.TryAdd(nameof(AuditFactory), options);
 }
 
 /// <summary>
