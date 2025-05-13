@@ -3,12 +3,14 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests;
 using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Util;
 using Altinn.Authorization.Api.Models.Consent;
+using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Common.AccessToken.Services;
@@ -307,11 +309,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
 
-            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
-            Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00037", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
-            Assert.Equal("These resources cannot be combined.", problemDetails.Errors.ToList()[0].Detail.ToString());
-            Assert.Equal("Resource", problemDetails.Errors.ToList()[0].Paths[0]);
+            Assert.Equal("AM-00009", problemDetails.ErrorCode.ToString());
+            Assert.Empty(problemDetails.Errors);
         }
 
         /// <summary>
@@ -359,11 +358,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
 
-            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
-            Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00027", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
-            Assert.Equal("Missing required metadata for consentright", problemDetails.Errors.ToList()[0].Detail.ToString());
-            Assert.Equal("/consentRight/0/Metadata/inntektsaar", problemDetails.Errors.ToList()[0].Paths[0]);
+            Assert.Equal("AM-00008", problemDetails.ErrorCode.ToString());
         }
 
         /// <summary>
@@ -428,18 +423,14 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent = await response.Content.ReadAsStringAsync();
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.NotNull(responseContent);
-            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
+            AltinnMultipleProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnMultipleProblemDetails>(responseContent, _jsonOptions);
 
-            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
-            Assert.Equal(2, problemDetails.Errors.Count);
-            Assert.Equal("AM.VLD-00025", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
-            Assert.Equal("Unknown consent metaddata.", problemDetails.Errors.ToList()[0].Detail.ToString());
-            Assert.Equal("/consentRight/1/Metadata/tilogmedwrong", problemDetails.Errors.ToList()[0].Paths[0]);
-            Assert.Equal("AM.VLD-00027", problemDetails.Errors.ToList()[1].ErrorCode.ToString());
-            Assert.Equal("Missing required metadata for consentright", problemDetails.Errors.ToList()[1].Detail.ToString());
-            Assert.Equal("/consentRight/1/Metadata/tilogmed", problemDetails.Errors.ToList()[1].Paths[0]);
+            Assert.Equal("STD-00001", problemDetails.ErrorCode.ToString());
+            Assert.Equal(2, problemDetails.Problems.Count);
+            Assert.Contains(Problems.UnknownConsentMetadata.ErrorCode, problemDetails.Problems.Select(r => r.ErrorCode));
+            Assert.Contains(Problems.MissingMetadata.ErrorCode, problemDetails.Problems.Select(r => r.ErrorCode));
         }
 
         /// <summary>
@@ -491,11 +482,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
 
-            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
-            Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00025", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
-            Assert.Equal("Unknown consent metaddata.", problemDetails.Errors.ToList()[0].Detail.ToString());
-            Assert.Equal("/consentRight/0/Metadata/inntektsaar", problemDetails.Errors.ToList()[0].Paths[0]);
+            Assert.Equal("AM-00006", problemDetails.ErrorCode.ToString());
+            Assert.Equal("Invalid consent metadata", problemDetails.Detail.ToString());
+            Assert.Empty(problemDetails.Errors);
+            Assert.Equal("inntektsaar", problemDetails.Extensions["key"].ToString());
         }
 
         /// <summary>

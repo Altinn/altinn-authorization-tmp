@@ -30,4 +30,24 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor InvalidPersonIdentifier { get; }
     = _factory.Create(4, HttpStatusCode.BadRequest, "Unknown person. Could not be found");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor InvalidConsentResource { get; }
+    = _factory.Create(5, HttpStatusCode.BadRequest, "Invalid consent resource");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor UnknownConsentMetadata { get; }
+    = _factory.Create(6, HttpStatusCode.BadRequest, "Invalid consent metadata");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor MissingMetadataValue { get; }
+    = _factory.Create(7, HttpStatusCode.BadRequest, "Missing metadata value");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor MissingMetadata { get; }
+    = _factory.Create(8, HttpStatusCode.BadRequest, "Missing metadata");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor InvalidResourceCombination { get; }
+    = _factory.Create(9, HttpStatusCode.BadRequest, "Invalid resource combination");
 }

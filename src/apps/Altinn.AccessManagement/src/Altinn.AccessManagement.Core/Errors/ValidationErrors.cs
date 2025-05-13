@@ -80,18 +80,6 @@ public static class ValidationErrors
     /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
-    public static ValidationErrorDescriptor InvalidPersonIdentifier { get; }
-        = _factory.Create(20, "Invalid person identifier. No person with this identifier.");
-
-    /// <summary>
-    /// Gets a validation error descriptor
-    /// </summary>
-    public static ValidationErrorDescriptor InvalidOrganizationIdentifier { get; }
-        = _factory.Create(21, $"Invalid organization identifier. No organization with this identifier.");
-
-    /// <summary>
-    /// Gets a validation error descriptor
-    /// </summary>
     public static ValidationErrorDescriptor InvalidValidToTime { get; }
         = _factory.Create(22, $"The ValidTo time need to be in the future");
 

@@ -533,7 +533,8 @@ namespace Altinn.AccessManagement.Core.Services
         /// </summary>
         private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest, CancellationToken cancelactionToken)
         {
-            ValidationErrorBuilder errors = default;
+            ValidationErrorBuilder validationErrorsBuilder = default;
+            MultipleProblemBuilder problemsBuilder = default;
             Result<ConsentPartyUrn> fromParty = await ValidatePartyFromExternalIdentity(consentRequest.From, cancelactionToken);
             if (fromParty.IsProblem)
             {
@@ -554,26 +555,31 @@ namespace Altinn.AccessManagement.Core.Services
                 consentRequest.To = toParty.Value;
             }
 
-             errors = ValidateValidTo(consentRequest, errors);
+            validationErrorsBuilder = ValidateValidTo(consentRequest, validationErrorsBuilder);
 
             string templateId = string.Empty;
 
             if (consentRequest.ConsentRights == null || consentRequest.ConsentRights.Count == 0)
             {
-                errors.Add(ValidationErrors.MissingConsentRight, ResourceParam);
+                validationErrorsBuilder.Add(ValidationErrors.MissingConsentRight, ResourceParam);
             }
             else
             {
                 templateId = string.Empty;
                 for (int rightIndex = 0; rightIndex < consentRequest.ConsentRights.Count; rightIndex++)
                 {
-                    (errors, templateId) = await ValidateConsentRight(consentRequest, errors, rightIndex, templateId, cancelactionToken);
+                    (problemsBuilder, templateId) = await ValidateConsentRight(consentRequest, problemsBuilder, rightIndex, templateId, cancelactionToken);
                 }
             }
 
-            if (errors.TryBuild(out var errorResult))
+            if (validationErrorsBuilder.TryBuild(out var errorResult))
             {
-                return errorResult;
+                problemsBuilder.Add(errorResult);
+            }
+
+            if (problemsBuilder.TryBuild(out var problemResult))
+            {
+                return problemResult;
             }
 
             ConsentTemplate consentTemplate = await GetTemplate(templateId, cancelactionToken);
@@ -606,33 +612,34 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
-        private async Task<(ValidationErrorBuilder Errors, string TemplateId)> ValidateConsentRight(ConsentRequest consentRequest, ValidationErrorBuilder errors, int rightIndex, string templateId, CancellationToken cancelactionToken)
+        private async Task<(MultipleProblemBuilder Errors, string TemplateId)> ValidateConsentRight(ConsentRequest consentRequest, MultipleProblemBuilder problemsBuilder, int rightIndex, string templateId, CancellationToken cancelactionToken)
         {
             ConsentRight consentRight = consentRequest.ConsentRights[rightIndex];
+            ValidationErrorBuilder validationErrors = default;
 
             if (consentRight.Action == null || consentRight.Action.Count == 0)
             {
-                errors.Add(ValidationErrors.MissingAction, $"/consentRight/{rightIndex}/action");
+                validationErrors.Add(ValidationErrors.MissingAction, $"/consentRight/{rightIndex}/action");
             }
 
             if (consentRight.Resource == null || consentRight.Resource.Count == 0 || consentRight.Resource.Count > 1)
             {
-                errors.Add(ValidationErrors.InvalidResource, ResourceParam);
+                problemsBuilder.Add(Problems.InvalidConsentResource);
             }
             else
             {
                 ServiceResource resourceDetails = await _resourceRegistryClient.GetResource(consentRight.Resource[0].Value, cancelactionToken);
                 if (resourceDetails == null)
                 {
-                    errors.Add(ValidationErrors.InvalidConsentResource, ResourceParam);
+                    problemsBuilder.Add(Problems.InvalidConsentResource);
                 }
                 else if (!resourceDetails.ResourceType.Equals(ResourceType.Consentresource))
                 {
-                    errors.Add(ValidationErrors.InvalidConsentResource, ResourceParam);
+                    problemsBuilder.Add(Problems.InvalidConsentResource);
                 }
                 else
                 {
-                    errors = ValidateConsentMetadata(errors, rightIndex, consentRight, resourceDetails);
+                    ValidateConsentMetadata(ref problemsBuilder, rightIndex, consentRight, resourceDetails);
                 }
 
                 if (string.IsNullOrEmpty(templateId))
@@ -641,14 +648,19 @@ namespace Altinn.AccessManagement.Core.Services
                 }
                 else if (!templateId.Equals(resourceDetails.ConsentTemplate, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    errors.Add(ValidationErrors.InvalidResourceCombination, ResourceParam);
+                    problemsBuilder.Add(Problems.InvalidResourceCombination);
                 }
             }
 
-            return (errors, templateId);
+            if (validationErrors.TryBuild(out var errorResult))
+            {
+                problemsBuilder.Add(errorResult);
+            }
+
+            return (problemsBuilder, templateId);
         }
 
-        private static ValidationErrorBuilder ValidateConsentMetadata(ValidationErrorBuilder errors, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails)
+        private static void ValidateConsentMetadata(ref MultipleProblemBuilder problemsBuilder, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails)
         {
             if (consentRight.MetaData != null && consentRight.MetaData.Count > 0)
             {
@@ -656,22 +668,20 @@ namespace Altinn.AccessManagement.Core.Services
                 {
                     if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
                     {
-                        errors.Add(ValidationErrors.UnknownConsentMetadata, $"/consentRight/{rightIndex}/Metadata/{metaData.Key.ToLower()}");
+                        problemsBuilder.Add(Problems.UnknownConsentMetadata.Create([new("key", metaData.Key.ToLower())]));
                     }
 
                     if (string.IsNullOrEmpty(metaData.Value))
                     {
-                        errors.Add(ValidationErrors.MissingMetadataValue, $"/consentRight/{rightIndex}/Metadata");
+                        problemsBuilder.Add(Problems.MissingMetadataValue.Create([new("rightindex", rightIndex.ToString())]));
                     }
                 }
             }
 
-            errors = ValidateRequiredMetadata(errors, rightIndex, consentRight, resourceDetails);
-
-            return errors;
+            ValidateRequiredMetadata(ref problemsBuilder, rightIndex, consentRight, resourceDetails);
         }
 
-        private static ValidationErrorBuilder ValidateRequiredMetadata(ValidationErrorBuilder errors, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails)
+        private static void ValidateRequiredMetadata(ref MultipleProblemBuilder problemsBuilder, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails)
         {
             if (resourceDetails.ConsentMetadata != null)
             {
@@ -679,12 +689,11 @@ namespace Altinn.AccessManagement.Core.Services
                 {
                     if (consentRight.MetaData == null || !consentRight.MetaData.ContainsKey(key))
                     {
-                        errors.Add(ValidationErrors.MissingMetadata, $"/consentRight/{rightIndex}/Metadata/{key}");
+                        problemsBuilder.Add(Problems.MissingMetadata.Create([new("key", key.ToLower())]));
                     }
                 }
             }
 
-            return errors;
         }
 
         private static ValidationErrorBuilder ValidateValidTo(ConsentRequest consentRequest, ValidationErrorBuilder errors)
