@@ -575,7 +575,7 @@ namespace Altinn.AccessManagement.Core.Services
         {
             if (context == null)
             {
-                errors.Add(ValidationErrors.MissingContext, "Context");
+                errors.Add(ValidationErrors.Required, "Context");
             }
        
             if (consentRequest.ConsentRights.Count != context.ConsentContextResources.Count)
