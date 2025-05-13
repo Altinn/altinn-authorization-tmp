@@ -226,17 +226,11 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> GetRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken)
         {
-            ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
             bool isAuthorized = await AuthorizeUserForConsentRequest(performedByParty, details, cancellationToken);
             if (!isAuthorized)
             {
-                errors.Add(ValidationErrors.NotAuthorizedForConsentRequest, "Not authoried to accept request");
-            }
-
-            if (errors.TryBuild(out var basicErrors))
-            {
-                return basicErrors;
+                return Problems.NotAuthorizedForConsentRequest;
             }
 
             details.To = await MapToExternalIdenity(details.To, cancellationToken);
@@ -252,7 +246,6 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> AcceptRequest(Guid consentRequestId, Guid performedByParty, ConsentContext context, CancellationToken cancellationToken)
         {
-            ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
 
             if (details == null)
@@ -278,6 +271,7 @@ namespace Altinn.AccessManagement.Core.Services
                 return Problems.ConsentCantBeAccepted;
             }
 
+            ValidationErrorBuilder errors = default;
             ValidateContext(details, context, errors);
 
             if (errors.TryBuild(out var beforeErrorREsult))

@@ -80,12 +80,6 @@ public static class ValidationErrors
     /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
-    public static ValidationErrorDescriptor NotAuthorizedForConsentRequest { get; }
-        = _factory.Create(19, "Not Authorized for ");
-
-    /// <summary>
-    /// Gets a validation error descriptor
-    /// </summary>
     public static ValidationErrorDescriptor InvalidPersonIdentifier { get; }
         = _factory.Create(20, "Invalid person identifier. No person with this identifier.");
 
