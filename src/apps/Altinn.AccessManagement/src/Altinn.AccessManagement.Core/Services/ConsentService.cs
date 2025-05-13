@@ -679,7 +679,7 @@ namespace Altinn.AccessManagement.Core.Services
             return errors;
         }
 
-        private async Task<ValidationErrorBuilder> ValidateAndSetFromParty(ConsentRequest consentRequest, ValidationErrorBuilder errors, CancellationToken cancelactionToken)
+        private async Task<ValidationErrorBuilder> ValidateAndSetFromParty(ConsentRequest consentRequest,  ValidationErrorBuilder errors, CancellationToken cancelactionToken)
         {
             ConsentPartyUrn from = await MapFromExternalIdenity(consentRequest.From, cancelactionToken);
             if (from == null)
