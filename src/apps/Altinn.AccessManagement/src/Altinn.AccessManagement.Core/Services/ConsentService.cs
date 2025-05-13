@@ -534,9 +534,27 @@ namespace Altinn.AccessManagement.Core.Services
         private async Task<Result<ConsentRequest>> ValidateAndSetInternalIdentifiers(ConsentRequest consentRequest, CancellationToken cancelactionToken)
         {
             ValidationErrorBuilder errors = default;
-            errors = await ValidateAndSetFromParty(consentRequest, errors, cancelactionToken);
-            errors = await ValidateAndSetToParty(consentRequest, errors, cancelactionToken);
-            errors = ValidateValidTo(consentRequest, errors);
+            Result<ConsentPartyUrn> fromParty = await ValidatePartyFromExternalIdentity(consentRequest.From, cancelactionToken);
+            if (fromParty.IsProblem)
+            {
+                return fromParty.Problem;
+            }
+            else
+            {
+                consentRequest.From = fromParty.Value;
+            }
+
+            Result<ConsentPartyUrn> toParty = await ValidatePartyFromExternalIdentity(consentRequest.To, cancelactionToken);
+            if (toParty.IsProblem)
+            {
+                return toParty.Problem;
+            }
+            else
+            {
+                consentRequest.To = toParty.Value;
+            }
+
+             errors = ValidateValidTo(consentRequest, errors);
 
             string templateId = string.Empty;
 
@@ -679,48 +697,22 @@ namespace Altinn.AccessManagement.Core.Services
             return errors;
         }
 
-        private async Task<ValidationErrorBuilder> ValidateAndSetFromParty(ConsentRequest consentRequest,  ValidationErrorBuilder errors, CancellationToken cancelactionToken)
+        private async Task<Result<ConsentPartyUrn>> ValidatePartyFromExternalIdentity(ConsentPartyUrn consentPartyUrn, CancellationToken cancelactionToken)
         {
-            ConsentPartyUrn from = await MapFromExternalIdenity(consentRequest.From, cancelactionToken);
-            if (from == null)
-            {
-                if (consentRequest.From.IsOrganizationId(out _))
-                {
-                    errors.Add(ValidationErrors.InvalidOrganizationIdentifier, "From");
-                }
-                else if (consentRequest.From.IsPersonId(out _))
-                {
-                    errors.Add(ValidationErrors.InvalidPersonIdentifier, "From");
-                }
-            }
-            else
-            {
-                consentRequest.From = from;
-            }
-
-            return errors;
-        }
-
-        private async Task<ValidationErrorBuilder> ValidateAndSetToParty(ConsentRequest consentRequest, ValidationErrorBuilder errors, CancellationToken cancelactionToken)
-        {
-            ConsentPartyUrn to = await MapFromExternalIdenity(consentRequest.To, cancelactionToken);
+            ConsentPartyUrn to = await MapFromExternalIdenity(consentPartyUrn, cancelactionToken);
             if (to == null)
             {
-                if (consentRequest.To.IsOrganizationId(out _))
+                if (consentPartyUrn.IsOrganizationId(out _))
                 {
-                    errors.Add(ValidationErrors.InvalidOrganizationIdentifier, "To");
+                    return Problems.InvalidOrganizationIdentifier.Create([new("orgnr", consentPartyUrn.ToString())]);
                 }
-                else if (consentRequest.To.IsPersonId(out _))
+                else if (consentPartyUrn.IsPersonId(out _))
                 {
-                    errors.Add(ValidationErrors.InvalidPersonIdentifier, "To");
+                    return Problems.InvalidPersonIdentifier.Create([new("fnumber", consentPartyUrn.ToString())]);
                 }
             }
-            else
-            {
-                consentRequest.To = to;
-            }
-
-            return errors;
+            
+            return to;
         }
 
         private async Task<ConsentTemplate> GetTemplate(string templateId, CancellationToken cancellationToken)

@@ -637,9 +637,9 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
 
-            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
-            Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00020", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal("AM-00004", problemDetails.ErrorCode.ToString());
+            Assert.Empty(problemDetails.Errors);
+            Assert.Single(problemDetails.Extensions);
         }
 
         private HttpClient GetTestClient()

@@ -20,6 +20,14 @@ public static class Problems
     = _factory.Create(1, HttpStatusCode.NotFound, "Consent not found");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
-    public static ProblemDescriptor ConsentCantBeAccepted { get; }
+    public static ProblemDescriptor ConsentCantBeAccepted { get; }  
     = _factory.Create(2, HttpStatusCode.BadRequest, "Consent have wrong status to be consented");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor InvalidOrganizationIdentifier { get; }
+    = _factory.Create(3, HttpStatusCode.BadRequest, "Unknown organization. Could not be found");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor InvalidPersonIdentifier { get; }
+    = _factory.Create(4, HttpStatusCode.BadRequest, "Unknown person. Could not be found");
 }
