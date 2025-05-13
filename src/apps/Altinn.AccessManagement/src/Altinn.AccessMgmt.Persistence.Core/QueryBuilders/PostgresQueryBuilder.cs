@@ -144,21 +144,6 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
     private static string GetAuditVariables(ChangeRequestOptions options)
     {
-        /*
-        private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
-        
-        if (options.ChangedBySystem == Guid.Empty)
-        {
-            options.ChangedBySystem = DefaultPerformedBy;
-        }
-        */
-
-        /*
-        sb.AppendLine("SELECT current_setting('app.current_user', false) INTO current_user;");
-        sb.AppendLine("SELECT current_setting('app.current_system', false) INTO current_system;");
-        sb.AppendLine("SELECT current_setting('app.current_operation', false) INTO current_operation;");
-        */
-
         return string.Format("SET LOCAL app.changed_by = '{0}'; SET LOCAL app.changed_by_system = '{1}'; SET LOCAL app.change_operation_id = '{2}';", options.ChangedBy, options.ChangedBySystem, options.ChangeOperationId);
     }
 
@@ -387,6 +372,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
                 FilterComparer.StartsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 FilterComparer.EndsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 FilterComparer.Contains => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
+                FilterComparer.Like => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 _ => throw new NotSupportedException($"Comparer '{filter.Comparer}' is not supported.")
             };
 
@@ -443,7 +429,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine(query);
         sb.AppendLine(")");
         sb.AppendLine("SELECT *");
-        sb.AppendLine("FROM pagedresult, (SELECT MAX(pagedresult._rownum) AS totalitems FROM pagedresult) AS pageinfo");
+        sb.AppendLine($"FROM pagedresult, (SELECT MAX(pagedresult._rownum) AS _totalItemCount, {options.PageSize} as _pageSize, {options.PageNumber} as _pageNumber FROM pagedresult) AS _totalItemCount");
         sb.AppendLine($"ORDER BY _rownum OFFSET {options.PageSize * (options.PageNumber - 1)} ROWS FETCH NEXT {options.PageSize} ROWS ONLY");
 
         return sb.ToString();

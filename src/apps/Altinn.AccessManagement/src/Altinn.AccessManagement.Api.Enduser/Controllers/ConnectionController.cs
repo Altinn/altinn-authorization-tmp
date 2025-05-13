@@ -62,17 +62,17 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
 
         if (from.HasValue && to.HasValue)
         {
-            return Ok(await connectionService.GetSpecific(from.Value, to.Value));
+            return Ok(await connectionService.Get(fromId: from.Value, toId: to.Value, facilitatorId: null, cancellationToken: cancellationToken));
         }
 
         if (from.HasValue)
         {
-            return Ok(await connectionService.GetReceived(from.Value));
+            return Ok(await connectionService.GetReceived(from.Value, cancellationToken: cancellationToken));
         }
 
         if (to.HasValue)
         {
-            return Ok(await connectionService.GetGiven(to.Value));
+            return Ok(await connectionService.GetGiven(to.Value, cancellationToken: cancellationToken));
         }
         
         return BadRequest();
@@ -172,8 +172,8 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
     /// Creates an assignment between the authenticated user's selected party and the specified target party.
     /// </summary>
     /// <param name="party">The GUID identifying the party the authenticated user is acting on behalf of.</param>
-    /// <param name="fromId">The GUID identifying the party the authenticated user is acting for</param>
-    /// <param name="toId">The GUID identifying the target party to which the assignment should be created.</param>
+    /// <param name="from">The GUID identifying the party the authenticated user is acting for</param>
+    /// <param name="to">The GUID identifying the target party to which the assignment should be created.</param>
     /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
     [HttpGet]
     [Route("accesspackages")]
@@ -195,12 +195,6 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
             // Party must match From or To
             return BadRequest();
         }
-
-        var audit = new ChangeRequestOptions()
-        {
-            ChangedBy = Accessor.GetPartyUuid(),
-            ChangedBySystem = AuditDefaults.EnduserApi
-        };
 
         var res = await connectionService.GetPackages(fromId: from, toId: to);
 
