@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Fixtures;
@@ -339,13 +340,9 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.NotNull(responseContent);
-            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
+            AltinnMultipleProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnMultipleProblemDetails>(responseContent, _jsonOptions);
 
-            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
-            Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00035", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
-            Assert.Equal("Consent cant be revoked. Wrong status", problemDetails.Errors.ToList()[0].Detail.ToString());
-            Assert.Equal("Status", problemDetails.Errors.ToList()[0].Paths[0]);
+            Assert.Equal(Problems.ConsentCantBeRevoked.ErrorCode, problemDetails.ErrorCode);
         }
 
         private HttpClient GetTestClient()

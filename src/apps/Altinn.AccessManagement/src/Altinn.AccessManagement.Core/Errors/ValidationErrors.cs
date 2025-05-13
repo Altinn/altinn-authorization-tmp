@@ -158,20 +158,8 @@ public static class ValidationErrors
     /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
-    public static ValidationErrorDescriptor ConsentCantBeRevoked { get; }
-    = _factory.Create(35, $"Consent cant be revoked. Wrong status");
-
-    /// <summary>
-    /// Gets a validation error descriptor
-    /// </summary>
     public static ValidationErrorDescriptor ConsentCantBeRejected { get; }
     = _factory.Create(36, $"Consent cant be rejected. Wrong status");
-
-    /// <summary>
-    /// Gets a validation error descriptor
-    /// </summary>
-    public static ValidationErrorDescriptor InvalidResourceCombination { get; }
-    = _factory.Create(37, $"These resources cannot be combined.");
 
     /// <summary>
     /// Gets a validation error descriptor

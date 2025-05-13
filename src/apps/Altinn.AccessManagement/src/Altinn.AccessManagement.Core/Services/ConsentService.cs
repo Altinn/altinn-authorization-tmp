@@ -309,7 +309,6 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> RevokeConsent(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken)
         {
-            ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
             if (details.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
             {
@@ -319,12 +318,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (details.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
             {
-                errors.Add(ValidationErrors.ConsentCantBeRevoked, _consentRequestStatus);
-            }
-
-            if (errors.TryBuild(out var beforeErrorREsult))
-            {
-                return beforeErrorREsult;
+                return Problems.ConsentCantBeRevoked;
             }
 
             try
@@ -343,11 +337,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (details.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
                 {
-                    errors.Add(ValidationErrors.ConsentCantBeAccepted, _consentRequestStatus);
-                    if (errors.TryBuild(out var errorResult))
-                    {
-                        return errorResult;
-                    }
+                    return Problems.ConsentCantBeRevoked;
                 }
 
                 throw;

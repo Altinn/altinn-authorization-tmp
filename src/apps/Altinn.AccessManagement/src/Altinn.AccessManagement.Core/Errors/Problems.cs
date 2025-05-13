@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Core.Errors;
@@ -50,4 +51,8 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor InvalidResourceCombination { get; }
     = _factory.Create(9, HttpStatusCode.BadRequest, "Invalid resource combination");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor ConsentCantBeRevoked { get; }
+     = _factory.Create(10, HttpStatusCode.BadRequest, "Consent cant be revoked.Wrong status");
 }
