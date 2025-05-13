@@ -180,11 +180,11 @@ public class ConnectionService(
         {
             if (from != null && from.HasValue && from.Value != Guid.Empty)
             {
-                filter.Equal(t => t.FromId, from);
+                filter.Equal(f => f.FromId, from);
                 return true;
             }
 
-            filter.NotSet(t => t.FromId);
+            filter.NotSet(f => f.FromId);
             return false;
         }
 
@@ -205,6 +205,7 @@ public class ConnectionService(
         if (isFromSet || isToSet)
         {
             filter.NotSet(t => t.Id);
+            filter.NotSet(t => t.RoleId);
             filter.NotSet(t => t.FacilitatorId);
         }
         else
@@ -263,16 +264,18 @@ public class ConnectionService(
         var assignment = existingAssignments.First();
 
         var userPackageFilter = ConnectionPackageRepository.CreateFilterBuilder()
-            .Equal(t => t.ToId, from)
             .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
+            .Equal(t => t.FromId, from)
             .Equal(t => t.PackageId, packageId);
 
-        var userPackages = await ConnectionPackageRepository.GetExtended(userPackageFilter, cancellationToken: cancellationToken);
+        var userPackags = await ConnectionPackageRepository.GetExtended(userPackageFilter, cancellationToken: cancellationToken);
+        var userpackage = userPackags.Where(p => p.PackageId == packageId)
+            .ToList();
 
         problem = ValidationRules.Validate(
-            ValidationRules.QueryParameters.AnyPackages(userPackages, queryParamName),
-            ValidationRules.QueryParameters.PackageIsAssignableByUser(userPackages, queryParamName),
-            ValidationRules.QueryParameters.PackageIsAssignableByDefinition(userPackages, queryParamName)
+            ValidationRules.QueryParameters.AnyPackages(userpackage, queryParamName),
+            ValidationRules.QueryParameters.PackageIsAssignableByUser(userpackage, queryParamName),
+            ValidationRules.QueryParameters.PackageIsAssignableByDefinition(userpackage, queryParamName)
         );
 
         if (problem is { })

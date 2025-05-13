@@ -324,8 +324,6 @@ public static class ValidationRules
         /// <summary>
         /// Checks if party exists
         /// </summary>
-        /// <param name="party"></param>
-        /// <param name="paramName"></param>
         /// <returns></returns>
         public static FuncExpression PartyExists(Entity party, string paramName = "party") => () =>
         {
