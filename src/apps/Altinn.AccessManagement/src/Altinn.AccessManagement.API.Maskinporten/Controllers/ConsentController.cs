@@ -29,18 +29,11 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
         [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSENT_READ)]
         public async Task<ActionResult<ConsentInfoMaskinporten>> GetConsent([FromBody] ConsentLookup consentLookup, CancellationToken cancellationToken = default)
         {
-            ConsentPartyUrn from = consentLookup.From switch
-            {
-                ConsentPartyUrnExternal.PersonId => ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(consentLookup.From.ValueSpan)),
-                ConsentPartyUrnExternal.OrganizationId => ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(consentLookup.From.ValueSpan)),
-                _ => throw new ArgumentException($"Unknown consent party urn: {consentLookup.From}")
-            };
-
-            Result<Consent> consent = await _consentService.GetConsent(consentLookup.Id, from, MapToCore(consentLookup.To), cancellationToken);
+            Result<Consent> consent = await _consentService.GetConsent(consentLookup.Id, MapToCore(consentLookup.From), MapToCore(consentLookup.To), cancellationToken);
 
             if (consent.IsProblem)
             {
-                return consent.Problem.ToActionResult(); // This line will now work with the extension method
+                return consent.Problem.ToActionResult();
             }
 
             return Ok(ConsentInfoMaskinporten.Convert(consent.Value));
@@ -50,8 +43,8 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
         {
             ConsentPartyUrn consentPartyUrn = consentPartyUrnExternal switch
             {
-                ConsentPartyUrnExternal.PersonId => ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(consentPartyUrnExternal.ValueSpan)),
-                ConsentPartyUrnExternal.OrganizationId => ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(consentPartyUrnExternal.ValueSpan)),
+                ConsentPartyUrnExternal.PersonId personUrn => ConsentPartyUrn.PersonId.Create(personUrn.Value),
+                ConsentPartyUrnExternal.OrganizationId organizationUrn => ConsentPartyUrn.OrganizationId.Create(organizationUrn.Value),
                 _ => throw new ArgumentException("Unknown consent party urn")
             };
 
