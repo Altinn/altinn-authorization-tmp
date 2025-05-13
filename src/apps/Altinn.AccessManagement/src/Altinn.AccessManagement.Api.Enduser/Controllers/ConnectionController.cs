@@ -294,7 +294,7 @@ public class ConnectionController(IHttpContextAccessor accessor, IConnectionServ
 
         if (res)
         {
-            return Ok();
+            return NoContent();
         }
 
         return Problem("Unable to remove package");
