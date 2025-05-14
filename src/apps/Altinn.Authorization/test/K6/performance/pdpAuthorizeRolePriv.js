@@ -1,8 +1,6 @@
 import http from 'k6/http';
 import exec from 'k6/execution';
-import { randomIntBetween, URL} from './common/k6-utils.js';
-import { expect, expectStatusFor } from "./common/testimports.js";
-import { describe } from './common/describe.js';
+import { expect, expectStatusFor, randomIntBetween, URL, describe } from "./common/testimports.js";
 import { postAuthorizeUrl } from './common/config.js';
 import { dagl } from './common/readTestdata.js';
 import { buildPrivAuthorizeBody } from './testData/buildAuthorizeBody.js';

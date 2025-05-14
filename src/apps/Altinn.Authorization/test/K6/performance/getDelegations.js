@@ -1,11 +1,7 @@
 import http from 'k6/http';
 import { getSystemsUrl, getSystemUsersUrl, getAmDelegationUrl } from "./common/config.js";
-import { expect, expectStatusFor } from "./common/testimports.js";
-import { describe } from './common/describe.js';
+import { expect, expectStatusFor, describe, randomItem, URL, getEnterpriseToken, getAmToken } from "./common/testimports.js";
 import { getParams } from "./commonFunctions.js";
-import { URL } from "./common/k6-utils.js";
-import { getEnterpriseToken, getAmToken } from './common/token.js';
-import { randomItem } from './common/k6-utils.js';
 import { orgOwners } from './common/readTestdata.js'; 
 
 const getSystemsLabel = "Get systems";

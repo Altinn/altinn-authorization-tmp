@@ -1,8 +1,6 @@
 import http from 'k6/http';
 import exec from 'k6/execution';
-import { randomIntBetween, URL} from './common/k6-utils.js';
-import { expect, expectStatusFor } from "./common/testimports.js";
-import { describe } from './common/describe.js';
+import { expect, expectStatusFor, randomIntBetween, URL, describe } from "./common/testimports.js";
 import { postAuthorizeUrl } from './common/config.js';
 import { dagl } from './common/readTestdata.js';
 import { buildDaglAuthorizeBody } from './testData/buildAuthorizeBody.js';
@@ -29,6 +27,16 @@ export default function() {
     const params = getAuthorizeParams(label, getAuthorizeClientToken(client));
     const body = buildDaglAuthorizeBody(client.SSN, resource, client.OrgNr, action);
     const url = new URL(postAuthorizeUrl);
+    const data = {
+        client: client,
+        action: action,
+        label: label,
+        expectedResponse: expectedResponse,
+        resource: resource,
+        requestBody: body
+    };
+    //altinnK6Lib.postSlackMessage(data)
+
 
     // Run request and check response
     describe('PDP Authorize', () => {

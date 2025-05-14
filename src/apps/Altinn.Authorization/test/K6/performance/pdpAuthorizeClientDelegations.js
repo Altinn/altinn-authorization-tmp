@@ -1,7 +1,5 @@
 import http from 'k6/http';
-import { randomItem, URL} from './common/k6-utils.js';
-import { expect, expectStatusFor } from "./common/testimports.js";
-import { describe } from './common/describe.js';
+import { expect, expectStatusFor, describe, randomItem, URL } from "./common/testimports.js";
 import { postAuthorizeUrl } from './common/config.js';
 import { systemUsers } from './common/readTestdata.js';
 import { buildClientDelegationAuthorizeBody } from './testData/buildAuthorizeBody.js';

@@ -1,5 +1,4 @@
-import { uuidv4, randomIntBetween } from "./common/k6-utils.js";
-import { getEnterpriseToken, getPersonalTokenSSN } from './common/token.js';
+import { getEnterpriseToken, getPersonalToken, uuidv4, randomIntBetween } from './common/testimports.js';
 
 const subscription_key = __ENV.subscription_key;
 const traceCalls = __ENV.TRACE_CALLS == "true" || __ENV.TRACE_CALLS == "1" || __ENV.TRACE_CALLS == "yes" || __ENV.TRACE_CALLS == "YES" || __ENV.TRACE_CALLS == "Yes";
@@ -42,7 +41,7 @@ export function getAuthorizeParams(label, token) {
 export function getAuthorizeToken(client) {
     const tokenOpts = {
         scopes: "altinn:authorization/authorize.admin",
-        orgno: client.facilitatorOrgNo,
+        orgNo: client.facilitatorOrgNo,
     }
     const token = getEnterpriseToken(tokenOpts);
     return token;
@@ -53,7 +52,7 @@ export function getAuthorizeClientToken(client) {
         scopes: "altinn:authorization/authorize.admin",
         ssn: client.SSN,
     }
-    const token = getPersonalTokenSSN(tokenOpts);
+    const token = getPersonalToken(tokenOpts);
     return token;
 }
 
