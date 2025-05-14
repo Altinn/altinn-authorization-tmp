@@ -22,7 +22,8 @@ namespace Altinn.AccessManagement.Core.Services
     /// <remarks>
     /// Service responsible for consent functionality
     /// </remarks>
-    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService, IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient) : IConsent
+    public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService, 
+        IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient, TimeProvider timeProvider) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
         private readonly IPartiesClient _partiesClient = partiesClient;
@@ -31,6 +32,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IAMPartyService _ampartyService = ampartyService;
         private readonly IMemoryCache _memoryCache = memoryCache;
         private readonly IProfileClient _profileClient = profileClient;
+        private readonly TimeProvider _timeProvider = timeProvider;
 
         private const string _consentRequestStatus = "Status";
         private const string ResourceParam = "Resource";
@@ -190,7 +192,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
-        private static ValidationErrorBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, ValidationErrorBuilder errors, ConsentRequestDetails consentRequest)
+        private ValidationErrorBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, ValidationErrorBuilder errors, ConsentRequestDetails consentRequest)
         {
             if (!to.Equals(consentRequest.To))
             {
@@ -202,7 +204,7 @@ namespace Altinn.AccessManagement.Core.Services
                 errors.Add(ValidationErrors.MissMatchConsentParty, "From");
             }
 
-            if (consentRequest.ValidTo < DateTime.UtcNow)
+            if (consentRequest.ValidTo < _timeProvider.GetUtcNow())
             {
                 errors.Add(ValidationErrors.ConsentExpired, "ValidTo");
             }
