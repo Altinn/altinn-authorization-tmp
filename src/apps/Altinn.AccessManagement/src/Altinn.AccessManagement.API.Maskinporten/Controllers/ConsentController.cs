@@ -15,7 +15,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
     /// <remarks>
     /// The default constructor taking in depencies. 
     /// </remarks>
-    [Route("accessmanagement/api/v1/maskinporten/consent/")]
+    [Route("accessmanagement/api/v1/maskinporten/consent")]
     [ApiController]
     public class ConsentController(IConsent consentService) : ControllerBase
     {

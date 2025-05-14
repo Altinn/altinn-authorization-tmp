@@ -12,7 +12,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
     /// <summary>
     /// The default constructor taking in depencies. 
     /// </summary>
-    [Route("accessmanagement/api/v1/enterprise/consent/")]
+    [Route("accessmanagement/api/v1/enterprise/consent")]
     [ApiController]
     public class ConsentController(IConsent consentService) : ControllerBase
     {

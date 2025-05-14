@@ -573,7 +573,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00028", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal(ValidationErrors.MissingAction.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
         }
 
         /// <summary>

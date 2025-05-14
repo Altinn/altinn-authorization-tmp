@@ -221,8 +221,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
 
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00036", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
-            Assert.Equal("Consent cant be rejected. Wrong status", problemDetails.Errors.ToList()[0].Detail.ToString());
+            Assert.Equal(ValidationErrors.ConsentCantBeRejected.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
             Assert.Equal("Status", problemDetails.Errors.ToList()[0].Paths[0]);
         }
 

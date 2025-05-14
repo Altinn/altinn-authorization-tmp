@@ -15,7 +15,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
     /// All endpoints are accessible only from the Altinn Portal to ensure that end users are properly informed about the details of their consents.
     /// The controller enforces the portal scope for authorization to access its methods.
     /// </summary>
-    [Route("accessmanagement/api/v1/enduser/consent/")]
+    [Route("accessmanagement/api/v1/enduser/consent")]
     [ApiController]
     [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     public class ConsentController(IConsent consentService) : ControllerBase
@@ -81,7 +81,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// - Have the right to delegate the requested rights. Either by having the right self or beeing the main administrator
         /// </summary>
         [HttpPost]
-        [Route("request/{requestId}/accept/")]
+        [Route("request/{requestId}/accept")]
         public async Task<IActionResult> Approve(Guid requestId, [FromBody] ConsentContextExternal context, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);
@@ -111,7 +111,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// Endpoint to deny a consent request
         /// </summary>
         [HttpPost]
-        [Route("request/{requestId}/reject/")]
+        [Route("request/{requestId}/reject")]
         public async Task<IActionResult> Reject(Guid requestId, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);
@@ -134,7 +134,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// Endpoint to deny a consent request
         /// </summary>
         [HttpPost]
-        [Route("request/{requestId}/revoke/")]
+        [Route("request/{requestId}/revoke")]
         public async Task<IActionResult> Revoke(Guid requestId, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);

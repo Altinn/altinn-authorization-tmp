@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Fixtures;
@@ -73,8 +74,8 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Equal(2, problemDetails.Errors.Count());
-            Assert.Equal("AM.VLD-00031", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
-            Assert.Equal("AM.VLD-00032", problemDetails.Errors.ToList()[1].ErrorCode.ToString());
+            Assert.Equal(ValidationErrors.ConsentExpired.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+            Assert.Equal(ValidationErrors.ConsentNotAccepted.ErrorCode, problemDetails.Errors.ToList()[1].ErrorCode);
         }
 
         [Fact]
@@ -155,7 +156,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal("AM.VLD-00032", problemDetails.Errors.ToList()[0].ErrorCode.ToString());
+            Assert.Equal(ValidationErrors.ConsentNotAccepted.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
         }
 
         private HttpClient GetTestClient()
