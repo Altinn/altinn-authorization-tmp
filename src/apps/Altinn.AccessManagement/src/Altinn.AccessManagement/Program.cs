@@ -29,6 +29,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseDbAudit();
 
 app.MapControllers();
 app.MapDefaultAltinnEndpoints();
