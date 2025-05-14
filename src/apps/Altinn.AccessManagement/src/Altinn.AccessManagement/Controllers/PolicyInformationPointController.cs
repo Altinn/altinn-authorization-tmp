@@ -80,7 +80,11 @@ public class PolicyInformationPointController : ControllerBase
             .NotSet(t => t.PackageId);
 
         var packages = await _connectionPackageRepository.GetExtended(filter, cancellationToken: cancellationToken);
-        result.AddRange(packages.Select(package => AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked(package.Package.Urn.Split(':').Last()))));
+        if (packages is { } && packages.Any())
+        {
+            result.AddRange(packages.Select(package => AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked(package.Package.Urn.Split(':').Last()))));
+        }
+
         return Ok(result);
     }
 }
