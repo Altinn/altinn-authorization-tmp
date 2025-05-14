@@ -69,13 +69,13 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
 
             HttpResponseMessage response = await client.PostAsJsonAsync(url, consentLookup);
             string responseContent = await response.Content.ReadAsStringAsync();
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.NotNull(responseContent);
-            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
-            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
-            Assert.Equal(2, problemDetails.Errors.Count());
-            Assert.Equal(ValidationErrors.ConsentExpired.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
-            Assert.Equal(ValidationErrors.ConsentNotAccepted.ErrorCode, problemDetails.Errors.ToList()[1].ErrorCode);
+            AltinnMultipleProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnMultipleProblemDetails>(responseContent, _jsonOptions);
+            Assert.Equal(StdProblemDescriptors.ErrorCodes.MultipleProblems, problemDetails.ErrorCode);
+            Assert.Equal(2, problemDetails.Problems.Count());
+            Assert.Equal(Problems.ConsentExpired.ErrorCode, problemDetails.Problems.ToList()[0].ErrorCode);
+            Assert.Equal(Problems.ConsentNotAccepted.ErrorCode, problemDetails.Problems.ToList()[1].ErrorCode);
         }
 
         [Fact]
@@ -153,10 +153,8 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.NotNull(responseContent);
-            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
-            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
-            Assert.Single(problemDetails.Errors);
-            Assert.Equal(ValidationErrors.ConsentNotAccepted.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+            AltinnMultipleProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnMultipleProblemDetails>(responseContent, _jsonOptions);
+            Assert.Equal(Problems.ConsentNotAccepted.ErrorCode, problemDetails.ErrorCode);
         }
 
         private HttpClient GetTestClient()

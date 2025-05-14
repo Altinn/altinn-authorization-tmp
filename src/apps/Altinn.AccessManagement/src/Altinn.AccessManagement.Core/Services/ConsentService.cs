@@ -116,7 +116,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc/>
         public async Task<Result<Consent>> GetConsent(Guid consentRequestId, ConsentPartyUrn from, ConsentPartyUrn to, CancellationToken cancellationToken)
         {
-            ValidationErrorBuilder errors = default;
+            MultipleProblemBuilder errors = default;
             ConsentRequestDetails consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
 
             // Map from external to internal identies 
@@ -125,15 +125,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (consentRequest == null)
             {
-                errors.Add(ValidationErrors.ConsentNotFound, "From");
-
-                if (errors.TryBuild(out var errorResultStart))
-                {
-                    return errorResultStart;
-                }
-
-                // Should not be possible to get here
-                throw new ArgumentException($"Consent request with id {consentRequestId} not found");
+                return Problems.ConsentNotFound;    
             }
             else
             {
@@ -192,37 +184,37 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
-        private ValidationErrorBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, ValidationErrorBuilder errors, ConsentRequestDetails consentRequest)
+        private MultipleProblemBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, MultipleProblemBuilder problemsBUilders, ConsentRequestDetails consentRequest)
         {
             if (!to.Equals(consentRequest.To))
             {
-                errors.Add(ValidationErrors.ConsentNotFound, "To");
+                problemsBUilders.Add(Problems.ConsentNotFound);
             }
 
             if (!from.Equals(consentRequest.From))
             {
-                errors.Add(ValidationErrors.MissMatchConsentParty, "From");
+                problemsBUilders.Add(Problems.MissMatchConsentParty);
             }
 
             if (consentRequest.ValidTo < _timeProvider.GetUtcNow())
             {
-                errors.Add(ValidationErrors.ConsentExpired, "ValidTo");
+                problemsBUilders.Add(Problems.ConsentExpired);
             }
 
             if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Created)
             {
-                errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
+                problemsBUilders.Add(Problems.ConsentNotAccepted);
             }
             else if (consentRequest.ConsentRequestStatus == ConsentRequestStatusType.Revoked)
             {
-                errors.Add(ValidationErrors.ConsentRevoked, _consentRequestStatus);
+                problemsBUilders.Add(Problems.ConsentRevoked);
             }
             else if (consentRequest.ConsentRequestStatus != ConsentRequestStatusType.Accepted)
             {
-                errors.Add(ValidationErrors.ConsentNotAccepted, _consentRequestStatus);
+                problemsBUilders.Add(Problems.ConsentNotAccepted);
             }
 
-            return errors;
+            return problemsBUilders;
         }
 
         /// <inheritdoc/>

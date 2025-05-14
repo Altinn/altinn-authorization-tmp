@@ -55,4 +55,20 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor ConsentCantBeRevoked { get; }
      = _factory.Create(10, HttpStatusCode.BadRequest, "Consent cant be revoked.Wrong status");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor ConsentRevoked { get; }
+    = _factory.Create(11, HttpStatusCode.BadRequest, $"Consent is revoked");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor MissMatchConsentParty { get; }
+    = _factory.Create(12, HttpStatusCode.BadRequest, $"The consented party does not match the party requested");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor ConsentExpired { get; }
+    = _factory.Create(13, HttpStatusCode.BadRequest, $"Consent is expired");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor ConsentNotAccepted { get; }
+    = _factory.Create(14, HttpStatusCode.BadRequest, $"Consent is not accepted");
 }
