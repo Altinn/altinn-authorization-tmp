@@ -1,10 +1,5 @@
-using System.Data;
-using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
-using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Microsoft.Data.SqlClient;
 
@@ -73,21 +68,21 @@ public class MssqlDbExecutor(SqlConnection connection, IDbConverter dbConverter)
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> ExecuteQuery<T>(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
         where T : new()
     {
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = query;
         cmd.Parameters.AddRange(parameters.ToArray());
-        return dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(cancellationToken));
+        return dbConverter.ConvertToResult<T>(await cmd.ExecuteReaderAsync(cancellationToken));
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> ExecuteQuery<T>(string query, CancellationToken cancellationToken = default)
         where T : new()
     {
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = query;
-        return dbConverter.ConvertToObjects<T>(await cmd.ExecuteReaderAsync(cancellationToken));
+        return dbConverter.ConvertToResult<T>(await cmd.ExecuteReaderAsync(cancellationToken));
     }
 }

@@ -1,5 +1,8 @@
 ﻿using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Data;
+using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -113,12 +116,21 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Unauthorized(string.Format("User '{0}' is missing role '{1}' on '{2}'", userId, roleUrn, assignment.FromEntityId.ToString()));
             }
 
-            await assignmentRepository.Create(new Assignment()
+            var options = new ChangeRequestOptions()
             {
-                FromId = fromEntity.Id,
-                ToId = toEntity.Id,
-                RoleId = role.Id,
-            });
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
+
+            await assignmentRepository.Create(
+                new Assignment()
+                {
+                    FromId = fromEntity.Id,
+                    ToId = toEntity.Id,
+                    RoleId = role.Id,
+                }, 
+                options: options
+            );
 
             return Created();
         }
@@ -149,7 +161,13 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Problem("Not allowed to delete this assignment");
             }
 
-            await assignmentRepository.Delete(id);
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
+
+            await assignmentRepository.Delete(id, options);
             return Ok();
         }
 
@@ -245,6 +263,12 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Unauthorized();
             }
 
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
+
             var userEntity = await entityRepository.Get(userId);
             var assignment = await assignmentRepository.Get(id);
             var package = await packageRepository.Get(packageId);
@@ -273,7 +297,9 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
             var availablePackages = new List<Package>();
             foreach (var con in connections)
             {
-                availablePackages.AddRange(await connectionPackageRepository.GetB(con.Id));
+                var connPackFilter = connectionPackageRepository.CreateFilterBuilder();
+                connPackFilter.Equal(t => t.Id, con.Id);
+                availablePackages.AddRange((await connectionPackageRepository.GetExtended(connPackFilter)).Select(t => t.Package));
             }
 
             if (availablePackages.Count(t => t.Id == package.Id) == 0)
@@ -307,14 +333,13 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 PackageId = packageId
             };
 
-            var res = await assignmentPackageRepository.CreateCross(assignment.Id, package.Id);
+            var res = await assignmentPackageRepository.Create(new AssignmentPackage() { AssignmentId = assignment.Id, PackageId = package.Id }, options);
             if (res == 1)
             {
                 return Created();
             }
 
             return Problem("Unable to add package to assignment");
-
         }
 
         /// <summary>
@@ -330,6 +355,12 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
             {
                 return Unauthorized();
             }
+
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
 
             var userEntity = await entityRepository.Get(userId);
             var assignment = await assignmentRepository.Get(id);
@@ -396,14 +427,13 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 ResourceId = resourceId
             };
 
-            var res = await assignmentResourceRepository.CreateCross(assignment.Id, resource.Id);
+            var res = await assignmentResourceRepository.Create(new AssignmentResource() { AssignmentId = assignment.Id, ResourceId = resource.Id }, options);
             if (res == 1)
             {
                 return Created();
             }
 
             return Problem("Unable to add package to assignment");
-
         }
 
         /// <summary>
@@ -422,8 +452,13 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
 
             var userEntity = await entityRepository.Get(userId);
 
-            // If user has access
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
 
+            // If user has access
             var assignment = await assignmentRepository.Get(id);
             var package = await packageRepository.Get(packageId);
 
@@ -432,7 +467,10 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return BadRequest();
             }
 
-            await assignmentPackageRepository.DeleteCross(id, packageId);
+            var deleteFilter = assignmentPackageRepository.CreateFilterBuilder();
+            deleteFilter.Equal(t => t.AssignmentId, assignment.Id);
+            deleteFilter.Equal(t => t.PackageId, package.Id);
+            await assignmentPackageRepository.Delete(deleteFilter, options);
 
             return Ok();
         }
@@ -452,9 +490,14 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
             }
 
             var userEntity = await entityRepository.Get(userId);
-            
+
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
+
             // If user has access
-            
             var assignment = await assignmentRepository.Get(id);
             var resource = await resourceRepository.Get(resourceId);
 
@@ -463,7 +506,10 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return BadRequest();
             }
 
-            await assignmentPackageRepository.DeleteCross(id, resourceId);
+            var deleteFilter = assignmentResourceRepository.CreateFilterBuilder();
+            deleteFilter.Equal(t => t.AssignmentId, assignment.Id);
+            deleteFilter.Equal(t => t.ResourceId, resource.Id);
+            await assignmentResourceRepository.Delete(deleteFilter, options);
 
             return Ok();
         }

@@ -1,7 +1,9 @@
 ﻿using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Data;
+using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.AccessMgmt.Persistence.Services.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -82,6 +84,12 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Unauthorized();
             }
 
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
+
             var fromAssignment = await assignmentRepository.Get(request.FromAssignmentId);
             var toAssignment = await assignmentRepository.Get(request.ToAssignmentId);
 
@@ -108,12 +116,16 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Ok(); // 302 Found?
             }
 
-            var res = await delegationRepository.Create(new Delegation()
-            {
-                FromId = request.FromAssignmentId,
-                ToId = request.ToAssignmentId,
-                FacilitatorId = Guid.Empty
-            });
+            var res = await delegationRepository.Create(
+                new Delegation()
+                {
+                    FromId = request.FromAssignmentId,
+                    ToId = request.ToAssignmentId,
+                    FacilitatorId = Guid.Empty
+                }, 
+                options: options
+            );
+
             if (res > 0)
             {
                 // Created
@@ -136,6 +148,12 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
             {
                 return Unauthorized();
             }
+
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
 
             var userEntity = await entityRepository.Get(userId);
             var assignment = await assignmentRepository.Get(id);
@@ -162,7 +180,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
 
             try
             {
-                var res = await delegationRepository.Delete(id);
+                var res = await delegationRepository.Delete(id, options: options);
                 if (res > 0)
                 {
                     return NoContent();
@@ -219,6 +237,12 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Unauthorized();
             }
 
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
+
             /*
             
             - User must have role:TS on Facilitator
@@ -229,7 +253,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
 
             try
             {
-                var res = await delegationPackageRepository.CreateCross(id, packageId);
+                var res = await delegationPackageRepository.Create(new DelegationPackage() { DelegationId = id, PackageId = packageId }, options);
                 if (res > 0)
                 {
                     return Created();
@@ -257,6 +281,12 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Unauthorized();
             }
 
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
+
             /*
 
            - User must have role:TS on Facilitator
@@ -266,7 +296,11 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
 
             try
             {
-                var res = await delegationPackageRepository.DeleteCross(id, packageId);
+                var deleteFilter = delegationPackageRepository.CreateFilterBuilder();
+                deleteFilter.Equal(t => t.DelegationId, id);
+                deleteFilter.Equal(t => t.PackageId, packageId);
+                var res = await delegationPackageRepository.Delete(deleteFilter, options);
+
                 if (res > 0)
                 {
                     return NoContent();
@@ -323,6 +357,12 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Unauthorized();
             }
 
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
+
             /*
             
             - User must have role:TS on Facilitator
@@ -333,7 +373,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
 
             try
             {
-                var res = await delegationResourceRepository.CreateCross(id, resourceId);
+                var res = await delegationResourceRepository.Create(new DelegationResource() { DelegationId = id, ResourceId = resourceId }, options);
                 if (res > 0)
                 {
                     return Created();
@@ -361,6 +401,12 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
                 return Unauthorized();
             }
 
+            var options = new ChangeRequestOptions()
+            {
+                ChangedBy = userId,
+                ChangedBySystem = AuditDefaults.EnduserApi
+            };
+
             /*
 
            - User must have role:TS on Facilitator
@@ -370,7 +416,11 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers
 
             try
             {
-                var res = await delegationResourceRepository.DeleteCross(id, resourceId);
+                var deleteFilter = delegationResourceRepository.CreateFilterBuilder();
+                deleteFilter.Equal(t => t.DelegationId, id);
+                deleteFilter.Equal(t => t.ResourceId, resourceId);
+                var res = await delegationResourceRepository.Delete(deleteFilter, options);
+
                 if (res > 0)
                 {
                     return NoContent();

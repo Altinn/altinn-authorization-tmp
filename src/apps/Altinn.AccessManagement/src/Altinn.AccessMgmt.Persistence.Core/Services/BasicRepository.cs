@@ -49,11 +49,11 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     public async Task<T> Get(Guid id, RequestOptions options = null, CancellationToken cancellationToken = default)
     {
         var res = await Get(new List<GenericFilter>() { new GenericFilter("id", id) }, options, cancellationToken: cancellationToken);
-        return res.FirstOrDefault();
+        return res.Data.FirstOrDefault();
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions options = null, CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions options = null, CancellationToken cancellationToken = default)
     {
         string propertyName = ExtractPropertyInfo(property).Name;
         var filters = new List<GenericFilter>
@@ -64,19 +64,19 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get(RequestOptions options = null, CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> Get(RequestOptions options = null, CancellationToken cancellationToken = default)
     {
         return await Get(filters: new List<GenericFilter>(), options: options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get(GenericFilterBuilder<T> filterBuilder, RequestOptions options = null, CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> Get(GenericFilterBuilder<T> filterBuilder, RequestOptions options = null, CancellationToken cancellationToken = default)
     {
         return await Get(filters: filterBuilder, options: options, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> Get(IEnumerable<GenericFilter> filters, RequestOptions options = null, CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> Get(IEnumerable<GenericFilter> filters, RequestOptions options = null, CancellationToken cancellationToken = default)
     {
         options ??= new RequestOptions();
         filters ??= new List<GenericFilter>();
@@ -86,6 +86,18 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         var param = BuildFilterParameters(filters, options);
 
         return await executor.ExecuteQuery<T>(query, param, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<IEnumerable<TypedDbAudit<T>>> GetFromHistory(Guid id, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
+    public Task<TypedDbAudit<T>> GetFromHistory(Guid id, DateTimeOffset asOf, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -199,91 +211,142 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Create(T entity, CancellationToken cancellationToken = default)
+    public async Task<int> Create(T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
         var param = BuildParameters(entity);
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildInsertQuery(param);
+        string query = queryBuilder.BuildInsertQuery(param, options: options);
 
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Upsert(T entity, CancellationToken cancellationToken = default)
+    public async Task<int> Upsert(T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
         var param = BuildParameters(entity);
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpsertQuery(param);
+        string query = queryBuilder.BuildUpsertQuery(param, options: options);
 
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, CancellationToken cancellationToken = default)
+    public async Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
         var param = BuildParameters(entity);
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpsertQuery(param, mergeFilter);
+        string query = queryBuilder.BuildUpsertQuery(param, mergeFilter, options: options);
 
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update(Guid id, T entity, CancellationToken cancellationToken = default)
+    public async Task<int> Update(Guid id, T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
         var param = BuildParameters(entity);
-        return await Update(id: id, parameters: param, cancellationToken: cancellationToken);
+        return await Update(id: id, parameters: param, cancellationToken: cancellationToken, options: options);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, CancellationToken cancellationToken = default)
+    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
         if (value == null)
         {
             var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-            string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, value));
+            string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, value), options: options);
             return await executor.ExecuteCommand(query, [new GenericParameter("_id", id)], cancellationToken: cancellationToken);
         }
 
-        return await Update(id, [new GenericParameter(ExtractPropertyInfo(property).Name, value)], cancellationToken);
+        return await Update(id, [new GenericParameter(ExtractPropertyInfo(property).Name, value)], cancellationToken: cancellationToken, options: options);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, CancellationToken cancellationToken = default)
+    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, null));
+        string query = queryBuilder.BuildSingleNullUpdateQuery(new GenericParameter(ExtractPropertyInfo(property).Name, null), options: options);
         return await executor.ExecuteCommand(query, [new GenericParameter("_id", id)], cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update(Guid id, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
+    public async Task<int> Update(Guid id, List<GenericParameter> parameters, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpdateQuery(parameters);
+        string query = queryBuilder.BuildUpdateQuery(parameters, options: options);
         parameters.Add(new GenericParameter("_id", id));
         return await executor.ExecuteCommand(query, parameters, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Delete(Guid id, CancellationToken cancellationToken = default)
+    public async Task<int> Delete(Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
-        return await Delete([new GenericFilter("id", id)], cancellationToken);
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
+        return await Delete([new GenericFilter("id", id)], cancellationToken: cancellationToken, options: options);
     }
 
     /// <inheritdoc/>
-    public async Task<int> Delete(IEnumerable<GenericFilter> filters, CancellationToken cancellationToken = default)
+    public async Task<int> Delete(IEnumerable<GenericFilter> filters, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
+        // TODO: Implement DeletedBy ... Somehow
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
         var param = BuildFilterParameters(filters, null);
-        string query = queryBuilder.BuildDeleteQuery(filters);
+        string query = queryBuilder.BuildDeleteQuery(filters, options: options);
         return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> CreateTranslation(T obj, string language, CancellationToken cancellationToken = default)
+    public async Task<int> CreateTranslation(T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
-        if (!Definition.HasTranslation)
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
+        if (!Definition.EnableTranslation)
         {
             return 0;
         }
@@ -291,22 +354,27 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         var parameters = BuildTranslationParameters(obj);
         parameters.Add(new GenericParameter("Language", language));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildInsertQuery(parameters, forTranslation: true);
+        string query = queryBuilder.BuildInsertQuery(parameters, forTranslation: true, options: options);
 
         return await executor.ExecuteCommand(query, parameters, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> UpdateTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default)
+    public async Task<int> UpdateTranslation(Guid id, T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
-        if (!Definition.HasTranslation)
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
+        if (!Definition.EnableTranslation)
         {
             return 0;
         }
 
         var parameters = BuildTranslationParameters(obj);
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpdateQuery(parameters, forTranslation: true);
+        string query = queryBuilder.BuildUpdateQuery(parameters, forTranslation: true, options: options);
 
         parameters.Add(new GenericParameter("_language", language));
         parameters.Add(new GenericParameter("_id", id));
@@ -315,9 +383,14 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> UpsertTranslation(Guid id, T obj, string language, CancellationToken cancellationToken = default)
+    public async Task<int> UpsertTranslation(Guid id, T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default)
     {
-        if (!Definition.HasTranslation)
+        if (Definition.DefinitionType != DbDefinitionType.Table)
+        {
+            throw new Exception($"'{Definition.ModelType.Name}' is not defined as a table");
+        }
+
+        if (!Definition.EnableTranslation)
         {
             return 0;
         }
@@ -325,7 +398,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         var parameters = BuildTranslationParameters(obj);
         parameters.Add(new GenericParameter("Language", language));
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
-        string query = queryBuilder.BuildUpsertQuery(parameters, forTranslation: true);
+        string query = queryBuilder.BuildUpsertQuery(parameters, forTranslation: true, options: options);
 
         parameters.Add(new GenericParameter("_language", language));
         parameters.Add(new GenericParameter("_id", id));

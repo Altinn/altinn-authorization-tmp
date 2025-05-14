@@ -29,14 +29,35 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// <summary>
         /// Sets whether the entity is a view.
         /// </summary>
-        /// <param name="value">Default: true</param>
-        /// <param name="version">View version to trigger recreate (default: 1)</param>
+        /// <param name="version">Default: 1</param>
         /// <returns></returns>
-        public DbDefinitionBuilder<T> IsView(bool value = true, int version = 1)
+        public DbDefinitionBuilder<T> SetVersion(int version = 1)
         {
             // Add view script??
-            DbDefinition.IsView = value;
-            DbDefinition.ViewVersion = version;
+            DbDefinition.Version = version;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets whether the entity is a view.
+        /// </summary>
+        /// <param name="value">Default: true</param>
+        /// <returns></returns>
+        [Obsolete(message: "Use SetType")]
+        public DbDefinitionBuilder<T> IsView(bool value = true)
+        {
+            DbDefinition.DefinitionType = DbDefinitionType.View;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets whether the entity is a view.
+        /// </summary>
+        /// <param name="value">Default: true</param>
+        /// <returns></returns>
+        public DbDefinitionBuilder<T> SetType(DbDefinitionType value = DbDefinitionType.Table)
+        {
+            DbDefinition.DefinitionType = value;
             return this;
         }
 
@@ -44,10 +65,12 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// Sets whether the entity is a view.
         /// </summary>
         /// <param name="query">Sql Query</param>
+        /// <param name="extendedQuery">Sql Extended Query</param>
         /// <returns></returns>
-        public DbDefinitionBuilder<T> SetViewQuery(string query)
+        public DbDefinitionBuilder<T> SetQuery(string query, string extendedQuery = null)
         {
-            DbDefinition.ViewQuery = query;
+            DbDefinition.Query = query;
+            DbDefinition.ExtendedQuery = extendedQuery;
             return this;
         }
 
@@ -55,9 +78,9 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// Sets whether the entity is a view.
         /// </summary>
         /// <returns></returns>
-        public DbDefinitionBuilder<T> AddViewDependency<TDep>()
+        public DbDefinitionBuilder<T> AddManualDependency<TDep>()
         {
-            DbDefinition.ViewDependencies.Add(typeof(TDep));
+            DbDefinition.ManualDependencies.Add(typeof(TDep));
             return this;
         }
 
@@ -68,7 +91,7 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         public DbDefinitionBuilder<T> EnableTranslation(bool value = true)
         {
-            DbDefinition.HasTranslation = value;
+            DbDefinition.EnableTranslation = value;
             return this;
         }
 
@@ -77,9 +100,9 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// </summary>
         /// <param name="value">If set to <c>true</c>, history is enabled; otherwise, it is disabled.</param>
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
-        public DbDefinitionBuilder<T> EnableHistory(bool value = true)
+        public DbDefinitionBuilder<T> EnableAudit(bool value = true)
         {
-            DbDefinition.HasHistory = value;
+            DbDefinition.EnableAudit = value;
             return this;
         }
 
@@ -222,6 +245,7 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// Registers a unique constraint for the specified properties.
         /// </summary>
         /// <param name="properties">A collection of expressions identifying the properties that should have a unique constraint.</param>
+        /// <param name="includedProperties">Properties to include</param>
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         public DbDefinitionBuilder<T> RegisterUniqueConstraint(IEnumerable<Expression<Func<T, object>>> properties, IEnumerable<Expression<Func<T, object>>> includedProperties = null)
             => RegisterConstraint(properties, isPrimaryKey: false, includedProperties: includedProperties);
@@ -300,8 +324,8 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
             (Expression<Func<T, object>> Source, Expression<Func<TB, object>> Join, Expression<Func<TExtended, TB>> Extended, bool? CascadeDelete) defineB
         )
         {
-            RegisterExtendedProperty(defineA.Source, defineA.Join, defineA.Extended, defineA.CascadeDelete ?? false);
-            RegisterExtendedProperty(defineB.Source, defineB.Join, defineB.Extended, defineB.CascadeDelete ?? false);
+            RegisterExtendedProperty(defineA.Source, defineA.Join, defineA.Extended, cascadeDelete: defineA.CascadeDelete ?? false);
+            RegisterExtendedProperty(defineB.Source, defineB.Join, defineB.Extended, cascadeDelete: defineB.CascadeDelete ?? false);
 
             var crossRef = new DbCrossRelationDefinition(
                crossType: typeof(T),
