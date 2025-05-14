@@ -47,7 +47,7 @@ public class ConnectionService(
         {
             var packageFilter = packageRepository.CreateFilterBuilder();
             packageFilter.In(t => t.Urn, packages.Select(p => $"urn:altinn:accesspackage:{p}"));
-            var packageResult = await packageRepository.Get(packageFilter);
+            var packageResult = await packageRepository.Get(packageFilter, cancellationToken: cancellationToken);
 
             if (packageResult == null || !packageResult.Any() || packageResult.Count() != packages.Count())
             {
@@ -59,7 +59,7 @@ public class ConnectionService(
             connPkgFilter.NotSet(t => t.FromId);
             connPkgFilter.In(t => t.PackageId, packageResult.Select(p => p.Id));
 
-            var connectionPackages = await connectionPackageRepository.Get(connPkgFilter);
+            var connectionPackages = await connectionPackageRepository.Get(connPkgFilter, cancellationToken: cancellationToken);
 
             // Add connections filter for connections containing the requested packages
             connFilter.In(t => t.Id, connectionPackages.Select(cp => cp.Id));
