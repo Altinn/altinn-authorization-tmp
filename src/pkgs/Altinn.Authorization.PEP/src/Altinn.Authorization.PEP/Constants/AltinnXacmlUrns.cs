@@ -11,6 +11,11 @@ namespace Altinn.Common.PEP.Constants
         public const string PartyId = "urn:altinn:partyid";
 
         /// <summary>
+        /// Thu uuid of the performing party (user)
+        /// </summary>
+        public const string PartyUuid = "urn:altinn:party:uuid";
+
+        /// <summary>
         /// Get the URN value for person. Only supported for use in external Authorize API
         /// </summary>
         public const string PersonId = "urn:altinn:person:identifier-no";

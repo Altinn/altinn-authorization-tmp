@@ -30,6 +30,7 @@ namespace Altinn.Common.PEP.Helpers
         private const string ParamOrg = "org";
         private const string ParamAppId = "appId";
         private const string ParamParty = "party";
+        private const string ParamPartyUuid = "partyuuid";
         private const string DefaultIssuer = "Altinn";
         private const string DefaultType = "string";
         private const string PersonHeaderTrigger = "person";
@@ -139,7 +140,26 @@ namespace Altinn.Common.PEP.Helpers
             request.Action = new List<XacmlJsonCategory>();
             request.Resource = new List<XacmlJsonCategory>();
 
-            string party = routeData.Values[ParamParty] as string;
+            string party = null;
+            string partyUuid = null;
+
+            bool hasParamPartyId = routeData.Values.ContainsKey(ParamParty);
+            bool hasParamPartyUuid = routeData.Values.ContainsKey(ParamPartyUuid);
+
+            if (hasParamPartyId)
+            {
+                party = routeData.Values[ParamParty] as string;
+            }
+
+            if (hasParamPartyUuid)
+            {
+                partyUuid = routeData.Values[ParamPartyUuid] as string;
+            }
+
+            if (hasParamPartyId && hasParamPartyUuid)
+            {
+                throw new ArgumentException("not allowed, both partyId and partyUuid " + party + " " + partyUuid);
+            }
 
             request.AccessSubject.Add(CreateSubjectCategory(context.User.Claims));
             request.Action.Add(CreateActionCategory(requirement.ActionType));
@@ -148,6 +168,10 @@ namespace Altinn.Common.PEP.Helpers
             if (partyIid.HasValue)
             {
                 request.Resource.Add(CreateResourceCategoryForResource(requirement.ResourceId, partyIid, null, null));
+            }
+            else if (Guid.TryParse(partyUuid, out Guid partyGuid))
+            {
+                request.Resource.Add(CreateResourceCategoryForResource(requirement.ResourceId, null, null, null, false, partyGuid));
             }
             else if (party.Equals(OrganizationHeaderTrigger) && headers.ContainsKey(OrganizationNumberHeader) && IDFormatDeterminator.IsValidOrganizationNumber(headers[OrganizationNumberHeader]))
             {
@@ -325,7 +349,7 @@ namespace Altinn.Common.PEP.Helpers
             return resourceCategory;
         }
 
-        private static XacmlJsonCategory CreateResourceCategoryForResource(string resourceid, int? partyId, string organizationnumber, string ssn, bool includeResult = false)
+        private static XacmlJsonCategory CreateResourceCategoryForResource(string resourceid, int? partyId, string organizationnumber, string ssn, bool includeResult = false, Guid? partyUuid = default)
         {
             XacmlJsonCategory resourceCategory = new XacmlJsonCategory();
             resourceCategory.Attribute = new List<XacmlJsonAttribute>();
@@ -346,6 +370,11 @@ namespace Altinn.Common.PEP.Helpers
             if (!string.IsNullOrWhiteSpace(resourceid))
             {
                 resourceCategory.Attribute.Add(CreateXacmlJsonAttribute(AltinnXacmlUrns.ResourceId, resourceid, DefaultType, DefaultIssuer));
+            }
+
+            if (partyUuid.HasValue) 
+            {
+                resourceCategory.Attribute.Add(CreateXacmlJsonAttribute(AltinnXacmlUrns.PartyUuid, partyUuid.Value.ToString(), DefaultType, DefaultIssuer, includeResult));
             }
 
             return resourceCategory;
