@@ -20,7 +20,7 @@ namespace Altinn.AccessManagement.Controllers;
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class SystemUserClientDelegationController : ControllerBase
 {
-    private readonly IConnectionRepository connectionRepository;
+    private readonly IConnectionService connectionService;
     private readonly IDelegationService delegationService;
     private readonly IDelegationRepository delegationRepository;
     private readonly IAssignmentRepository assignmentRepository;
@@ -30,18 +30,40 @@ public class SystemUserClientDelegationController : ControllerBase
     /// Initializes a new instance of the <see cref="SystemUserClientDelegationController"/> class.
     /// </summary>
     public SystemUserClientDelegationController(
-        IConnectionRepository connectionRepository, 
+        IConnectionService connectionService,
         IDelegationService delegationService, 
         IDelegationRepository delegationRepository,
         IAssignmentRepository assignmentRepository,
         IRoleRepository roleRepository
         )
     {
-        this.connectionRepository = connectionRepository;
+        this.connectionService = connectionService;
         this.delegationService = delegationService;
         this.delegationRepository = delegationRepository;
         this.assignmentRepository = assignmentRepository;
         this.roleRepository = roleRepository;
+    }
+
+    /// <summary>
+    /// Gets all clients for a given facilitator
+    /// </summary>
+    /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
+    /// <param name="roles"> The list of role codes to filter the connections by</param>
+    /// <param name="packages"> The list of package identifiers to filter the connections by</param>
+    /// <returns><seealso cref="ConnectionDto"/>List of connections</returns>
+    [HttpGet("clients")]
+    [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
+    public async Task<ActionResult<ConnectionDto>> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null)
+    {
+        var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
+        if (userId == Guid.Empty)
+        {
+            return Unauthorized();
+        }
+
+        var dbResult = await connectionService.GetClients(party, roles, packages);
+
+        return Ok(dbResult.Select(ConnectionConverter.ConvertToDto));
     }
 
     /// <summary>
@@ -60,12 +82,9 @@ public class SystemUserClientDelegationController : ControllerBase
             return Unauthorized();
         }
 
-        var f = connectionRepository.CreateFilterBuilder();
-        f.Equal(t => t.ToId, systemUser);
-        f.Equal(t => t.FacilitatorId, party);
+        var dbResult = await connectionService.Get(fromId: null, toId: systemUser, facilitatorId: party);
         var res = new List<ConnectionDto>();
-
-        foreach (var r in await connectionRepository.GetExtended(f))
+        foreach (var r in dbResult)
         {
             res.Add(ConnectionConverter.ConvertToDto(r));
         }
@@ -100,7 +119,7 @@ public class SystemUserClientDelegationController : ControllerBase
         var result = new List<CreateDelegationResponse>();
         foreach (var delegation in delegations)
         {
-            result.Add(ConnectionConverter.ConvertToResponseModel(await connectionRepository.Get(delegation.Id)));
+            result.Add(ConnectionConverter.ConvertToResponseModel(await delegationRepository.GetExtended(delegation.Id)));
         }
 
         // Remark: Kan ikke garantere at det KUN er delegeringer som er opprettet i denne handlingen som blir returnert.

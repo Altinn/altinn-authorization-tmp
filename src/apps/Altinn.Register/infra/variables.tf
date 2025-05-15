@@ -61,3 +61,17 @@ variable "db_storage_tier" {
   type    = string
   default = "P4"
 }
+
+variable "sbl_endpoint" {
+  type = string
+}
+
+variable "features" {
+  type = object({
+    a2_party_import = optional(object({
+      parties  = optional(bool, false),
+      user_ids = optional(bool, false),
+    }), {})
+  })
+  default = {}
+}

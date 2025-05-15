@@ -9,7 +9,12 @@ namespace Altinn.AccessMgmt.Persistence.Core.Helpers;
 /// <typeparam name="T">The entity type for which the filters are being built.</typeparam>
 public class GenericFilterBuilder<T> : IEnumerable<GenericFilter>
 {
-    private readonly List<GenericFilter> _filters = new();
+    private readonly List<GenericFilter> _filters = [];
+
+    /// <summary>
+    /// Returns true if any filters are specified in list.
+    /// </summary>
+    public bool Empty => _filters.Count == 0;
 
     /// <summary>
     /// Adds a filter condition to the builder using the specified property expression, value, and comparer.
@@ -36,6 +41,19 @@ public class GenericFilterBuilder<T> : IEnumerable<GenericFilter>
     public GenericFilterBuilder<T> Equal<TProperty>(Expression<Func<T, TProperty>> property, TProperty value)
     {
         return Add(property, value, FilterComparer.Equals);
+    }
+
+    /// <summary>
+    /// Adds an equality filter condition for the specified property.
+    /// </summary>
+    /// <typeparam name="TProperty">The type of the property.</typeparam>
+    /// <param name="property">An expression selecting the property to filter on.</param>
+    /// <returns>The current instance of <see cref="GenericFilterBuilder{T}"/>, enabling a fluent API.</returns>
+    public GenericFilterBuilder<T> NotSet<TProperty>(Expression<Func<T, TProperty>> property)
+    {
+        var propertyInfo = ExtractPropertyInfo(property);
+        _filters.Add(new GenericFilter(propertyInfo.Name, null, FilterComparer.Equals));
+        return this;
     }
 
     /// <summary>

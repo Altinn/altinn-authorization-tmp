@@ -28,13 +28,35 @@ public static class AltinnHostDatabase
 
         if (!builder.Services.Contains(Markers.MigrationSource.ServiceDescriptor) && options.MigrationSource != null)
         {
-            builder.Services.AddNpgsqlDataSource(options.MigrationSource.ConnectionString.ToString(), options.MigrationSource.Builder, serviceKey: SourceType.Migration);
+            builder.Services.AddNpgsqlDataSource(
+                options.MigrationSource.ConnectionString.ToString(),
+                builder =>
+                {
+                    options.MigrationSource.Builder(builder);
+                    builder.ConfigureTracing(tracing =>
+                    {
+                        tracing.ConfigureCommandSpanNameProvider(cmd => cmd.CommandText);
+                    });
+                },
+                serviceKey: SourceType.Migration
+            );
             builder.Services.Add(Markers.MigrationSource.ServiceDescriptor);
         }
 
         if (!builder.Services.Contains(Markers.AppSource.ServiceDescriptor) && options.AppSource != null)
         {
-            builder.Services.AddNpgsqlDataSource(options.AppSource.ConnectionString.ToString(), options.AppSource.Builder, serviceKey: SourceType.App);
+            builder.Services.AddNpgsqlDataSource(
+                options.AppSource.ConnectionString.ToString(),
+                builder =>
+                {
+                    options.MigrationSource.Builder(builder);
+                    builder.ConfigureTracing(tracing =>
+                    {
+                        tracing.ConfigureCommandSpanNameProvider(cmd => cmd.CommandText);
+                    });
+                },
+                serviceKey: SourceType.App
+            );
             builder.Services.Add(Markers.AppSource.ServiceDescriptor);
         }
 
@@ -43,7 +65,10 @@ public static class AltinnHostDatabase
             if (options.Telemetry.EnableTraces)
             {
                 builder.Services.AddOpenTelemetry()
-                    .WithTracing(builder => builder.AddNpgsql());
+                    .WithTracing(builder =>
+                    {
+                        builder.AddNpgsql();
+                    });
             }
 
             if (options.Telemetry.EnableMetrics)
