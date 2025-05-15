@@ -19,11 +19,11 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         private readonly IConsent _consentService = consentService;
 
         /// <summary>
-        /// Endpoint to create a consent request
+        /// Endpoint to create a consent request for
         /// </summary>
         [Authorize]
         [HttpPost]
-        [Route("request")]
+        [Route("request", Name ="enterprisecreaterequest")]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(ConsentRequestStatusExternal), StatusCodes.Status200OK)]
@@ -44,10 +44,45 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
 
             if (consentRequestStatus.IsProblem)
             {
-                return consentRequestStatus.Problem.ToActionResult(); // This line will now work with the extension method
+                return consentRequestStatus.Problem.ToActionResult();
             }
 
-            return Created($"/accessmanagement/api/v1/enterprise/consent/request/{consentRequestStatus.Value.Id}", consentRequestStatus.Value);
+            if (consentRequestStatus.Value == null)
+            {
+                return BadRequest("Consent request could not be created");
+            }
+
+            var routeValues = new { consentRequestId = consentRequestStatus.Value.Id };
+            string? locationUrl = Url.Link("enterprisegetrequest", routeValues);
+
+            return Created(locationUrl, consentRequestStatus.Value);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("request/{consentRequestId:guid}", Name="enterprisegetrequest")]
+        [Produces(MediaTypeNames.Application.Json)]
+        [ProducesResponseType(typeof(ConsentRequestStatusExternal), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> GetRequest([FromRoute] Guid consentRequestId, CancellationToken cancellationToken = default)
+        {
+            ConsentPartyUrn? consentPartyUrn = OrgUtil.GetAuthenticatedParty(User);
+
+            if (consentPartyUrn == null)
+            {
+                return Unauthorized();
+            }
+            
+            Result<ConsentRequestDetails> consentRequestStatus = await _consentService.GetRequest(consentRequestId, consentPartyUrn, cancellationToken);
+
+            if (consentRequestStatus.IsProblem)
+            {
+                return consentRequestStatus.Problem.ToActionResult();
+            }
+
+            return Ok(consentRequestStatus.Value);
         }
     }
 }

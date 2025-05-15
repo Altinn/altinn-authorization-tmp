@@ -68,8 +68,8 @@ public static class ValidationErrors
     /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
-    public static ValidationErrorDescriptor InvalidValidToTime { get; }
-        = _factory.Create(22, $"The ValidTo time need to be in the future");
+    public static ValidationErrorDescriptor TimeNotInFuture { get; }
+        = _factory.Create(22, $"The time need to be in the future");
 
     /// <summary>
     /// Gets a validation error descriptor

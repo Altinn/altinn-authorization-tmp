@@ -107,6 +107,80 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
         }
 
+        [Fact]
+        public async Task CreateConsentRequest_AndCheckStatus_Valid()
+        {
+            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            {
+                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                ValidTo = DateTimeOffset.UtcNow.AddDays(1),
+                ConsentRights = new List<ConsentRightExternal>
+                {
+                    new ConsentRightExternal
+                    {
+                        Action = new List<string> { "read" },
+                        Resource = new List<ConsentResourceAttributeExternal>
+                        {
+                            new ConsentResourceAttributeExternal
+                            {
+                                Type = "urn:altinn:resource",
+                                Value = "ttd_inntektsopplysninger"
+                            }
+                        },
+                        MetaData = new Dictionary<string, string>
+                        {
+                            { "INNTEKTSAAR", "ADSF" }
+                        }
+                    }
+                },
+                Requestmessage = new Dictionary<string, string>
+                {
+                    { "en", "Please approve this consent request" }
+                }
+            };
+
+            HttpClient client = GetTestClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
+            string responseContent = await response.Content.ReadAsStringAsync();
+            string location = response.Headers.Location.ToString();   
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.NotNull(responseContent);
+            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            Assert.Single(consentInfo.ConsentRights);
+            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
+            Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
+            Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
+            Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
+            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Single(consentInfo.ConsentRequestEvents);
+            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+
+            string getUrl = $"/accessmanagement/api/v1/enterprise/consent/request/{consentInfo.Id}";
+            HttpResponseMessage getResponse = await client.GetAsync(location);
+            string getResponseConsent = await getResponse.Content.ReadAsStringAsync();
+
+            Assert.NotNull(getResponseConsent);
+            ConsentRequestDetailsExternal consentInfoFromGet = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(getResponseConsent, _jsonOptions);
+            Assert.Single(consentInfoFromGet.ConsentRights);
+            Assert.Single(consentInfoFromGet.ConsentRights[0].MetaData);
+            Assert.Equal(consentRequest.ValidTo.Minute, consentInfoFromGet.ValidTo.Minute);
+            Assert.Equal(consentRequest.ValidTo.Second, consentInfoFromGet.ValidTo.Second);
+            Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfoFromGet.ConsentRights[0].Action.Count);
+            Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfoFromGet.ConsentRights[0].Action[0]);
+            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfoFromGet.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Single(consentInfo.ConsentRequestEvents);
+            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
+        }
+
         /// <summary>
         /// Test get consent. Expect a consent in response
         /// </summary>

@@ -6,7 +6,6 @@ using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers
 {
@@ -30,7 +29,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// User is authorized to delegate the rights that are requested. Either by having the right themselves or being the main administrator
         /// </summary>
         [HttpGet]
-        [Route("request/{requestId}")]
+        [Route("request/{requestId}", Name ="endusergetconsentrequest")]
         public async Task<IActionResult> GetConsentRequest([FromRoute] Guid requestId, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);
@@ -39,7 +38,9 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
                 return Unauthorized();
             }
 
-            Result<ConsentRequestDetails> consentRequest = await _consentService.GetRequest(requestId, performedBy.Value, cancellationToken);
+            ConsentPartyUrn performedByParty = ConsentPartyUrn.PartyUuid.Create(performedBy.Value);
+
+            Result<ConsentRequestDetails> consentRequest = await _consentService.GetRequest(requestId, performedByParty, cancellationToken);
             if (consentRequest.IsProblem)
             {
                 return Unauthorized();

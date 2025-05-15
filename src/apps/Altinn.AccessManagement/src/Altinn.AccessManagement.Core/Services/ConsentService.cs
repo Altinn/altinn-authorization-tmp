@@ -3,6 +3,7 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -218,16 +219,39 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> GetRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken)
+        public async Task<Result<ConsentRequestDetails>> GetRequest(Guid consentRequestId, ConsentPartyUrn performedByParty, CancellationToken cancellationToken)
         {
             ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
-            bool isAuthorized = await AuthorizeUserForConsentRequest(performedByParty, details, cancellationToken);
-            if (!isAuthorized)
+            if (details == null)
             {
-                return Problems.NotAuthorizedForConsentRequest;
+                return Problems.ConsentNotFound;
             }
 
             details.To = await MapToExternalIdenity(details.To, cancellationToken);
+
+            if (performedByParty.IsOrganizationId(out Authorization.Core.Models.Register.OrganizationNumber organizationNumber))
+            {
+                if (details.To.IsOrganizationId(out Authorization.Core.Models.Register.OrganizationNumber toOrganizationNumber))
+                {
+                    if (!toOrganizationNumber.ToString().Equals(organizationNumber.ToString()))
+                    {
+                        return Problems.NotAuthorizedForConsentRequest;
+                    }
+                }
+                else
+                {
+                    return Problems.NotAuthorizedForConsentRequest;
+                }
+            }
+            else if (performedByParty.IsPartyUuid(out Guid partyUuid))
+            {
+                bool isAuthorized = await AuthorizeUserForConsentRequest(partyUuid, details, cancellationToken);
+                if (!isAuthorized)
+                {
+                    return Problems.NotAuthorizedForConsentRequest;
+                }
+            }
+
             details.From = await MapToExternalIdenity(details.From, cancellationToken);
             foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)
             {
@@ -358,7 +382,7 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 return await GetInternalIdentifier(personIdentifier, cancellationToken);
             }
-            else if (consentPartyUrn.IsOrganizationId(out OrganizationNumber organizationNumber))
+            else if (consentPartyUrn.IsOrganizationId(out Authorization.Core.Models.Register.OrganizationNumber organizationNumber))
             {
                 return await GetInternalIdentifier(organizationNumber, cancellationToken);
             }
@@ -401,13 +425,13 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (!string.IsNullOrEmpty(party.OrganizationId))
             {
-                return ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(party.OrganizationId));
+                return ConsentPartyUrn.OrganizationId.Create(Authorization.Core.Models.Register.OrganizationNumber.Parse(party.OrganizationId));
             }
 
             throw new ArgumentException($"Party with guid {guid} is not valid consent party");
         }
 
-        private async Task<ConsentPartyUrn> GetInternalIdentifier(OrganizationNumber organizationNumber, CancellationToken cancellationToken)
+        private async Task<ConsentPartyUrn> GetInternalIdentifier(Authorization.Core.Models.Register.OrganizationNumber organizationNumber, CancellationToken cancellationToken)
         {
             MinimalParty party = await _ampartyService.GetByOrgNo(organizationNumber.ToString(), cancellationToken);
             if (party == null)
@@ -684,7 +708,7 @@ namespace Altinn.AccessManagement.Core.Services
         {
             if (consentRequest.ValidTo < DateTime.UtcNow)
             {
-                errors.Add(ValidationErrors.InvalidValidToTime, "ValidTo");
+                errors.Add(ValidationErrors.TimeNotInFuture, "ValidTo");
             }
 
             return errors;
