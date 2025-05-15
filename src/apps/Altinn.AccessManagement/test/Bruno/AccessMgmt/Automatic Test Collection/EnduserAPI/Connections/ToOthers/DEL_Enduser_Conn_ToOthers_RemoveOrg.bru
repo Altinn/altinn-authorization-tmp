@@ -1,48 +1,34 @@
 meta {
-  name: POST_SysUser_ClientEnkDelg_AccPkg
+  name: DEL_Enduser_Conn_ToOthers_RemoveOrg
   type: http
-  seq: 4
+  seq: 9
 }
 
-post {
-  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation?party={{party}}
+delete {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&from={{party}}&to={{toOrg}}&cascade=true
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
+  from: {{party}}
+  to: {{toOrg}}
+  cascade: true
 }
 
 headers {
-  Content-Type: application/json
   Accept: application/json
-}
-
-body:json {
-  {
-    "clientId": "{{clientId}}",
-    "agentId": "{{systemUser}}",
-    "agentName": "Fiken",
-    "agentRole": "agent",
-    "rolePackages": [
-      {
-        "roleIdentifier": "regnskapsforer",
-        "packageUrn": "{{packageToDelegate}}"
-      }
-    ]
-  }
 }
 
 script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_SysUser_ClientEnkDelg_AccPkg");
+  bru.setVar("requestName", "DEL_Enduser_Conn_ToOthers_RemoveOrg");
+  
   bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-  bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
-  bru.setVar("clientId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.partyUuid);
-  bru.setVar("packageToDelegate", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.clientEnkPackageToDelegate);
+  bru.setVar("toOrg", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg1.partyUuid);
   
   var getTokenParameters = {
     auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
@@ -54,11 +40,16 @@ script:pre-request {
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
-  bru.setVar("bearerToken",  token);
+  bru.setVar("bearerToken", token);
 }
 
 tests {
-  test("Should return 200 OK", function() {
-    expect(res.status).to.equal(200);
+  
+  test(bru.getVar("requestName"), function() {
+    const data = res.getBody();
+    
+    expect(res.status).to.equal(204);
+    assert.isNotOk(data, "Expected response body to be empty");
+    
   });
 }

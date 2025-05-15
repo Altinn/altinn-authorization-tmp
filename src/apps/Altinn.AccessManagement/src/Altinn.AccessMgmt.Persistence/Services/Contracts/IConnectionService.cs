@@ -9,6 +9,26 @@ namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
 public interface IConnectionService
 {
     /// <summary>
+    /// Gets all client connections for a specified facilitator entity.
+    /// </summary>
+    /// <param name="facilitatorId">The identifier of the entity, access has been facilitated by.</param>
+    /// <param name="roles"> The list of role codes/identifiers to filter the connections by.</param>
+    /// <param name="packages"> The list of package identifiers to filter the connections by.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+    /// <returns>A collection of all client connections.</returns>
+    Task<IEnumerable<ExtConnection>> GetClients(Guid facilitatorId, string[] roles = null, string[] packages = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the connections facilitated by the specified entity.
+    /// </summary>
+    /// <param name="fromId">The identifier of the entity, access has been provided from.</param>
+    /// <param name="toId">The identifier of the entity access has been provided to.</param>
+    /// <param name="facilitatorId">The identifier of the entity, access has been facilitated by.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+    /// <returns>A collection of facilitated connections.</returns>
+    Task<IEnumerable<ExtConnection>> Get(Guid? fromId, Guid? toId, Guid? facilitatorId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets the connections given to the specified entity (Assignment.To).
     /// </summary>
     /// <param name="toId">The identifier of the entity access has been provided to.</param>
@@ -31,15 +51,6 @@ public interface IConnectionService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>A collection of facilitated connections.</returns>
     Task<IEnumerable<ExtConnection>> GetFacilitated(Guid id, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Gets the specific connection between two entities.
-    /// </summary>
-    /// <param name="fromId">The identifier of the entity giving the connection.</param>
-    /// <param name="toId">The identifier of the entity receiving the connection.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
-    /// <returns>A collection of specific connections.</returns>
-    Task<IEnumerable<ExtConnection>> GetSpecific(Guid fromId, Guid toId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the specific connection between two entities.

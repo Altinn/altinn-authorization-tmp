@@ -144,21 +144,6 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
     private static string GetAuditVariables(ChangeRequestOptions options)
     {
-        /*
-        private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
-        
-        if (options.ChangedBySystem == Guid.Empty)
-        {
-            options.ChangedBySystem = DefaultPerformedBy;
-        }
-        */
-
-        /*
-        sb.AppendLine("SELECT current_setting('app.current_user', false) INTO current_user;");
-        sb.AppendLine("SELECT current_setting('app.current_system', false) INTO current_system;");
-        sb.AppendLine("SELECT current_setting('app.current_operation', false) INTO current_operation;");
-        */
-
         return string.Format("SET LOCAL app.changed_by = '{0}'; SET LOCAL app.changed_by_system = '{1}'; SET LOCAL app.change_operation_id = '{2}';", options.ChangedBy, options.ChangedBySystem, options.ChangeOperationId);
     }
 
@@ -387,6 +372,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
                 FilterComparer.StartsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 FilterComparer.EndsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 FilterComparer.Contains => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
+                FilterComparer.Like => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 _ => throw new NotSupportedException($"Comparer '{filter.Comparer}' is not supported.")
             };
 
@@ -443,7 +429,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine(query);
         sb.AppendLine(")");
         sb.AppendLine("SELECT *");
-        sb.AppendLine("FROM pagedresult, (SELECT MAX(pagedresult._rownum) AS totalitems FROM pagedresult) AS pageinfo");
+        sb.AppendLine($"FROM pagedresult, (SELECT MAX(pagedresult._rownum) AS _totalItemCount, {options.PageSize} as _pageSize, {options.PageNumber} as _pageNumber FROM pagedresult) AS _totalItemCount");
         sb.AppendLine($"ORDER BY _rownum OFFSET {options.PageSize * (options.PageNumber - 1)} ROWS FETCH NEXT {options.PageSize} ROWS ONLY");
 
         return sb.ToString();
@@ -658,7 +644,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         var scripts = new OrderedDictionary<string, string>();
 
         var query = $"""
-        CREATE OR REPLACE VIEW {GetTableName(includeAlias: false)} AS
+        DROP VIEW IF EXISTS {GetTableName(includeAlias: false)};
+        CREATE VIEW {GetTableName(includeAlias: false)} AS
         {_definition.Query}
         """;
 
@@ -702,8 +689,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         
         if (_definition.EnableTranslation)
         {
+            string fkName = $"FK_Translation_{_definition.ModelType.Name}_id";
             scripts.Add($"CREATE TABLE {translationName}", translationScript);
-            var translationForeignKey = $"ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} ADD CONSTRAINT FK_Translation_{_definition.ModelType.Name}_id FOREIGN KEY (id) REFERENCES {GetSchemaName()}.{GetTableName(includeAlias: false, includeSchema: false)} (id) ON DELETE CASCADE;";
+            var translationForeignKey = $"ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} DROP CONSTRAINT IF EXISTS {fkName}; ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} ADD CONSTRAINT {fkName} FOREIGN KEY (id) REFERENCES {GetSchemaName()}.{GetTableName(includeAlias: false, includeSchema: false)} (id) ON DELETE CASCADE;";
             scripts.Add($"ADD CONSTRAINT FK_Translation_{_definition.ModelType.Name}_id", translationForeignKey);
         }
 
@@ -758,8 +746,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         {
             if (isTranslation)
             {
+                string fkName = $"FK_{_definition.ModelType.Name}_id";
                 script.AppendLine($", CONSTRAINT PK_{_definition.ModelType.Name} PRIMARY KEY ({string.Join(',', _definition.Constraints.First(t => t.IsPrimaryKey).Properties.Select(t => $"{t.Key}"))}, language)");
-                var query = $"ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} ADD CONSTRAINT FK_{_definition.ModelType.Name}_id FOREIGN KEY (id) REFERENCES {GetSchemaName()}.{GetTableName(includeAlias: false, includeSchema: false)} (id) ON DELETE CASCADE;";
+                var query = $"ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} DROP CONSTRAINT IF EXISTS {fkName}; ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} ADD CONSTRAINT {fkName} FOREIGN KEY (id) REFERENCES {GetSchemaName()}.{GetTableName(includeAlias: false, includeSchema: false)} (id) ON DELETE CASCADE;";
             }
             else
             {
@@ -861,7 +850,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string name = string.IsNullOrEmpty(foreignKey.Name) ? $"{_definition.ModelType.Name}_{foreignKey.BaseProperty}" : foreignKey.Name;
 
         var key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
-        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
+        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} DROP CONSTRAINT IF EXISTS {name}; ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
 
         res.Add(key, query);
 
@@ -888,7 +877,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string baseColumns = $"{columnDefinitions}, audit_validfrom, now() as audit_validto, audit_changedby, audit_changedbysystem, audit_changeoperation, null::uuid AS audit_deletedby, null::uuid AS audit_deletedbysystem, null::text AS audit_deleteoperation";
 
         string viewQuery = $"""
-        CREATE OR REPLACE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: isTranslation)} AS
+        DROP VIEW IF EXISTS {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: isTranslation)};
+        CREATE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: isTranslation)} AS
         SELECT {historyColumns}
         FROM  {GetTableName(useHistory: true, useTranslation: isTranslation)}
         WHERE audit_validfrom <= coalesce(current_setting('app.asof', true)::timestamptz, now())

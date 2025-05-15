@@ -1,23 +1,24 @@
 meta {
-  name: DEL_SysUser_ClientDelg_AccPkgForDelete_DelAgntAss
+  name: GET_Enduser_Conn_ToOthers_GetOrg_Empty
   type: http
-  seq: 6
+  seq: 10
 }
 
-delete {
-  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation/deleteagentassignment?party={{party}}&agentId={{systemUser}}&cascade=false
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&from={{party}}&to={{toOrg}}&packageId=&package=
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  agentId: {{systemUser}}
-  cascade: false
+  from: {{party}}
+  to: {{toOrg}}
+  packageId: 
+  package: 
 }
 
 headers {
-  Content-Type: application/json
   Accept: application/json
 }
 
@@ -25,10 +26,10 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_SysUser_ClientEnkDelg_AccPkg");
+  bru.setVar("requestName", "GET_Enduser_Conn_ToOthers_GetOrg_Empty");
+  
   bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-  bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
-  bru.setVar("clientId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_WITHOUT_CLIENTDELEGATION.partyUuid);
+  bru.setVar("toOrg", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg1.partyUuid);
   
   var getTokenParameters = {
     auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
@@ -40,11 +41,17 @@ script:pre-request {
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
-  bru.setVar("bearerToken",  token);
+  bru.setVar("bearerToken", token);
 }
 
 tests {
-  test("Should return 200 OK", function() {
+  
+  test(bru.getVar("requestName"), function() {
+    const body = res.getBody();
+    const data = body.data;
+    
     expect(res.status).to.equal(200);
+    assert.isEmpty(data, "Expected data in response body to be empty array");
+    
   });
 }

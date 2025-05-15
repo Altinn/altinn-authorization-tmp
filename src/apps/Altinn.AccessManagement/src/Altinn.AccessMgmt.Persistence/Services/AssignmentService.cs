@@ -121,7 +121,7 @@ public class AssignmentService(
                 AssignmentId = assignmentId,
                 PackageId = packageId
             },
-            options: options, 
+            options: options,
             cancellationToken: cancellationToken
         );
 
@@ -280,18 +280,20 @@ public class AssignmentService(
             throw new Exception(string.Format("Multiple inheirited assignment exists. Use Force = true to create anyway."));
         }
 
-        await assignmentRepository.Create(
-            new Assignment()
-            {
-                FromId = fromEntityId,
-                ToId = toEntityId,
-                RoleId = role.Id
-            },
-            options: options, 
-            cancellationToken: cancellationToken
-        );
+        assignment = new Assignment()
+        {
+            FromId = fromEntityId,
+            ToId = toEntityId,
+            RoleId = role.Id
+        };
 
-        throw new NotImplementedException();
+        var result = await assignmentRepository.Create(assignment, options: options, cancellationToken: cancellationToken);
+        if (result == 0)
+        {
+            Unreachable();
+        }
+
+        return assignment;
     }
 
     /// <inheritdoc/>
@@ -322,7 +324,7 @@ public class AssignmentService(
     {
         if (entity is null)
         {
-            errors.Add(ValidationErrors.MissingPartyInDb, param, [new("partyId", id.ToString())]);
+            errors.Add(ValidationErrors.EntityNotExists, param, [new("partyId", id.ToString())]);
         }
     }
 
@@ -330,7 +332,7 @@ public class AssignmentService(
     {
         if (entity is not null && !entity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
         {
-            errors.Add(ValidationErrors.InvalidPartyType, param, [new("partyId", $"expected party of type 'Organisasjon' got '{entity.Type.Name}'.")]);
+            errors.Add(ValidationErrors.InvalidQueryParameter, param, [new("partyId", $"expected party of type 'Organisasjon' got '{entity.Type.Name}'.")]);
         }
     }
 

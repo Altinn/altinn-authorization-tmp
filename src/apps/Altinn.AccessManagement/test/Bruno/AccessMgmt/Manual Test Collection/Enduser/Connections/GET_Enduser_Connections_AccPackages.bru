@@ -1,22 +1,24 @@
 meta {
-  name: DEL_SysUser_ClientDelg_AccPkgForDelete_DelClntDelg
+  name: GET_Enduser_Connections_AccPackages
   type: http
-  seq: 7
+  seq: 5
 }
 
-delete {
-  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation/deletedelegation?party={{party}}&delegationId
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/accesspackages?party={{party}}&from={{party}}&to={{daglParty}}&package=&packageUrn=
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  delegationId: 
+  from: {{party}}
+  to: {{daglParty}}
+  package: 
+  packageUrn: 
 }
 
 headers {
-  Content-Type: application/json
   Accept: application/json
 }
 
@@ -24,10 +26,10 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_SysUser_ClientEnkDelg_AccPkg");
+  bru.setVar("requestName", "GET_Enduser_Connections_AccPackages");
+  
   bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-  bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
-  bru.setVar("clientId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_WITHOUT_CLIENTDELEGATION.partyUuid);
+  bru.setVar("daglParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid);
   
   var getTokenParameters = {
     auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
@@ -39,11 +41,5 @@ script:pre-request {
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
-  bru.setVar("bearerToken",  token);
-}
-
-tests {
-  test("Should return 200 OK", function() {
-    expect(res.status).to.equal(200);
-  });
+  bru.setVar("bearerToken", token);
 }
