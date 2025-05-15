@@ -1,48 +1,35 @@
 meta {
-  name: POST_SysUser_ClientEnkDelg_AccPkg
+  name: GET_Enduser_Conn_AccPcks_ToOthers_ToOrg
   type: http
   seq: 4
 }
 
-post {
-  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation?party={{party}}
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/accesspackages?party={{party}}&from={{party}}&to={{toOrg}}&packageId=&package=
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
+  from: {{party}}
+  to: {{toOrg}}
+  packageId: 
+  package: 
 }
 
 headers {
-  Content-Type: application/json
   Accept: application/json
-}
-
-body:json {
-  {
-    "clientId": "{{clientId}}",
-    "agentId": "{{systemUser}}",
-    "agentName": "Fiken",
-    "agentRole": "agent",
-    "rolePackages": [
-      {
-        "roleIdentifier": "regnskapsforer",
-        "packageUrn": "{{packageToDelegate}}"
-      }
-    ]
-  }
 }
 
 script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_SysUser_ClientEnkDelg_AccPkg");
+  bru.setVar("requestName", "GET_Enduser_Conn_AccPcks_ToOthers_ToOrg");
+  
   bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-  bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
-  bru.setVar("clientId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.partyUuid);
-  bru.setVar("packageToDelegate", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.clientEnkPackageToDelegate);
+  bru.setVar("toOrg", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg1.partyUuid);
   
   var getTokenParameters = {
     auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
@@ -54,11 +41,21 @@ script:pre-request {
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
-  bru.setVar("bearerToken",  token);
+  bru.setVar("bearerToken", token);
 }
 
 tests {
-  test("Should return 200 OK", function() {
+  
+  test(bru.getVar("requestName"), function() {
+    const body = res.getBody();
+    const data = body.data;
+    
     expect(res.status).to.equal(200);
+    assert.isNotEmpty(data, "Expected data in response body to NOT be empty array");
+    
+    assert.equal(data[0].fromId, bru.getVar("party"));
+    assert.equal(data[0].toId, bru.getVar("toOrg"));
+    assert.equal(data[0].roleId, "42cae370-2dc1-4fdc-9c67-c2f4b0f0f829"); // rettighetshaver uuid
+    
   });
 }

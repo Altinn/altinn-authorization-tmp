@@ -18,7 +18,8 @@ public class ConnectionService(
     IAssignmentRepository assignmentRepository,
     IDelegationRepository delegationRepository,
     IAssignmentPackageRepository assignmentPackageRepository,
-    IDelegationPackageRepository delegationPackageRepository
+    IDelegationPackageRepository delegationPackageRepository,
+    IRoleRepository roleRepository
     ) : IConnectionService
 {
     /// <inheritdoc />
@@ -26,11 +27,67 @@ public class ConnectionService(
     {
         var filter = connectionRepository.CreateFilterBuilder();
         filter.Equal(t => t.Id, Id);
-        filter.IsNull(t => t.FromId);
-        filter.IsNull(t => t.ToId);
-        filter.IsNull(t => t.FacilitatorId);
+        filter.NotSet(t => t.FromId);
+        filter.NotSet(t => t.ToId);
+        filter.NotSet(t => t.FacilitatorId);
         var res = await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
         return res.FirstOrDefault();
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<ExtConnection>> GetClients(Guid facilitatorId, string[] roles = null, string[] packages = null, CancellationToken cancellationToken = default)
+    {
+        var connFilter = connectionRepository.CreateFilterBuilder();
+        connFilter.NotSet(t => t.Id);
+        connFilter.NotSet(t => t.FromId);
+        connFilter.NotSet(t => t.FacilitatorId);
+
+        // If filter packages are provided, we need to filter the connections by the packages assigned to the facilitator
+        if (packages != null)
+        {
+            var packageFilter = packageRepository.CreateFilterBuilder();
+            packageFilter.In(t => t.Urn, packages.Select(p => $"urn:altinn:accesspackage:{p}"));
+            var packageResult = await packageRepository.Get(packageFilter, cancellationToken: cancellationToken);
+
+            if (packageResult == null || !packageResult.Any() || packageResult.Count() != packages.Count())
+            {
+                throw new ArgumentException($"Filter: {nameof(packages)}, provided contains one or more package identifiers which cannot be found.");
+            }
+
+            var connPkgFilter = connectionPackageRepository.CreateFilterBuilder();
+            connPkgFilter.Equal(t => t.ToId, facilitatorId);
+            connPkgFilter.NotSet(t => t.FromId);
+            connPkgFilter.In(t => t.PackageId, packageResult.Select(p => p.Id));
+
+            var connectionPackages = await connectionPackageRepository.Get(connPkgFilter, cancellationToken: cancellationToken);
+
+            // Add connections filter for connections containing the requested packages
+            connFilter.In(t => t.Id, connectionPackages.Select(cp => cp.Id));
+            connFilter.NotSet(t => t.ToId);
+        }
+        else
+        {
+            // If no filter packages are provided, we need to filter on connection given to facilitator id
+            connFilter.Equal(t => t.ToId, facilitatorId);
+        }
+
+        // If filter role codes are provided, we need to add filter on connections by the roles assigned to the facilitator
+        if (roles != null)
+        {
+            var roleFilter = roleRepository.CreateFilterBuilder();
+            roleFilter.In(t => t.Code, roles);
+            var roleResult = await roleRepository.Get(roleFilter, cancellationToken: cancellationToken);
+
+            if (roleResult == null || !roleResult.Any() || roleResult.Count() != roles.Count())
+            {
+                throw new ArgumentException($"Filter: {nameof(roles)}, provided contains one or more role identifiers which cannot be found.");
+            }
+
+            // Add connections filter for connections containing the requested roles
+            connFilter.In(t => t.RoleId, roleResult.Select(r => r.Id));
+        }
+
+        return await connectionRepository.GetExtended(connFilter, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
@@ -44,7 +101,7 @@ public class ConnectionService(
         }
         else
         {
-            filter.IsNull(t => t.FromId);
+            filter.NotSet(t => t.FromId);
         }
 
         if (toId.HasValue)
@@ -53,7 +110,7 @@ public class ConnectionService(
         }
         else
         {
-            filter.IsNull(t => t.ToId);
+            filter.NotSet(t => t.ToId);
         }
 
         if (facilitatorId.HasValue)
@@ -62,7 +119,7 @@ public class ConnectionService(
         }
         else
         {
-            filter.IsNull(t => t.FacilitatorId);
+            filter.NotSet(t => t.FacilitatorId);
         }
 
         if (!filter.Any())
@@ -70,7 +127,7 @@ public class ConnectionService(
             throw new ArgumentException("You need to define a filter");
         }
 
-        filter.IsNull(t => t.Id);
+        filter.NotSet(t => t.Id);
         return await connectionRepository.GetExtended(filter, cancellationToken: cancellationToken);
     }
 
@@ -149,13 +206,13 @@ public class ConnectionService(
 
         var assignment = assignmentRepository.Get(connectionId, cancellationToken: cancellationToken);
         var delegation = delegationRepository.Get(connectionId, cancellationToken: cancellationToken);
-        
+
         if (assignment != null)
         {
             var res = await GetOrCreateAssignmentPackage(connectionId, packageId, options, cancellationToken: cancellationToken);
             return true;
         }
-        
+
         if (delegation != null)
         {
             var res = await GetOrCreateDelegationPackage(connectionId, packageId, options, cancellationToken: cancellationToken);
@@ -187,7 +244,7 @@ public class ConnectionService(
 
         return false;
     }
-    
+
     private async Task<IEnumerable<ConnectionPackage>> GetConnectionPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default)
     {
         /* Get packages assigned to entity from a specific entity, to see if entity can assign it to another entity */
@@ -206,7 +263,7 @@ public class ConnectionService(
         }
         else
         {
-            filter.IsNull(t => fromId);
+            filter.NotSet(t => fromId);
         }
 
         if (toId.HasValue)
@@ -215,7 +272,7 @@ public class ConnectionService(
         }
         else
         {
-            filter.IsNull(t => t.ToId);
+            filter.NotSet(t => t.ToId);
         }
 
         return (await connectionPackageRepository.Get(filter, cancellationToken: cancellationToken)).Data;
@@ -265,7 +322,11 @@ public class ConnectionService(
             return true;
         }
 
-        var deleteResult = await assignmentPackageRepository.DeleteCross(assignmentId, packageId, options, cancellationToken: cancellationToken);
+        var deleteFilter = assignmentPackageRepository.CreateFilterBuilder();
+        deleteFilter.Equal(t => t.AssignmentId, assignmentId);
+        deleteFilter.Equal(t => t.PackageId, packageId);
+        var deleteResult = await assignmentPackageRepository.Delete(deleteFilter, options, cancellationToken: cancellationToken);
+
         if (deleteResult > 0)
         {
             return true;
@@ -307,7 +368,11 @@ public class ConnectionService(
             return true;
         }
 
-        var deleteResult = await delegationPackageRepository.DeleteCross(delegationId, packageId, options, cancellationToken: cancellationToken);
+        var deleteFilter = delegationPackageRepository.CreateFilterBuilder();
+        deleteFilter.Equal(t => t.DelegationId, delegationId);
+        deleteFilter.Equal(t => t.PackageId, packageId);
+        var deleteResult = await delegationPackageRepository.Delete(deleteFilter, options, cancellationToken: cancellationToken);
+
         if (deleteResult > 0)
         {
             return true;
@@ -352,7 +417,7 @@ public class ConnectionService(
             return checkResult.Data.First();
         }
 
-        var createResult = await assignmentPackageRepository.CreateCross(assignmentId, packageId, options, cancellationToken: cancellationToken);
+        var createResult = await assignmentPackageRepository.Create(new AssignmentPackage() { AssignmentId = assignmentId, PackageId = packageId }, options, cancellationToken: cancellationToken);
         if (createResult > 0)
         {
             var createCheckResult = await assignmentPackageRepository.Get();
@@ -402,7 +467,7 @@ public class ConnectionService(
             return checkResult.First();
         }
 
-        var createResult = await delegationPackageRepository.CreateCross(delegationId, packageId, options, cancellationToken: cancellationToken);
+        var createResult = await delegationPackageRepository.Create(new DelegationPackage() { DelegationId = delegationId, PackageId = packageId }, options, cancellationToken: cancellationToken);
         if (createResult > 0)
         {
             var createCheckResult = await delegationPackageRepository.Get(filter, cancellationToken: cancellationToken);
