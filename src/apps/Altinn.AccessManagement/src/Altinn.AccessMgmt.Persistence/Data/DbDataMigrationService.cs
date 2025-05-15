@@ -2440,10 +2440,17 @@ public class DbDataMigrationService(
             variants.Add(variant.Name, variant.Id);
         }
 
-        var filter = rolePackageRepository.CreateFilterBuilder();
-        filter.Equal(t => t.RoleId, roles["urn:altinn:external-role:ccr:forretningsforer"]);
-        filter.Equal(t => t.PackageId, packages["urn:altinn:accesspackage:forretningsforer-eiendom"]);
-        filter.Equal(t => t.EntityVariantId, variants["BBL"]);
-        await rolePackageRepository.Delete(filter, options, cancellationToken);
+        try 
+        {
+            var filter = rolePackageRepository.CreateFilterBuilder();
+            filter.Equal(t => t.RoleId, roles["urn:altinn:external-role:ccr:forretningsforer"]);
+            filter.Equal(t => t.PackageId, packages["urn:altinn:accesspackage:forretningsforer-eiendom"]);
+            filter.Equal(t => t.EntityVariantId, variants["BBL"]);
+            await rolePackageRepository.Delete(filter, options, cancellationToken);
+        }
+        catch(Exception e)
+        {
+
+        }
     }
 }
