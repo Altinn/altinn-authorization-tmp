@@ -2413,9 +2413,10 @@ public class DbDataMigrationService(
     private async Task Cleanup(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var dataKey = "<cleanup-data>";
-        if (migrationService.NeedMigration<ProviderType>(dataKey, 1))
+        if (migrationService.NeedMigration<RolePackage>(dataKey, 1))
         {
             await CleanupRolePackage(options, cancellationToken);
+            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 1);
         }
     }
 
