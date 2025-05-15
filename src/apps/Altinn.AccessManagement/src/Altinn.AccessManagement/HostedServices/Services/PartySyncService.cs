@@ -16,11 +16,12 @@ namespace Altinn.AccessManagement.HostedServices.Services;
 public class PartySyncService : BaseSyncService, IPartySyncService
 {
     private readonly ILogger<RegisterHostedService> _logger;
+    private readonly IAltinnRegister _register;
     private readonly IIngestService ingestService;
 
     private readonly IEntityTypeRepository entityTypeRepository;
     private readonly IEntityVariantRepository entityVariantRepository;
-
+    
     /// <summary>
     /// PartySyncService Constructor
     /// </summary>
@@ -32,8 +33,9 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         IIngestService ingestService,
         IEntityTypeRepository entityTypeRepository,
         IEntityVariantRepository entityVariantRepository
-    ) : base(lease, featureManager, register)
+    ) : base(lease, featureManager)
     {
+        _register = register;
         _logger = logger;
         this.ingestService = ingestService;
         this.entityVariantRepository = entityVariantRepository;
@@ -60,7 +62,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         EntityTypes = (await entityTypeRepository.Get(cancellationToken: cancellationToken)).ToList();
         EntityVariants = (await entityVariantRepository.Get(cancellationToken: cancellationToken)).ToList();
 
-        await foreach (var page in await Register.StreamParties(RegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await _register.StreamParties(RegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {

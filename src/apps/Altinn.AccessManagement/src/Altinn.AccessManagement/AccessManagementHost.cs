@@ -116,7 +116,11 @@ internal static partial class AccessManagementHost
         builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
         builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
 
-        builder.Services.AddHostedService<AltinnRoleHostedServices>();        
+        builder.Services.AddHostedService<AltinnRoleHostedService>();
+        builder.Services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
+        builder.Services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
+        builder.Services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
+        builder.Services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
 
         return builder;
     }
@@ -157,7 +161,7 @@ internal static partial class AccessManagementHost
     private static WebApplicationBuilder ConfigureLibsHost(this WebApplicationBuilder builder)
     {
         builder.Services.AddHostedService<RegisterHostedService>();
-        builder.Services.AddHostedService<AltinnRoleHostedServices>();
+        builder.Services.AddHostedService<AltinnRoleHostedService>();
         builder.AddAzureAppConfigurationDefaults(opts =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);

@@ -39,7 +39,7 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
         IProviderRepository providerRepository,
         IProviderTypeRepository providerTypeRepository,
         ILogger<ResourceSyncService> logger
-        ) : base(lease, featureManager, register)
+        ) : base(lease, featureManager)
     {
         _logger = logger;
 

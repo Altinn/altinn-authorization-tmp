@@ -26,7 +26,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         IAssignmentRepository assignmentRepository,
         IEntityRepository entityRepository,
         IEntityTypeRepository entityTypeRepository
-    ) : base(lease, featureManager, register)
+    ) : base(lease, featureManager)
     {
         _register = register;
         _logger = logger;
