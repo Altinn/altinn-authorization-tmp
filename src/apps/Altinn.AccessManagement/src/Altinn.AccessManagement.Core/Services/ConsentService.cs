@@ -86,7 +86,7 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 await _consentRepository.RejectConsentRequest(consentRequestId, performedByParty, cancellationToken);
             }
-            catch (Exception)
+            catch (InvalidOperationException)
             {
                 await _consentRepository.GetRequest(consentRequestId, cancellationToken);
 
