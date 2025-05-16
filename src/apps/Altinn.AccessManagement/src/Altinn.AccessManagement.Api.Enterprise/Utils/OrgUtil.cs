@@ -13,33 +13,44 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
         /// <summary>
         /// Returns partyUid claim value if present. Null if not
         /// </summary>
-       public static ConsentPartyUrn? GetAuthenticatedParty(ClaimsPrincipal claimsPrincipal)
+        public static ConsentPartyUrn? GetAuthenticatedParty(ClaimsPrincipal claimsPrincipal)
         {
             string? consumerJson = claimsPrincipal.FindFirstValue("consumer");
-            if (string.IsNullOrEmpty(consumerJson))
+            if (string.IsNullOrWhiteSpace(consumerJson))
             {
                 return null;
             }
 
             try
             {
-                using JsonDocument doc = JsonDocument.Parse(consumerJson);
-                JsonElement root = doc.RootElement;
+                using var doc = JsonDocument.Parse(consumerJson);
+                var root = doc.RootElement;
 
-                if (!root.TryGetProperty("ID", out JsonElement idElement) ||
-                    !root.TryGetProperty("authority", out JsonElement authorityElement))
+                if (!root.TryGetProperty("ID", out var idElement) ||
+                    !root.TryGetProperty("authority", out var authorityElement))
                 {
                     return null;
                 }
 
-                string consumerAuthority = authorityElement.GetString()!;
-                if (!"iso6523-actorid-upis".Equals(consumerAuthority))
+                var consumerAuthority = authorityElement.GetString();
+                if (!string.Equals(consumerAuthority, "iso6523-actorid-upis", StringComparison.Ordinal))
                 {
                     return null;
                 }
 
-                string consumerId = idElement.GetString()!;
-                string organisationNumber = consumerId.Split(':')[1];
+                var consumerId = idElement.GetString();
+                if (string.IsNullOrEmpty(consumerId) || !consumerId.Contains(':'))
+                {
+                    return null;
+                }
+
+                var parts = consumerId.Split(':');
+                if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    return null;
+                }
+
+                var organisationNumber = parts[1];
                 return ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(organisationNumber));
             }
             catch (JsonException)
