@@ -50,11 +50,6 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 return consentRequestStatus.Problem.ToActionResult();
             }
 
-            if (consentRequestStatus.Value == null)
-            {
-                return BadRequest("Consent request could not be created");
-            }
-
             var routeValues = new { consentRequestId = consentRequestStatus.Value.Id };
             string? locationUrl = Url.Link(GetRouteName, routeValues);
 
