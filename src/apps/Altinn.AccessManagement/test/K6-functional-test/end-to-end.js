@@ -5,6 +5,8 @@ import {
   addRevisorRoleToErForOrg,
 } from "./helpers/er-requests.js";
 import { retry } from "./helpers/helpers.js";
+import * as altinnK6Lib from "https://raw.githubusercontent.com/Altinn/altinn-platform/refs/heads/main/libs/k6/build/index.js";
+import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
 
 const facilitatorPartyUuidRevisor = "7c1170ec-8232-4998-a277-0ba224808541";
 const facilitatorOrg = "314239458";
@@ -101,6 +103,30 @@ function addRoleBackToEr(targetOrg) {
   });
 }
 
-export default function () {
+export function handleSummary(data) {
+  const slackMessage = {
+    text: "K6 Test Report for Revisor Role Removal",
+    stats: textSummary(data, { indent: "  ", enableColors: true }),
+  };
+
+  altinnK6Lib.postSlackMessage(slackMessage);
+
+  return {
+    stdout: textSummary(data, { indent: "  " }),
+  };
+}
+
+///Uncommented this to test slack integaration via function defined below
+function test() {
   testRemovalOfRevisorRoleForClient();
+
+  altinnK6Lib.postSlackMessage(data);
+}
+
+export default function () {
+  check(1 == 1, "Verify Altinn is the best organization");
+
+  var data = "Verify Altinn is the best";
+
+  altinnK6Lib.postSlackMessage(data);
 }
