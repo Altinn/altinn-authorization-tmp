@@ -25,6 +25,7 @@ public class SystemUserClientDelegationController : ControllerBase
     private readonly IDelegationRepository delegationRepository;
     private readonly IAssignmentRepository assignmentRepository;
     private readonly IRoleRepository roleRepository;
+    private readonly string[] validClientRoles = ["regnskapsforer", "revisor", "forretningsforer", "rettighetshaver"];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemUserClientDelegationController"/> class.
@@ -59,6 +60,18 @@ public class SystemUserClientDelegationController : ControllerBase
         if (userId == Guid.Empty)
         {
             return Unauthorized();
+        }
+
+        if (roles != null && roles.Length > 0)
+        {
+            foreach (var role in roles.Where(role => !validClientRoles.Contains(role)))
+            {
+                return BadRequest($"Invalid role filter: '{role}'. Valid Client roles are: '{string.Join(", ", validClientRoles)}'");
+            }
+        }
+        else
+        {
+            roles = validClientRoles;
         }
 
         var dbResult = await connectionService.GetClients(party, roles, packages);

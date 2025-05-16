@@ -38,7 +38,6 @@ public class ConnectionService(
     public async Task<IEnumerable<ExtConnection>> GetClients(Guid facilitatorId, string[] roles = null, string[] packages = null, CancellationToken cancellationToken = default)
     {
         var connFilter = connectionRepository.CreateFilterBuilder();
-        connFilter.NotSet(t => t.Id);
         connFilter.NotSet(t => t.FromId);
         connFilter.NotSet(t => t.FacilitatorId);
 
@@ -69,6 +68,7 @@ public class ConnectionService(
         {
             // If no filter packages are provided, we need to filter on connection given to facilitator id
             connFilter.Equal(t => t.ToId, facilitatorId);
+            connFilter.NotSet(t => t.Id);
         }
 
         // If filter role codes are provided, we need to add filter on connections by the roles assigned to the facilitator
