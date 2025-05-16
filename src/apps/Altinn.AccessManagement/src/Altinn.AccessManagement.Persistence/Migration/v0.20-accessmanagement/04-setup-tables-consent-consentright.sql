@@ -1,4 +1,4 @@
--- Enum: delegation.instanceType
+-- Table: consent.consentright
 
 CREATE TABLE IF NOT EXISTS consent.consentright
 (
