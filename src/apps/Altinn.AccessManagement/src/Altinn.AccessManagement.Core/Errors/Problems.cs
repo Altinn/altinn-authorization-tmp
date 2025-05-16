@@ -71,4 +71,8 @@ public static class Problems
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor ConsentNotAccepted { get; }
     = _factory.Create(14, HttpStatusCode.BadRequest, $"Consent is not accepted");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor ConsentCantBeRejected { get; }
+    = _factory.Create(30, HttpStatusCode.BadRequest,  $"Consent cant be rejected. Wrong status");
 }

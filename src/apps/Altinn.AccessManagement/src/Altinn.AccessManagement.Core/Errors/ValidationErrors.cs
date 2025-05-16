@@ -88,25 +88,7 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor ConsentNotFound { get; }
     = _factory.Create(26, $"Incorrect consentId or wrong consent receiver");
-
-    /// <summary>
-    /// Gets a validation error descriptor
-    /// </summary>
-    public static ValidationErrorDescriptor ConsentExpired { get; }
-    = _factory.Create(27, $"Consent is expired");
-
-    /// <summary>
-    /// Gets a validation error descriptor
-    /// </summary>
-    public static ValidationErrorDescriptor ConsentNotAccepted { get; }
-    = _factory.Create(28, $"Consent is not accepted");
-    
-    /// <summary>
-    /// Gets a validation error descriptor
-    /// </summary>
-    public static ValidationErrorDescriptor ConsentCantBeRejected { get; }
-    = _factory.Create(30, $"Consent cant be rejected. Wrong status");
-
+   
     /// <summary>
     /// Gets a validation error descriptor
     /// </summary>

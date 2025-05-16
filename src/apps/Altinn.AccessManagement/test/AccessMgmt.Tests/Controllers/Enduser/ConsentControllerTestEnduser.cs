@@ -217,12 +217,10 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.NotNull(responseContent);
-            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
+            AltinnMultipleProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnMultipleProblemDetails>(responseContent, _jsonOptions);
 
-            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
-            Assert.Single(problemDetails.Errors);
-            Assert.Equal(ValidationErrors.ConsentCantBeRejected.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
-            Assert.Equal("Status", problemDetails.Errors.ToList()[0].Paths[0]);
+            Assert.Equal(Problems.ConsentCantBeRejected.ErrorCode, problemDetails.ErrorCode);
+            Assert.Empty(problemDetails.Problems);
         }
 
         /// <summary>

@@ -64,7 +64,6 @@ namespace Altinn.AccessManagement.Core.Services
         /// <inheritdoc/>
         public async Task<Result<ConsentRequestDetails>> RejectRequest(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken)
         {
-            ValidationErrorBuilder errors = default;
             ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
             if (details.ConsentRequestStatus == ConsentRequestStatusType.Rejected)
             {
@@ -74,12 +73,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
             {
-                errors.Add(ValidationErrors.ConsentCantBeRejected, _consentRequestStatus);
-            }
-
-            if (errors.TryBuild(out var beforeErrorREsult))
-            {
-                return beforeErrorREsult;
+                return Problems.ConsentCantBeRejected;
             }
 
             try
@@ -98,11 +92,7 @@ namespace Altinn.AccessManagement.Core.Services
 
                 if (details.ConsentRequestStatus != ConsentRequestStatusType.Created)
                 {
-                    errors.Add(ValidationErrors.ConsentCantBeRejected, _consentRequestStatus);
-                    if (errors.TryBuild(out var errorResult))
-                    {
-                        return errorResult;
-                    }
+                   return Problems.ConsentCantBeRejected;
                 }
 
                 throw;
