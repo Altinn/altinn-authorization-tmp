@@ -18,12 +18,15 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
     {
         private readonly IConsent _consentService = consentService;
 
+        private const string CreateRouteName = "enterprisecreaterequest";
+        private const string GetRouteName = "enterprisegetrequest";
+
         /// <summary>
         /// Endpoint to create a consent request for
         /// </summary>
         [Authorize]
         [HttpPost]
-        [Route("request", Name ="enterprisecreaterequest")]
+        [Route("request", Name = CreateRouteName)]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(ConsentRequestStatusExternal), StatusCodes.Status200OK)]
@@ -53,14 +56,17 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
             }
 
             var routeValues = new { consentRequestId = consentRequestStatus.Value.Id };
-            string? locationUrl = Url.Link("enterprisegetrequest", routeValues);
+            string? locationUrl = Url.Link(GetRouteName, routeValues);
 
             return Created(locationUrl, consentRequestStatus.Value);
         }
 
+        /// <summary>
+        /// Returns the consent request. Only returns request details for the authenticated party.
+        /// </summary>
         [Authorize]
         [HttpGet]
-        [Route("request/{consentRequestId:guid}", Name="enterprisegetrequest")]
+        [Route("request/{consentRequestId:guid}", Name= GetRouteName)]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(ConsentRequestStatusExternal), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
