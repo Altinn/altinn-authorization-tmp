@@ -1,7 +1,10 @@
+using Altinn.Authorization.Host.Database.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 namespace Altinn.Authorization.Host.Database;
 
@@ -47,38 +50,28 @@ public static class AltinnHostDatabase
         {
             builder.Services.AddNpgsqlDataSource(
                 options.AppSource.ConnectionString.ToString(),
-                builder =>
+                dataSourceBuilder =>
                 {
-                    options.MigrationSource.Builder(builder);
-                    builder.ConfigureTracing(tracing =>
-                    {
-                        tracing.ConfigureCommandSpanNameProvider(cmd => cmd.CommandText);
-                    });
+                    options.MigrationSource.Builder(dataSourceBuilder);
+                    dataSourceBuilder.ConfigureTracing(o =>
+                        o.ConfigureCommandSpanNameProvider(_ => DbCommandExtensions.CommandName.Value));
                 },
                 serviceKey: SourceType.App
             );
             builder.Services.Add(Markers.AppSource.ServiceDescriptor);
         }
 
-        if (!builder.Services.Contains(Markers.ServiceDescriptor))
+        if (options.Telemetry.EnableTraces)
         {
-            if (options.Telemetry.EnableTraces)
-            {
-                builder.Services.AddOpenTelemetry()
-                    .WithTracing(builder =>
-                    {
-                        builder.AddNpgsql();
-                    });
-            }
-
-            if (options.Telemetry.EnableMetrics)
-            {
-                builder.Services.AddOpenTelemetry()
-                    .WithMetrics(builder => builder.AddNpgsqlInstrumentation());
-            }
-
-            builder.Services.Add(Markers.ServiceDescriptor);
+            builder.Services.ConfigureOpenTelemetryTracerProvider(tracerBuilder => tracerBuilder.AddNpgsql());
         }
+
+        if (options.Telemetry.EnableMetrics)
+        {
+            builder.Services.ConfigureOpenTelemetryMeterProvider(meterBuilder => meterBuilder.AddNpgsqlInstrumentation());
+        }
+
+        builder.Services.Add(Markers.ServiceDescriptor);
 
         return builder;
     }

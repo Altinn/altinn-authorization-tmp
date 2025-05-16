@@ -1,9 +1,12 @@
 ﻿using System.Data;
+using System.Runtime.CompilerServices;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Utilities;
 using Altinn.Authorization.Host.Database;
+using Altinn.Authorization.Host.Database.Extensions;
 using Altinn.Authorization.Host.Startup;
+using Altinn.Authorization.ServiceDefaults.Npgsql;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 
@@ -35,143 +38,110 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, IDbConverter db
     /// <summary>
     /// Executes a query and maps the result to objects of type T.
     /// </summary>
-    public async Task<IEnumerable<T>> ExecuteMigrationQuery<T>(string query, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> ExecuteMigrationQuery<T>(string query, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
         where T : new()
     {
         using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.Migration);
-        var cmd = conn.CreateCommand();
-        cmd.CommandText = query;
-        conn.Open();
-        return _dbConverter.ConvertToResult<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken)).Data;
+        var openConnection = conn.OpenAsync(cancellationToken);
+        var cmd = conn.CreateCommand(query);
+
+        await openConnection;
+        using var reader = await cmd.ExecuteReaderWithSpanNameAsync(CommandBehavior.SingleResult, callerName, cancellationToken);
+        return _dbConverter.ConvertToResult<T>(reader).Data;
     }
 
     /// <summary>
     /// Executes a non-query command (INSERT, UPDATE, DELETE) and returns the number of affected rows.
     /// </summary>
-    public async Task<int> ExecuteMigrationCommand(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
+    public async Task<int> ExecuteMigrationCommand(string query, List<GenericParameter> parameters, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
     {
         using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.Migration);
-        try
-        {
-            var cmd = conn.CreateCommand();
-            cmd.CommandText = query;
-            if (parameters != null)
-            {
-                foreach (var parameter in parameters)
-                {
-                    cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
-                }
-            }
+        var openConnection = conn.OpenAsync(cancellationToken);
+        var cmd = conn.CreateCommand(query);
 
-            conn.Open();
-            return await cmd.ExecuteNonQueryAsync(cancellationToken: cancellationToken);
-        }
-        catch (Exception ex)
+        if (parameters != null)
         {
-            Logger.LogError(ex, "Failed to execute migration command. Query: {Query}, Parameters: {Parameters}", query, FormatParameters(parameters));
-            throw;
-        }
-    }
-
-    /// <summary>
-    /// Executes a non-query command (INSERT, UPDATE, DELETE) and returns the number of affected rows.
-    /// </summary>
-    public async Task<int> ExecuteCommand(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
-    {
-        using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
-        var cmd = conn.CreateCommand();
-        cmd.CommandText = query;
-        try
-        {
-            conn.Open();
             foreach (var parameter in parameters)
             {
                 cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
             }
+        }
 
-            return await cmd.ExecuteNonQueryAsync(cancellationToken: cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to execute command. Query: {Query}, Parameters: {Parameters}", query, FormatParameters(parameters));
-            throw;
-        }
+        await openConnection;
+        return await cmd.ExecuteNonQueryAsync(cancellationToken: cancellationToken);
     }
 
     /// <summary>
     /// Executes a non-query command (INSERT, UPDATE, DELETE) and returns the number of affected rows.
     /// </summary>
-    public async Task<int> ExecuteCommand(string query, CancellationToken cancellationToken = default)
+    public async Task<int> ExecuteCommand(string query, List<GenericParameter> parameters, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
     {
-        try
+        using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
+        var openConnection = conn.OpenAsync(cancellationToken);
+        var cmd = conn.CreateCommand(query);
+
+        foreach (var parameter in parameters)
         {
-            using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
-            var cmd = conn.CreateCommand();
-            cmd.CommandText = query;
-            conn.Open();
-            return await cmd.ExecuteNonQueryAsync(cancellationToken: cancellationToken);
+            cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
         }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to execute command. Query: {Query}", query);
-            throw;
-        }
+
+        await openConnection;
+        return await cmd.ExecuteNonQueryAsync(cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Executes a non-query command (INSERT, UPDATE, DELETE) and returns the number of affected rows.
+    /// </summary>
+    public async Task<int> ExecuteCommand(string query, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    {
+        using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
+        var openConnection = conn.OpenAsync(cancellationToken);
+        var cmd = conn.CreateCommand(query);
+
+        await openConnection;
+        return await cmd.ExecuteNonQueryAsync(cancellationToken: cancellationToken);
     }
 
     /// <summary>
     /// Executes a query and maps the result to objects of type T.
     /// </summary>
-    public async Task<QueryResponse<T>> ExecuteQuery<T>(string query, List<GenericParameter> parameters, CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> ExecuteQuery<T>(string query, List<GenericParameter> parameters, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
         where T : new()
     {
         using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
-        var cmd = conn.CreateCommand();
-        cmd.CommandText = query;
+        var openConnection = conn.OpenAsync(cancellationToken);
+        var cmd = conn.CreateCommand(query);
 
-        try
+        foreach (var parameter in parameters)
         {
-            conn.Open();
-            foreach (var parameter in parameters)
+            if (parameter.Value is null)
             {
-                if (parameter.Value is null)
-                {
-                    cmd.Parameters.Add(new NpgsqlParameter(parameter.Key, DBNull.Value));
-                }
-                else
-                {
-                    cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
-                }
+                cmd.Parameters.Add(new NpgsqlParameter(parameter.Key, DBNull.Value));
             }
+            else
+            {
+                cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
+            }
+        }
 
-            return _dbConverter.ConvertToResult<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to execute query. Query: {Query}, Parameters: {Parameters}", query, FormatParameters(parameters));
-            throw;
-        }
+        await openConnection;
+        using var reader = await cmd.ExecuteReaderWithSpanNameAsync(CommandBehavior.SingleResult, callerName, cancellationToken);
+        return _dbConverter.ConvertToResult<T>(reader);
     }
 
     /// <summary>
     /// Executes a query and maps the result to objects of type T.
     /// </summary>
-    public async Task<QueryResponse<T>> ExecuteQuery<T>(string query, CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> ExecuteQuery<T>(string query, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
         where T : new()
     {
         using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);
-        var cmd = conn.CreateCommand();
-        cmd.CommandText = query;
+        var openConnection = conn.OpenAsync(cancellationToken);
+        var cmd = conn.CreateCommand(query);
 
-        try
-        {
-            conn.Open();
-            return _dbConverter.ConvertToResult<T>(await cmd.ExecuteReaderAsync(CommandBehavior.SingleResult, cancellationToken));
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to execute query. Query: {Query}", query);
-            throw;
-        }
+        await openConnection;
+        using var reader = await cmd.ExecuteReaderWithSpanNameAsync(CommandBehavior.SingleResult, callerName, cancellationToken);
+        return _dbConverter.ConvertToResult<T>(reader);
     }
 
     /// <summary>
