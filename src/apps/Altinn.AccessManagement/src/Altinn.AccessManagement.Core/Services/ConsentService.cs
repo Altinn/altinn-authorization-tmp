@@ -290,7 +290,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             ValidationErrorBuilder errors = default;
-            ValidateContext(details, context, errors);
+            ValidateContext(details, context, ref errors);
 
             if (errors.TryBuild(out var beforeErrorREsult))
             {
@@ -597,7 +597,7 @@ namespace Altinn.AccessManagement.Core.Services
             return consentRequest;
         }
 
-        private void ValidateContext(ConsentRequestDetails consentRequest, ConsentContext context, ValidationErrorBuilder errors)
+        private void ValidateContext(ConsentRequestDetails consentRequest, ConsentContext context, ref ValidationErrorBuilder errors)
         {
             if (context == null)
             {
