@@ -1,4 +1,4 @@
--- Enum: delegation.instanceType
+-- Table: consent.resourceattribute
 
 CREATE TABLE IF NOT EXISTS consent.resourceattribute
 (
