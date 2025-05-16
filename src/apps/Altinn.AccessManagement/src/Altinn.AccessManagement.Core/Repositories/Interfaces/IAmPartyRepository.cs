@@ -1,4 +1,6 @@
-﻿using Altinn.Authorization.Core.Models.Party;
+﻿using Altinn.AccessManagement.Core.Models.Register;
+using Altinn.Authorization.Core.Models.Party;
+using Altinn.Authorization.Core.Models.Register;
 
 namespace Altinn.AccessManagement.Core.Repositories.Interfaces
 {
@@ -20,11 +22,11 @@ namespace Altinn.AccessManagement.Core.Repositories.Interfaces
         /// <summary>
         /// Get Party by org number
         /// </summary>
-        public Task<MinimalParty> GetByOrgNo(string orgNo, CancellationToken cancellationToken = default);
+        public Task<MinimalParty> GetByOrgNo(Authorization.Core.Models.Register.OrganizationNumber orgNo, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get Party by person number
         /// </summary>
-        public Task<MinimalParty> GetByPersonNo(string personNo, CancellationToken cancellationToken = default);
+        public Task<MinimalParty> GetByPersonNo(PersonIdentifier personNo, CancellationToken cancellationToken = default);
     }
 }

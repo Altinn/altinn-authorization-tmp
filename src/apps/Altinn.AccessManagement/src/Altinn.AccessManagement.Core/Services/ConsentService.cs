@@ -433,7 +433,7 @@ namespace Altinn.AccessManagement.Core.Services
 
         private async Task<ConsentPartyUrn> GetInternalIdentifier(Authorization.Core.Models.Register.OrganizationNumber organizationNumber, CancellationToken cancellationToken)
         {
-            MinimalParty party = await _ampartyService.GetByOrgNo(organizationNumber.ToString(), cancellationToken);
+            MinimalParty party = await _ampartyService.GetByOrgNo(organizationNumber, cancellationToken);
             if (party == null)
             {
                 return null;
@@ -444,7 +444,7 @@ namespace Altinn.AccessManagement.Core.Services
 
         private async Task<ConsentPartyUrn> GetInternalIdentifier(PersonIdentifier personIdentifier, CancellationToken cancellationToken)
         {
-            MinimalParty party = await _ampartyService.GetByPersonNo(personIdentifier.ToString(), cancellationToken);
+            MinimalParty party = await _ampartyService.GetByPersonNo(personIdentifier, cancellationToken);
             if (party == null)
             {
                 return null;

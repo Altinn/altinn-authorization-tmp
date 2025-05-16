@@ -1,8 +1,10 @@
-﻿using Altinn.AccessManagement.Core.Repositories.Interfaces;
+﻿using Altinn.AccessManagement.Core.Models.Register;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.Core.Models.Party;
+using Altinn.Authorization.Core.Models.Register;
 
 namespace Altinn.AccessMgmt.Persistence.Services
 {
@@ -14,11 +16,11 @@ namespace Altinn.AccessMgmt.Persistence.Services
         private readonly IEntityLookupRepository entityLookupRepository = entityLookupRepository;
 
         /// <inheritdoc />
-        public async Task<MinimalParty> GetByOrgNo(string orgNo, CancellationToken cancellationToken = default)
+        public async Task<MinimalParty> GetByOrgNo(Authorization.Core.Models.Register.OrganizationNumber orgNo, CancellationToken cancellationToken = default)
         {
             GenericFilterBuilder<AccessMgmt.Core.Models.EntityLookup> filter = entityLookupRepository.CreateFilterBuilder();
             filter.Add(t => t.Key, "OrganizationIdentifier", Core.Helpers.FilterComparer.Contains);
-            filter.Equal(t => t.Value, orgNo);
+            filter.Equal(t => t.Value, orgNo.ToString());
 
             IEnumerable<AccessMgmt.Core.Models.ExtEntityLookup> res = await entityLookupRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
@@ -49,11 +51,11 @@ namespace Altinn.AccessMgmt.Persistence.Services
         }
 
         /// <inheritdoc />
-        public async Task<MinimalParty> GetByPersonNo(string personNo, CancellationToken cancellationToken = default)
+        public async Task<MinimalParty> GetByPersonNo(PersonIdentifier personNo, CancellationToken cancellationToken = default)
         {
             GenericFilterBuilder<AccessMgmt.Core.Models.EntityLookup> filter = entityLookupRepository.CreateFilterBuilder();
             filter.Add(t => t.Key, "PersonIdentifier", Core.Helpers.FilterComparer.Contains);
-            filter.Equal(t => t.Value, personNo);
+            filter.Equal(t => t.Value, personNo.ToString());
 
             IEnumerable<AccessMgmt.Core.Models.ExtEntityLookup> res = await entityLookupRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
