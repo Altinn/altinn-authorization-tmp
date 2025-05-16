@@ -43,7 +43,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
             Result<ConsentRequestDetails> consentRequest = await _consentService.GetRequest(requestId, performedByParty, cancellationToken);
             if (consentRequest.IsProblem)
             {
-                return Unauthorized();
+                return consentRequest.Problem.ToActionResult();
             }
 
             return Ok(consentRequest.Value);
@@ -69,7 +69,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
             Result<Consent> consent = await consentService.GetConsent(requestId, cancellationToken);
             if (consent.IsProblem)
             {
-                return Unauthorized();
+                consent.Problem.ToActionResult();
             }
 
             return Ok(consent.Value);
