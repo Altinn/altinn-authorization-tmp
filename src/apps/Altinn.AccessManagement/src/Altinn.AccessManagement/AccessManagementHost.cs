@@ -87,8 +87,11 @@ internal static partial class AccessManagementHost
             opt.Telemetry.EnableTraces = true;
         });
 
-        builder.Services.AddOpenTelemetry()
-            .UseAzureMonitor();
+        if (!builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddOpenTelemetry()
+                .UseAzureMonitor();
+        }
 
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
