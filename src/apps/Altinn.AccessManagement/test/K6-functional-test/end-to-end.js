@@ -104,29 +104,16 @@ function addRoleBackToEr(targetOrg) {
 }
 
 export function handleSummary(data) {
-  const slackMessage = {
-    text: "K6 Test Report for Revisor Role Removal",
-    stats: textSummary(data, { indent: "  ", enableColors: true }),
-  };
-
-  altinnK6Lib.postSlackMessage(slackMessage);
-
-  return {
-    stdout: textSummary(data, { indent: "  " }),
-  };
+  // const slackMessage = {
+  //   text: "K6 Test Report for Revisor Role Removal",
+  //   stats: textSummary(data, { indent: "  ", enableColors: true }),
+  // };
+  altinnK6Lib.postSlackMessage(data);
 }
 
 ///Uncommented this to test slack integaration via function defined below
-function test() {
+export default function test() {
   testRemovalOfRevisorRoleForClient();
 
-  altinnK6Lib.postSlackMessage(data);
-}
-
-export default function () {
-  check(1 == 1, "Verify Altinn is the best organization");
-
-  var data = "Verify Altinn is the best";
-
-  altinnK6Lib.postSlackMessage(data);
+  handleSummary("Her er rapporten din for k6 (smoketest)");
 }
