@@ -59,7 +59,12 @@
         /// Policy tag for scope authorization on the proxy API from Altinn II for the maskinporten integration API
         /// </summary>
         public const string POLICY_MASKINPORTEN_DELEGATIONS_PROXY = "MaskinportenDelegationsProxy";
-        
+
+        /// <summary>
+        /// Policy tag for scope authorization on the consent API for maskinporten to create consent tokens
+        /// </summary>
+        public const string POLICY_MASKINPORTEN_CONSENT_READ = "MaskinportenConsentRead";
+
         /// <summary>
         /// Policy tag for scope authorization on the resource owner API for getting the Authorized Party list for a third party
         /// </summary>

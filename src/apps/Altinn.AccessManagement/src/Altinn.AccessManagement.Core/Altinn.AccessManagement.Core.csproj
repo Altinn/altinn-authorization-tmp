@@ -16,11 +16,15 @@
         <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
         <PackageReference Include="Microsoft.Extensions.Telemetry.Abstractions" />
-        <PackageReference Include="Npgsql"/>
+        <PackageReference Include="Npgsql" />
     </ItemGroup>
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Core.Models\src\Altinn.Authorization.Core.Models\Altinn.Authorization.Core.Models.csproj" />
     </ItemGroup>
 
     <ItemGroup>
