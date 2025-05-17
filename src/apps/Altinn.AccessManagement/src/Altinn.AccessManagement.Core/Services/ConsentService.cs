@@ -149,7 +149,7 @@ namespace Altinn.AccessManagement.Core.Services
             // TODO Authorize user for consent request
             if (consentRequest == null)
             {
-                errors.Add(ValidationErrors.ConsentNotFound, "From");
+                errors.Add(ValidationErrors.ConsentNotFound, "/from");
 
                 if (errors.TryBuild(out var errorResultStart))
                 {
