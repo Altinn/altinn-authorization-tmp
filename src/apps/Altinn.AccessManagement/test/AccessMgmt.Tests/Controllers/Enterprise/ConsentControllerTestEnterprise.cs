@@ -647,7 +647,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
             Assert.Single(problemDetails.Errors);
-            Assert.Equal(ValidationErrors.MissingAction.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+            Assert.Equal(ValidationErrors.Required.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
         }
 
         /// <summary>

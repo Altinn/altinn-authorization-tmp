@@ -120,7 +120,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
             else
             {
-                errors = ValidateGetConsentRequest(from, to, errors, consentRequest);
+                errors = ValidateGetConsentRequest(from, to, ref errors, consentRequest);
 
                 if (errors.TryBuild(out var errorResult))
                 {
@@ -175,7 +175,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
-        private MultipleProblemBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, MultipleProblemBuilder problemsBUilders, ConsentRequestDetails consentRequest)
+        private MultipleProblemBuilder ValidateGetConsentRequest(ConsentPartyUrn from, ConsentPartyUrn to, ref MultipleProblemBuilder problemsBUilders, ConsentRequestDetails consentRequest)
         {
             if (!to.Equals(consentRequest.To))
             {
@@ -559,7 +559,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (consentRequest.ConsentRights == null || consentRequest.ConsentRights.Count == 0)
             {
-                validationErrorsBuilder.Add(ValidationErrors.MissingConsentRight, ResourceParam);
+                validationErrorsBuilder.Add(ValidationErrors.EmptyList, ResourceParam);
             }
             else
             {
@@ -617,7 +617,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (consentRight.Action == null || consentRight.Action.Count == 0)
             {
-                validationErrors.Add(ValidationErrors.MissingAction, $"/consentRight/{rightIndex}/action");
+                validationErrors.Add(ValidationErrors.Required, $"/consentRight/{rightIndex}/action");
             }
 
             if (consentRight.Resource == null || consentRight.Resource.Count == 0 || consentRight.Resource.Count > 1)

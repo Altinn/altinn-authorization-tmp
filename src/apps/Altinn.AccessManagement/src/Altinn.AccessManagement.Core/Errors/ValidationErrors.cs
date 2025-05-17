@@ -74,24 +74,18 @@ public static class ValidationErrors
     /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
-    public static ValidationErrorDescriptor MissingConsentRight { get; }
-        = _factory.Create(23, $"The consentrequest needs to include at least 1 right");
-
-    /// <summary>
-    /// Gets a validation error descriptor
-    /// </summary>
-    public static ValidationErrorDescriptor MissingAction { get; }
-        = _factory.Create(24, $"Missing required actions for consent request");
+    public static ValidationErrorDescriptor EmptyList { get; }
+        = _factory.Create(23, $"The list cant be empty");
 
     /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
     public static ValidationErrorDescriptor ConsentNotFound { get; }
-    = _factory.Create(26, $"Incorrect consentId or wrong consent receiver");
+    = _factory.Create(24, $"Incorrect consentId or wrong consent receiver");
    
     /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
     public static ValidationErrorDescriptor InvalidResourceContext { get; }
-    = _factory.Create(31, $"Resource context does not match consent request rights");
+    = _factory.Create(25, $"Resource context does not match consent request rights");
 }
