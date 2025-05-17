@@ -14,6 +14,7 @@ using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Profile.Models;
 using Altinn.Platform.Register.Models;
 using Microsoft.Extensions.Caching.Memory;
+using System.Diagnostics;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -156,7 +157,7 @@ namespace Altinn.AccessManagement.Core.Services
                 }
 
                 // Should not be possible to get here
-                throw new ArgumentException($"Consent request with id {consentRequestId} not found");
+                throw new UnreachableException($"Consent request with id {consentRequestId} not found");
             }
             else
             {
