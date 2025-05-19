@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 
@@ -21,11 +22,15 @@ public interface IDbExtendedRepository<T, TExtended> : IDbBasicRepository<T>
     /// <param name="options">
     /// Optional request options, such as language, paging, or as-of date. If null, default options are applied.
     /// </param>
+    /// <param name="callerName">
+    /// The name of the calling method, automatically provided by the compiler. 
+    /// Used to set the span name for OpenTelemetry tracing to aid in observability and diagnostics.
+    /// </param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the extended entity if found; otherwise, null.
     /// </returns>
-    Task<TExtended> GetExtended(Guid id, RequestOptions options = null, CancellationToken cancellationToken = default);
+    Task<TExtended> GetExtended(Guid id, RequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a collection of extended entities.
@@ -33,11 +38,15 @@ public interface IDbExtendedRepository<T, TExtended> : IDbBasicRepository<T>
     /// <param name="options">
     /// Optional request options, such as language, paging, or as-of date. If null, default options are applied.
     /// </param>
+    /// <param name="callerName">
+    /// The name of the calling method, automatically provided by the compiler. 
+    /// Used to set the span name for OpenTelemetry tracing to aid in observability and diagnostics.
+    /// </param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains a collection of extended entities.
     /// </returns>
-    Task<QueryResponse<TExtended>> GetExtended(RequestOptions options = null, CancellationToken cancellationToken = default);
+    Task<QueryResponse<TExtended>> GetExtended(RequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a collection of extended entities based on property and value
@@ -45,9 +54,13 @@ public interface IDbExtendedRepository<T, TExtended> : IDbBasicRepository<T>
     /// <param name="property">Filter property</param>
     /// <param name="value">Filter value</param>
     /// <param name="options">RequestOptions</param>
+    /// <param name="callerName">
+    /// The name of the calling method, automatically provided by the compiler. 
+    /// Used to set the span name for OpenTelemetry tracing to aid in observability and diagnostics.
+    /// </param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns>T<see cref="Task{TResult}"/> representing the result of the asynchronous operation.</returns>
-    Task<QueryResponse<TExtended>> GetExtended<TProperty>(Expression<Func<TExtended, TProperty>> property, TProperty value, RequestOptions options = null, CancellationToken cancellationToken = default);
+    Task<QueryResponse<TExtended>> GetExtended<TProperty>(Expression<Func<TExtended, TProperty>> property, TProperty value, RequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a collection of extended entities that match the criteria specified by a <see cref="GenericFilterBuilder{TExtended}"/>.
@@ -58,11 +71,15 @@ public interface IDbExtendedRepository<T, TExtended> : IDbBasicRepository<T>
     /// <param name="options">
     /// Optional request options, such as language, paging, or as-of date. If null, default options are applied.
     /// </param>
+    /// <param name="callerName">
+    /// The name of the calling method, automatically provided by the compiler. 
+    /// Used to set the span name for OpenTelemetry tracing to aid in observability and diagnostics.
+    /// </param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains a collection of extended entities that match the specified criteria.
     /// </returns>
-    Task<QueryResponse<TExtended>> GetExtended(GenericFilterBuilder<TExtended> filter, RequestOptions options = null, CancellationToken cancellationToken = default);
+    Task<QueryResponse<TExtended>> GetExtended(GenericFilterBuilder<TExtended> filter, RequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a collection of extended entities that match the provided filter criteria.
@@ -71,9 +88,13 @@ public interface IDbExtendedRepository<T, TExtended> : IDbBasicRepository<T>
     /// <param name="options">
     /// Optional request options, such as language, paging, or as-of date. If null, default options are applied.
     /// </param>
+    /// <param name="callerName">
+    /// The name of the calling method, automatically provided by the compiler. 
+    /// Used to set the span name for OpenTelemetry tracing to aid in observability and diagnostics.
+    /// </param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains a collection of extended entities that satisfy the provided filters.
     /// </returns>
-    Task<QueryResponse<TExtended>> GetExtended(IEnumerable<GenericFilter> filters, RequestOptions options = null, CancellationToken cancellationToken = default);
+    Task<QueryResponse<TExtended>> GetExtended(IEnumerable<GenericFilter> filters, RequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default);
 }

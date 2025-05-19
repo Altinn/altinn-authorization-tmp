@@ -194,13 +194,17 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
 
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);
-
-        if (packageId.HasValue)
+        async Task<ValidationProblemInstance> RemovePackage()
         {
-            problem = await ConnectionService.RemovePackage(fromUuid, toUuid, "rettighetshaver", packageId.Value, cancellationToken);
+            if (packageId.HasValue)
+            {
+                return await ConnectionService.RemovePackage(fromUuid, toUuid, "rettighetshaver", packageId.Value, cancellationToken);
+            }
+
+            return await ConnectionService.RemovePackage(fromUuid, toUuid, "rettighetshaver", package, cancellationToken);
         }
 
-        problem = await ConnectionService.RemovePackage(fromUuid, toUuid, "rettighetshaver", package, cancellationToken);
+        problem = await RemovePackage();
 
         if (problem is { })
         {
