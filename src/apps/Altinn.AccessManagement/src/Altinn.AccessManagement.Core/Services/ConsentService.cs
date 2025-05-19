@@ -224,7 +224,7 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 if (details.To.IsOrganizationId(out Authorization.Core.Models.Register.OrganizationNumber toOrganizationNumber))
                 {
-                    if (!toOrganizationNumber.ToString().Equals(organizationNumber.ToString()))
+                    if (!toOrganizationNumber.Equals(organizationNumber))
                     {
                         return Problems.NotAuthorizedForConsentRequest;
                     }

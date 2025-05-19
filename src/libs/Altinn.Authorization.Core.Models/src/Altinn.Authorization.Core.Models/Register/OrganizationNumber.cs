@@ -14,7 +14,8 @@ namespace Altinn.Authorization.Core.Models.Register;
 [JsonConverter(typeof(JsonConverter))]
 public class OrganizationNumber : ISpanParsable<OrganizationNumber>,
     ISpanFormattable,
-    IExampleDataProvider<OrganizationNumber>
+    IExampleDataProvider<OrganizationNumber>,
+    IEquatable<OrganizationNumber>
 {
     private static readonly SearchValues<char> NUMBERS = SearchValues.Create(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
 
@@ -85,6 +86,9 @@ public class OrganizationNumber : ISpanParsable<OrganizationNumber>,
         result = new OrganizationNumber(original ?? new string(s));
         return true;
     }
+
+    public bool Equals(OrganizationNumber? other)
+        => ReferenceEquals(this, other) || other is not null && _value == other._value;
 
     /// <inheritdoc/>
     public override string ToString()
