@@ -450,8 +450,8 @@ namespace Altinn.AccessManagement.Core.Services
         /// </summary>
         private async Task<bool> AuthorizeUserForConsentRequest(Guid userUuid, ConsentRequestDetails consentRequest, CancellationToken cancellationToken)
         {
-            Guid fromParty = consentRequest.From.IsPartyUuid(out Guid from) ? from : Guid.Empty;
-            List<Party> parties = await _partiesClient.GetPartiesAsync(new List<Guid> { fromParty }, cancellationToken: cancellationToken);
+            Guid fromParty = ((ConsentPartyUrn.PartyUuid)consentRequest.From).Value;
+            List<Party> parties = await _partiesClient.GetPartiesAsync([fromParty], cancellationToken: cancellationToken);
             Party party = parties[0];
 
             UserProfile profile = await _profileClient.GetUser(new Models.Profile.UserProfileLookup() { UserUuid = userUuid }, cancellationToken);
