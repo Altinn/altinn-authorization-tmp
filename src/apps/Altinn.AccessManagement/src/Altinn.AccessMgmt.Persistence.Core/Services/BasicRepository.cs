@@ -47,14 +47,14 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     #region Read
 
     /// <inheritdoc/>
-    public async Task<T> Get(Guid id, RequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<T> Get(Guid id, RequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         var res = await Get(new List<GenericFilter>() { new GenericFilter("id", id) }, options, callerName: callerName, cancellationToken: cancellationToken);
         return res.Data.FirstOrDefault();
     }
 
     /// <inheritdoc/>
-    public async Task<QueryResponse<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> Get<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, RequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         string propertyName = ExtractPropertyInfo(property).Name;
         var filters = new List<GenericFilter>
@@ -65,19 +65,19 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<QueryResponse<T>> Get(RequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> Get(RequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         return await Get(filters: new List<GenericFilter>(), options: options, callerName: callerName, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<QueryResponse<T>> Get(GenericFilterBuilder<T> filterBuilder, RequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> Get(GenericFilterBuilder<T> filterBuilder, RequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         return await Get(filters: filterBuilder, options: options, callerName: callerName, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<QueryResponse<T>> Get(IEnumerable<GenericFilter> filters, RequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<QueryResponse<T>> Get(IEnumerable<GenericFilter> filters, RequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         options ??= new RequestOptions();
         filters ??= new List<GenericFilter>();
@@ -212,7 +212,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Create(T entity, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> Create(T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {
@@ -227,7 +227,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Upsert(T entity, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> Upsert(T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {
@@ -242,7 +242,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> Upsert(T entity, List<GenericFilter> mergeFilter, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {
@@ -257,7 +257,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update(Guid id, T entity, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> Update(Guid id, T entity, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {
@@ -269,7 +269,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, TProperty value, Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {
@@ -287,7 +287,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> Update<TProperty>(Expression<Func<T, TProperty>> property, Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {
@@ -300,7 +300,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Update(Guid id, List<GenericParameter> parameters, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> Update(Guid id, List<GenericParameter> parameters, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {
@@ -314,7 +314,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Delete(Guid id, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> Delete(Guid id, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {
@@ -325,7 +325,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> Delete(IEnumerable<GenericFilter> filters, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> Delete(IEnumerable<GenericFilter> filters, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {
@@ -340,7 +340,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> CreateTranslation(T obj, string language, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> CreateTranslation(T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {
@@ -361,7 +361,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> UpdateTranslation(Guid id, T obj, string language, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> UpdateTranslation(Guid id, T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {
@@ -384,7 +384,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     }
 
     /// <inheritdoc/>
-    public async Task<int> UpsertTranslation(Guid id, T obj, string language, ChangeRequestOptions options = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
+    public async Task<int> UpsertTranslation(Guid id, T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
     {
         if (Definition.DefinitionType != DbDefinitionType.Table)
         {

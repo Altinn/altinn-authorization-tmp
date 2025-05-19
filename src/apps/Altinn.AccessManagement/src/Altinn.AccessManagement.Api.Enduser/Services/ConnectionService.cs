@@ -417,7 +417,7 @@ public class ConnectionService(
     private void Unreachable() =>
         throw new UnreachableException();
 
-    private string SpanName(string spanName) =>
+    private static string SpanName(string spanName) =>
         $"{nameof(ConnectionService)}: {spanName}";
 }
 
