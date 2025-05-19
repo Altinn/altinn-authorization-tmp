@@ -49,5 +49,10 @@
         /// Defines when the consent was revoked.
         /// </summary>
         public required List<ConsentRequestEvent> ConsentRequestEvents { get; set; }
+
+        /// <summary>
+        /// Redirect url for the user to be redirected after consent is given or denied.
+        /// </summary>
+        public required string RedirectUrl { get; set; } = string.Empty;
     }
 }

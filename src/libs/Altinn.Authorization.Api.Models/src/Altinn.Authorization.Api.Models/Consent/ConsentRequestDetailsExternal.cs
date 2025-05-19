@@ -44,6 +44,11 @@ namespace Altinn.Authorization.Api.Models.Consent
         public DateTimeOffset? Consented { get; set; }
 
         /// <summary>
+        /// Redirect url for the user to be redirected after consent is given or denied.
+        /// </summary>
+        public required string RedirectUrl { get; set; } = string.Empty;
+
+        /// <summary>
         /// List all events related to consent request
         /// </summary>
         public required List<ConsentRequestEventExternal> ConsentRequestEvents { get; set; }
@@ -67,7 +72,8 @@ namespace Altinn.Authorization.Api.Models.Consent
                 Consented = core.Consented,
                 ValidTo = core.ValidTo,
                 ConsentRights = core.ConsentRights.Select(ConsentRightExternal.FromCore).ToList(),
-                ConsentRequestEvents = core.ConsentRequestEvents.Select(ConsentRequestEventExternal.FromCore).ToList()
+                ConsentRequestEvents = core.ConsentRequestEvents.Select(ConsentRequestEventExternal.FromCore).ToList(),
+                RedirectUrl = core.RedirectUrl,
             };
         }
     }

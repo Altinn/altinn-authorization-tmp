@@ -81,7 +81,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Requestmessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
-                }
+                },
+                RedirectUrl = "https://www.dnb.no"   
             };
 
             HttpClient client = GetTestClient();
@@ -137,7 +138,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Requestmessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
-                }
+                },
+                RedirectUrl = "https://www.dnb.no"
             };
 
             HttpClient client = GetTestClient();
@@ -211,7 +213,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Requestmessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
-                }
+                },
+                RedirectUrl = "https://www.dnb.no"
             };
 
             HttpClient client = GetTestClient();
@@ -288,7 +291,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Requestmessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
-                }
+                },
+                RedirectUrl = "https://www.dnb.no"
             };
 
             HttpClient client = GetTestClient();
@@ -368,7 +372,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Requestmessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
-                }
+                },
+                RedirectUrl = "https://www.dnb.no"
             };
 
             HttpClient client = GetTestClient();
@@ -417,7 +422,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Requestmessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
-                }
+                },
+                RedirectUrl = "https://www.dnb.no"
             };
 
             HttpClient client = GetTestClient();
@@ -486,7 +492,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Requestmessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
-                }
+                },
+                RedirectUrl = "https://www.dnb.no"
             };
 
             HttpClient client = GetTestClient();
@@ -541,7 +548,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Requestmessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
-                }
+                },
+                RedirectUrl = "https://www.dnb.no"
             };
 
             HttpClient client = GetTestClient();
@@ -580,7 +588,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Requestmessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
-                }
+                },
+                RedirectUrl = "https://www.dnb.no"
             };
 
             HttpClient client = GetTestClient();
@@ -630,7 +639,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Requestmessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
-                }
+                },
+                RedirectUrl = "https://www.dnb.no"
             };
 
             HttpClient client = GetTestClient();
@@ -684,7 +694,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 Requestmessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
-                }
+                },
+                RedirectUrl = "https://www.dnb.no"  
             };
 
             HttpClient client = GetTestClient();

@@ -68,6 +68,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             Assert.True(consentRequest.ConsentRights.Count > 0);
             Assert.Equal("01025161013", consentRequest.From.ValueSpan);
             Assert.Equal("810419512", consentRequest.To.ValueSpan);  // TODO FIx
+            Assert.Equal("https:///www.urlfromsavedreqest.com", consentRequest.RedirectUrl);  // TODO FI
             Assert.Equal("urn:altinn:resource", consentRequest.ConsentRights[0].Resource[0].Type);
         }
 

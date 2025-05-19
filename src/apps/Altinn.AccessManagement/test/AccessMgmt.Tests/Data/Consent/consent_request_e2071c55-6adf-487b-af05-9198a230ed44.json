@@ -39,5 +39,6 @@
       }
     }
   ],
-  "portalViewMode": "Hide"
+  "portalViewMode": "Hide",
+  "redirectUrl":  "https:///www.urlfromsavedreqest.com"
 }

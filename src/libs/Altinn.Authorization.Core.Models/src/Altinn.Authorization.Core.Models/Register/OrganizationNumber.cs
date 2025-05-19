@@ -2,6 +2,7 @@
 
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Altinn.Swashbuckle.Examples;
@@ -15,7 +16,8 @@ namespace Altinn.Authorization.Core.Models.Register;
 public class OrganizationNumber : ISpanParsable<OrganizationNumber>,
     ISpanFormattable,
     IExampleDataProvider<OrganizationNumber>,
-    IEquatable<OrganizationNumber>
+    IEquatable<OrganizationNumber>,
+    IEqualityOperators<OrganizationNumber, OrganizationNumber, bool>
 {
     private static readonly SearchValues<char> NUMBERS = SearchValues.Create(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
 
@@ -115,6 +117,12 @@ public class OrganizationNumber : ISpanParsable<OrganizationNumber>,
         charsWritten = _value.Length;
         return true;
     }
+
+    public static bool operator ==(OrganizationNumber? left, OrganizationNumber? right)
+        => ReferenceEquals(left, right) || (left?.Equals(right) ?? right is null);
+
+    public static bool operator !=(OrganizationNumber? left, OrganizationNumber? right)
+        => !(left == right);
 
     private sealed class JsonConverter : JsonConverter<OrganizationNumber>
     {

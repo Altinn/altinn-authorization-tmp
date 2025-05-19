@@ -125,14 +125,15 @@ namespace Altinn.AccessManagement.Persistence.Consent
             DateTimeOffset createdTime = DateTime.UtcNow;
 
             const string consentRquestQuery = /*strpsql*/@"
-                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, toPartyUuid, validTo, requestMessage, templateId)
+                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, toPartyUuid, validTo, requestMessage, templateId, redirectUrl)
                 VALUES (
                 @consentRequestId, 
                 @fromPartyUuid, 
                 @toPartyUuid, 
                 @validTo, 
                 @requestMessage,
-                @templateId)
+                @templateId, 
+                @redirectUrl)
                 RETURNING consentRequestId;
                 ";
 
@@ -163,6 +164,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             }
 
             command.Parameters.AddWithValue("requestMessage", NpgsqlDbType.Hstore, consentRequest.Requestmessage);
+            command.Parameters.AddWithValue("redirectUrl", NpgsqlDbType.Text, consentRequest.RedirectUrl);
 
             command.Parameters.AddWithValue("validTo", NpgsqlDbType.TimestampTz, consentRequest.ValidTo.ToOffset(TimeSpan.Zero));
             await command.ExecuteNonQueryAsync(cancellationToken);
@@ -295,6 +297,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     Requestmessage = await reader.GetFieldValueAsync<Dictionary<string, string>>("requestMessage", cancellationToken: cancellationToken),
                     ConsentRequestStatus = await reader.GetFieldValueAsync<ConsentRequestStatusType>("status", cancellationToken: cancellationToken),
                     Consented = await reader.GetFieldValueAsync<DateTimeOffset?>("consented", cancellationToken: cancellationToken),
+                    RedirectUrl = await reader.GetFieldValueAsync<string>("redirectUrl", cancellationToken: cancellationToken),
                     ConsentRequestEvents = consentRequestEvents
                 };
             }
