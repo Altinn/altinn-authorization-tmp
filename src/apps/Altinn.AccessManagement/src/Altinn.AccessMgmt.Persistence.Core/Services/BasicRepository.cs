@@ -223,7 +223,7 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
         var queryBuilder = definitionRegistry.GetQueryBuilder<T>();
         string query = queryBuilder.BuildInsertQuery(param, options: options);
 
-        return await executor.ExecuteCommand(query, param, cancellationToken: cancellationToken);
+        return await executor.ExecuteCommand(query, param, callerName: callerName, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>

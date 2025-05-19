@@ -302,7 +302,7 @@ public class ConnectionService(
             Unreachable();
         }
 
-        var createCheckResult = await AssignmentPackageRepository.Get(assignmentPackageFilter, callerName: SpanName("get assignment packages"), cancellationToken: cancellationToken);
+        var createCheckResult = await AssignmentPackageRepository.Get(assignmentPackageFilter, callerName: SpanName("Get assignment packages"), cancellationToken: cancellationToken);
         if (createCheckResult == null || !createCheckResult.Any())
         {
             Unreachable();

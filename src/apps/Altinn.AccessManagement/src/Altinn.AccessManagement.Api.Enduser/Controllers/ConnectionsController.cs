@@ -19,7 +19,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 /// Controller for en user api operations for connections
 /// </summary>
 [ApiController]
-[Route("accessmanagement/api/v1/enduser/[controller]")]
+[Route("accessmanagement/api/v1/enduser/connections")]
 [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class ConnectionsController(IEnduserConnectionService connectionService) : ControllerBase
