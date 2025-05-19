@@ -26,11 +26,11 @@ namespace Altinn.Authorization.Core.Models.Consent
         /// </summary>
         public MetadataDictionary? MetaData { get; set; }
 
-        public void SetMetadataValues(Dictionary<string, string> dictionary)
+        public void AddMetadataValues(IReadOnlyDictionary<string, string> dictionary)
         {
             if (dictionary != null)
             {
-                MetaData = new MetadataDictionary();
+                MetaData = [];
                 foreach (var item in dictionary)
                 {
                     MetaData.Add(item.Key, item.Value);

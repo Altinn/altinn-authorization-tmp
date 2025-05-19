@@ -419,7 +419,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     Resource = resourceAttributes
                 };
 
-                consentRight.SetMetadataValues(metadata);
+                consentRight.AddMetadataValues(metadata);
 
                 consentRights.Add(consentRight);
             }
