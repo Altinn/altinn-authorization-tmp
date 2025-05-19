@@ -1,8 +1,8 @@
--- Table: consent.consentevent
+-- Table: consent.resourcecontext
 
 CREATE TABLE IF NOT EXISTS consent.resourcecontext
 (
-  Id uuid NOT NULL,
+  id uuid PRIMARY KEY NOT NULL,
   contextId uuid NOT NULL,
   resourceId text NOT NULL,
   language text NOT NULL,
