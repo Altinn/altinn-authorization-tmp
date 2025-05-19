@@ -281,6 +281,7 @@ public interface IDbBasicRepository<T>
     /// The name of the calling method, automatically provided by the compiler. 
     /// Used to set the span name for OpenTelemetry tracing to aid in observability and diagnostics.
     /// </param>
+    /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the number of rows affected.
     /// </returns>
     Task<int> UpsertTranslation(Guid id, T obj, string language, ChangeRequestOptions options = null, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "");
