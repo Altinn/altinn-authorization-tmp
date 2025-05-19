@@ -114,7 +114,7 @@ public class ConnectionService(
             RoleId = roleId,
         };
 
-        var result = await AssignmentRepository.Create(assignment, DbAudit.Value, cancellationToken);
+        var result = await AssignmentRepository.Create(assignment, DbAudit.Value, cancellationToken: cancellationToken);
         if (result == 0)
         {
             Unreachable();
