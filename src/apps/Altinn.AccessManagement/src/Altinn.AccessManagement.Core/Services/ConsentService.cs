@@ -52,6 +52,22 @@ namespace Altinn.AccessManagement.Core.Services
             performedByParty = await MapFromExternalIdenity(performedByParty, cancellationToken);
 
             ConsentRequestDetails requestDetails = await _consentRepository.CreateRequest(result.Value, performedByParty, cancellationToken);
+            if (requestDetails == null)
+            {
+                // Need to verify if it is null because of duplicate
+                ConsentRequestDetails consentRequestDetails = await _consentRepository.GetRequest(consentRequest.Id, cancellationToken);
+                if (consentRequestDetails != null 
+                    && consentRequest.Id == consentRequestDetails.Id 
+                    && consentRequest.From == consentRequestDetails.From
+                    && consentRequest.To == consentRequestDetails.To)
+                {
+                    // We dont validate resource or other parameters when creating a consent request and it exist for the same parties  
+                    return consentRequestDetails;
+                }
+
+                return Problems.ConsentWithIdAlreadyExist.Create([new("requestId", consentRequest.Id.ToString())]);
+            }
+            
             requestDetails.From = consentRequest.From;
             requestDetails.To = consentRequest.To;
             foreach (ConsentRequestEvent consentRequestEvent in requestDetails.ConsentRequestEvents)

@@ -167,7 +167,19 @@ namespace Altinn.AccessManagement.Persistence.Consent
             command.Parameters.AddWithValue("redirectUrl", NpgsqlDbType.Text, consentRequest.RedirectUrl);
 
             command.Parameters.AddWithValue("validTo", NpgsqlDbType.TimestampTz, consentRequest.ValidTo.ToOffset(TimeSpan.Zero));
-            await command.ExecuteNonQueryAsync(cancellationToken);
+
+            try
+            {
+                await command.ExecuteNonQueryAsync(cancellationToken);
+            }
+            catch (NpgsqlException ex)
+            {
+                if (ex.SqlState == "23505")
+                {
+                    return null; // Duplicate key violation
+                }
+                throw;
+            }
 
             foreach (ConsentRight consentRight in consentRequest.ConsentRights)
             {

@@ -110,6 +110,158 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
         }
 
+        /// <summary>
+        /// Test get consent. Expect a consent in response
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task CreateConsentRequestDuplicatePost_Valid()
+        {
+            Guid requestID = Guid.CreateVersion7();
+            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            {
+                Id = requestID,
+                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                ValidTo = DateTimeOffset.UtcNow.AddDays(1),
+                ConsentRights = new List<ConsentRightExternal>
+                {
+                    new ConsentRightExternal
+                    {
+                        Action = new List<string> { "read" },
+                        Resource = new List<ConsentResourceAttributeExternal>
+                        {
+                            new ConsentResourceAttributeExternal
+                            {
+                                Type = "urn:altinn:resource",
+                                Value = "ttd_inntektsopplysninger"
+                            }
+                        },
+                        MetaData = new Dictionary<string, string>
+                        {
+                            { "INNTEKTSAAR", "ADSF" }
+                        }
+                    }
+                },
+                Requestmessage = new Dictionary<string, string>
+                {
+                    { "en", "Please approve this consent request" }
+                },
+                RedirectUrl = "https://www.dnb.no"
+            };
+
+            HttpClient client = GetTestClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.NotNull(responseContent);
+            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            Assert.Single(consentInfo.ConsentRights);
+            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
+            Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
+            Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
+            Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
+            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Single(consentInfo.ConsentRequestEvents);
+            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+
+            // Post again. Expects 200 ok since everyhing is the same
+            HttpResponseMessage response2 = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
+            string responseContent2 = await response2.Content.ReadAsStringAsync();
+            /// TODO This need to ve created
+            Assert.Equal(HttpStatusCode.Created, response2.StatusCode);
+            Assert.NotNull(responseContent2);
+            ConsentRequestDetailsExternal consentInfo2 = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            Assert.Single(consentInfo2.ConsentRights);
+            Assert.Single(consentInfo2.ConsentRights[0].MetaData);
+            Assert.Equal(consentRequest.ValidTo.Minute, consentInfo2.ValidTo.Minute);
+            Assert.Equal(consentRequest.ValidTo.Second, consentInfo2.ValidTo.Second);
+            Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo2.ConsentRights[0].Action.Count);
+            Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo2.ConsentRights[0].Action[0]);
+            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo2.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Single(consentInfo2.ConsentRequestEvents);
+            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo2.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo2.ConsentRequestEvents[0].PerformedBy);
+        }
+
+        [Fact]
+        public async Task CreateConsentRequestDuplicatePost_InvalidDifferentFrom()
+        {
+            Guid requestID = Guid.CreateVersion7();
+            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            {
+                Id = requestID,
+                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                ValidTo = DateTimeOffset.UtcNow.AddDays(1),
+                ConsentRights = new List<ConsentRightExternal>
+                {
+                    new ConsentRightExternal
+                    {
+                        Action = new List<string> { "read" },
+                        Resource = new List<ConsentResourceAttributeExternal>
+                        {
+                            new ConsentResourceAttributeExternal
+                            {
+                                Type = "urn:altinn:resource",
+                                Value = "ttd_inntektsopplysninger"
+                            }
+                        },
+                        MetaData = new Dictionary<string, string>
+                        {
+                            { "INNTEKTSAAR", "ADSF" }
+                        }
+                    }
+                },
+                Requestmessage = new Dictionary<string, string>
+                {
+                    { "en", "Please approve this consent request" }
+                },
+                RedirectUrl = "https://www.dnb.no"
+            };
+
+            HttpClient client = GetTestClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.NotNull(responseContent);
+            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            Assert.Single(consentInfo.ConsentRights);
+            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
+            Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
+            Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
+            Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
+            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Single(consentInfo.ConsentRequestEvents);
+            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+
+            // Post again but changes from. Should cause problem
+            consentRequest.From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025181049"));
+            HttpResponseMessage response2 = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
+            string responseContent2 = await response2.Content.ReadAsStringAsync();
+
+            /// TODO This need to ve created
+            Assert.Equal(HttpStatusCode.BadRequest, response2.StatusCode);
+            Assert.NotNull(responseContent2);
+            AltinnMultipleProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnMultipleProblemDetails>(responseContent2, _jsonOptions);
+
+            Assert.Equal(Problems.ConsentWithIdAlreadyExist.ErrorCode, problemDetails.ErrorCode);
+        }
+
         [Fact]
         public async Task CreateConsentRequest_AndCheckStatus_Valid()
         {

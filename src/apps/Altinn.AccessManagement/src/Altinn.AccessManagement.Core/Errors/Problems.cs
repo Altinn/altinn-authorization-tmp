@@ -74,5 +74,9 @@ public static class Problems
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor ConsentCantBeRejected { get; }
-    = _factory.Create(30, HttpStatusCode.BadRequest,  $"Consent cant be rejected. Wrong status");
+    = _factory.Create(15, HttpStatusCode.BadRequest,  $"Consent cant be rejected. Wrong status");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor ConsentWithIdAlreadyExist { get; }
+    = _factory.Create(16, HttpStatusCode.BadRequest, $"Consent with id already exist");
 }
