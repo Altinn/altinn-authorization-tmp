@@ -54,8 +54,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_Valid()
         {
+            Guid requestID = Guid.CreateVersion7();
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
+                Id = requestID,
                 From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
                 To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
@@ -111,8 +113,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_AndCheckStatus_Valid()
         {
+            Guid requestID = Guid.CreateVersion7();
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
+                Id = requestID,
                 From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
                 To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
@@ -190,8 +194,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_ValidWithoutMetadata()
         {
+            Guid requestID = Guid.CreateVersion7();
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
+                Id = requestID,
                 From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
                 To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
@@ -247,8 +253,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_ValidTwin()
         {
+            Guid requestID = Guid.CreateVersion7();
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
+                Id = requestID,
                 From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
                 To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
@@ -328,8 +336,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_IncompatibleTemplates()
         {
+            Guid requestID = Guid.CreateVersion7();
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
+                Id = requestID,
                 From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
                 To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
@@ -399,8 +409,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_MissingMetadata()
         {
+            Guid requestID = Guid.CreateVersion7();
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
+                Id = requestID,
                 From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
                 To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
@@ -448,8 +460,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_WrongNamingMetadata()
         {
+            Guid requestID = Guid.CreateVersion7();
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
+                Id = requestID,
                 From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
                 To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
@@ -521,8 +535,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_UnknownMetadata()
         {
+            Guid requestID = Guid.CreateVersion7();
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
+                Id = requestID,
                 From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
                 To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
@@ -577,8 +593,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_MissingRights()
         {
+            Guid requestID = Guid.CreateVersion7();
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
+                Id = requestID,
                 From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
                 To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
@@ -612,8 +630,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_MissingAction()
         {
+            Guid requestID = Guid.CreateVersion7();
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
+                Id = requestID,
                 From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
                 To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
@@ -667,8 +687,10 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_FromIsNonExistingPerson()
         {
+            Guid requestID = Guid.CreateVersion7();
             ConsentRequestExternal consentRequest = new ConsentRequestExternal
             {
+                Id = requestID,
                 From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01014922047")),
                 To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),

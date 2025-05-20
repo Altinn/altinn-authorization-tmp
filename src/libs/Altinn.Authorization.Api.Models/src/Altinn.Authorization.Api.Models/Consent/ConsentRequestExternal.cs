@@ -8,6 +8,11 @@ namespace Altinn.Authorization.Api.Models.Consent
     public class ConsentRequestExternal
     {
         /// <summary>
+        /// The unique identifier for the consent request. Need to be unique across all consent requests.
+        /// </summary>
+        public required Guid Id { get; set; }
+
+        /// <summary>
         /// Defines the party to request consent from.
         /// </summary>
         public required ConsentPartyUrnExternal From { get; set; }

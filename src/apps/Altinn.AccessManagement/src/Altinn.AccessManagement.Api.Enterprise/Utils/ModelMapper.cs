@@ -14,12 +14,9 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
         /// </summary>
         public static ConsentRequest ToCore(ConsentRequestExternal consentRequestExternal)
         {
-            // The id 
-            Guid consentId = Guid.NewGuid();
-
             return new ConsentRequest
             {
-                Id = consentId,
+                Id = consentRequestExternal.Id,
                 From = ToCore(consentRequestExternal.From),
                 To = ToCore(consentRequestExternal.To),
                 ValidTo = consentRequestExternal.ValidTo,
