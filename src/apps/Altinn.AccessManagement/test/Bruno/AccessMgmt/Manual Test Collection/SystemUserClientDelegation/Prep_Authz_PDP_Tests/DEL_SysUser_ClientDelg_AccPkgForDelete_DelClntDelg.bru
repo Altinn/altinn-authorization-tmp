@@ -1,24 +1,22 @@
 meta {
-  name: GET_Enduser_Conn_ToOthers_GetOrg_Empty
+  name: DEL_SysUser_ClientDelg_AccPkgForDelete_DelClntDelg
   type: http
-  seq: 10
+  seq: 6
 }
 
-get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&from={{party}}&to={{toOrg}}&packageId=&package=
+delete {
+  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation/deletedelegation?party={{party}}&delegationId
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  from: {{party}}
-  to: {{toOrg}}
-  packageId: 
-  package: 
+  delegationId: 
 }
 
 headers {
+  Content-Type: application/json
   Accept: application/json
 }
 
@@ -26,10 +24,10 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "GET_Enduser_Conn_ToOthers_GetOrg_Empty");
-  
+  bru.setVar("requestName", "POST_SysUser_ClientEnkDelg_AccPkg");
   bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-  bru.setVar("toOrg", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg1.partyUuid);
+  bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
+  bru.setVar("clientId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_WITHOUT_CLIENTDELEGATION.partyUuid);
   
   var getTokenParameters = {
     auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
@@ -41,17 +39,11 @@ script:pre-request {
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
-  bru.setVar("bearerToken", token);
+  bru.setVar("bearerToken",  token);
 }
 
 tests {
-  
-  test(bru.getVar("requestName"), function() {
-    const body = res.getBody();
-    const data = body.data;
-    
+  test("Should return 200 OK", function() {
     expect(res.status).to.equal(200);
-    assert.isEmpty(data, "Expected data in response body to be empty array");
-    
   });
 }

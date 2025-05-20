@@ -1,35 +1,48 @@
 meta {
-  name: GET_Enduser_Conn_ToOthers_GetOrg_Empty
+  name: POST_SysUser_ClientDelg_AccPkgForDelete
   type: http
-  seq: 10
+  seq: 6
 }
 
-get {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&from={{party}}&to={{toOrg}}&packageId=&package=
+post {
+  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation?party={{party}}
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  from: {{party}}
-  to: {{toOrg}}
-  packageId: 
-  package: 
 }
 
 headers {
+  Content-Type: application/json
   Accept: application/json
+}
+
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "agentId": "{{systemUser}}",
+    "agentName": "Fiken",
+    "agentRole": "agent",
+    "rolePackages": [
+      {
+        "roleIdentifier": "regnskapsforer",
+        "packageUrn": "{{packageToDelegate}}"
+      }
+    ]
+  }
 }
 
 script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "GET_Enduser_Conn_ToOthers_GetOrg_Empty");
-  
+  bru.setVar("requestName", "POST_SysUser_ClientDelg_AccPkgForDelete");
   bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-  bru.setVar("toOrg", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg1.partyUuid);
+  bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
+  bru.setVar("clientId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_WITHOUT_CLIENTDELEGATION.partyUuid);
+  bru.setVar("packageToDelegate", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.clientPackageForDelete);
   
   var getTokenParameters = {
     auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
@@ -41,17 +54,11 @@ script:pre-request {
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
-  bru.setVar("bearerToken", token);
+  bru.setVar("bearerToken",  token);
 }
 
 tests {
-  
-  test(bru.getVar("requestName"), function() {
-    const body = res.getBody();
-    const data = body.data;
-    
+  test("Should return 200 OK", function() {
     expect(res.status).to.equal(200);
-    assert.isEmpty(data, "Expected data in response body to be empty array");
-    
   });
 }
