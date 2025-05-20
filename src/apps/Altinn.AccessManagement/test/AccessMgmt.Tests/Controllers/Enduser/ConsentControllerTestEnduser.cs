@@ -60,7 +60,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}");
+            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/enduser/consentrequests/{requestId.ToString()}");
             string responseText = await response.Content.ReadAsStringAsync();
             ConsentRequestDetailsExternal consentRequest = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsExternal>();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -109,7 +109,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             HttpContent httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/accept/", httpContent);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consentrequests/{requestId.ToString()}/accept/", httpContent);
             string responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             ConsentRequestDetailsExternal consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsExternal>();
@@ -157,7 +157,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
 
             // Create HttpContent from the JSON string
             HttpContent httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/accept/", httpContent);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consentrequests/{requestId.ToString()}/accept/", httpContent);
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
@@ -173,7 +173,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/reject/", null);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consentrequests/{requestId.ToString()}/reject/", null);
             string responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -214,7 +214,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/reject/", null);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consentrequests/{requestId.ToString()}/reject/", null);
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.NotNull(responseContent);
@@ -260,7 +260,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/enduser/consent/{requestId.ToString()}");
+            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/enduser/consents/{requestId.ToString()}");
             string responseContent = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -311,7 +311,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, performedBy, AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/revoke/", null);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consents/{requestId.ToString()}/revoke/", null);
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
@@ -334,7 +334,7 @@ namespace AccessMgmt.Tests.Controllers.Enduser
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, performedBy, AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consent/request/{requestId.ToString()}/revoke/", null);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consents/{requestId.ToString()}/revoke/", null);
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.NotNull(responseContent);
