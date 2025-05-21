@@ -1,0 +1,6 @@
+{
+  "shortName":"Api.Models",
+  "deps": [
+    "lib:Altinn.Authorization.Core.Models"
+  ]
+}
