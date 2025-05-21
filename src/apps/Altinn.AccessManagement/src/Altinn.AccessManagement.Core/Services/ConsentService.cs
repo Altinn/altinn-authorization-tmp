@@ -1,9 +1,9 @@
-﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using System.Diagnostics;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -14,7 +14,6 @@ using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Profile.Models;
 using Altinn.Platform.Register.Models;
 using Microsoft.Extensions.Caching.Memory;
-using System.Diagnostics;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -40,7 +39,7 @@ namespace Altinn.AccessManagement.Core.Services
         private const string ResourceParam = "Resource";
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken)
+        public async Task<Result<ConsentRequestDetailsWrapper>> CreateRequest(ConsentRequest consentRequest, ConsentPartyUrn performedByParty, CancellationToken cancellationToken)
         {
             Result<ConsentRequest> result = await ValidateAndSetInternalIdentifiers(consentRequest, cancellationToken);
 
@@ -62,7 +61,13 @@ namespace Altinn.AccessManagement.Core.Services
                     && consentRequest.To == consentRequestDetails.To)
                 {
                     // We dont validate resource or other parameters when creating a consent request and it exist for the same parties  
-                    return consentRequestDetails;
+                    ConsentRequestDetailsWrapper requestWrapper = new()
+                    {
+                        ConsentRequest = consentRequestDetails,
+                        AlreadyExisted = true
+                    };
+
+                    return requestWrapper;
                 }
 
                 return Problems.ConsentWithIdAlreadyExist.Create([new("requestId", consentRequest.Id.ToString())]);
@@ -75,7 +80,12 @@ namespace Altinn.AccessManagement.Core.Services
                 consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
             }
 
-            return requestDetails;
+            ConsentRequestDetailsWrapper consentRequestDetailsWrapper = new()
+            {
+                ConsentRequest = requestDetails,
+            };
+
+            return consentRequestDetailsWrapper;
         }
 
         /// <inheritdoc/>

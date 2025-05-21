@@ -12,7 +12,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
     /// <summary>
     /// The default constructor taking in depencies. 
     /// </summary>
-    [Route("accessmanagement/api/v1/enterprise/consent")]
+    [Route("accessmanagement/api/v1/enterprise")]
     [ApiController]
     public class ConsentController(IConsent consentService) : ControllerBase
     {
@@ -26,7 +26,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         /// </summary>
         [Authorize]
         [HttpPost]
-        [Route("request", Name = CreateRouteName)]
+        [Route("consentrequests", Name = CreateRouteName)]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(ConsentRequestStatusExternal), StatusCodes.Status200OK)]
@@ -43,17 +43,22 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 return Unauthorized();
             }
 
-            Result<ConsentRequestDetails> consentRequestStatus = await _consentService.CreateRequest(ModelMapper.ToCore(consentRequest), consentPartyUrn, cancellationToken);
+            Result<ConsentRequestDetailsWrapper> consentRequestStatus = await _consentService.CreateRequest(ModelMapper.ToCore(consentRequest), consentPartyUrn, cancellationToken);
 
             if (consentRequestStatus.IsProblem)
             {
                 return consentRequestStatus.Problem.ToActionResult();
             }
 
-            var routeValues = new { consentRequestId = consentRequestStatus.Value.Id };
+            var routeValues = new { consentRequestId = consentRequestStatus.Value.ConsentRequest.Id };
             string? locationUrl = Url.Link(GetRouteName, routeValues);
 
-            return Created(locationUrl, consentRequestStatus.Value);
+            if(consentRequestStatus.Value.AlreadyExisted)
+            {
+                return Ok(consentRequestStatus.Value.ConsentRequest);
+            }
+
+            return Created(locationUrl, consentRequestStatus.Value.ConsentRequest);
         }
 
         /// <summary>
@@ -61,7 +66,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         /// </summary>
         [Authorize]
         [HttpGet]
-        [Route("request/{consentRequestId:guid}", Name= GetRouteName)]
+        [Route("consentrequests/{consentRequestId:guid}", Name= GetRouteName)]
         [Produces(MediaTypeNames.Application.Json)]
         [ProducesResponseType(typeof(ConsentRequestStatusExternal), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]

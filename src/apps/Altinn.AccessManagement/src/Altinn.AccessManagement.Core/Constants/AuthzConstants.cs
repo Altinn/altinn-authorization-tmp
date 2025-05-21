@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessManagement.Core.Constants
+﻿using Altinn.Authorization.Core.Models.Consent;
+
+namespace Altinn.AccessManagement.Core.Constants
 {
     /// <summary>
     /// Constants related to authorization.
@@ -86,6 +88,16 @@
         public const string POLICY_CLIENTDELEGATION_WRITE = "CLIENTDELEGATION_WRITE";
 
         /// <summary>
+        /// Policy tag for authorizing enterprises for consent requests
+        /// </summary>
+        public const string POLICY_CONSENTREQUEST_WRITE = "CONSENTREQUEST_WRITE";
+
+        /// <summary>
+        /// Policy tag for authorizing enterprises for consent requests
+        /// </summary>
+        public const string POLICY_CONSENTREQUEST_READ = "CONSENTREQUEST_READ";
+
+        /// <summary>
         /// Portal enduser scope giving access to most of the end user APIs
         /// </summary>
         public const string SCOPE_PORTAL_ENDUSER = "altinn:portal/enduser";
@@ -114,6 +126,16 @@
         /// Scope giving access to delegations for arbitrary Maskinporten schemes
         /// </summary>
         public const string SCOPE_MASKINPORTEN_DELEGATIONS_ADMIN = "altinn:maskinporten/delegations.admin";
+
+        /// <summary>
+        /// Scope giving access to creating consentrequests
+        /// </summary>
+        public const string SCOPE_CONSENTREQUEST_WRITE = "altinn:consentrequests.write";
+
+        /// <summary>
+        /// Scope giving access to creating consentrequests
+        /// </summary>
+        public const string SCOPE_CONSENTREQUEST_READ = " altinn:consentrequests.read";
 
         /// <summary>
         /// Claim for scopes from maskinporten token

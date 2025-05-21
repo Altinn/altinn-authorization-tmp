@@ -88,7 +88,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -151,7 +151,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -175,8 +175,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             // Post again. Expects 200 ok since everyhing is the same
             HttpResponseMessage response2 = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent2 = await response2.Content.ReadAsStringAsync();
-            /// TODO This need to ve created
-            Assert.Equal(HttpStatusCode.Created, response2.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
             Assert.NotNull(responseContent2);
             ConsentRequestDetailsExternal consentInfo2 = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo2.ConsentRights);
@@ -228,7 +227,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -299,7 +298,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -321,7 +320,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
 
-            string getUrl = $"/accessmanagement/api/v1/enterprise/consent/request/{consentInfo.Id}";
+            string getUrl = $"/accessmanagement/api/v1/enterprise/consentrequests/{consentInfo.Id}";
             HttpResponseMessage getResponse = await client.GetAsync(location);
             string getResponseConsent = await getResponse.Content.ReadAsStringAsync();
 
@@ -376,7 +375,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
@@ -456,7 +455,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
@@ -539,7 +538,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
@@ -591,7 +590,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
@@ -663,7 +662,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
@@ -721,7 +720,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
@@ -763,7 +762,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
@@ -816,7 +815,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
@@ -873,7 +872,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             };
 
             HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consent/request/";
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
