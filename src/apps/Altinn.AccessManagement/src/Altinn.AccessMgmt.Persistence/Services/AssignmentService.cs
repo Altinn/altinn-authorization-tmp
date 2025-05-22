@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
@@ -29,6 +30,128 @@ public class AssignmentService(
     private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
     private readonly IEntityRepository entityRepository = entityRepository;
     private readonly IDelegationRepository delegationRepository = delegationRepository;
+    private static readonly string RETTIGHETSHAVER = "rettighetshaver";
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<NewConnectionDto>> GetClients(Guid toId, string[] roles, string[] packages, CancellationToken cancellationToken = default)
+    {
+        // Setup filter to be used for fetching client assignments
+        var clientFilter = assignmentRepository.CreateFilterBuilder();
+        clientFilter.Equal(t => t.ToId, toId);
+
+        // Fetch role metadata
+        var roleFilter = roleRepository.CreateFilterBuilder();
+        roleFilter.In(t => t.Code, roles);
+        var roleResult = await roleRepository.Get(roleFilter, cancellationToken: cancellationToken);
+
+        if (roleResult == null || !roleResult.Any() || roleResult.Count() != roles.Count())
+        {
+            throw new ArgumentException($"Filter: {nameof(roles)}, provided contains one or more role identifiers which cannot be found.");
+        }
+
+        var filterRoleIds = roleResult.Select(r => r.Id).ToList();
+
+        // Fetch role-package metadata
+        var rolePackFilter = rolePackageRepository.CreateFilterBuilder();
+        rolePackFilter.In(t => t.RoleId, filterRoleIds);
+        var rolePackageResult = await rolePackageRepository.Get(rolePackFilter, cancellationToken: cancellationToken);
+
+        // Fetch package metadata
+        var packageResult = await packageRepository.Get(cancellationToken: cancellationToken);
+
+        if (!packages.All(p => packageResult.Select(pr => pr.Urn).Contains($"urn:altinn:accesspackage:{p}")))
+        {
+            throw new ArgumentException($"Filter: {nameof(packages)}, provided contains one or more package identifiers which cannot be found.");
+        }
+
+        // Fetch client assignments
+        clientFilter.In(t => t.RoleId, filterRoleIds);
+        var clients = await assignmentRepository.GetExtended(clientFilter, cancellationToken: cancellationToken);
+
+        // Fetch assignment packages
+        QueryResponse<AssignmentPackage> assignmentPackageResult = null;
+        if (roles.Contains(RETTIGHETSHAVER))
+        {
+            var rettighetshaverClients = clients.Where(c => c.RoleId == roleResult.First(r => r.Code == RETTIGHETSHAVER).Id);
+            if (rettighetshaverClients != null && rettighetshaverClients.Any())
+            {
+                var assignmentPackageFilter = assignmentPackageRepository.CreateFilterBuilder();
+                assignmentPackageFilter.In(t => t.AssignmentId, rettighetshaverClients.Select(p => p.Id));
+
+                assignmentPackageResult = await assignmentPackageRepository.Get(assignmentPackageFilter, cancellationToken: cancellationToken);
+            }
+        }
+
+        return BuildConnectionsFromAssignments(clients, assignmentPackageResult, roleResult, packageResult, rolePackageResult, roles, packages);
+    }
+
+    private IEnumerable<NewConnectionDto> BuildConnectionsFromAssignments(IEnumerable<ExtAssignment> assignments, IEnumerable<AssignmentPackage> assignmentPackages, QueryResponse<Role> roles, QueryResponse<Package> packages, QueryResponse<RolePackage> rolePackages, string[] filterRoles, string[] filterPackages)
+    {
+        Dictionary<Guid, NewConnectionDto> clientDict = new();
+
+        foreach (var assignment in assignments)
+        {
+            var roleName = roles.First(r => r.Id == assignment.RoleId).Name;
+            var assignmentPackageIds = assignmentPackages != null ? assignmentPackages.Where(ap => ap.AssignmentId == assignment.Id).Select(ap => ap.PackageId) : [];
+            var assignmentPackageNames = assignmentPackageIds.Any() ? assignmentPackageIds.Select(ap => packages.First(p => p.Id == ap).Urn.Split(":").Last()).ToArray() : [];
+            var rolePackageIds = rolePackages.Where(rp => rp.RoleId == assignment.RoleId).Select(rp => rp.PackageId);
+            var rolePackageNames = rolePackageIds.Select(rp => packages.First(p => p.Id == rp).Urn.Split(":").Last()).ToArray();
+
+            // Skip client if connection provides neither assignment-packages or role-packages
+            if (!assignmentPackageNames.Any() && !rolePackageNames.Any())
+            {
+                continue;
+            }
+
+            // Add client to dictionary if not already present
+            if (!clientDict.ContainsKey(assignment.FromId))
+            {
+                var connection = new NewConnectionDto()
+                {
+                    Party = new NewConnectionDto.NewParty
+                    {
+                        PartyUuid = assignment.FromId,
+                        Name = assignment.From.Name
+                    }
+                };
+
+                clientDict.Add(assignment.FromId, connection);
+            }
+
+            // Add packages client has been assigned
+            if (assignmentPackageNames.Any())
+            {
+                clientDict[assignment.FromId].AuthorizedPackages.Add(new NewConnectionDto.AuthorizedAccessPackage
+                {
+                    Role = roleName,
+                    Packages = assignmentPackageNames
+                });
+            }
+
+            // Add packages client has through role
+            if (rolePackageNames.Any())
+            {
+                clientDict[assignment.FromId].AuthorizedPackages.Add(new NewConnectionDto.AuthorizedAccessPackage
+                {
+                    Role = roleName,
+                    Packages = rolePackageNames
+                });
+            }
+        }
+
+        // Return only clients having all required filterpackages
+        List<NewConnectionDto> result = new();
+        foreach (var client in clientDict.Keys)
+        {
+            var allClientPackages = clientDict[client].AuthorizedPackages.SelectMany(rp => rp.Packages).Distinct().ToArray();
+            if (filterPackages.All(allClientPackages.Contains))
+            {
+                result.Add(clientDict[client]);
+            }
+        }
+
+        return result;
+    }
 
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default)

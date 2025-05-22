@@ -21,6 +21,7 @@ namespace Altinn.AccessManagement.Controllers;
 public class SystemUserClientDelegationController : ControllerBase
 {
     private readonly IConnectionService connectionService;
+    private readonly IAssignmentService assignmentService;
     private readonly IDelegationService delegationService;
     private readonly IDelegationRepository delegationRepository;
     private readonly IAssignmentRepository assignmentRepository;
@@ -32,6 +33,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// </summary>
     public SystemUserClientDelegationController(
         IConnectionService connectionService,
+        IAssignmentService assignmentService,
         IDelegationService delegationService, 
         IDelegationRepository delegationRepository,
         IAssignmentRepository assignmentRepository,
@@ -39,6 +41,7 @@ public class SystemUserClientDelegationController : ControllerBase
         )
     {
         this.connectionService = connectionService;
+        this.assignmentService = assignmentService;
         this.delegationService = delegationService;
         this.delegationRepository = delegationRepository;
         this.assignmentRepository = assignmentRepository;
@@ -51,10 +54,10 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
     /// <param name="roles"> The list of role codes to filter the connections by</param>
     /// <param name="packages"> The list of package identifiers to filter the connections by</param>
-    /// <returns><seealso cref="ConnectionDto"/>List of connections</returns>
+    /// <returns>List of Client connections</returns>
     [HttpGet("clients")]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
-    public async Task<ActionResult<ConnectionDto>> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null)
+    public async Task<ActionResult> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)
@@ -74,9 +77,14 @@ public class SystemUserClientDelegationController : ControllerBase
             roles = validClientRoles;
         }
 
-        var dbResult = await connectionService.GetClients(party, roles, packages);
+        if (packages == null || packages.Length == 0)
+        {
+            packages = [];
+        }
 
-        return Ok(dbResult.Select(ConnectionConverter.ConvertToDto));
+        var clients = await assignmentService.GetClients(party, roles, packages);
+
+        return Ok(clients);
     }
 
     /// <summary>
