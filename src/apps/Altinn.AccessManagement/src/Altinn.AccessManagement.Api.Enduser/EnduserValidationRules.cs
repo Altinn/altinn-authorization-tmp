@@ -140,18 +140,15 @@ public static class ValidationRules
     /// <param name="from">The UUID of the 'from' party (could be a person or an organization).</param>
     /// <param name="to">The UUID of the 'to' party (could be a person or an organization).</param>
     /// <param name="packageId">The UUID of the package</param>
-    /// <param name="packgeUrn">The URN of the package</param>
+    /// <param name="packageUrn">The URN of the package</param>
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
-    public static ValidationProblemInstance EnduserAddConnectionPackage(string party, string from, string to, Guid? packageId, string packgeUrn) => Validate(
+    public static ValidationProblemInstance EnduserAddConnectionPackage(string party, string from, string to, Guid? packageId, string packageUrn) => Validate(
         QueryParameters.Party(party),
         QueryParameters.PartyFrom(from),
         QueryParameters.PartyTo(to),
-        Any(
-            QueryParameters.PackageId(packageId),
-            QueryParameters.PackageUrn(packgeUrn)
-        ),
+        QueryParameters.PackageReference(packageId, packageUrn),
         QueryParameters.EnduserAddCombination(party, from, to)
     );
 
@@ -196,18 +193,15 @@ public static class ValidationRules
     /// <param name="from">The UUID of the 'from' party (could be a person or an organization).</param>
     /// <param name="to">The UUID of the 'to' party (could be a person or an organization).</param>
     /// <param name="packageId">The UUID of the package</param>
-    /// <param name="packgeUrn">The URN of the package</param>
+    /// <param name="packageUrn">The URN of the package</param>
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
-    public static ValidationProblemInstance EnduserRemoveConnectionPacakge(string party, string from, string to, Guid? packageId, string packgeUrn) => Validate(
+    public static ValidationProblemInstance EnduserRemoveConnectionPacakge(string party, string from, string to, Guid? packageId, string packageUrn) => Validate(
         QueryParameters.Party(party),
         QueryParameters.PartyFrom(from),
         QueryParameters.PartyTo(to),
-        Any(
-            QueryParameters.PackageId(packageId),
-            QueryParameters.PackageUrn(packgeUrn)
-        ),
+        QueryParameters.PackageReference(packageId, packageUrn),
         QueryParameters.EnduserRemoveCombination(party, from, to)
     );
 
@@ -292,20 +286,30 @@ public static class ValidationRules
         /// Used to check if package exists by check URN and resulkt of the DB lookup.
         /// </summary>
         /// <param name="packages">List of packags</param>
+        /// <param name="packageName">Name of the package.</param>
         /// <param name="paramName">name of the query URN parameter.</param>
         /// <returns></returns>
-        internal static RuleExpression PackageUrnLookup(IEnumerable<Package> packages, string paramName = "packageUrn") => () =>
+        internal static RuleExpression PackageUrnLookup(IEnumerable<Package> packages, string packageName, string paramName = "package") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
+
+            if (packages?.Count() == 0)
+            {
+                return (ref ValidationErrorBuilder errors) =>
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("packages", $"No packages were found with the name '{packageName}'.")]
+                    );
+            }
 
             if (packages?.Count() == 1)
             {
                 return null;
             }
 
+            var msg = string.Join(",", packages.Select(p => p.Id.ToString()));
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, $"QUERY/{paramName}", [new("packages", string.Join(",", packages.Select(p => p.Id.ToString())))]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("packages", $"Multiple packages were found with the name '{packageName}'.")]
+                );
         };
 
         /// <summary>
@@ -581,34 +585,39 @@ public static class ValidationRules
         /// <summary>
         /// Validates packages ID
         /// </summary>
-        /// <param name="packageId">packge ID</param>
-        /// <param name="paramName">query param name</param>
-        internal static RuleExpression PackageId(Guid? packageId, string paramName = "packageId") => () =>
+        /// <param name="packageId">Package ID.</param>
+        /// <param name="packageUrn">Package URN.</param>
+        /// <param name="paramNamePackageId">query param name for package UUID.</param>
+        /// <param name="paramNamePackage">query param name for package URN.</param>
+        internal static RuleExpression PackageReference(Guid? packageId, string packageUrn, string paramNamePackageId = "packageId", string paramNamePackage = "package") => () =>
         {
-            if (packageId.HasValue && packageId != Guid.Empty)
+            if ((packageId.HasValue && packageId != Guid.Empty) != !string.IsNullOrEmpty(packageUrn))
             {
                 return null;
             }
 
+            if (packageId.HasValue && !string.IsNullOrEmpty(packageUrn))
+            {
+                return (ref ValidationErrorBuilder errors) =>
+                {
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Provide either a package URN or a package ID, not both.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Provide either a package URN or a package ID, not both.")]);
+                };
+            }
+
+            if (packageId.HasValue && packageId.Value == Guid.Empty)
+            {
+                return (ref ValidationErrorBuilder errors) =>
+                {
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", $"The provided package ID '{packageId}' is an empty UUID, which is invalid.")]);
+                };
+            }
+
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("package", "Package ID is not provided")]);
+            {
+                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Either a package URN or a package ID must be provided.")]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Either a package URN or a package ID must be provided.")]);
+            };
         };
-
-        /// <summary>
-        /// Valdidates Package URN
-        /// </summary>
-        /// <param name="packgeUrn">URN of package</param>
-        /// <param name="paramName">Query param name</param>
-        /// <returns></returns>
-        internal static RuleExpression PackageUrn(string packgeUrn, string paramName = "packageUrn") => () =>
-       {
-           if (!string.IsNullOrEmpty(packgeUrn))
-           {
-               return null;
-           }
-
-           return (ref ValidationErrorBuilder errors) =>
-               errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("package", "Package URN is not provided")]);
-       };
     }
 }
