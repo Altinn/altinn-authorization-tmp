@@ -1,19 +1,21 @@
 meta {
-  name: DEL_SysUser_ClientDelg_AccPkgForDelete_DelAssId
+  name: GET_SysUser_ClientDelg_GetRegnAndDelgAccPkgClients
   type: http
-  seq: 8
+  seq: 14
 }
 
-delete {
-  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation/deleteassignment?party={{party}}&assignmentId&cascade=false
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation/clients?party={{party}}&packages=regnskapsforer-med-signeringsrettighet&packages=skatt-naering
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  assignmentId: 
-  cascade: false
+  packages: regnskapsforer-med-signeringsrettighet
+  packages: skatt-naering
+  ~roles: rettighetshaver
+  ~roles: regnskapsforer
 }
 
 headers {
@@ -25,10 +27,9 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_SysUser_ClientEnkDelg_AccPkg");
+  bru.setVar("requestName", "GET_SysUser_ClientDelg_GetRegnAndDelgAccPkgClients");
   bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
   bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
-  bru.setVar("clientId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_WITHOUT_CLIENTDELEGATION.partyUuid);
   
   var getTokenParameters = {
     auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
