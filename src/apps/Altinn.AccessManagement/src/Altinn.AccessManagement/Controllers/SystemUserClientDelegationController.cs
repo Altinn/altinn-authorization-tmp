@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
@@ -54,7 +55,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
     /// <param name="roles"> The list of role codes to filter the connections by</param>
     /// <param name="packages"> The list of package identifiers to filter the connections by</param>
-    /// <returns>List of Client connections</returns>
+    /// <returns>List of Clients<seealso cref="ClientDto"/></returns>
     [HttpGet("clients")]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
     public async Task<ActionResult> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null)

@@ -70,5 +70,5 @@ public interface IAssignmentService
     /// Fetches Client assignments.
     /// </summary>
     /// <returns></returns>
-    Task<IEnumerable<NewConnectionDto>> GetClients(Guid toId, string[] roles, string[] packages, CancellationToken cancellationToken = default);
+    Task<IEnumerable<ClientDto>> GetClients(Guid toId, string[] roles, string[] packages, CancellationToken cancellationToken = default);
 }
