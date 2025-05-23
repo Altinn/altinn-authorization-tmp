@@ -69,6 +69,67 @@ public class DbSchemaMigrationService
         await executor.ExecuteMigrationCommand(tableGrant);
     }
 
+    private async Task MigrateFunctions()
+    {
+        var compactEntityFunction = """
+            create or replace function public.compactEntity(_id uuid) returns jsonb stable language sql as
+            $$
+            SELECT jsonb_build_object(
+                'Id', e.Id,
+                'Name', e.Name,
+                'RefId', e.RefId,
+                'Type', et.Name,
+                'Variant', ev.Name,
+                'Children', COALESCE(json_agg(GetEntityParty(ce.Id)) FILTER (WHERE ce.Id IS NOT NULL), NULL)
+                )
+            FROM dbo.Entity e
+            JOIN dbo.EntityType et ON e.TypeId = et.Id
+            JOIN dbo.EntityVariant ev ON e.VariantId = ev.Id
+            LEFT OUTER JOIN dbo.Entity as ce on e.Id = ce.ParentId
+            WHERE e.Id = _Id
+            GROUP BY e.Id, e.Name, e.RefId, et.Name, ev.Name;
+            $$;
+            """;
+        await executor.ExecuteMigrationCommand(compactEntityFunction);
+
+        var compactRoleFunction = """
+            create or replace function public.compactRole(_id uuid) returns jsonb stable language sql as
+            $$
+            SELECT jsonb_build_object(
+                'Id', r.Id,
+                'Value', r.Code,
+                'Children', COALESCE(
+                                json_agg(json_build_object('Id', rmr.Id, 'Value', rmr.Code, 'Children', null))
+                                FILTER (WHERE rmr.Id IS NOT NULL), NULL)
+            )
+            FROM dbo.role r
+            left outer join dbo.RoleMap as rm on rm.HasRoleId = r.Id
+            left outer join dbo.Role as rmr on rm.GetRoleId = rmr.Id
+            WHERE r.id = _Id
+            group by r.Id, r.Name;
+            $$;
+            """;
+        await executor.ExecuteMigrationCommand(compactRoleFunction);
+
+        var compactPackageFunction = """
+            create or replace function compactpackage(_id uuid) returns jsonb stable language sql as
+            $$
+            select jsonb_build_object('Id', p.Id,'Value', p.Urn)
+            from dbo.Package as p;
+            $$;
+            """;
+        await executor.ExecuteMigrationCommand(compactPackageFunction);
+
+        var compactResourceFunction = """
+            create or replace function compactresource(_id uuid) returns jsonb stable language sql as
+            $$
+            select jsonb_build_object('Id', r.Id,'Value', r.RefId)
+            from dbo.Resource as r;
+            $$;
+            """;
+        await executor.ExecuteMigrationCommand(compactResourceFunction);
+    }
+
     /// <summary>
     /// MigrateAll
     /// </summary>
@@ -83,6 +144,7 @@ public class DbSchemaMigrationService
         await PreMigration(cancellationToken: cancellationToken);
         await ExecuteMigration(cancellationToken: cancellationToken);
         await PostMigration(cancellationToken: cancellationToken);
+        await MigrateFunctions();
     }
 
     /// <summary>

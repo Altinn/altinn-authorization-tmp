@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Data;
 using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Utilities;
@@ -45,7 +46,7 @@ public sealed class DbConverter : IDbConverter
         };
     }
 
-    /// /// <inheritdoc />
+    /// <inheritdoc />
     public List<T> ConvertToObjects<T>(IDataReader reader)
     where T : new()
     {
@@ -257,6 +258,11 @@ public sealed class DbConverter : IDbConverter
             else if (property.PropertyType == typeof(DateTimeOffset))
             {
                 value = string.IsNullOrWhiteSpace(value.ToString()) ? null : DateTimeOffset.Parse(value.ToString());
+            }
+            else if (property.PropertyType.Namespace.StartsWith("Altinn"))
+            {
+                value = JsonSerializer.Deserialize(value?.ToString() ?? "{}", property.PropertyType, options: new JsonSerializerOptions(JsonSerializerDefaults.Web));
+                property.SetValue(target, value);
             }
             else
             {
