@@ -36,10 +36,6 @@ public class AssignmentService(
     /// <inheritdoc/>
     public async Task<IEnumerable<ClientDto>> GetClients(Guid toId, string[] roles, string[] packages, CancellationToken cancellationToken = default)
     {
-        // Setup filter to be used for fetching client assignments
-        var clientFilter = assignmentRepository.CreateFilterBuilder();
-        clientFilter.Equal(t => t.ToId, toId);
-
         // Fetch role metadata
         var roleFilter = roleRepository.CreateFilterBuilder();
         roleFilter.In(t => t.Code, roles);
@@ -66,8 +62,13 @@ public class AssignmentService(
         }
 
         // Fetch client assignments
+        var clientFilter = assignmentRepository.CreateFilterBuilder();
+        clientFilter.Equal(t => t.ToId, toId);
         clientFilter.In(t => t.RoleId, filterRoleIds);
-        var clients = await assignmentRepository.GetExtended(clientFilter, cancellationToken: cancellationToken);
+        var clientAssignmentResult = await assignmentRepository.GetExtended(clientFilter, cancellationToken: cancellationToken);
+
+        // Discard non-organization clients (for now). To be opened up for private individuals in the future.
+        var clients = clientAssignmentResult.Where(c => c.From.TypeId == PartyTypeOrganizationUuid);
 
         // Fetch assignment packages
         QueryResponse<AssignmentPackage> assignmentPackageResult = null;
@@ -83,21 +84,15 @@ public class AssignmentService(
             }
         }
 
-        return BuildConnectionsFromAssignments(clients, assignmentPackageResult, roleResult, packageResult, rolePackageResult, packages);
+        return GetFilteredClientsFromAssignments(clients, assignmentPackageResult, roleResult, packageResult, rolePackageResult, packages);
     }
 
-    private List<ClientDto> BuildConnectionsFromAssignments(IEnumerable<ExtAssignment> assignments, IEnumerable<AssignmentPackage> assignmentPackages, QueryResponse<Role> roles, QueryResponse<Package> packages, QueryResponse<RolePackage> rolePackages, string[] filterPackages)
+    private List<ClientDto> GetFilteredClientsFromAssignments(IEnumerable<ExtAssignment> assignments, IEnumerable<AssignmentPackage> assignmentPackages, QueryResponse<Role> roles, QueryResponse<Package> packages, QueryResponse<RolePackage> rolePackages, string[] filterPackages)
     {
-        Dictionary<Guid, ClientDto> clientDict = new();
+        Dictionary<Guid, ClientDto> clients = new();
 
         foreach (var assignment in assignments)
         {
-            // Skip non-organization assignments
-            if (assignment.From.TypeId != PartyTypeOrganizationUuid)
-            {
-                continue;
-            }
-
             var roleName = roles.First(r => r.Id == assignment.RoleId).Code;
             var assignmentPackageIds = assignmentPackages != null ? assignmentPackages.Where(ap => ap.AssignmentId == assignment.Id).Select(ap => ap.PackageId) : [];
             var assignmentPackageNames = assignmentPackageIds.Any() ? assignmentPackageIds.Select(ap => packages.First(p => p.Id == ap).Urn.Split(":").Last()).ToArray() : [];
@@ -111,7 +106,7 @@ public class AssignmentService(
             }
 
             // Add client to dictionary if not already present
-            if (!clientDict.TryGetValue(assignment.FromId, out ClientDto client))
+            if (!clients.TryGetValue(assignment.FromId, out ClientDto client))
             {
                 client = new ClientDto()
                 {
@@ -123,7 +118,7 @@ public class AssignmentService(
                     }
                 };
 
-                clientDict.Add(assignment.FromId, client);
+                clients.Add(assignment.FromId, client);
             }
 
             // Add packages client has been assigned
@@ -149,12 +144,12 @@ public class AssignmentService(
 
         // Return only clients having all required filterpackages
         List<ClientDto> result = new();
-        foreach (var client in clientDict.Keys)
+        foreach (var client in clients.Keys)
         {
-            var allClientPackages = clientDict[client].Access.SelectMany(rp => rp.Packages).Distinct().ToArray();
+            var allClientPackages = clients[client].Access.SelectMany(rp => rp.Packages).Distinct();
             if (filterPackages.All(allClientPackages.Contains))
             {
-                result.Add(clientDict[client]);
+                result.Add(clients[client]);
             }
         }
 
