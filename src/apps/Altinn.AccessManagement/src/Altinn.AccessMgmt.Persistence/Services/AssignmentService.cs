@@ -45,7 +45,7 @@ public class AssignmentService(
         roleFilter.In(t => t.Code, roles);
         var roleResult = await roleRepository.Get(roleFilter, cancellationToken: cancellationToken);
 
-        if (roleResult == null || !roleResult.Any() || roleResult.Count() != roles.Count())
+        if (roleResult == null || !roleResult.Any() || roleResult.Count() != roles.Length)
         {
             throw new ArgumentException($"Filter: {nameof(roles)}, provided contains one or more role identifiers which cannot be found.");
         }
@@ -74,7 +74,7 @@ public class AssignmentService(
         if (roles.Contains(RETTIGHETSHAVER))
         {
             var rettighetshaverClients = clients.Where(c => c.RoleId == roleResult.First(r => r.Code == RETTIGHETSHAVER).Id);
-            if (rettighetshaverClients != null && rettighetshaverClients.Any())
+            if (rettighetshaverClients.Any())
             {
                 var assignmentPackageFilter = assignmentPackageRepository.CreateFilterBuilder();
                 assignmentPackageFilter.In(t => t.AssignmentId, rettighetshaverClients.Select(p => p.Id));
@@ -83,10 +83,10 @@ public class AssignmentService(
             }
         }
 
-        return BuildConnectionsFromAssignments(clients, assignmentPackageResult, roleResult, packageResult, rolePackageResult, roles, packages);
+        return BuildConnectionsFromAssignments(clients, assignmentPackageResult, roleResult, packageResult, rolePackageResult, packages);
     }
 
-    private IEnumerable<ClientDto> BuildConnectionsFromAssignments(IEnumerable<ExtAssignment> assignments, IEnumerable<AssignmentPackage> assignmentPackages, QueryResponse<Role> roles, QueryResponse<Package> packages, QueryResponse<RolePackage> rolePackages, string[] filterRoles, string[] filterPackages)
+    private List<ClientDto> BuildConnectionsFromAssignments(IEnumerable<ExtAssignment> assignments, IEnumerable<AssignmentPackage> assignmentPackages, QueryResponse<Role> roles, QueryResponse<Package> packages, QueryResponse<RolePackage> rolePackages, string[] filterPackages)
     {
         Dictionary<Guid, ClientDto> clientDict = new();
 
@@ -98,44 +98,38 @@ public class AssignmentService(
                 continue;
             }
 
-            var roleName = roles.First(r => r.Id == assignment.RoleId).Name;
+            var roleName = roles.First(r => r.Id == assignment.RoleId).Code;
             var assignmentPackageIds = assignmentPackages != null ? assignmentPackages.Where(ap => ap.AssignmentId == assignment.Id).Select(ap => ap.PackageId) : [];
             var assignmentPackageNames = assignmentPackageIds.Any() ? assignmentPackageIds.Select(ap => packages.First(p => p.Id == ap).Urn.Split(":").Last()).ToArray() : [];
             var rolePackageIds = rolePackages.Where(rp => rp.RoleId == assignment.RoleId).Select(rp => rp.PackageId);
             var rolePackageNames = rolePackageIds.Select(rp => packages.First(p => p.Id == rp).Urn.Split(":").Last()).ToArray();
 
             // Skip client if connection provides neither assignment-packages or role-packages
-            if (!assignmentPackageNames.Any() && !rolePackageNames.Any())
+            if (assignmentPackageNames.Length == 0 && rolePackageNames.Length == 0)
             {
                 continue;
             }
 
             // Add client to dictionary if not already present
-            if (!clientDict.ContainsKey(assignment.FromId))
+            if (!clientDict.TryGetValue(assignment.FromId, out ClientDto client))
             {
-                var connection = new ClientDto()
+                client = new ClientDto()
                 {
                     Party = new ClientDto.ClientParty
                     {
-                        PartyUuid = assignment.FromId,
+                        Id = assignment.FromId,
                         Name = assignment.From.Name,
                         OrganizationNumber = assignment.From.RefId
                     }
                 };
 
-                clientDict.Add(assignment.FromId, connection);
-            }
-
-            // Add role to client if not already present
-            if (!clientDict[assignment.FromId].AuthorizedRoles.Contains(roleName))
-            {
-                clientDict[assignment.FromId].AuthorizedRoles.Add(roleName);
+                clientDict.Add(assignment.FromId, client);
             }
 
             // Add packages client has been assigned
-            if (assignmentPackageNames.Any())
+            if (assignmentPackageNames.Length > 0)
             {
-                clientDict[assignment.FromId].AuthorizedAccessPackages.Add(new ClientDto.ClientRoleAccessPackages
+                client.Access.Add(new ClientDto.ClientRoleAccessPackages
                 {
                     Role = roleName,
                     Packages = assignmentPackageNames
@@ -143,9 +137,9 @@ public class AssignmentService(
             }
 
             // Add packages client has through role
-            if (rolePackageNames.Any())
+            if (rolePackageNames.Length > 0)
             {
-                clientDict[assignment.FromId].AuthorizedAccessPackages.Add(new ClientDto.ClientRoleAccessPackages
+                client.Access.Add(new ClientDto.ClientRoleAccessPackages
                 {
                     Role = roleName,
                     Packages = rolePackageNames
@@ -157,7 +151,7 @@ public class AssignmentService(
         List<ClientDto> result = new();
         foreach (var client in clientDict.Keys)
         {
-            var allClientPackages = clientDict[client].AuthorizedAccessPackages.SelectMany(rp => rp.Packages).Distinct().ToArray();
+            var allClientPackages = clientDict[client].Access.SelectMany(rp => rp.Packages).Distinct().ToArray();
             if (filterPackages.All(allClientPackages.Contains))
             {
                 result.Add(clientDict[client]);

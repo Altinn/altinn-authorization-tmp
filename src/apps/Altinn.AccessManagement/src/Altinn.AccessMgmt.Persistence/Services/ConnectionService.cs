@@ -18,8 +18,7 @@ public class ConnectionService(
     IAssignmentRepository assignmentRepository,
     IDelegationRepository delegationRepository,
     IAssignmentPackageRepository assignmentPackageRepository,
-    IDelegationPackageRepository delegationPackageRepository,
-    IRoleRepository roleRepository
+    IDelegationPackageRepository delegationPackageRepository
     ) : IConnectionService
 {
     /// <inheritdoc />

@@ -68,9 +68,10 @@ public class SystemUserClientDelegationController : ControllerBase
 
         if (roles != null && roles.Length > 0)
         {
-            foreach (var role in roles.Where(role => !validClientRoles.Contains(role)))
+            var invalidRoles = roles.Where(role => !validClientRoles.Contains(role));
+            if (invalidRoles.Any())
             {
-                return BadRequest($"Invalid role filter: '{role}'. Valid Client roles are: '{string.Join(", ", validClientRoles)}'");
+                return BadRequest($"Invalid role filter: '{string.Join(",", invalidRoles)}'. Valid Client roles are: '{string.Join(", ", validClientRoles)}'");
             }
         }
         else

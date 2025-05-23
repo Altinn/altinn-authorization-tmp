@@ -1,6 +1,4 @@
-﻿using Altinn.Platform.Register.Models;
-
-namespace Altinn.AccessManagement.Core.Models;
+﻿namespace Altinn.AccessManagement.Core.Models;
 
 /// <summary>
 /// Model representing a connected client party, meaning a party which has been authorized for one or more accesses, either directly or through role(s), access packages, resources or resource instances.
@@ -21,14 +19,9 @@ public class ClientDto
     public ClientParty Party { get; set; }
 
     /// <summary>
-    /// Gets or sets a collection of all rolecodes for roles from either Enhetsregisteret or Altinn 2 which the authorized subject has been authorized for on behalf of this party
+    /// Gets or sets a collection of all access information for the client 
     /// </summary>
-    public List<string> AuthorizedRoles { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets a collection of all Authorized Packages 
-    /// </summary>
-    public List<ClientRoleAccessPackages> AuthorizedAccessPackages { get; set; } = [];
+    public List<ClientRoleAccessPackages> Access { get; set; } = [];
 
     /// <summary>
     /// Composite Key instances
@@ -43,30 +36,9 @@ public class ClientDto
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ClientParty"/> class based on a <see cref="Party"/> class.
-        /// </summary>
-        /// <param name="party">Party model from registry</param>
-        /// <param name="includeSubunits">Whether model should also build list of subunits if any exists</param>
-        public ClientParty(Party party, bool includeSubunits = true)
-        {
-            if (party.PartyTypeName != Platform.Register.Enums.PartyType.Organisation)
-            {
-                throw new ArgumentException("Party type must be organisation", nameof(party));
-            }
-
-            PartyUuid = party.PartyUuid.Value;
-            Name = party.Name;
-            Type = party.PartyTypeName.ToString();
-            OrganizationNumber = party.OrgNumber;
-            UnitType = party.UnitType;
-            IsDeleted = party.IsDeleted;
-            Subunits = includeSubunits ? party.ChildParties?.Select(subunit => new ClientParty(subunit)).ToList() ?? [] : [];
-        }
-
-        /// <summary>
         /// Gets or sets the universally unique identifier of the party
         /// </summary>
-        public Guid PartyUuid { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the party
@@ -78,6 +50,7 @@ public class ClientDto
         /// </summary>
         public string OrganizationNumber { get; set; }
 
+        /* ToBe Added in the future maybe
         /// <summary>
         /// Gets or sets the type of party
         /// </summary>
@@ -97,6 +70,7 @@ public class ClientDto
         /// Gets or sets a set of subunits of this party, which the authorized subject also has some access to.
         /// </summary>
         public List<ClientParty> Subunits { get; set; } = [];
+        */
     }
 
     /// <summary>
@@ -105,12 +79,12 @@ public class ClientDto
     public class ClientRoleAccessPackages
     {
         /// <summary>
-        /// Resource ID
+        /// Role
         /// </summary>
         public string Role { get; set; }
 
         /// <summary>
-        /// Instance ID
+        /// Packages
         /// </summary>
         public string[] Packages { get; set; }
     }
