@@ -67,7 +67,6 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         sb.AppendLine("WHERE a.id = COALESCE(@id, a.id)::uuid");
         sb.AppendLine("AND a.fromid   = COALESCE(@fromid, a.fromid)::uuid");
         sb.AppendLine("AND a.toid   = COALESCE(@toid, a.toid)::uuid");
-        sb.AppendLine("AND a.roleid   = COALESCE(@roleid, a.roleid)::uuid");
 
         // PARENT
         sb.AppendLine("UNION ALL");
@@ -88,7 +87,6 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         sb.AppendLine("WHERE a.id = COALESCE(@id, a.id)::uuid");
         sb.AppendLine("AND fe.id = COALESCE(@fromid, fe.id)::uuid");
         sb.AppendLine("AND a.toid = COALESCE(@toid, a.toid)::uuid");
-        sb.AppendLine("AND a.roleid = COALESCE(@roleid, a.roleid)::uuid");
 
         // DELEGATION
         sb.AppendLine("UNION ALL");
@@ -102,7 +100,6 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         sb.AppendLine("AND fe.fromid = COALESCE(@fromid, fe.fromid)::uuid");
         sb.AppendLine("AND te.toid   = COALESCE(@toid, te.toid)::uuid");
         sb.AppendLine("AND d.facilitatorid = COALESCE(@facilitatorid, d.facilitatorid)::uuid");
-        sb.AppendLine("AND fe.roleid = COALESCE(@roleid, fe.roleid)::uuid");
 
         sb.AppendLine("),");
 
@@ -115,7 +112,6 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         sb.AppendLine("x.source || 'MAP' AS source, x.isdirect, x.isparent, 1 AS isrolemap, x.iskeyrole");
         sb.AppendLine("FROM a1 as x");
         sb.AppendLine("JOIN dbo.rolemap as rm ON x.roleid = rm.hasroleid");
-        sb.AppendLine("WHERE x.roleid = COALESCE(@roleid, x.roleid)::uuid");
         sb.AppendLine("),");
 
         sb.AppendLine("a3 AS(");
@@ -129,7 +125,6 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         sb.AppendLine("JOIN dbo.assignment a ON s.toid = a.fromid");
         sb.AppendLine("JOIN dbo.role r ON a.roleid = r.id");
         sb.AppendLine("AND r.iskeyrole = TRUE");
-        sb.AppendLine("AND a.roleid   = COALESCE(@roleid, a.roleid)::uuid");
         sb.AppendLine(")");
 
         if (extended)
@@ -163,7 +158,6 @@ public class ConnectionDefinition : BaseDbDefinition<Connection>, IDbDefinition
         sb.AppendLine("AND a.fromid = COALESCE(@fromid, a.fromid)::uuid");
         sb.AppendLine("AND a.toid = COALESCE(@toid, a.toid)::uuid");
         sb.AppendLine("AND COALESCE(a.viaid, '00000000-0000-0000-0000-000000000000') = COALESCE(@facilitatorid, a.viaid, '00000000-0000-0000-0000-000000000000')::uuid");
-        sb.AppendLine("AND a.roleid   = COALESCE(@roleid, a.roleid)::uuid");
 
         return sb.ToString();
     }
