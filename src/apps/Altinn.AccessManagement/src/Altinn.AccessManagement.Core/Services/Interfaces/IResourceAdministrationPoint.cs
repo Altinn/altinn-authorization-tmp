@@ -27,7 +27,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// </summary>
         /// <param name="scope">The scope of the resource</param>
         /// <returns>resource list based on given scope</returns>
-        Task<List<ServiceResource>> GetResources(string scope);
+        Task<IEnumerable<ServiceResource>> GetResources(string scope);
 
         /// <summary>
         /// Integration point for retrieving a single resoure by it's resource id
