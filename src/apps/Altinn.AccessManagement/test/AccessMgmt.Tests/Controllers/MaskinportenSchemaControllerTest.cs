@@ -550,8 +550,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
         }
 
         /// <summary>
-        /// Test case: GetMaskinportenDelegations without sending scopes
-        /// Expected: GetMaskinportenDelegations returns badrequest
+        /// Test case: GetMaskinportenDelegations authorized with admin scope, without specifying filter scope param
+        /// Expected: GetMaskinportenDelegations returns OK
         /// </summary>
         [Fact]
         public async Task GetMaskinportenDelegations_Admin_WithoutScope_Valid()
