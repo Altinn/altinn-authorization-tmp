@@ -102,12 +102,10 @@ namespace Altinn.AccessManagement.HostedServices.Services
 
                         if (item.DelegationAction == DelegationAction.Delegate)
                         {
-                            if (item.ToUserType == UserType.EnterpriseIdentified)
+                            if (item.ToUserType != UserType.EnterpriseIdentified)
                             {
-                                continue;
-                            }
-
-                            batchData.Add(assignment.Asignment);
+                                batchData.Add(assignment.Asignment);
+                            }                            
                         }
                         else
                         {
@@ -122,28 +120,31 @@ namespace Altinn.AccessManagement.HostedServices.Services
                     }
                 }
 
-                await Flush(batchId);
+                if (batchData.Count > 0)
+                {
+                    await Flush(batchId);
+                }
 
                 if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
                 {
                     return;
                 }
 
-                await UpdateLease(ls, data => data.RoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
+                await UpdateLease(ls, data => data.AllAltinnRoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
                 
                 async Task Flush(Guid batchId)
                 {
                     try
                     {
                         _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchName);
-                        var ingested = await _ingestService.IngestTempData<Assignment>(batchData, batchId, curretOptions, cancellationToken);
+                        var ingested = await _ingestService.IngestTempData<Assignment>(batchData, batchId, previousOptions, cancellationToken);
 
                         if (ingested != batchData.Count)
                         {
                             _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
                         }
 
-                        var merged = await _ingestService.MergeTempData<Assignment>(batchId, curretOptions, cancellationToken: cancellationToken);
+                        var merged = await _ingestService.MergeTempData<Assignment>(batchId, previousOptions, GetAssignmentMergeMatchFilter, cancellationToken: cancellationToken);
 
                         _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
                     }
@@ -191,6 +192,8 @@ namespace Altinn.AccessManagement.HostedServices.Services
                 throw new Exception(string.Format("Failed to convert model to Assignment. From:{0} To:{1} Role:{2}", model.FromPartyUuid, model.ToUserPartyUuid, model.RoleTypeCode));
             }
         }
+
+        private static readonly IReadOnlyList<string> GetAssignmentMergeMatchFilter = new List<string>() { "fromid", "roleid", "toid" }.AsReadOnly();
 
         private async Task<AccessMgmt.Core.Models.Role> GetOrCreateRole(string roleCode)
         {

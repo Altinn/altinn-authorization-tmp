@@ -30,11 +30,6 @@ namespace Altinn.AccessMgmt.Persistence.Services.Models
         public Guid? Facilitator { get; set; }
 
         /// <summary>
-        /// The date and time when the delegation was performed
-        /// </summary>
-        public DateTimeOffset DelegatedDateTimeOffset { get; set; } = DateTimeOffset.UtcNow;
-
-        /// <summary>
         /// Packages to be delegated to Agent
         /// </summary>
         public List<CreateSystemDelegationRolePackageDto> RolePackages { get; set; } = [];

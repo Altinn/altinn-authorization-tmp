@@ -50,10 +50,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
         /// <inheritdoc />
         public async Task SyncAdminRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
         {
-            var batchData = new List<Assignment>();
             var adminRoles = await _role.StreamRoles("11", ls.Data?.AltinnAdminRoleStreamNextPageLink, cancellationToken);
-
-
 
             await foreach (var page in adminRoles)
             {
@@ -84,6 +81,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                             throw new Exception("Failed to convert RoleModel to Assignment");
                         }
 
+                        /*
                         if (batchData.Any(t => t.FromId == assignment.Asignment.FromId && t.ToId == assignment.Asignment.ToId && t.RoleId == assignment.Asignment.RoleId))
                         {
                             // If changes on same assignment then execute as-is before continuing.
@@ -115,6 +113,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                         }
 
                         previousOptions = assignment.Options;
+                        */
                     }
                 }
 
@@ -131,6 +130,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
 
                 async Task Flush(Guid batchId)
                 {
+                    /*
                     try
                     {
                         _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchName);
@@ -155,6 +155,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                         batchId = Guid.NewGuid();
                         batchData.Clear();
                     }
+                    */
                 }
             }
         }

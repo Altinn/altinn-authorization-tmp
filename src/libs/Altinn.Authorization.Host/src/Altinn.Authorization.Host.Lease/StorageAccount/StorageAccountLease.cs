@@ -97,7 +97,7 @@ public partial class StorageAccountLease(IAzureClientFactory<BlobServiceClient> 
         {
             try
             {
-                                                                                                                                                                                                                                                  await castedLease.BlobClient.GetBlobLeaseClient(castedLease.Response.LeaseId).ReleaseAsync(default, cancellationToken);
+                await castedLease.BlobClient.GetBlobLeaseClient(castedLease.Response.LeaseId).ReleaseAsync(default, cancellationToken);
                 castedLease.Response = null;
             }
             catch (RequestFailedException ex) when (ex.ErrorCode == "LeaseLost" || ex.ErrorCode == "LeaseAlreadyPresent")
