@@ -464,6 +464,8 @@ public class DbDataMigrationService(
         var persEntityTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Person"));
         var ccrProviderId = (await providerRepository.Get(t => t.Code, "sys-ccr")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Enhetsregisteret"));
         var a3ProviderId = (await providerRepository.Get(t => t.Code, "sys-altinn3")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 3"));
+        var a2ProviderId = (await providerRepository.Get(t => t.Code, "sys-altinn2")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 2"));
+
 
         var roles = new List<Role>() 
         {
