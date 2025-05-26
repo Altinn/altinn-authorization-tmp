@@ -414,7 +414,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
             if (inList.Any())
             {
-                conditions.Add($"{tableAlias}.{m} IN ({string.Join(",", notInList)})");
+                conditions.Add($"{tableAlias}.{m} IN ({string.Join(",", inList)})");
             }
 
             if (notInList.Any())

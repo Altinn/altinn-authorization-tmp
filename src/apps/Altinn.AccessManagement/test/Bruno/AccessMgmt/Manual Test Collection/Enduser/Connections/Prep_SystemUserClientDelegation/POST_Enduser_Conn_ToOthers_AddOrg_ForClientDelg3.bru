@@ -1,48 +1,33 @@
 meta {
-  name: POST_SysUser_ClientDelg_AccPkg_AsClientDagl_Forbid
+  name: POST_Enduser_Conn_ToOthers_AddOrg_ForClientDelg3
   type: http
-  seq: 3
+  seq: 6
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation?party={{party}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections?party={{party}}&from={{party}}&to={{toOrg}}
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
+  from: {{party}}
+  to: {{toOrg}}
 }
 
 headers {
-  Content-Type: application/json
   Accept: application/json
-}
-
-body:json {
-  {
-    "clientId": "{{clientId}}",
-    "agentId": "{{systemUser}}",
-    "agentName": "Fiken",
-    "agentRole": "agent",
-    "rolePackages": [
-      {
-        "roleIdentifier": "regnskapsforer",
-        "packageUrn": "{{packageToDelegate}}"
-      }
-    ]
-  }
 }
 
 script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_SysUser_ClientDelg_AccPkg_AsClientDagl_Forbid");
-  bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-  bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
-  bru.setVar("clientId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_USENSUELL_UVIRKSOM_TIGER.partyUuid);
-  bru.setVar("packageToDelegate", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.clientPackageToDelegate);
+  bru.setVar("requestName", "POST_Enduser_Conn_ToOthers_AddOrg_ForClientDelg");
+  
+  bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_USENSUELL_UVIRKSOM_TIGER.partyUuid);
+  bru.setVar("toOrg", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
   
   var getTokenParameters = {
     auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_USENSUELL_UVIRKSOM_TIGER.dagligleder.userId,
@@ -58,7 +43,16 @@ script:pre-request {
 }
 
 tests {
-  test("Should return 403 FORBIDDEN", function() {
-    expect(res.status).to.equal(403);
+  
+  test(bru.getVar("requestName"), function() {
+    const data = res.getBody();
+    
+    expect(res.status).to.equal(200);
+    assert.isOk(data, "Expected response body to return created assignment");
+    
+    assert.equal(data.fromId, bru.getVar("party"));
+    assert.equal(data.toId, bru.getVar("toOrg"));
+    assert.equal(data.roleId, "42cae370-2dc1-4fdc-9c67-c2f4b0f0f829"); // rettighetshaver uuid
+    
   });
 }
