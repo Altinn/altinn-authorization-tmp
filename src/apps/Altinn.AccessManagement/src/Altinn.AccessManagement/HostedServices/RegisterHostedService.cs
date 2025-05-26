@@ -62,7 +62,7 @@ public partial class RegisterHostedService(
         }
 
         var cancellationToken = (CancellationToken)state;
-        await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("ral3_access_management_register_sync", cancellationToken);
+        await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("access_management_register_sync", cancellationToken);
         if (!ls.HasLease || cancellationToken.IsCancellationRequested)
         {
             return;
