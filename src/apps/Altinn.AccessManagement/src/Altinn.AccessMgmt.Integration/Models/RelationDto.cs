@@ -5,7 +5,7 @@ namespace Altinn.AccessMgmt.Integration.Models;
 /// <summary>
 /// Connection from one party to another
 /// </summary>
-public class RelationPermissionDto
+public class CompactRelationDto
 {
     /// <summary>
     /// Party
@@ -18,19 +18,9 @@ public class RelationPermissionDto
     public List<CompactRole> Roles { get; set; } = new();
 
     /// <summary>
-    /// Packages the party has
-    /// </summary>
-    public List<CompactPackage> Packages { get; set; } = new();
-
-    /// <summary>
-    /// Resources the party has
-    /// </summary>
-    public List<CompactResource> Resources { get; set; } = new();
-
-    /// <summary>
     /// Connections the party has
     /// </summary>
-    public List<RelationPermissionDto> Connections { get; set; } = new();
+    public List<CompactRelationDto> Connections { get; set; } = new();
 }
 
 /// <summary>
@@ -51,7 +41,49 @@ public class RelationDto
     /// <summary>
     /// Connections the party has
     /// </summary>
-    public List<RelationPermissionDto> Connections { get; set; } = new();
+    public List<RelationDto> Connections { get; set; } = new();
+
+    /// <summary>
+    /// Packages the party has
+    /// </summary>
+    public List<CompactPackage> Packages { get; set; } = new();
+
+    /// <summary>
+    /// Resources the party has
+    /// </summary>
+    public List<CompactResource> Resources { get; set; } = new();
+}
+
+/// <summary>
+/// Resource permission
+/// </summary>
+public class ResourcePermission
+{
+    /// <summary>
+    /// Resource the permissions are for
+    /// </summary>
+    public CompactResource Resource { get; set; }
+
+    /// <summary>
+    /// Parties with permissions
+    /// </summary>
+    public List<ConnectionPermission> Permissions { get; set; }
+}
+
+/// <summary>
+/// Package permissions
+/// </summary>
+public class PackagePermission
+{
+    /// <summary>
+    /// Package the permissions are for
+    /// </summary>
+    public CompactPackage Package { get; set; }
+
+    /// <summary>
+    /// Parties with permissions
+    /// </summary>
+    public List<ConnectionPermission> Permissions { get; set; }
 }
 
 /// <summary>
@@ -80,9 +112,28 @@ public class ConnectionPermission
 /// </summary>
 public class Permission
 {
+    /// <summary>
+    /// From party
+    /// </summary>
     public CompactEntity From { get; set; }
+
+    /// <summary>
+    /// To party
+    /// </summary>
     public CompactEntity To { get; set; }
+
+    /// <summary>
+    /// Via party
+    /// </summary>
     public CompactEntity Via { get; set; }
+
+    /// <summary>
+    /// Role
+    /// </summary>
     public CompactRole Role { get; set; }
+
+    /// <summary>
+    /// Via role
+    /// </summary>
     public CompactRole ViaRole { get; set; }
 }

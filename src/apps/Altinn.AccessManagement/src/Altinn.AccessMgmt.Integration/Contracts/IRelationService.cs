@@ -14,8 +14,19 @@ public interface IRelationService
     /// <param name="partyId">Filter for party</param>
     /// <param name="roleId">Filter for role</param>
     /// <param name="packageId">Filter for package</param>
+    /// <param name="resourceId">Filter for resource</param>
     /// <returns></returns>
-    Task<IEnumerable<RelationPermissionDto>> GetConnectionsFrom(Guid partyId, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null);
+    Task<IEnumerable<RelationDto>> GetConnectionsFrom(Guid partyId, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null);
+
+    /// <summary>
+    /// Get Connections recived from party
+    /// </summary>
+    /// <param name="partyId">Filter for party</param>
+    /// <param name="roleId">Filter for role</param>
+    /// <param name="packageId">Filter for package</param>
+    /// <param name="resourceId">Filter for resource</param>
+    /// <returns></returns>
+    Task<IEnumerable<RelationDto>> GetConnectionsTo(Guid partyId, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null);
 
     /// <summary>
     /// Get connections given from party
@@ -23,7 +34,15 @@ public interface IRelationService
     /// <param name="partyId">Filter for party</param>
     /// <param name="roleId">Filter for role</param>
     /// <returns></returns>
-    Task<IEnumerable<RelationDto>> GetConnectionsFrom(Guid partyId, Guid? roleId = null);
+    Task<IEnumerable<CompactRelationDto>> GetConnectionsFrom(Guid partyId, Guid? roleId = null);
+
+    /// <summary>
+    /// Get Connections recived from party
+    /// </summary>
+    /// <param name="partyId">Filter for party</param>
+    /// <param name="roleId">Filter for role</param>\
+    /// <returns></returns>
+    Task<IEnumerable<CompactRelationDto>> GetConnectionsTo(Guid partyId, Guid? roleId = null);
 
     /// <summary>
     /// List entities that has this package from given party
@@ -32,23 +51,6 @@ public interface IRelationService
     /// <param name="packageId">Filter for package</param>
     /// <returns></returns>
     Task<IEnumerable<ConnectionPermission>> GetPackagePermissionsFrom(Guid partyId, Guid packageId);
-
-    /// <summary>
-    /// Get Connections recived from party
-    /// </summary>
-    /// <param name="partyId">Filter for party</param>
-    /// <param name="roleId">Filter for role</param>
-    /// <param name="packageId">Filter for package</param>
-    /// <returns></returns>
-    Task<IEnumerable<RelationPermissionDto>> GetConnectionsTo(Guid partyId, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null);
-
-    /// <summary>
-    /// Get Connections recived from party
-    /// </summary>
-    /// <param name="partyId">Filter for party</param>
-    /// <param name="roleId">Filter for role</param>\
-    /// <returns></returns>
-    Task<IEnumerable<RelationDto>> GetConnectionsTo(Guid partyId, Guid? roleId = null);
 
     /// <summary>
     /// List entities that the party has this package at

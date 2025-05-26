@@ -10,7 +10,7 @@ namespace Altinn.AccessMgmt.Integration.Services;
 public class RelationService(IRelationRepository relationRepository, IRelationPermissionRepository relationPermissionRepository) : IRelationService
 {
     /// <inheritdoc />
-    public async Task<IEnumerable<RelationPermissionDto>> GetConnectionsFrom(Guid partyId, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null)
+    public async Task<IEnumerable<RelationDto>> GetConnectionsFrom(Guid partyId, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null)
     {
         var filter = relationPermissionRepository.CreateFilterBuilder();
         filter.Equal(t => t.FromId, partyId);
@@ -36,7 +36,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RelationDto>> GetConnectionsFrom(Guid partyId, Guid? roleId = null)
+    public async Task<IEnumerable<CompactRelationDto>> GetConnectionsFrom(Guid partyId, Guid? roleId = null)
     {
         var filter = relationRepository.CreateFilterBuilder();
         filter.Equal(t => t.FromId, partyId);
@@ -52,7 +52,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RelationPermissionDto>> GetConnectionsTo(Guid partyId, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null)
+    public async Task<IEnumerable<RelationDto>> GetConnectionsTo(Guid partyId, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null)
     {
         var filter = relationPermissionRepository.CreateFilterBuilder();
         filter.Equal(t => t.ToId, partyId);
@@ -78,7 +78,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RelationDto>> GetConnectionsTo(Guid partyId, Guid? roleId = null)
+    public async Task<IEnumerable<CompactRelationDto>> GetConnectionsTo(Guid partyId, Guid? roleId = null)
     {
         var filter = relationRepository.CreateFilterBuilder();
         filter.Equal(t => t.ToId, partyId);
@@ -233,6 +233,35 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
         return res.Select(t => t.Resource);
     }
 
+    private IEnumerable<CompactRelationDto> GetConnectionsFrom(IEnumerable<ExtCompactRelation> res)
+    {
+        var result = new List<CompactRelationDto>();
+
+        var tempResult = new Dictionary<Guid, CompactRelationDto>(); // ViaId - Include Reason for Split in KeyRole & Delegation (?)
+        foreach (var connection in res.Where(t => t.Reason != "Direct").DistinctBy(t => t.To.Id))
+        {
+            var party = connection.To;
+            tempResult.Add(connection.Via.Id, new CompactRelationDto()
+            {
+                Party = party,
+                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).ToList(),
+                Connections = new List<CompactRelationDto>(),
+            });
+        }
+
+        foreach (var party in res.Where(t => t.Reason == "Direct").Select(t => t.To).DistinctBy(t => t.Id))
+        {
+            result.Add(new CompactRelationDto()
+            {
+                Party = party,
+                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).ToList(),
+                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).ToList(), // Split in KeyRole & Delegation (?)
+            });
+        }
+
+        return result;
+    }
+
     private IEnumerable<RelationDto> GetConnectionsFrom(IEnumerable<ExtRelation> res)
     {
         var result = new List<RelationDto>();
@@ -245,7 +274,8 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             {
                 Party = party,
                 Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).ToList(),
-                // Connections = new List<RelationDto>(),
+                Packages = res.Where(t => t.To.Id == party.Id).Select(t => t.Package).ToList(),
+                Connections = new List<RelationDto>(),
             });
         }
 
@@ -255,37 +285,36 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             {
                 Party = party,
                 Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).ToList(),
-                // Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).ToList(), // Split in KeyRole & Delegation (?)
+                Packages = res.Where(t => t.To.Id == party.Id).Select(t => t.Package).ToList(),
+                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).ToList(), // Split in KeyRole & Delegation (?)
             });
         }
 
         return result;
     }
 
-    private IEnumerable<RelationPermissionDto> GetConnectionsFrom(IEnumerable<ExtRelationPermission> res)
+    private IEnumerable<CompactRelationDto> GetConnectionsTo(IEnumerable<ExtCompactRelation> res)
     {
-        var result = new List<RelationPermissionDto>();
+        var result = new List<CompactRelationDto>();
 
-        var tempResult = new Dictionary<Guid, RelationPermissionDto>(); // ViaId - Include Reason for Split in KeyRole & Delegation (?)
-        foreach (var connection in res.Where(t => t.Reason != "Direct").DistinctBy(t => t.To.Id))
+        var tempResult = new Dictionary<Guid, CompactRelationDto>(); // ViaId - Include Reason for Split in KeyRole & Delegation (?)
+        foreach (var connection in res.Where(t => t.Reason != "Direct").DistinctBy(t => t.From.Id))
         {
-            var party = connection.To;
-            tempResult.Add(connection.Via.Id, new RelationPermissionDto()
+            var fromParty = connection.From;
+            tempResult.Add(connection.Via.Id, new CompactRelationDto()
             {
-                Party = party,
-                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).ToList(),
-                Packages = res.Where(t => t.To.Id == party.Id).Select(t => t.Package).ToList(),
-                Connections = new List<RelationPermissionDto>(),
+                Party = fromParty,
+                Roles = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Role).ToList(),
+                Connections = new List<CompactRelationDto>(),
             });
         }
 
-        foreach (var party in res.Where(t => t.Reason == "Direct").Select(t => t.To).DistinctBy(t => t.Id))
+        foreach (var party in res.Where(t => t.Reason == "Direct").Select(t => t.From).DistinctBy(t => t.Id))
         {
-            result.Add(new RelationPermissionDto()
+            result.Add(new CompactRelationDto()
             {
                 Party = party,
-                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).ToList(),
-                Packages = res.Where(t => t.To.Id == party.Id).Select(t => t.Package).ToList(),
+                Roles = res.Where(t => t.From.Id == party.Id).Select(t => t.Role).ToList(),
                 Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).ToList(), // Split in KeyRole & Delegation (?)
             });
         }
@@ -305,43 +334,14 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             {
                 Party = fromParty,
                 Roles = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Role).ToList(),
-                // Connections = new List<RelationDto>(),
+                Packages = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Package).ToList(),
+                Connections = new List<RelationDto>(),
             });
         }
 
         foreach (var party in res.Where(t => t.Reason == "Direct").Select(t => t.From).DistinctBy(t => t.Id))
         {
             result.Add(new RelationDto()
-            {
-                Party = party,
-                Roles = res.Where(t => t.From.Id == party.Id).Select(t => t.Role).ToList(),
-                // Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).ToList(),
-            });
-        }
-
-        return result;
-    }
-
-    private IEnumerable<RelationPermissionDto> GetConnectionsTo(IEnumerable<ExtRelationPermission> res)
-    {
-        var result = new List<RelationPermissionDto>();
-
-        var tempResult = new Dictionary<Guid, RelationPermissionDto>(); // ViaId
-        foreach (var connection in res.Where(t => t.Reason != "Direct").DistinctBy(t => t.From.Id))
-        {
-            var fromParty = connection.From;
-            tempResult.Add(connection.Via.Id, new RelationPermissionDto()
-            {
-                Party = fromParty,
-                Roles = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Role).ToList(),
-                Packages = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Package).ToList(),
-                Connections = new List<RelationPermissionDto>(),
-            });
-        }
-
-        foreach (var party in res.Where(t => t.Reason == "Direct").Select(t => t.From).DistinctBy(t => t.Id))
-        {
-            result.Add(new RelationPermissionDto()
             {
                 Party = party,
                 Roles = res.Where(t => t.From.Id == party.Id).Select(t => t.Role).ToList(),
@@ -353,7 +353,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
         return result;
     }
 
-    private Permission ConvertToPermission(ExtRelation connection)
+    private Permission ConvertToPermission(ExtCompactRelation connection)
     {
         return new Permission()
         {
@@ -365,7 +365,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
         };
     }
 
-    private Permission ConvertToPermission(ExtRelationPermission connection)
+    private Permission ConvertToPermission(ExtRelation connection)
     {
         return new Permission()
         {

@@ -5,28 +5,28 @@ using Altinn.AccessMgmt.Persistence.Core.Definitions;
 namespace Altinn.AccessMgmt.Repo.Definitions;
 
 /// <inheritdoc/>
-public class RelationPermissionDefinition : BaseDbDefinition<Relation>, IDbDefinition
+public class RelationDefinition : BaseDbDefinition<Relation>, IDbDefinition
 {
     /// <inheritdoc/>
-    public RelationPermissionDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
+    public RelationDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
     {
     }
 
     /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<RelationPermission>(def =>
+        definitionRegistry.Define<Relation>(def =>
         {
             def.SetVersion(1);
             def.SetType(DbDefinitionType.View);
 
-            def.RegisterExtProperty<ExtRelationPermission>(t => t.FromId, t => t.From, functionName: "CompactEntity");
-            def.RegisterExtProperty<ExtRelationPermission>(t => t.RoleId, t => t.Role, functionName: "CompactRole");
-            def.RegisterExtProperty<ExtRelationPermission>(t => t.ViaId, t => t.Via, functionName: "CompactEntity", nullable: true);
-            def.RegisterExtProperty<ExtRelationPermission>(t => t.ViaRoleId, t => t.ViaRole, functionName: "CompactRole", nullable: true);
-            def.RegisterExtProperty<ExtRelationPermission>(t => t.ToId, t => t.To, functionName: "CompactEntity");
-            def.RegisterExtProperty<ExtRelationPermission>(t => t.PackageId, t => t.Package, functionName: "CompactPackage", nullable: true);
-            def.RegisterExtProperty<ExtRelationPermission>(t => t.ResourceId, t => t.Resource, functionName: "CompactResource", nullable: true);
+            def.RegisterExtProperty<ExtRelation>(t => t.FromId, t => t.From, functionName: "CompactEntity");
+            def.RegisterExtProperty<ExtRelation>(t => t.RoleId, t => t.Role, functionName: "CompactRole");
+            def.RegisterExtProperty<ExtRelation>(t => t.ViaId, t => t.Via, functionName: "CompactEntity", nullable: true);
+            def.RegisterExtProperty<ExtRelation>(t => t.ViaRoleId, t => t.ViaRole, functionName: "CompactRole", nullable: true);
+            def.RegisterExtProperty<ExtRelation>(t => t.ToId, t => t.To, functionName: "CompactEntity");
+            def.RegisterExtProperty<ExtRelation>(t => t.PackageId, t => t.Package, functionName: "CompactPackage", nullable: true);
+            def.RegisterExtProperty<ExtRelation>(t => t.ResourceId, t => t.Resource, functionName: "CompactResource", nullable: true);
             def.RegisterProperty(t => t.Reason);
 
             def.SetQuery(BasicScript());

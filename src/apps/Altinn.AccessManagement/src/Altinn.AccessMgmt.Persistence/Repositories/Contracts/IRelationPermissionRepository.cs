@@ -4,4 +4,4 @@ using Altinn.AccessMgmt.Persistence.Core.Contracts;
 namespace Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 
 /// <inheritdoc/>
-public interface IRelationPermissionRepository : IDbExtendedRepository<RelationPermission, ExtRelationPermission> { }
+public interface IRelationPermissionRepository : IDbExtendedRepository<Relation, ExtRelation> { }

@@ -9,7 +9,7 @@ namespace Altinn.AccessMgmt.Persistence.Repositories;
 /// <summary>
 /// Data service for NewConnection
 /// </summary>
-public class RelationRepository : ExtendedRepository<Relation, ExtRelation>, IRelationRepository
+public class RelationRepository : ExtendedRepository<CompactRelation, ExtCompactRelation>, IRelationRepository
 {
     /// <inheritdoc/>
     public RelationRepository(DbDefinitionRegistry dbDefinitionRegistry, IDbExecutor executor) : base(dbDefinitionRegistry, executor)
