@@ -90,7 +90,7 @@ public class RelationPermissionDefinition : BaseDbDefinition<Relation>, IDbDefin
         JOIN dbo.assignment fa ON fa.id = d.fromid
         JOIN dbo.assignment ta ON ta.id = d.toid
         LEFT OUTER JOIN dbo.delegationpackage dp ON dp.delegationid = d.id
-        LEFT OUTER JOIN dbo.delegationresource dp ON dr.delegationid = d.id;
+        LEFT OUTER JOIN dbo.delegationresource dr ON dr.delegationid = d.id;
         """;
     }
 }
