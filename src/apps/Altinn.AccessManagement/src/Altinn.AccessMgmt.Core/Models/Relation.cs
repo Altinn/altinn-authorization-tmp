@@ -71,4 +71,3 @@ public class ExtRelation
     /// </summary>
     public string Reason { get; set; }
 }
-

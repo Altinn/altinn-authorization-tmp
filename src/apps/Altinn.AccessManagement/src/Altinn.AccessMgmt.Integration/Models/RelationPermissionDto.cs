@@ -5,7 +5,7 @@ namespace Altinn.AccessMgmt.Integration.Models;
 /// <summary>
 /// Connection from one party to another
 /// </summary>
-public class ConnectionV2Dto
+public class RelationPermissionDto
 {
     /// <summary>
     /// Party
@@ -30,7 +30,28 @@ public class ConnectionV2Dto
     /// <summary>
     /// Connections the party has
     /// </summary>
-    public List<ConnectionV2Dto> Connections { get; set; } = new();
+    public List<RelationPermissionDto> Connections { get; set; } = new();
+}
+
+/// <summary>
+/// Connection from one party to another
+/// </summary>
+public class RelationDto
+{
+    /// <summary>
+    /// Party
+    /// </summary>
+    public CompactEntity Party { get; set; } = new();
+
+    /// <summary>
+    /// Roles the party has for given filter
+    /// </summary>
+    public List<CompactRole> Roles { get; set; } = new();
+
+    /// <summary>
+    /// Connections the party has
+    /// </summary>
+    public List<RelationPermissionDto> Connections { get; set; } = new();
 }
 
 /// <summary>
