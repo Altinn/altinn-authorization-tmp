@@ -5,27 +5,28 @@ using Altinn.AccessMgmt.Persistence.Core.Definitions;
 namespace Altinn.AccessMgmt.Repo.Definitions;
 
 /// <inheritdoc/>
-public class NewConnectionDefinition : BaseDbDefinition<ConnectionV2>, IDbDefinition
+public class RelationPermissionDefinition : BaseDbDefinition<Relation>, IDbDefinition
 {
     /// <inheritdoc/>
-    public NewConnectionDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
+    public RelationPermissionDefinition(DbDefinitionRegistry definitionRegistry) : base(definitionRegistry)
     {
     }
 
     /// <inheritdoc/>
     public void Define()
     {
-        definitionRegistry.Define<ConnectionV2>(def =>
+        definitionRegistry.Define<RelationPermission>(def =>
         {
             def.SetVersion(1);
             def.SetType(DbDefinitionType.View);
 
-            def.RegisterExtProperty<ExtConnectionV2>(t => t.FromId, t => t.From, "CompactEntity");
-            def.RegisterExtProperty<ExtConnectionV2>(t => t.RoleId, t => t.Role, "CompactRole");
-            def.RegisterExtProperty<ExtConnectionV2>(t => t.ViaId, t => t.Via, "CompactEntity", nullable: true);
-            def.RegisterExtProperty<ExtConnectionV2>(t => t.ViaRoleId, t => t.ViaRole, "CompactRole", nullable: true);
-            def.RegisterExtProperty<ExtConnectionV2>(t => t.ToId, t => t.To, "CompactEntity");
-            def.RegisterExtProperty<ExtConnectionV2>(t => t.PackageId, t => t.Package, "CompactPackage", nullable: true);
+            def.RegisterExtProperty<ExtRelationPermission>(t => t.FromId, t => t.From, functionName: "CompactEntity");
+            def.RegisterExtProperty<ExtRelationPermission>(t => t.RoleId, t => t.Role, functionName: "CompactRole");
+            def.RegisterExtProperty<ExtRelationPermission>(t => t.ViaId, t => t.Via, functionName: "CompactEntity", nullable: true);
+            def.RegisterExtProperty<ExtRelationPermission>(t => t.ViaRoleId, t => t.ViaRole, functionName: "CompactRole", nullable: true);
+            def.RegisterExtProperty<ExtRelationPermission>(t => t.ToId, t => t.To, functionName: "CompactEntity");
+            def.RegisterExtProperty<ExtRelationPermission>(t => t.PackageId, t => t.Package, functionName: "CompactPackage", nullable: true);
+            def.RegisterExtProperty<ExtRelationPermission>(t => t.ResourceId, t => t.Resource, functionName: "CompactResource", nullable: true);
             def.RegisterProperty(t => t.Reason);
 
             def.SetQuery(BasicScript());
@@ -36,8 +37,11 @@ public class NewConnectionDefinition : BaseDbDefinition<ConnectionV2>, IDbDefini
             def.AddManualDependency<Assignment>();
             def.AddManualDependency<Delegation>();
             def.AddManualDependency<AssignmentPackage>();
+            def.AddManualDependency<AssignmentResource>();
             def.AddManualDependency<DelegationPackage>();
+            def.AddManualDependency<DelegationResource>();
             def.AddManualDependency<Package>();
+            def.AddManualDependency<Resource>();
         });
     }
 
@@ -50,33 +54,43 @@ public class NewConnectionDefinition : BaseDbDefinition<ConnectionV2>, IDbDefini
         NULL::uuid     AS viaroleid,
         a.toid,
         ap.packageid,
+        ar.resourceid,
         'Direct'::text AS reason
         FROM dbo.assignment a
         LEFT OUTER JOIN dbo.assignmentpackage ap ON ap.assignmentid = a.id
+        LEFT OUTER JOIN dbo.assignmentresource ar ON ar.assignmentid = a.id
+
         UNION ALL
+
         SELECT a.fromid,
         a.roleid,
         a.toid          AS viaid,
         a2.roleid       AS viaroleid,
         a2.toid,
         ap.packageid,
+        ar.resourceid,
         'KeyRole'::text AS reason
         FROM dbo.assignment a
         JOIN dbo.assignment a2 ON a.toid = a2.fromid
         JOIN dbo.role r ON a2.roleid = r.id AND r.iskeyrole = true
         LEFT OUTER JOIN dbo.assignmentpackage ap ON ap.assignmentid = a.id
+        LEFT OUTER JOIN dbo.assignmentresource ar ON ar.assignmentid = a.id
+
         UNION ALL
+
         SELECT fa.fromid,
         fa.roleid,
         fa.toid            AS viaid,
         ta.roleid          AS viaroleid,
         ta.toid,
         dp.packageid,
+        dr.resourceid,
         'Delegation'::text AS reason
         FROM dbo.delegation d
         JOIN dbo.assignment fa ON fa.id = d.fromid
         JOIN dbo.assignment ta ON ta.id = d.toid
-        LEFT OUTER JOIN dbo.delegationpackage dp ON dp.delegationid = d.id;
+        LEFT OUTER JOIN dbo.delegationpackage dp ON dp.delegationid = d.id
+        LEFT OUTER JOIN dbo.delegationresource dp ON dr.delegationid = d.id;
         """;
     }
 }

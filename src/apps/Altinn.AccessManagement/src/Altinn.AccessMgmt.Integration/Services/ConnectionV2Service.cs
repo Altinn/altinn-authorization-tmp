@@ -63,6 +63,33 @@ public class ConnectionV2Service(INewConnectionRepository repository) : IConnect
     }
 
     /// <inheritdoc />
+    public async Task<List<ConnectionV2Dto>> GetConnectionsVia(Guid? partyId = null, Guid? roleId = null, Guid? packageId = null)
+    {
+        var result = new List<ConnectionV2Dto>();
+
+        var filter = repository.CreateFilterBuilder();
+
+        if (partyId.HasValue)
+        {
+            filter.Equal(t => t.ViaId, partyId.Value);
+        }
+
+        if (roleId.HasValue)
+        {
+            filter.Equal(t => t.RoleId, roleId.Value);
+        }
+
+        if (packageId.HasValue)
+        {
+            filter.Equal(t => t.PackageId, packageId.Value);
+        }
+
+        var res = await repository.GetExtended(filter);
+
+        return GetConnectionsTo(res);
+    }
+
+    /// <inheritdoc />
     public async Task<List<ConnectionPermission>> GetPackagePermissions(Guid partyId, Guid packageId)
     {
         var result = new List<ConnectionPermission>();
@@ -87,11 +114,91 @@ public class ConnectionV2Service(INewConnectionRepository repository) : IConnect
             result.Add(perm);
         }
 
-
         return result;
     }
 
-    private List<ConnectionV2Dto> GetConnectionsFrom(IEnumerable<ExtConnectionV2> res)
+    /// <inheritdoc />
+    public async Task<IEnumerable<CompactPackage>> GetPackagesFrom(Guid? partyId = null, Guid? toId = null, Guid? packageId = null)
+    {
+        var result = new List<ConnectionV2Dto>();
+
+        var filter = repository.CreateFilterBuilder();
+
+        if (partyId.HasValue)
+        {
+            filter.Equal(t => t.FromId, partyId.Value);
+        }
+
+        if (toId.HasValue)
+        {
+            filter.Equal(t => t.ToId, toId.Value);
+        }
+
+        if (packageId.HasValue)
+        {
+            filter.Equal(t => t.PackageId, packageId.Value);
+        }
+
+        var res = await repository.GetExtended(filter);
+
+        return res.Select(t => t.Package);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<CompactPackage>> GetPackagesTo(Guid? partyId = null, Guid? fromId = null, Guid? packageId = null)
+    {
+        var result = new List<ConnectionV2Dto>();
+
+        var filter = repository.CreateFilterBuilder();
+
+        if (partyId.HasValue)
+        {
+            filter.Equal(t => t.ToId, partyId.Value);
+        }
+
+        if (fromId.HasValue)
+        {
+            filter.Equal(t => t.FromId, fromId.Value);
+        }
+
+        if (packageId.HasValue)
+        {
+            filter.Equal(t => t.PackageId, packageId.Value);
+        }
+
+        var res = await repository.GetExtended(filter);
+
+        return res.Select(t => t.Package);
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<CompactResource>> GetResources(Guid? fromId = null, Guid? toId = null, Guid? packageId = null)
+    {
+        var result = new List<ConnectionV2Dto>();
+
+        var filter = repository.CreateFilterBuilder();
+
+        if (fromId.HasValue)
+        {
+            filter.Equal(t => t.FromId, fromId.Value);
+        }
+
+        if (toId.HasValue)
+        {
+            filter.Equal(t => t.ToId, toId.Value);
+        }
+
+        if (packageId.HasValue)
+        {
+            filter.Equal(t => t.PackageId, packageId.Value);
+        }
+
+        var res = await repository.GetExtended(filter);
+
+        return res.Select(t => t.Resource);
+    }
+
+    private List<ConnectionV2Dto> GetConnectionsFrom(IEnumerable<ExtRelation> res)
     {
         var result = new List<ConnectionV2Dto>();
 
@@ -122,7 +229,7 @@ public class ConnectionV2Service(INewConnectionRepository repository) : IConnect
         return result;
     }
     
-    private List<ConnectionV2Dto> GetConnectionsTo(IEnumerable<ExtConnectionV2> res)
+    private List<ConnectionV2Dto> GetConnectionsTo(IEnumerable<ExtRelation> res)
     {
         var result = new List<ConnectionV2Dto>();
 
@@ -153,7 +260,7 @@ public class ConnectionV2Service(INewConnectionRepository repository) : IConnect
         return result;
     }
     
-    private Permission ConvertToPermission(ExtConnectionV2 connection)
+    private Permission ConvertToPermission(ExtRelation connection)
     {
         return new Permission()
         {

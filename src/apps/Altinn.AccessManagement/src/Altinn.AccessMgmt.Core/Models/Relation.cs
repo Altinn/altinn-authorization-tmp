@@ -3,7 +3,7 @@
 /// <summary>
 /// New Connection
 /// </summary>
-public class ConnectionV2
+public class Relation
 {
     /// <summary>
     /// The entity identity the connection is from (origin, client, source etc) 
@@ -31,16 +31,6 @@ public class ConnectionV2
     public Guid ToId { get; set; }
 
     /// <summary>
-    /// Package
-    /// </summary>
-    public Guid PackageId { get; set; }
-
-    /// <summary>
-    /// Resource
-    /// </summary>
-    public Guid ResourceId { get; set; }
-
-    /// <summary>
     /// Reason
     /// </summary>
     public string Reason { get; set; }
@@ -49,7 +39,7 @@ public class ConnectionV2
 /// <summary>
 /// New Connection
 /// </summary>
-public class ExtConnectionV2
+public class ExtRelation
 {
     /// <summary>
     /// The entity identity the connection is from (origin, client, source etc) 
@@ -77,12 +67,8 @@ public class ExtConnectionV2
     public CompactEntity To { get; set; }
 
     /// <summary>
-    /// Package
-    /// </summary>
-    public CompactPackage Package { get; set; }
-
-    /// <summary>
     /// Reason
     /// </summary>
     public string Reason { get; set; }
 }
+

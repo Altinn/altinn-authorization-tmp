@@ -46,15 +46,15 @@ public interface IConnectionV2Service
     /// <summary>
     /// Get parties with access to package on party
     /// </summary>
-    Task<List<CompactPackage>> GetPackagesFrom(Guid? partyId = null, Guid? toId = null, Guid? packageId = null);
+    Task<IEnumerable<CompactPackage>> GetPackagesFrom(Guid? partyId = null, Guid? toId = null, Guid? packageId = null);
 
     /// <summary>
     /// Get parties with access to package on party
     /// </summary>
-    Task<List<CompactPackage>> GetPackagesTo(Guid? partyId = null, Guid? fromId = null, Guid? packageId = null);
+    Task<IEnumerable<CompactPackage>> GetPackagesTo(Guid? partyId = null, Guid? fromId = null, Guid? packageId = null);
 
     /// <summary>
     /// Get parties with access to package on party
     /// </summary>
-    Task<List<CompactResource>> GetResources(Guid? fromId = null, Guid? toId = null, Guid? resourceId = null);
+    Task<IEnumerable<CompactResource>> GetResources(Guid? fromId = null, Guid? toId = null, Guid? resourceId = null);
 }
