@@ -5,27 +5,6 @@ namespace Altinn.AccessMgmt.Integration.Models;
 /// <summary>
 /// Connection from one party to another
 /// </summary>
-public class CompactRelationDto
-{
-    /// <summary>
-    /// Party
-    /// </summary>
-    public CompactEntity Party { get; set; } = new();
-
-    /// <summary>
-    /// Roles the party has for given filter
-    /// </summary>
-    public List<CompactRole> Roles { get; set; } = new();
-
-    /// <summary>
-    /// Connections the party has
-    /// </summary>
-    public List<CompactRelationDto> Connections { get; set; } = new();
-}
-
-/// <summary>
-/// Connection from one party to another
-/// </summary>
 public class RelationDto
 {
     /// <summary>
@@ -55,85 +34,22 @@ public class RelationDto
 }
 
 /// <summary>
-/// Resource permission
+/// Connection from one party to another
 /// </summary>
-public class ResourcePermission
+public class CompactRelationDto
 {
     /// <summary>
-    /// Resource the permissions are for
+    /// Party
     /// </summary>
-    public CompactResource Resource { get; set; }
+    public CompactEntity Party { get; set; } = new();
 
     /// <summary>
-    /// Parties with permissions
+    /// Roles the party has for given filter
     /// </summary>
-    public List<ConnectionPermission> Permissions { get; set; }
-}
-
-/// <summary>
-/// Package permissions
-/// </summary>
-public class PackagePermission
-{
-    /// <summary>
-    /// Package the permissions are for
-    /// </summary>
-    public CompactPackage Package { get; set; }
+    public List<CompactRole> Roles { get; set; } = new();
 
     /// <summary>
-    /// Parties with permissions
+    /// Connections the party has
     /// </summary>
-    public List<ConnectionPermission> Permissions { get; set; }
-}
-
-/// <summary>
-/// Connection Permission
-/// </summary>
-public class ConnectionPermission
-{
-    /// <summary>
-    /// The party with permission
-    /// </summary>
-    public CompactEntity Party { get; set; }
-
-    /// <summary>
-    /// KeyRole permissions
-    /// </summary>
-    public List<Permission> KeyRoles { get; set; }
-
-    /// <summary>
-    /// Delegated permissions
-    /// </summary>
-    public List<Permission> Delegations { get; set; }
-}
-
-/// <summary>
-/// Permission
-/// </summary>
-public class Permission
-{
-    /// <summary>
-    /// From party
-    /// </summary>
-    public CompactEntity From { get; set; }
-
-    /// <summary>
-    /// To party
-    /// </summary>
-    public CompactEntity To { get; set; }
-
-    /// <summary>
-    /// Via party
-    /// </summary>
-    public CompactEntity Via { get; set; }
-
-    /// <summary>
-    /// Role
-    /// </summary>
-    public CompactRole Role { get; set; }
-
-    /// <summary>
-    /// Via role
-    /// </summary>
-    public CompactRole ViaRole { get; set; }
+    public List<CompactRelationDto> Connections { get; set; } = new();
 }
