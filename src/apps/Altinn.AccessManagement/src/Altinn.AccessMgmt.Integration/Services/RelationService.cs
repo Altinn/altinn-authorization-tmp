@@ -244,7 +244,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             tempResult.Add(connection.Via.Id, new CompactRelationDto()
             {
                 Party = party,
-                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).ToList(),
+                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
                 Connections = new List<CompactRelationDto>(),
             });
         }
@@ -254,8 +254,8 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             result.Add(new CompactRelationDto()
             {
                 Party = party,
-                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).ToList(),
-                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).ToList(), // Split in KeyRole & Delegation (?)
+                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).DistinctBy(t => t.Party.Id).ToList(), // Split in KeyRole & Delegation (?)
             });
         }
 
@@ -273,8 +273,8 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             tempResult.Add(connection.Via.Id, new RelationDto()
             {
                 Party = party,
-                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).ToList(),
-                Packages = res.Where(t => t.To.Id == party.Id).Select(t => t.Package).ToList(),
+                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+                Packages = res.Where(t => t.To.Id == party.Id).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
                 Connections = new List<RelationDto>(),
             });
         }
@@ -284,9 +284,9 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             result.Add(new RelationDto()
             {
                 Party = party,
-                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).ToList(),
-                Packages = res.Where(t => t.To.Id == party.Id).Select(t => t.Package).ToList(),
-                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).ToList(), // Split in KeyRole & Delegation (?)
+                Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+                Packages = res.Where(t => t.To.Id == party.Id).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).DistinctBy(t => t.Party.Id).ToList(), // Split in KeyRole & Delegation (?)
             });
         }
 
@@ -304,7 +304,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             tempResult.Add(connection.Via.Id, new CompactRelationDto()
             {
                 Party = fromParty,
-                Roles = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Role).ToList(),
+                Roles = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
                 Connections = new List<CompactRelationDto>(),
             });
         }
@@ -314,8 +314,8 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             result.Add(new CompactRelationDto()
             {
                 Party = party,
-                Roles = res.Where(t => t.From.Id == party.Id).Select(t => t.Role).ToList(),
-                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).ToList(), // Split in KeyRole & Delegation (?)
+                Roles = res.Where(t => t.From.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).DistinctBy(t => t.Party.Id).ToList(), // Split in KeyRole & Delegation (?)
             });
         }
 
@@ -333,8 +333,8 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             tempResult.Add(connection.Via.Id, new RelationDto()
             {
                 Party = fromParty,
-                Roles = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Role).ToList(),
-                Packages = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Package).ToList(),
+                Roles = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+                Packages = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
                 Connections = new List<RelationDto>(),
             });
         }
@@ -344,9 +344,9 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             result.Add(new RelationDto()
             {
                 Party = party,
-                Roles = res.Where(t => t.From.Id == party.Id).Select(t => t.Role).ToList(),
-                Packages = res.Where(t => t.From.Id == party.Id).Select(t => t.Package).ToList(),
-                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).ToList(),
+                Roles = res.Where(t => t.From.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+                Packages = res.Where(t => t.From.Id == party.Id).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).DistinctBy(t => t.Party.Id).ToList(),
             });
         }
 
