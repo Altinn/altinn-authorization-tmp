@@ -128,6 +128,16 @@ public class DbSchemaMigrationService
             $$;
             """;
         await executor.ExecuteMigrationCommand(compactResourceFunction);
+
+        var nameFunctions = """
+        create or replace function namerole(_id uuid) returns text stable language sql as $$ select code from dbo.role where id = _id; $$;
+        create or replace function nameentity(_id uuid) returns text stable language sql as $$ select e.name || ' (' || ev.name || ')' from dbo.entity as e inner join dbo.entityvariant as ev on e.variantid = ev.id where e.id = _id; $$;
+        create or replace function namepackage(_id uuid) returns text stable language sql as $$ select name from dbo.package where id = _id; $$;
+        create or replace function nameassignment(_id uuid) returns text stable language sql as $$ select nameentity(a.fromid) || ' - ' || namerole(a.roleid) || ' - '  || nameentity(a.toid) from dbo.assignment as a where id = _id; $$;
+        create or replace function namedelegation(_id uuid) returns text stable language sql as $$ select nameassignment(d.fromid) || ' | ' || nameentity(d.facilitatorid) || ' | ' || nameassignment(d.toid) from dbo.delegation as d where id = _id; $$;
+        """;
+
+        await executor.ExecuteMigrationCommand(nameFunctions);
     }
 
     /// <summary>
