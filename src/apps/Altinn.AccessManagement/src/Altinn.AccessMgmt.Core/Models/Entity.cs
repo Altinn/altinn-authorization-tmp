@@ -90,7 +90,7 @@ public class CompactEntity
     /// <summary>
     /// Parent
     /// </summary>
-    public string Parent { get; set; }
+    public CompactEntity Parent { get; set; }
 
     /// <summary>
     /// Children
