@@ -1,6 +1,8 @@
-﻿using Altinn.AccessManagement.HostedServices.Contracts;
+﻿using System.Linq.Expressions;
+using Altinn.AccessManagement.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
+using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
@@ -19,11 +21,15 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
     private readonly IAltinnLease _lease;
     private readonly IAltinnResourceRegister _resourceRegister;
     private readonly IIngestService _ingestService;
-
     private readonly IResourceTypeRepository _resourceTypeRepository;
     private readonly IResourceRepository _resourceRepository;
     private readonly IProviderRepository _providerRepository;
     private readonly IProviderTypeRepository _providerTypeRepository;
+    private readonly IPackageResourceRepository _packageResourceRepository;
+    private readonly IPackageRepository _packageRepository;
+    private readonly IRoleResourceRepository _roleResourceRepository;
+    private readonly IRoleRepository _roleRepository;
+    private readonly IRoleLookupRepository _roleLookupRepository;
 
     /// <summary>
     /// Constructor
@@ -37,6 +43,11 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
         IResourceTypeRepository resourceTypeRepository,
         IResourceRepository resourceRepository,
         IProviderRepository providerRepository,
+        IPackageRepository packageRepository,
+        IRoleRepository roleRepository,
+        IPackageResourceRepository packageResourceRepository,
+        IRoleResourceRepository roleResourceRepository,
+        IRoleLookupRepository roleLookupRepository,
         IProviderTypeRepository providerTypeRepository,
         ILogger<ResourceSyncService> logger
         ) : base(lease, featureManager, register)
@@ -45,11 +56,15 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
 
         _resourceRegister = resourceRegister;
         _ingestService = ingestService;
-
+        _roleResourceRepository = roleResourceRepository;
+        _roleRepository = roleRepository;
+        _roleLookupRepository = roleLookupRepository;
         _resourceRepository = resourceRepository;
         _resourceTypeRepository = resourceTypeRepository;
+        _packageResourceRepository = packageResourceRepository;
         _providerRepository = providerRepository;
         _providerTypeRepository = providerTypeRepository;
+        _packageRepository = packageRepository;
     }
 
     /// <inheritdoc />
@@ -96,49 +111,7 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
     }
 
     /// <inheritdoc />
-    public async Task<bool> SyncResources(CancellationToken cancellationToken)
-    {
-        var response = await _resourceRegister.GetResources(cancellationToken);
-        if (!response.IsSuccessful)
-        {
-            Log.ServiceOwnerError(_logger, response.StatusCode);
-            return false;
-        }
-
-        var options = new ChangeRequestOptions()
-        {
-            ChangedBy = AuditDefaults.RegisterImportSystem,
-            ChangedBySystem = AuditDefaults.RegisterImportSystem
-        };
-
-        var resources = new List<Resource>();
-        var failed = new List<ResourceModel>();
-        foreach (var res in response.Content)
-        {
-            //if (res.Status.ToString().Equals("Disabled", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    Console.WriteLine($"Delete: {res.Identifier}");
-            //    continue;
-            //}
-
-            try
-            {
-                resources.Add(await ConvertToResource(res, options, cancellationToken));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                failed.Add(res);
-            }
-        }
-
-        await _ingestService.IngestAndMergeData(resources, options: options, ["Id"]);
-
-        return true;
-    }
-
-    /// <inheritdoc />
-    public async Task SyncResourceMapping(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+    public async Task SyncResources(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
     {
         var options = new ChangeRequestOptions()
         {
@@ -151,7 +124,7 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
 
         await foreach (var page in await _resourceRegister.StreamResources(ls.Data?.ResourcesNextPageLink, cancellationToken))
         {
-            if (!page.IsSuccessful)
+            if (page.IsProblem)
             {
                 Log.UpdatedResourceError(_logger, page.StatusCode);
                 return;
@@ -162,44 +135,31 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
 
             foreach (var updatedResource in page.Content.Data)
             {
-                if (updatedResource.Deleted)
-                {
-                    // Flush and delete from db
-                    await Flush();
-
-                    var filter = _resourceRepository.CreateFilterBuilder();
-                    filter.Equal(t => t.RefId, updatedResource.ResourceUrn);
-                    filter.Equal(t => t.ProviderId, Guid.Empty); // Get provider...
-                    await _resourceRepository.Delete(filter, options: options, cancellationToken: cancellationToken);
-                }
-
-                var resourceResponse = await _resourceRegister.GetResource(updatedResource.ResourceUrn.Split(":").Last(), cancellationToken);
-                if (!resourceResponse.IsSuccessful)
-                {
-                    throw new Exception(resourceResponse.StatusCode.ToString() + updatedResource.ResourceUrn.Split(":").Last());
-                }
-
                 try
                 {
-                    var resource = await ConvertToResource(resourceResponse.Content, options: options, cancellationToken: cancellationToken);
-
-                    if (!resources.Any(t => t.Id.Equals(resource.Id)))
+                    var resource = await UpsertResource(updatedResource, options, cancellationToken);
+                    if (updatedResource.Deleted)
                     {
-                        resources.Add(resource);
+                        // await Flush();
+                        // await DeleteRoleMap(updatedResource, resource, options, cancellationToken);
+                        // await DeleteAccessPackageMap(updatedResource, resource, options, cancellationToken);
+                    }
+                    else
+                    {
+                        await UpsertRoleResource(updatedResource, resource, options, cancellationToken);
+                        await UpsertAccessPackageMap(updatedResource, resource, options, cancellationToken);
                     }
                 }
                 catch (Exception ex)
                 {
-                    var f = new Failed();
-                    f.Exception = ex;
-                    f.UpdatedModel = updatedResource;
-                    f.RawResource = resourceResponse.Content;
-                    failed.Add(f);
-
-                    if (failed.Count > 10)
-                    {
-                        break;
-                    }
+                    var failure = new Failed();
+                    failure.Exception = ex;
+                    failure.UpdatedModel = updatedResource;
+                    failed.Add(failure);
+                    // if (failed.Count > 10)
+                    // {
+                    //     break;
+                    // }
                 }
             }
 
@@ -221,6 +181,159 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
         }
     }
 
+    private async Task<bool> DeleteRoleMap(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    {
+        var roleUrns = new List<string>()
+        {
+            "urn:altinn:role:",
+            "urn:altinn:rolecode:",
+        };
+
+        if (roleUrns.Any(r => updatedResource.SubjectUrn.StartsWith(r, StringComparison.OrdinalIgnoreCase)))
+        {
+            var roleLookupFilter = _roleLookupRepository.CreateFilterBuilder()
+                .Add(r => r.Key, "ERCode", FilterComparer.Like)
+                .Add(r => r.Value, updatedResource.SubjectUrn.Split(":").Last(), FilterComparer.Like);
+
+            var roleLookups = await _roleLookupRepository.GetExtended(roleLookupFilter, cancellationToken: cancellationToken);
+            if (roleLookups.Single().Role is var role && role != null)
+            {
+                var filter = _roleResourceRepository.CreateFilterBuilder()
+                    .Equal(f => f.ResourceId, resource.Id)
+                    .Equal(f => f.RoleId, role.Id);
+
+                await _roleResourceRepository.Delete(filter, options, cancellationToken: cancellationToken);
+            }
+        }
+
+        return false;
+    }
+
+    private async Task<bool> DeleteAccessPackageMap(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    {
+        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:accesspackage:", StringComparison.OrdinalIgnoreCase))
+        {
+            var packages = await _packageRepository.Get(r => r.Urn, updatedResource.SubjectUrn, cancellationToken: cancellationToken);
+            if (packages.Single() is var package && package != null)
+            {
+                var filter = _packageResourceRepository.CreateFilterBuilder()
+                    .Equal(f => f.ResourceId, resource.Id)
+                    .Equal(f => f.PackageId, package.Id);
+
+                await _packageResourceRepository.Delete(filter, options, cancellationToken: cancellationToken);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private async Task<bool> UpsertAccessPackageMap(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    {
+        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:accesspackage:", StringComparison.OrdinalIgnoreCase))
+        {
+            var packages = await _packageRepository.Get(r => r.Urn, updatedResource.SubjectUrn, cancellationToken: cancellationToken);
+            if (packages.Single() is var package && package != null)
+            {
+                var packageResource = new PackageResource
+                {
+                    PackageId = package.Id,
+                    ResourceId = resource.Id,
+                };
+
+                var cmpProps = new List<Expression<Func<PackageResource, object>>>()
+                {
+                    p => p.PackageId,
+                    p => p.ResourceId,
+                };
+
+                var updateProps = new List<Expression<Func<PackageResource, object>>>()
+                {
+                    r => r.PackageId,
+                    r => r.ResourceId,
+                };
+
+                await _packageResourceRepository.Upsert(packageResource, updateProps, cmpProps, options, cancellationToken: cancellationToken);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private async Task<bool> UpsertRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    {
+        var roleUrns = new List<string>()
+        {
+            "urn:altinn:role:",
+            "urn:altinn:rolecode:",
+        };
+
+        if (roleUrns.Any(r => updatedResource.SubjectUrn.StartsWith(r, StringComparison.OrdinalIgnoreCase)))
+        {
+            var roleLookupFilter = _roleLookupRepository.CreateFilterBuilder()
+                .Add(r => r.Key, "ERCode", FilterComparer.Like)
+                .Add(r => r.Value, updatedResource.SubjectUrn.Split(":").Last(), FilterComparer.Like);
+
+            var roleLookups = await _roleLookupRepository.GetExtended(roleLookupFilter, cancellationToken: cancellationToken);
+            if (roleLookups.Single().Role is var role && role != null)
+            {
+                var roleResource = new RoleResource
+                {
+                    ResourceId = resource.Id,
+                    RoleId = role.Id,
+                };
+
+                var cmpProps = new List<Expression<Func<RoleResource, object>>>()
+                {
+                    r => r.ResourceId,
+                    r => r.RoleId,
+                };
+
+                var updateProps = new List<Expression<Func<RoleResource, object>>>()
+                {
+                    r => r.ResourceId,
+                    r => r.RoleId,
+                };
+
+                await _roleResourceRepository.Upsert(roleResource, updateProps, cmpProps, options, cancellationToken: cancellationToken);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private async Task<Resource> UpsertResource(ResourceUpdatedModel resourceUpdated, ChangeRequestOptions options, CancellationToken cancellationToken)
+    {
+        var response = await _resourceRegister.GetResource(resourceUpdated.ResourceUrn.Split(":").Last(), cancellationToken: cancellationToken);
+        if (response.IsProblem)
+        {
+            Log.UpdatedResourceError(_logger, response.StatusCode);
+            return null;
+        }
+
+        var repositoryResource = await ConvertToResource(response.Content, options, cancellationToken);
+
+        var cmpProps = new List<Expression<Func<Resource, object>>>()
+        {
+            r => r.RefId,
+        };
+
+        var updateProps = new List<Expression<Func<Resource, object>>>()
+        {
+            r => r.ProviderId,
+            r => r.TypeId,
+            r => r.Name,
+            r => r.Description,
+        };
+
+        await _resourceRepository.Upsert(repositoryResource, cmpProps, updateProps, options, cancellationToken);
+
+        var resources = await _resourceRepository.Get(r => r.RefId, response.Content.Identifier, cancellationToken: cancellationToken);
+        return resources.First();
+    }
+
     public IEnumerable<Provider> Providers { get; set; }
 
     public IEnumerable<ResourceType> ResourceTypes { get; set; }
@@ -230,19 +343,8 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
         var provider = await GetOrCreateProvider(model, options, cancellationToken) ?? throw new Exception("Unable to get or create provider");
         var resourceType = await GetOrCreateResourceType(model, options, cancellationToken) ?? throw new Exception("Unable to get or create resourcetype");
 
-        var filter = _resourceRepository.CreateFilterBuilder();
-        filter.Equal(t => t.RefId, model.Identifier);
-        filter.Equal(t => t.ProviderId, provider.Id);
-        var res = (await _resourceRepository.Get(filter)).FirstOrDefault();
-
-        if (model.Title == null || string.IsNullOrEmpty(model.Title.Nb))
-        {
-            throw new Exception("Missing title");
-        }
-
         return new Resource()
         {
-            Id = res == null ? Guid.CreateVersion7() : res.Id,
             Name = model.Title.Nb,
             Description = "-",
             RefId = model.Identifier,
@@ -314,7 +416,6 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
 
                 provider = new Provider()
                 {
-                    Id = Guid.CreateVersion7(),
                     Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.Nb,
                     RefId = model.HasCompetentAuthority.Organization,
                     Code = model.HasCompetentAuthority.Orgcode,
@@ -358,12 +459,12 @@ internal class Failed
     /// Model from page
     /// </summary>
     internal ResourceUpdatedModel UpdatedModel { get; set; }
-    
+
     /// <summary>
     /// Single resource from Registry
     /// </summary>
     internal ResourceModel RawResource { get; set; }
-    
+
     /// <summary>
     /// Exception
     /// </summary>
