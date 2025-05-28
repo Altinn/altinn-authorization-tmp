@@ -44,9 +44,6 @@ public abstract class BasicRepository<T> : IDbBasicRepository<T>
     /// <inheritdoc/>
     public GenericFilterBuilder<T> CreateFilterBuilder() { return new GenericFilterBuilder<T>(); }
 
-    /// <inheritdoc />
-    public PropertySelectorBuilder<T> CreatePropertySelectorBuilder() { return new PropertySelectorBuilder<T>(); }
-
     #region Read
 
     /// <inheritdoc/>
