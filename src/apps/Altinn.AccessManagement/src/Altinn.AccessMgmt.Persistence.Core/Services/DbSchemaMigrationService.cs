@@ -72,7 +72,7 @@ public class DbSchemaMigrationService
     private async Task MigrateFunctions()
     {
         var compactEntityFunction = """
-            create or replace function public.compactEntity(_id uuid) returns jsonb stable language sql as
+            create or replace function compactentity(_id uuid, _include_children boolean DEFAULT true, _include_lookups boolean DEFAULT true) returns jsonb stable language sql as
             $$
             SELECT jsonb_build_object(
                 'Id', e.Id,
@@ -80,12 +80,15 @@ public class DbSchemaMigrationService
                 'RefId', e.RefId,
                 'Type', et.Name,
                 'Variant', ev.Name,
-                'Children', COALESCE(json_agg(GetEntityParty(ce.Id)) FILTER (WHERE ce.Id IS NOT NULL), NULL)
+                'Parent', compactentity(e.parentid, false, true),
+                'Children', COALESCE(json_agg(compactentity(ce.Id, false, true)) FILTER (WHERE _include_children and ce.Id IS NOT NULL), NULL),
+                'KeyValues', COALESCE(jsonb_object_agg(el.key, el.value) FILTER (WHERE _include_lookups and el.Id IS NOT NULL), NULL)
                 )
             FROM dbo.Entity e
             JOIN dbo.EntityType et ON e.TypeId = et.Id
             JOIN dbo.EntityVariant ev ON e.VariantId = ev.Id
             LEFT OUTER JOIN dbo.Entity as ce on e.Id = ce.ParentId
+            LEFT OUTER JOIN dbo.EntityLookup as el on e.Id = el.entityid
             WHERE e.Id = _Id
             GROUP BY e.Id, e.Name, e.RefId, et.Name, ev.Name;
             $$;
