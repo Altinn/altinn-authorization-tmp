@@ -307,8 +307,6 @@ internal static partial class AccessManagementHost
         var adminConnectionString = new NpgsqlConnectionStringBuilder(string.Format(adminConnectionStringFmt, adminConnectionStringPwd));
         var connectionString = new NpgsqlConnectionStringBuilder(string.Format(connectionStringFmt, connectionStringPwd))
         {
-            MaxAutoPrepare = 50,
-            AutoPrepareMinUsages = 2,
             IncludeErrorDetail = true
         };
 
