@@ -331,17 +331,17 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         var cmpProps = new List<Expression<Func<Resource, object>>>()
         {
             r => r.RefId,
+            r => r.ProviderId,
         };
 
         var updateProps = new List<Expression<Func<Resource, object>>>()
         {
-            r => r.ProviderId,
             r => r.TypeId,
             r => r.Name,
             r => r.Description,
         };
 
-        await _resourceRepository.Upsert(repositoryResource, cmpProps, updateProps, options, cancellationToken);
+        await _resourceRepository.Upsert(repositoryResource, updateProps, cmpProps, options, cancellationToken);
 
         var resources = await _resourceRepository.Get(r => r.RefId, response.Content.Identifier, cancellationToken: cancellationToken);
         return resources.First();
