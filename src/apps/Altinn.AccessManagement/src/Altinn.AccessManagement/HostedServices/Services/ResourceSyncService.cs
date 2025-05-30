@@ -79,8 +79,8 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 
         var options = new ChangeRequestOptions()
         {
-            ChangedBy = AuditDefaults.RegisterImportSystem,
-            ChangedBySystem = AuditDefaults.RegisterImportSystem
+            ChangedBy = AuditDefaults.ResourceRegisterImportSystem,
+            ChangedBySystem = AuditDefaults.ResourceRegisterImportSystem,
         };
 
         var providerType = (await _providerTypeRepository.Get(t => t.Name, "Tjenesteeier")).FirstOrDefault();
@@ -115,8 +115,8 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     {
         var options = new ChangeRequestOptions()
         {
-            ChangedBy = AuditDefaults.RegisterImportSystem,
-            ChangedBySystem = AuditDefaults.RegisterImportSystem
+            ChangedBy = AuditDefaults.ResourceRegisterImportSystem,
+            ChangedBySystem = AuditDefaults.ResourceRegisterImportSystem
         };
 
         Providers = [.. await _providerRepository.Get()];

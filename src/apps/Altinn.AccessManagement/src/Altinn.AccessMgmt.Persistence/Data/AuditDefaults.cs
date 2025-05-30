@@ -18,7 +18,7 @@ public static class AuditDefaults
     /// <summary>
     /// RegisterImportSystem
     /// </summary>
-    public static readonly Guid ResourceRegisterImportSystem = Guid.Parse("EFEC83FC-DEBA-4F09-8073-B4DD19D0B16B");
+    public static readonly Guid ResourceRegisterImportSystem = Guid.Parse("14FD92DB-C124-4208-BA62-293CBABFF2AD");
 
     /// <summary>
     /// EnduserApi
