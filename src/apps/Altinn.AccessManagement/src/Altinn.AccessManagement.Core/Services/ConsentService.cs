@@ -167,6 +167,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
+        /// <inheritdoc/>
         public async Task<Result<Consent>> GetConsent(Guid consentRequestId, CancellationToken cancellationToken)
         {
             ValidationErrorBuilder errors = default;
@@ -270,6 +271,17 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             details.From = await MapToExternalIdenity(details.From, cancellationToken);
+            
+            if (details.HandledBy != null)
+            {
+                details.HandledBy = await MapToExternalIdenity(details.HandledBy, cancellationToken);
+            }
+
+            if (details.RequiredDelegator != null)
+            {
+                details.RequiredDelegator = await MapToExternalIdenity(details.RequiredDelegator, cancellationToken);
+            }
+            
             foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)
             {
                 consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
@@ -578,6 +590,32 @@ namespace Altinn.AccessManagement.Core.Services
             else
             {
                 consentRequest.To = toParty.Value;
+            }
+
+            if (consentRequest.RequiredDelegator != null)
+            {
+                Result<ConsentPartyUrn> requiredDelegator = await ValidatePartyFromExternalIdentity(consentRequest.RequiredDelegator, cancelactionToken);
+                if (requiredDelegator.IsProblem)
+                {
+                    return requiredDelegator.Problem;
+                }
+                else
+                {
+                    consentRequest.RequiredDelegator = requiredDelegator.Value;
+                }
+            }
+
+            if (consentRequest.HandledBy != null)
+            {
+                Result<ConsentPartyUrn> handledBy = await ValidatePartyFromExternalIdentity(consentRequest.HandledBy, cancelactionToken);
+                if (handledBy.IsProblem)
+                {
+                    return handledBy.Problem;
+                }
+                else
+                {
+                    consentRequest.HandledBy = handledBy.Value;
+                }
             }
 
             validationErrorsBuilder = ValidateValidTo(consentRequest, validationErrorsBuilder);

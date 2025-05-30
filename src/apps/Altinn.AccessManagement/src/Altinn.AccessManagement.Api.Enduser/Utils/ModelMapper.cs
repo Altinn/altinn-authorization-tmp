@@ -22,7 +22,11 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils
             {
                 Id = consentId,
                 From = ToCore(consentRequestExternal.From),
+                RequiredDelegator = consentRequestExternal.RequiredDelegator != null
+                    ? ToCore(consentRequestExternal.RequiredDelegator)
+                    : null,
                 To = ToCore(consentRequestExternal.To),
+
                 ValidTo = consentRequestExternal.ValidTo,
                 ConsentRights = consentRequestExternal.ConsentRights.Select(ConsentRightExternal.ToCore).ToList(),
                 Requestmessage = consentRequestExternal.Requestmessage,

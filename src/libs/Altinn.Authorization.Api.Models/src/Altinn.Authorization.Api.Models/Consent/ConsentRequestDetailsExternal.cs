@@ -24,6 +24,11 @@ namespace Altinn.Authorization.Api.Models.Consent
         public required ConsentPartyUrnExternal To { get; set; }
 
         /// <summary>
+        /// The required party that need to accept the consent request.
+        /// </summary>
+        public ConsentPartyUrnExternal? RequiredDelegator { get; set; }
+
+        /// <summary>
         /// Defines how long the concent is valid
         /// </summary>
         public required DateTimeOffset ValidTo { get; set; }
@@ -69,6 +74,14 @@ namespace Altinn.Authorization.Api.Models.Consent
                 Id = core.Id,
                 From = from,
                 To = to,
+                RequiredDelegator = core.RequiredDelegator != null
+                    ? core.RequiredDelegator switch
+                    {
+                        ConsentPartyUrn.PersonId => ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse(core.RequiredDelegator.ValueSpan)),
+                        ConsentPartyUrn.OrganizationId => ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(core.RequiredDelegator.ValueSpan)),
+                        _ => throw new ArgumentException("Unknown consent party urn")
+                    }
+                    : null,
                 Consented = core.Consented,
                 ValidTo = core.ValidTo,
                 ConsentRights = core.ConsentRights.Select(ConsentRightExternal.FromCore).ToList(),

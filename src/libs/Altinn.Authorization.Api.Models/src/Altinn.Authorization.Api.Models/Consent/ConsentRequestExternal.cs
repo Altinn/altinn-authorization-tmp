@@ -18,6 +18,11 @@ namespace Altinn.Authorization.Api.Models.Consent
         public required ConsentPartyUrnExternal From { get; set; }
 
         /// <summary>
+        /// Defines the party to request consent from.
+        /// </summary>
+        public ConsentPartyUrnExternal? RequiredDelegator { get; set; }
+
+        /// <summary>
         /// Defines the party requesting consent.
         /// </summary>
         public required ConsentPartyUrnExternal To { get; set; }

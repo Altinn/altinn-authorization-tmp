@@ -19,6 +19,9 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
                 Id = consentRequestExternal.Id,
                 From = ToCore(consentRequestExternal.From),
                 To = ToCore(consentRequestExternal.To),
+                RequiredDelegator = consentRequestExternal.RequiredDelegator != null
+                    ? ToCore(consentRequestExternal.RequiredDelegator)
+                    : null,
                 ValidTo = consentRequestExternal.ValidTo,
                 ConsentRights = consentRequestExternal.ConsentRights.Select(ConsentRightExternal.ToCore).ToList(),
                 Requestmessage = consentRequestExternal.Requestmessage,
