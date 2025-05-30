@@ -140,9 +140,9 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
                     var resource = await UpsertResource(updatedResource, options, cancellationToken);
                     if (updatedResource.Deleted)
                     {
-                        // await Flush();
-                        // await DeleteRoleMap(updatedResource, resource, options, cancellationToken);
-                        // await DeleteAccessPackageMap(updatedResource, resource, options, cancellationToken);
+                        await Flush();
+                        await DeleteRoleMap(updatedResource, resource, options, cancellationToken);
+                        await DeleteAccessPackageMap(updatedResource, resource, options, cancellationToken);
                     }
                     else
                     {
