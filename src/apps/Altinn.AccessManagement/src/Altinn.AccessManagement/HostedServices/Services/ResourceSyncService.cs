@@ -15,7 +15,7 @@ using Microsoft.FeatureManagement;
 namespace Altinn.AccessManagement.HostedServices.Services;
 
 /// <inheritdoc />
-public class ResourceSyncService : BaseSyncService, IResourceSyncService
+public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 {
     private readonly ILogger<ResourceSyncService> _logger;
     private readonly IAltinnLease _lease;
@@ -73,7 +73,7 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
         var serviceOwners = await _resourceRegister.GetServiceOwners(cancellationToken);
         if (!serviceOwners.IsSuccessful)
         {
-            Log.ServiceOwnerError(_logger, serviceOwners.StatusCode);
+            Log.FailedToReadResourceOwners(_logger);
             return false;
         }
 
@@ -100,12 +100,12 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
                 Name = serviceOwner.Value.Name.Nb,
                 RefId = serviceOwner.Value.Orgnr,
                 Code = serviceOwner.Key,
-                TypeId = providerType.Id
+                TypeId = providerType.Id,
             });
         }
 
         // IngestService will map in Id property and update properties not matchaed
-        await _ingestService.IngestAndMergeData(resourceOwners, options: options, ["Id"]);
+        await _ingestService.IngestAndMergeData(resourceOwners, options: options, ["Id"], cancellationToken: cancellationToken);
 
         return true;
     }
@@ -119,14 +119,14 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
             ChangedBySystem = AuditDefaults.RegisterImportSystem
         };
 
-        Providers = (await _providerRepository.Get()).ToList();
-        ResourceTypes = (await _resourceTypeRepository.Get()).ToList();
+        Providers = [.. await _providerRepository.Get()];
+        ResourceTypes = [.. await _resourceTypeRepository.Get()];
 
         await foreach (var page in await _resourceRegister.StreamResources(ls.Data?.ResourcesNextPageLink, cancellationToken))
         {
             if (page.IsProblem)
             {
-                Log.UpdatedResourceError(_logger, page.StatusCode);
+                Log.FailedToReadFromStream(_logger);
                 return;
             }
 
@@ -141,32 +141,37 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
                     if (updatedResource.Deleted)
                     {
                         await Flush();
-                        await DeleteRoleMap(updatedResource, resource, options, cancellationToken);
+                        await DeleteERRoleMap(updatedResource, resource, options, cancellationToken);
+                        await DeleteAltinnRoleResource(updatedResource, resource, options, cancellationToken);
                         await DeleteAccessPackageMap(updatedResource, resource, options, cancellationToken);
                     }
                     else
                     {
-                        await UpsertRoleResource(updatedResource, resource, options, cancellationToken);
+                        await UpsertERRoleResource(updatedResource, resource, options, cancellationToken);
+                        await UpsertAltinnRoleResource(updatedResource, resource, options, cancellationToken);
                         await UpsertAccessPackageMap(updatedResource, resource, options, cancellationToken);
                     }
                 }
                 catch (Exception ex)
                 {
-                    var failure = new Failed();
-                    failure.Exception = ex;
-                    failure.UpdatedModel = updatedResource;
+                    var failure = new Failed
+                    {
+                        Exception = ex,
+                        UpdatedModel = updatedResource,
+                    };
+
                     failed.Add(failure);
-                    // if (failed.Count > 10)
-                    // {
-                    //     break;
-                    // }
+                    if (failed.Count > 10)
+                    {
+                        break;
+                    }
                 }
             }
 
-            foreach (var f in failed)
+            foreach (var failure in failed)
             {
-                Console.WriteLine(f.UpdatedModel.ResourceUrn);
-                Console.WriteLine(f.Exception.Message);
+                Console.WriteLine(failure.UpdatedModel.ResourceUrn);
+                Console.WriteLine(failure.Exception.Message);
             }
 
             await Flush();
@@ -175,21 +180,15 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
 
             async Task Flush()
             {
-                await _ingestService.IngestAndMergeData(resources, options: options, ["RefId", "ProviderId"]);
+                await _ingestService.IngestAndMergeData(resources, options: options, ["RefId", "ProviderId"], cancellationToken: cancellationToken);
                 resources.Clear();
             }
         }
     }
 
-    private async Task<bool> DeleteRoleMap(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    private async Task<bool> DeleteERRoleMap(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
-        var roleUrns = new List<string>()
-        {
-            "urn:altinn:role:",
-            "urn:altinn:rolecode:",
-        };
-
-        if (roleUrns.Any(r => updatedResource.SubjectUrn.StartsWith(r, StringComparison.OrdinalIgnoreCase)))
+        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:rolecode:", StringComparison.OrdinalIgnoreCase))
         {
             var roleLookupFilter = _roleLookupRepository.CreateFilterBuilder()
                 .Add(r => r.Key, "ERCode", FilterComparer.Like)
@@ -207,6 +206,16 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
         }
 
         return false;
+    }
+
+    private async Task<bool> DeleteAltinnRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    {
+        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:role:", StringComparison.OrdinalIgnoreCase))
+        {
+            Log.MissingAltinnRoles(_logger, "delete");
+        }
+
+        return await Task.FromResult(false);
     }
 
     private async Task<bool> DeleteAccessPackageMap(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
@@ -261,15 +270,19 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
         return false;
     }
 
-    private async Task<bool> UpsertRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    private async Task<bool> UpsertAltinnRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
-        var roleUrns = new List<string>()
+        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:role:", StringComparison.OrdinalIgnoreCase))
         {
-            "urn:altinn:role:",
-            "urn:altinn:rolecode:",
-        };
+            Log.MissingAltinnRoles(_logger, "upsert");
+        }
 
-        if (roleUrns.Any(r => updatedResource.SubjectUrn.StartsWith(r, StringComparison.OrdinalIgnoreCase)))
+        return await Task.FromResult(false);
+    }
+
+    private async Task<bool> UpsertERRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    {
+        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:rolecode:", StringComparison.OrdinalIgnoreCase))
         {
             var roleLookupFilter = _roleLookupRepository.CreateFilterBuilder()
                 .Add(r => r.Key, "ERCode", FilterComparer.Like)
@@ -309,7 +322,7 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
         var response = await _resourceRegister.GetResource(resourceUpdated.ResourceUrn.Split(":").Last(), cancellationToken: cancellationToken);
         if (response.IsProblem)
         {
-            Log.UpdatedResourceError(_logger, response.StatusCode);
+            Log.FailedToGetResource(_logger, resourceUpdated.ResourceUrn);
             return null;
         }
 
@@ -450,6 +463,21 @@ public class ResourceSyncService : BaseSyncService, IResourceSyncService
         }
 
         return provider;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(EventId = 0, Level = LogLevel.Warning, Message = "Cannot perform operation '{operation}' for Altinn roles as they have not yet been synced to the database.")]
+        internal static partial void MissingAltinnRoles(ILogger logger, string operation);
+
+        [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Unable to retrieve resource '{resource}' from the resource registry.")]
+        internal static partial void FailedToGetResource(ILogger logger, string resource);
+
+        [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Failed to read stream of updated resources from the resource registry.")]
+        internal static partial void FailedToReadFromStream(ILogger logger);
+
+        [LoggerMessage(EventId = 3, Level = LogLevel.Error, Message = "Failed to retrieve list of service owners from the resource registry.")]
+        internal static partial void FailedToReadResourceOwners(ILogger logger);
     }
 }
 
