@@ -774,4 +774,10 @@ public class DelegationMetadataRepository : IDelegationMetadataRepository
     {
         throw new NotImplementedException();
     }
+
+    /// <inheritdoc />
+    public Task<List<DelegationChange>> GetAllDelegationChangesForAuthorizedParties(List<Guid> toPartyUuids, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }
