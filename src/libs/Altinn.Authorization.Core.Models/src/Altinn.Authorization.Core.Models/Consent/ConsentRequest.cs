@@ -16,9 +16,19 @@
         public required ConsentPartyUrn From { get; set; }
 
         /// <summary>
+        /// Defines if a specific person to consent is required. This is used in cases where a specific person must consent and the right cant be delegated
+        /// </summary>
+        public ConsentPartyUrn? RequiredDelegator { get; set; }
+
+        /// <summary>
         /// Defines the party requesting consent.
         /// </summary>
         public required ConsentPartyUrn To { get; set; }
+
+        /// <summary>
+        /// Defines the party that handles the consent request on behalf of the requesting party.
+        /// </summary>
+        public ConsentPartyUrn? HandledBy { get; set; }
 
         /// <summary>
         /// Defines how long the concent is valid

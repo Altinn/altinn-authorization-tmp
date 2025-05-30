@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS consent.consentrequest
 (
     consentRequestId uuid PRIMARY KEY NOT NULL,
     fromPartyUuid UUID,
+    requiredDelegatorUuid UUID null,
     toPartyUuid UUID,
+    handledByPartyUuid UUID null,
     requestMessage hstore,
     redirecturl text,
     isDeleted bool default False,

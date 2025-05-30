@@ -125,11 +125,13 @@ namespace Altinn.AccessManagement.Persistence.Consent
             DateTimeOffset createdTime = DateTime.UtcNow;
 
             const string consentRquestQuery = /*strpsql*/@"
-                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, toPartyUuid, validTo, requestMessage, templateId, redirectUrl)
+                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, requiredDelegatorUuid, toPartyUuid, handledByPartyUuid, validTo, requestMessage, templateId, redirectUrl)
                 VALUES (
                 @consentRequestId, 
-                @fromPartyUuid, 
+                @fromPartyUuid,
+                @requiredDelegatorUuid,
                 @toPartyUuid, 
+                @handledByPartyUuid,
                 @validTo, 
                 @requestMessage,
                 @templateId, 
@@ -154,6 +156,24 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 throw new InvalidDataException("Invalid fromPartyUuid");
             }
 
+            if (consentRequest.HandledBy != null && consentRequest.HandledBy.IsPartyUuid(out Guid handledByPartyGuid))
+            {
+                command.Parameters.AddWithValue("handledByPartyUuid", NpgsqlDbType.Uuid, handledByPartyGuid);
+            }
+            else
+            {
+                command.Parameters.AddWithValue("handledByPartyUuid", NpgsqlDbType.Uuid, DBNull.Value);
+            }
+
+            if (consentRequest.RequiredDelegator != null && consentRequest.RequiredDelegator.IsPartyUuid(out Guid requiredDelegatorGuid))
+            {
+                command.Parameters.AddWithValue("requiredDelegatorUuid", NpgsqlDbType.Uuid, requiredDelegatorGuid);
+            }
+            else
+            {
+                command.Parameters.AddWithValue("requiredDelegatorUuid", NpgsqlDbType.Uuid, DBNull.Value);
+            }
+
             if (consentRequest.To.IsPartyUuid(out Guid toPartyGuid))
             {
                 command.Parameters.AddWithValue("toPartyUuid", NpgsqlDbType.Uuid, toPartyGuid);
@@ -162,6 +182,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             {
                 throw new InvalidDataException("Invalid toPartyUuid");
             }
+
 
             command.Parameters.AddWithValue("requestMessage", NpgsqlDbType.Hstore, consentRequest.Requestmessage);
             command.Parameters.AddWithValue("redirectUrl", NpgsqlDbType.Text, consentRequest.RedirectUrl);
