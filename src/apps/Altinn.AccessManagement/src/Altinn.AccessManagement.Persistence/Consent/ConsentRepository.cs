@@ -311,9 +311,24 @@ namespace Altinn.AccessManagement.Persistence.Consent
             {
                 Guid from = await reader.GetFieldValueAsync<Guid>("fromPartyUuid", cancellationToken: cancellationToken);
                 Guid to = await reader.GetFieldValueAsync<Guid>("toPartyUuid", cancellationToken: cancellationToken);
+                Guid? requiredDelegator = await reader.GetFieldValueAsync<Guid?>("requiredDelegatorUuid", cancellationToken: cancellationToken);
+                Guid? handledByParty = await reader.GetFieldValueAsync<Guid?>("requiredDelegatorUuid", cancellationToken: cancellationToken);
 
                 ConsentPartyUrn fromPartyUrn = ConsentPartyUrn.PartyUuid.Create(from);
                 ConsentPartyUrn toPartyUrn = ConsentPartyUrn.PartyUuid.Create(to);
+
+                ConsentPartyUrn requiredDelegatorUrn = null;
+                ConsentPartyUrn handledByPartyUrn = null;
+                
+                if (requiredDelegator != null)
+                {
+                    requiredDelegatorUrn = ConsentPartyUrn.PartyUuid.Create(requiredDelegator.Value);
+                }
+
+                if (handledByParty != null)
+                {
+                    handledByPartyUrn = ConsentPartyUrn.PartyUuid.Create(handledByParty.Value);
+                }
 
                 if (fromPartyUrn == null || toPartyUrn == null)
                 {
@@ -325,6 +340,8 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     Id = consentRequestId,
                     From = fromPartyUrn,
                     To = toPartyUrn,
+                    HandledBy = handledByPartyUrn,
+                    RequiredDelegator = requiredDelegatorUrn,
                     ValidTo = await reader.GetFieldValueAsync<DateTimeOffset>("validTo", cancellationToken: cancellationToken),
                     ConsentRights = consentRight,
                     Requestmessage = await reader.GetFieldValueAsync<Dictionary<string, string>>("requestMessage", cancellationToken: cancellationToken),

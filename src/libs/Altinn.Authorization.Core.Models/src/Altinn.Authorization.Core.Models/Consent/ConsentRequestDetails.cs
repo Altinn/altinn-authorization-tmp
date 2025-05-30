@@ -16,6 +16,11 @@
         public required ConsentPartyUrn From { get; set; }
 
         /// <summary>
+        /// Defines the party that is required to accept the consent request. 
+        /// </summary>
+        public ConsentPartyUrn? RequiredDelegator { get; set; }
+
+        /// <summary>
         /// Defines the party requesting consent.
         /// </summary>
         public required ConsentPartyUrn To { get; set; }
