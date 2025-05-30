@@ -120,6 +120,53 @@ namespace AccessMgmt.Tests.Controllers.Enduser
         }
 
         [Fact]
+        public async Task AcceptRequestWithRequiredDelegator_Valid()
+        {
+            Guid requestId = Guid.Parse("a4253d59-b40f-409a-a3f7-c6395f065192");
+            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            await repositgo.CreateRequest(await GetRequest(requestId), ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
+
+            ConsentContextExternal consentContextExternal = new ConsentContextExternal
+            {
+                Language = "nb",
+                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
+                ConsentContextResources = new List<ResourceContextExternal>
+               {
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   },
+                   new()
+                   {
+                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
+                       Language = "nb",
+                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
+                   }
+               }
+            };
+
+            // Serialize the object to JSON
+            string jsonContent = JsonSerializer.Serialize(consentContextExternal);
+
+            // Create HttpContent from the JSON string
+            HttpContent httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/enduser/consentrequests/{requestId.ToString()}/accept/", httpContent);
+            string responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            ConsentRequestDetailsExternal consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsExternal>();
+            Assert.Equal(2, consentInfo.ConsentRequestEvents.Count);
+            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventTypeExternal.Accepted, consentInfo.ConsentRequestEvents[1].EventType);
+        }
+
+        [Fact]
         public async Task AcceptRequest_AlreadyRejected()
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");

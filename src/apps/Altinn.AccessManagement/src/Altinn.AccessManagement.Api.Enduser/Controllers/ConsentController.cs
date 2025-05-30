@@ -83,7 +83,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// </summary>
         [HttpPost]
         [Route("consentrequests/{requestId}/accept")]
-        public async Task<IActionResult> Approve(Guid requestId, [FromBody] ConsentContextExternal context, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> Accept(Guid requestId, [FromBody] ConsentContextExternal context, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);
             if (performedBy == null)

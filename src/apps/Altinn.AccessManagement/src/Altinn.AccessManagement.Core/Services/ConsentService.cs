@@ -489,6 +489,14 @@ namespace Altinn.AccessManagement.Core.Services
         private async Task<bool> AuthorizeUserForConsentRequest(Guid userUuid, ConsentRequestDetails consentRequest, CancellationToken cancellationToken)
         {
             Guid fromParty = ((ConsentPartyUrn.PartyUuid)consentRequest.From).Value;
+            if (consentRequest.RequiredDelegator != null && consentRequest.RequiredDelegator.IsPartyUuid(out Guid requiredDelegatorPartyUuid))
+            {
+                if (requiredDelegatorPartyUuid != userUuid)
+                {
+                    return false; // User is not the required delegator
+                }
+            }
+
             List<Party> parties = await _partiesClient.GetPartiesAsync([fromParty], cancellationToken: cancellationToken);
             Party party = parties[0];
 
