@@ -98,7 +98,7 @@ namespace Altinn.AccessManagement.Tests.Util
         /// <param name="scope">Scopes to add to token</param>
         /// <param name="consumerPrefix">If maskinporten token sets the scope prefixes the organization owns or authorized for</param>
         /// <returns>Claims principal</returns>
-        public static ClaimsPrincipal GetClaimsPrincipal(string org, string orgNumber, string scope = null, string[] consumerPrefix = null)
+        public static ClaimsPrincipal GetClaimsPrincipal(string org, string orgNumber, string scope = null, string supplier = null,  string[] consumerPrefix = null)
         {
             string issuer = "https://platform.altinn.cloud/authentication/api/v1/openid/";
 
@@ -121,6 +121,11 @@ namespace Altinn.AccessManagement.Tests.Util
                 claims.Add(new Claim(AltinnCoreClaimTypes.Org, org, ClaimValueTypes.String, issuer));
             }
 
+            if (supplier != null)
+            {
+                claims.Add(new Claim("supplier", GetOrgNoObject(supplier)));
+            }
+
             claims.Add(new Claim("consumer", GetOrgNoObject(orgNumber)));
             claims.Add(new Claim(AltinnCoreClaimTypes.OrgNumber, orgNumber.ToString(), ClaimValueTypes.Integer32, issuer));
             claims.Add(new Claim(AltinnCoreClaimTypes.AuthenticateMethod, "IntegrationTestMock", ClaimValueTypes.String, issuer));
@@ -140,9 +145,9 @@ namespace Altinn.AccessManagement.Tests.Util
         /// <param name="scope">Scopes to add to token</param>
         /// <param name="consumerPrefix">If maskinporten token sets the scope prefixes the organization owns or authorized for</param>
         /// <returns>Altinn org-token</returns>
-        public static string GetOrgToken(string org, string orgNumber = "991825827", string scope = null, string[] consumerPrefix = null)
+        public static string GetOrgToken(string org, string orgNumber = "991825827", string scope = null, string supplier = null, string[] consumerPrefix = null)
         {
-            ClaimsPrincipal principal = GetClaimsPrincipal(org, orgNumber, scope, consumerPrefix);
+            ClaimsPrincipal principal = GetClaimsPrincipal(org, orgNumber, scope, supplier, consumerPrefix);
 
             string token = JwtTokenMock.GenerateToken(principal, new TimeSpan(0, 30, 0));
 

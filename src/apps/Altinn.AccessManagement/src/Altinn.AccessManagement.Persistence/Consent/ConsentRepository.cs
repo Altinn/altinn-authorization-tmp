@@ -312,7 +312,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 Guid from = await reader.GetFieldValueAsync<Guid>("fromPartyUuid", cancellationToken: cancellationToken);
                 Guid to = await reader.GetFieldValueAsync<Guid>("toPartyUuid", cancellationToken: cancellationToken);
                 Guid? requiredDelegator = await reader.GetFieldValueAsync<Guid?>("requiredDelegatorUuid", cancellationToken: cancellationToken);
-                Guid? handledByParty = await reader.GetFieldValueAsync<Guid?>("requiredDelegatorUuid", cancellationToken: cancellationToken);
+                Guid? handledByParty = await reader.GetFieldValueAsync<Guid?>("handledByPartyUuid", cancellationToken: cancellationToken);
 
                 ConsentPartyUrn fromPartyUrn = ConsentPartyUrn.PartyUuid.Create(from);
                 ConsentPartyUrn toPartyUrn = ConsentPartyUrn.PartyUuid.Create(to);

@@ -37,13 +37,20 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         public async Task<ActionResult> CreateRequest([FromBody] ConsentRequestExternal consentRequest, CancellationToken cancellationToken = default)
         {
             ConsentPartyUrn? consentPartyUrn = OrgUtil.GetAuthenticatedParty(User);
+            ConsentPartyUrn? supplierUrn = OrgUtil.GetSupplierParty(User);
 
             if (consentPartyUrn == null)
             {
                 return Unauthorized();
             }
 
-            Result<ConsentRequestDetailsWrapper> consentRequestStatus = await _consentService.CreateRequest(ModelMapper.ToCore(consentRequest), consentPartyUrn, cancellationToken);
+            ConsentRequest consentRequestInternal = ModelMapper.ToCore(consentRequest);
+            if (supplierUrn != null)
+            {
+                consentRequestInternal.HandledBy = supplierUrn;
+            }
+
+            Result<ConsentRequestDetailsWrapper> consentRequestStatus = await _consentService.CreateRequest(consentRequestInternal, consentPartyUrn, cancellationToken);
 
             if (consentRequestStatus.IsProblem)
             {
