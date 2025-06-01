@@ -128,6 +128,11 @@ namespace Altinn.AccessManagement.Core.Constants
         public const string SCOPE_MASKINPORTEN_DELEGATIONS_ADMIN = "altinn:maskinporten/delegations.admin";
 
         /// <summary>
+        /// Scope giving access to creating consentrequests for anyone if you are the resource owner for the resources that is part of the consent request
+        /// </summary>
+        public const string SCOPE_CONSENTREQUEST_ORG = "altinn:consentrequests.org";
+
+        /// <summary>
         /// Scope giving access to creating consentrequests
         /// </summary>
         public const string SCOPE_CONSENTREQUEST_WRITE = "altinn:consentrequests.write";

@@ -1,5 +1,6 @@
 ﻿using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enterprise.Utils;
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Consent;
@@ -24,7 +25,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         /// <summary>
         /// Endpoint to create a consent request for
         /// </summary>
-        [Authorize]
+        [Authorize(Policy = AuthzConstants.POLICY_CONSENTREQUEST_WRITE)]
         [HttpPost]
         [Route("consentrequests", Name = CreateRouteName)]
         [Consumes(MediaTypeNames.Application.Json)]

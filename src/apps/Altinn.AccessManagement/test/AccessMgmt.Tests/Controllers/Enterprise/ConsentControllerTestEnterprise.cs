@@ -90,7 +90,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
@@ -153,7 +153,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
@@ -229,7 +229,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
@@ -300,7 +300,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
@@ -378,7 +378,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
@@ -456,7 +456,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write", "810418192");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write", "810418192");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
@@ -535,7 +535,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
@@ -615,7 +615,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -698,7 +698,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -750,7 +750,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -822,7 +822,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -880,7 +880,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -922,7 +922,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -975,7 +975,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent = await response.Content.ReadAsStringAsync();
@@ -1033,7 +1033,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consent/request.write");
+            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
