@@ -1,7 +1,7 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Integration.Models;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 
-namespace Altinn.AccessMgmt.Integration.Contracts;
+namespace Altinn.AccessMgmt.Persistence.Services.Contracts;
 
 /// <summary>
 /// Service for getting connections

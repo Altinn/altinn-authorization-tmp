@@ -1,10 +1,10 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Integration.Contracts;
-using Altinn.AccessMgmt.Integration.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.ProblemDetails;
 
-namespace Altinn.AccessMgmt.Integration.Services;
+namespace Altinn.AccessMgmt.Persistence.Services;
 
 /// <inheritdoc />
 public class RelationService(IRelationRepository relationRepository, IRelationPermissionRepository relationPermissionRepository) : IRelationService

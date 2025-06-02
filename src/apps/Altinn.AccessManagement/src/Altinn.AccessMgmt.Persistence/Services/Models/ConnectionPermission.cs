@@ -1,6 +1,6 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 
-namespace Altinn.AccessMgmt.Integration.Models;
+namespace Altinn.AccessMgmt.Persistence.Services.Models;
 
 /// <summary>
 /// Connection Permission
