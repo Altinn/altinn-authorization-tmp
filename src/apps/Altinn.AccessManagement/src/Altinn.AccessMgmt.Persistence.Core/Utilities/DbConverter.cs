@@ -1,9 +1,8 @@
-﻿using Altinn.AccessMgmt.Persistence.Core.Models;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Data;
 using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Utilities;
 
