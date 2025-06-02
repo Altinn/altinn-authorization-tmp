@@ -86,16 +86,16 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Entity>(dataKey, string.Empty, 2);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 9))
+        if (migrationService.NeedMigration<Role>(dataKey, 10))
         {
             await IngestRole(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 9);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 10);
         }
 
-        if (migrationService.NeedMigration<RoleMap>(dataKey, 3))
+        if (migrationService.NeedMigration<RoleMap>(dataKey, 4))
         {
             await IngestRoleMap(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 3);
+            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 4);
         }
 
         if (migrationService.NeedMigration<AreaGroup>(dataKey, 4))
@@ -1305,8 +1305,10 @@ public class DbDataMigrationService(
             new RoleMap() { HasRoleId = roleSam,  GetRoleId = roleUTOMR }
         };
 
-        await ingestService.IngestAndMergeData(roleMaps, options: options, null, cancellationToken);
+        await ingestService.IngestAndMergeData(roleMaps, options: options, GetRoleMapMergeMatchFilter, cancellationToken);
     }
+
+    private static readonly IReadOnlyList<string> GetRoleMapMergeMatchFilter = new List<string>() { "hasroleid", "getroleid" }.AsReadOnly();
 
     /// <summary>
     /// Ingest all static areagroup data

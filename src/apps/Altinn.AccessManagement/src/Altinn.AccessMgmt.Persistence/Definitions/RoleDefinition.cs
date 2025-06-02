@@ -29,13 +29,12 @@ public class RoleDefinition : BaseDbDefinition<Role>, IDbDefinition
             def.RegisterProperty(t => t.IsKeyRole, defaultValue: "false");
             def.RegisterProperty(t => t.IsAssignable, defaultValue: "false");
             def.RegisterProperty(t => t.ProviderId);
-            def.RegisterProperty(t => t.EntityTypeId);
+            def.RegisterProperty(t => t.EntityTypeId, nullable: true);
 
             def.RegisterExtendedProperty<ExtRole, Provider>(t => t.ProviderId, t => t.Id, t => t.Provider, cascadeDelete: false);
             def.RegisterExtendedProperty<ExtRole, EntityType>(t => t.EntityTypeId, t => t.Id, t => t.EntityType, cascadeDelete: false);
 
             def.RegisterUniqueConstraint([t => t.Urn]);
-            def.RegisterUniqueConstraint([t => t.EntityTypeId, t => t.Name]);
             def.RegisterUniqueConstraint([t => t.EntityTypeId, t => t.Code]);
         });
     }
