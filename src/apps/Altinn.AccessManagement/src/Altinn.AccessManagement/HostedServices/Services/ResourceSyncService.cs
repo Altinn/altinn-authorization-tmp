@@ -18,7 +18,6 @@ namespace Altinn.AccessManagement.HostedServices.Services;
 public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 {
     private readonly ILogger<ResourceSyncService> _logger;
-    private readonly IAltinnLease _lease;
     private readonly IAltinnResourceRegister _resourceRegister;
     private readonly IIngestService _ingestService;
     private readonly IResourceTypeRepository _resourceTypeRepository;
@@ -28,7 +27,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     private readonly IPackageResourceRepository _packageResourceRepository;
     private readonly IPackageRepository _packageRepository;
     private readonly IRoleResourceRepository _roleResourceRepository;
-    private readonly IRoleRepository _roleRepository;
     private readonly IRoleLookupRepository _roleLookupRepository;
 
     /// <summary>
