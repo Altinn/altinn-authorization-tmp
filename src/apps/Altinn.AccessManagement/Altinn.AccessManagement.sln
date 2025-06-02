@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Per
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Core", "src\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj", "{0718B15A-A6BD-4956-944A-590C620A6F53}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Integration", "src\Altinn.AccessManagement.Integration\Altinn.AccessManagement.Integration.csproj", "{B0DD4B25-01D5-4339-A066-2A7FA89CF788}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.AppHost", "src\Altinn.AccessManagement.AppHost\Altinn.AccessManagement.AppHost.csproj", "{D6F8A6E9-0FAB-4FD9-957F-00EA5E494CD3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0C88DD14-F956-CE84-757C-A364CCF449FC}"
@@ -52,8 +54,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.FFB", "src\Altinn.AccessMgmt.FFB\Altinn.AccessMgmt.FFB.csproj", "{17EA283C-CD54-701D-8A8A-706DA9A8F2F4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.WebComponents", "src\Altinn.AccessMgmt.WebComponents\Altinn.AccessMgmt.WebComponents.csproj", "{750AE370-10AE-095E-4463-F80EBE092FAB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.Integration", "src\Altinn.AccessMgmt.Integration\Altinn.AccessMgmt.Integration.csproj", "{C29BCF40-4944-4F32-FA64-DCC6B0996719}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
