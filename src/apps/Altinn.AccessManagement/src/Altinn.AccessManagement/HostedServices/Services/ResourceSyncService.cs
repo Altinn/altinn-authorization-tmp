@@ -55,7 +55,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         _resourceRegister = resourceRegister;
         _ingestService = ingestService;
         _roleResourceRepository = roleResourceRepository;
-        _roleRepository = roleRepository;
         _roleLookupRepository = roleLookupRepository;
         _resourceRepository = resourceRepository;
         _resourceTypeRepository = resourceTypeRepository;
