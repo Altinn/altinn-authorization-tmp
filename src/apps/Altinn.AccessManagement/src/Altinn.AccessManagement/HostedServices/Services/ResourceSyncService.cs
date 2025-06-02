@@ -51,7 +51,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         ) : base(lease, featureManager, register)
     {
         _logger = logger;
-
         _resourceRegister = resourceRegister;
         _ingestService = ingestService;
         _roleResourceRepository = roleResourceRepository;
@@ -108,7 +107,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     }
 
     /// <inheritdoc />
-    public async Task SyncResources(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+    public async Task SyncResources(LeaseResult<ResourceRegisterLease> ls, CancellationToken cancellationToken)
     {
         var options = new ChangeRequestOptions()
         {
@@ -119,7 +118,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         Providers = [.. await _providerRepository.Get()];
         ResourceTypes = [.. await _resourceTypeRepository.Get()];
 
-        await foreach (var page in await _resourceRegister.StreamResources(ls.Data?.ResourcesNextPageLink, cancellationToken))
+        await foreach (var page in await _resourceRegister.StreamResources(ls.Data?.ResourceNextPageLink, cancellationToken))
         {
             if (page.IsProblem)
             {
@@ -160,7 +159,8 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
                     failed.Add(failure);
                     if (failed.Count > 10)
                     {
-                        break;
+                        /// FIX: We should break here, but waiting for role import. 
+                        // break;
                     }
                 }
             }
@@ -173,7 +173,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 
             await Flush();
 
-            await UpdateLease(ls, data => data.ResourcesNextPageLink = page.Content.Links.Next, cancellationToken);
+            await UpdateLease(ls, data => data.ResourceNextPageLink = page.Content.Links.Next, cancellationToken);
 
             async Task Flush()
             {
@@ -431,6 +431,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
                     Code = model.HasCompetentAuthority.Orgcode,
                     TypeId = providerType.Id,
                 };
+                
                 await _providerRepository.Create(provider, options: options, cancellationToken: cancellationToken);
 
                 //if (model.HasCompetentAuthority.Name != null && model.HasCompetentAuthority.Name.En != null)

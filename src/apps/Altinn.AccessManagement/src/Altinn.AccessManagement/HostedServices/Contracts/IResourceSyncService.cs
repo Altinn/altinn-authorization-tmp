@@ -17,5 +17,5 @@ public interface IResourceSyncService
     /// <summary>
     /// Sync resource mapping
     /// </summary>
-    Task SyncResources(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken);
+    Task SyncResources(LeaseResult<ResourceRegisterLease> ls, CancellationToken cancellationToken);
 }
