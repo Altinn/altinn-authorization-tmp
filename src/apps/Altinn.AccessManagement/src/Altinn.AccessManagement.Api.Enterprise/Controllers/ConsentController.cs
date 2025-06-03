@@ -55,7 +55,12 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
             {
                 // This scenario is only allowed for orgs creating consents for their own resources. 
                 // Used in EBEVIS where Digdir request consent 
-                // TODO: Add scope validation
+                string? scopes = OrgUtil.GetMaskinportenScopes(User);
+                if (string.IsNullOrEmpty(scopes) || !scopes.Contains(AuthzConstants.SCOPE_CONSENTREQUEST_ORG))
+                {
+                    return Forbid();
+                }
+
                 consentRequestInternal.HandledBy = consentPartyUrn;
             }
 

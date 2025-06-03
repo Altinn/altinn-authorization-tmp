@@ -1,11 +1,6 @@
 ﻿using System.Data;
-using System.Security.Policy;
-using System.Threading;
-using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.Authorization.Core.Models.Consent;
-using Azure.Core;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Npgsql;
 using NpgsqlTypes;
 

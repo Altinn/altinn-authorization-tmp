@@ -10,6 +10,12 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
     /// </summary>
     public static class OrgUtil
     {
+        public static string? GetMaskinportenScopes(ClaimsPrincipal claimsPrincipal)
+        {
+            string? scopes = claimsPrincipal.FindFirstValue("scope");
+            return scopes;
+        }
+
         /// <summary>
         /// Returns orgnumber for the consumer party from the claims principal.
         /// </summary>
