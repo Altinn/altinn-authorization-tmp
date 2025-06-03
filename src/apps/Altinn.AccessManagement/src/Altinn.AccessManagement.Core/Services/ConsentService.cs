@@ -73,8 +73,13 @@ namespace Altinn.AccessManagement.Core.Services
                 return Problems.ConsentWithIdAlreadyExist.Create([new("requestId", consentRequest.Id.ToString())]);
             }
             
-            requestDetails.From = consentRequest.From;
-            requestDetails.To = consentRequest.To;
+            requestDetails.From = await MapToExternalIdenity(requestDetails.From, cancellationToken);
+            requestDetails.To = await MapToExternalIdenity(requestDetails.To, cancellationToken);
+            if (requestDetails.HandledBy != null)
+            {
+                requestDetails.HandledBy = await MapToExternalIdenity(requestDetails.HandledBy, cancellationToken);
+            }
+                
             foreach (ConsentRequestEvent consentRequestEvent in requestDetails.ConsentRequestEvents)
             {
                 consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);

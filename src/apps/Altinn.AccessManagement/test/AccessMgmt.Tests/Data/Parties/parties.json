@@ -1153,5 +1153,34 @@
     "IsDeleted": false,
     "OnlyHierarchyElementWithNoAccess": false,
     "ChildParties": null
+  },
+  {
+    "PartyTypeName": 2,
+    "SSN": "",
+    "OrgNumber": "991825827",
+    "Person": null,
+    "Organization": {
+      "OrgNumber": "991825827",
+      "Name": "DIGITALISERINGSDIREKTORATET",
+      "UnitType": "ORGL",
+      "TelephoneNumber": null,
+      "MobileNumber": null,
+      "FaxNumber": null,
+      "EMailAddress": "test@digdir.test",
+      "InternetAddress": null,
+      "MailingAddress": null,
+      "MailingPostalCode": null,
+      "MailingPostalCity": null,
+      "BusinessAddress": null,
+      "BusinessPostalCode": null,
+      "BusinessPostalCity": null
+    },
+    "PartyId": 50167512,
+    "PartyUuid": "CDDA2F11-95C5-4BE4-9690-54206FF663F6",
+    "UnitType": "ORGL",
+    "Name": "DIGITALISERINGSDIREKTORATET",
+    "IsDeleted": false,
+    "OnlyHierarchyElementWithNoAccess": false,
+    "ChildParties": null
   }
 ]

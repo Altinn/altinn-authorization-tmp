@@ -51,6 +51,14 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 consentRequestInternal.HandledBy = supplierUrn;
             }
 
+            if (consentRequestInternal.To != consentPartyUrn)
+            {
+                // This scenario is only allowed for orgs creating consents for their own resources. 
+                // Used in EBEVIS where Digdir request consent 
+                // TODO: Add scope validation
+                consentRequestInternal.HandledBy = consentPartyUrn;
+            }
+
             Result<ConsentRequestDetailsWrapper> consentRequestStatus = await _consentService.CreateRequest(consentRequestInternal, consentPartyUrn, cancellationToken);
 
             if (consentRequestStatus.IsProblem)
@@ -61,7 +69,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
             var routeValues = new { consentRequestId = consentRequestStatus.Value.ConsentRequest.Id };
             string? locationUrl = Url.Link(GetRouteName, routeValues);
 
-            if(consentRequestStatus.Value.AlreadyExisted)
+            if (consentRequestStatus.Value.AlreadyExisted)
             {
                 return Ok(consentRequestStatus.Value.ConsentRequest);
             }

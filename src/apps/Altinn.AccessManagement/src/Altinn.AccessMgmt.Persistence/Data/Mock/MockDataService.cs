@@ -75,6 +75,7 @@ public class MockDataService
         Entity norskRegnskap = new() { Id = Guid.Parse("B82839EE-9F16-4398-8C98-ECB7682E8418"), Name = "Norsk Regnskap AS", RefId = "ORG-006", TypeId = orgType.Id, VariantId = variantAS.Id };
         Entity smekkfullBank = new() { Id = Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181"), Name = "SmekkFull Bank AS", RefId = "810419512", TypeId = orgType.Id, VariantId = variantAS.Id };
         Entity smekkfullBankSupplier = new() { Id = Guid.Parse("00000000-0000-0000-0005-000000004219"), Name = "KOLSAAS OG FLAAM", RefId = "810418192", TypeId = orgType.Id, VariantId = variantAS.Id };
+        Entity digitaliseringsDirektoratet = new() { Id = Guid.Parse("CDDA2F11-95C5-4BE4-9690-54206FF663F6"), Name = "DIGITALISERINGSDIREKTORATET", RefId = "991825827", TypeId = orgType.Id, VariantId = variantAS.Id };
 
         await entityRepository.Upsert(spirhAS, options);
         await entityRepository.Upsert(bakerHansenAS, options);
@@ -85,9 +86,11 @@ public class MockDataService
         await entityRepository.Upsert(norskRegnskap, options);
         await entityRepository.Upsert(smekkfullBank, options);
         await entityRepository.Upsert(smekkfullBankSupplier, options);
+        await entityRepository.Upsert(digitaliseringsDirektoratet, options);
 
         await entityLookupRepository.Upsert(new EntityLookup() { EntityId = smekkfullBank.Id, Key = "OrganizationIdentifier", Value = smekkfullBank.RefId }, options);
         await entityLookupRepository.Upsert(new EntityLookup() { EntityId = smekkfullBankSupplier.Id, Key = "OrganizationIdentifier", Value = smekkfullBankSupplier.RefId }, options);
+        await entityLookupRepository.Upsert(new EntityLookup() { EntityId = digitaliseringsDirektoratet.Id, Key = "OrganizationIdentifier", Value = digitaliseringsDirektoratet.RefId }, options);
 
         Entity mariusThuen = new() { Id = Guid.Parse("3ECA9413-F58C-4205-8ED4-2322E1C5E5C0"), Name = "Marius Thuen", RefId = "PERS-000", TypeId = persType.Id, VariantId = variantPers.Id };
         Entity fredrikJohnsen = new() { Id = Guid.Parse("B238C6ED-D186-410D-983F-2B4AA887F376"), Name = "Fredrik Johnsen", RefId = "PERS-001", TypeId = persType.Id, VariantId = variantPers.Id };
