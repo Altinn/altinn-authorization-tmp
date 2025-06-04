@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace AccessMgmt.Tests.Controllers.Internal
+namespace AccessMgmt.Tests.Controllers.Bff
 {
     public class ConsentControllerTestBFF(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
     {
