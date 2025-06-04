@@ -120,7 +120,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             DateTimeOffset createdTime = DateTime.UtcNow;
 
             const string consentRquestQuery = /*strpsql*/@"
-                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, requiredDelegatorUuid, toPartyUuid, handledByPartyUuid, validTo, requestMessage, templateId, redirectUrl)
+                INSERT INTO consent.consentrequest (consentRequestId, fromPartyUuid, requiredDelegatorUuid, toPartyUuid, handledByPartyUuid, validTo, requestMessage, templateId, templateVersion, redirectUrl)
                 VALUES (
                 @consentRequestId, 
                 @fromPartyUuid,
@@ -130,6 +130,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 @validTo, 
                 @requestMessage,
                 @templateId, 
+                @templateVersion, 
                 @redirectUrl)
                 RETURNING consentRequestId;
                 ";
@@ -141,7 +142,17 @@ namespace Altinn.AccessManagement.Persistence.Consent
             await using NpgsqlCommand command = conn.CreateCommand();
             command.CommandText = consentRquestQuery;
             command.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid,  consentRequest.Id);
-            command.Parameters.AddWithValue("templateId", NpgsqlDbType.Uuid, consentRequest.TemplateId);
+            command.Parameters.AddWithValue("templateId", NpgsqlDbType.Text, consentRequest.TemplateId);
+       
+            if (consentRequest.TemplateVersion != null)
+            {
+                command.Parameters.AddWithValue("templateVersion", NpgsqlDbType.Integer, consentRequest.TemplateVersion);
+            }
+            else
+            {
+                command.Parameters.AddWithValue("templateVersion", NpgsqlDbType.Integer, DBNull.Value);
+            }
+
             if (consentRequest.From.IsPartyUuid(out Guid fromPartyGuid))
             {
                 command.Parameters.AddWithValue("fromPartyUuid", NpgsqlDbType.Uuid, fromPartyGuid);

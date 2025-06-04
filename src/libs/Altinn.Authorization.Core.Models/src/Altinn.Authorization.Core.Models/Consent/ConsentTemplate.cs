@@ -19,7 +19,7 @@ namespace Altinn.Authorization.Core.Models.Consent
         /// <summary>
         /// Every update the template is save a new version is created
         /// </summary>
-        public Guid Version { get; set; } = Guid.NewGuid();
+        public int? Version { get; set; }
 
         /// <summary>
         /// Title of the consent template

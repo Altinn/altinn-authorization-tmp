@@ -25,7 +25,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
                 ValidTo = consentRequestExternal.ValidTo,
                 ConsentRights = consentRequestExternal.ConsentRights.Select(ConsentRightExternal.ToCore).ToList(),
                 Requestmessage = consentRequestExternal.Requestmessage,
-                RedirectUrl = consentRequestExternal.RedirectUrl,
+                RedirectUrl = consentRequestExternal.RedirectUrl
             };
         }
 

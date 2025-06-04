@@ -41,5 +41,6 @@
       "id": "urn:altinn:resource",
       "value": "ttd_skattegrunnlag"
     }
-  ]
+  ],
+  "consentTemplate": "default"
 }

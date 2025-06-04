@@ -48,7 +48,12 @@
         /// <summary>
         /// The consent template id.
         /// </summary>
-        public Guid TemplateId { get; set; }
+        public string? TemplateId { get; set; }
+
+        /// <summary>
+        /// The version of the consent template.
+        /// </summary>
+        public int? TemplateVersion { get; set; }
 
         /// <summary>
         /// Redirect url for the user to be redirected after consent is given or denied.

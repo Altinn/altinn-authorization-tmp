@@ -14,5 +14,10 @@
         /// The value of the resource attribute
         /// </summary>
         public required string Value { get; set; }
+
+        /// <summary>
+        /// The version of the resource attribute
+        /// </summary>
+        public string? Version { get; set; }
     }
 }

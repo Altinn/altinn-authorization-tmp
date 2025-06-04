@@ -685,7 +685,8 @@ namespace Altinn.AccessManagement.Core.Services
 
             ConsentTemplate consentTemplate = await GetTemplate(templateId, cancelactionToken);
 
-            consentRequest.TemplateId = consentTemplate.Version;
+            consentRequest.TemplateVersion = consentTemplate.Version;
+            consentRequest.TemplateId = consentTemplate.Id;
 
             return consentRequest;
         }
@@ -827,15 +828,8 @@ namespace Altinn.AccessManagement.Core.Services
 
         private async Task<ConsentTemplate> GetTemplate(string templateId, CancellationToken cancellationToken)
         {
-            return new ConsentTemplate()
-            {
-                Version = Guid.CreateVersion7(),
-                Id = templateId,
-                Texts = new ConsentTemplateTexts() // Ensure the required 'Texts' property is initialized  
-                {
-                    // Initialize the properties of ConsentTemplateTexts as needed  
-                }
-            };
+            ConsentTemplate consentTemplate = await _resourceRegistryClient.GetConsentTemplate(templateId, null, cancellationToken);
+            return consentTemplate ?? throw new ArgumentException($"Consent template with id {templateId} not found");
         }
 
         /// <summary>
