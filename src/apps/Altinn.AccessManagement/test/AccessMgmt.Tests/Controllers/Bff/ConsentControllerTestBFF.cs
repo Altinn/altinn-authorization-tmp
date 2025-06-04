@@ -62,12 +62,12 @@ namespace AccessMgmt.Tests.Controllers.Bff
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/{requestId.ToString()}");
             string responseText = await response.Content.ReadAsStringAsync();
-            ConsentRequestDetailsExternal consentRequest = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsExternal>();
+            ConsentRequestDetailsBFF consentRequest = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBFF>();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(requestId, consentRequest.Id);
             Assert.True(consentRequest.ConsentRights.Count > 0);
-            Assert.Equal("01025161013", consentRequest.From.ValueSpan);
-            Assert.Equal("810419512", consentRequest.To.ValueSpan);  // TODO FIx
+            Assert.Equal("d5b861c8-8e3b-44cd-9952-5315e5990cf5", consentRequest.From.ValueSpan);
+            Assert.Equal("8ef5e5fa-94e1-4869-8635-df86b6219181", consentRequest.To.ValueSpan);  // TODO FIx
             Assert.Equal("https:///www.urlfromsavedreqest.com", consentRequest.RedirectUrl);  // TODO FI
             Assert.Equal("urn:altinn:resource", consentRequest.ConsentRights[0].Resource[0].Type);
         }

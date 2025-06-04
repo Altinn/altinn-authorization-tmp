@@ -46,7 +46,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return consentRequest.Problem.ToActionResult();
             }
 
-            return Ok(consentRequest.Value);
+            return Ok(ConsentRequestDetailsBFF.FromCore(consentRequest.Value));
         }
 
         /// <summary>
