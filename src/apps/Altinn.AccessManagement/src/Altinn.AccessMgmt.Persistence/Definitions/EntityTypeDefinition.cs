@@ -23,6 +23,7 @@ public class EntityTypeDefinition : BaseDbDefinition<EntityType>, IDbDefinition
             def.RegisterProperty(t => t.Id);
 
             def.RegisterProperty(t => t.Name);
+            def.RegisterProperty(t => t.Code, nullable: true);
             def.RegisterProperty(t => t.ProviderId);
 
             def.RegisterExtendedProperty<ExtEntityType, Provider>(t => t.ProviderId, t => t.Id, t => t.Provider, cascadeDelete: true);

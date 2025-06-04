@@ -453,9 +453,9 @@ public class AssignmentService(
 
     private static void ValidatePartyIsOrg(ExtEntity entity, ref ValidationErrorBuilder errors, string param)
     {
-        if (entity is not null && !entity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
+        if (entity is not null && !entity.Type.Code.Equals("organization", StringComparison.InvariantCultureIgnoreCase))
         {
-            errors.Add(ValidationErrors.InvalidQueryParameter, param, [new("partyId", $"expected party of type 'Organisasjon' got '{entity.Type.Name}'.")]);
+            errors.Add(ValidationErrors.InvalidQueryParameter, param, [new("partyId", $"expected party of type 'organization' got '{entity.Type.Name}'.")]);
         }
     }
 

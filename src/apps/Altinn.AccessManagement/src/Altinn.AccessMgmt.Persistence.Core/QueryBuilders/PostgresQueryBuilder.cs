@@ -199,7 +199,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             sb.AppendLine(" AND T.language = N.language");
         }
 
-        sb.AppendLine($"WHEN MATCHED AND ({string.Join(" OR ", updateProperties.Select(t => $"T.{t} <> @{t}"))}) THEN");
+        var comparisons = updateProperties.Select(t => $"(T.{t} IS NULL OR T.{t} <> @{t})");
+        sb.AppendLine($"WHEN MATCHED AND ({string.Join(" OR ", comparisons)}) THEN");
+        // sb.AppendLine($"WHEN MATCHED AND ({string.Join(" OR ", updateProperties.Select(t => $"T.{t} <> @{t}"))}) THEN");
         sb.AppendLine($"UPDATE SET {string.Join(",", updateProperties.Select(t => $"{t} = @{t}"))}");
         sb.AppendLine("WHEN NOT MATCHED THEN");
         sb.AppendLine($"INSERT ({InsertColumns(insertProperties)}) VALUES({InsertValues(insertProperties)});");

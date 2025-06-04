@@ -243,7 +243,7 @@ public class DelegationService(
                     if (agentAssignment == null)
                     {
                         // Find or Create Agent Entity
-                        var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "System", options) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
+                        var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "system-user", "System", options) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
 
                         // Find or Create Agent Assignment
                         agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole, options) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
@@ -345,21 +345,21 @@ public class DelegationService(
         }
     }
 
-    private async Task<Entity> GetOrCreateEntity(Guid id, string name, string refId, string type, string variant, ChangeRequestOptions options)
+    private async Task<Entity> GetOrCreateEntity(Guid id, string name, string refId, string typeCode, string variant, ChangeRequestOptions options)
     {
-        var entityType = (await entityTypeRepository.Get(t => t.Name, type)).First() ?? throw new Exception(string.Format("Type not found '{0}'", type));
+        var entityType = (await entityTypeRepository.Get(t => t.Code, typeCode)).First() ?? throw new Exception(string.Format("Type not found '{0}'", typeCode));
 
         var variantFilter = entityVariantRepository.CreateFilterBuilder();
         variantFilter.Equal(t => t.TypeId, entityType.Id);
         variantFilter.Equal(t => t.Name, variant);
-        var entityVariant = (await entityVariantRepository.Get(variantFilter)).First() ?? throw new Exception(string.Format("Variant not found '{0}'", type));
+        var entityVariant = (await entityVariantRepository.Get(variantFilter)).First() ?? throw new Exception(string.Format("Variant not found '{0}'", typeCode));
         
         var entity = await entityRepository.Get(id);
         if (entity != null)
         {
             if (!entity.TypeId.Equals(entityType.Id))
             {
-                throw new ArgumentException(string.Format("Entity is not of desired type '{0}'", type), paramName: "Type");
+                throw new ArgumentException(string.Format("Entity is not of desired type '{0}'", typeCode), paramName: "Type");
             }
 
             if (!entity.VariantId.Equals(entityVariant.Id))

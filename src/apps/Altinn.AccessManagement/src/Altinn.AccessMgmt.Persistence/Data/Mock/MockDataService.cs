@@ -51,8 +51,8 @@ public class MockDataService
             ChangedBySystem = AuditDefaults.StaticDataIngest
         };
 
-        var orgType = (await entityTypeRepository.Get(t => t.Name, "Organisasjon")).FirstOrDefault() ?? throw new Exception("Could not find type 'Organisasjon'");
-        var persType = (await entityTypeRepository.Get(t => t.Name, "Person")).FirstOrDefault() ?? throw new Exception("Could not find type 'Person'");
+        var orgType = (await entityTypeRepository.Get(t => t.Code, "organization")).FirstOrDefault() ?? throw new Exception("Could not find type 'organization'");
+        var persType = (await entityTypeRepository.Get(t => t.Code, "person")).FirstOrDefault() ?? throw new Exception("Could not find type 'person'");
         var variants = await entityVariantRepository.Get();
         var variantAS = variants.First(t => t.TypeId == orgType.Id && t.Name == "AS");
         var variantPers = variants.First(t => t.TypeId == persType.Id && t.Name == "Person");

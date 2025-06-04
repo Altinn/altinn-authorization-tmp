@@ -73,10 +73,10 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Provider>(dataKey, string.Empty, 3);
         }
 
-        if (migrationService.NeedMigration<EntityType>(dataKey, 4))
+        if (migrationService.NeedMigration<EntityType>(dataKey, 5))
         {
             await IngestEntityType(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 4);
+            await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 5);
         }
 
         if (migrationService.NeedMigration<EntityVariant>(dataKey, 4))
@@ -209,31 +209,31 @@ public class DbDataMigrationService(
 
         var entityTypes = new List<EntityType>()
         {
-            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerA3.Id },
-            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerA3.Id },
-            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembruker", ProviderId = providerA3.Id },
-            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Intern", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerA3.Id, Code = "organization" },
+            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerA3.Id, Code = "person" },
+            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembruker", ProviderId = providerA3.Id, Code = "system-user" },
+            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Intern", ProviderId = providerA3.Id, Code = "internal" },
         };
 
         var entityTypesNno = new List<EntityType>()
         {
-            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerA3.Id },
-            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerA3.Id },
-            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembrukar", ProviderId = providerA3.Id },
-            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Intern", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = providerA3.Id, Code = "organization" },
+            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerA3.Id, Code = "person" },
+            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembrukar", ProviderId = providerA3.Id, Code = "system-user" },
+            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Intern", ProviderId = providerA3.Id, Code = "internal" },
         };
 
         var entityTypesEng = new List<EntityType>()
         {
-            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organization", ProviderId = providerA3.Id },
-            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerA3.Id },
-            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "SystemUser", ProviderId = providerA3.Id },
-            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Internal", ProviderId = providerA3.Id },
+            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organization", ProviderId = providerA3.Id, Code = "organization" },
+            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = providerA3.Id, Code = "person" },
+            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "SystemUser", ProviderId = providerA3.Id, Code = "system-user" },
+            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Internal", ProviderId = providerA3.Id, Code = "internal" },
         };
 
         foreach (var item in entityTypes)
         {
-            await entityTypeService.Upsert(item, options: options, cancellationToken: cancellationToken);
+            await entityTypeService.Upsert(item, updateProperties: [t => t.Name, t => t.Code, t => t.ProviderId], compareProperties: [t => t.Id], options: options, cancellationToken: cancellationToken);
         }
 
         foreach (var item in entityTypesNno)
@@ -255,10 +255,10 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestEntityVariant(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Organisasjon"));
-        var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Person"));
-        var systemTypeId = (await entityTypeService.Get(t => t.Name, "Systembruker")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "System"));
-        var internalTypeId = (await entityTypeService.Get(t => t.Name, "Intern")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
+        var orgTypeId = (await entityTypeService.Get(t => t.Code, "organization")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "organization"));
+        var persTypeId = (await entityTypeService.Get(t => t.Code, "person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "person"));
+        var systemTypeId = (await entityTypeService.Get(t => t.Code, "system-user")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "system-user"));
+        var internalTypeId = (await entityTypeService.Get(t => t.Code, "internal")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "internal"));
 
         var entityVariants = new List<EntityVariant>()
         {
@@ -440,8 +440,8 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestSystemEntity(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        var internalTypeId = (await entityTypeService.Get(t => t.Name, "Intern")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
-        var internalVariantId = (await entityVariantService.Get(t => t.TypeId, internalTypeId)).FirstOrDefault(t => t.Name.Equals("Standard", StringComparison.OrdinalIgnoreCase))?.Id ?? throw new KeyNotFoundException(string.Format("EntityVariant '{0}' not found", "Intern"));
+        var internalTypeId = (await entityTypeService.Get(t => t.Code, "internal")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "internal"));
+        var internalVariantId = (await entityVariantService.Get(t => t.TypeId, internalTypeId)).FirstOrDefault(t => t.Name.Equals("Standard", StringComparison.OrdinalIgnoreCase))?.Id ?? throw new KeyNotFoundException(string.Format("EntityVariant '{0}' not found", "internal"));
 
         var systemEntities = new List<Entity>()
         {
@@ -465,8 +465,8 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestRole(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        var orgEntityTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Organisasjon"));
-        var persEntityTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Person"));
+        var orgEntityTypeId = (await entityTypeService.Get(t => t.Code, "organization")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "organization"));
+        var persEntityTypeId = (await entityTypeService.Get(t => t.Code, "person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "person"));
         var ccrProviderId = (await providerRepository.Get(t => t.Code, "sys-ccr")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Enhetsregisteret"));
         var a3ProviderId = (await providerRepository.Get(t => t.Code, "sys-altinn3")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 3"));
         var a2ProviderId = (await providerRepository.Get(t => t.Code, "sys-altinn2")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 2"));
@@ -1323,7 +1323,7 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestAreaGroup(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        var orgEntityTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Organisasjon"));
+        var orgEntityTypeId = (await entityTypeService.Get(t => t.Code, "organization")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "organization"));
 
         var areaGroups = new List<AreaGroup>()
         {
@@ -1472,7 +1472,7 @@ public class DbDataMigrationService(
         //// TODO: Translate
 
         var provider = (await providerRepository.Get(t => t.Code, "sys-altinn3")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Digitaliseringsdirektoratet"));
-        var orgEntityType = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "Organisasjon"));
+        var orgEntityType = (await entityTypeService.Get(t => t.Code, "organization")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found '{0}'", "organization"));
 
         var areas = await areaService.Get();
 
