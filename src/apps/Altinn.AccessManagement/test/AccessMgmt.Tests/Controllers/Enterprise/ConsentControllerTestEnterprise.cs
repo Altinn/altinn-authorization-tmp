@@ -100,6 +100,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
             Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Equal($"https://am.ui.localhost/accessmanagement/ui/consent/request?id={requestID}", consentInfo.ViewUri);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);

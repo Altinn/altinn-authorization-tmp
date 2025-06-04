@@ -40,7 +40,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
 
             ConsentPartyUrn performedByParty = ConsentPartyUrn.PartyUuid.Create(performedBy.Value);
 
-            Result<ConsentRequestDetails> consentRequest = await _consentService.GetRequest(requestId, performedByParty, cancellationToken);
+            Result<ConsentRequestDetails> consentRequest = await _consentService.GetRequest(requestId, performedByParty, false, cancellationToken);
             if (consentRequest.IsProblem)
             {
                 return consentRequest.Problem.ToActionResult();

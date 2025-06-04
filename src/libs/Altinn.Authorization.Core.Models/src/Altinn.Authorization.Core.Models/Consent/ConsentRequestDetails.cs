@@ -64,5 +64,10 @@
         /// Redirect url for the user to be redirected after consent is given or denied.
         /// </summary>
         public required string RedirectUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The URI for the view that should be shown to the user when requesting consent.
+        /// </summary>
+        public string ViewUri { get; set; } = string.Empty;
     }
 }

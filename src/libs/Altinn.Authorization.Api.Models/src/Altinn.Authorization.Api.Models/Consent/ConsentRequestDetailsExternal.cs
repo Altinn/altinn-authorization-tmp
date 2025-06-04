@@ -63,6 +63,11 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// </summary>
         public required List<ConsentRequestEventExternal> ConsentRequestEvents { get; set; }
 
+        /// <summary>
+        /// The URI for the view that should be shown to the user when requesting consent.
+        /// </summary>
+        public string ViewUri { get; set; } = string.Empty;
+
         public static ConsentRequestDetailsExternal FromCore(ConsentRequestDetails core)
         {
             ConsentPartyUrnExternal to = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(core.To.ValueSpan));
@@ -100,6 +105,7 @@ namespace Altinn.Authorization.Api.Models.Consent
                 ConsentRights = core.ConsentRights.Select(ConsentRightExternal.FromCore).ToList(),
                 ConsentRequestEvents = core.ConsentRequestEvents.Select(ConsentRequestEventExternal.FromCore).ToList(),
                 RedirectUrl = core.RedirectUrl,
+                ViewUri = core.ViewUri,
             };
         }
     }

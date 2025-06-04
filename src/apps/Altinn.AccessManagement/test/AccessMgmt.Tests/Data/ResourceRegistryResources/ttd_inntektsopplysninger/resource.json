@@ -35,7 +35,7 @@
   "accessListMode": "Enabled",
   "selfIdentifiedUserEnabled": false,
   "enterpriseUserEnabled": false,
-  "resourceType": "Consentresource",
+  "resourceType": "Consent",
   "consentMetadata": {
     "inntektsaar": {}
   },

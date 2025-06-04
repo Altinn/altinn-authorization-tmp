@@ -79,7 +79,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 return Ok(consentRequestStatus.Value.ConsentRequest);
             }
 
-            return Created(locationUrl, consentRequestStatus.Value.ConsentRequest);
+            return Created(locationUrl, ConsentRequestDetailsExternal.FromCore(consentRequestStatus.Value.ConsentRequest));
         }
 
         /// <summary>
@@ -102,14 +102,14 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 return Unauthorized();
             }
             
-            Result<ConsentRequestDetails> consentRequestStatus = await _consentService.GetRequest(consentRequestId, consentPartyUrn, cancellationToken);
+            Result<ConsentRequestDetails> consentRequestStatus = await _consentService.GetRequest(consentRequestId, consentPartyUrn, false, cancellationToken);
 
             if (consentRequestStatus.IsProblem)
             {
                 return consentRequestStatus.Problem.ToActionResult();
             }
 
-            return Ok(consentRequestStatus.Value);
+            return Ok(ConsentRequestDetailsExternal.FromCore(consentRequestStatus.Value));
         }
     }
 }

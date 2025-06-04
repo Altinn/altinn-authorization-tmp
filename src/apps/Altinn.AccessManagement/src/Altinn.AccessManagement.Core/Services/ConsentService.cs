@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
+using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Errors;
@@ -14,6 +15,7 @@ using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Profile.Models;
 using Altinn.Platform.Register.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -24,7 +26,7 @@ namespace Altinn.AccessManagement.Core.Services
     /// Service responsible for consent functionality
     /// </remarks>
     public class ConsentService(IConsentRepository consentRepository, IPartiesClient partiesClient, ISingleRightsService singleRightsService, 
-        IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient, TimeProvider timeProvider) : IConsent
+        IResourceRegistryClient resourceRegistryClient, IAMPartyService ampartyService, IMemoryCache memoryCache, IProfileClient profileClient, TimeProvider timeProvider, IOptions<GeneralSettings> generalSettings) : IConsent
     {
         private readonly IConsentRepository _consentRepository = consentRepository;
         private readonly IPartiesClient _partiesClient = partiesClient;
@@ -34,6 +36,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IMemoryCache _memoryCache = memoryCache;
         private readonly IProfileClient _profileClient = profileClient;
         private readonly TimeProvider _timeProvider = timeProvider;
+        private readonly GeneralSettings _generalSettings = generalSettings.Value;
 
         private const string _consentRequestStatus = "Status";
         private const string ResourceParam = "Resource";
@@ -60,6 +63,20 @@ namespace Altinn.AccessManagement.Core.Services
                     && consentRequest.From == consentRequestDetails.From
                     && consentRequest.To == consentRequestDetails.To)
                 {
+                    consentRequestDetails.From = await MapToExternalIdenity(consentRequestDetails.From, cancellationToken);
+                    consentRequestDetails.To = await MapToExternalIdenity(consentRequestDetails.To, cancellationToken);
+                    if (consentRequestDetails.HandledBy != null)
+                    {
+                        consentRequestDetails.HandledBy = await MapToExternalIdenity(consentRequestDetails.HandledBy, cancellationToken);
+                    }
+
+                    if (consentRequestDetails.RequiredDelegator != null)
+                    {
+                        consentRequestDetails.RequiredDelegator = await MapToExternalIdenity(consentRequestDetails.RequiredDelegator, cancellationToken);
+                    }
+
+                    consentRequestDetails.ViewUri = GetConsentViewUri(consentRequestDetails.Id);
+
                     // We dont validate resource or other parameters when creating a consent request and it exist for the same parties  
                     ConsentRequestDetailsWrapper requestWrapper = new()
                     {
@@ -79,12 +96,18 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 requestDetails.HandledBy = await MapToExternalIdenity(requestDetails.HandledBy, cancellationToken);
             }
-                
+
+            if (requestDetails.RequiredDelegator != null)
+            {
+                requestDetails.RequiredDelegator = await MapToExternalIdenity(requestDetails.RequiredDelegator, cancellationToken);
+            }
+
             foreach (ConsentRequestEvent consentRequestEvent in requestDetails.ConsentRequestEvents)
             {
                 consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
             }
 
+            requestDetails.ViewUri = GetConsentViewUri(requestDetails.Id);
             ConsentRequestDetailsWrapper consentRequestDetailsWrapper = new()
             {
                 ConsentRequest = requestDetails,
@@ -242,7 +265,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<Result<ConsentRequestDetails>> GetRequest(Guid consentRequestId, ConsentPartyUrn performedByParty, CancellationToken cancellationToken)
+        public async Task<Result<ConsentRequestDetails>> GetRequest(Guid consentRequestId, ConsentPartyUrn performedByParty, bool useInternalIdenties, CancellationToken cancellationToken)
         {
             ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
             if (details == null)
@@ -291,6 +314,8 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
             }
+
+            details.ViewUri = GetConsentViewUri(details.Id);
 
             return details;
         }
@@ -709,7 +734,7 @@ namespace Altinn.AccessManagement.Core.Services
                 {
                     problemsBuilder.Add(Problems.InvalidConsentResource);
                 }
-                else if (!resourceDetails.ResourceType.Equals(ResourceType.Consentresource))
+                else if (!resourceDetails.ResourceType.Equals(ResourceType.Consent))
                 {
                     problemsBuilder.Add(Problems.InvalidConsentResource);
                 }
@@ -811,6 +836,14 @@ namespace Altinn.AccessManagement.Core.Services
                     // Initialize the properties of ConsentTemplateTexts as needed  
                 }
             };
+        }
+
+        /// <summary>
+        /// Generates the URI for the consent view in the Altinn UI portal.
+        /// </summary>
+        private string GetConsentViewUri(Guid requesteId)
+        {
+            return $"https://am.ui.{_generalSettings.Hostname}/accessmanagement/ui/consent/request?id={requesteId}";
         }
     }
 }
