@@ -35,7 +35,7 @@ public class RolePackageDefinition : BaseDbDefinition<RolePackage>, IDbDefinitio
             def.RegisterUniqueConstraint([t => t.RoleId, t => t.PackageId], nullableProperties: [t => t.EntityVariantId]);
 
             def.AddManualPreMigrationScript(1, GetPreMigrationScript_UniqueConstraint());
-            def.AddManualPreMigrationScript(2, GetPreMigrationScript_RemoveDuplicates());
+            def.AddManualPreMigrationScript(2, GetPreMigrationScript_RemoveDuplicates());            
         });
     }
 

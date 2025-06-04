@@ -72,5 +72,5 @@ public class RoleDefinition : BaseDbDefinition<Role>, IDbDefinition
             END
             $$;
             """;
-    }
+    }    
 }
