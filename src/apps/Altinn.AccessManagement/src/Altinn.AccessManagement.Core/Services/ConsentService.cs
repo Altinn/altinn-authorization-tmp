@@ -273,8 +273,28 @@ namespace Altinn.AccessManagement.Core.Services
                 return Problems.ConsentNotFound;
             }
 
-            details.To = await MapToExternalIdenity(details.To, cancellationToken);
+            if (!useInternalIdenties)
+            {
+                details.To = await MapToExternalIdenity(details.To, cancellationToken);
+                details.From = await MapToExternalIdenity(details.From, cancellationToken);
 
+
+                if (details.HandledBy != null)
+                {
+                    details.HandledBy = await MapToExternalIdenity(details.HandledBy, cancellationToken);
+                }
+
+                if (details.RequiredDelegator != null)
+                {
+                    details.RequiredDelegator = await MapToExternalIdenity(details.RequiredDelegator, cancellationToken);
+                }
+
+                foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)
+                {
+                    consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
+                }
+            }
+ 
             if (performedByParty.IsOrganizationId(out Authorization.Core.Models.Register.OrganizationNumber organizationNumber))
             {
                 if (details.To.IsOrganizationId(out Authorization.Core.Models.Register.OrganizationNumber toOrganizationNumber))
@@ -296,23 +316,6 @@ namespace Altinn.AccessManagement.Core.Services
                 {
                     return Problems.NotAuthorizedForConsentRequest;
                 }
-            }
-
-            details.From = await MapToExternalIdenity(details.From, cancellationToken);
-            
-            if (details.HandledBy != null)
-            {
-                details.HandledBy = await MapToExternalIdenity(details.HandledBy, cancellationToken);
-            }
-
-            if (details.RequiredDelegator != null)
-            {
-                details.RequiredDelegator = await MapToExternalIdenity(details.RequiredDelegator, cancellationToken);
-            }
-            
-            foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)
-            {
-                consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
             }
 
             details.ViewUri = GetConsentViewUri(details.Id);

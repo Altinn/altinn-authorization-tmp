@@ -189,7 +189,6 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 throw new InvalidDataException("Invalid toPartyUuid");
             }
 
-
             command.Parameters.AddWithValue("requestMessage", NpgsqlDbType.Hstore, consentRequest.Requestmessage);
             command.Parameters.AddWithValue("redirectUrl", NpgsqlDbType.Text, consentRequest.RedirectUrl);
 
@@ -354,7 +353,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     ConsentRequestStatus = await reader.GetFieldValueAsync<ConsentRequestStatusType>("status", cancellationToken: cancellationToken),
                     Consented = await reader.GetFieldValueAsync<DateTimeOffset?>("consented", cancellationToken: cancellationToken),
                     RedirectUrl = await reader.GetFieldValueAsync<string>("redirectUrl", cancellationToken: cancellationToken),
-                    ConsentRequestEvents = consentRequestEvents
+                    ConsentRequestEvents = consentRequestEvents,
+                    TemplateId = await reader.GetFieldValueAsync<string>("templateId", cancellationToken: cancellationToken),
+                    TemplateVersion = await reader.GetFieldValueAsync<int?>("templateVersion", cancellationToken: cancellationToken),
                 };
             }
 

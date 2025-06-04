@@ -69,5 +69,15 @@
         /// The URI for the view that should be shown to the user when requesting consent.
         /// </summary>
         public string ViewUri { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The consent template id.
+        /// </summary>
+        public string? TemplateId { get; set; }
+
+        /// <summary>
+        /// The version of the consent template.
+        /// </summary>
+        public int? TemplateVersion { get; set; }
     }
 }

@@ -40,5 +40,7 @@
     }
   ],
   "portalViewMode": "Hide",
-  "redirectUrl":  "https:///www.urlfromsavedreqest.com"
+  "redirectUrl": "https:///www.urlfromsavedreqest.com",
+  "templateId": "sblanesoknad",
+  "templateVersion": 1
 }
