@@ -1691,7 +1691,7 @@
     "accessListMode": "Enabled",
     "selfIdentifiedUserEnabled": false,
     "enterpriseUserEnabled": false,
-    "resourceType": "Consentresource",
+    "resourceType": "Consent",
     "authorizationReference": [
       {
         "id": "urn:altinn:resource",
@@ -1736,7 +1736,7 @@
     "accessListMode": "Enabled",
     "selfIdentifiedUserEnabled": false,
     "enterpriseUserEnabled": false,
-    "resourceType": "Consentresource",
+    "resourceType": "Consent",
     "authorizationReference": [
       {
         "id": "urn:altinn:resource",

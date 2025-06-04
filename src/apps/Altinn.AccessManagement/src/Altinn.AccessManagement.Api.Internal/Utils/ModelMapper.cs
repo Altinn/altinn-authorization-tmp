@@ -3,7 +3,7 @@ using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
 
-namespace Altinn.AccessManagement.Api.Enduser.Utils
+namespace Altinn.AccessManagement.Api.Internal.Utils
 {
     /// <summary>
     /// Mapper for converting between external and internal models

@@ -1,4 +1,4 @@
-﻿using Altinn.AccessManagement.Api.Enduser.Utils;
+﻿using Altinn.AccessManagement.Api.Internal.Utils;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Api.Models.Consent;
@@ -7,14 +7,14 @@ using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Altinn.AccessManagement.Api.Enduser.Controllers
+namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
 {
     /// <summary>
     /// API controller for managing consent information for end users.
     /// All endpoints are accessible only from the Altinn Portal to ensure that end users are properly informed about the details of their consents.
     /// The controller enforces the portal scope for authorization to access its methods.
     /// </summary>
-    [Route("accessmanagement/api/v1/enduser")]
+    [Route("accessmanagement/api/v1/bff")]
     [ApiController]
     [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     public class ConsentController(IConsent consentService) : ControllerBase
@@ -29,7 +29,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// User is authorized to delegate the rights that are requested. Either by having the right themselves or being the main administrator
         /// </summary>
         [HttpGet]
-        [Route("consentrequests/{requestId}", Name ="endusergetconsentrequest")]
+        [Route("consentrequests/{requestId}", Name ="bffgetconsentrequest")]
         public async Task<IActionResult> GetConsentRequest([FromRoute] Guid requestId, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);
