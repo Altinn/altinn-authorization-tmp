@@ -89,22 +89,6 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             ConsentContextExternal consentContextExternal = new ConsentContextExternal
             {
                 Language = "nb",
-                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
-                ConsentContextResources = new List<ResourceContextExternal>
-               {
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   },
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   }
-               }
             };
             await repositgo.AcceptConsentRequest(requestId, Guid.NewGuid(), consentContextExternal.ToCore());
 

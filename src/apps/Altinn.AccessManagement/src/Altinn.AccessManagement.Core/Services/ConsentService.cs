@@ -700,21 +700,6 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 errors.Add(ValidationErrors.Required, "Context");
             }
-       
-            if (consentRequest.ConsentRights.Count != context.ConsentContextResources.Count)
-            {
-                errors.Add(ValidationErrors.InvalidResourceContext, "Context");
-            }
-
-            foreach (ConsentRight consentRight in consentRequest.ConsentRights)
-            {
-                ConsentResourceAttribute attribute = consentRight.Resource[0];
-                string resourceId = $"{attribute.Type}:{attribute.Value}";
-                if (context.ConsentContextResources.All(x => x.ResourceId != resourceId))
-                {
-                    errors.Add(ValidationErrors.InvalidResourceContext, ResourceParam);
-                }
-            }
         }
 
         private async Task<(MultipleProblemBuilder Errors, string TemplateId)> ValidateConsentRight(ConsentRequest consentRequest, MultipleProblemBuilder problemsBuilder, int rightIndex, string templateId, CancellationToken cancelactionToken)

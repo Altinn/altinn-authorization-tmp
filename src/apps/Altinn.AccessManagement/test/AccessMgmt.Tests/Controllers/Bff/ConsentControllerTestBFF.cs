@@ -110,22 +110,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
             ConsentContextExternal consentContextExternal = new ConsentContextExternal
             {
                 Language = "nb",
-                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
-                ConsentContextResources = new List<ResourceContextExternal>
-               {
-                   new() 
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   },
-                   new() 
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   }
-               }
             };
 
             // Serialize the object to JSON
@@ -157,22 +141,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
             ConsentContextExternal consentContextExternal = new ConsentContextExternal
             {
                 Language = "nb",
-                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
-                ConsentContextResources = new List<ResourceContextExternal>
-               {
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   },
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   }
-               }
             };
 
             // Serialize the object to JSON
@@ -207,22 +175,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
             ConsentContextExternal consentContextExternal = new ConsentContextExternal
             {
                 Language = "nb",
-                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
-                ConsentContextResources = new List<ResourceContextExternal>
-               {
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   },
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   }
-               }
             };
 
             // Serialize the object to JSON
@@ -266,22 +218,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
             ConsentContextExternal consentContextExternal = new ConsentContextExternal
             {
                 Language = "nb",
-                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
-                ConsentContextResources = new List<ResourceContextExternal>
-               {
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   },
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   }
-               }
             };
             await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToCore());
             HttpClient client = GetTestClient();
@@ -312,22 +248,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
             ConsentContextExternal consentContextExternal = new ConsentContextExternal
             {
                 Language = "nb",
-                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
-                ConsentContextResources = new List<ResourceContextExternal>
-               {
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   },
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   }
-               }
             };
             await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToCore());
             HttpClient client = GetTestClient();
@@ -343,7 +263,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             Assert.Equal("01025161013", consentRequest.From.ValueSpan);
             Assert.Equal("810419512", consentRequest.To.ValueSpan);  // TODO FIx
             Assert.Equal("urn:altinn:resource", consentRequest.ConsentRights[0].Resource[0].Type);
-            Assert.Equal(consentContextExternal.Context, consentRequest.Context.Context);
+            Assert.Equal(consentContextExternal.Language, consentRequest.Context.Language);
         }
 
         /// <summary>
@@ -362,22 +282,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
             ConsentContextExternal consentContextExternal = new ConsentContextExternal
             {
                 Language = "nb",
-                Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv",
-                ConsentContextResources = new List<ResourceContextExternal>
-               {
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_skattegrunnlag",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   },
-                   new()
-                   {
-                       ResourceId = "urn:altinn:resource:ttd_inntektsopplysninger",
-                       Language = "nb",
-                       Context = "Ved å samtykke til denne teksten så gir du samtykke til at vi kan dele dataene dine med oss selv"
-                   }
-               }
             };
             await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToCore());
 

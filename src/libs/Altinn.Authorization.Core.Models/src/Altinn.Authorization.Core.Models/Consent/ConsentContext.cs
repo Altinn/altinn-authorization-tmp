@@ -8,19 +8,8 @@
         public required string Language { get; set; }
 
         /// <summary>
-        /// The context of the consent. This is a free text field that can be used to describe the context of the consent. Saved in the language presented to the user.
-        /// </summary>
-        public required string Context { get; set; }
-
-        /// <summary>
         /// ContextIxtentifier. This is a unique identifier for the context. It is used to identify the context in the system.
         /// </summary>
         public Guid? ContextId { get; set; }
-
-        /// <summary>
-        /// The consent context of reasources. Containes the consent 
-        /// </summary>
-        public List<ResourceContext> ConsentContextResources { get; set; } = new List<ResourceContext>();
-
     }
 }
