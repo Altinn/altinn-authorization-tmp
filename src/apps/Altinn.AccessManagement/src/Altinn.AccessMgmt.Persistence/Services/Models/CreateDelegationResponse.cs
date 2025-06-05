@@ -14,4 +14,9 @@ public class CreateDelegationResponse
     /// Client party identifier
     /// </summary>
     public Guid FromEntityId { get; set; }
+
+    /// <summary>
+    /// Delegation that was created
+    /// </summary>
+    public DelegationDto Delegation { get; set; }
 }
