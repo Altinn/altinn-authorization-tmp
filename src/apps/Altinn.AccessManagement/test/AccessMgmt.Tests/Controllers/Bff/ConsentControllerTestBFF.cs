@@ -73,6 +73,32 @@ namespace AccessMgmt.Tests.Controllers.Bff
         }
 
         [Fact]
+        public async Task GetConsentRequestWithoutMessagehandledby()
+        {
+            Guid requestId = Guid.Parse("e579b7a2-7994-4636-9aca-59e114915b70");
+
+            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            await repositgo.CreateRequest(await GetRequest(requestId), ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/{requestId.ToString()}");
+            string responseText = await response.Content.ReadAsStringAsync();
+            ConsentRequestDetailsBFF consentRequest = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBFF>();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(requestId, consentRequest.Id);
+            Assert.True(consentRequest.ConsentRights.Count > 0);
+            Assert.Equal("sblanesoknad", consentRequest.TemplateId);
+            Assert.Equal(1, consentRequest.TemplateVersion);
+            Assert.Equal("d5b861c8-8e3b-44cd-9952-5315e5990cf5", consentRequest.From.ValueSpan);
+            Assert.Equal("8ef5e5fa-94e1-4869-8635-df86b6219181", consentRequest.To.ValueSpan);
+            Assert.Equal("cdda2f11-95c5-4be4-9690-54206ff663f6", consentRequest.HandledBy.ValueSpan);
+            Assert.Null(consentRequest.Requestmessage);
+            Assert.Equal("https:///www.urlfromsavedreqest.com", consentRequest.RedirectUrl);
+            Assert.Equal("urn:altinn:resource", consentRequest.ConsentRights[0].Resource[0].Type);
+        }
+
+        [Fact]
         public async Task AcceptRequest_Valid()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
@@ -112,7 +138,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/bff/consentrequests/{requestId.ToString()}/accept/", httpContent);
             string responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            ConsentRequestDetailsExternal consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsExternal>();
+            ConsentRequestDetailsBFF consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBFF>();
             Assert.Equal(2, consentInfo.ConsentRequestEvents.Count);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -159,7 +185,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/bff/consentrequests/{requestId.ToString()}/accept/", httpContent);
             string responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            ConsentRequestDetailsExternal consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsExternal>();
+            ConsentRequestDetailsBFF consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBFF>();
             Assert.Equal(2, consentInfo.ConsentRequestEvents.Count);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -361,7 +387,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/bff/consents/{requestId.ToString()}/revoke/", null);
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            ConsentRequestDetailsBFF consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsBFF>(responseContent, _jsonOptions);
             Assert.Equal(3,consentInfo.ConsentRequestEvents.Count);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);

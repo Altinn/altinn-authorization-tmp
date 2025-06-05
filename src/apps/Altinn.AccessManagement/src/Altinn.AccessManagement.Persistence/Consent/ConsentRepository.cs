@@ -189,7 +189,15 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 throw new InvalidDataException("Invalid toPartyUuid");
             }
 
-            command.Parameters.AddWithValue("requestMessage", NpgsqlDbType.Hstore, consentRequest.Requestmessage);
+            if (consentRequest.Requestmessage != null)
+            {
+                command.Parameters.AddWithValue("requestMessage", NpgsqlDbType.Hstore, consentRequest.Requestmessage);
+            }
+            else
+            {
+                command.Parameters.AddWithValue("requestMessage", NpgsqlDbType.Hstore, DBNull.Value);
+            }
+
             command.Parameters.AddWithValue("redirectUrl", NpgsqlDbType.Text, consentRequest.RedirectUrl);
 
             command.Parameters.AddWithValue("validTo", NpgsqlDbType.TimestampTz, consentRequest.ValidTo.ToOffset(TimeSpan.Zero));
@@ -349,7 +357,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     RequiredDelegator = requiredDelegatorUrn,
                     ValidTo = await reader.GetFieldValueAsync<DateTimeOffset>("validTo", cancellationToken: cancellationToken),
                     ConsentRights = consentRight,
-                    Requestmessage = await reader.GetFieldValueAsync<Dictionary<string, string>>("requestMessage", cancellationToken: cancellationToken),
+                    Requestmessage = await reader.IsDBNullAsync(reader.GetOrdinal("requestMessage"), cancellationToken)
+                        ? null
+                        : await reader.GetFieldValueAsync<Dictionary<string, string>>("requestMessage", cancellationToken: cancellationToken),
                     ConsentRequestStatus = await reader.GetFieldValueAsync<ConsentRequestStatusType>("status", cancellationToken: cancellationToken),
                     Consented = await reader.GetFieldValueAsync<DateTimeOffset?>("consented", cancellationToken: cancellationToken),
                     RedirectUrl = await reader.GetFieldValueAsync<string>("redirectUrl", cancellationToken: cancellationToken),

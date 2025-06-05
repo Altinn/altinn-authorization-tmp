@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS consent.consentrequest
     requiredDelegatorUuid UUID null,
     toPartyUuid UUID,
     handledByPartyUuid UUID null,
-    requestMessage hstore,
+    requestMessage hstore null,
     redirecturl text,
     isDeleted bool default False,
     created timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
