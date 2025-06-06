@@ -1,7 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
     <ItemGroup>
         <PackageReference Include="Altinn.Common.PEP" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+		<PackageReference Include="Altinn.Authorization.ProblemDetails" />
+		<PackageReference Include="Altinn.Authorization.ProblemDetails.Abstractions" />
         <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />
     </ItemGroup>
 
@@ -9,6 +11,8 @@
         <PackageReference Include="Swashbuckle.AspNetCore" />
         <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
         <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
+        <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Api.Models\src\Altinn.Authorization.Api.Models\Altinn.Authorization.Api.Models.csproj" />
+        <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Core.Models\src\Altinn.Authorization.Core.Models\Altinn.Authorization.Core.Models.csproj" />
         <ProjectReference Include="..\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj" />
         <ProjectReference Include="..\Altinn.AccessMgmt.Persistence\Altinn.AccessMgmt.Persistence.csproj" />
     </ItemGroup>
