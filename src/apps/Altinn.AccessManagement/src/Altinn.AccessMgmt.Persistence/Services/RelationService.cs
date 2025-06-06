@@ -9,10 +9,15 @@ namespace Altinn.AccessMgmt.Persistence.Services;
 public class RelationService(IRelationRepository relationRepository, IRelationPermissionRepository relationPermissionRepository) : IRelationService
 {
     /// <inheritdoc />
-    public async Task<IEnumerable<RelationDto>> GetConnectionsToOthers(Guid partyId, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<RelationDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
         var filter = relationPermissionRepository.CreateFilterBuilder();
         filter.Equal(t => t.FromId, partyId);
+
+        if (toId.HasValue)
+        {
+            filter.Equal(t => t.ToId, toId.Value);
+        }
 
         if (roleId.HasValue)
         {
@@ -35,10 +40,15 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<CompactRelationDto>> GetConnectionsToOthers(Guid partyId, Guid? roleId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<CompactRelationDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
     {
         var filter = relationRepository.CreateFilterBuilder();
         filter.Equal(t => t.FromId, partyId);
+
+        if (toId.HasValue)
+        {
+            filter.Equal(t => t.ToId, toId.Value);
+        }
 
         if (roleId.HasValue)
         {
@@ -51,10 +61,15 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RelationDto>> GetConnectionsFromOthers(Guid partyId, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<RelationDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
         var filter = relationPermissionRepository.CreateFilterBuilder();
         filter.Equal(t => t.ToId, partyId);
+
+        if (fromId.HasValue)
+        {
+            filter.Equal(t => t.FromId, fromId.Value);
+        }
 
         if (roleId.HasValue)
         {
@@ -77,10 +92,15 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<CompactRelationDto>> GetConnectionsFromOthers(Guid partyId, Guid? roleId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<CompactRelationDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
     {
         var filter = relationRepository.CreateFilterBuilder();
         filter.Equal(t => t.ToId, partyId);
+
+        if (fromId.HasValue)
+        {
+            filter.Equal(t => t.FromId, fromId.Value);
+        }
 
         if (roleId.HasValue)
         {
@@ -143,7 +163,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
         var filter = relationPermissionRepository.CreateFilterBuilder();
         filter.Equal(t => t.ToId, partyId);
@@ -151,6 +171,11 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
         if (fromId.HasValue)
         {
             filter.Equal(t => t.FromId, fromId.Value);
+        }
+
+        if (packageId.HasValue)
+        {
+            filter.Equal(t => t.PackageId, packageId.Value);
         }
 
         if (resourceId.HasValue)
@@ -168,7 +193,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
         var filter = relationPermissionRepository.CreateFilterBuilder();
         filter.Equal(t => t.FromId, partyId);
@@ -176,6 +201,11 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
         if (toId.HasValue)
         {
             filter.Equal(t => t.ToId, toId.Value);
+        }
+
+        if (packageId.HasValue)
+        {
+            filter.Equal(t => t.PackageId, packageId.Value);
         }
 
         if (resourceId.HasValue)
@@ -297,112 +327,6 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             ViaRole = connection.ViaRole,
             Role = connection.Role
         };
-    }
-
-    #endregion
-
-    #region Obsolete
-
-    /// <inheritdoc />
-    [Obsolete]
-    public async Task<IEnumerable<ConnectionPermission>> GetPackagePermissionsFrom(Guid partyId, Guid packageId, CancellationToken cancellationToken = default)
-    {
-        var filter = relationPermissionRepository.CreateFilterBuilder();
-        filter.Equal(t => t.FromId, partyId);
-        filter.Equal(t => t.PackageId, packageId);
-        var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
-
-        var result = new List<ConnectionPermission>();
-
-        foreach (var connection in res.Where(t => t.Reason == "Direct").DistinctBy(t => t.To.Id).Select(t => t.To))
-        {
-            var perm = new ConnectionPermission()
-            {
-                Party = connection,
-                KeyRoles = new List<Permission>(),
-                Delegations = new List<Permission>()
-            };
-
-            perm.KeyRoles = res.Where(t => t.Reason == "KeyRole" && t.Via.Id == connection.Id).Select(t => ConvertToPermission(t)).ToList();
-            perm.Delegations = res.Where(t => t.Reason == "Delegation" && t.Via.Id == connection.Id).Select(t => ConvertToPermission(t)).ToList();
-
-            result.Add(perm);
-        }
-
-        return result;
-    }
-
-    /// <inheritdoc />
-    [Obsolete]
-    public async Task<IEnumerable<ConnectionPermission>> GetPackagePermissionsTo(Guid partyId, Guid packageId, CancellationToken cancellationToken = default)
-    {
-        var filter = relationPermissionRepository.CreateFilterBuilder();
-        filter.Equal(t => t.ToId, partyId);
-        filter.Equal(t => t.PackageId, packageId);
-        var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
-
-        var result = new List<ConnectionPermission>();
-
-        foreach (var connection in res.Where(t => t.Reason == "Direct").DistinctBy(t => t.From.Id).Select(t => t.From))
-        {
-            var perm = new ConnectionPermission()
-            {
-                Party = connection,
-                KeyRoles = new List<Permission>(),
-                Delegations = new List<Permission>()
-            };
-
-            perm.KeyRoles = res.Where(t => t.Reason == "KeyRole" && t.Via.Id == connection.Id).Select(t => ConvertToPermission(t)).ToList();
-            perm.Delegations = res.Where(t => t.Reason == "Delegation" && t.Via.Id == connection.Id).Select(t => ConvertToPermission(t)).ToList();
-
-            result.Add(perm);
-        }
-
-        return result;
-    }
-
-    /// <inheritdoc />
-    [Obsolete]
-    public async Task<IEnumerable<CompactPackage>> GetPackagesFrom(Guid partyId, Guid? toId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
-    {
-        var filter = relationPermissionRepository.CreateFilterBuilder();
-        filter.Equal(t => t.FromId, partyId);
-
-        if (toId.HasValue)
-        {
-            filter.Equal(t => t.ToId, toId.Value);
-        }
-
-        if (packageId.HasValue)
-        {
-            filter.Equal(t => t.PackageId, packageId.Value);
-        }
-
-        var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
-
-        return res.Select(t => t.Package);
-    }
-
-    /// <inheritdoc />
-    [Obsolete]
-    public async Task<IEnumerable<CompactPackage>> GetPackagesTo(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
-    {
-        var filter = relationPermissionRepository.CreateFilterBuilder();
-        filter.Equal(t => t.ToId, partyId);
-
-        if (fromId.HasValue)
-        {
-            filter.Equal(t => t.FromId, fromId.Value);
-        }
-
-        if (packageId.HasValue)
-        {
-            filter.Equal(t => t.PackageId, packageId.Value);
-        }
-
-        var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
-
-        return res.Select(t => t.Package);
     }
 
     #endregion
