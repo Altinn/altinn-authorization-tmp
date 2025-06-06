@@ -3,13 +3,10 @@ using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.AltinnRole;
-using Altinn.Authorization.Integration.Platform.Register;
-using Authorization.Platform.Authorization.Models;
 using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.HostedServices.Services
@@ -24,29 +21,20 @@ namespace Altinn.AccessManagement.HostedServices.Services
             IFeatureManager featureManager,
             IIngestService ingestService,
             IRoleRepository roleRepository,
-            IProviderRepository providerRepository,
-            IAssignmentRepository assignmentRepository,
-            IEntityRepository entityRepository,
-            IEntityTypeRepository entityTypeRepository
+            IAssignmentRepository assignmentRepository
         ) : base(lease, featureManager)
         {
             _role = role;
             _logger = logger;
             _ingestService = ingestService;
             _roleRepository = roleRepository;
-            _providerRepository = providerRepository;
             _assignmentRepository = assignmentRepository;
-            _entityRepository = entityRepository;
-            _entityTypeRepository = entityTypeRepository;
         }
 
         private readonly IAltinnRole _role;
         private readonly ILogger<RoleSyncService> _logger;
         private readonly IRoleRepository _roleRepository;
-        private readonly IProviderRepository _providerRepository;
         private readonly IAssignmentRepository _assignmentRepository;
-        private readonly IEntityRepository _entityRepository;
-        private readonly IEntityTypeRepository _entityTypeRepository;
         private readonly IIngestService _ingestService;
 
         /// <inheritdoc />
@@ -195,7 +183,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
 
         private static readonly IReadOnlyList<string> GetAssignmentMergeMatchFilter = new List<string>() { "fromid", "roleid", "toid" }.AsReadOnly();
 
-        private async Task<AccessMgmt.Core.Models.Role> GetOrCreateRole(string roleCode)
+        private async Task<Role> GetOrCreateRole(string roleCode)
         {
             string roleIdentifier = $"urn:altinn:rolecode:{roleCode}";
 
@@ -203,7 +191,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
             if (role == null)
             {
                 await _roleRepository.Create(
-                    new AccessMgmt.Core.Models.Role()
+                    new Role()
                     {
                         Id = Guid.CreateVersion7(),
                         Name = roleIdentifier,
@@ -234,6 +222,6 @@ namespace Altinn.AccessManagement.HostedServices.Services
 
         private Provider Provider { get; set; }
 
-        private List<AccessMgmt.Core.Models.Role> Roles { get; set; } = [];
+        private List<Role> Roles { get; set; } = [];
     }
 }
