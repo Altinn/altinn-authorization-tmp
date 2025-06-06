@@ -237,11 +237,17 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     {
         var result = new List<CompactRelationDto>();
 
-        var tempResult = new Dictionary<Guid, CompactRelationDto>(); // ViaId - Include Reason for Split in KeyRole & Delegation (?)
+        var tempResult = new Dictionary<Guid, List<CompactRelationDto>>(); // ViaId - Include Reason for Split in KeyRole & Delegation (?)
         foreach (var connection in res.Where(t => t.Reason != "Direct").DistinctBy(t => t.To.Id))
         {
             var party = connection.To;
-            tempResult.Add(connection.Via.Id, new CompactRelationDto()
+
+            if (!tempResult.ContainsKey(connection.Via.Id))
+            {
+                tempResult.Add(connection.Via.Id, new List<CompactRelationDto>());
+            }
+
+            tempResult[connection.Via.Id].Add(new CompactRelationDto()
             {
                 Party = party,
                 Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
@@ -255,7 +261,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             {
                 Party = party,
                 Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).DistinctBy(t => t.Party.Id).ToList(), // Split in KeyRole & Delegation (?)
+                Connections = tempResult.Where(t => t.Key == party.Id).SelectMany(t => t.Value).DistinctBy(t => t.Party.Id).ToList(), // Split in KeyRole & Delegation (?)
             });
         }
 
@@ -266,11 +272,17 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     {
         var result = new List<RelationDto>();
 
-        var tempResult = new Dictionary<Guid, RelationDto>(); // ViaId - Include Reason for Split in KeyRole & Delegation (?)
+        var tempResult = new Dictionary<Guid, List<RelationDto>>(); // ViaId - Include Reason for Split in KeyRole & Delegation (?)
         foreach (var connection in res.Where(t => t.Reason != "Direct").DistinctBy(t => t.To.Id))
         {
             var party = connection.To;
-            tempResult.Add(connection.Via.Id, new RelationDto()
+
+            if (!tempResult.ContainsKey(connection.Via.Id))
+            {
+                tempResult.Add(connection.Via.Id, new List<RelationDto>());
+            }
+
+            tempResult[connection.Via.Id].Add(new RelationDto()
             {
                 Party = party,
                 Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
@@ -286,7 +298,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
                 Party = party,
                 Roles = res.Where(t => t.To.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
                 Packages = res.Where(t => t.To.Id == party.Id).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
-                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).DistinctBy(t => t.Party.Id).ToList(), // Split in KeyRole & Delegation (?)
+                Connections = tempResult.Where(t => t.Key == party.Id).SelectMany(t => t.Value).DistinctBy(t => t.Party.Id).ToList(), // Split in KeyRole & Delegation (?)
             });
         }
 
@@ -297,11 +309,17 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     {
         var result = new List<CompactRelationDto>();
 
-        var tempResult = new Dictionary<Guid, CompactRelationDto>(); // ViaId - Include Reason for Split in KeyRole & Delegation (?)
+        var tempResult = new Dictionary<Guid, List<CompactRelationDto>>();
         foreach (var connection in res.Where(t => t.Reason != "Direct").DistinctBy(t => t.From.Id))
         {
             var fromParty = connection.From;
-            tempResult.Add(connection.Via.Id, new CompactRelationDto()
+
+            if (!tempResult.ContainsKey(connection.Via.Id))
+            {
+                tempResult.Add(connection.Via.Id, new List<CompactRelationDto>());
+            }
+
+            tempResult[connection.Via.Id].Add(new CompactRelationDto()
             {
                 Party = fromParty,
                 Roles = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
@@ -315,7 +333,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             {
                 Party = party,
                 Roles = res.Where(t => t.From.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).DistinctBy(t => t.Party.Id).ToList(), // Split in KeyRole & Delegation (?)
+                Connections = tempResult.Where(t => t.Key == party.Id).SelectMany(t => t.Value).DistinctBy(t => t.Party.Id).ToList(),
             });
         }
 
@@ -326,11 +344,17 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
     {
         var result = new List<RelationDto>();
 
-        var tempResult = new Dictionary<Guid, RelationDto>(); // ViaId
+        var tempResult = new Dictionary<Guid, List<RelationDto>>(); // ViaId
         foreach (var connection in res.Where(t => t.Reason != "Direct").DistinctBy(t => t.From.Id))
         {
             var fromParty = connection.From;
-            tempResult.Add(connection.Via.Id, new RelationDto()
+
+            if (!tempResult.ContainsKey(connection.Via.Id))
+            {
+                tempResult.Add(connection.Via.Id, new List<RelationDto>());
+            }
+
+            tempResult[connection.Via.Id].Add(new RelationDto()
             {
                 Party = fromParty,
                 Roles = res.Where(t => t.From.Id == fromParty.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
@@ -346,7 +370,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
                 Party = party,
                 Roles = res.Where(t => t.From.Id == party.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
                 Packages = res.Where(t => t.From.Id == party.Id).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
-                Connections = tempResult.Where(t => t.Key == party.Id).Select(t => t.Value).DistinctBy(t => t.Party.Id).ToList(),
+                Connections = tempResult.Where(t => t.Key == party.Id).SelectMany(t => t.Value).DistinctBy(t => t.Party.Id).ToList(),
             });
         }
 
