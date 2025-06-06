@@ -732,11 +732,11 @@ namespace Altinn.AccessManagement.Core.Services
                     ValidateConsentMetadata(ref problemsBuilder, rightIndex, consentRight, resourceDetails);
                 }
 
-                if (string.IsNullOrEmpty(templateId))
+                if (resourceDetails != null && string.IsNullOrEmpty(templateId))
                 {
                     templateId = resourceDetails.ConsentTemplate;
                 }
-                else if (!templateId.Equals(resourceDetails.ConsentTemplate, StringComparison.InvariantCultureIgnoreCase))
+                else if (resourceDetails != null && !templateId.Equals(resourceDetails.ConsentTemplate, StringComparison.InvariantCultureIgnoreCase))
                 {
                     problemsBuilder.Add(Problems.InvalidResourceCombination);
                 }
