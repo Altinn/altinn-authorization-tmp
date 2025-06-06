@@ -35,12 +35,4 @@ public interface IDelegationService
     /// Create a delegation and required assignments for system agent flow
     /// </summary>
     Task<IEnumerable<Delegation>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid facilitatorPartyId, ChangeRequestOptions options);
-
-    /// <summary>
-    /// Import client delegation and required assignments for A2 client delegations
-    /// </summary>
-    /// <param name="request">The delegation to import</param>
-    /// <param name="options">ChangeRequestOptions</param>
-    /// <returns></returns>
-    Task<IEnumerable<Delegation>> ImportClientDelegation(ImportClientDelegationRequestDto request, ChangeRequestOptions options);
 }

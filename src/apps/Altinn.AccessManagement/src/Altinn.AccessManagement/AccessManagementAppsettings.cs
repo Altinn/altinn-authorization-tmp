@@ -40,11 +40,6 @@ public class AccessManagementAppsettings
     public PlatformSettings Platform { get; set; } = new();
 
     /// <summary>
-    /// 
-    /// </summary>
-    public SblBridgeSettings SblBridge { get; set; } = new();
-
-    /// <summary>
     /// Gets or sets the lease settings.
     /// </summary>
     public LeaseSettings Lease { get; set; } = new();

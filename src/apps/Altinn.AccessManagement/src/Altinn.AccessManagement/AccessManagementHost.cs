@@ -148,22 +148,6 @@ internal static partial class AccessManagementHost
             return appsettings.Platform;
         });
 
-        /*
-        builder.AddAltinnRoleIntegration(opts =>
-        {
-            var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (appsettings.SblBridge?.BaseApiUrl == null)
-            {
-                Log.ConfigValueIsNullOrEmpty(Logger, nameof(appsettings.SblBridge.BaseApiUrl));
-                opts.Endpoint = default;
-            }
-            else
-            {
-                opts.Endpoint = appsettings.SblBridge.BaseApiUrl;
-            }
-        });        
-        */
-
         return builder;
     }
 
