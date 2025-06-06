@@ -4,7 +4,6 @@ using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
-using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 

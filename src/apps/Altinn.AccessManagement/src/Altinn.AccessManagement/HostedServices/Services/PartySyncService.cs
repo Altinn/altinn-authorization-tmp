@@ -21,7 +21,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
     private readonly IEntityTypeRepository entityTypeRepository;
     private readonly IEntityVariantRepository entityVariantRepository;
-    
+
     /// <summary>
     /// PartySyncService Constructor
     /// </summary>
