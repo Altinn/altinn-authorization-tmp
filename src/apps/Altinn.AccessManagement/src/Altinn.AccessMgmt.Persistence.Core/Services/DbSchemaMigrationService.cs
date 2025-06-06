@@ -119,7 +119,7 @@ public class DbSchemaMigrationService
             $$
             select jsonb_build_object('Id', p.Id,'Value', p.Urn)
             from dbo.Package as p
-            where id = _id;
+            where p.id = _id;
             $$;
             """;
         await executor.ExecuteMigrationCommand(compactPackageFunction);
@@ -129,7 +129,7 @@ public class DbSchemaMigrationService
             $$
             select jsonb_build_object('Id', r.Id,'Value', r.RefId)
             from dbo.Resource as r
-            where id = _id;
+            where r.id = _id;
             $$;
             """;
         await executor.ExecuteMigrationCommand(compactResourceFunction);
