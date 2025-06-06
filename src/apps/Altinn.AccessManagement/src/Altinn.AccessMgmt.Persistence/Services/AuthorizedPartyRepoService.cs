@@ -8,6 +8,8 @@ using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
@@ -24,7 +26,8 @@ public class AuthorizedPartyRepoService(
     IDelegationRepository delegationRepository,
     IConnectionRepository connectionRepository,
     IConnectionPackageRepository connectionPackageRepository,
-    IDelegationMetadataRepository resourceDelegationRepository
+    IDelegationMetadataRepository resourceDelegationRepository,
+    IRelationService relationService
     ) : IAuthorizedPartyRepoService
 {
     private static readonly string RETTIGHETSHAVER = "rettighetshaver";
@@ -46,25 +49,26 @@ public class AuthorizedPartyRepoService(
         }
 
         // Get AccessPackage Delegations
-        List<string> packages = new();
+        ////var connectionfilter = connectionRepository.CreateFilterBuilder();
+        ////connectionfilter.Equal(t => t.ToId, toId);
+        ////connectionfilter.NotSet(t => t.FromId);
+        ////connectionfilter.NotSet(t => t.Id);
+        ////connectionfilter.NotSet(t => t.FacilitatorId);
 
-        var connectionfilter = connectionRepository.CreateFilterBuilder();
-        connectionfilter.Equal(t => t.ToId, toId);
-        connectionfilter.NotSet(t => t.FromId);
-        connectionfilter.NotSet(t => t.Id);
-        connectionfilter.NotSet(t => t.FacilitatorId);
+        ////var connections = await connectionRepository.GetExtended(connectionfilter, cancellationToken: cancellationToken);
 
-        var connections = await connectionRepository.GetExtended(connectionfilter, cancellationToken: cancellationToken);
+        ////var connectionPackageFilter = connectionPackageRepository.CreateFilterBuilder();
+        ////connectionPackageFilter.In(t => t.Id, connections.Select(c => c.Id));
+        ////connectionPackageFilter.Equal(t => t.ToId, toId);
+        ////connectionPackageFilter.NotSet(t => t.FromId);
+        ////connectionPackageFilter.NotSet(t => t.PackageId);
 
-        var connectionPackageFilter = connectionPackageRepository.CreateFilterBuilder();
-        connectionPackageFilter.In(t => t.Id, connections.Select(c => c.Id));
-        connectionPackageFilter.Equal(t => t.ToId, toId);
-        connectionPackageFilter.NotSet(t => t.FromId);
-        connectionPackageFilter.NotSet(t => t.PackageId);
+        ////var connectionPackages = await connectionPackageRepository.GetExtended(connectionPackageFilter, cancellationToken: cancellationToken);
 
-        var connectionPackages = await connectionPackageRepository.GetExtended(connectionPackageFilter, cancellationToken: cancellationToken);
+        var connections = await relationService.GetConnectionsTo(toId, null, null, null, cancellationToken: cancellationToken);
+        ////var packages = await relationService.GetPackagesTo(toId, cancellationToken: cancellationToken);
 
-        EnrichWithAccessPackageParties(parties, connections, null);
+        EnrichWithAccessPackageParties(parties, connections);
 
         // Get App and Resource Delegations
         List<DelegationChange> resourceDelegations = await resourceDelegationRepository.GetAllDelegationChangesForAuthorizedParties(toId.SingleToList(), cancellationToken: cancellationToken);
@@ -76,6 +80,28 @@ public class AuthorizedPartyRepoService(
         EnrichWithResourceParties(parties, resourceDelegations, fromEntities);
 
         return parties.Values;
+    }
+
+    private void EnrichWithAccessPackageParties(Dictionary<Guid, AuthorizedParty> parties, IEnumerable<RelationDto> connections)
+    {
+        foreach (var connection in connections)
+        {
+            if (!parties.TryGetValue(connection.Party.Id, out AuthorizedParty party))
+            {
+                party = new AuthorizedParty
+                {
+                    PartyUuid = connection.Party.Id,
+                    Name = connection.Party.Name,
+                    OrganizationNumber = connection.Party.RefId,
+                    PersonId = connection.Party.RefId
+                };
+
+                parties[connection.Party.Id] = party;
+            }
+
+            var packages = connection.Packages?.Select(cp => cp.Value.ToString()).ToList() ?? [];
+            party.EnrichWithAccessPackage(packages);
+        }
     }
 
     private void EnrichWithAccessPackageParties(Dictionary<Guid, AuthorizedParty> parties, QueryResponse<ExtConnection> connections, QueryResponse<ExtConnectionPackage> connectionPackages)

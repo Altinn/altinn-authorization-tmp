@@ -145,8 +145,13 @@ public class AuthorizedParty
     /// <param name="accessPackages">The access packages to add to the authorized party (and any subunits) list of authorized packages</param>
     public void EnrichWithAccessPackage(IEnumerable<string> accessPackages)
     {
+        if (!accessPackages.Any())
+        {
+            return;
+        }
+
         OnlyHierarchyElementWithNoAccess = false;
-        AuthorizedAccessPackages.Union(accessPackages);
+        AuthorizedAccessPackages.AddRange(accessPackages);
 
         if (Subunits != null)
         {
