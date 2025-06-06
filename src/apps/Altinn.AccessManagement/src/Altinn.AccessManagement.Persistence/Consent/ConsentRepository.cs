@@ -164,9 +164,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 throw new InvalidDataException("Invalid toPartyUuid");
             }
 
-            if (consentRequest.Requestmessage != null)
+            if (consentRequest.RequestMessage != null)
             {
-                command.Parameters.AddWithValue("requestMessage", NpgsqlDbType.Hstore, consentRequest.Requestmessage);
+                command.Parameters.AddWithValue("requestMessage", NpgsqlDbType.Hstore, consentRequest.RequestMessage);
             }
             else
             {

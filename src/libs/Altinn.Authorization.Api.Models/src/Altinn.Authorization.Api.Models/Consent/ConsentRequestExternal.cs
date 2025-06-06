@@ -40,7 +40,7 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// <summary>
         /// The request message
         /// </summary>
-        public Dictionary<string, string>? Requestmessage { get; set; }
+        public Dictionary<string, string>? RequestMessage { get; set; }
 
         /// <summary>
         /// Redirect url for the user to be redirected after consent is given or denied.

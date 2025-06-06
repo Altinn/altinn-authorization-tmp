@@ -80,7 +80,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -144,7 +144,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -210,7 +210,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -286,7 +286,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -357,7 +357,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -435,7 +435,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -513,7 +513,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -591,7 +591,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -671,7 +671,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -754,7 +754,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -806,7 +806,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -878,7 +878,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -936,7 +936,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     },
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -978,7 +978,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 ConsentRights = new List<ConsentRightExternal>
                 {
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -1031,7 +1031,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
@@ -1088,7 +1088,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         }
                     }
                 },
-                Requestmessage = new Dictionary<string, string>
+                RequestMessage = new Dictionary<string, string>
                 {
                     { "en", "Please approve this consent request" }
                 },
