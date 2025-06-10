@@ -43,7 +43,7 @@
         /// <summary>
         /// The request message
         /// </summary>
-        public Dictionary<string, string>? Requestmessage { get; set; }
+        public Dictionary<string, string>? RequestMessage { get; set; }
 
         /// <summary>
         /// The status of the consent request

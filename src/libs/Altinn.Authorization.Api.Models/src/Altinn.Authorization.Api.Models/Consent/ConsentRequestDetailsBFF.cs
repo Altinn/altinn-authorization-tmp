@@ -127,7 +127,7 @@ namespace Altinn.Authorization.Api.Models.Consent
                 ViewUri = core.ViewUri,
                 TemplateId = core.TemplateId,
                 TemplateVersion = core.TemplateVersion,
-                Requestmessage = core.Requestmessage
+                Requestmessage = core.RequestMessage
             };
         }
     }

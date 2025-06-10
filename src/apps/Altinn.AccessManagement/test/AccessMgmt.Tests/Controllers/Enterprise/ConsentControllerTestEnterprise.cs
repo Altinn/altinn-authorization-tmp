@@ -650,7 +650,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         },
                         MetaData = new Dictionary<string, string>
                         {
-                            { "INNTEKTSAAR", "ADSF" }
+                            { "INNTEKTSAAR", "2022" }
                         }
                     },
                     new ConsentRightExternal
@@ -666,8 +666,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                         },
                         MetaData = new Dictionary<string, string>
                         {
-                            { "fraOgMed", "ADSF" },
-                            { "tilOgMed", "ADSF" }
+                            { "fraOgMed", "2018-03" },
+                            { "tilOgMed", "2018-06" }
                         }
                     }
                 },
@@ -684,7 +684,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            HttpResponseMessage response = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
+            string requestContent = JsonSerializer.Serialize(consentRequest, _jsonOptions);
+            HttpResponseMessage response = await client.PostAsync(url, new StringContent(requestContent, Encoding.UTF8, "application/json"));
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseContent);

@@ -46,7 +46,7 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// <summary>
         /// The request message
         /// </summary>
-        public Dictionary<string, string>? Requestmessage { get; set; }
+        public Dictionary<string, string>? RequestMessage { get; set; }
 
         /// <summary>
         /// Defines when the consent was given.
@@ -106,6 +106,9 @@ namespace Altinn.Authorization.Api.Models.Consent
                 ConsentRequestEvents = core.ConsentRequestEvents.Select(ConsentRequestEventExternal.FromCore).ToList(),
                 RedirectUrl = core.RedirectUrl,
                 ViewUri = core.ViewUri,
+                RequestMessage = core.RequestMessage != null
+                    ? new Dictionary<string, string>(core.RequestMessage)
+                    : null
             };
         }
     }

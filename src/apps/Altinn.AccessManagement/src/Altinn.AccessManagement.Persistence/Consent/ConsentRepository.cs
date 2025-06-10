@@ -332,7 +332,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     RequiredDelegator = requiredDelegatorUrn,
                     ValidTo = await reader.GetFieldValueAsync<DateTimeOffset>("validTo", cancellationToken: cancellationToken),
                     ConsentRights = consentRight,
-                    Requestmessage = await reader.IsDBNullAsync(reader.GetOrdinal("requestMessage"), cancellationToken)
+                    RequestMessage = await reader.IsDBNullAsync(reader.GetOrdinal("requestMessage"), cancellationToken)
                         ? null
                         : await reader.GetFieldValueAsync<Dictionary<string, string>>("requestMessage", cancellationToken: cancellationToken),
                     ConsentRequestStatus = await reader.GetFieldValueAsync<ConsentRequestStatusType>("status", cancellationToken: cancellationToken),
