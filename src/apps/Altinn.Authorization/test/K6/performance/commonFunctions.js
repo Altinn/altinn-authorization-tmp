@@ -1,3 +1,4 @@
+import papaparse from 'https://jslib.k6.io/papaparse/5.1.1/index.js';
 import { getEnterpriseToken, getPersonalToken, uuidv4, randomIntBetween } from './common/testimports.js';
 
 const subscription_key = __ENV.subscription_key;
@@ -8,10 +9,19 @@ export const pdpAuthorizeLabelDenyPermit = "PDP Authorize Deny";
 const tokenGenLabel = "Token generator";
 const labels = [pdpAuthorizeLabel, pdpAuthorizeLabelDenyPermit];
 
-const breakpoint = __ENV.breakpoint;
-const stages_duration = (__ENV.stages_duration ?? '1m');
-const stages_target = (__ENV.stages_target ?? '5');
-const abort_on_fail = (__ENV.abort_on_fail ?? 'true') === 'true';
+export const breakpoint = __ENV.breakpoint;
+export const stages_duration = (__ENV.stages_duration ?? '1m');
+export const stages_target = (__ENV.stages_target ?? '5');
+export const abort_on_fail = (__ENV.abort_on_fail ?? 'false') === 'true';
+
+export function readCsv(filename) {
+  try {
+    return papaparse.parse(open(filename), { header: true, skipEmptyLines: true }).data;
+  } catch (error) {
+    console.log(`Error reading CSV file: ${error}`);
+    return [];
+  } 
+}
 
 export function getParams(label) {
     const traceparent = uuidv4();
@@ -56,7 +66,7 @@ export function getAuthorizeClientToken(client) {
     return token;
 }
 
-export function buildOptions() {
+export function buildOptions(mylabels = labels) {
     let options = {
         summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(95)', 'p(99)', 'count'],
         thresholds: {
@@ -66,7 +76,7 @@ export function buildOptions() {
         }
     };
     if (breakpoint) {
-        for (var label of labels) {
+        for (var label of mylabels) {
             options.thresholds[[`http_req_duration{name:${label}}`]] = [{ threshold: "max<5000", abortOnFail: abort_on_fail }];
             options.thresholds[[`http_req_failed{name:${label}}`]] = [{ threshold: 'rate<=0.0', abortOnFail: abort_on_fail }];
         }
@@ -76,7 +86,7 @@ export function buildOptions() {
         ];
     }
     else {
-        for (var label of labels) {
+        for (var label of mylabels) {
             options.thresholds[[`http_req_duration{name:${label}}`]] = [];
             options.thresholds[[`http_req_failed{name:${label}}`]] = ['rate<=0.0'];
         }

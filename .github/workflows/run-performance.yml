@@ -54,6 +54,7 @@ on:
                 - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRoleDagl.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRoleDaglDeny.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRolePriv.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/getClientDelegations.js'
 
 
 permissions:

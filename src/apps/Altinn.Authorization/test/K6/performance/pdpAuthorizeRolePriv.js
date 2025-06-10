@@ -1,15 +1,19 @@
 import http from 'k6/http';
 import exec from 'k6/execution';
-import { expect, expectStatusFor, randomIntBetween, URL, describe } from "./common/testimports.js";
+import { SharedArray } from "k6/data";
+import { expect, randomIntBetween, URL, describe } from "./common/testimports.js";
 import { postAuthorizeUrl } from './common/config.js';
-import { dagl } from './common/readTestdata.js';
 import { buildPrivAuthorizeBody } from './testData/buildAuthorizeBody.js';
-import { buildOptions, getAuthorizeParams, getActionLabelAndExpectedResponse, getAuthorizeClientToken } from "./commonFunctions.js";
+import { buildOptions, getAuthorizeParams, getActionLabelAndExpectedResponse, getAuthorizeClientToken, readCsv } from "./commonFunctions.js";
 
 // resource with read/write for PRIV and DAGL
 const resource = "ttd-dialogporten-performance-test-02";
 const noOfClientsPerVu = 50;
 
+const daglFilename = `./testData/OrgsDagl.csv`;
+export const dagl = new SharedArray('dagl', function () {
+  return readCsv(daglFilename);
+});
 export let options = buildOptions();
 
 export default function() {
@@ -24,7 +28,7 @@ export default function() {
     describe('PDP Authorize', () => {
         let r = http.post(url.toString(), JSON.stringify(body), params);
         let response = JSON.parse(r.body);
-        expectStatusFor(r).to.equal(200);
+        expect(r.status, "response status").to.equal(200);
         expect(r, 'response').to.have.validJsonBody(); 
         expect(response.response[0].decision).to.equal(expectedResponse); 
     });   
