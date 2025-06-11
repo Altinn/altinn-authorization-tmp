@@ -1,7 +1,4 @@
-﻿using Altinn.Authorization.Core.Models.Consent;
-using Altinn.Authorization.Core.Models.Register;
-
-namespace Altinn.Authorization.Api.Models.Consent
+﻿namespace Altinn.Authorization.Api.Models.Consent
 {
     /// <summary>
     /// Represents a consent request.
@@ -67,49 +64,5 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// The URI for the view that should be shown to the user when requesting consent.
         /// </summary>
         public string ViewUri { get; set; } = string.Empty;
-
-        public static ConsentRequestDetailsExternal FromCore(ConsentRequestDetails core)
-        {
-            ConsentPartyUrnExternal to = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(core.To.ValueSpan));
-
-            ConsentPartyUrnExternal from = core.From switch
-            {
-                ConsentPartyUrn.PersonId => ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse(core.From.ValueSpan)),
-                ConsentPartyUrn.OrganizationId => ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(core.From.ValueSpan)),
-                _ => throw new ArgumentException("Unknown consent party urn")
-            };
-
-            return new ConsentRequestDetailsExternal
-            {
-                Id = core.Id,
-                From = from,
-                To = to,
-                RequiredDelegator = core.RequiredDelegator != null
-                    ? core.RequiredDelegator switch
-                    {
-                        ConsentPartyUrn.PersonId => ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse(core.RequiredDelegator.ValueSpan)),
-                        ConsentPartyUrn.OrganizationId => ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(core.RequiredDelegator.ValueSpan)),
-                        _ => throw new ArgumentException("Unknown consent party urn")
-                    }
-                    : null,
-                HandledBy = core.HandledBy != null
-                    ? core.HandledBy switch
-                    {
-                        ConsentPartyUrn.PersonId => ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse(core.HandledBy.ValueSpan)),
-                        ConsentPartyUrn.OrganizationId => ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(core.HandledBy.ValueSpan)),
-                        _ => throw new ArgumentException("Unknown consent party urn")
-                    }
-                    : null,
-                Consented = core.Consented,
-                ValidTo = core.ValidTo,
-                ConsentRights = core.ConsentRights.Select(ConsentRightExternal.FromCore).ToList(),
-                ConsentRequestEvents = core.ConsentRequestEvents.Select(ConsentRequestEventExternal.FromCore).ToList(),
-                RedirectUrl = core.RedirectUrl,
-                ViewUri = core.ViewUri,
-                RequestMessage = core.RequestMessage != null
-                    ? new Dictionary<string, string>(core.RequestMessage)
-                    : null
-            };
-        }
     }
 }

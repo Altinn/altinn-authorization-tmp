@@ -58,7 +58,7 @@ namespace Altinn.AccessManagement.Api.Internal.Extensions
                 Consented = details.Consented,
                 ValidTo = details.ValidTo,
                 ConsentRights = details.ConsentRights.Select(ConsentRightExternal.FromCore).ToList(),
-                ConsentRequestEvents = details.ConsentRequestEvents.Select(ConsentRequestEventExternal.FromCore).ToList(),
+                ConsentRequestEvents = [.. details.ConsentRequestEvents.Select(static x => x.ToConsentRequestEventExternal())],
                 RedirectUrl = details.RedirectUrl,
                 ViewUri = details.ViewUri,
                 TemplateId = details.TemplateId,

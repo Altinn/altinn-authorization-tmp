@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using Altinn.AccessManagement.Api.Enterprise.Extensions;
 using Altinn.AccessManagement.Api.Enterprise.Utils;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -79,7 +80,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 return Ok(consentRequestStatus.Value.ConsentRequest);
             }
 
-            return Created(locationUrl, ConsentRequestDetailsExternal.FromCore(consentRequestStatus.Value.ConsentRequest));
+            return Created(locationUrl, consentRequestStatus.Value.ConsentRequest.ToConsentRequestDetailsExternal());
         }
 
         /// <summary>
@@ -109,7 +110,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
                 return consentRequestStatus.Problem.ToActionResult();
             }
 
-            return Ok(ConsentRequestDetailsExternal.FromCore(consentRequestStatus.Value));
+            return Ok(consentRequestStatus.Value.ToConsentRequestDetailsExternal());
         }
     }
 }
