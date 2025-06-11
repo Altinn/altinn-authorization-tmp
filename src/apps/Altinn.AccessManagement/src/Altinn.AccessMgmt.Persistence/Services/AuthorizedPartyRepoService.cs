@@ -40,15 +40,15 @@ public class AuthorizedPartyRepoService(
             return errorResult;
         }
 
+        // Get AccessPackage Delegations
+        var connections = await relationService.GetConnectionsFromOthers(toId, null, null, null, cancellationToken: cancellationToken);
+        EnrichWithAccessPackageParties(parties, connections);
+
         // Get App and Resource Delegations
         List<DelegationChange> resourceDelegations = await resourceDelegationRepository.GetAllDelegationChangesForAuthorizedParties(toId.SingleToList(), cancellationToken: cancellationToken);
         var fromParties = await contextRetrievalService.GetPartiesByUuids(resourceDelegations.Select(d => d.FromUuid.Value).Distinct().ToList(), true, cancellationToken);
 
         EnrichWithResourceParties(parties, resourceDelegations, fromParties);
-
-        // Get AccessPackage Delegations
-        var connections = await relationService.GetConnectionsFromOthers(toId, null, null, null, cancellationToken: cancellationToken);
-        EnrichWithAccessPackageParties(parties, connections);
 
         return parties.Values;
     }
