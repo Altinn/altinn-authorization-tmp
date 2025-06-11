@@ -97,13 +97,13 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Role>(dataKey, string.Empty, 11);
         }
 
-        if (migrationService.NeedMigration<RoleMap>(dataKey, 4))
+        if (migrationService.NeedMigration<RoleMap>(dataKey, 5))
         {
             await IngestRoleMap(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 5);
         }
 
-        if (migrationService.NeedMigration<AreaGroup>(dataKey, 5))
+        if (migrationService.NeedMigration<AreaGroup>(dataKey, 4))
         {
             await IngestAreaGroup(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 4);
