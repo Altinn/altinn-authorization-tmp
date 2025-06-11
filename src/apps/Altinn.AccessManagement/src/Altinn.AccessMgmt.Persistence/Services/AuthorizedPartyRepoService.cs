@@ -1,38 +1,30 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Contracts;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.ProblemDetails;
+using Altinn.Platform.Register.Models;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
 /// <inheritdoc/>
 public class AuthorizedPartyRepoService(
-    IAssignmentRepository assignmentRepository,
-    IPackageRepository packageRepository,
-    IAssignmentPackageRepository assignmentPackageRepository,
-    IRoleRepository roleRepository,
-    IRolePackageRepository rolePackageRepository,
     IEntityRepository entityRepository,
-    IEntityVariantRepository entityVariantRepository,
-    IDelegationRepository delegationRepository,
-    IConnectionRepository connectionRepository,
-    IConnectionPackageRepository connectionPackageRepository,
     IDelegationMetadataRepository resourceDelegationRepository,
-    IRelationService relationService
+    IRelationService relationService,
+    IContextRetrievalService contextRetrievalService
     ) : IAuthorizedPartyRepoService
 {
-    private static readonly string RETTIGHETSHAVER = "rettighetshaver";
-    private static readonly Guid PartyTypeOrganizationUuid = new Guid("8c216e2f-afdd-4234-9ba2-691c727bb33d");
-
     /// <inheritdoc/>
     public async Task<Result<IEnumerable<AuthorizedParty>>> Get(Guid toId, CancellationToken cancellationToken = default)
     {
@@ -48,36 +40,15 @@ public class AuthorizedPartyRepoService(
             return errorResult;
         }
 
-        // Get AccessPackage Delegations
-        ////var connectionfilter = connectionRepository.CreateFilterBuilder();
-        ////connectionfilter.Equal(t => t.ToId, toId);
-        ////connectionfilter.NotSet(t => t.FromId);
-        ////connectionfilter.NotSet(t => t.Id);
-        ////connectionfilter.NotSet(t => t.FacilitatorId);
-
-        ////var connections = await connectionRepository.GetExtended(connectionfilter, cancellationToken: cancellationToken);
-
-        ////var connectionPackageFilter = connectionPackageRepository.CreateFilterBuilder();
-        ////connectionPackageFilter.In(t => t.Id, connections.Select(c => c.Id));
-        ////connectionPackageFilter.Equal(t => t.ToId, toId);
-        ////connectionPackageFilter.NotSet(t => t.FromId);
-        ////connectionPackageFilter.NotSet(t => t.PackageId);
-
-        ////var connectionPackages = await connectionPackageRepository.GetExtended(connectionPackageFilter, cancellationToken: cancellationToken);
-
-        var connections = await relationService.GetConnectionsTo(toId, null, null, null, cancellationToken: cancellationToken);
-        ////var packages = await relationService.GetPackagesTo(toId, cancellationToken: cancellationToken);
-
-        EnrichWithAccessPackageParties(parties, connections);
-
         // Get App and Resource Delegations
         List<DelegationChange> resourceDelegations = await resourceDelegationRepository.GetAllDelegationChangesForAuthorizedParties(toId.SingleToList(), cancellationToken: cancellationToken);
+        var fromParties = await contextRetrievalService.GetPartiesByUuids(resourceDelegations.Select(d => d.FromUuid.Value).Distinct().ToList(), true, cancellationToken);
 
-        var entityFilter = entityRepository.CreateFilterBuilder();
-        entityFilter.In(t => t.Id, resourceDelegations.Select(d => d.FromUuid).Distinct().ToList());
-        var fromEntities = await entityRepository.GetExtended(entityFilter, cancellationToken: cancellationToken);
+        EnrichWithResourceParties(parties, resourceDelegations, fromParties);
 
-        EnrichWithResourceParties(parties, resourceDelegations, fromEntities);
+        // Get AccessPackage Delegations
+        var connections = await relationService.GetConnectionsFromOthers(toId, null, null, null, cancellationToken: cancellationToken);
+        EnrichWithAccessPackageParties(parties, connections);
 
         return parties.Values;
     }
@@ -88,72 +59,69 @@ public class AuthorizedPartyRepoService(
         {
             if (!parties.TryGetValue(connection.Party.Id, out AuthorizedParty party))
             {
-                party = new AuthorizedParty
-                {
-                    PartyUuid = connection.Party.Id,
-                    Name = connection.Party.Name,
-                    OrganizationNumber = connection.Party.RefId,
-                    PersonId = connection.Party.RefId
-                };
-
+                party = BuildAuthorizedPartyFromCompactEntity(connection.Party);
                 parties[connection.Party.Id] = party;
             }
 
-            var packages = connection.Packages?.Select(cp => cp.Value.ToString()).ToList() ?? [];
+            var packages = connection.Packages?.Select(cp => cp?.Value);
             party.EnrichWithAccessPackage(packages);
         }
     }
 
-    private void EnrichWithAccessPackageParties(Dictionary<Guid, AuthorizedParty> parties, QueryResponse<ExtConnection> connections, QueryResponse<ExtConnectionPackage> connectionPackages)
-    {
-        foreach (var connection in connections)
-        {
-            if (!parties.TryGetValue(connection.From.Id, out AuthorizedParty party))
-            {
-                party = new AuthorizedParty
-                {
-                    PartyUuid = connection.From.Id,
-                    Name = connection.From.Name,
-                    OrganizationNumber = connection.From.RefId,
-                    PersonId = connection.From.RefId
-                };
-
-                parties[connection.From.Id] = party;
-            }
-
-            var packages = connectionPackages?.Where(cp => cp.Id == connection.Id).Select(cp => cp.PackageId.ToString()).ToList() ?? [];
-            if (packages.Count > 0)
-            {
-                party.EnrichWithAccessPackage(packages);
-            }
-        }
-    }
-
-    private void EnrichWithResourceParties(Dictionary<Guid, AuthorizedParty> parties, List<DelegationChange> resourceDelegations, QueryResponse<ExtEntity> fromEntities)
+    private void EnrichWithResourceParties(Dictionary<Guid, AuthorizedParty> parties, List<DelegationChange> resourceDelegations, Dictionary<string, Party> fromParties)
     {
         foreach (DelegationChange delegation in resourceDelegations)
         {
             if (!parties.TryGetValue(delegation.FromUuid.Value, out AuthorizedParty party))
             {
-                var fromEntity = fromEntities.FirstOrDefault(e => e.Id == delegation.FromUuid);
-                if (fromEntity == null)
+                if (!fromParties.TryGetValue(delegation.FromUuid.ToString(), out Party fromParty))
                 {
                     continue;
                 }
 
-                party = new AuthorizedParty
-                {
-                    PartyUuid = delegation.FromUuid.Value,
-                    Name = fromEntity.Name,
-                    OrganizationNumber = fromEntity.RefId,
-                    PersonId = fromEntity.RefId
-                };
-
+                party = new AuthorizedParty(fromParty);
                 parties[delegation.FromUuid.Value] = party;
             }
 
             party.EnrichWithResourceAccess(delegation.ResourceId);
         }
+    }
+
+    private static AuthorizedParty BuildAuthorizedPartyFromCompactEntity(CompactEntity entity)
+    {
+        var party = new AuthorizedParty
+        {
+            PartyUuid = entity.Id,
+            Name = entity.Name
+        };
+
+        if (entity.Type == "Organisasjon")
+        {
+            party.OrganizationNumber = entity.RefId;
+            party.Type = AuthorizedPartyType.Organization;
+            party.UnitType = entity.Variant;
+            
+            if (int.TryParse(entity.KeyValues.FirstOrDefault(t => t.Key == "PartyId").Value, out int partyId))
+            {
+                party.PartyId = partyId;
+            }
+
+            if (entity.Children != null)
+            {
+                foreach (var child in entity.Children.DistinctBy(t => t.Id))
+                {
+                    var subunit = BuildAuthorizedPartyFromCompactEntity(child);
+                    party.Subunits.Add(subunit);
+                }
+            }
+        }
+        else
+        {
+            party.PersonId = entity.RefId;
+            party.Type = AuthorizedPartyType.Person;
+        }
+
+        return party;
     }
 
     private static void ValidatePartyIsNotNull(Guid id, ExtEntity entity, ref ValidationErrorBuilder errors, string param)
