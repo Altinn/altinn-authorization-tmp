@@ -1,10 +1,7 @@
-﻿using Altinn.Authorization.Core.Models.Consent;
-using Altinn.Authorization.Core.Models.Register;
-
-namespace Altinn.Authorization.Api.Models.Consent
+﻿namespace Altinn.Authorization.Api.Models.Consent
 {
     /// <summary>
-    /// Represents a consent request.
+    /// Represents a consent request. Model used internally in the BFF (Backend for Frontend) layer to handle consent requests.
     /// </summary>
     public class ConsentRequestDetailsBFF
     {
@@ -77,58 +74,5 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// The version of the consent template.
         /// </summary>
         public int? TemplateVersion { get; set; }
-
-        public static ConsentRequestDetailsBFF FromCore(ConsentRequestDetails core)
-        {
-            ConsentPartyUrnExternal to;
-            if (core.To.IsPartyUuid(out Guid toPartyUuid))
-            {
-                to = ConsentPartyUrnExternal.PartyUuid.Create(toPartyUuid);
-            }
-            else
-            {
-                throw new ArgumentException("Unknown consent party urn");
-            }
-
-            ConsentPartyUrnExternal from;
-            if (core.From.IsPartyUuid(out Guid fromPartyUuid))
-            {
-                from = ConsentPartyUrnExternal.PartyUuid.Create(fromPartyUuid);
-            }
-            else
-            {
-                throw new ArgumentException("Unknown consent party urn");
-            }
-
-            ConsentPartyUrnExternal? requiredDelegator = null;
-            if (core.RequiredDelegator != null && core.RequiredDelegator.IsPartyUuid(out Guid delegatorUuid))
-            {
-                requiredDelegator = ConsentPartyUrnExternal.PartyUuid.Create(delegatorUuid);
-            }
-
-            ConsentPartyUrnExternal? handledBy = null;
-            if (core.HandledBy != null && core.HandledBy.IsPartyUuid(out Guid handledByUuid))
-            {
-                handledBy = ConsentPartyUrnExternal.PartyUuid.Create(handledByUuid);
-            }
-
-            return new ConsentRequestDetailsBFF
-            {
-                Id = core.Id,
-                From = from,
-                To = to,
-                RequiredDelegator = requiredDelegator,
-                HandledBy = handledBy,
-                Consented = core.Consented,
-                ValidTo = core.ValidTo,
-                ConsentRights = core.ConsentRights.Select(ConsentRightExternal.FromCore).ToList(),
-                ConsentRequestEvents = core.ConsentRequestEvents.Select(ConsentRequestEventExternal.FromCore).ToList(),
-                RedirectUrl = core.RedirectUrl,
-                ViewUri = core.ViewUri,
-                TemplateId = core.TemplateId,
-                TemplateVersion = core.TemplateVersion,
-                Requestmessage = core.RequestMessage
-            };
-        }
     }
 }

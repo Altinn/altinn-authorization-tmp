@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Api.Internal.Utils;
+﻿using Altinn.AccessManagement.Api.Internal.Extensions;
+using Altinn.AccessManagement.Api.Internal.Utils;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Api.Models.Consent;
@@ -46,7 +47,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return consentRequest.Problem.ToActionResult();
             }
 
-            return Ok(ConsentRequestDetailsBFF.FromCore(consentRequest.Value));
+            return Ok(consentRequest.Value.ToConsentRequestDetailsBFF());
         }
 
         /// <summary>
@@ -105,7 +106,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return consentRequest.Problem.ToActionResult();
             }
 
-            return Ok(consentRequest.Value);
+            return Ok(consentRequest.Value.ToConsentRequestDetailsBFF());
         }
 
         /// <summary>
@@ -128,7 +129,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return consentRequest.Problem.ToActionResult();
             }
 
-            return Ok(consentRequest.Value);
+            return Ok(consentRequest.Value.ToConsentRequestDetailsBFF());
         }
 
         /// <summary>
