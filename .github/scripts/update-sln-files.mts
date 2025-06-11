@@ -28,6 +28,7 @@ type SlnSpec = {
   readonly type?: VerticalType;
   readonly tree: ProjectTree;
   readonly vertical?: Vertical;
+  hasProjects: boolean;
 };
 
 type ProjectTree = ProjectTreeNode[];
@@ -63,6 +64,7 @@ const rootSln: SlnSpec = {
   name: "Altinn.Authorization",
   displayName: "Altinn.Authorization",
   tree: [],
+  hasProjects: true,
 };
 
 const verticalSlns: SlnSpec[] = [];
@@ -90,14 +92,16 @@ for (const vertical of verticals) {
   };
   typeDir.children.push(verticalDir);
 
-  verticalSlns.push({
+  var verticalSln = {
     dir: vertical.path,
     name: vertical.name,
     displayName: vertical.shortName,
     type: vertical.type,
     tree: verticalDir.children,
     vertical,
-  });
+    hasProjects: false,
+  } as SlnSpec;
+  verticalSlns.push(verticalSln);
 
   const srcDir: ProjectTreeDir = {
     type: "dir",
@@ -116,6 +120,7 @@ for (const vertical of verticals) {
   verticalDir.children.push(testDir);
 
   for (const srcProjects of vertical.projects.src) {
+    verticalSln.hasProjects = true;
     srcDir.children.push({
       type: "item",
       name: srcProjects.name,
@@ -124,6 +129,7 @@ for (const vertical of verticals) {
   }
 
   for (const testProjects of vertical.projects.test) {
+    verticalSln.hasProjects = true;
     testDir.children.push({
       type: "item",
       name: testProjects.name,
@@ -216,6 +222,10 @@ function* flattenTree(
 }
 
 for (const sln of [rootSln, ...verticalSlns]) {
+  if (!sln.hasProjects) {
+    continue;
+  }
+
   await within(async () => {
     const dir = sln.dir;
     $.cwd = dir;
