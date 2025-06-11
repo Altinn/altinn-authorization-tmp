@@ -100,10 +100,10 @@ public class DbDataMigrationService(
         if (migrationService.NeedMigration<RoleMap>(dataKey, 4))
         {
             await IngestRoleMap(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 4);
+            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 5);
         }
 
-        if (migrationService.NeedMigration<AreaGroup>(dataKey, 4))
+        if (migrationService.NeedMigration<AreaGroup>(dataKey, 5))
         {
             await IngestAreaGroup(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 4);
@@ -471,6 +471,7 @@ public class DbDataMigrationService(
         var a3ProviderId = (await providerRepository.Get(t => t.Code, "sys-altinn3")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 3"));
         var a2ProviderId = (await providerRepository.Get(t => t.Code, "sys-altinn2")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 2"));
 
+
         var roles = new List<Role>()
         {
             new Role() { Id = Guid.Parse("42CAE370-2DC1-4FDC-9C67-C2F4B0F0F829"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Rettighetshaver",              Code = "rettighetshaver",               Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten", Urn = "urn:altinn:role:rettighetshaver", IsKeyRole = false, IsAssignable = true },
@@ -585,7 +586,7 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("b1213d79-03fa-4837-9193-e4b9fe24eccb"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Helse-, sosial- og velferdstjenester",         Code = "UIHTL",               Description = "Tilgang til helse-, sosial- og velferdsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:UIHTL", IsKeyRole = false },
             new Role() { Id = Guid.Parse("3c99647d-10b5-447e-9f0b-7bef1c7880f7"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Samferdsel",                                   Code = "UILUF",               Description = "Rollen gir rettighet til tjenester relatert til samferdsel. For eksempel tjenester fra Statens Vegvesen, Sjøfartsdirektoratet og Luftfartstilsynet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rolen gir.", Urn = "urn:altinn:rolecode:UILUF", IsKeyRole = false },
             new Role() { Id = Guid.Parse("dbaae9f8-107a-4222-9afd-d9f95cd5319c"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Utfyller/Innsender",                           Code = "UTINN",               Description = "Denne rollen gir rettighet til et bredt utvalg skjema og tjenester som ikke har så strenge krav til autorisasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:UTINN", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("af338fd5-3f1d-4ab5-8326-9dfecad26f71"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Energi, miljø og klima",                       Code = "UTOMR",               Description = "Tilgang til tjenester relatert til energi, miljø og klima. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:UTOMR", IsKeyRole = false },            
+            new Role() { Id = Guid.Parse("af338fd5-3f1d-4ab5-8326-9dfecad26f71"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Energi, miljø og klima",                       Code = "UTOMR",               Description = "Tilgang til tjenester relatert til energi, miljø og klima. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:UTOMR", IsKeyRole = false },
             new Role() { Id = Guid.Parse("478f710a-4af1-412d-9c67-de976fd0b229"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Hovedrolle for sensitive tjeneste",            Code = "SENS",                Description = "Hovedrolle for sensitive tjeneste", Urn = "urn:altinn:rolecode:SENS", IsKeyRole = false },
 
             new Role() { Id = Guid.Parse("1c6eeec1-fe70-4fc5-8b45-df4a2255dea6"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Privatperson",                                 Code = "privatperson",        Description = "Denne rollen er hentet fra Folkeregisteret og gir rettighet til flere tjenester.", Urn = "urn:altinn:role:privatperson", IsKeyRole = false },
