@@ -1,4 +1,4 @@
-﻿namespace Altinn.AccessManagement.Api.Enterprise.Enums.Consent
+﻿namespace Altinn.Authorization.Api.Models.Consent
 {
     /// <summary>
     /// Defines the view mode of the consent portal for external users.

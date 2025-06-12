@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using Altinn.AccessManagement.Api.Internal.Extensions;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
@@ -219,7 +220,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             {
                 Language = "nb",
             };
-            await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToCore());
+            await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToConsentContext());
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -249,7 +250,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             {
                 Language = "nb",
             };
-            await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToCore());
+            await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToConsentContext());
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -283,7 +284,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             {
                 Language = "nb",
             };
-            await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToCore());
+            await repositgo.AcceptConsentRequest(requestId, performedBy, consentContextExternal.ToConsentContext());
 
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, performedBy, AuthzConstants.SCOPE_PORTAL_ENDUSER);

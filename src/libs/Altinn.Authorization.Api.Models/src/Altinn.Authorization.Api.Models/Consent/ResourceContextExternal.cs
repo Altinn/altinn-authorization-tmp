@@ -1,7 +1,4 @@
-﻿using Altinn.Authorization.Core.Models.Consent;
-using Microsoft.Extensions.Hosting;
-
-namespace Altinn.Authorization.Api.Models.Consent
+﻿namespace Altinn.Authorization.Api.Models.Consent
 {
     public class ResourceContextExternal
     {
@@ -19,16 +16,5 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// The resource context of the consent
         /// </summary>
         public required string Context { get; set; }
-
-        public ResourceContext ToCore()
-        {
-            Guid guid = Guid.CreateVersion7();
-            return new ResourceContext
-            {
-                ResourceId = ResourceId,
-                Language = Language,
-                Context = Context
-            };
-        }
     }
 }

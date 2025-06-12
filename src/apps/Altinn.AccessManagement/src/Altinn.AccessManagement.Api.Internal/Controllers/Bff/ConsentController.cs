@@ -97,7 +97,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return BadRequest("Consent context is required");
             }
 
-            ConsentContext consentContext = context.ToCore();
+            ConsentContext consentContext = context.ToConsentContext();
 
             Result<ConsentRequestDetails> consentRequest = await _consentService.AcceptRequest(requestId, performedBy.Value, consentContext, cancellationToken);
 

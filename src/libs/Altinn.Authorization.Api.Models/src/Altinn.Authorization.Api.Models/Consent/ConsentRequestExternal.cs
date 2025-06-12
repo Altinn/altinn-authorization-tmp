@@ -1,6 +1,4 @@
-﻿using Altinn.Authorization.Core.Models.Consent;
-
-namespace Altinn.Authorization.Api.Models.Consent
+﻿namespace Altinn.Authorization.Api.Models.Consent
 {
     /// <summary>
     /// Represents a consent request.

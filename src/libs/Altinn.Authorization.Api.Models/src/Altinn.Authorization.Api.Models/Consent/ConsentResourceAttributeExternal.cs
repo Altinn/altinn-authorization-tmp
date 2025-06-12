@@ -1,6 +1,4 @@
-﻿using Altinn.Authorization.Core.Models.Consent;
-
-namespace Altinn.Authorization.Api.Models.Consent
+﻿namespace Altinn.Authorization.Api.Models.Consent
 {
     /// <summary>
     /// A resurce attribute identifying part or whole resource
@@ -16,17 +14,5 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// The value of the resource attribute
         /// </summary>
         public required string Value { get; set; }
-        
-        /// <summary>
-        /// Map from external consent resource attribute to internal consent resource attribute
-        /// </summary>
-        public static ConsentResourceAttribute ToCore(ConsentResourceAttributeExternal external)
-        {
-            return new ConsentResourceAttribute
-            {
-                Type = external.Type,
-                Value = external.Value
-            };
-        }
     }
 }
