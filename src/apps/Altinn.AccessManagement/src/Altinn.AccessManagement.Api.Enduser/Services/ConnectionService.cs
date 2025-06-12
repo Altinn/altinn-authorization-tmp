@@ -221,12 +221,13 @@ public class ConnectionService(
         var assignment = existingAssignments.First();
 
         var packages = await RelationService.GetPackagePermissionsFromOthers(DbAudit.Value.ChangedBy, fromId, packageId, cancellationToken: cancellationToken);
-        var userPackageFilter = RelationPermissionRepository.CreateFilterBuilder()
-            .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
-            .Equal(t => t.FromId, fromId)
-            .Equal(t => t.PackageId, packageId);
-
-        var userPackages = await RelationPermissionRepository.Get(userPackageFilter, callerName: SpanName("Get extended packages assignments"), cancellationToken: cancellationToken);
+        
+        // var userPackageFilter = RelationPermissionRepository.CreateFilterBuilder()
+        // .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
+        // .Equal(t => t.FromId, fromId)
+        // .Equal(t => t.PackageId, packageId);
+        // 
+        // var userPackages = await RelationPermissionRepository.Get(userPackageFilter, callerName: SpanName("Get extended packages assignments"), cancellationToken: cancellationToken);
         // problem = ValidationRules.Validate(
         //     ValidationRules.QueryParameters.AnyPackages(userPackages, queryParamName),
         //     ValidationRules.QueryParameters.PackageIsAssignableByUser(userPackages, queryParamName),
