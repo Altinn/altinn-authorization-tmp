@@ -24,6 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Api.Models\src\Altinn.Authorization.Api.Models\Altinn.Authorization.Api.Models.csproj" />
       <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Core.Models\src\Altinn.Authorization.Core.Models\Altinn.Authorization.Core.Models.csproj" />
     </ItemGroup>
 
