@@ -53,7 +53,7 @@ public class AuthorizedPartyRepoService(
         return parties.Values;
     }
 
-    private void EnrichWithAccessPackageParties(Dictionary<Guid, AuthorizedParty> parties, IEnumerable<RelationDto> connections)
+    private static void EnrichWithAccessPackageParties(Dictionary<Guid, AuthorizedParty> parties, IEnumerable<RelationDto> connections)
     {
         foreach (var connection in connections)
         {
@@ -68,7 +68,7 @@ public class AuthorizedPartyRepoService(
         }
     }
 
-    private void EnrichWithResourceParties(Dictionary<Guid, AuthorizedParty> parties, List<DelegationChange> resourceDelegations, Dictionary<string, Party> fromParties)
+    private static void EnrichWithResourceParties(Dictionary<Guid, AuthorizedParty> parties, List<DelegationChange> resourceDelegations, Dictionary<string, Party> fromParties)
     {
         foreach (DelegationChange delegation in resourceDelegations)
         {
