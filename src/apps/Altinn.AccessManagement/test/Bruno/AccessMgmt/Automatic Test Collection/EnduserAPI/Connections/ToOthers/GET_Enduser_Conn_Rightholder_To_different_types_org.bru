@@ -43,7 +43,7 @@ script:pre-request {
 }
 
 tests {
-  test("GET Org2 as rightholder for org1 who has delegeated tilgangspakke", function() {
+  test("GET Org2 as rightholder for org1 who has delegeated tilgangspakke : ToOthers", function() {
     const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
       const testdata = require(`./Testdata/enduser/${bru.getEnvVar("tokenEnv")}.json`);
      const data = res.getBody();

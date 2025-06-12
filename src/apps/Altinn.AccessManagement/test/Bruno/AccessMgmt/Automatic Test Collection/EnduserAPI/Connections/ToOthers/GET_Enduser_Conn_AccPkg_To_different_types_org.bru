@@ -43,7 +43,7 @@ script:pre-request {
 }
 
 tests {
-  test("GET all delegated packages from Org1 to Org2", function() {
+  test("GET all delegated packages from Org1 to Org2 : ToOthers", function() {
      const data = res.getBody();
       var packageId = bru.getEnvVar("packageId");
       expect(res.status).to.equal(200);

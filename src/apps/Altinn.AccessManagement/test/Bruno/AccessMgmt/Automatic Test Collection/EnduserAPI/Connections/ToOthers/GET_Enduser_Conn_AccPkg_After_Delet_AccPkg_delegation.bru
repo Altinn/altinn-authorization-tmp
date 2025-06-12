@@ -43,7 +43,7 @@ script:pre-request {
 }
 
 tests {
-  test("Verify after deletin rightholder from list GET endpoint should return empty response", function() {
+  test("Verify after deletin rightholder from list GET endpoint should return empty response : ToOthers", function() {
      const data = res.getBody();
       
       expect(res.status).to.equal(200);

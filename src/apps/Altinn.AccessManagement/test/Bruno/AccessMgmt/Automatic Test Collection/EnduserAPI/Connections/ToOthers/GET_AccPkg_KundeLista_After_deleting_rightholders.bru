@@ -34,7 +34,7 @@ script:pre-request {
 }
 
 tests {
-  test("Verify that Org1 appears in the client list for Org2 after Org2 receives delegated access via the access package from Org1.", function() {
+  test("Verify that Org1 appears in the client list for Org2 after Org2 receives delegated access via the access package from Org1 : ToOthers", function() {
     const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   
       const data = res.getBody();

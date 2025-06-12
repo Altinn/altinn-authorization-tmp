@@ -44,7 +44,7 @@ script:pre-request {
 }
 
 tests {
-  test("Verify deletion of rightholder gives 400 bad request with cascade: false", function() {
+  test("Verify deletion of rightholder gives 400 bad request with cascade: false : ToOthers", function() {
     const data = res.getBody();
     
     expect(res.status).to.equal(400);

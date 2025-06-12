@@ -44,7 +44,7 @@ script:pre-request {
 }
 
 tests {
-  test("Verify deletion of delegated access pacakge which was delegated from Org1", function() {
+  test("Verify deletion of delegated access pacakge which was delegated from Org1 : FromOthers", function() {
     const data = res.getBody();
     
     expect(res.status).to.equal(204);

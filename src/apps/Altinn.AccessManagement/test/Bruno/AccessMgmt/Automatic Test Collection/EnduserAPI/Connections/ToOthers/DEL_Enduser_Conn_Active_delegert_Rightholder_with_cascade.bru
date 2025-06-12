@@ -44,7 +44,7 @@ script:pre-request {
 }
 
 tests {
-  test("Verify deletion of rightholder without deleteing delegated access package gives 204 response with cascade ture", function() {
+  test("Verify deletion of rightholder without deleteing delegated access package gives 204 response with cascade ture : ToOthers", function() {
     const data = res.getBody();
     
     expect(res.status).to.equal(204);

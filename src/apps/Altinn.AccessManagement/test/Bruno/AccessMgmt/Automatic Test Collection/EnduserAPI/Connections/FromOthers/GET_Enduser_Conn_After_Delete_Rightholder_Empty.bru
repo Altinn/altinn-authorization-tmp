@@ -45,7 +45,7 @@ script:pre-request {
 }
 
 tests {
-  test("GET null response after deleting av rightholder from lista", function() {
+  test("GET null response after deleting av rightholder from lista :FromOthers", function() {
      const data = res.getBody();
       expect(res.status).to.equal(200);
       expect(data.data).to.empty

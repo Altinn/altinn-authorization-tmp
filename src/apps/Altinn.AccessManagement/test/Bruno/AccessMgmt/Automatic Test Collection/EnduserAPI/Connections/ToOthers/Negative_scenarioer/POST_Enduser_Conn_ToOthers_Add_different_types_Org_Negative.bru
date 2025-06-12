@@ -43,7 +43,7 @@ script:pre-request {
 }
 
 tests {
-  test("Verify Org1 is not able to add Org2 for delegation without keyroles", function() {
+  test("Verify Org1 is not able to add Org2 for delegation without keyroles : ToOthers", function() {
     
     const data = res.getBody();
     expect(res.status).to.equal(403);

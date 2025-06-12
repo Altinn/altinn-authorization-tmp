@@ -44,7 +44,7 @@ script:pre-request {
 }
 
 tests {
-  test("Verify deletion of rightholder gives 204 response", function() {
+  test("Verify deletion of rightholder gives 204 response : FromOthers", function() {
     const data = res.getBody();
     
     expect(res.status).to.equal(204);
