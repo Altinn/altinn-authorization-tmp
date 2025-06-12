@@ -1,4 +1,4 @@
-﻿namespace Altinn.Authorization.Core.Models.Consent
+﻿namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// represents an event related to a consent request.

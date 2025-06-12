@@ -1,5 +1,8 @@
-﻿namespace Altinn.Authorization.Core.Models.Consent
+﻿namespace Altinn.AccessManagement.Core.Models.Consent
 {
+    /// <summary>
+    /// Represents the context in which consent is given or requested.
+    /// </summary>
     public class ConsentContext
     {
         /// <summary>

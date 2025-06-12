@@ -1,6 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
-using Altinn.Authorization.Core.Models.Consent;
 
 namespace Altinn.AccessManagement.Core.Clients.Interfaces
 {

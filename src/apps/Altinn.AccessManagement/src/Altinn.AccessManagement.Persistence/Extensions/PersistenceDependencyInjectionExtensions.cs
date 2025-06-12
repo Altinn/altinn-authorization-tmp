@@ -1,11 +1,11 @@
 ﻿using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Consent;
 using Altinn.AccessManagement.Persistence.Policy;
-using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.ServiceDefaults.Npgsql.Yuniql;
 using Altinn.Platform.Register.Enums;
 using Azure.Core;

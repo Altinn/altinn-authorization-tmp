@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Altinn.Authorization.Core.Models.Consent
+﻿namespace Altinn.AccessManagement.Core.Models.Consent
 {
+    /// <summary>
+    /// Represents the texts used in consent templates for different parties.
+    /// </summary>
     public class ConsentTemplateTypeText
     {
         /// <summary>

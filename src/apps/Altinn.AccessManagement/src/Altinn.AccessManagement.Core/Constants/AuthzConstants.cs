@@ -1,6 +1,4 @@
-﻿using Altinn.Authorization.Core.Models.Consent;
-
-namespace Altinn.AccessManagement.Core.Constants
+﻿namespace Altinn.AccessManagement.Core.Constants
 {
     /// <summary>
     /// Constants related to authorization.

@@ -1,4 +1,4 @@
-﻿namespace Altinn.Authorization.Core.Models.Consent
+﻿namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// Describes a concent
@@ -38,6 +38,6 @@
         /// <summary>
         /// The consent context
         /// </summary>
-        public ConsentContext? Context { get; set; }
+        public ConsentContext Context { get; set; }
     }
 }

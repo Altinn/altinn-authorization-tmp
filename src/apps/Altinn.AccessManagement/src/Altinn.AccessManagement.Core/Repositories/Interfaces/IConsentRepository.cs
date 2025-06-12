@@ -1,4 +1,4 @@
-﻿using Altinn.Authorization.Core.Models.Consent;
+﻿using Altinn.AccessManagement.Core.Models.Consent;
 
 namespace Altinn.AccessManagement.Core.Repositories.Interfaces
 {

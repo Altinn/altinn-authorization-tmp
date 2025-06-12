@@ -1,9 +1,9 @@
-﻿using Altinn.AccessManagement.Core.Models.Register;
+﻿using Altinn.AccessManagement.Core.Models.Party;
+using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.Authorization.Core.Models.Party;
 using Altinn.Authorization.Core.Models.Register;
 
 namespace Altinn.AccessMgmt.Persistence.Services

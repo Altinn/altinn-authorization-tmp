@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using Altinn.Authorization.Core.Models.Consent;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Core.Errors;

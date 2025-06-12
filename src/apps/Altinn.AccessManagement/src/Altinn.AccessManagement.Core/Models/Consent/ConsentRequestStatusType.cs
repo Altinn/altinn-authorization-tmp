@@ -1,14 +1,13 @@
 ﻿using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
-using NpgsqlTypes;
 
-namespace Altinn.Authorization.Core.Models.Consent
+namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// Enum for the status of a consent request
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum ConsentRequestEventType
+    public enum ConsentRequestStatusType
     {
         [EnumMember(Value = "created")]
         Created = 0,

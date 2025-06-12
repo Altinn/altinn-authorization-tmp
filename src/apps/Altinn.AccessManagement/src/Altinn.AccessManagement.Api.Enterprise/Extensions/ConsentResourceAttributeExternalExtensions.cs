@@ -1,5 +1,5 @@
-﻿using Altinn.Authorization.Api.Models.Consent;
-using Altinn.Authorization.Core.Models.Consent;
+﻿using Altinn.AccessManagement.Core.Models.Consent;
+using Altinn.Authorization.Api.Models.Consent;
 
 namespace Altinn.AccessManagement.Api.Enterprise.Extensions
 {

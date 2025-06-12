@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Altinn.Authorization.Core.Models.Consent
+﻿namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// Represents a right in a consent.
@@ -24,7 +22,7 @@ namespace Altinn.Authorization.Core.Models.Consent
         /// The metadata for the right. Can be multiple but in most concents it is only one.   
         /// Keys are case insensitive.
         /// </summary>
-        public MetadataDictionary? MetaData { get; set; }
+        public MetadataDictionary MetaData { get; set; }
 
         public void AddMetadataValues(IReadOnlyDictionary<string, string> dictionary)
         {

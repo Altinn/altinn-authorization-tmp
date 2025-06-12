@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Altinn.Authorization.Core.Models.Consent
+﻿namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// Defines a consent template
@@ -39,7 +33,7 @@ namespace Altinn.Authorization.Core.Models.Consent
         /// <summary>
         /// Only service owners in this list can use this template in consent resources
         /// </summary>
-        public List<string>? RestrictedToServiceOwners { get; set; }
+        public List<string> RestrictedToServiceOwners { get; set; }
 
         /// <summary>
         /// Texts for consent content and history

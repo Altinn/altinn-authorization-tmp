@@ -5,9 +5,9 @@ using System.Text;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Integration.Configuration;
-using Altinn.Authorization.Core.Models.Consent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

@@ -1,5 +1,8 @@
-﻿namespace Altinn.Authorization.Core.Models.Party
+﻿namespace Altinn.AccessManagement.Core.Models.Party
 {
+    /// <summary>
+    /// Represents a minimal party model used in various contexts where only basic party information is needed.
+    /// </summary>
     public class MinimalParty
     {
         /// <summary>
@@ -20,11 +23,11 @@
         /// <summary>
         ///  The organization number of the party
         /// </summary>
-        public string? OrganizationId { get; set; }
+        public string OrganizationId { get; set; }
 
         /// <summary>
         /// The person number of the party
         /// </summary>
-        public string? PersonId { get; set; }
+        public string PersonId { get; set; }
     }
 }

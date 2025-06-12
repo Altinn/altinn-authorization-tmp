@@ -2,7 +2,7 @@
 using Altinn.Authorization.Core.Models.Register;
 using Altinn.Urn;
 
-namespace Altinn.Authorization.Core.Models.Consent
+namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// A unique reference to a party in the form of an URN.

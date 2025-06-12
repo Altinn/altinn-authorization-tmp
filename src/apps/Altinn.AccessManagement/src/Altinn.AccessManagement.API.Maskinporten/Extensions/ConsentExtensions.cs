@@ -1,5 +1,5 @@
-﻿using Altinn.Authorization.Api.Models.Consent;
-using Altinn.Authorization.Core.Models.Consent;
+﻿using Altinn.AccessManagement.Core.Models.Consent;
+using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
 
 namespace Altinn.AccessManagement.Api.Maskinporten.Extensions

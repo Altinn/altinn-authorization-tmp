@@ -1,4 +1,4 @@
-﻿namespace Altinn.Authorization.Core.Models.Consent
+﻿namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// A resurce attribute identifying part or whole resource
@@ -18,6 +18,6 @@
         /// <summary>
         /// The version of the resource attribute
         /// </summary>
-        public string? Version { get; set; }
+        public string Version { get; set; }
     }
 }

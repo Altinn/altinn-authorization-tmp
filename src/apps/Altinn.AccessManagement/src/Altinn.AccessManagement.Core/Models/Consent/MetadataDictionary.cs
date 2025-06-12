@@ -1,4 +1,4 @@
-﻿namespace Altinn.Authorization.Core.Models.Consent
+﻿namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// Represents a dictionary of metadata.

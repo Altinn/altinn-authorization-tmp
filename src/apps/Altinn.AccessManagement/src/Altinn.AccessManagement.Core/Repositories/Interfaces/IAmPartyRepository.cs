@@ -1,5 +1,5 @@
-﻿using Altinn.AccessManagement.Core.Models.Register;
-using Altinn.Authorization.Core.Models.Party;
+﻿using Altinn.AccessManagement.Core.Models.Party;
+using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.Authorization.Core.Models.Register;
 
 namespace Altinn.AccessManagement.Core.Repositories.Interfaces

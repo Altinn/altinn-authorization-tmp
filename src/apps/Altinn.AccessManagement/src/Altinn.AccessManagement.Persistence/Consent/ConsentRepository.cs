@@ -1,6 +1,6 @@
 ﻿using System.Data;
+using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
-using Altinn.Authorization.Core.Models.Consent;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -274,7 +274,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
         }
 
         /// <inheritdoc/>
-        public Task<List<Altinn.Authorization.Core.Models.Consent.Consent>> GetAllConsents(Guid partyUid, CancellationToken cancellationToken = default)
+        public Task<List<Core.Models.Consent.Consent>> GetAllConsents(Guid partyUid, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

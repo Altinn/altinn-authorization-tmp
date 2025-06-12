@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
-using Altinn.Authorization.Core.Models.Consent;
+using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.Authorization.Core.Models.Register;
 
 namespace Altinn.AccessManagement.Api.Enterprise.Utils

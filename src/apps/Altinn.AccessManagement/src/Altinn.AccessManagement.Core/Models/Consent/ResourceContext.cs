@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.Hosting;
-
-namespace Altinn.Authorization.Core.Models.Consent
+﻿namespace Altinn.AccessManagement.Core.Models.Consent
 {
+    /// <summary>
+    /// Represents the context of a resource in a consent request.
+    /// </summary>
     public class ResourceContext
     {
         /// <summary>

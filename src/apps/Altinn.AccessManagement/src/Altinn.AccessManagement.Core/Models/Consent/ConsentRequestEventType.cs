@@ -1,13 +1,13 @@
 ﻿using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Authorization.Core.Models.Consent
+namespace Altinn.AccessManagement.Core.Models.Consent
 {
     /// <summary>
     /// Enum for the status of a consent request
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum ConsentRequestStatusType
+    public enum ConsentRequestEventType
     {
         [EnumMember(Value = "created")]
         Created = 0,

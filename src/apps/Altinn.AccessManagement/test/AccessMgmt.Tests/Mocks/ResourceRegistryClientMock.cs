@@ -7,9 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Integration.Clients;
-using Altinn.Authorization.Core.Models.Consent;
 
 namespace Altinn.AccessManagement.Tests.Mocks
 {
