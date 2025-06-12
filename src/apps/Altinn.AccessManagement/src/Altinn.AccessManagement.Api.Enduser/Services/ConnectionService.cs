@@ -6,7 +6,9 @@ using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.ProblemDetails;
+using DnsClient.Protocol;
 
 namespace Altinn.AccessManagement.Enduser.Services;
 
@@ -15,8 +17,6 @@ namespace Altinn.AccessManagement.Enduser.Services;
 /// </summary>
 public class ConnectionService(
     IDbAudit dbAudit,
-    IConnectionRepository connectionRepository,
-    IConnectionPackageRepository connectionPackageRepository,
     IPackageRepository packageRepository,
     IRoleRepository roleRepository,
     IAssignmentRepository assignmentRepository,
@@ -29,10 +29,6 @@ public class ConnectionService(
     ) : IEnduserConnectionService
 {
     private IDbAudit DbAudit { get; } = dbAudit;
-
-    private IConnectionRepository ConnectionRepository { get; } = connectionRepository;
-
-    private IConnectionPackageRepository ConnectionPackageRepository { get; } = connectionPackageRepository;
 
     private IRelationService RelationService { get; } = relationService;
 
@@ -53,22 +49,22 @@ public class ConnectionService(
     private IRelationPermissionRepository RelationPermissionRepository { get; } = relationPermissionRepository;
 
     /// <inheritdoc />
-    public async Task<Result<List<ExtRelation>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default)
+    public async Task<Result<List<CompactRelationDto>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default)
     {
-        var filter = RelationRepository.CreateFilterBuilder();
         if (fromId is { } && fromId.Value != Guid.Empty)
         {
-            filter.Equal(t => t.FromId, fromId);
+            var result = await RelationService.GetConnectionsFromOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken: cancellationToken);
+            return result.ToList();
         }
 
         if (toId is { } && toId != Guid.Empty)
         {
-            filter.Equal(t => t.ToId, toId);
+            var result = await RelationService.GetConnectionsToOthers(toId.Value, fromId is { } && fromId.Value != Guid.Empty ? fromId : null, null, cancellationToken: cancellationToken);
+            return result.ToList();
         }
 
-        var result = await RelationPermissionRepository.GetExtended(filter, callerName: SpanName("Get extended assignments"), cancellationToken: cancellationToken);
-
-        return result?.ToList() ?? [];
+        Unreachable();
+        return default;
     }
 
     /// <inheritdoc />
@@ -158,24 +154,22 @@ public class ConnectionService(
     }
 
     /// <inheritdoc />
-    public async Task<Result<List<Relation>>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default)
+    public async Task<Result<List<PackagePermission>>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default)
     {
-        var filter = RelationPermissionRepository
-            .CreateFilterBuilder();
-
         if (fromId is { } && fromId.Value != Guid.Empty)
         {
-            filter.Equal(f => f.FromId, fromId);
+            var result = await RelationService.GetPackagePermissionsFromOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken);
+            return result.ToList();
         }
 
         if (toId is { } && toId.Value != Guid.Empty)
         {
-            filter.Equal(t => t.ToId, toId);
+            var result = await RelationService.GetPackagePermissionsToOthers(toId.Value, fromId is { } && fromId.Value != Guid.Empty ? fromId : null, null, cancellationToken);
+            return result.ToList();
         }
 
-        var result = await RelationPermissionRepository.Get(filter, callerName: SpanName("Get assignment packages"), cancellationToken: cancellationToken);
-
-        return result.ToList();
+        Unreachable();
+        return default;
     }
 
     /// <inheritdoc />
@@ -226,12 +220,13 @@ public class ConnectionService(
 
         var assignment = existingAssignments.First();
 
+        var packages = await RelationService.GetPackagePermissionsFromOthers(DbAudit.Value.ChangedBy, fromId, packageId, cancellationToken: cancellationToken);
         var userPackageFilter = RelationPermissionRepository.CreateFilterBuilder()
             .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
             .Equal(t => t.FromId, fromId)
             .Equal(t => t.PackageId, packageId);
 
-        // var userPackages = await RelationPermissionRepository.GetExtended(userPackageFilter, callerName: SpanName("Get extended packages assignments"), cancellationToken: cancellationToken);
+        var userPackages = await RelationPermissionRepository.Get(userPackageFilter, callerName: SpanName("Get extended packages assignments"), cancellationToken: cancellationToken);
         // problem = ValidationRules.Validate(
         //     ValidationRules.QueryParameters.AnyPackages(userPackages, queryParamName),
         //     ValidationRules.QueryParameters.PackageIsAssignableByUser(userPackages, queryParamName),
@@ -393,7 +388,7 @@ public interface IEnduserConnectionService
     /// <returns>
     /// A <see cref="Result{T}"/> containing a list of <see cref="ExtConnection"/> instances matching the criteria.
     /// </returns>
-    Task<Result<List<ExtRelation>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default);
+    Task<Result<List<CompactRelationDto>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a role assignment between two entities.
@@ -429,7 +424,7 @@ public interface IEnduserConnectionService
     /// <returns>
     /// A <see cref="Result{T}"/> containing a list of <see cref="ConnectionPackage"/> instances.
     /// </returns>
-    Task<Result<List<Relation>>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default);
+    Task<Result<List<PackagePermission>>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a package to an assignment (by package ID) based on the role between two entities.

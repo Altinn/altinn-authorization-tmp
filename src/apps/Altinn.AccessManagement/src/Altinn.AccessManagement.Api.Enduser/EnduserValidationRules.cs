@@ -220,7 +220,7 @@ public static class ValidationRules
         /// <param name="packages">Lists of packages</param>
         /// <param name="paramName">name of query parameter</param>
         /// <returns></returns>
-        internal static RuleExpression AnyPackages(IEnumerable<ExtRelation> packages, string paramName = "packageId") => () =>
+        internal static RuleExpression AnyPackages(IEnumerable<Relation> packages, string paramName = "packageId") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
@@ -240,7 +240,7 @@ public static class ValidationRules
         /// <param name="packages">list of packages</param>
         /// <param name="paramName">name of the query parameter</param>
         /// <returns></returns>
-        internal static RuleExpression PackageIsAssignableByDefinition(IEnumerable<ExtRelation> packages, string paramName = "packageId") => () =>
+        internal static RuleExpression PackageIsAssignableByDefinition(IEnumerable<Relation> packages, string paramName = "packageId") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
@@ -266,14 +266,14 @@ public static class ValidationRules
         /// <param name="packages">List of packages.</param>
         /// <param name="paramName">name of the query parameter.</param>
         /// <returns></returns>
-        internal static RuleExpression PackageIsAssignableByUser(IEnumerable<ExtRelation> packages, string paramName = "packageId") => () =>
+        internal static RuleExpression PackageIsAssignableByUser(IEnumerable<Relation> packages, string paramName = "packageId") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
 
             return null;
 
-            // if (packages.All(t => t.CanAssign))
+            // if (packages.All(t => t.PackageId))
             // {
             //     return null;
             // }
