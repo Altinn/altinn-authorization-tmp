@@ -220,7 +220,7 @@ public static class ValidationRules
         /// <param name="packages">Lists of packages</param>
         /// <param name="paramName">name of query parameter</param>
         /// <returns></returns>
-        internal static RuleExpression AnyPackages(IEnumerable<ConnectionPackage> packages, string paramName = "packageId") => () =>
+        internal static RuleExpression AnyPackages(IEnumerable<ExtRelation> packages, string paramName = "packageId") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
@@ -240,22 +240,24 @@ public static class ValidationRules
         /// <param name="packages">list of packages</param>
         /// <param name="paramName">name of the query parameter</param>
         /// <returns></returns>
-        internal static RuleExpression PackageIsAssignableByDefinition(IEnumerable<ExtConnectionPackage> packages, string paramName = "packageId") => () =>
+        internal static RuleExpression PackageIsAssignableByDefinition(IEnumerable<ExtRelation> packages, string paramName = "packageId") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
 
-            if (packages.All(t => t.Package.IsAssignable))
-            {
-                return null;
-            }
+            return null;
 
-            var packagesNotAssignable = packages
-                .Where(p => p.Package.IsAssignable)
-                .Select(p => p.Id);
+            // if (packages.All(t => t.Package.IsAssignable))
+            // {
+            //     return null;
+            // }
 
-            return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("Packages", $"{string.Join(",", packagesNotAssignable)} are not assignable.")]);
+            // var packagesNotAssignable = packages
+            //     .Where(p => p.Package.IsAssignable)
+            //     .Select(p => p.Id);
+
+            // return (ref ValidationErrorBuilder errors) =>
+            //     errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("Packages", $"{string.Join(",", packagesNotAssignable)} are not assignable.")]);
         };
 
         /// <summary>
@@ -264,22 +266,24 @@ public static class ValidationRules
         /// <param name="packages">List of packages.</param>
         /// <param name="paramName">name of the query parameter.</param>
         /// <returns></returns>
-        internal static RuleExpression PackageIsAssignableByUser(IEnumerable<ConnectionPackage> packages, string paramName = "packageId") => () =>
+        internal static RuleExpression PackageIsAssignableByUser(IEnumerable<ExtRelation> packages, string paramName = "packageId") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
 
-            if (packages.All(t => t.CanAssign))
-            {
-                return null;
-            }
+            return null;
 
-            var packagesNotAssignableByUser = packages
-                .Where(p => p.CanAssign)
-                .Select(p => p.Id);
+            // if (packages.All(t => t.CanAssign))
+            // {
+            //     return null;
+            // }
 
-            return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("Packages", $"Packages with IDs {string.Join(",", packagesNotAssignableByUser)} can't be assigned by user.")]);
+            // var packagesNotAssignableByUser = packages
+            //     .Where(p => p.CanAssign)
+            //     .Select(p => p.Id);
+
+            // return (ref ValidationErrorBuilder errors) =>
+            //     errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("Packages", $"Packages with IDs {string.Join(",", packagesNotAssignableByUser)} can't be assigned by user.")]);
         };
 
         /// <summary>
