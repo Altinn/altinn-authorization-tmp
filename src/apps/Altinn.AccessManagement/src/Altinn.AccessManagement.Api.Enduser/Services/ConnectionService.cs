@@ -8,7 +8,6 @@ using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.ProblemDetails;
-using DnsClient.Protocol;
 
 namespace Altinn.AccessManagement.Enduser.Services;
 
