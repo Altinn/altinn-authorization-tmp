@@ -49,7 +49,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Extensions
                     : null,
                 Consented = details.Consented,
                 ValidTo = details.ValidTo,
-                ConsentRights = details.ConsentRights.Select(ConsentRightExternal.FromCore).ToList(),
+                ConsentRights = [.. details.ConsentRights.Select(static x => x.ToConsentRightExternal())],
                 ConsentRequestEvents = [.. details.ConsentRequestEvents.Select(static x => x.ToConsentRequestEventExternal())],
                 RedirectUrl = details.RedirectUrl,
                 ViewUri = details.ViewUri,

@@ -1,8 +1,8 @@
-﻿using Altinn.AccessManagement.Core.Constants;
+﻿using Altinn.AccessManagement.Api.Maskinporten.Extensions;
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.Api.Models.Consent;
 using Altinn.Authorization.Core.Models.Consent;
-using Altinn.Authorization.Core.Models.Register;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +36,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
                 return consent.Problem.ToActionResult();
             }
 
-            return Ok(ConsentInfoMaskinporten.Convert(consent.Value));
+            return Ok(consent.Value.ToConsentInfoMaskinporten());
         }
 
         private static ConsentPartyUrn MapToCore(ConsentPartyUrnExternal consentPartyUrnExternal)

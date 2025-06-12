@@ -16,19 +16,7 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// The value of the resource attribute
         /// </summary>
         public required string Value { get; set; }
-
-        /// <summary>
-        /// Map from internal consent resource attribute to external consent resource attribute
-        /// </summary>
-        public static ConsentResourceAttributeExternal FromCore(ConsentResourceAttribute core)
-        {
-            return new ConsentResourceAttributeExternal
-            {
-                Type = core.Type,
-                Value = core.Value
-            };
-        }
-
+        
         /// <summary>
         /// Map from external consent resource attribute to internal consent resource attribute
         /// </summary>

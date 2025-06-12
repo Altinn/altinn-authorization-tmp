@@ -1,7 +1,4 @@
-﻿using Altinn.Authorization.Core.Models.Consent;
-using Altinn.Authorization.Core.Models.Register;
-
-namespace Altinn.Authorization.Api.Models.Consent
+﻿namespace Altinn.Authorization.Api.Models.Consent
 {
     /// <summary>
     /// Represents the consent information for Maskinporten.
@@ -37,30 +34,5 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// The consented rights.
         /// </summary>
         public required List<ConsentRightExternal> ConsentRights { get; set; }
-
-        /// <summary>
-        /// Maps from internal consent to external consent
-        /// </summary>
-        public static ConsentInfoMaskinporten Convert(Altinn.Authorization.Core.Models.Consent.Consent consent)
-        {
-            ConsentPartyUrnExternal to = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(consent.To.ValueSpan));
-
-            ConsentPartyUrnExternal from = consent.From switch
-            {
-                ConsentPartyUrn.PersonId => ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse(consent.From.ValueSpan)),
-                ConsentPartyUrn.OrganizationId => ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(consent.From.ValueSpan)),
-                _ => throw new ArgumentException("Unknown consent party urn")
-            };
-
-            return new ConsentInfoMaskinporten
-            {
-                Id = consent.Id,
-                From = from,
-                To = to,
-                Consented = consent.Consented,
-                ValidTo = consent.ValidTo,
-                ConsentRights = consent.ConsentRights.Select(ConsentRightExternal.FromCore).ToList()
-            };
-        }
     }
 }

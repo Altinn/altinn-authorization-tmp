@@ -24,41 +24,5 @@ namespace Altinn.Authorization.Api.Models.Consent
         /// Metadata for consent resource right not required
         /// </summary>
         public Dictionary<string, string>? MetaData { get; set; }
-
-        /// <summary>
-        /// Maps from internal consent right to external consent right
-        /// </summary>
-        public static ConsentRightExternal FromCore(ConsentRight core)
-        {
-            return new ConsentRightExternal
-            {
-                Action = core.Action,
-                Resource = core.Resource.Select(ConsentResourceAttributeExternal.FromCore).ToList(),
-                MetaData = core.MetaData
-            };
-        }
-
-        /// <summary>
-        /// Maps from external consent right to internal consent right
-        /// </summary>
-        public static ConsentRight ToCore(ConsentRightExternal external)
-        {
-            ConsentRight consentRight = new ConsentRight
-            {
-                Action = external.Action,
-                Resource = external.Resource.Select(ConsentResourceAttributeExternal.ToCore).ToList()
-            };
-
-            if (external.MetaData != null)
-            {
-                consentRight.MetaData = new MetadataDictionary();
-                foreach (var item in external.MetaData)
-                {
-                    consentRight.MetaData.Add(item.Key, item.Value);
-                }
-            }
-
-            return consentRight;
-        }
     }
 }

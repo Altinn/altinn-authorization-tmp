@@ -1,0 +1,25 @@
+﻿using Altinn.Authorization.Api.Models.Consent;
+using Altinn.Authorization.Core.Models.Consent;
+
+namespace Altinn.AccessManagement.Api.Enterprise.Extensions
+{
+    /// <summary>
+    /// Provides extension methods for transforming ConsentResourceAttributeExternal to ConsentResourceAttribute.
+    /// </summary>
+    public static class ConsentResourceAttributeExternalExtensions
+    {
+        /// <summary>
+        /// Maps a ConsentResourceAttributeExternal to a ConsentResourceAttribute.
+        /// </summary>
+        /// <param name="external">the ConsentResourceAttributeExternal</param>
+        /// <returns></returns>
+        public static ConsentResourceAttribute ToConsentResourceAttribute(this ConsentResourceAttributeExternal external)
+        {
+            return new ConsentResourceAttribute
+            {
+                Type = external.Type,
+                Value = external.Value
+            };
+        }
+    }
+}

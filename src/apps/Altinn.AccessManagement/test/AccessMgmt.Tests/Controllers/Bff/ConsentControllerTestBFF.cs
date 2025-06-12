@@ -294,7 +294,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             ConsentRequestDetailsBFF consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsBFF>(responseContent, _jsonOptions);
             Assert.Equal(3,consentInfo.ConsentRequestEvents.Count);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentPartyUrnExternal.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), consentInfo.ConsentRequestEvents[0].PerformedBy);
             Assert.Equal(ConsentRequestEventTypeExternal.Accepted, consentInfo.ConsentRequestEvents[1].EventType);
             Assert.Equal(ConsentRequestEventTypeExternal.Revoked, consentInfo.ConsentRequestEvents[2].EventType);
         }
