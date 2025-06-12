@@ -19,6 +19,7 @@ public class ConnectionService(
     IDbAudit dbAudit,
     IPackageRepository packageRepository,
     IRoleRepository roleRepository,
+    IConnectionPackageRepository connectionPackageRepository,
     IAssignmentRepository assignmentRepository,
     IDelegationRepository delegationRepository,
     IAssignmentPackageRepository assignmentPackageRepository,
@@ -37,6 +38,8 @@ public class ConnectionService(
     private IPackageRepository PackageRepository { get; } = packageRepository;
 
     private IRoleRepository RoleRepository { get; } = roleRepository;
+
+    private IConnectionPackageRepository ConnectionPackageRepository { get; } = connectionPackageRepository;
 
     private IAssignmentRepository AssignmentRepository { get; } = assignmentRepository;
 
@@ -220,19 +223,20 @@ public class ConnectionService(
 
         var assignment = existingAssignments.First();
 
-        var packages = await RelationService.GetPackagePermissionsFromOthers(DbAudit.Value.ChangedBy, fromId, packageId, cancellationToken: cancellationToken);
-        
-        // var userPackageFilter = RelationPermissionRepository.CreateFilterBuilder()
-        // .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
-        // .Equal(t => t.FromId, fromId)
-        // .Equal(t => t.PackageId, packageId);
-        // 
-        // var userPackages = await RelationPermissionRepository.Get(userPackageFilter, callerName: SpanName("Get extended packages assignments"), cancellationToken: cancellationToken);
-        // problem = ValidationRules.Validate(
-        //     ValidationRules.QueryParameters.AnyPackages(userPackages, queryParamName),
-        //     ValidationRules.QueryParameters.PackageIsAssignableByUser(userPackages, queryParamName),
-        //     ValidationRules.QueryParameters.PackageIsAssignableByDefinition(userPackages, queryParamName)
-        // );
+        var userPackageFilter = ConnectionPackageRepository.CreateFilterBuilder()
+            .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
+            .Equal(t => t.FromId, fromId)
+            .Equal(t => t.PackageId, packageId);
+
+        var userPackags = await ConnectionPackageRepository.GetExtended(userPackageFilter, callerName: SpanName("Get extended packages assignments"), cancellationToken: cancellationToken);
+        var userpackage = userPackags.Where(p => p.PackageId == packageId)
+            .ToList();
+
+        problem = ValidationRules.Validate(
+            ValidationRules.QueryParameters.AnyPackages(userpackage, queryParamName),
+            ValidationRules.QueryParameters.PackageIsAssignableByUser(userpackage, queryParamName),
+            ValidationRules.QueryParameters.PackageIsAssignableByDefinition(userpackage, queryParamName)
+        );
 
         if (problem is { })
         {
