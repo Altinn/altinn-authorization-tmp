@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Altinn.Authorization.Core.M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Core.Models", "..\Altinn.Authorization.Core.Models\src\Altinn.Authorization.Core.Models\Altinn.Authorization.Core.Models.csproj", "{D22A1349-8D3F-48D9-BA46-E4BDC72E6CEF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Api.Contracts", "src\Altinn.Authorization.Api.Models\Altinn.Authorization.Api.Contracts.csproj", "{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,18 @@ Global
 		{D22A1349-8D3F-48D9-BA46-E4BDC72E6CEF}.Release|x64.Build.0 = Release|Any CPU
 		{D22A1349-8D3F-48D9-BA46-E4BDC72E6CEF}.Release|x86.ActiveCfg = Release|Any CPU
 		{D22A1349-8D3F-48D9-BA46-E4BDC72E6CEF}.Release|x86.Build.0 = Release|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Debug|x64.Build.0 = Debug|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Debug|x86.Build.0 = Debug|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Release|x64.ActiveCfg = Release|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Release|x64.Build.0 = Release|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Release|x86.ActiveCfg = Release|Any CPU
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -55,5 +69,6 @@ Global
 		{5E8EB896-8338-4A33-A6B5-CBF28D2B95C3} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{F9C99559-36C1-7114-20AC-0AE340633EDA} = {6C4D298B-81FB-2B6B-5AB6-46205EDDC72C}
 		{D22A1349-8D3F-48D9-BA46-E4BDC72E6CEF} = {F9C99559-36C1-7114-20AC-0AE340633EDA}
+		{B7AF223B-9AF5-4A18-813D-3D0B9D910A2E} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal
