@@ -4,7 +4,7 @@ using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.Authorization.Core.Models.Register;
+using Altinn.Authorization.Api.Models.Register;
 
 namespace Altinn.AccessMgmt.Persistence.Services
 {
@@ -16,7 +16,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
         private readonly IEntityLookupRepository entityLookupRepository = entityLookupRepository;
 
         /// <inheritdoc />
-        public async Task<MinimalParty> GetByOrgNo(Authorization.Core.Models.Register.OrganizationNumber orgNo, CancellationToken cancellationToken = default)
+        public async Task<MinimalParty> GetByOrgNo(Authorization.Api.Models.Register.OrganizationNumber orgNo, CancellationToken cancellationToken = default)
         {
             GenericFilterBuilder<AccessMgmt.Core.Models.EntityLookup> filter = entityLookupRepository.CreateFilterBuilder();
             filter.Add(t => t.Key, "OrganizationIdentifier", Core.Helpers.FilterComparer.Contains);

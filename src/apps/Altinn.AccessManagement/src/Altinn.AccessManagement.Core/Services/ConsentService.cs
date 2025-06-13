@@ -10,7 +10,7 @@ using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.Authorization.Core.Models.Register;
+using Altinn.Authorization.Api.Models.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Profile.Models;
 using Altinn.Platform.Register.Models;
@@ -293,9 +293,9 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             }
  
-            if (performedByParty.IsOrganizationId(out Authorization.Core.Models.Register.OrganizationNumber organizationNumber))
+            if (performedByParty.IsOrganizationId(out OrganizationNumber organizationNumber))
             {
-                if (details.To.IsOrganizationId(out Authorization.Core.Models.Register.OrganizationNumber toOrganizationNumber))
+                if (details.To.IsOrganizationId(out OrganizationNumber toOrganizationNumber))
                 {
                     if (!toOrganizationNumber.Equals(organizationNumber))
                     {
@@ -440,7 +440,7 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 return await GetInternalIdentifier(personIdentifier, cancellationToken);
             }
-            else if (consentPartyUrn.IsOrganizationId(out Authorization.Core.Models.Register.OrganizationNumber organizationNumber))
+            else if (consentPartyUrn.IsOrganizationId(out OrganizationNumber organizationNumber))
             {
                 return await GetInternalIdentifier(organizationNumber, cancellationToken);
             }
@@ -483,13 +483,13 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (!string.IsNullOrEmpty(party.OrganizationId))
             {
-                return ConsentPartyUrn.OrganizationId.Create(Authorization.Core.Models.Register.OrganizationNumber.Parse(party.OrganizationId));
+                return ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(party.OrganizationId));
             }
 
             throw new ArgumentException($"Party with guid {guid} is not valid consent party");
         }
 
-        private async Task<ConsentPartyUrn> GetInternalIdentifier(Authorization.Core.Models.Register.OrganizationNumber organizationNumber, CancellationToken cancellationToken)
+        private async Task<ConsentPartyUrn> GetInternalIdentifier(OrganizationNumber organizationNumber, CancellationToken cancellationToken)
         {
             MinimalParty party = await _ampartyService.GetByOrgNo(organizationNumber, cancellationToken);
             if (party == null)

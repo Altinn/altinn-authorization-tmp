@@ -1,5 +1,5 @@
 ﻿using System.Globalization;
-using Altinn.Authorization.Core.Models.Register;
+using Altinn.Authorization.Api.Models.Register;
 using Altinn.Urn;
 
 namespace Altinn.AccessManagement.Core.Models.Consent

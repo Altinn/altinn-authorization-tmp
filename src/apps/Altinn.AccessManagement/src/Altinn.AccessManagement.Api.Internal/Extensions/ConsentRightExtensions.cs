@@ -1,10 +1,8 @@
 ﻿using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.Authorization.Api.Models.Consent;
-using Altinn.Authorization.Core.Models.Register;
 
 namespace Altinn.AccessManagement.Api.Internal.Extensions
 {
-
     /// <summary>
     /// Provides extension methods for transforming ConsentRight to ConsentRightExternal.
     /// </summary>

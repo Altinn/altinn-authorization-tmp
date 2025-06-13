@@ -1,6 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.Register;
-using Altinn.Authorization.Core.Models.Register;
+using Altinn.Authorization.Api.Models.Register;
 
 namespace Altinn.AccessManagement.Core.Services.Interfaces
 {
@@ -22,7 +22,7 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <summary>
         /// Get Party by org number
         /// </summary>
-        public Task<MinimalParty> GetByOrgNo(Authorization.Core.Models.Register.OrganizationNumber orgNo, CancellationToken cancellationToken = default);
+        public Task<MinimalParty> GetByOrgNo(Authorization.Api.Models.Register.OrganizationNumber orgNo, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get Party by person number

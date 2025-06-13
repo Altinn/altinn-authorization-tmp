@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 using Altinn.Swashbuckle.Examples;
 using Altinn.Swashbuckle.Filters;
 
-namespace Altinn.Authorization.Core.Models.Register;
+namespace Altinn.Authorization.Api.Models.Register;
 
 /// <summary>
 /// A organization number (a string of 9 digits).

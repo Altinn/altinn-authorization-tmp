@@ -11,8 +11,4 @@
     <PackageReference Include="Altinn.Urn.Swashbuckle" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Altinn.Authorization.Core.Models\src\Altinn.Authorization.Core.Models\Altinn.Authorization.Core.Models.csproj" />
-  </ItemGroup>
-
 </Project>
