@@ -130,7 +130,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
 
         var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
-        return res.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermission()
+        return res.Where(r => r.Package is { }).DistinctBy(t => t.Package.Id).Select(permission => new PackagePermission()
         {
             Package = permission.Package,
             Permissions = res.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
@@ -155,7 +155,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
 
         var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
-        return res.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermission()
+        return res.Where(r => r.Package is { }).DistinctBy(t => t.Package.Id).Select(permission => new PackagePermission()
         {
             Package = permission.Package,
             Permissions = res.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
