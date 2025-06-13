@@ -185,7 +185,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
 
         var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
-        return res.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
+        return res.Where(r => r.Resource is { }).DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
         {
             Resource = permission.Resource,
             Permissions = res.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
@@ -215,7 +215,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
 
         var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
-        return res.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
+        return res.Where(r => r.Resource is { }).DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
         {
             Resource = permission.Resource,
             Permissions = res.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
