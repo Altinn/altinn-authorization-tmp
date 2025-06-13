@@ -309,12 +309,12 @@ public class ConnectionService(
 
         var assignment = result.First();
 
-        var connectionPackageFilter = RelationPermissionRepository.CreateFilterBuilder()
+        var connectionPackageFilter = ConnectionPackageRepository.CreateFilterBuilder()
             .Equal(t => t.FromId, fromId)
             .Equal(t => t.ToId, toId)
             .Equal(t => t.PackageId, packageId);
 
-        var userPackages = await RelationPermissionRepository.GetExtended(connectionPackageFilter, callerName: SpanName("Get extended connection packages for calling user"), cancellationToken: cancellationToken);
+        var userPackages = await ConnectionPackageRepository.GetExtended(connectionPackageFilter, callerName: SpanName("Get extended connection packages for calling user"), cancellationToken: cancellationToken);
 
         if (!userPackages.Any())
         {
