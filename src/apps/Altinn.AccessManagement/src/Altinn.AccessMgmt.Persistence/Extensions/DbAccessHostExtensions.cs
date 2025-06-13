@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
+using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Executors;
@@ -81,6 +82,7 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<IPackageService, PackageService>();
         builder.Services.AddSingleton<IRoleService, RoleService>();
         builder.Services.AddSingleton<IStatusService, StatusService>();
+        builder.Services.AddSingleton<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
 
         builder.Services.AddSingleton<IIngestService, PostgresIngestService>();
         builder.Services.AddSingleton<IDbExecutor, PostgresDbExecutor>();
