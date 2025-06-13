@@ -63,7 +63,7 @@ public class AuthorizedPartyRepoService(
                 parties[connection.Party.Id] = party;
             }
 
-            var packages = connection.Packages?.Select(cp => cp?.Value);
+            var packages = connection.Packages?.Select(cp => cp?.Value.Split(":").Last());
             party.EnrichWithAccessPackage(packages);
         }
     }
