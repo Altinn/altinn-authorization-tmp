@@ -127,9 +127,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api.Maskinporten", "src\apps\Altinn.AccessManagement\src\Altinn.AccessManagement.API.Maskinporten\Altinn.AccessManagement.Api.Maskinporten.csproj", "{0F73EF9B-1241-429D-86A1-25078F1A9EE4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Altinn.Authorization.Api.Models", "Altinn.Authorization.Api.Models", "{12D22F24-8EF1-1AA5-12F0-59C6A791ADA2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Altinn.Authorization.Api.Contracts", "Altinn.Authorization.Api.Contracts", "{12D22F24-8EF1-1AA5-12F0-59C6A791ADA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Api.Models", "src\libs\Altinn.Authorization.Api.Models\src\Altinn.Authorization.Api.Models\Altinn.Authorization.Api.Models.csproj", "{ADBF90A8-4F3B-4674-A672-65A61888845A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Api.Contracts", "src\libs\Altinn.Authorization.Api.Models\src\Altinn.Authorization.Api.Models\Altinn.Authorization.Api.Contracts.csproj", "{ADBF90A8-4F3B-4674-A672-65A61888845A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Altinn.Authorization.Api.Models", "Altinn.Authorization.Api.Models", "{1FE9FCEC-6555-BF5D-F500-546DC440C92D}"
 EndProject

@@ -1,7 +1,7 @@
 ﻿using Altinn.AccessManagement.Api.Enterprise.Extensions;
 using Altinn.AccessManagement.Core.Models.Consent;
-using Altinn.Authorization.Api.Models.Consent;
-using Altinn.Authorization.Api.Models.Register;
+using Altinn.Authorization.Api.Contracts.Consent;
+using Altinn.Authorization.Api.Contracts.Register;
 
 namespace Altinn.AccessManagement.Api.Enterprise.Utils
 {

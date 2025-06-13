@@ -1,4 +1,4 @@
-﻿namespace Altinn.Authorization.Api.Models.Consent
+﻿namespace Altinn.Authorization.Api.Contracts.Consent
 {
     /// <summary>
     /// Represents a consent request. Model used internally in the BFF (Backend for Frontend) layer to handle consent requests.

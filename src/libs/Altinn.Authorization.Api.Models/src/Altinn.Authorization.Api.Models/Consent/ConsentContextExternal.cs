@@ -1,4 +1,4 @@
-﻿namespace Altinn.Authorization.Api.Models.Consent
+﻿namespace Altinn.Authorization.Api.Contracts.Consent
 {
     public class ConsentContextExternal
     {

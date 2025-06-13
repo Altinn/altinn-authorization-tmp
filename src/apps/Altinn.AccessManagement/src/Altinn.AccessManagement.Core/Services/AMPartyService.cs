@@ -2,7 +2,7 @@
 using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.Authorization.Api.Models.Register;
+using Altinn.Authorization.Api.Contracts.Register;
 
 namespace Altinn.AccessManagement.Core.Services
 {
@@ -14,7 +14,7 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly IAmPartyRepository _amPartyRepository = ampartyRepository;
 
         /// <inheritdoc />
-        public async Task<MinimalParty> GetByOrgNo(Authorization.Api.Models.Register.OrganizationNumber orgNo, CancellationToken cancellationToken = default)
+        public async Task<MinimalParty> GetByOrgNo(Authorization.Api.Contracts.Register.OrganizationNumber orgNo, CancellationToken cancellationToken = default)
         {
            return await _amPartyRepository.GetByOrgNo(orgNo, cancellationToken);
         }

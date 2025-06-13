@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Authorization.Api.Models.Consent
+namespace Altinn.Authorization.Api.Contracts.Consent
 {
     /// <summary>
     /// Enum for the status of a consent request

@@ -13,7 +13,7 @@ using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.Authorization.AccessManagement;
-using Altinn.Authorization.Api.Models.Register;
+using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Database;
 using Altinn.Authorization.Host.Lease;
