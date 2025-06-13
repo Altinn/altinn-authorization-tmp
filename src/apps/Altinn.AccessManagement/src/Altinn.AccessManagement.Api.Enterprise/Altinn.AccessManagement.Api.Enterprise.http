@@ -1,0 +1,6 @@
+@Altinn.AccessManagement.Api.Enterprise_HostAddress = http://localhost:5238
+
+GET {{Altinn.AccessManagement.Api.Enterprise_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
