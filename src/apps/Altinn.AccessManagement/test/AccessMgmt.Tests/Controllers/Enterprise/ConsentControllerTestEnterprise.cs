@@ -70,7 +70,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }
@@ -95,13 +95,13 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
-            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal($"https://am.ui.localhost/accessmanagement/ui/consent/request?id={requestID}", consentInfo.ViewUri);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -134,7 +134,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }
@@ -159,7 +159,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
-            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.To, consentInfo.To);
             Assert.Equal(consentRequest.From, consentInfo.From);
             Assert.Equal("urn:altinn:organization:identifier-no:991825827", consentInfo.HandledBy.ToString());
@@ -167,7 +167,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("991825827")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -200,7 +200,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }
@@ -225,12 +225,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
-            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -242,12 +242,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent2);
             ConsentRequestDetailsExternal consentInfo2 = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo2.ConsentRights);
-            Assert.Single(consentInfo2.ConsentRights[0].MetaData);
+            Assert.Single(consentInfo2.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo2.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo2.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo2.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo2.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo2.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo2.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo2.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo2.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo2.ConsentRequestEvents[0].PerformedBy);
@@ -276,7 +276,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }
@@ -301,12 +301,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
-            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -347,7 +347,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }
@@ -373,12 +373,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
-            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -390,12 +390,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(getResponseConsent);
             ConsentRequestDetailsExternal consentInfoFromGet = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(getResponseConsent, _jsonOptions);
             Assert.Single(consentInfoFromGet.ConsentRights);
-            Assert.Single(consentInfoFromGet.ConsentRights[0].MetaData);
+            Assert.Single(consentInfoFromGet.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfoFromGet.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfoFromGet.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfoFromGet.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfoFromGet.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfoFromGet.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfoFromGet.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
@@ -425,7 +425,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }
@@ -451,12 +451,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
-            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -468,13 +468,13 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(getResponseConsent);
             ConsentRequestDetailsExternal consentInfoFromGet = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(getResponseConsent, _jsonOptions);
             Assert.Single(consentInfoFromGet.ConsentRights);
-            Assert.Single(consentInfoFromGet.ConsentRights[0].MetaData);
+            Assert.Single(consentInfoFromGet.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfoFromGet.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfoFromGet.ValidTo.Second);
             Assert.Equal(consentRequest.RequiredDelegator, consentInfoFromGet.RequiredDelegator);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfoFromGet.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfoFromGet.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfoFromGet.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfoFromGet.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
@@ -503,7 +503,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }
@@ -529,12 +529,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
-            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -546,13 +546,13 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(getResponseConsent);
             ConsentRequestDetailsExternal consentInfoFromGet = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(getResponseConsent, _jsonOptions);
             Assert.Single(consentInfoFromGet.ConsentRights);
-            Assert.Single(consentInfoFromGet.ConsentRights[0].MetaData);
+            Assert.Single(consentInfoFromGet.ConsentRights[0].Metadata);
             Assert.Equal("urn:altinn:organization:identifier-no:810418192", consentInfoFromGet.HandledBy.ToString());
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfoFromGet.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfoFromGet.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfoFromGet.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfoFromGet.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfoFromGet.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfoFromGet.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
@@ -607,7 +607,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
-            Assert.Null(consentInfo.ConsentRights[0].MetaData);
+            Assert.Null(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
@@ -644,7 +644,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "2022" }
                         }
@@ -660,7 +660,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_skattegrunnlag"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "fraOgMed", "2018-03" },
                             { "tilOgMed", "2018-06" }
@@ -687,12 +687,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.NotNull(responseContent);
             ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
             Assert.Equal(2, consentInfo.ConsentRights.Count);
-            Assert.Single(consentInfo.ConsentRights[0].MetaData);
+            Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].MetaData["INNTEKTSAAR"], consentInfo.ConsentRights[0].MetaData["INNTEKTSAAR"]);
+            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -728,7 +728,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }
@@ -744,7 +744,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_skattegrunnlag2"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "fraOgMed", "ADSF" },
                             { "tilOgMed", "ADSF" }
@@ -852,7 +852,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }
@@ -868,7 +868,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_skattegrunnlag"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "fraOgMed", "ADSF" },
                             { "tilOgMedwrong", "ADSF" }
@@ -927,7 +927,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_navnescore"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }
@@ -1022,7 +1022,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }
@@ -1079,7 +1079,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                                 Value = "ttd_inntektsopplysninger"
                             }
                         },
-                        MetaData = new Dictionary<string, string>
+                        Metadata = new Dictionary<string, string>
                         {
                             { "INNTEKTSAAR", "ADSF" }
                         }

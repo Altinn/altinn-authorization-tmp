@@ -21,12 +21,12 @@ namespace Altinn.AccessManagement.Api.Enterprise.Extensions
                 Resource = external.Resource.Select(static x => x.ToConsentResourceAttribute()).ToList()
             };
 
-            if (external.MetaData != null)
+            if (external.Metadata != null)
             {
-                consentRight.MetaData = new MetadataDictionary();
-                foreach (var item in external.MetaData)
+                consentRight.Metadata = new MetadataDictionary();
+                foreach (var item in external.Metadata)
                 {
-                    consentRight.MetaData.Add(item.Key, item.Value);
+                    consentRight.Metadata.Add(item.Key, item.Value);
                 }
             }
 

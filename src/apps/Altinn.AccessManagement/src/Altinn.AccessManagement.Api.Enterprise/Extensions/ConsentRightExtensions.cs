@@ -19,7 +19,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Extensions
             {
                 Action = core.Action,
                 Resource = core.Resource.Select(static x => x.ToConsentResourceAttributeExternal()).ToList(),
-                MetaData = core.MetaData
+                Metadata = core.Metadata
             };
         }
     }

@@ -21,6 +21,6 @@
         /// <summary>
         /// Metadata for consent resource right not required
         /// </summary>
-        public Dictionary<string, string>? MetaData { get; set; }
+        public Dictionary<string, string>? Metadata { get; set; }
     }
 }

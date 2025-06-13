@@ -226,18 +226,18 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 resourceCommand.CommandText = $"INSERT INTO consent.resourceattribute (consentRightId, type, value) VALUES {string.Join(", ", values)}";
                 await resourceCommand.ExecuteNonQueryAsync(cancellationToken);
 
-                if (consentRight.MetaData != null && consentRight.MetaData.Count > 0)
+                if (consentRight.Metadata != null && consentRight.Metadata.Count > 0)
                 {
                     await using NpgsqlCommand metadatacommand = conn.CreateCommand();
                     List<string> metaValues = [];
-                    int metaDataIndex = 0;
-                    foreach (KeyValuePair<string, string> kvp in consentRight.MetaData)
+                    int metadataIndex = 0;
+                    foreach (KeyValuePair<string, string> kvp in consentRight.Metadata)
                     {
-                        metaValues.Add($"(@consentRightId{metaDataIndex}, @id{metaDataIndex}, @value{metaDataIndex})");
-                        metadatacommand.Parameters.AddWithValue($"@consentrightid{metaDataIndex}", consentRightGuid);
-                        metadatacommand.Parameters.AddWithValue($"@id{metaDataIndex}", kvp.Key);
-                        metadatacommand.Parameters.AddWithValue($"@value{metaDataIndex}", kvp.Value);
-                        metaDataIndex++;
+                        metaValues.Add($"(@consentRightId{metadataIndex}, @id{metadataIndex}, @value{metadataIndex})");
+                        metadatacommand.Parameters.AddWithValue($"@consentrightid{metadataIndex}", consentRightGuid);
+                        metadatacommand.Parameters.AddWithValue($"@id{metadataIndex}", kvp.Key);
+                        metadatacommand.Parameters.AddWithValue($"@value{metadataIndex}", kvp.Value);
+                        metadataIndex++;
                     }
 
                     metadatacommand.CommandText = $"INSERT INTO consent.metadata (consentrightid, id, value) VALUES {string.Join(", ", metaValues)}";

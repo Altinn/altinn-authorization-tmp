@@ -748,9 +748,9 @@ namespace Altinn.AccessManagement.Core.Services
 
         private static void ValidateConsentMetadata(ref MultipleProblemBuilder problemsBuilder, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails)
         {
-            if (consentRight.MetaData != null && consentRight.MetaData.Count > 0)
+            if (consentRight.Metadata != null && consentRight.Metadata.Count > 0)
             {
-                foreach (KeyValuePair<string, string> metaData in consentRight.MetaData)
+                foreach (KeyValuePair<string, string> metaData in consentRight.Metadata)
                 {
                     if (resourceDetails.ConsentMetadata == null || !resourceDetails.ConsentMetadata.ContainsKey(metaData.Key.ToLower()))
                     {
@@ -773,7 +773,7 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 foreach (string key in resourceDetails.ConsentMetadata.Keys.Select(consentMetadata => consentMetadata))
                 {
-                    if (consentRight.MetaData == null || !consentRight.MetaData.ContainsKey(key))
+                    if (consentRight.Metadata == null || !consentRight.Metadata.ContainsKey(key))
                     {
                         problemsBuilder.Add(Problems.MissingMetadata.Create([new("key", key.ToLower())]));
                     }

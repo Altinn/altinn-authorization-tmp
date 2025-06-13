@@ -19,7 +19,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Extensions
             {
                 Action = core.Action,
                 Resource = [.. core.Resource.Select(static x => x.ToConsentResourceAttributeExternal())],
-                MetaData = core.MetaData
+                Metadata = core.Metadata
             };
         }
     }

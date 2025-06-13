@@ -22,16 +22,16 @@
         /// The metadata for the right. Can be multiple but in most concents it is only one.   
         /// Keys are case insensitive.
         /// </summary>
-        public MetadataDictionary MetaData { get; set; }
+        public MetadataDictionary Metadata { get; set; }
 
         public void AddMetadataValues(IReadOnlyDictionary<string, string> dictionary)
         {
             if (dictionary != null)
             {
-                MetaData = [];
+                Metadata = [];
                 foreach (var item in dictionary)
                 {
-                    MetaData.Add(item.Key, item.Value);
+                    Metadata.Add(item.Key, item.Value);
                 }
             }   
         }
