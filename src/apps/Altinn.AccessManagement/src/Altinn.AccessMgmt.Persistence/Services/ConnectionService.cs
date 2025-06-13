@@ -230,7 +230,6 @@ public class ConnectionService(
         filter.Equal(t => t.ToId, toId);
         filter.Equal(t => t.PackageId, packageId);
         return (await connectionPackageRepository.GetExtended(filter, cancellationToken: cancellationToken)).Data;
-
     }
 
     private async Task<bool> RemoveAssignmentPackage(Guid assignmentId, Guid packageId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
@@ -295,11 +294,12 @@ public class ConnectionService(
             throw new Exception("User does not have the package assigned on this entity");
         }
 
-        //if (!userPackages.Any(t => t.CanDelegate))
-        //{
-        //    throw new Exception("User can't delegate package");
-        //}
-
+        /*
+        if (!userPackages.Any(t => t.CanDelegate))
+        {
+            throw new Exception("User can't delegate package");
+        }
+        */
 
         var filter = delegationPackageRepository.CreateFilterBuilder();
         filter.Equal(t => t.DelegationId, delegationId);
@@ -400,7 +400,6 @@ public class ConnectionService(
             throw new Exception("Package is not assignable");
         }
 
-
         var filter = delegationPackageRepository.CreateFilterBuilder();
         filter.Equal(t => t.DelegationId, delegationId);
         filter.Equal(t => t.PackageId, packageId);
@@ -455,7 +454,8 @@ public static class ConnectionConverter
         return new CreateDelegationResponse()
         {
             DelegationId = delegation.Id,
-            FromEntityId = delegation.From.FromId
+            FromEntityId = delegation.From.FromId,
+            Delegation = ConvertToDto(delegation)
         };
     }
 
@@ -473,6 +473,20 @@ public static class ConnectionConverter
             Role = ConvertToDto(connection.Role),
             FacilitatorRole = ConvertToDto(connection.FacilitatorRole),
             Delegation = connection.Delegation
+        };
+    }
+
+    /// <summary>
+    /// Convert database model to dto model
+    /// </summary>
+    public static DelegationDto ConvertToDto(ExtDelegation connection)
+    {
+        return new DelegationDto()
+        {
+            Id = connection.Id,
+            From = connection.From,
+            To = connection.To,
+            Facilitator = connection.Facilitator,
         };
     }
 
