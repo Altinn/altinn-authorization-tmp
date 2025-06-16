@@ -60,7 +60,7 @@ public static partial class ServiceCollectionExtensions
         })
         .AddAltinnRole(opts =>
         {
-            opts.Endpoint = appsettings.AltinnRole.Endpoint;
+            opts.Endpoint = appsettings.SblBridge.Endpoint;
         });
 
         return services;

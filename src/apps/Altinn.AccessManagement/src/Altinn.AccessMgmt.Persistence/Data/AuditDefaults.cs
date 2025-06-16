@@ -28,5 +28,5 @@ public static class AuditDefaults
     /// <summary>
     /// Altinn2ClientImportSystem
     /// </summary>
-    public static readonly Guid Altinn2ClientImportSystem = Guid.Parse("46CFA478-971F-446E-9BC1-AF57469361D0");
+    public static readonly Guid Altinn2RoleImportSystem = Guid.Parse("46CFA478-971F-446E-9BC1-AF57469361D0");
 }

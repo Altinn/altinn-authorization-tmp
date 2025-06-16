@@ -69,14 +69,14 @@ namespace Altinn.AccessManagement.HostedServices.Services
                     foreach (var item in page.Content.Data)
                     {
                         var assignment = await ConvertRoleDelegationModelToAssignment(item);
-                        if (assignment.Asignment == null)
+                        if (assignment.Assignment == null)
                         {
                             throw new Exception("Failed to convert RoleModel to Assignment");
                         }
 
                         curretOptions = assignment.Options;
 
-                        if (batchData.Any(t => t.FromId == assignment.Asignment.FromId && t.ToId == assignment.Asignment.ToId && t.RoleId == assignment.Asignment.RoleId))
+                        if (batchData.Any(t => t.FromId == assignment.Assignment.FromId && t.ToId == assignment.Assignment.ToId && t.RoleId == assignment.Assignment.RoleId))
                         {
                             // If changes on same assignment then execute as-is before continuing.
                             await Flush(batchId);
@@ -92,15 +92,15 @@ namespace Altinn.AccessManagement.HostedServices.Services
                         {
                             if (item.ToUserType != UserType.EnterpriseIdentified)
                             {
-                                batchData.Add(assignment.Asignment);
+                                batchData.Add(assignment.Assignment);
                             }                            
                         }
                         else
                         {
                             var filter = _assignmentRepository.CreateFilterBuilder();
-                            filter.Equal(t => t.FromId, assignment.Asignment.FromId);
-                            filter.Equal(t => t.ToId, assignment.Asignment.ToId);
-                            filter.Equal(t => t.RoleId, assignment.Asignment.RoleId);
+                            filter.Equal(t => t.FromId, assignment.Assignment.FromId);
+                            filter.Equal(t => t.ToId, assignment.Assignment.ToId);
+                            filter.Equal(t => t.RoleId, assignment.Assignment.RoleId);
                             await _assignmentRepository.Delete(filter, curretOptions);
                         }
 
@@ -150,14 +150,12 @@ namespace Altinn.AccessManagement.HostedServices.Services
             }
         }
 
-        private async Task<(Assignment Asignment, ChangeRequestOptions Options)> ConvertRoleDelegationModelToAssignment(RoleDelegationModel model)
+        private async Task<(Assignment Assignment, ChangeRequestOptions Options)> ConvertRoleDelegationModelToAssignment(RoleDelegationModel model)
         {
             try
             {
-                var role = await GetOrCreateRole(model.RoleTypeCode);
+                var role = await GetRole(model.RoleTypeCode);
 
-                // TODO: Fix Datetime for Role based on data from model if not known use now.
-                // TODO; Fix performedby When known actual performer when not known provider set as performer
                 Assignment assignment = new Assignment()
                 {
                     Id = Guid.CreateVersion7(),
@@ -168,8 +166,8 @@ namespace Altinn.AccessManagement.HostedServices.Services
 
                 ChangeRequestOptions options = new ChangeRequestOptions()
                 {
-                    ChangedBy = model.PerformedByUserUuid ?? AuditDefaults.Altinn2ClientImportSystem,
-                    ChangedBySystem = AuditDefaults.Altinn2ClientImportSystem,
+                    ChangedBy = model.PerformedByUserUuid ?? AuditDefaults.Altinn2RoleImportSystem,
+                    ChangedBySystem = AuditDefaults.Altinn2RoleImportSystem,
                     ChangedAt = model.DelegationChangeDateTime ?? DateTimeOffset.UtcNow,
                 };
 
@@ -183,35 +181,14 @@ namespace Altinn.AccessManagement.HostedServices.Services
 
         private static readonly IReadOnlyList<string> GetAssignmentMergeMatchFilter = new List<string>() { "fromid", "roleid", "toid" }.AsReadOnly();
 
-        private async Task<Role> GetOrCreateRole(string roleCode)
+        private async Task<Role> GetRole(string roleCode)
         {
             string roleIdentifier = $"urn:altinn:rolecode:{roleCode}";
 
             var role = (await _roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
             if (role == null)
             {
-                await _roleRepository.Create(
-                    new Role()
-                    {
-                        Id = Guid.CreateVersion7(),
-                        Name = roleIdentifier,
-                        Description = roleIdentifier,
-                        Code = roleIdentifier,
-                        Urn = roleIdentifier,
-                        EntityTypeId = OrgType.Id,
-                        ProviderId = Provider.Id,
-                    },
-                    new ChangeRequestOptions()
-                    {
-                        ChangedBy = AuditDefaults.Altinn2ClientImportSystem,
-                        ChangedBySystem = AuditDefaults.Altinn2ClientImportSystem,
-                    });
-
-                role = (await _roleRepository.Get(t => t.Urn, roleIdentifier)).FirstOrDefault();
-                if (role == null)
-                {
-                    throw new Exception(string.Format("Unable to get or create role '{0}'", roleIdentifier));
-                }
+                throw new Exception(string.Format("Unable to get role '{0}'", roleIdentifier));
             }
 
             Roles.Add(role);

@@ -56,7 +56,7 @@ public class PlatformFixture
         })
         .AddRegister(opts => opts.Endpoint = Appsettings.Platform.Register.Endpoint)
         .AddResourceRegister(opts => opts.Endpoint = Appsettings.Platform.ResourceRegister.Endpoint)
-        .AddAltinnRole(opts => opts.Endpoint = Appsettings.Platform.AltinnRole.Endpoint);
+        .AddAltinnRole(opts => opts.Endpoint = Appsettings.Platform.SblBridge.Endpoint);
 
         ServiceProvider = Services.BuildServiceProvider();
     }

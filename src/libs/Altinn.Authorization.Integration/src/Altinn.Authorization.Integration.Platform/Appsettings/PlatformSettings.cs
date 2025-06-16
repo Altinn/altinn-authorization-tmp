@@ -31,7 +31,7 @@ namespace Altinn.Authorization.Integration.Platform.Appsettings
         /// <remarks>
         /// The endpoint should be a valid URI, typically pointing to an API service.
         /// </remarks>
-        public EndpointOptions AltinnRole { get; set; } = new();
+        public EndpointOptions SblBridge { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the token-related configuration options.

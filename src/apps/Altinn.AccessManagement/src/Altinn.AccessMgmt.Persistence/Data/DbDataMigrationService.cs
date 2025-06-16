@@ -449,7 +449,7 @@ public class DbDataMigrationService(
             new Entity() { Id = AuditDefaults.StaticDataIngest, Name = "StaticDataIngest", RefId = "sys-static-data-ingest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
             new Entity() { Id = AuditDefaults.RegisterImportSystem, Name = "RegisterImportSystem", RefId = "sys-register-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
             new Entity() { Id = AuditDefaults.EnduserApi, Name = "EnduserApi", RefId = "accessmgmt-enduser-api", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
-            new Entity() { Id = AuditDefaults.Altinn2ClientImportSystem, Name = "Altinn2ClientImportSystem", RefId = "sys-altinn2-client-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            new Entity() { Id = AuditDefaults.Altinn2RoleImportSystem, Name = "Altinn2ClientImportSystem", RefId = "sys-altinn2-client-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
         };
 
         foreach (var item in systemEntities)
