@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Executors;
@@ -73,12 +74,14 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddSingleton(typeof(ISearchCache<>), typeof(SearchCache<>));
 
+        builder.Services.AddSingleton<IRelationService, RelationService>();
         builder.Services.AddSingleton<IConnectionService, ConnectionService>();
         builder.Services.AddSingleton<IAssignmentService, AssignmentService>();
         builder.Services.AddSingleton<IDelegationService, DelegationService>();
         builder.Services.AddSingleton<IPackageService, PackageService>();
         builder.Services.AddSingleton<IRoleService, RoleService>();
         builder.Services.AddSingleton<IStatusService, StatusService>();
+        builder.Services.AddSingleton<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
 
         builder.Services.AddSingleton<IIngestService, PostgresIngestService>();
         builder.Services.AddSingleton<IDbExecutor, PostgresDbExecutor>();
