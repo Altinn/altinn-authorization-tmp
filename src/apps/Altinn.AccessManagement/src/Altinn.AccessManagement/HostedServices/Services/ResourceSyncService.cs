@@ -282,7 +282,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         if (updatedResource.SubjectUrn.StartsWith("urn:altinn:rolecode:", StringComparison.OrdinalIgnoreCase))
         {
             var roleLookupFilter = _roleLookupRepository.CreateFilterBuilder()
-                .Add(r => r.Key, "ERCode", FilterComparer.Like)
+                .Add(r => r.Key, "LegacyCode", FilterComparer.Like)
                 .Add(r => r.Value, updatedResource.SubjectUrn.Split(":").Last(), FilterComparer.Like);
 
             var roleLookups = await _roleLookupRepository.GetExtended(roleLookupFilter, cancellationToken: cancellationToken);
