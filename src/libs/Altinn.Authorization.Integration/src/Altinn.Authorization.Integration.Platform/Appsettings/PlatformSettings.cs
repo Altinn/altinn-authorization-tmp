@@ -25,13 +25,20 @@ namespace Altinn.Authorization.Integration.Platform.Appsettings
         public EndpointOptions Register { get; set; } = new();
 
         /// <summary>
-        /// Gets or sets the endpoint URI for the Register service.
-        /// This service is used for managing organizational and individual registry data within Altinn.
+        /// Gets or sets the endpoint URI for SBL Bridge.
         /// </summary>
         /// <remarks>
-        /// The endpoint should be a valid URI, typically pointing to an API service.
+        /// The endpoint should be a valid URI
         /// </remarks>
         public EndpointOptions SblBridge { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the endpoint URI for Access Management API.
+        /// </summary>
+        /// <remarks>
+        /// The endpoint should be a valid URI
+        /// </remarks>
+        public EndpointOptions AccessManagement { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the token-related configuration options.

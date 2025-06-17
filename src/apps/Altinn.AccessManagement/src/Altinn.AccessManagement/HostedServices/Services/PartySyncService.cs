@@ -62,7 +62,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         EntityTypes = (await entityTypeRepository.Get(cancellationToken: cancellationToken)).ToList();
         EntityVariants = (await entityVariantRepository.Get(cancellationToken: cancellationToken)).ToList();
 
-        await foreach (var page in await _register.StreamParties(RegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await _register.StreamParties(AltinnRegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {

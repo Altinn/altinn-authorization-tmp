@@ -11,7 +11,6 @@ using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
-using Altinn.Authorization.Integration.Platform.AltinnRole;
 using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.HostedServices

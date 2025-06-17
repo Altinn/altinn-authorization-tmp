@@ -6,7 +6,7 @@ using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
-using Altinn.Authorization.Integration.Platform.AltinnRole;
+using Altinn.Authorization.Integration.Platform.SblBridge;
 using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.HostedServices.Services
@@ -16,7 +16,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
     {
         public AllAltinnRoleSyncService(
             IAltinnLease lease,
-            IAltinnRole role,
+            IAltinnSblBridge role,
             ILogger<RoleSyncService> logger,
             IFeatureManager featureManager,
             IIngestService ingestService,
@@ -31,7 +31,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
             _assignmentRepository = assignmentRepository;
         }
 
-        private readonly IAltinnRole _role;
+        private readonly IAltinnSblBridge _role;
         private readonly ILogger<RoleSyncService> _logger;
         private readonly IRoleRepository _roleRepository;
         private readonly IAssignmentRepository _assignmentRepository;

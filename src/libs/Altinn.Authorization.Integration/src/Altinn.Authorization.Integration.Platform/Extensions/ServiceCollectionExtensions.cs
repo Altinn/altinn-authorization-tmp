@@ -1,9 +1,10 @@
 using Altinn.Authorization.Host.Identity;
 using Altinn.Authorization.Host.Startup;
+using Altinn.Authorization.Integration.Platform.AccessManagement;
 using Altinn.Authorization.Integration.Platform.Appsettings;
 using Altinn.Authorization.Integration.Platform.Register;
 using Altinn.Authorization.Integration.Platform.ResourceRegister;
-using Altinn.Authorization.Integration.Platform.AltinnRole;
+using Altinn.Authorization.Integration.Platform.SblBridge;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -58,7 +59,7 @@ public static partial class ServiceCollectionExtensions
         {
             opts.Endpoint = appsettings.ResourceRegister.Endpoint;
         })
-        .AddAltinnRole(opts =>
+        .AddSblBridge(opts =>
         {
             opts.Endpoint = appsettings.SblBridge.Endpoint;
         });
@@ -156,7 +157,7 @@ public static partial class ServiceCollectionExtensions
         /// <returns>The updated <see cref="PlatformBuilder"/>.</returns>
         public PlatformBuilder AddRegister(Action<AltinnRegisterOptions> configureOptions)
         {
-            if (Services.Contains(Register.ServiceDescriptor))
+            if (Services.Contains(Markers.Register))
             {
                 return this;
             }
@@ -165,25 +166,8 @@ public static partial class ServiceCollectionExtensions
                 .Validate(opts => opts.Endpoint != null, $"Can't add Register as '{nameof(AltinnRegisterOptions.Endpoint)}' is not specified")
                 .Configure(configureOptions);
 
-            Services.TryAddSingleton<IAltinnRegister, RegisterClient>();
-            Services.TryAddSingleton(Register.ServiceDescriptor);
-
-            return this;
-        }
-
-        public PlatformBuilder AddAltinnRole(Action<AltinnRoleOptions> configureOptions)
-        {
-            if (Services.Contains(AltinnRole.ServiceDescriptor))
-            {
-                return this;
-            }
-
-            Services.AddOptions<AltinnRoleOptions>()
-                .Validate(opts => opts.Endpoint != null, $"Can't add AltinnRole as '{nameof(AltinnRoleOptions.Endpoint)}' is not specified")
-                .Configure(configureOptions);
-
-            Services.TryAddSingleton<IAltinnRole, AltinnRoleClient>();
-            Services.TryAddSingleton(AltinnRole.ServiceDescriptor);
+            Services.TryAddSingleton<IAltinnRegister, AltinnRegisterClient>();
+            Services.TryAddSingleton(Markers.Register);
 
             return this;
         }
@@ -195,7 +179,7 @@ public static partial class ServiceCollectionExtensions
         /// <returns>The updated <see cref="PlatformBuilder"/>.</returns>
         public PlatformBuilder AddResourceRegister(Action<AltinnResourceRegisterOptions> configureOptions)
         {
-            if (Services.Contains(ResourceRegister.ServiceDescriptor))
+            if (Services.Contains(Markers.ResourceRegister))
             {
                 return this;
             }
@@ -204,25 +188,73 @@ public static partial class ServiceCollectionExtensions
                 .Validate(opts => opts.Endpoint != null, $"Can't add Resource Register as '{nameof(AltinnRegisterOptions.Endpoint)}' is not specified")
                 .Configure(configureOptions);
 
-            Services.AddSingleton<IAltinnResourceRegister, ResourceRegisterClient>();
-            Services.Add(ResourceRegister.ServiceDescriptor);
+            Services.AddSingleton<IAltinnResourceRegister, AltinnResourceRegisterClient>();
+            Services.Add(Markers.ResourceRegister);
 
             return this;
         }
 
-        private sealed class Register
+        /// <summary>
+        /// Adds Altinn SBL bridge services to the service collection.
+        /// </summary>
+        /// <param name="configureOptions">A delegate to configure <see cref="AltinnResourceRegisterOptions"/>.</param>
+        /// <returns>The updated <see cref="PlatformBuilder"/>.</returns>
+        public PlatformBuilder AddSblBridge(Action<AltinnSblBridgeOptions> configureOptions)
         {
-            public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Register, Register>();
+            if (Services.Contains(Markers.SblBridge))
+            {
+                return this;
+            }
+
+            Services.AddOptions<AltinnSblBridgeOptions>()
+                .Validate(opts => opts.Endpoint is { }, $"Can't add SBL Bridge as '{nameof(AltinnSblBridgeOptions.Endpoint)}' is not specified")
+                .Configure(configureOptions);
+
+            Services.AddSingleton<IAltinnSblBridge, AltinnSblBridgeClient>();
+            Services.Add(Markers.SblBridge);
+
+            return this;
+        }
+        
+        /// <summary>
+        /// Adds Altinn SBL bridge services to the service collection.
+        /// </summary>
+        /// <param name="configureOptions">A delegate to configure <see cref="AltinnResourceRegisterOptions"/>.</param>
+        /// <returns>The updated <see cref="PlatformBuilder"/>.</returns>
+        public PlatformBuilder AddAccessManagement(Action<AltinnAccessManagementOptions> configureOptions)
+        {
+            if (Services.Contains(Markers.SblBridge))
+            {
+                return this;
+            }
+
+            Services.AddOptions<AltinnAccessManagementOptions>()
+                .Validate(opts => opts.Endpoint is { }, $"Can't add SBL Bridge as '{nameof(AltinnAccessManagementOptions.Endpoint)}' is not specified")
+                .Configure(configureOptions);
+
+            Services.AddSingleton<IAltinnAccessManagement, AltinnAccessManagementClient>();
+            Services.Add(Markers.SblBridge);
+
+            return this;
         }
 
-        private sealed class AltinnRole
+        private sealed class Markers
         {
-            public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<AltinnRole, AltinnRole>();
-        }
+            public static ServiceDescriptor Register { get; } = ServiceDescriptor.Singleton<RegisterMarker, RegisterMarker>();
 
-        private sealed class ResourceRegister
-        {
-            public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<ResourceRegister, ResourceRegister>();
+            public static ServiceDescriptor ResourceRegister { get; } = ServiceDescriptor.Singleton<ResourceRegisterMarker, ResourceRegisterMarker>();
+
+            public static ServiceDescriptor SblBridge { get; } = ServiceDescriptor.Singleton<SblBridgeMarker, SblBridgeMarker>();
+
+            public static ServiceDescriptor AccessManagement { get; } = ServiceDescriptor.Singleton<AccessManagementMarker, AccessManagementMarker>();
+
+            private sealed class RegisterMarker { }
+
+            private sealed class ResourceRegisterMarker { }
+
+            private sealed class SblBridgeMarker { }
+
+            private sealed class AccessManagementMarker { }
         }
     }
 

@@ -2,19 +2,19 @@
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace Altinn.Authorization.Integration.Platform.AltinnRole;
+namespace Altinn.Authorization.Integration.Platform.SblBridge;
 
 /// <summary>
 /// Client for interacting with endpoint that stream roles (ER-roles).
 /// </summary>
-public partial class AltinnRoleClient
+public partial class AltinnSblBridgeClient
 {
     /// <inheritdoc/>
     public async Task<IAsyncEnumerable<PlatformResponse<PageStream<RoleDelegationModel>>>> StreamRoles(string subscriptionId, string nextPage = null, CancellationToken cancellationToken = default)
     {
         List<Action<HttpRequestMessage>> request = [
             RequestComposer.WithHttpVerb(HttpMethod.Get),
-            RequestComposer.WithSetUri(Options.Value.Endpoint, $"/sblbridge/roledelegationevent/api/getevents?subscriptionId={subscriptionId}"),
+            RequestComposer.WithSetUri(Options.Value.Endpoint, $"/roledelegationevent/api/getevents?subscriptionId={subscriptionId}"),
             RequestComposer.WithSetUri(nextPage)
         ];
 
