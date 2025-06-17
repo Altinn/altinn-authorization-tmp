@@ -46,7 +46,7 @@ public class EntityLookupDefinition : BaseDbDefinition<EntityLookup>, IDbDefinit
             SET LOCAL app.changed_by_system = '3296007F-F9EA-4BD0-B6A6-C8462D54633A'; 
             SET LOCAL app.change_operation_id = '3296007F-F9EA-4BD0-B6A6-C8462D54633A';
 
-            UPDATE dbo.entitylookup SET IsProtected = true WHERE Key = 'PersonIdentifier';
+            UPDATE dbo.entitylookup SET IsProtected = true WHERE Key = 'PersonIdentifier' AND IsProtected = false;
 
           END IF;
         END
