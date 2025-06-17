@@ -217,7 +217,15 @@ public class ConnectionService(
         problem = ValidationRules.Validate(ValidationRules.QueryParameters.VerifyAssignmentRoleExists(existingAssignments, role));
         if (problem is { })
         {
-            return problem;
+            var relationsResult = await Get(fromUuid, toUuid, cancellationToken: cancellationToken);
+            if (relationsResult is { } && relationsResult.Value is { } && relationsResult.Value.Any())
+            {
+                await AddAssignment(fromUuid, toUuid, "rettighetshaver", cancellationToken);
+            }
+            else
+            {
+                return problem;
+            }
         }
 
         var assignment = existingAssignments.First();
