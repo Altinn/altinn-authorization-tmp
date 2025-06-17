@@ -41,13 +41,13 @@ public class EntityLookupDefinition : BaseDbDefinition<EntityLookup>, IDbDefinit
         $$
         BEGIN
         IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'dbo' AND table_name = 'entitylookup') THEN
-            CREATE TEMP TABLE session_audit_context ON COMMIT DROP AS
-            SELECT 
-              '3296007F-F9EA-4BD0-B6A6-C8462D54633A'::uuid AS changed_by,
-              '3296007F-F9EA-4BD0-B6A6-C8462D54633A'::uuid AS changed_by_system,
-              '3296007F-F9EA-4BD0-B6A6-C8462D54633A'::text AS change_operation_id;
-        
-              UPDATE dbo.entitylookup SET IsProtected = true WHERE Key = 'PersonIdentifier';
+
+            SET LOCAL app.changed_by = '3296007F-F9EA-4BD0-B6A6-C8462D54633A'; 
+            SET LOCAL app.changed_by_system = '3296007F-F9EA-4BD0-B6A6-C8462D54633A'; 
+            SET LOCAL app.change_operation_id = '3296007F-F9EA-4BD0-B6A6-C8462D54633A';
+
+            UPDATE dbo.entitylookup SET IsProtected = true WHERE Key = 'PersonIdentifier';
+
           END IF;
         END
         $$;
