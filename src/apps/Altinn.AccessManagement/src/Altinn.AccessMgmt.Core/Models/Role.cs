@@ -55,6 +55,16 @@ public class Role
     /// Can be assigned
     /// </summary>
     public bool IsAssignable { get; set; }
+
+    /// <summary>
+    /// Legacy role code
+    /// </summary>
+    public string LegacyRoleCode { get; set; }
+
+    /// <summary>
+    /// Legacy Urn
+    /// </summary>
+    public string LegacyUrn { get; set; }
 }
 
 /// <summary>
