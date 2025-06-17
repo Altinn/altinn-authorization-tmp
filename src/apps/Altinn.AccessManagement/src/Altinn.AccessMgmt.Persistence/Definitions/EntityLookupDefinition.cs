@@ -51,11 +51,10 @@ public class EntityLookupDefinition : BaseDbDefinition<EntityLookup>, IDbDefinit
                 LOOP
                     UPDATE dbo.entitylookup
                     SET IsProtected = true
-                    WHERE ctid IN (
-                        SELECT CTID
+                    WHERE id IN (
+                        SELECT id
                         FROM dbo.entitylookup
-                        WHERE Key = 'PersonIdentifier'
-                          AND IsProtected = false
+                        WHERE Key = 'PersonIdentifier' AND IsProtected = false
                         LIMIT _batch_size
                     );
 
