@@ -97,7 +97,7 @@ public class AuthorizedPartyRepoService(
 
         if (entity.Type == "Organisasjon")
         {
-            party.OrganizationNumber = entity.RefId;
+            party.OrganizationNumber = entity.KeyValues["OrganizationIdentifier"];
             party.Type = AuthorizedPartyType.Organization;
             party.UnitType = entity.Variant;
             
@@ -117,7 +117,7 @@ public class AuthorizedPartyRepoService(
         }
         else
         {
-            party.PersonId = entity.RefId;
+            party.PersonId = entity.KeyValues["PersonIdentifier"];
             party.Type = AuthorizedPartyType.Person;
         }
 

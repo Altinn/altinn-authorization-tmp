@@ -77,7 +77,6 @@ public class DbSchemaMigrationService
             SELECT jsonb_build_object(
                 'Id', e.Id,
                 'Name', e.Name,
-                'RefId', e.RefId,
                 'Type', et.Name,
                 'Variant', ev.Name,
                 'Parent', compactentity(e.parentid, false, true),
@@ -100,7 +99,7 @@ public class DbSchemaMigrationService
             $$
             SELECT jsonb_build_object(
                 'Id', r.Id,
-                'Value', r.Code,
+                'Code', r.Code,
                 'Children', COALESCE(
                                 json_agg(json_build_object('Id', rmr.Id, 'Value', rmr.Code, 'Children', null))
                                 FILTER (WHERE rmr.Id IS NOT NULL), NULL)
@@ -117,7 +116,7 @@ public class DbSchemaMigrationService
         var compactPackageFunction = """
             create or replace function compactpackage(_id uuid) returns jsonb stable language sql as
             $$
-            select jsonb_build_object('Id', p.Id,'Value', p.Urn)
+            select jsonb_build_object('Id', p.Id,'Urn', p.Urn, 'AreaId', p.AreaId)
             from dbo.Package as p
             where p.id = _id;
             $$;
