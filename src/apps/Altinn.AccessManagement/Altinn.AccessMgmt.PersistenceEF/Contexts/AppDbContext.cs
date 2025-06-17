@@ -17,7 +17,7 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new PackageAppConfiguration());
+        modelBuilder.ApplyConfiguration(new PackageConfiguration());
         //modelBuilder.ApplyConfiguration(new RoleAppConfiguration());
         //modelBuilder.ApplyConfiguration(new CategoryAppConfiguration());
         //modelBuilder.ApplyConfiguration(new RolePackageAppConfiguration());
