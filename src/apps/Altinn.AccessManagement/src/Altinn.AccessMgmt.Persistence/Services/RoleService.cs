@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.AccessMgmt.Repo.Definitions;
+using Authorization.Platform.Authorization.Models;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -23,6 +24,8 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
             return null;
         }
 
+        await GetSingleLegacyRoleCodeAndUrn(extRole);
+
         return new RoleDto(extRole);
     }
 
@@ -35,20 +38,7 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
             return null;
         }
 
-        var roleLookup = await roleLookupRepository.GetExtended();
-
-        foreach (var role in roles)
-        {
-            if (roleLookup.FirstOrDefault(x => x.RoleId == role.Id && x.Key == "LegacyCode") != null)
-            {
-                role.LegacyRoleCode = roleLookup.FirstOrDefault(x => x.Role.Code == role.Code && x.Key == "LegacyCode").Value;
-            }
-
-            if (roleLookup.FirstOrDefault(x => x.RoleId == role.Id && x.Key == "Urn") != null)
-            {
-                role.LegacyUrn = roleLookup.FirstOrDefault(x => x.Role.Code == role.Code && x.Key == "Urn").Value;
-            }
-        }
+        await GetLegacyRoleCodeAndUrn(roles);
 
         return roles.Select(t => new RoleDto(t));
     }
@@ -62,6 +52,8 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
             return null;
         }
 
+        await GetLegacyRoleCodeAndUrn(roles);
+
         return roles.Select(t => new RoleDto(t));
     }
 
@@ -73,6 +65,8 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
         {
             return null;
         }
+
+        await GetLegacyRoleCodeAndUrn(roles);
 
         return roles.Select(t => new RoleDto(t));
     }
@@ -114,5 +108,38 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
         }
 
         return rolePackages.Select(t => new RolePackageDto(t));
+    }
+
+    private async Task GetLegacyRoleCodeAndUrn(QueryResponse<ExtRole> roles)
+    {
+        var roleLookup = await roleLookupRepository.GetExtended();
+
+        foreach (var role in roles)
+        {
+            if (roleLookup.FirstOrDefault(x => x.RoleId == role.Id && x.Key == "LegacyCode") != null)
+            {
+                role.LegacyRoleCode = roleLookup.FirstOrDefault(x => x.Role.Code == role.Code && x.Key == "LegacyCode").Value;
+            }
+
+            if (roleLookup.FirstOrDefault(x => x.RoleId == role.Id && x.Key == "Urn") != null)
+            {
+                role.LegacyUrn = roleLookup.FirstOrDefault(x => x.Role.Code == role.Code && x.Key == "Urn").Value;
+            }
+        }
+    }
+
+    private async Task GetSingleLegacyRoleCodeAndUrn(ExtRole extRole)
+    {
+        var roleLookup = await roleLookupRepository.GetExtended();
+
+        if (roleLookup.FirstOrDefault(x => x.RoleId == extRole.Id && x.Key == "LegacyRoleCode") != null)
+        {
+            extRole.LegacyRoleCode = roleLookup.FirstOrDefault(x => x.Role.Code == extRole.Code && x.Key == "LegacyCode").Value;
+        }
+
+        if (roleLookup.FirstOrDefault(x => x.RoleId == extRole.Id && x.Key == "Urn") != null)
+        {
+            extRole.LegacyUrn = roleLookup.FirstOrDefault(x => x.Role.Code == extRole.Code && x.Key == "Urn").Value;
+        }
     }
 }
