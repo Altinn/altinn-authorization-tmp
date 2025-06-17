@@ -91,4 +91,9 @@ public class CompactPackage
     /// Value
     /// </summary>
     public string Value { get; set; }
+
+    /// <summary>
+    /// AreaId
+    /// </summary>
+    public Guid AreaId { get; set; }
 }
