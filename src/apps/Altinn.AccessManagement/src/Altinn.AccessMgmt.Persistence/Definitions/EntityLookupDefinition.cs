@@ -37,18 +37,31 @@ public class EntityLookupDefinition : BaseDbDefinition<EntityLookup>, IDbDefinit
     private string PostMigrationScript_IsProtectedInit()
     {
         return """
-        DO
-        $$
+        DO $$
+        DECLARE
+            _batch_size INT := 10000;
         BEGIN
-        IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'dbo' AND table_name = 'entitylookup') THEN
+            
+            IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'dbo' AND table_name = 'entitylookup') THEN
+            
+                 SET LOCAL app.changed_by = '3296007F-F9EA-4BD0-B6A6-C8462D54633A';
+                 SET LOCAL app.changed_by_system = '3296007F-F9EA-4BD0-B6A6-C8462D54633A';
+                 SET LOCAL app.change_operation_id = '3296007F-F9EA-4BD0-B6A6-C8462D54633A';
 
-            SET LOCAL app.changed_by = '3296007F-F9EA-4BD0-B6A6-C8462D54633A'; 
-            SET LOCAL app.changed_by_system = '3296007F-F9EA-4BD0-B6A6-C8462D54633A'; 
-            SET LOCAL app.change_operation_id = '3296007F-F9EA-4BD0-B6A6-C8462D54633A';
+                LOOP
+                    UPDATE dbo.entitylookup
+                    SET IsProtected = true
+                    WHERE ctid IN (
+                        SELECT CTID
+                        FROM dbo.entitylookup
+                        WHERE Key = 'PersonIdentifier'
+                          AND IsProtected = false
+                        LIMIT _batch_size
+                    );
 
-            UPDATE dbo.entitylookup SET IsProtected = true WHERE Key = 'PersonIdentifier' AND IsProtected = false;
-
-          END IF;
+                    EXIT WHEN NOT FOUND;
+                END LOOP;
+            END IF;
         END
         $$;
         """;
