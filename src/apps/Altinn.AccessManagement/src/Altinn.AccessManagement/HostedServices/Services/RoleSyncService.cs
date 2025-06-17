@@ -15,7 +15,6 @@ namespace Altinn.AccessManagement.HostedServices.Services;
 /// <inheritdoc />
 public class RoleSyncService : BaseSyncService, IRoleSyncService
 {
-
     public RoleSyncService(
         IAltinnLease lease,
         IAltinnRegister register,
@@ -27,7 +26,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         IAssignmentRepository assignmentRepository,
         IEntityRepository entityRepository,
         IEntityTypeRepository entityTypeRepository
-    ) : base(lease, featureManager, register)
+    ) : base(lease, featureManager)
     {
         _register = register;
         _logger = logger;

@@ -121,7 +121,7 @@ public partial class RegisterHostedService(
 
             try
             {
-                if (canRunPartySync)
+                if (canRunRoleSync)
                 {
                     await roleSyncService.SyncRoles(ls, cancellationToken);
                     await statusService.RunSuccess(roleStatus, options);

@@ -217,6 +217,24 @@ module "appsettings" {
       value       = false
     },
     {
+      name        = "AccessManagement.HostedServices.AllAltinnRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.HostedServices.AltinnClientRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.HostedServices.AltinnAdminRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessManagement.MigrationDb"
       description = "Specifies if database should be migrated"
       label       = "${lower(var.environment)}-access-management"
