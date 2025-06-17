@@ -64,6 +64,9 @@
     <PackageVersion Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.2" />
     <PackageVersion Include="Microsoft.Build.Artifacts" Version="6.1.63" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.0.2" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.6" />
     <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.11.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.5" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.24" />

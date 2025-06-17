@@ -55,6 +55,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Altinn.Authorization.Integr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Integration.Platform", "..\..\libs\Altinn.Authorization.Integration\src\Altinn.Authorization.Integration.Platform\Altinn.Authorization.Integration.Platform.csproj", "{6A72F988-A24A-4745-954D-6CDDF24C8090}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.PersistenceEF", "Altinn.AccessMgmt.PersistenceEF\Altinn.AccessMgmt.PersistenceEF.csproj", "{28B07D82-824E-47FD-9823-357FD2722886}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -317,6 +319,18 @@ Global
 		{6A72F988-A24A-4745-954D-6CDDF24C8090}.Release|x64.Build.0 = Release|Any CPU
 		{6A72F988-A24A-4745-954D-6CDDF24C8090}.Release|x86.ActiveCfg = Release|Any CPU
 		{6A72F988-A24A-4745-954D-6CDDF24C8090}.Release|x86.Build.0 = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|x64.Build.0 = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|x86.Build.0 = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|x64.ActiveCfg = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|x64.Build.0 = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|x86.ActiveCfg = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -345,5 +359,6 @@ Global
 		{5FF5A89F-22F7-429F-9DD5-0758D7DB6C44} = {935C4FF9-8B5E-1FBA-4117-FAEFD052FCC5}
 		{DD9B9820-8A3B-57C2-9B1B-A9BE0AF659EC} = {6C4D298B-81FB-2B6B-5AB6-46205EDDC72C}
 		{6A72F988-A24A-4745-954D-6CDDF24C8090} = {DD9B9820-8A3B-57C2-9B1B-A9BE0AF659EC}
+		{28B07D82-824E-47FD-9823-357FD2722886} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal
