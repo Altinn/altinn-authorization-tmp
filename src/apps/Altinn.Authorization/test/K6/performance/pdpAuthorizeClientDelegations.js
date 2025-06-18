@@ -27,10 +27,7 @@ export default function() {
     const token = getAuthorizeToken(client);
     const params = getAuthorizeParams(label, token);
     const body = buildClientDelegationAuthorizeBody(client.systemUserId, resource, client.customerOrgNo, action);
-    console.log(JSON.stringify(body, null, 2));
-    console.log(token)
     const url = new URL(postAuthorizeUrl);
-    console.log(`url: ${url.toString()}`);
     describe('PDP Authorize', () => {
         let r = http.post(url.toString(), JSON.stringify(body), params);
         let response = JSON.parse(r.body);

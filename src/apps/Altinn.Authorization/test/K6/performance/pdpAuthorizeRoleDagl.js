@@ -48,6 +48,7 @@ export default function() {
         let response = JSON.parse(r.body);
         expect(r.status, "response status").to.equal(200);
         expect(r, 'response').to.have.validJsonBody(); 
-        expect(response.response[0].decision).to.equal(expectedResponse); 
+        console.log(`Response: ${JSON.stringify(response, null, 2)}`);  
+        expect(response.response[0].decision, `'${response.response[0].decision}'`).to.equal(expectedResponse); 
     });   
 }
