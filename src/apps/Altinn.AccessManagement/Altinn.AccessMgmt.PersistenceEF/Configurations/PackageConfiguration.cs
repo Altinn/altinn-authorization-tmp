@@ -27,7 +27,7 @@ public class PackageConfiguration : IEntityTypeConfiguration<Package>
     }
 }
 
-public class ExtentedPackageConfiguration : IEntityTypeConfiguration<ExtPackage>
+public class ExtendedPackageConfiguration : IEntityTypeConfiguration<ExtPackage>
 {
     public void Configure(EntityTypeBuilder<ExtPackage> builder)
     {

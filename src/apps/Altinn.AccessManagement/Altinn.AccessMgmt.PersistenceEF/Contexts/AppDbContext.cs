@@ -9,20 +9,12 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public DbSet<Package> Packages => Set<Package>();
-    //public DbSet<Role> Roles => Set<Role>();
-    //public DbSet<RolePackage> RolePackages => Set<RolePackage>();
-    //public DbSet<ExtPackage> ExtendedPackages => Set<ExtPackage>();
-    //public DbSet<ExtRole> ExtendedRoles => Set<ExtRole>();
-    //public DbSet<ExtRolePackage> ExtendedRolePackages => Set<ExtRolePackage>();
+
+    public DbSet<ExtPackage> ExtendedPackages => Set<ExtPackage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new PackageConfiguration());
-        //modelBuilder.ApplyConfiguration(new RoleAppConfiguration());
-        //modelBuilder.ApplyConfiguration(new CategoryAppConfiguration());
-        //modelBuilder.ApplyConfiguration(new RolePackageAppConfiguration());
-        //modelBuilder.ApplyConfiguration(new PackageExtendedConfiguration());
-        //modelBuilder.ApplyConfiguration(new RoleExtendedConfiguration());
-        //modelBuilder.ApplyConfiguration(new RolePackageExtendedConfiguration());
+        modelBuilder.ApplyConfiguration(new ExtendedPackageConfiguration());
     }
 }

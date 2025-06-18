@@ -4,7 +4,7 @@ using Altinn.AccessMgmt.PersistenceEF.Contracts;
 namespace Altinn.AccessMgmt.PersistenceEF.Models;
 
 /// <inheritdoc />
-public class AuditPackage : Package, IAudit 
+public class AuditProvider : Provider, IAudit 
 {
     /// <inheritdoc />
     public DateTime ValidFrom { get; set; }

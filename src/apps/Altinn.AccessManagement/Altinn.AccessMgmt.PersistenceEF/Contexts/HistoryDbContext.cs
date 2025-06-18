@@ -15,7 +15,7 @@ public class HistoryDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new PackageHistoryConfiguration());
+        modelBuilder.ApplyConfiguration(new AuditPackageConfiguration());
         //modelBuilder.ApplyConfiguration(new RoleHistoryConfiguration());
         //modelBuilder.ApplyConfiguration(new CategoryHistoryConfiguration());
         //modelBuilder.ApplyConfiguration(new RolePackageHistoryConfiguration());
