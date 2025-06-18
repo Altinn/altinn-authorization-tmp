@@ -9,6 +9,7 @@ const authorizeUrl = "api/v1/authorize";
 const readSystemsUrl = "api/v1/systemregister"
 const systemUsersUrl = "api/v1/systemuser/vendor/bysystem/"
 const amDelegationUrl = "api/v1/internal/systemuserclientdelegation"
+const amAuthorizedPartiesUrl = "api/v1/resourceowner/authorizedparties";
 
 export const urls = {
     v1: {
@@ -27,6 +28,10 @@ export const urls = {
         amDelegationUrl: {
             test: testAmBaseUrl + amDelegationUrl,
             yt01: yt01AmBaseUrl + amDelegationUrl
+        },
+        authorizedPartiesUrl: {
+            test: testAmBaseUrl + amAuthorizedPartiesUrl,
+            yt01: yt01AmBaseUrl + amAuthorizedPartiesUrl
         }
     }
 };
@@ -43,4 +48,5 @@ export const postAuthorizeUrl = urls[__ENV.API_VERSION]["authorizeUrl"][__ENV.AP
 export const getSystemsUrl = urls[__ENV.API_VERSION]["readSystemsUrl"][__ENV.API_ENVIRONMENT];
 export const getSystemUsersUrl = urls[__ENV.API_VERSION]["systemUsersUrl"][__ENV.API_ENVIRONMENT];
 export const getAmDelegationUrl = urls[__ENV.API_VERSION]["amDelegationUrl"][__ENV.API_ENVIRONMENT];
+export const getAuthorizedPartiesUrl = urls[__ENV.API_VERSION]["authorizedPartiesUrl"][__ENV.API_ENVIRONMENT];
 export const tokenGeneratorEnv = __ENV.API_ENVIRONMENT == "yt01" ? "yt01" : "tt02"; // yt01 is the only environment that has a separate token generator environment
