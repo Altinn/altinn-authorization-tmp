@@ -14,7 +14,7 @@ public class Role
     /// EntityTypeId
     /// e.g Organization
     /// </summary>
-    public Guid EntityTypeId { get; set; }
+    public Guid? EntityTypeId { get; set; }
 
     /// <summary>
     /// ProviderId
@@ -71,4 +71,25 @@ public class ExtRole : Role
     /// Provider
     /// </summary>
     public Provider Provider { get; set; }
+}
+
+/// <summary>
+/// Compact Role Model
+/// </summary>
+public class CompactRole
+{
+    /// <summary>
+    /// Id
+    /// </summary>
+    public Guid Id { get; set; }
+
+    /// <summary>
+    /// Value
+    /// </summary>
+    public string Code { get; set; }
+
+    /// <summary>
+    /// Children
+    /// </summary>
+    public List<CompactRole> Children { get; set; }
 }

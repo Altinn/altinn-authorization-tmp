@@ -51,8 +51,8 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
         string ingestTableName = "ingest." + queryBuilder.GetTableName(includeAlias: false, includeSchema: false) + "_" + ingestName;
 
         var createIngestTable = $"CREATE UNLOGGED TABLE IF NOT EXISTS {ingestTableName} AS SELECT {columnStatement} FROM {tableName} WITH NO DATA;";
-        await dbExecutor.ExecuteMigrationCommand(createIngestTable, null, cancellationToken);
-        
+        await dbExecutor.ExecuteMigrationCommand(createIngestTable, null, cancellationToken: cancellationToken);
+
         var completed = await WriteToIngest(data, ingestColumns, ingestTableName, options, cancellationToken);
 
         return completed;
@@ -77,8 +77,19 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
         var ingestName = ingestId.ToString().Replace("-", string.Empty);
         string ingestTableName = "ingest." + queryBuilder.GetTableName(includeAlias: false, includeSchema: false) + "_" + ingestName;
 
-        var mergeMatchStatement = string.Join(" AND ", matchColumns.Select(t => $"target.{t} = source.{t}"));
-        var mergeUpdateUnMatchStatement = string.Join(" OR ", ingestColumns.Where(t => matchColumns.Count(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase)) == 0).Select(t => $"target.{t.Name} <> source.{t.Name}"));
+        var mergeMatchStatement = string.Join(" AND ", matchColumns.Select(t => $"(target.{t} IS NULL AND source.{t} IS NULL OR target.{t} = source.{t})"));
+        var mergeUpdateUnMatchStatement = string.Join(
+            " OR ",
+            ingestColumns
+                .Where(t => matchColumns.Count(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase)) == 0)
+                .Select(t =>
+                    $"(" +
+                    $"target.{t.Name} <> source.{t.Name} " +
+                    $"OR (target.{t.Name} IS NULL AND source.{t.Name} IS NOT NULL) " +
+                    $"OR (target.{t.Name} IS NOT NULL AND source.{t.Name} IS NULL)" +
+                    $")"
+                )
+        );
         var mergeUpdateStatement = string.Join(" , ", ingestColumns.Where(t => matchColumns.Count(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase)) == 0).Select(t => $"{t.Name} = source.{t.Name}"));
         var insertColumns = string.Join(" , ", ingestColumns.Select(t => $"{t.Name}"));
         var insertValues = string.Join(" , ", ingestColumns.Select(t => $"source.{t.Name}"));
@@ -87,13 +98,13 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
 
         sb.AppendLine(GetAuditVariables(options));
         sb.AppendLine($"MERGE INTO {tableName} AS target USING {ingestTableName} AS source ON {mergeMatchStatement}");
-        
+
         if (type.Name != "Assignment")
         {
             sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
             sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
         }
-            
+
         sb.AppendLine($"WHEN NOT MATCHED THEN ");
         sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
 
@@ -101,11 +112,11 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
 
         Console.WriteLine("Starting MERGE");
 
-        var res = await dbExecutor.ExecuteMigrationCommand(mergeStatement, null, cancellationToken);
+        var res = await dbExecutor.ExecuteMigrationCommand(mergeStatement, null, cancellationToken: cancellationToken);
 
         Console.WriteLine("Cleanup");
         var dropIngestTable = $"DROP TABLE IF EXISTS {ingestTableName};";
-        await dbExecutor.ExecuteMigrationCommand(dropIngestTable, null, cancellationToken);
+        await dbExecutor.ExecuteMigrationCommand(dropIngestTable, null, cancellationToken: cancellationToken);
 
         Console.WriteLine($"Merged {res}");
 
@@ -202,7 +213,7 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
             {
                 Name = c.ColumnName,
                 Property = definition.Properties.First(t => t.Name.Equals(c.ColumnName, StringComparison.CurrentCultureIgnoreCase)).Property,
-                Type = GetPostgresType(c.DataType)                
+                Type = GetPostgresType(c.DataType)
             });
         }
 
@@ -219,22 +230,22 @@ public class PostgresIngestService(IAltinnDatabase databaseFactory, IDbExecutor 
     /// Definition of column to ingest
     /// </summary>
     internal class IngestColumnDefinition
-        {
-            /// <summary>
-            /// Column name
-            /// </summary>
-            internal string Name { get; set; }
+    {
+        /// <summary>
+        /// Column name
+        /// </summary>
+        internal string Name { get; set; }
 
-            /// <summary>
-            /// Db data type
-            /// </summary>
-            internal NpgsqlDbType Type { get; set; }
+        /// <summary>
+        /// Db data type
+        /// </summary>
+        internal NpgsqlDbType Type { get; set; }
 
-            /// <summary>
-            /// PropertyInfo
-            /// </summary>
-            internal PropertyInfo Property { get; set; }
-        }
+        /// <summary>
+        /// PropertyInfo
+        /// </summary>
+        internal PropertyInfo Property { get; set; }
+    }
 
     private NpgsqlDbType GetPostgresType(Type type)
     {

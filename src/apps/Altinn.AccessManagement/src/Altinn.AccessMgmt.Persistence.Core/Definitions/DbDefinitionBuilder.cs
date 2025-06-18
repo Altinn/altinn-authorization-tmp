@@ -142,6 +142,53 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
             return this;
         }
 
+        /// <summary>
+        /// Registers a property as a column in the database definition.
+        /// </summary>
+        /// <param name="column">An expression that identifies the property to register.</param>
+        /// <param name="nullable">Indicates whether the column can contain null values.</param>
+        /// <param name="defaultValue">The default value for the column, if any.</param>
+        /// <param name="length">The maximum length of the column (if applicable).</param>
+        /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
+        public DbDefinitionBuilder<T> RegisterExtProperty<TExtended>(Expression<Func<T, object>> property, Expression<Func<TExtended, object>> extendedProperty, string functionName, bool nullable = false, string defaultValue = null, int? length = null)
+        {
+            var propertyInfo = ExtractPropertyInfo(property);
+            var extendedPropertyInfo = ExtractPropertyInfo(extendedProperty);
+            var propertyType = propertyInfo.PropertyType;
+
+            // Hvis typen er en kompleks type, send den til `RegisterComplexProperty`
+            if (propertyType.Namespace != null && propertyType.Namespace == typeof(T).Namespace
+                && !propertyType.IsPrimitive && propertyType != typeof(string))
+            {
+                RegisterComplexProperty(propertyType, propertyInfo.Name, nullable);
+            }
+            else
+            {
+                // Registrer normal (ikke-kompleks) egenskap
+                var columnDef = new DbPropertyDefinition()
+                {
+                    Name = propertyInfo.Name,
+                    Property = propertyInfo,
+                    DefaultValue = defaultValue,
+                    IsNullable = nullable
+                };
+
+                DbDefinition.Properties.Add(columnDef);
+            }
+
+            var extendedDef = new DbExtendedPropertyDefinition()
+            {
+                Name = propertyInfo.Name,
+                Property = propertyInfo,
+                ExtendedProperty = extendedPropertyInfo,
+                Function = functionName
+            };
+
+            DbDefinition.ExtendedProperties.Add(extendedDef);
+
+            return this;
+        }
+
         private void RegisterComplexProperty(Type complexType, string parentPrefix, bool nullable)
         {
             foreach (var subProperty in complexType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
@@ -175,14 +222,16 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// Registers a constraint for the specified properties, either as a primary key or a unique constraint.
         /// </summary>
         /// <param name="properties">A collection of expressions identifying the properties.</param>
+        /// <param name="nullableProperties">Properties that are nullable in db</param>
         /// <param name="isPrimaryKey">Specifies whether this is a primary key constraint.</param>
         /// <param name="includedProperties">A collection of expressions identifying the properties to be included in an unique covering index</param>
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         /// <exception cref="Exception">Thrown if any of the specified properties does not exist on the model type.</exception>
-        private DbDefinitionBuilder<T> RegisterConstraint(IEnumerable<Expression<Func<T, object>>> properties, bool isPrimaryKey, IEnumerable<Expression<Func<T, object>>> includedProperties)
+        private DbDefinitionBuilder<T> RegisterConstraint(IEnumerable<Expression<Func<T, object>>> properties, IEnumerable<Expression<Func<T, object>>> nullableProperties, bool isPrimaryKey, IEnumerable<Expression<Func<T, object>>> includedProperties)
         {
             var propertyDefinitions = new Dictionary<string, Type>();
             var includedPropertyDefinitions = new Dictionary<string, Type>();
+            var nullablePropertyDefinitions = new Dictionary<string, Type>();
             var propertyInfos = typeof(T).GetProperties().ToDictionary(p => p.Name, p => p.PropertyType);
 
             foreach (var property in properties)
@@ -195,6 +244,18 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
                 }
 
                 propertyDefinitions[propertyInfo.Name] = propertyInfo.PropertyType;
+            }
+
+            foreach (var property in nullableProperties)
+            {
+                var propertyInfo = ExtractPropertyInfo(property);
+
+                if (!propertyInfos.ContainsKey(propertyInfo.Name))
+                {
+                    throw new Exception($"{typeof(T).Name} does not contain the property '{propertyInfo.Name}'");
+                }
+
+                nullablePropertyDefinitions[propertyInfo.Name] = propertyInfo.PropertyType;
             }
 
             if (includedProperties != null)
@@ -216,7 +277,8 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
             {
                 Properties = propertyDefinitions,
                 IsPrimaryKey = isPrimaryKey,
-                IncludedProperties = includedPropertyDefinitions
+                IncludedProperties = includedPropertyDefinitions,
+                NullableProperties = nullablePropertyDefinitions
             };
 
             if (isPrimaryKey)
@@ -226,7 +288,7 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
             }
             else
             {
-                constraint.Name = $"UC_{typeof(T).Name}_{string.Join("_", propertyDefinitions.Keys)}";
+                constraint.Name = $"UC_{typeof(T).Name}_{string.Join("_", propertyDefinitions.Keys)}{(nullablePropertyDefinitions.Any() ? "_" + string.Join("_", nullablePropertyDefinitions.Keys) : string.Empty)}";
                 DbDefinition.Constraints.Add(constraint);
             }
 
@@ -239,7 +301,7 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// <param name="properties">A collection of expressions identifying the properties that form the primary key.</param>
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         public DbDefinitionBuilder<T> RegisterPrimaryKey(IEnumerable<Expression<Func<T, object>>> properties)
-            => RegisterConstraint(properties, isPrimaryKey: true, includedProperties: null);
+            => RegisterConstraint(properties, nullableProperties: [], isPrimaryKey: true, includedProperties: null);
 
         /// <summary>
         /// Registers a unique constraint for the specified properties.
@@ -248,7 +310,16 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         /// <param name="includedProperties">Properties to include</param>
         /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
         public DbDefinitionBuilder<T> RegisterUniqueConstraint(IEnumerable<Expression<Func<T, object>>> properties, IEnumerable<Expression<Func<T, object>>> includedProperties = null)
-            => RegisterConstraint(properties, isPrimaryKey: false, includedProperties: includedProperties);
+            => RegisterConstraint(properties, nullableProperties: [], isPrimaryKey: false, includedProperties: includedProperties);
+
+        /// <summary>
+        /// Registers a unique constraint for the specified properties.
+        /// </summary>
+        /// <param name="properties">A collection of expressions identifying the properties that should have a unique constraint.</param>
+        /// <param name="includedProperties">Properties to include</param>
+        /// <returns>The current <see cref="DbDefinitionBuilder{T}"/> instance for fluent chaining.</returns>
+        public DbDefinitionBuilder<T> RegisterUniqueConstraint(IEnumerable<Expression<Func<T, object>>> properties, IEnumerable<Expression<Func<T, object>>> nullableProperties, IEnumerable<Expression<Func<T, object>>> includedProperties = null)
+            => RegisterConstraint(properties, nullableProperties: nullableProperties, isPrimaryKey: false, includedProperties: includedProperties);
 
         #endregion
 
@@ -344,6 +415,24 @@ namespace Altinn.AccessMgmt.Persistence.Core.Definitions
         }
 
         #endregion
+
+        /// <summary>
+        /// Adds scripts to be run before main schema migration
+        /// </summary>
+        public DbDefinitionBuilder<T> AddManualPreMigrationScript(int runOrder, string script)
+        {
+            DbDefinition.ManualPreMigrationScripts.Add(runOrder, script);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds scripts to be run before main schema migration
+        /// </summary>
+        public DbDefinitionBuilder<T> AddManualPostMigrationScript(int runOrder, string script)
+        {
+            DbDefinition.ManualPostMigrationScripts.Add(runOrder, script);
+            return this;
+        }
 
         #region Helpers
 

@@ -32,7 +32,8 @@
                 "orgno": "315556155",
                 "partyId": 52007751,
                 "partyUuid": "0f08aee7-a6e9-4674-ba2d-517bd31e3941"
-            }
+            },
+            "directPackageToDelegate": "skatt-naering"
         },
         "client_ENK_HUMAN_TOPP_KATT_BIL": {
             "name": "HUMAN TOPP KATT BIL",
@@ -65,7 +66,8 @@
                 "partyId": 50906465,
                 "partyUuid": "d673d146-ed6f-4bb4-8037-f63696a683c1"
             },
-            "directPackageToDelegate": "motorvognavgift"
+            "directPackageToDelegate": "motorvognavgift",
+            "directPackageToDelegate2": "skatt-naering"
         },
         "client_rightholderOrg2": {
             "name": "STOLT BETYDELIG TIGER AS",
@@ -213,13 +215,13 @@
             }
         }
     },
-    "bbl_type_client_org": {
-        "name": "USELVSTENDIG FLAT PUMA BBL",
-        "partyuuid": "BD95521A-17E9-4817-8207-735EF015BF53",
-        "orgno": "210815872",
+    "brl_type_client_org": {
+        "name": "BORETTSLAGET SMART TØRR HEST",
+        "partyuuid": "b4d5c266-b4d5-4088-af2c-b878f2160005",
+        "orgno": "310104892",
         "dagl": {
-            "name": "REDELIG HABITT",
-            "pid": "11896799993"
+            "name": "INNSIKTSFULL GJESTEROM",
+            "pid": "25815597829"
         }
     },
     "esek_type_client_org": {
@@ -232,3 +234,4 @@
         }
     }
 }
+

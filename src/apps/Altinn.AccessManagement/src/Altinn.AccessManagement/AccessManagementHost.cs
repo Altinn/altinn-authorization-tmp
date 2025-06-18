@@ -29,11 +29,14 @@ using Altinn.Common.PEP.Clients;
 using Altinn.Common.PEP.Implementation;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using OpenTelemetry;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace Altinn.AccessManagement;
@@ -52,7 +55,7 @@ internal static partial class AccessManagementHost
     public static WebApplication Create(string[] args)
     {
         Log.CreateAltinnHost(Logger);
-        var builder = AltinnHost.CreateWebApplicationBuilder("access-management", args);
+        var builder = AltinnHost.CreateWebApplicationBuilder("access-management", args, opts => opts.ConfigureEnabledServices(services => services.DisableApplicationInsights()));
         builder.ConfigureAppsettings();
         builder.ConfigureLibsHost();
         builder.Services.AddMemoryCache();
@@ -65,7 +68,6 @@ internal static partial class AccessManagementHost
             .AddCheck<HealthCheck>("authorization_admin_health_check");
 
         builder.ConfigureLibsIntegrations();
-
         builder.ConfigureAppsettings();
         builder.AddAltinnDatabase(opt =>
         {
@@ -82,9 +84,19 @@ internal static partial class AccessManagementHost
 
             opt.AppSource = new(string.Format(connectionStringFmt, connectionStringPwd));
             opt.MigrationSource = new(string.Format(adminConnectionStringFmt, adminConnectionStringPwd));
-            opt.Telemetry.EnableMetrics = true;
-            opt.Telemetry.EnableTraces = true;
         });
+
+        if (!builder.Environment.IsDevelopment())
+        {
+            if (builder.Configuration.GetValue<string>("ApplicationInsights:InstrumentationKey") is var key && !string.IsNullOrEmpty(key))
+            {
+                builder.Services.AddOpenTelemetry()
+                    .UseAzureMonitor(m =>
+                    {
+                        m.ConnectionString = string.Format("InstrumentationKey={0}", key);
+                    });
+            }
+        }
 
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
