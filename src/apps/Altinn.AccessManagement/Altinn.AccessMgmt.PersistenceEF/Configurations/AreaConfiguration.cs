@@ -1,5 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.PersistenceEF.Configurations;
+using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -28,7 +28,6 @@ public class ExtendedAreaConfiguration : IEntityTypeConfiguration<ExtArea>
 {
     public void Configure(EntityTypeBuilder<ExtArea> builder)
     {
-        builder.ToTable("area", "dbo");
         builder.HasOne(p => p.Group).WithMany().HasForeignKey(p => p.GroupId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -1,47 +1,47 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Contracts;
+﻿namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 
 /// <summary>
-/// Adds audit properties to model
+/// Audit properties
 /// </summary>
-public interface IAudit
+public class AuditInfo
 {
     /// <summary>
     /// ValidFrom
     /// </summary>
-    DateTime ValidFrom { get; set; }
+    public DateTime ValidFrom { get; set; }
 
     /// <summary>
     /// ValidTo
     /// </summary>
-    DateTime? ValidTo { get; set; }
+    public DateTime? ValidTo { get; set; }
 
     /// <summary>
     /// ChangedBy
     /// </summary>
-    Guid? ChangedBy { get; set; }
+    public Guid? ChangedBy { get; set; }
 
     /// <summary>
     /// ChangedBySystem
     /// </summary>
-    Guid? ChangedBySystem { get; set; }
+    public Guid? ChangedBySystem { get; set; }
 
     /// <summary>
     /// ChangeOperation
     /// </summary>
-    string ChangeOperation { get; set; }
+    public string ChangeOperation { get; set; }
 
     /// <summary>
     /// DeletedBy
     /// </summary>
-    Guid? DeletedBy { get; set; }
+    public Guid? DeletedBy { get; set; }
 
     /// <summary>
     /// DeletedBySystem
     /// </summary>
-    Guid? DeletedBySystem { get; set; }
+    public Guid? DeletedBySystem { get; set; }
 
     /// <summary>
     /// DeleteOperation
     /// </summary>
-    string DeleteOperation { get; set; }
+    public string DeleteOperation { get; set; }
 }

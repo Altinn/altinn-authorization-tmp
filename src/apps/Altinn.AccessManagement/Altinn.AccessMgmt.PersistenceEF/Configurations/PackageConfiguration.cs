@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -41,4 +42,17 @@ public class ExtendedPackageConfiguration : IEntityTypeConfiguration<ExtPackage>
 public class AuditPackageConfiguration : AuditConfiguration<AuditPackage>
 {
     public AuditPackageConfiguration() : base("package") { }
+}
+/// <inheritdoc />
+public abstract partial class BasicDbContext : DbContext
+{
+    public DbSet<Package> Packages => Set<Package>();
+
+    public DbSet<ExtPackage> ExtendedPackages => Set<ExtPackage>();
+}
+
+/// <inheritdoc />
+public partial class AuditDbContext : DbContext
+{
+    public DbSet<AuditPackage> AuditPackages => Set<AuditPackage>();
 }

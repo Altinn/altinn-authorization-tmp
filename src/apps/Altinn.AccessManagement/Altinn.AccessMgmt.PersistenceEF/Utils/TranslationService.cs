@@ -1,4 +1,4 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Contracts;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Utils;
