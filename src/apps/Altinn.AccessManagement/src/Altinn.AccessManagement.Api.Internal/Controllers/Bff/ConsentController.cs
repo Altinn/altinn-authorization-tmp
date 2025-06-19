@@ -3,10 +3,14 @@ using Altinn.AccessManagement.Api.Internal.Utils;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.Authorization.ABAC.Xacml.JsonProfile;
 using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.Authorization.ProblemDetails;
+using Altinn.Common.PEP.Helpers;
+using Altinn.Common.PEP.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
 {
@@ -17,9 +21,10 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
     /// </summary>
     [Route("accessmanagement/api/v1/bff")]
     [ApiController]
-    public class ConsentController(IConsent consentService) : ControllerBase
+    public class ConsentController(IConsent consentService, IPDP pdp) : ControllerBase
     {
         private readonly IConsent _consentService = consentService;
+        private readonly IPDP _pdp = pdp;
 
         /// <summary>
         /// Get a specific consent. 
@@ -47,7 +52,18 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return consentRequest.Problem.ToActionResult();
             }
 
-            return Ok(consentRequest.Value.ToConsentRequestDetailsBFF());
+            // Check if the user is authorized to view the consent request. Anyone with read access to access management can view the consent request details.
+            if (consentRequest.Value.From.IsPartyUuid(out Guid resourePartUuuid))
+            {
+                bool isAuthorized = await IsAuthorized("altinn_access_management", resourePartUuuid, User, "read");
+
+                if (isAuthorized)
+                {
+                    return Ok(consentRequest.Value.ToConsentRequestDetailsBFF());
+                }
+            }
+
+            return Unauthorized();
         }
 
         /// <summary>
@@ -173,6 +189,24 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             }
 
             return Ok(result.Value);
+        }
+
+        private async Task<bool> IsAuthorized(string resource, Guid resourceParty, ClaimsPrincipal userPrincipal,  string action)
+        {
+            XacmlJsonRequestRoot request = DecisionHelper.CreateDecisionRequestForResourceRegistryResource(resource, resourceParty, userPrincipal, "read");
+            XacmlJsonResponse response = await _pdp.GetDecisionForRequest(request);
+
+            if (response?.Response == null)
+            {
+                throw new ArgumentNullException("response");
+            }
+
+            if (!DecisionHelper.ValidatePdpDecision(response.Response, userPrincipal))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
