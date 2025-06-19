@@ -44,5 +44,10 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// Revokes a consent. The consent needs to be in accepted state to be able to be revoked.
         /// </summary>
         Task<Result<ConsentRequestDetails>> RevokeConsent(Guid consentRequestId, Guid performedByParty, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns the redirect url for a consent request. This is used to redirect the user to the consent page in Altinn Studio.
+        /// </summary>
+        Task<string> GetRequestRedirectUrl(Guid consentRequestId, CancellationToken cancellationToken);
     }
 }

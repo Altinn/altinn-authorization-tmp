@@ -17,7 +17,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
     /// </summary>
     [Route("accessmanagement/api/v1/bff")]
     [ApiController]
-    [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
     public class ConsentController(IConsent consentService) : ControllerBase
     {
         private readonly IConsent _consentService = consentService;
@@ -30,6 +29,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         /// User is authorized to delegate the rights that are requested. Either by having the right themselves or being the main administrator
         /// </summary>
         [HttpGet]
+        [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
         [Route("consentrequests/{requestId}", Name ="bffgetconsentrequest")]
         public async Task<IActionResult> GetConsentRequest([FromRoute] Guid requestId, CancellationToken cancellationToken = default)
         {
@@ -58,6 +58,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         /// User is authorized to delegated the rights that is requested. Either by having the right self or beeing the main administrator
         /// </summary>
         [HttpGet]
+        [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
         [Route("consents/{requestId}/")]
         public async Task<IActionResult> GetConsent([FromRoute] Guid requestId, CancellationToken cancellationToken = default)
         {
@@ -77,12 +78,29 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         }
 
         /// <summary>
+        /// Endpoint to get the redirect URL for a consent request.
+        /// </summary>
+        [HttpGet]
+        [Route("consentrequests/{requestId}/redirecturl")]
+        public async Task<IActionResult> GetConsentRedirectUrl([FromRoute] Guid requestId, CancellationToken cancellationToken = default)
+        {
+            string redirectUrl = await consentService.GetRequestRedirectUrl(requestId, cancellationToken);
+            if (string.IsNullOrEmpty(redirectUrl))
+            {
+                return NotFound("Redirect URL not found for the consent request.");
+            }
+
+            return Ok(new ConsentRedirectUrl() { Url = redirectUrl });
+        }
+
+        /// <summary>
         /// Endpoint to approve a consent request
         /// The authenticated user must fullfill the requirements to approve the request.
         /// - Have right for accessmanagement for the party that is requesting the consent
         /// - Have the right to delegate the requested rights. Either by having the right self or beeing the main administrator
         /// </summary>
         [HttpPost]
+        [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
         [Route("consentrequests/{requestId}/accept")]
         public async Task<IActionResult> Accept(Guid requestId, [FromBody] ConsentContextExternal context, CancellationToken cancellationToken = default)
         {
@@ -113,6 +131,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         /// Endpoint to deny a consent request
         /// </summary>
         [HttpPost]
+        [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
         [Route("consentrequests/{requestId}/reject")]
         public async Task<IActionResult> Reject(Guid requestId, CancellationToken cancellationToken = default)
         {
@@ -136,6 +155,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         /// Endpoint to deny a consent request
         /// </summary>
         [HttpPost]
+        [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
         [Route("consents/{consentId}/revoke")]
         public async Task<IActionResult> Revoke(Guid consentId, CancellationToken cancellationToken = default)
         {

@@ -424,6 +424,18 @@ namespace Altinn.AccessManagement.Core.Services
             return updated;
         }
 
+        /// <inheritdoc/>
+        public async Task<string> GetRequestRedirectUrl(Guid consentRequestId, CancellationToken cancellationToken)
+        {
+            ConsentRequestDetails details = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
+            if (details == null)
+            {
+                return null;
+            }
+
+            return details.RedirectUrl;
+        }
+
         private async Task SetExternalIdentities(ConsentRequestDetails details, CancellationToken cancellationToken)
         {
             details.From = await MapToExternalIdenity(details.From, cancellationToken);
