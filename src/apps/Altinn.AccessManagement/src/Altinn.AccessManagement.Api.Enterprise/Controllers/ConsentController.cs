@@ -20,8 +20,8 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
     {
         private readonly IConsent _consentService = consentService;
 
-        private const string CreateRouteName = "enterprisecreaterequest";
-        private const string GetRouteName = "enterprisegetrequest";
+        private const string CreateRouteName = "enterprisecreateconsentrequest";
+        private const string GetRouteName = "enterprisegetconsentrequest";
 
         /// <summary>
         /// Endpoint to create a consent request for
