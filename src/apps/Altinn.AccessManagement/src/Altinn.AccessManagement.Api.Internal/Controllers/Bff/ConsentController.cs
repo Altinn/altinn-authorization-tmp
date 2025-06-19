@@ -59,8 +59,8 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         /// </summary>
         [HttpGet]
         [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-        [Route("consents/{requestId}/")]
-        public async Task<IActionResult> GetConsent([FromRoute] Guid requestId, CancellationToken cancellationToken = default)
+        [Route("consents/{consentId}/")]
+        public async Task<IActionResult> GetConsent([FromRoute] Guid consentId, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);
             if (performedBy == null)
@@ -68,7 +68,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return Unauthorized();
             }
 
-            Result<Consent> consent = await consentService.GetConsent(requestId, cancellationToken);
+            Result<Consent> consent = await consentService.GetConsent(consentId, cancellationToken);
             if (consent.IsProblem)
             {
                 consent.Problem.ToActionResult();
