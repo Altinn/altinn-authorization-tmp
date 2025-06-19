@@ -63,16 +63,16 @@ namespace Altinn.AccessManagement.Core.Services
                     && consentRequest.From == consentRequestDetails.From
                     && consentRequest.To == consentRequestDetails.To)
                 {
-                    consentRequestDetails.From = await MapToExternalIdenity(consentRequestDetails.From, cancellationToken);
-                    consentRequestDetails.To = await MapToExternalIdenity(consentRequestDetails.To, cancellationToken);
+                    consentRequestDetails.From = await MapToExternalIdentity(consentRequestDetails.From, cancellationToken);
+                    consentRequestDetails.To = await MapToExternalIdentity(consentRequestDetails.To, cancellationToken);
                     if (consentRequestDetails.HandledBy != null)
                     {
-                        consentRequestDetails.HandledBy = await MapToExternalIdenity(consentRequestDetails.HandledBy, cancellationToken);
+                        consentRequestDetails.HandledBy = await MapToExternalIdentity(consentRequestDetails.HandledBy, cancellationToken);
                     }
 
                     if (consentRequestDetails.RequiredDelegator != null)
                     {
-                        consentRequestDetails.RequiredDelegator = await MapToExternalIdenity(consentRequestDetails.RequiredDelegator, cancellationToken);
+                        consentRequestDetails.RequiredDelegator = await MapToExternalIdentity(consentRequestDetails.RequiredDelegator, cancellationToken);
                     }
 
                     consentRequestDetails.ViewUri = GetConsentViewUri(consentRequestDetails.Id);
@@ -90,21 +90,21 @@ namespace Altinn.AccessManagement.Core.Services
                 return Problems.ConsentWithIdAlreadyExist.Create([new("requestId", consentRequest.Id.ToString())]);
             }
             
-            requestDetails.From = await MapToExternalIdenity(requestDetails.From, cancellationToken);
-            requestDetails.To = await MapToExternalIdenity(requestDetails.To, cancellationToken);
+            requestDetails.From = await MapToExternalIdentity(requestDetails.From, cancellationToken);
+            requestDetails.To = await MapToExternalIdentity(requestDetails.To, cancellationToken);
             if (requestDetails.HandledBy != null)
             {
-                requestDetails.HandledBy = await MapToExternalIdenity(requestDetails.HandledBy, cancellationToken);
+                requestDetails.HandledBy = await MapToExternalIdentity(requestDetails.HandledBy, cancellationToken);
             }
 
             if (requestDetails.RequiredDelegator != null)
             {
-                requestDetails.RequiredDelegator = await MapToExternalIdenity(requestDetails.RequiredDelegator, cancellationToken);
+                requestDetails.RequiredDelegator = await MapToExternalIdentity(requestDetails.RequiredDelegator, cancellationToken);
             }
 
             foreach (ConsentRequestEvent consentRequestEvent in requestDetails.ConsentRequestEvents)
             {
-                consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
+                consentRequestEvent.PerformedBy = await MapToExternalIdentity(consentRequestEvent.PerformedBy, cancellationToken);
             }
 
             requestDetails.ViewUri = GetConsentViewUri(requestDetails.Id);
@@ -183,8 +183,8 @@ namespace Altinn.AccessManagement.Core.Services
                 Consent consent = new()
                 {
                     Id = consentRequest.Id,
-                    From = await MapToExternalIdenity(consentRequest.From, cancellationToken),
-                    To = await MapToExternalIdenity(consentRequest.To, cancellationToken),
+                    From = await MapToExternalIdentity(consentRequest.From, cancellationToken),
+                    To = await MapToExternalIdentity(consentRequest.To, cancellationToken),
                     ValidTo = consentRequest.ValidTo,
                     ConsentRights = consentRequest.ConsentRights
                 };
@@ -217,8 +217,8 @@ namespace Altinn.AccessManagement.Core.Services
                 Consent consent = new()
                 {
                     Id = consentRequest.Id,
-                    From = await MapToExternalIdenity(consentRequest.From, cancellationToken),
-                    To = await MapToExternalIdenity(consentRequest.To, cancellationToken),
+                    From = await MapToExternalIdentity(consentRequest.From, cancellationToken),
+                    To = await MapToExternalIdentity(consentRequest.To, cancellationToken),
                     ValidTo = consentRequest.ValidTo,
                     ConsentRights = consentRequest.ConsentRights
                 };
@@ -273,23 +273,23 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (!useInternalIdenties)
             {
-                details.To = await MapToExternalIdenity(details.To, cancellationToken);
-                details.From = await MapToExternalIdenity(details.From, cancellationToken);
+                details.To = await MapToExternalIdentity(details.To, cancellationToken);
+                details.From = await MapToExternalIdentity(details.From, cancellationToken);
 
 
                 if (details.HandledBy != null)
                 {
-                    details.HandledBy = await MapToExternalIdenity(details.HandledBy, cancellationToken);
+                    details.HandledBy = await MapToExternalIdentity(details.HandledBy, cancellationToken);
                 }
 
                 if (details.RequiredDelegator != null)
                 {
-                    details.RequiredDelegator = await MapToExternalIdenity(details.RequiredDelegator, cancellationToken);
+                    details.RequiredDelegator = await MapToExternalIdentity(details.RequiredDelegator, cancellationToken);
                 }
 
                 foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)
                 {
-                    consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
+                    consentRequestEvent.PerformedBy = await MapToExternalIdentity(consentRequestEvent.PerformedBy, cancellationToken);
                 }
             }
  
@@ -438,11 +438,11 @@ namespace Altinn.AccessManagement.Core.Services
 
         private async Task SetExternalIdentities(ConsentRequestDetails details, CancellationToken cancellationToken)
         {
-            details.From = await MapToExternalIdenity(details.From, cancellationToken);
-            details.To = await MapToExternalIdenity(details.To, cancellationToken);
+            details.From = await MapToExternalIdentity(details.From, cancellationToken);
+            details.To = await MapToExternalIdentity(details.To, cancellationToken);
             foreach (ConsentRequestEvent consentRequestEvent in details.ConsentRequestEvents)
             {
-                consentRequestEvent.PerformedBy = await MapToExternalIdenity(consentRequestEvent.PerformedBy, cancellationToken);
+                consentRequestEvent.PerformedBy = await MapToExternalIdentity(consentRequestEvent.PerformedBy, cancellationToken);
             }
         }
 
@@ -460,7 +460,7 @@ namespace Altinn.AccessManagement.Core.Services
             return consentPartyUrn;
         }
 
-        private async Task<ConsentPartyUrn> MapToExternalIdenity(ConsentPartyUrn consentPartyUrn, CancellationToken cancellationToken)
+        private async Task<ConsentPartyUrn> MapToExternalIdentity(ConsentPartyUrn consentPartyUrn, CancellationToken cancellationToken)
         {
             if (consentPartyUrn.IsPartyUuid(out Guid partyUuid))
             {
