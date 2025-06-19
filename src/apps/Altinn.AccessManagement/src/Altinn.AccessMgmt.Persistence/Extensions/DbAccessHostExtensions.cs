@@ -149,6 +149,13 @@ public static partial class DbAccessHostExtensions
         var dbIngest = host.Services.GetRequiredService<DbDataMigrationService>();
         await dbIngest.IngestAll();
 
+        /*
+        //// TODO: Add FeatureFlag
+        // var mockService = host.Services.GetRequiredService<MockDataService>();
+        // await mockService.GenerateBasicData();
+        // await mockService.GeneratePackageResources();
+        // await mockService.SystemUserClientDelegation();
+        */
         if (generateBasicData == true)
         {
             var mockService = host.Services.GetRequiredService<MockDataService>();
