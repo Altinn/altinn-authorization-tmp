@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a right in a consent.
     /// </summary>
-    public class ConsentRightExternal
+    public class ConsentRightDto
     {
         /// <summary>
         /// The action in the consent. Read, write etc. Can be multiple but in most concents it is only one.
@@ -13,7 +13,7 @@
         /// <summary>
         /// The resource attribute that identifies the resource part of the right. Can be multiple but in most concents it is only one.
         /// </summary>
-        public required List<ConsentResourceAttributeExternal> Resource
+        public required List<ConsentResourceAttributeDto> Resource
         {
             get; set;
         }

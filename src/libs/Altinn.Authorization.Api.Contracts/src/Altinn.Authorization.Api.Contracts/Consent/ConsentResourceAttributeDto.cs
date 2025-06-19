@@ -3,7 +3,7 @@
     /// <summary>
     /// A resurce attribute identifying part or whole resource
     /// </summary>
-    public class ConsentResourceAttributeExternal
+    public class ConsentResourceAttributeDto
     {
         /// <summary>
         /// The type of resource attribute. is a urn

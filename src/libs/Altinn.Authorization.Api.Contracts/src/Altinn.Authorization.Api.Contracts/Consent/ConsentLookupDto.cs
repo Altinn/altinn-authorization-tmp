@@ -3,7 +3,7 @@
     /// <summary>
     /// Model for looking up a consent.
     /// </summary>
-    public class ConsentLookup
+    public class ConsentLookupDto
     {
         /// <summary>
         /// Defines the Id of the consent.
@@ -13,11 +13,11 @@
         /// <summary>
         /// Defines the party that has approved a consent request.
         /// </summary>
-        public required ConsentPartyUrnExternal From { get; set; }
+        public required ConsentPartyUrn From { get; set; }
 
         /// <summary>
         /// Defines the party receiving consent.
         /// </summary>
-        public required ConsentPartyUrnExternal To { get; set; }
+        public required ConsentPartyUrn To { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Extensions
         /// </summary>
         /// <param name="external">the ConsentResourceAttributeExternal</param>
         /// <returns></returns>
-        public static ConsentResourceAttribute ToConsentResourceAttribute(this ConsentResourceAttributeExternal external)
+        public static ConsentResourceAttribute ToConsentResourceAttribute(this ConsentResourceAttributeDto external)
         {
             return new ConsentResourceAttribute
             {

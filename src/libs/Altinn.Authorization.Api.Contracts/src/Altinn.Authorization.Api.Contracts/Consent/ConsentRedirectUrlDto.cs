@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a redirect URL for consent requests.
     /// </summary>
-    public class ConsentRedirectUrl
+    public class ConsentRedirectUrlDto
     {
         /// <summary>
         /// Gets or sets the URL to redirect user to after consent is granted or denied.

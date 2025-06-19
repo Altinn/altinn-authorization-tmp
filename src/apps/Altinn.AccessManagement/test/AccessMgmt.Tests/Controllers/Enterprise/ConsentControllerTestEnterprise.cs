@@ -51,20 +51,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_Valid()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -93,7 +93,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseContent);
-            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
             Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal($"https://am.ui.localhost/accessmanagement/ui/consent/request?id={requestID}", consentInfo.ViewUri);
@@ -103,8 +103,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
         }
 
         /// <summary>
@@ -115,20 +115,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequestByOrg_Valid()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -157,7 +157,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseContent);
-            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
             Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.To, consentInfo.To);
@@ -169,8 +169,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("991825827")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("991825827")), consentInfo.ConsentRequestEvents[0].PerformedBy);
         }
 
         /// <summary>
@@ -181,20 +181,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequestDuplicatePost_Valid()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -223,7 +223,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseContent);
-            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
             Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
@@ -232,15 +232,15 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
 
             // Post again. Expects 200 ok since everyhing is the same
             HttpResponseMessage response2 = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent2 = await response2.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
             Assert.NotNull(responseContent2);
-            ConsentRequestDetailsExternal consentInfo2 = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfo2 = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
             Assert.Single(consentInfo2.ConsentRights);
             Assert.Single(consentInfo2.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo2.ValidTo.Minute);
@@ -249,28 +249,28 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo2.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo2.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo2.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo2.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo2.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfo2.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo2.ConsentRequestEvents[0].PerformedBy);
         }
 
         [Fact]
         public async Task CreateConsentRequestDuplicatePost_InvalidDifferentFrom()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -299,7 +299,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseContent);
-            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
             Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
@@ -308,11 +308,11 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
 
             // Post again but changes from. Should cause problem
-            consentRequest.From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025181049"));
+            consentRequest.From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025181049"));
             HttpResponseMessage response2 = await client.PostAsync(url, new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json"));
             string responseContent2 = await response2.Content.ReadAsStringAsync();
 
@@ -328,20 +328,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_AndCheckStatus_Valid()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -371,7 +371,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string location = response.Headers.Location.ToString();   
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseContent);
-            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
             Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
@@ -380,15 +380,15 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
 
             string getUrl = $"/accessmanagement/api/v1/enterprise/consentrequests/{consentInfo.Id}";
             HttpResponseMessage getResponse = await client.GetAsync(location);
             string getResponseConsent = await getResponse.Content.ReadAsStringAsync();
 
             Assert.NotNull(getResponseConsent);
-            ConsentRequestDetailsExternal consentInfoFromGet = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(getResponseConsent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfoFromGet = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(getResponseConsent, _jsonOptions);
             Assert.Single(consentInfoFromGet.ConsentRights);
             Assert.Single(consentInfoFromGet.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfoFromGet.ValidTo.Minute);
@@ -397,29 +397,29 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfoFromGet.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfoFromGet.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
         }
 
         [Fact]
         public async Task CreateConsentRequestRequiredDelegator_AndCheckStatus_Valid()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                RequiredDelegator = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                RequiredDelegator = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -449,7 +449,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string location = response.Headers.Location.ToString();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseContent);
-            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
             Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
@@ -458,15 +458,15 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
 
             string getUrl = $"/accessmanagement/api/v1/enterprise/consentrequests/{consentInfo.Id}";
             HttpResponseMessage getResponse = await client.GetAsync(location);
             string getResponseConsent = await getResponse.Content.ReadAsStringAsync();
 
             Assert.NotNull(getResponseConsent);
-            ConsentRequestDetailsExternal consentInfoFromGet = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(getResponseConsent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfoFromGet = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(getResponseConsent, _jsonOptions);
             Assert.Single(consentInfoFromGet.ConsentRights);
             Assert.Single(consentInfoFromGet.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfoFromGet.ValidTo.Minute);
@@ -476,28 +476,28 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfoFromGet.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfoFromGet.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
         }
 
         [Fact]
         public async Task CreateConsentRequestHandledByParty_AndCheckStatus_Valid()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -527,7 +527,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string location = response.Headers.Location.ToString();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseContent);
-            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
             Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
@@ -536,15 +536,15 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
 
             string getUrl = $"/accessmanagement/api/v1/enterprise/consentrequests/{consentInfo.Id}";
             HttpResponseMessage getResponse = await client.GetAsync(location);
             string getResponseConsent = await getResponse.Content.ReadAsStringAsync();
 
             Assert.NotNull(getResponseConsent);
-            ConsentRequestDetailsExternal consentInfoFromGet = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(getResponseConsent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfoFromGet = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(getResponseConsent, _jsonOptions);
             Assert.Single(consentInfoFromGet.ConsentRights);
             Assert.Single(consentInfoFromGet.ConsentRights[0].Metadata);
             Assert.Equal("urn:altinn:organization:identifier-no:810418192", consentInfoFromGet.HandledBy.ToString());
@@ -554,8 +554,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfoFromGet.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfoFromGet.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
         }
 
         /// <summary>
@@ -566,20 +566,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_ValidWithoutMetadata()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_navnescore"
@@ -605,7 +605,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseContent);
-            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
             Assert.Null(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
@@ -613,8 +613,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
         }
 
         /// <summary>
@@ -625,20 +625,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_ValidTwin()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -649,12 +649,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                             { "INNTEKTSAAR", "2022" }
                         }
                     },
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_skattegrunnlag"
@@ -685,7 +685,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.NotNull(responseContent);
-            ConsentRequestDetailsExternal consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsExternal>(responseContent, _jsonOptions);
+            ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
             Assert.Equal(2, consentInfo.ConsentRights.Count);
             Assert.Single(consentInfo.ConsentRights[0].Metadata);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
@@ -694,11 +694,11 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
             Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
             Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventTypeExternal.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
+            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
         }
 
         /// <summary>
@@ -709,20 +709,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_IncompatibleTemplates()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -733,12 +733,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                             { "INNTEKTSAAR", "ADSF" }
                         }
                     },
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_skattegrunnlag2"
@@ -782,20 +782,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_MissingMetadata()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -833,20 +833,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_WrongNamingMetadata()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -857,12 +857,12 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                             { "INNTEKTSAAR", "ADSF" }
                         }
                     },
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_skattegrunnlag"
@@ -908,20 +908,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_UnknownMetadata()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_navnescore"
@@ -966,13 +966,13 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_MissingRights()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
                 },
                 RequestMessage = new Dictionary<string, string>
@@ -1003,20 +1003,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_MissingAction()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                    new ConsentRightExternal
+                    new ConsentRightDto
                     {
                         Action = new List<string>(),
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"
@@ -1060,20 +1060,20 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         public async Task CreateConsentRequest_FromIsNonExistingPerson()
         {
             Guid requestID = Guid.CreateVersion7();
-            ConsentRequestExternal consentRequest = new ConsentRequestExternal
+            ConsentRequestDto consentRequest = new ConsentRequestDto
             {
                 Id = requestID,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01014922047")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01014922047")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
                 ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightExternal>
+                ConsentRights = new List<ConsentRightDto>
                 {
-                   new ConsentRightExternal
+                   new ConsentRightDto
                     {
                         Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeExternal>
+                        Resource = new List<ConsentResourceAttributeDto>
                         {
-                            new ConsentResourceAttributeExternal
+                            new ConsentResourceAttributeDto
                             {
                                 Type = "urn:altinn:resource",
                                 Value = "ttd_inntektsopplysninger"

@@ -8,7 +8,7 @@ namespace Altinn.Authorization.Api.Contracts.Consent
     /// A unique reference to a party in the form of an URN.
     /// </summary>
     [KeyValueUrn]
-    public abstract partial record ConsentPartyUrnExternal
+    public abstract partial record ConsentPartyUrn
     {
         /// <summary>
         /// Try to get the urn as a party id.

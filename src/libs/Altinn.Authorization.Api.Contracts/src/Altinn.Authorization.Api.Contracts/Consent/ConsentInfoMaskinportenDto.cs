@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents the consent information for Maskinporten.
     /// </summary>
-    public class ConsentInfoMaskinporten
+    public class ConsentInfoMaskinportenDto
     {
         /// <summary>
         /// The unique identifier for the consent. Same ID as concent request.
@@ -13,12 +13,12 @@
         /// <summary>
         /// Defines who is gives consent 
         /// </summary>
-        public required ConsentPartyUrnExternal? From { get; set; }
+        public required ConsentPartyUrn? From { get; set; }
 
         /// <summary>
         /// Defines the party requesting consent.
         /// </summary>
-        public required ConsentPartyUrnExternal To { get; set; }
+        public required ConsentPartyUrn To { get; set; }
 
         /// <summary>
         /// Defines when the consent was given.
@@ -33,6 +33,6 @@
         /// <summary>
         /// The consented rights.
         /// </summary>
-        public required List<ConsentRightExternal> ConsentRights { get; set; }
+        public required List<ConsentRightDto> ConsentRights { get; set; }
     }
 }

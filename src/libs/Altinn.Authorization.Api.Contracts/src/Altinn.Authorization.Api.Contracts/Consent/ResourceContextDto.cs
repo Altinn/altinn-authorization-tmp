@@ -1,6 +1,6 @@
 ﻿namespace Altinn.Authorization.Api.Contracts.Consent
 {
-    public class ResourceContextExternal
+    public class ResourceContextDto
     {
         /// <summary>
         /// The resource id of the consent

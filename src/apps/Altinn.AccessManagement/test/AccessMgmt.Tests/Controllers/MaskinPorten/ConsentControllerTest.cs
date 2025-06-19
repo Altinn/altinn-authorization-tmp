@@ -51,7 +51,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
-            await repositgo.CreateRequest(await GetRequest(requestId), ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
+            await repositgo.CreateRequest(await GetRequest(requestId), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
 
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";
@@ -59,11 +59,11 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:maskinporten/consent.read");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            ConsentLookup consentLookup = new ConsentLookup()
+            ConsentLookupDto consentLookup = new ConsentLookupDto()
             {
                 Id = requestId,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512"))
+                From = Altinn.Authorization.Api.Contracts.Consent.ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = Altinn.Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512"))
             };
 
             HttpResponseMessage response = await client.PostAsJsonAsync(url, consentLookup);
@@ -84,8 +84,8 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
             ConsentRequest request = await GetRequest(requestId);
             request.ValidTo = DateTime.UtcNow.AddDays(10);
-            await repositgo.CreateRequest(request, ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
-            ConsentContextExternal consentContextExternal = new ConsentContextExternal
+            await repositgo.CreateRequest(request, Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
+            ConsentContextDto consentContextExternal = new ConsentContextDto
             {
                 Language = "nb",
             };
@@ -97,16 +97,16 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:maskinporten/consent.read");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            ConsentLookup consentLookup = new ConsentLookup()
+            ConsentLookupDto consentLookup = new ConsentLookupDto()
             {
                 Id = requestId,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512"))
+                From = Altinn.Authorization.Api.Contracts.Consent.ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = Altinn.Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512"))
             };
 
             HttpResponseMessage response = await client.PostAsJsonAsync(url, consentLookup);
             string responseContent = await response.Content.ReadAsStringAsync();
-            ConsentInfoMaskinporten consentInfo = JsonSerializer.Deserialize<ConsentInfoMaskinporten>(responseContent, _jsonOptions);
+            ConsentInfoMaskinportenDto consentInfo = JsonSerializer.Deserialize<ConsentInfoMaskinportenDto>(responseContent, _jsonOptions);
             Assert.Equal(2, consentInfo.ConsentRights.Count());
         }
 
@@ -117,7 +117,7 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
             ConsentRequest request = await GetRequest(requestId);
             request.ValidTo = DateTime.UtcNow.AddDays(10);
-            await repositgo.CreateRequest(request, ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
+            await repositgo.CreateRequest(request, Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
 
             HttpClient client = GetTestClient();
             string url = $"/accessmanagement/api/v1/maskinporten/consent/lookup/";
@@ -125,11 +125,11 @@ namespace AccessMgmt.Tests.Controllers.MaskinPorten
             string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:maskinporten/consent.read");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            ConsentLookup consentLookup = new ConsentLookup()
+            ConsentLookupDto consentLookup = new ConsentLookupDto()
             {
                 Id = requestId,
-                From = ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse("810419512"))
+                From = Altinn.Authorization.Api.Contracts.Consent.ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = Altinn.Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512"))
             };
 
             HttpResponseMessage response = await client.PostAsJsonAsync(url, consentLookup);

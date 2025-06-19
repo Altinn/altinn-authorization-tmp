@@ -31,15 +31,15 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         [Route("consentrequests", Name = CreateRouteName)]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(ConsentRequestStatusExternal), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ConsentRequestStatusDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> CreateRequest([FromBody] ConsentRequestExternal consentRequest, CancellationToken cancellationToken = default)
+        public async Task<ActionResult> CreateRequest([FromBody] ConsentRequestDto consentRequest, CancellationToken cancellationToken = default)
         {
-            ConsentPartyUrn? consentPartyUrn = OrgUtil.GetAuthenticatedParty(User);
-            ConsentPartyUrn? supplierUrn = OrgUtil.GetSupplierParty(User);
+            Core.Models.Consent.ConsentPartyUrn? consentPartyUrn = OrgUtil.GetAuthenticatedParty(User);
+            Core.Models.Consent.ConsentPartyUrn? supplierUrn = OrgUtil.GetSupplierParty(User);
 
             if (consentPartyUrn == null)
             {
@@ -90,13 +90,13 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         [HttpGet]
         [Route("consentrequests/{consentRequestId:guid}", Name= GetRouteName)]
         [Produces(MediaTypeNames.Application.Json)]
-        [ProducesResponseType(typeof(ConsentRequestStatusExternal), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ConsentRequestStatusDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> GetRequest([FromRoute] Guid consentRequestId, CancellationToken cancellationToken = default)
         {
-            ConsentPartyUrn? consentPartyUrn = OrgUtil.GetAuthenticatedParty(User);
+            Core.Models.Consent.ConsentPartyUrn? consentPartyUrn = OrgUtil.GetAuthenticatedParty(User);
 
             if (consentPartyUrn == null)
             {

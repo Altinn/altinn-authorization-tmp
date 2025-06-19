@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines the view mode of the consent portal for external users.
     /// </summary>
-    public enum ConsentPortalViewModeExternal
+    public enum ConsentPortalViewMode
     {
         Hidden = 0,
 

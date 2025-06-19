@@ -14,41 +14,41 @@ namespace Altinn.AccessManagement.Api.Internal.Extensions
         /// <param name="details">The ConsentRequestDetails object to convert.</param>
         /// <returns>A ConsentRequestDetailsBFF object.</returns>
         /// <exception cref="ArgumentException">Thrown when an unknown consent party URN is encountered.</exception>
-        public static ConsentRequestDetailsBFF ToConsentRequestDetailsBFF(this ConsentRequestDetails details)
+        public static ConsentRequestDetailsBFFDto ToConsentRequestDetailsBFF(this ConsentRequestDetails details)
         {
-            ConsentPartyUrnExternal to;
+            Authorization.Api.Contracts.Consent.ConsentPartyUrn to;
             if (details.To.IsPartyUuid(out Guid toPartyUuid))
             {
-                to = ConsentPartyUrnExternal.PartyUuid.Create(toPartyUuid);
+                to = Authorization.Api.Contracts.Consent.ConsentPartyUrn.PartyUuid.Create(toPartyUuid);
             }
             else
             {
                 throw new ArgumentException("Unknown consent party urn");
             }
 
-            ConsentPartyUrnExternal from;
+            Authorization.Api.Contracts.Consent.ConsentPartyUrn from;
             if (details.From.IsPartyUuid(out Guid fromPartyUuid))
             {
-                from = ConsentPartyUrnExternal.PartyUuid.Create(fromPartyUuid);
+                from = Authorization.Api.Contracts.Consent.ConsentPartyUrn.PartyUuid.Create(fromPartyUuid);
             }
             else
             {
                 throw new ArgumentException("Unknown consent party urn");
             }
 
-            ConsentPartyUrnExternal? requiredDelegator = null;
+            Authorization.Api.Contracts.Consent.ConsentPartyUrn? requiredDelegator = null;
             if (details.RequiredDelegator != null && details.RequiredDelegator.IsPartyUuid(out Guid delegatorUuid))
             {
-                requiredDelegator = ConsentPartyUrnExternal.PartyUuid.Create(delegatorUuid);
+                requiredDelegator = Authorization.Api.Contracts.Consent.ConsentPartyUrn.PartyUuid.Create(delegatorUuid);
             }
 
-            ConsentPartyUrnExternal? handledBy = null;
+            Authorization.Api.Contracts.Consent.ConsentPartyUrn? handledBy = null;
             if (details.HandledBy != null && details.HandledBy.IsPartyUuid(out Guid handledByUuid))
             {
-                handledBy = ConsentPartyUrnExternal.PartyUuid.Create(handledByUuid);
+                handledBy = Authorization.Api.Contracts.Consent.ConsentPartyUrn.PartyUuid.Create(handledByUuid);
             }
 
-            return new ConsentRequestDetailsBFF
+            return new ConsentRequestDetailsBFFDto
             {
                 Id = details.Id,
                 From = from,

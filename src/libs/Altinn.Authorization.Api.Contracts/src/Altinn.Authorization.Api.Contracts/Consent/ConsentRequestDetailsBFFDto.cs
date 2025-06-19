@@ -1,9 +1,9 @@
 ﻿namespace Altinn.Authorization.Api.Contracts.Consent
 {
     /// <summary>
-    /// Represents a consent request.
+    /// Represents a consent request. Model used internally in the BFF (Backend for Frontend) layer to handle consent requests.
     /// </summary>
-    public class ConsentRequestDetailsExternal
+    public class ConsentRequestDetailsBFFDto
     {
         /// <summary>
         /// The id of the consent request.
@@ -13,22 +13,22 @@
         /// <summary>
         /// Defines the party to request consent from.
         /// </summary>
-        public required ConsentPartyUrnExternal From { get; set; }
+        public required ConsentPartyUrn From { get; set; }
 
         /// <summary>
         /// Defines the party requesting consent.
         /// </summary>
-        public required ConsentPartyUrnExternal To { get; set; }
+        public required ConsentPartyUrn To { get; set; }
 
         /// <summary>
         /// The required party that need to accept the consent request.
         /// </summary>
-        public ConsentPartyUrnExternal? RequiredDelegator { get; set; }
+        public ConsentPartyUrn? RequiredDelegator { get; set; }
 
         /// <summary>
         /// The handled by party that handles the consent request on behalf of the requesting party.
         /// </summary>
-        public ConsentPartyUrnExternal? HandledBy { get; set; }
+        public ConsentPartyUrn? HandledBy { get; set; }
 
         /// <summary>
         /// Defines how long the concent is valid
@@ -38,12 +38,12 @@
         /// <summary>
         /// The consented rights.
         /// </summary>
-        public required List<ConsentRightExternal> ConsentRights { get; set; }
+        public required List<ConsentRightDto> ConsentRights { get; set; }
 
         /// <summary>
         /// The request message
         /// </summary>
-        public Dictionary<string, string>? RequestMessage { get; set; }
+        public Dictionary<string, string>? Requestmessage { get; set; }
 
         /// <summary>
         /// Defines when the consent was given.
@@ -58,11 +58,21 @@
         /// <summary>
         /// List all events related to consent request
         /// </summary>
-        public required List<ConsentRequestEventExternal> ConsentRequestEvents { get; set; }
+        public required List<ConsentRequestEventDto> ConsentRequestEvents { get; set; }
 
         /// <summary>
         /// The URI for the view that should be shown to the user when requesting consent.
         /// </summary>
         public string ViewUri { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The consent template id.
+        /// </summary>
+        public string? TemplateId { get; set; }
+
+        /// <summary>
+        /// The version of the consent template.
+        /// </summary>
+        public int? TemplateVersion { get; set; }
     }
 }

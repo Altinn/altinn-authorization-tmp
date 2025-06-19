@@ -9,11 +9,11 @@ namespace Altinn.AccessManagement.Api.Enterprise.Extensions
     public static class ConsentRightExternalExtensions
     {
         /// <summary>
-        /// Converts a <see cref="ConsentRightExternal"/> object to a <see cref="ConsentRight"/> object.
+        /// Converts a <see cref="ConsentRightDto"/> object to a <see cref="ConsentRight"/> object.
         /// </summary>
-        /// <param name="core">The <see cref="ConsentRightExternal"/> object to convert.</param>
+        /// <param name="core">The <see cref="ConsentRightDto"/> object to convert.</param>
         /// <returns>A <see cref="ConsentRight"/> object representing the converted data.</returns>
-        public static ConsentRight ToConsentRightExternal(this ConsentRightExternal external)
+        public static ConsentRight ToConsentRightExternal(this ConsentRightDto external)
         {
             ConsentRight consentRight = new ConsentRight
             {

@@ -7,7 +7,7 @@ namespace Altinn.Authorization.Api.Contracts.Consent
     /// Enum for the status of a consent request
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum ConsentRequestEventTypeExternal
+    public enum ConsentRequestEventType
     {
         [EnumMember(Value = "created")]
         Created = 0,

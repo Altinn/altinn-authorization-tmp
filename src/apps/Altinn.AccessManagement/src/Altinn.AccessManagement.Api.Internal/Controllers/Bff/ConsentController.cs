@@ -39,7 +39,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return Unauthorized();
             }
 
-            ConsentPartyUrn performedByParty = ConsentPartyUrn.PartyUuid.Create(performedBy.Value);
+            Core.Models.Consent.ConsentPartyUrn performedByParty = Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(performedBy.Value);
 
             Result<ConsentRequestDetails> consentRequest = await _consentService.GetRequest(requestId, performedByParty, true, cancellationToken);
             if (consentRequest.IsProblem)
@@ -90,7 +90,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return NotFound("Redirect URL not found for the consent request.");
             }
 
-            return Ok(new ConsentRedirectUrl() { Url = redirectUrl });
+            return Ok(new ConsentRedirectUrlDto() { Url = redirectUrl });
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         [HttpPost]
         [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
         [Route("consentrequests/{requestId}/accept")]
-        public async Task<IActionResult> Accept(Guid requestId, [FromBody] ConsentContextExternal context, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> Accept(Guid requestId, [FromBody] ConsentContextDto context, CancellationToken cancellationToken = default)
         {
             Guid? performedBy = UserUtil.GetUserUuid(User);
             if (performedBy == null)

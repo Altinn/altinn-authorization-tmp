@@ -13,7 +13,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
         /// <summary>
         /// Converts external consent request to internal model
         /// </summary>
-        public static ConsentRequest ToCore(ConsentRequestExternal consentRequestExternal)
+        public static ConsentRequest ToCore(ConsentRequestDto consentRequestExternal)
         {
             return new ConsentRequest
             {
@@ -30,16 +30,16 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
             };
         }
 
-        private static ConsentPartyUrn ToCore(ConsentPartyUrnExternal consentPartyUrnExternal)
+        private static Core.Models.Consent.ConsentPartyUrn ToCore(Authorization.Api.Contracts.Consent.ConsentPartyUrn consentPartyUrnExternal)
         {
             return consentPartyUrnExternal switch
             {
                 _ when consentPartyUrnExternal.IsOrganizationId(out OrganizationNumber? organizationNumber) =>
-                    ConsentPartyUrn.OrganizationId.Create(organizationNumber),
+                    Core.Models.Consent.ConsentPartyUrn.OrganizationId.Create(organizationNumber),
                 _ when consentPartyUrnExternal.IsPersonId(out PersonIdentifier? personIdentifier) =>
-                    ConsentPartyUrn.PersonId.Create(personIdentifier),
+                    Core.Models.Consent.ConsentPartyUrn.PersonId.Create(personIdentifier),
                 _ when consentPartyUrnExternal.IsPartyUuid(out Guid partyUuid) =>
-                    ConsentPartyUrn.PartyUuid.Create(partyUuid),
+                    Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(partyUuid),
                 _ => throw new ArgumentException("Unknown consent party urn")
             };
         }

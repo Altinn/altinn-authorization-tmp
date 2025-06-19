@@ -15,18 +15,18 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Extensions
         /// <param name="consent">The Consent object to convert.</param>
         /// <returns>A ConsentRequestDetailsBFF object.</returns>
         /// <exception cref="ArgumentException">Thrown when an unknown consent party URN is encountered.</exception>
-        public static ConsentInfoMaskinporten ToConsentInfoMaskinporten(this Consent consent)
+        public static ConsentInfoMaskinportenDto ToConsentInfoMaskinporten(this Consent consent)
         {
-            ConsentPartyUrnExternal to = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(consent.To.ValueSpan));
+            Authorization.Api.Contracts.Consent.ConsentPartyUrn to = Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(consent.To.ValueSpan));
 
-            ConsentPartyUrnExternal from = consent.From switch
+            Authorization.Api.Contracts.Consent.ConsentPartyUrn from = consent.From switch
             {
-                ConsentPartyUrn.PersonId => ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse(consent.From.ValueSpan)),
-                ConsentPartyUrn.OrganizationId => ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(consent.From.ValueSpan)),
+                Core.Models.Consent.ConsentPartyUrn.PersonId => Authorization.Api.Contracts.Consent.ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(consent.From.ValueSpan)),
+                Core.Models.Consent.ConsentPartyUrn.OrganizationId => Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(consent.From.ValueSpan)),
                 _ => throw new ArgumentException("Unknown consent party urn")
             };
 
-            return new ConsentInfoMaskinporten
+            return new ConsentInfoMaskinportenDto
             {
                 Id = consent.Id,
                 From = from,

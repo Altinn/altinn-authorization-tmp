@@ -27,7 +27,7 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
         [HttpPost]
         [Route("lookup")]
         [Authorize(Policy = AuthzConstants.POLICY_MASKINPORTEN_CONSENT_READ)]
-        public async Task<ActionResult<ConsentInfoMaskinporten>> GetConsent([FromBody] ConsentLookup consentLookup, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<ConsentInfoMaskinportenDto>> GetConsent([FromBody] ConsentLookupDto consentLookup, CancellationToken cancellationToken = default)
         {
             Result<Consent> consent = await _consentService.GetConsent(consentLookup.Id, MapToCore(consentLookup.From), MapToCore(consentLookup.To), cancellationToken);
 
@@ -39,12 +39,12 @@ namespace Altinn.AccessManagement.Api.Maskinporten.Controllers
             return Ok(consent.Value.ToConsentInfoMaskinporten());
         }
 
-        private static ConsentPartyUrn MapToCore(ConsentPartyUrnExternal consentPartyUrnExternal)
+        private static Core.Models.Consent.ConsentPartyUrn MapToCore(Authorization.Api.Contracts.Consent.ConsentPartyUrn consentPartyUrnExternal)
         {
-            ConsentPartyUrn consentPartyUrn = consentPartyUrnExternal switch
+            Core.Models.Consent.ConsentPartyUrn consentPartyUrn = consentPartyUrnExternal switch
             {
-                ConsentPartyUrnExternal.PersonId personUrn => ConsentPartyUrn.PersonId.Create(personUrn.Value),
-                ConsentPartyUrnExternal.OrganizationId organizationUrn => ConsentPartyUrn.OrganizationId.Create(organizationUrn.Value),
+                Authorization.Api.Contracts.Consent.ConsentPartyUrn.PersonId personUrn => Core.Models.Consent.ConsentPartyUrn.PersonId.Create(personUrn.Value),
+                Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId organizationUrn => Core.Models.Consent.ConsentPartyUrn.OrganizationId.Create(organizationUrn.Value),
                 _ => throw new ArgumentException("Unknown consent party urn")
             };
 

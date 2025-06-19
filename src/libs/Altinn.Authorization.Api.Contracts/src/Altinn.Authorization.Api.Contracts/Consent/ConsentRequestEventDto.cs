@@ -3,7 +3,7 @@
     /// <summary>
     /// represents an event related to a consent request.
     /// </summary>
-    public class ConsentRequestEventExternal
+    public class ConsentRequestEventDto
     {
         /// <summary>
         /// The ID of the consent event that this event is related to.
@@ -18,12 +18,12 @@
         /// <summary>
         /// Who made the event happen
         /// </summary>
-        public required ConsentPartyUrnExternal PerformedBy { get; set; }
+        public required ConsentPartyUrn PerformedBy { get; set; }
 
         /// <summary>
         /// The type of event that happened.
         /// </summary>
-        public ConsentRequestEventTypeExternal EventType { get; set; }
+        public ConsentRequestEventType EventType { get; set; }
 
         /// <summary>
         /// The ID of the consent request that this event is related to.

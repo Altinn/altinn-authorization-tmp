@@ -13,7 +13,7 @@ namespace Altinn.AccessManagement.Api.Internal.Extensions
         /// </summary>
         /// <param name="core">the ConsentContextExternal</param>
         /// <returns></returns>
-        public static ConsentContext ToConsentContext(this ConsentContextExternal core)
+        public static ConsentContext ToConsentContext(this ConsentContextDto core)
         {
             return new ConsentContext
             {

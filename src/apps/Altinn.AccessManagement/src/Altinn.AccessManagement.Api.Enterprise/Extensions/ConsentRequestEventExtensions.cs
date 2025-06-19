@@ -15,33 +15,33 @@ namespace Altinn.AccessManagement.Api.Enterprise.Extensions
         /// <param name="core">The ConsentRequestEvent object to convert.</param>
         /// <returns>A ConsentRequestDetailsBFF object.</returns>
         /// <exception cref="ArgumentException">Thrown when an unknown consent party URN is encountered.</exception>
-        public static ConsentRequestEventExternal ToConsentRequestEventExternal(this ConsentRequestEvent core)
+        public static ConsentRequestEventDto ToConsentRequestEventExternal(this ConsentRequestEvent core)
         {
-            ConsentPartyUrnExternal toExternal;
+            Authorization.Api.Contracts.Consent.ConsentPartyUrn toExternal;
 
             if (core.PerformedBy.IsOrganizationId(out OrganizationNumber? organizationNumberTo))
             {
-                toExternal = ConsentPartyUrnExternal.OrganizationId.Create(organizationNumberTo);
+                toExternal = Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId.Create(organizationNumberTo);
             }
             else if (core.PerformedBy.IsPersonId(out PersonIdentifier? personIdentifier))
             {
-                toExternal = ConsentPartyUrnExternal.PersonId.Create(personIdentifier);
+                toExternal = Authorization.Api.Contracts.Consent.ConsentPartyUrn.PersonId.Create(personIdentifier);
             }
             else if (core.PerformedBy.IsPartyUuid(out Guid partyUuid))
             {
-                toExternal = ConsentPartyUrnExternal.PartyUuid.Create(partyUuid);
+                toExternal = Authorization.Api.Contracts.Consent.ConsentPartyUrn.PartyUuid.Create(partyUuid);
             }
             else
             {
                 throw new ArgumentException("Unknown consent party urn");
             }
 
-            return new ConsentRequestEventExternal
+            return new ConsentRequestEventDto
             {
                 ConsentEventID = core.ConsentEventID,
                 Created = core.Created,
                 PerformedBy = toExternal,
-                EventType = (ConsentRequestEventTypeExternal)core.EventType,
+                EventType = (Authorization.Api.Contracts.Consent.ConsentRequestEventType)core.EventType,
                 ConsentRequestID = core.ConsentRequestID
             };
         }

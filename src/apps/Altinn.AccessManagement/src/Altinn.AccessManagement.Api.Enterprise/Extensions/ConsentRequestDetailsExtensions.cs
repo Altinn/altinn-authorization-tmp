@@ -15,18 +15,18 @@ namespace Altinn.AccessManagement.Api.Enterprise.Extensions
         /// <param name="details">The ConsentRequestDetails object to convert.</param>
         /// <returns>A ConsentRequestDetailsBFF object.</returns>
         /// <exception cref="ArgumentException">Thrown when an unknown consent party URN is encountered.</exception>
-        public static ConsentRequestDetailsExternal ToConsentRequestDetailsExternal(this ConsentRequestDetails details)
+        public static ConsentRequestDetailsDto ToConsentRequestDetailsExternal(this ConsentRequestDetails details)
         {
-            ConsentPartyUrnExternal to = ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(details.To.ValueSpan));
+            Authorization.Api.Contracts.Consent.ConsentPartyUrn to = Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(details.To.ValueSpan));
 
-            ConsentPartyUrnExternal from = details.From switch
+            Authorization.Api.Contracts.Consent.ConsentPartyUrn from = details.From switch
             {
-                ConsentPartyUrn.PersonId => ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse(details.From.ValueSpan)),
-                ConsentPartyUrn.OrganizationId => ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(details.From.ValueSpan)),
+                Core.Models.Consent.ConsentPartyUrn.PersonId => Authorization.Api.Contracts.Consent.ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(details.From.ValueSpan)),
+                Core.Models.Consent.ConsentPartyUrn.OrganizationId => Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(details.From.ValueSpan)),
                 _ => throw new ArgumentException("Unknown consent party urn")
             };
 
-            return new ConsentRequestDetailsExternal
+            return new ConsentRequestDetailsDto
             {
                 Id = details.Id,
                 From = from,
@@ -34,16 +34,16 @@ namespace Altinn.AccessManagement.Api.Enterprise.Extensions
                 RequiredDelegator = details.RequiredDelegator != null
                     ? details.RequiredDelegator switch
                     {
-                        ConsentPartyUrn.PersonId => ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse(details.RequiredDelegator.ValueSpan)),
-                        ConsentPartyUrn.OrganizationId => ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(details.RequiredDelegator.ValueSpan)),
+                        Core.Models.Consent.ConsentPartyUrn.PersonId => Authorization.Api.Contracts.Consent.ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(details.RequiredDelegator.ValueSpan)),
+                        Core.Models.Consent.ConsentPartyUrn.OrganizationId => Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(details.RequiredDelegator.ValueSpan)),
                         _ => throw new ArgumentException("Unknown consent party urn")
                     }
                     : null,
                 HandledBy = details.HandledBy != null
                     ? details.HandledBy switch
                     {
-                        ConsentPartyUrn.PersonId => ConsentPartyUrnExternal.PersonId.Create(PersonIdentifier.Parse(details.HandledBy.ValueSpan)),
-                        ConsentPartyUrn.OrganizationId => ConsentPartyUrnExternal.OrganizationId.Create(OrganizationNumber.Parse(details.HandledBy.ValueSpan)),
+                        Core.Models.Consent.ConsentPartyUrn.PersonId => Authorization.Api.Contracts.Consent.ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse(details.HandledBy.ValueSpan)),
+                        Core.Models.Consent.ConsentPartyUrn.OrganizationId => Authorization.Api.Contracts.Consent.ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse(details.HandledBy.ValueSpan)),
                         _ => throw new ArgumentException("Unknown consent party urn")
                     }
                     : null,
