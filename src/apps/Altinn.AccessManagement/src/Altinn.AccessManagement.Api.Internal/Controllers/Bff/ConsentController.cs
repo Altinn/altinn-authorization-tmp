@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Api.Internal.Extensions;
+﻿using System.Security.Claims;
+using Altinn.AccessManagement.Api.Internal.Extensions;
 using Altinn.AccessManagement.Api.Internal.Utils;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models.Consent;
@@ -8,9 +9,9 @@ using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Common.PEP.Helpers;
 using Altinn.Common.PEP.Interfaces;
+using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
 {
@@ -55,7 +56,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             // Check if the user is authorized to view the consent request. Anyone with read access to access management can view the consent request details.
             if (consentRequest.Value.From.IsPartyUuid(out Guid resourePartUuuid))
             {
-                bool isAuthorized = await IsAuthorized("altinn_access_management", resourePartUuuid, User, "read");
+                bool isAuthorized = await AuthorizeResourceAccess("altinn_access_management", resourePartUuuid, User, "read");
 
                 if (isAuthorized)
                 {
@@ -90,7 +91,18 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 consent.Problem.ToActionResult();
             }
 
-            return Ok(consent.Value);
+            // Check if the user is authorized to view the consent request. Anyone with read access to access management can view the consent request details.
+            if (consent.Value != null && consent.Value.From.IsPartyUuid(out Guid resourePartUuuid))
+            {
+                bool isAuthorized = await AuthorizeResourceAccess("altinn_access_management", resourePartUuuid, User, "read");
+
+                if (isAuthorized)
+                {
+                    return Ok(consent.Value);
+                }
+            }
+
+            return Unauthorized();
         }
 
         /// <summary>
@@ -131,9 +143,27 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return BadRequest("Consent context is required");
             }
 
+            Core.Models.Consent.ConsentPartyUrn performedByParty = Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(performedBy.Value);
+            Result<ConsentRequestDetails> consentRequest = await _consentService.GetRequest(requestId, performedByParty, true, cancellationToken);
+            if (consentRequest.IsProblem)
+            {
+                return consentRequest.Problem.ToActionResult();
+            }
+
+            // Check if the user is authorized to accept consent request in general. 
+            if (consentRequest.Value.From.IsPartyUuid(out Guid resourePartUuuid))
+            {
+                bool isAuthorized = await AuthorizeResourceAccess("altinn_access_management", resourePartUuuid, User, "write");
+
+                if (!isAuthorized)
+                {
+                    return Unauthorized();
+                }
+            }
+
             ConsentContext consentContext = context.ToConsentContext();
 
-            Result<ConsentRequestDetails> consentRequest = await _consentService.AcceptRequest(requestId, performedBy.Value, consentContext, cancellationToken);
+            consentRequest = await _consentService.AcceptRequest(requestId, performedBy.Value, consentContext, cancellationToken);
 
             if (consentRequest.IsProblem)
             {
@@ -157,7 +187,25 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return Unauthorized();
             }
 
-            Result<ConsentRequestDetails> consentRequest = await _consentService.RejectRequest(requestId, performedBy.Value, cancellationToken);
+            Core.Models.Consent.ConsentPartyUrn performedByParty = Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(performedBy.Value);
+            Result<ConsentRequestDetails> consentRequest = await _consentService.GetRequest(requestId, performedByParty, true, cancellationToken);
+            if (consentRequest.IsProblem)
+            {
+                return consentRequest.Problem.ToActionResult();
+            }
+
+            // Check if the user is authorized to reject consent request in general. 
+            if (consentRequest.Value.From.IsPartyUuid(out Guid resourePartUuuid))
+            {
+                bool isAuthorized = await AuthorizeResourceAccess("altinn_access_management", resourePartUuuid, User, "write");
+
+                if (!isAuthorized)
+                {
+                    return Unauthorized();
+                }
+            }
+
+            consentRequest = await _consentService.RejectRequest(requestId, performedBy.Value, cancellationToken);
 
             if (consentRequest.IsProblem)
             {
@@ -181,6 +229,23 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return Unauthorized();
             }
 
+            Result<Consent> consent = await consentService.GetConsent(consentId, cancellationToken);
+            if (consent.IsProblem)
+            {
+                consent.Problem.ToActionResult();
+            }
+
+            // Check if the user is authorized to view the consent request. Anyone with read access to access management can view the consent request details.
+            if (consent.Value != null && consent.Value.From.IsPartyUuid(out Guid resourePartUuuid))
+            {
+                bool isAuthorized = await AuthorizeResourceAccess("altinn_access_management", resourePartUuuid, User, "write");
+
+                if (!isAuthorized)
+                {
+                    return Unauthorized();
+                }
+            }
+
             Result<ConsentRequestDetails> result = await _consentService.RevokeConsent(consentId, performedBy.Value, cancellationToken);
 
             if (result.IsProblem)
@@ -191,7 +256,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             return Ok(result.Value);
         }
 
-        private async Task<bool> IsAuthorized(string resource, Guid resourceParty, ClaimsPrincipal userPrincipal,  string action)
+        private async Task<bool> AuthorizeResourceAccess(string resource, Guid resourceParty, ClaimsPrincipal userPrincipal,  string action)
         {
             XacmlJsonRequestRoot request = DecisionHelper.CreateDecisionRequestForResourceRegistryResource(resource, resourceParty, userPrincipal, "read");
             XacmlJsonResponse response = await _pdp.GetDecisionForRequest(request);

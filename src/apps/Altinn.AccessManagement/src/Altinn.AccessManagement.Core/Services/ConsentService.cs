@@ -217,8 +217,8 @@ namespace Altinn.AccessManagement.Core.Services
                 Consent consent = new()
                 {
                     Id = consentRequest.Id,
-                    From = await MapToExternalIdentity(consentRequest.From, cancellationToken),
-                    To = await MapToExternalIdentity(consentRequest.To, cancellationToken),
+                    From = consentRequest.From,
+                    To = consentRequest.To,
                     ValidTo = consentRequest.ValidTo,
                     ConsentRights = consentRequest.ConsentRights
                 };
