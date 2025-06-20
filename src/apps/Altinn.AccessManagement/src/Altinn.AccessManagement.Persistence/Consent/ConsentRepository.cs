@@ -217,13 +217,21 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 await using NpgsqlCommand resourceCommand = conn.CreateCommand();
                 for (int i = 0; i < consentRight.Resource.Count; i++)
                 {
-                    values.Add($"(@consentRightId{i}, @type{i}, @value{i})");
+                    values.Add($"(@consentRightId{i}, @type{i}, @value{i}, @version{i})");
                     resourceCommand.Parameters.AddWithValue($"@consentRightId{i}", consentRightGuid);
                     resourceCommand.Parameters.AddWithValue($"@type{i}", consentRight.Resource[i].Type);
                     resourceCommand.Parameters.AddWithValue($"@value{i}", consentRight.Resource[i].Value);
+                    if (consentRight.Resource[i].Version != null)
+                    {
+                        resourceCommand.Parameters.AddWithValue($"@version{i}", consentRight.Resource[i].Version);
+                    }
+                    else
+                    {
+                        resourceCommand.Parameters.AddWithValue($"@version{i}", DBNull.Value);
+                    }
                 }
 
-                resourceCommand.CommandText = $"INSERT INTO consent.resourceattribute (consentRightId, type, value) VALUES {string.Join(", ", values)}";
+                resourceCommand.CommandText = $"INSERT INTO consent.resourceattribute (consentRightId, type, value, version) VALUES {string.Join(", ", values)}";
                 await resourceCommand.ExecuteNonQueryAsync(cancellationToken);
 
                 if (consentRight.Metadata != null && consentRight.Metadata.Count > 0)
@@ -481,7 +489,8 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 SELECT 
                 cr.consentRightId,
                 type,
-                value 
+                value,
+                version
                 FROM consent.resourceattribute ra 
                 join consent.consentright cr on cr.consentRightId = ra.consentRightId 
                 WHERE cr.consentRequestId = @id
@@ -499,7 +508,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 ConsentResourceAttribute consentResourceAttribute = new()
                 {
                     Type = await reader.GetFieldValueAsync<string>("type", cancellationToken: cancellationToken),
-                    Value = await reader.GetFieldValueAsync<string>("value", cancellationToken: cancellationToken)
+                    Value = await reader.GetFieldValueAsync<string>("value", cancellationToken: cancellationToken),
+                    Version = await reader.IsDBNullAsync(reader.GetOrdinal("version"), cancellationToken) ? null
+                        : await reader.GetFieldValueAsync<string>("version", cancellationToken: cancellationToken)
                 };
 
                 if (keyValuePairs.TryGetValue(consentRightId, out List<ConsentResourceAttribute> value))
