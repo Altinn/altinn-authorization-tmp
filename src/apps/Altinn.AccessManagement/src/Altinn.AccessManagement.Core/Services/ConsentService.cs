@@ -38,7 +38,6 @@ namespace Altinn.AccessManagement.Core.Services
         private readonly TimeProvider _timeProvider = timeProvider;
         private readonly GeneralSettings _generalSettings = generalSettings.Value;
 
-        private const string _consentRequestStatus = "Status";
         private const string ResourceParam = "Resource";
 
         /// <inheritdoc/>
@@ -349,7 +348,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             ValidationErrorBuilder errors = default;
-            ValidateContext(details, context, ref errors);
+            ValidateContext(context, ref errors);
 
             if (errors.TryBuild(out var beforeErrorREsult))
             {
@@ -701,7 +700,7 @@ namespace Altinn.AccessManagement.Core.Services
             return consentRequest;
         }
 
-        private void ValidateContext(ConsentRequestDetails consentRequest, ConsentContext context, ref ValidationErrorBuilder errors)
+        private static void ValidateContext(ConsentContext context, ref ValidationErrorBuilder errors)
         {
             if (context == null)
             {
@@ -775,10 +774,10 @@ namespace Altinn.AccessManagement.Core.Services
                 }
             }
 
-            ValidateRequiredMetadata(ref problemsBuilder, rightIndex, consentRight, resourceDetails);
+            ValidateRequiredMetadata(ref problemsBuilder, consentRight, resourceDetails);
         }
 
-        private static void ValidateRequiredMetadata(ref MultipleProblemBuilder problemsBuilder, int rightIndex, ConsentRight consentRight, ServiceResource resourceDetails)
+        private static void ValidateRequiredMetadata(ref MultipleProblemBuilder problemsBuilder, ConsentRight consentRight, ServiceResource resourceDetails)
         {
             if (resourceDetails.ConsentMetadata != null)
             {
