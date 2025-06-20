@@ -6,6 +6,9 @@
     public class MetadataDictionary
        : Dictionary<string, string>
     {
+        /// <summary>
+        /// The default constructor for MetadataDictionary.
+        /// </summary>
         public MetadataDictionary()
             : base(StringComparer.OrdinalIgnoreCase)
         {

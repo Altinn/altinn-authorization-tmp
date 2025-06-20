@@ -24,6 +24,9 @@
         /// </summary>
         public MetadataDictionary Metadata { get; set; }
 
+        /// <summary>
+        /// Adds metadata values to the ConsentRight.
+        /// </summary>
         public void AddMetadataValues(IReadOnlyDictionary<string, string> dictionary)
         {
             if (dictionary != null)

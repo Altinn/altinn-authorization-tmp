@@ -199,7 +199,6 @@ namespace Altinn.AccessManagement.Core.Services
             ValidationErrorBuilder errors = default;
             ConsentRequestDetails consentRequest = await _consentRepository.GetRequest(consentRequestId, cancellationToken);
 
-            // TODO Authorize user for consent request
             if (consentRequest == null)
             {
                 errors.Add(ValidationErrors.ConsentNotFound, "/from");
