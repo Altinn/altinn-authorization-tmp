@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Altinn.Authorization.Host.Identity;
 using Altinn.Authorization.Host.Startup;
 using Altinn.Authorization.Integration.Platform.AccessManagement;
@@ -223,7 +224,7 @@ public static partial class ServiceCollectionExtensions
         /// <returns>The updated <see cref="PlatformBuilder"/>.</returns>
         public PlatformBuilder AddAccessManagement(Action<AltinnAccessManagementOptions> configureOptions)
         {
-            if (Services.Contains(Markers.SblBridge))
+            if (Services.Contains(Markers.AccessManagement))
             {
                 return this;
             }
@@ -233,7 +234,7 @@ public static partial class ServiceCollectionExtensions
                 .Configure(configureOptions);
 
             Services.AddSingleton<IAltinnAccessManagement, AltinnAccessManagementClient>();
-            Services.Add(Markers.SblBridge);
+            Services.Add(Markers.AccessManagement);
 
             return this;
         }
@@ -248,12 +249,16 @@ public static partial class ServiceCollectionExtensions
 
             public static ServiceDescriptor AccessManagement { get; } = ServiceDescriptor.Singleton<AccessManagementMarker, AccessManagementMarker>();
 
+            [SuppressMessage("CodeSmell", "S2094:Classes should not be empty", Justification = "Used as a DI marker")]
             private sealed class RegisterMarker { }
 
+            [SuppressMessage("CodeSmell", "S2094:Classes should not be empty", Justification = "Used as a DI marker")]
             private sealed class ResourceRegisterMarker { }
 
+            [SuppressMessage("CodeSmell", "S2094:Classes should not be empty", Justification = "Used as a DI marker")]
             private sealed class SblBridgeMarker { }
 
+            [SuppressMessage("CodeSmell", "S2094:Classes should not be empty", Justification = "Used as a DI marker")]
             private sealed class AccessManagementMarker { }
         }
     }

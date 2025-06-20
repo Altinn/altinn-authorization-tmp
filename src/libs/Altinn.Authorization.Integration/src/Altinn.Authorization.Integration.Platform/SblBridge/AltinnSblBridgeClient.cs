@@ -6,6 +6,7 @@ namespace Altinn.Authorization.Integration.Platform.SblBridge;
 /// Client for interacting with the Altinn Register service.
 /// </summary>
 /// <param name="HttpClientFactory">Factory for creating HTTP clients.</param>
+/// <param name="PlatformOptions">Options for configuring platform integration services.</param>
 /// <param name="Options">Configuration options for the Altinn Register service.</param>
 public partial class AltinnSblBridgeClient(
     IHttpClientFactory HttpClientFactory,
