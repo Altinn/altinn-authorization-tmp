@@ -70,3 +70,24 @@ public class ExtAssignment : Assignment
     /// </summary>
     public Entity To { get; set; }
 }
+
+/// <summary>
+/// Extended Assignment
+/// </summary>
+public class ExtendedAssignment : Assignment
+{
+    /// <summary>
+    /// Role
+    /// </summary>
+    public ExtendedRole Role { get; set; }
+
+    /// <summary>
+    /// ActiveFrom (Entity)
+    /// </summary>
+    public ExtendedEntity From { get; set; }
+
+    /// <summary>
+    /// ActiveTo (Entity)
+    /// </summary>
+    public ExtendedEntity To { get; set; }
+}

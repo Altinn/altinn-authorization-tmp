@@ -6,6 +6,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Configurations;
 
-public class ConnectionPackageConfiguration : IEntityTypeConfiguration<ConnectionPackage> { }
-public class ExtendedConnectionPackageConfiguration : IEntityTypeConfiguration<ExtConnectionPackage> { }
-public class AuditConnectionPackageConfiguration : AuditConfiguration<AuditConnectionPackage> { public AuditConnectionPackageConfiguration() : base("ConnectionPackage") { } }
+//public class ConnectionPackageConfiguration : IEntityTypeConfiguration<ConnectionPackage> { }
+//public class ExtendedConnectionPackageConfiguration : IEntityTypeConfiguration<ExtConnectionPackage> { }
+//public class AuditConnectionPackageConfiguration : AuditConfiguration<AuditConnectionPackage> { public AuditConnectionPackageConfiguration() : base("ConnectionPackage") { } }

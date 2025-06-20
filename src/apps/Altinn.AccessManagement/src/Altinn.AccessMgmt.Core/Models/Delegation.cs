@@ -70,3 +70,24 @@ public class ExtDelegation : Delegation
     /// </summary>
     public Entity Facilitator { get; set; }
 }
+
+/// <summary>
+/// Extended delegation
+/// </summary>
+public class ExtendedDelegation : Delegation
+{
+    /// <summary>
+    /// Assignment to delegate from
+    /// </summary>
+    public ExtendedAssignment From { get; set; }
+
+    /// <summary>
+    /// Assignment to delegate to
+    /// </summary>
+    public ExtendedAssignment To { get; set; }
+
+    /// <summary>
+    /// Delegation facilitator
+    /// </summary>
+    public ExtendedEntity Facilitator { get; set; }
+}

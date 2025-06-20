@@ -24,8 +24,8 @@ public class RolePackageConfiguration : IEntityTypeConfiguration<RolePackage>
     }
 }
 
-public class ExtendedRolePackageConfiguration : IEntityTypeConfiguration<ExtRolePackage> {
-    public void Configure(EntityTypeBuilder<ExtRolePackage> builder)
+public class ExtendedRolePackageConfiguration : IEntityTypeConfiguration<ExtendedRolePackage> {
+    public void Configure(EntityTypeBuilder<ExtendedRolePackage> builder)
     {
         builder.ToTable("RolePackage", "dbo");
         builder.HasOne(p => p.Role).WithMany().HasForeignKey(p => p.RoleId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

@@ -21,8 +21,8 @@ public class DelegationConfiguration : IEntityTypeConfiguration<Delegation> {
     }
 }
 
-public class ExtendedDelegationConfiguration : IEntityTypeConfiguration<ExtDelegation> {
-    public void Configure(EntityTypeBuilder<ExtDelegation> builder)
+public class ExtendedDelegationConfiguration : IEntityTypeConfiguration<ExtendedDelegation> {
+    public void Configure(EntityTypeBuilder<ExtendedDelegation> builder)
     {
         builder.ToTable("Delegation", "dbo");
         builder.HasOne(p => p.From).WithMany().HasForeignKey(p => p.FromId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

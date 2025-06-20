@@ -19,8 +19,8 @@ public class RoleResourceConfiguration : IEntityTypeConfiguration<RoleResource> 
         builder.HasIndex(t => new { t.RoleId, t.ResourceId }).IsUnique();
     }
 }
-public class ExtendedRoleResourceConfiguration : IEntityTypeConfiguration<ExtRoleResource> {
-    public void Configure(EntityTypeBuilder<ExtRoleResource> builder)
+public class ExtendedRoleResourceConfiguration : IEntityTypeConfiguration<ExtendedRoleResource> {
+    public void Configure(EntityTypeBuilder<ExtendedRoleResource> builder)
     {
         builder.ToTable("RoleResource", "dbo");
         builder.HasOne(p => p.Role).WithMany().HasForeignKey(p => p.RoleId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

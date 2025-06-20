@@ -60,3 +60,19 @@ public class ExtPackageResource : PackageResource
     /// </summary>
     public Resource Resource { get; set; }
 }
+
+/// <summary>
+/// Extended PackageResource
+/// </summary>
+public class ExtendedPackageResource : PackageResource
+{
+    /// <summary>
+    /// Package
+    /// </summary>
+    public ExtendedPackage Package { get; set; }
+
+    /// <summary>
+    /// Resource
+    /// </summary>
+    public ExtendedResource Resource { get; set; }
+}

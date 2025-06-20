@@ -11,6 +11,7 @@ public class PackageConfiguration : IEntityTypeConfiguration<Package>
     public void Configure(EntityTypeBuilder<Package> builder)
     {
         builder.ToTable("package", "dbo");
+        builder.HasDiscriminator<string>("discriminator").HasValue<Package>("package").HasValue<ExtPackage>("package");
 
         builder.HasKey(p => p.Id);
 
@@ -24,15 +25,16 @@ public class PackageConfiguration : IEntityTypeConfiguration<Package>
         builder.Property(t => t.EntityTypeId);
         builder.Property(t => t.AreaId);
 
-        builder.HasIndex(t => new { t.ProviderId, t.Name }).IsUnique().HasDatabaseName("UC_dbo_Package__Provider_Name");
+        builder.HasIndex(t => new { t.ProviderId, t.Name }).IsUnique();
     }
 }
 
-public class ExtendedPackageConfiguration : IEntityTypeConfiguration<ExtPackage>
+public class ExtendedPackageConfiguration : IEntityTypeConfiguration<ExtendedPackage>
 {
-    public void Configure(EntityTypeBuilder<ExtPackage> builder)
+    public void Configure(EntityTypeBuilder<ExtendedPackage> builder)
     {
         builder.ToTable("package", "dbo");
+
         builder.HasOne(p => p.Provider).WithMany().HasForeignKey(p => p.ProviderId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.NoAction);
         builder.HasOne(p => p.EntityType).WithMany().HasForeignKey(p => p.EntityTypeId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.NoAction);
         builder.HasOne(p => p.Area).WithMany().HasForeignKey(p => p.AreaId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.NoAction);
@@ -43,6 +45,7 @@ public class AuditPackageConfiguration : AuditConfiguration<AuditPackage>
 {
     public AuditPackageConfiguration() : base("package") { }
 }
+
 /// <inheritdoc />
 public abstract partial class BasicDbContext : DbContext
 {

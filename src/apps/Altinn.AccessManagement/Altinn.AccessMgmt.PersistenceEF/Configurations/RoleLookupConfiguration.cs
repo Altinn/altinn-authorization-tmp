@@ -22,8 +22,8 @@ public class RoleLookupConfiguration : IEntityTypeConfiguration<RoleLookup>
     }
 }
 
-public class ExtendedRoleLookupConfiguration : IEntityTypeConfiguration<ExtRoleLookup> {
-    public void Configure(EntityTypeBuilder<ExtRoleLookup> builder)
+public class ExtendedRoleLookupConfiguration : IEntityTypeConfiguration<ExtendedRoleLookup> {
+    public void Configure(EntityTypeBuilder<ExtendedRoleLookup> builder)
     {
         builder.ToTable("RoleLookup", "dbo");
         builder.HasOne(p => p.Role).WithMany().HasForeignKey(p => p.RoleId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

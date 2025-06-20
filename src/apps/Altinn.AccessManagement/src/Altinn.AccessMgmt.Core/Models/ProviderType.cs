@@ -15,3 +15,13 @@ public class ProviderType
     /// </summary>
     public string Name { get; set; }
 }
+
+/// <summary>
+/// Define the types of Providers
+/// </summary>
+public class ExtProviderType: ProviderType { }
+
+/// <summary>
+/// Define the types of Providers
+/// </summary>
+public class ExtendedProviderType : ProviderType { }

@@ -46,3 +46,14 @@ public class ExtArea : Area
     /// </summary>
     public AreaGroup Group { get; set; }
 }
+
+/// <summary>
+/// Extended Area
+/// </summary>
+public class ExtendedArea : Area
+{
+    /// <summary>
+    /// EntityGroup
+    /// </summary>
+    public ExtendedAreaGroup Group { get; set; }
+}

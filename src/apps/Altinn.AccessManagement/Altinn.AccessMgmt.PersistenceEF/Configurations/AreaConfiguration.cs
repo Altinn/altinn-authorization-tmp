@@ -24,10 +24,12 @@ public class AreaConfiguration : IEntityTypeConfiguration<Area>
     }
 }
 
-public class ExtendedAreaConfiguration : IEntityTypeConfiguration<ExtArea> 
+public class ExtendedAreaConfiguration : IEntityTypeConfiguration<ExtendedArea> 
 {
-    public void Configure(EntityTypeBuilder<ExtArea> builder)
+    public void Configure(EntityTypeBuilder<ExtendedArea> builder)
     {
+        builder.ToTable("area", "dbo");
+
         builder.HasOne(p => p.Group).WithMany().HasForeignKey(p => p.GroupId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);
     }
 }

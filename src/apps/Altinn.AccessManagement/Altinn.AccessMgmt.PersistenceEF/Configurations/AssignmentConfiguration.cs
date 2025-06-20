@@ -22,8 +22,8 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
     }
 }
 
-public class ExtendedAssignmentConfiguration : IEntityTypeConfiguration<ExtAssignment> {
-    public void Configure(EntityTypeBuilder<ExtAssignment> builder)
+public class ExtendedAssignmentConfiguration : IEntityTypeConfiguration<ExtendedAssignment> {
+    public void Configure(EntityTypeBuilder<ExtendedAssignment> builder)
     {
         builder.ToTable("assignment", "dbo");
         builder.HasOne(p => p.From).WithMany().HasForeignKey(p => p.FromId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

@@ -20,8 +20,8 @@ public class PackageResourceConfiguration : IEntityTypeConfiguration<PackageReso
     }
 }
 
-public class ExtendedPackageResourceConfiguration : IEntityTypeConfiguration<ExtPackageResource> {
-    public void Configure(EntityTypeBuilder<ExtPackageResource> builder)
+public class ExtendedPackageResourceConfiguration : IEntityTypeConfiguration<ExtendedPackageResource> {
+    public void Configure(EntityTypeBuilder<ExtendedPackageResource> builder)
     {
         builder.ToTable("PackageResource", "dbo");
         builder.HasOne(p => p.Package).WithMany().HasForeignKey(p => p.PackageId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

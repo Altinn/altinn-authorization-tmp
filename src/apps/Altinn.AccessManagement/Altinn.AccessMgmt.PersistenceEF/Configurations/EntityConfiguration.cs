@@ -23,8 +23,8 @@ public class EntityConfiguration : IEntityTypeConfiguration<Entity> {
     }
 }
 
-public class ExtendedEntityConfiguration : IEntityTypeConfiguration<ExtEntity> {
-    public void Configure(EntityTypeBuilder<ExtEntity> builder)
+public class ExtendedEntityConfiguration : IEntityTypeConfiguration<ExtendedEntity> {
+    public void Configure(EntityTypeBuilder<ExtendedEntity> builder)
     {
         builder.ToTable("entity", "dbo");
         builder.HasOne(p => p.Type).WithMany().HasForeignKey(p => p.TypeId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Restrict);

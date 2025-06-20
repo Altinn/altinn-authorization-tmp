@@ -20,8 +20,8 @@ public class AssignmentPackageConfiguration : IEntityTypeConfiguration<Assignmen
     }
 }
 
-public class ExtendedAssignmentPackageConfiguration : IEntityTypeConfiguration<ExtAssignmentPackage> {
-    public void Configure(EntityTypeBuilder<ExtAssignmentPackage> builder)
+public class ExtendedAssignmentPackageConfiguration : IEntityTypeConfiguration<ExtendedAssignmentPackage> {
+    public void Configure(EntityTypeBuilder<ExtendedAssignmentPackage> builder)
     {
         builder.ToTable("AssignmentPackage", "dbo");
         builder.HasOne(p => p.Assignment).WithMany().HasForeignKey(p => p.AssignmentId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

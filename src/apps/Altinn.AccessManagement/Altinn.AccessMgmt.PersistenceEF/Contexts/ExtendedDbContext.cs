@@ -1,97 +1,101 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Configurations;
-using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
 /// <inheritdoc />
-public partial class ExtendedDbContext : DbContext
+public class ExtendedDbContext : DbContext
 {
     public ExtendedDbContext(DbContextOptions<ExtendedDbContext> options) : base(options) { }
 
-    #region DbSets
-    public DbSet<ExtArea> Areas => Set<ExtArea>();
+    #region ExtendedDbSets
 
-    public DbSet<ExtAreaGroup> AreaGroups => Set<ExtAreaGroup>();
+    public DbSet<ExtendedArea> ExtendedAreas => Set<ExtendedArea>();
 
-    public DbSet<ExtAssignment> Assignments => Set<ExtAssignment>();
+    public DbSet<ExtendedAreaGroup> ExtendedAreaGroups => Set<ExtendedAreaGroup>();
 
-    public DbSet<ExtAssignmentPackage> AssignmentPackages => Set<ExtAssignmentPackage>();
+    public DbSet<ExtendedAssignment> ExtendedAssignments => Set<ExtendedAssignment>();
 
-    public DbSet<ExtAssignmentResource> AssignmentResources => Set<ExtAssignmentResource>();
+    public DbSet<ExtendedAssignmentPackage> ExtendedAssignmentPackages => Set<ExtendedAssignmentPackage>();
 
-    public DbSet<ExtConnection> Connections => Set<ExtConnection>();
+    public DbSet<ExtendedAssignmentResource> ExtendedAssignmentResources => Set<ExtendedAssignmentResource>();
 
-    public DbSet<ExtConnectionPackage> ConnectionPackages => Set<ExtConnectionPackage>();
+    //public DbSet<ExtendedConnection> ExtendedConnections => Set<ExtendedConnection>();
 
-    public DbSet<ExtConnectionResource> ConnectionResources => Set<ExtConnectionResource>();
+    //public DbSet<ExtendedConnectionPackage> ExtendedConnectionPackages => Set<ExtendedConnectionPackage>();
 
-    public DbSet<ExtDelegation> Delegations => Set<ExtDelegation>();
+    //public DbSet<ExtendedConnectionResource> ExtendedConnectionResources => Set<ExtendedConnectionResource>();
 
-    public DbSet<ExtDelegationPackage> DelegationPackages => Set<ExtDelegationPackage>();
+    public DbSet<ExtendedDelegation> ExtendedDelegations => Set<ExtendedDelegation>();
 
-    public DbSet<ExtDelegationResource> DelegationResources => Set<ExtDelegationResource>();
+    public DbSet<ExtendedDelegationPackage> ExtendedDelegationPackages => Set<ExtendedDelegationPackage>();
 
-    public DbSet<ExtEntity> Entities => Set<ExtEntity>();
+    public DbSet<ExtendedDelegationResource> ExtendedDelegationResources => Set<ExtendedDelegationResource>();
 
-    public DbSet<ExtEntityLookup> EntityLookups => Set<ExtEntityLookup>();
+    public DbSet<ExtendedEntity> ExtendedEntities => Set<ExtendedEntity>();
 
-    public DbSet<ExtEntityType> EntityTypes => Set<ExtEntityType>();
+    public DbSet<ExtendedEntityLookup> ExtendedEntityLookups => Set<ExtendedEntityLookup>();
 
-    public DbSet<ExtEntityVariant> EntityVariants => Set<ExtEntityVariant>();
+    public DbSet<ExtendedEntityType> ExtendedEntityTypes => Set<ExtendedEntityType>();
 
-    public DbSet<ExtEntityVariantRole> EntityVariantRoles => Set<ExtEntityVariantRole>();
+    public DbSet<ExtendedEntityVariant> ExtendedEntityVariants => Set<ExtendedEntityVariant>();
 
-    public DbSet<ExtPackage> Packages => Set<ExtPackage>();
+    public DbSet<ExtendedEntityVariantRole> ExtendedEntityVariantRoles => Set<ExtendedEntityVariantRole>();
 
-    public DbSet<ExtPackageResource> PackageResources => Set<ExtPackageResource>();
+    public DbSet<ExtendedPackage> ExtendedPackages => Set<ExtendedPackage>();
 
-    public DbSet<ExtProvider> Providers => Set<ExtProvider>();
+    public DbSet<ExtendedPackageResource> ExtendedPackageResources => Set<ExtendedPackageResource>();
 
-    public DbSet<ExtRelation> Relations => Set<ExtRelation>();
+    public DbSet<ExtendedProvider> ExtendedProviders => Set<ExtendedProvider>();
 
-    public DbSet<ExtResource> Resources => Set<ExtResource>();
+    //public DbSet<ExtendedRelation> ExtendedRelations => Set<ExtendedRelation>();
 
-    public DbSet<ExtRole> Roles => Set<ExtRole>();
+    public DbSet<ExtendedResource> ExtendedResources => Set<ExtendedResource>();
 
-    public DbSet<ExtRoleLookup> RoleLookups => Set<ExtRoleLookup>();
+    public DbSet<ExtendedRole> ExtendedRoles => Set<ExtendedRole>();
 
-    public DbSet<ExtRoleMap> RoleMaps => Set<ExtRoleMap>();
+    public DbSet<ExtendedRoleLookup> ExtendedRoleLookups => Set<ExtendedRoleLookup>();
 
-    public DbSet<ExtRolePackage> RolePackages => Set<ExtRolePackage>();
+    public DbSet<ExtendedRoleMap> ExtendedRoleMaps => Set<ExtendedRoleMap>();
 
-    public DbSet<ExtRoleResource> RoleResources => Set<ExtRoleResource>();
+    public DbSet<ExtendedRolePackage> ExtendedRolePackages => Set<ExtendedRolePackage>();
+
+    public DbSet<ExtendedRoleResource> ExtendedRoleResources => Set<ExtendedRoleResource>();
 
     #endregion
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration<ExtArea>(new ExtendedAreaConfiguration());
-        modelBuilder.ApplyConfiguration<ExtAreaGroup>(new ExtendedAreaGroupConfiguration());
-        modelBuilder.ApplyConfiguration<ExtAssignment>(new ExtendedAssignmentConfiguration());
-        modelBuilder.ApplyConfiguration<ExtAssignmentPackage>(new ExtendedAssignmentPackageConfiguration());
-        modelBuilder.ApplyConfiguration<ExtAssignmentResource>(new ExtendedAssignmentResourceConfiguration());
-        modelBuilder.ApplyConfiguration<ExtConnection>(new ExtendedConnectionConfiguration());
-        modelBuilder.ApplyConfiguration<ExtConnectionPackage>(new ExtendedConnectionPackageConfiguration());
-        modelBuilder.ApplyConfiguration<ExtConnectionResource>(new ExtendedConnectionResourceConfiguration());
-        modelBuilder.ApplyConfiguration<ExtDelegation>(new ExtendedDelegationConfiguration());
-        modelBuilder.ApplyConfiguration<ExtDelegationPackage>(new ExtendedDelegationPackageConfiguration());
-        modelBuilder.ApplyConfiguration<ExtDelegationResource>(new ExtendedDelegationResourceConfiguration());
-        modelBuilder.ApplyConfiguration<ExtEntity>(new ExtendedEntityConfiguration());
-        modelBuilder.ApplyConfiguration<ExtEntityLookup>(new ExtendedEntityLookupConfiguration());
-        modelBuilder.ApplyConfiguration<ExtEntityType>(new ExtendedEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration<ExtEntityVariant>(new ExtendedEntityVariantConfiguration());
-        modelBuilder.ApplyConfiguration<ExtEntityVariantRole>(new ExtendedEntityVariantRoleConfiguration());
-        modelBuilder.ApplyConfiguration<ExtPackage>(new ExtendedPackageConfiguration());
-        modelBuilder.ApplyConfiguration<ExtPackageResource>(new ExtendedPackageResourceConfiguration());
-        modelBuilder.ApplyConfiguration<ExtProvider>(new ExtendedProviderConfiguration());
-        modelBuilder.ApplyConfiguration<ExtRelation>(new ExtendedRelationConfiguration());
-        modelBuilder.ApplyConfiguration<ExtResource>(new ExtendedResourceConfiguration());
-        modelBuilder.ApplyConfiguration<ExtRole>(new ExtendedRoleConfiguration());
-        modelBuilder.ApplyConfiguration<ExtRoleLookup>(new ExtendedRoleLookupConfiguration());
-        modelBuilder.ApplyConfiguration<ExtRoleMap>(new ExtendedRoleMapConfiguration());
-        modelBuilder.ApplyConfiguration<ExtRolePackage>(new ExtendedRolePackageConfiguration());
-        modelBuilder.ApplyConfiguration<ExtRoleResource>(new ExtendedRoleResourceConfiguration());
+        ApplyExtendedConfiguration(modelBuilder);
+
+        modelBuilder.UseLowerCaseNamingConvention();
+    }
+
+    private void ApplyExtendedConfiguration(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfiguration<ExtendedArea>(new ExtendedAreaConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedAreaGroup>(new ExtendedAreaGroupConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedAssignment>(new ExtendedAssignmentConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedAssignmentPackage>(new ExtendedAssignmentPackageConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedAssignmentResource>(new ExtendedAssignmentResourceConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedDelegation>(new ExtendedDelegationConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedDelegationPackage>(new ExtendedDelegationPackageConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedDelegationResource>(new ExtendedDelegationResourceConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedEntity>(new ExtendedEntityConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedEntityLookup>(new ExtendedEntityLookupConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedEntityType>(new ExtendedEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedEntityVariant>(new ExtendedEntityVariantConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedEntityVariantRole>(new ExtendedEntityVariantRoleConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedPackage>(new ExtendedPackageConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedPackageResource>(new ExtendedPackageResourceConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedProvider>(new ExtendedProviderConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedResource>(new ExtendedResourceConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedRole>(new ExtendedRoleConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedRoleLookup>(new ExtendedRoleLookupConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedRoleMap>(new ExtendedRoleMapConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedRolePackage>(new ExtendedRolePackageConfiguration());
+        modelBuilder.ApplyConfiguration<ExtendedRoleResource>(new ExtendedRoleResourceConfiguration());
     }
 }

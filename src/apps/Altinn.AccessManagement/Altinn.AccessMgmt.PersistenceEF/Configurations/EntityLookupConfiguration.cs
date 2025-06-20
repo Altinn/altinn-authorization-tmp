@@ -23,9 +23,9 @@ public class EntityLookupConfiguration : IEntityTypeConfiguration<EntityLookup>
     }
 }
 
-public class ExtendedEntityLookupConfiguration : IEntityTypeConfiguration<ExtEntityLookup> 
+public class ExtendedEntityLookupConfiguration : IEntityTypeConfiguration<ExtendedEntityLookup> 
 {
-    public void Configure(EntityTypeBuilder<ExtEntityLookup> builder)
+    public void Configure(EntityTypeBuilder<ExtendedEntityLookup> builder)
     {
         builder.ToTable("EntityLookup", "dbo");
         builder.HasOne(p => p.Entity).WithMany().HasForeignKey(p => p.EntityId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

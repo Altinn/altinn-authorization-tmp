@@ -23,9 +23,9 @@ public class AreaGroupConfiguration : IEntityTypeConfiguration<AreaGroup>
     }
 }
 
-public class ExtendedAreaGroupConfiguration : IEntityTypeConfiguration<ExtAreaGroup> 
+public class ExtendedAreaGroupConfiguration : IEntityTypeConfiguration<ExtendedAreaGroup> 
 {
-    public void Configure(EntityTypeBuilder<ExtAreaGroup> builder)
+    public void Configure(EntityTypeBuilder<ExtendedAreaGroup> builder)
     {
         builder.ToTable("areagroup", "dbo");
         builder.HasOne(p => p.EntityType).WithMany().HasForeignKey(p => p.EntityTypeId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

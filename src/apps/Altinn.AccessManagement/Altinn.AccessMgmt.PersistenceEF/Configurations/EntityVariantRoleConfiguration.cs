@@ -20,9 +20,9 @@ public class EntityVariantRoleConfiguration : IEntityTypeConfiguration<EntityVar
     }
 }
 
-public class ExtendedEntityVariantRoleConfiguration : IEntityTypeConfiguration<ExtEntityVariantRole>
+public class ExtendedEntityVariantRoleConfiguration : IEntityTypeConfiguration<ExtendedEntityVariantRole>
 {
-    public void Configure(EntityTypeBuilder<ExtEntityVariantRole> builder)
+    public void Configure(EntityTypeBuilder<ExtendedEntityVariantRole> builder)
     {
         builder.ToTable("EntityVariantRole", "dbo");
         builder.HasOne(p => p.Variant).WithMany().HasForeignKey(p => p.VariantId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

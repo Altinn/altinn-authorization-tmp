@@ -10,7 +10,7 @@ public class EntityTypeConfiguration : IEntityTypeConfiguration<EntityType>
 {
     public void Configure(EntityTypeBuilder<EntityType> builder)
     {
-        builder.ToTable("EntityType", "dbo");
+        builder.ToTable("entitytype", "dbo");
 
         builder.HasKey(p => p.Id);
 
@@ -21,11 +21,11 @@ public class EntityTypeConfiguration : IEntityTypeConfiguration<EntityType>
     }
 }
 
-public class ExtendedEntityTypeConfiguration : IEntityTypeConfiguration<ExtEntityType>
+public class ExtendedEntityTypeConfiguration : IEntityTypeConfiguration<ExtendedEntityType>
 {
-    public void Configure(EntityTypeBuilder<ExtEntityType> builder)
+    public void Configure(EntityTypeBuilder<ExtendedEntityType> builder)
     {
-        builder.ToTable("EntityType", "dbo");
+        builder.ToTable("entitytype", "dbo");
         builder.HasOne(p => p.Provider).WithMany().HasForeignKey(p => p.ProviderId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);
     }
 }

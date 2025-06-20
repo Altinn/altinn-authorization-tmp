@@ -20,8 +20,8 @@ public class RoleMapConfiguration : IEntityTypeConfiguration<RoleMap> {
     }
 }
 
-public class ExtendedRoleMapConfiguration : IEntityTypeConfiguration<ExtRoleMap> {
-    public void Configure(EntityTypeBuilder<ExtRoleMap> builder)
+public class ExtendedRoleMapConfiguration : IEntityTypeConfiguration<ExtendedRoleMap> {
+    public void Configure(EntityTypeBuilder<ExtendedRoleMap> builder)
     {
         builder.ToTable("RoleMap", "dbo");
         builder.HasOne(p => p.HasRole).WithMany().HasForeignKey(p => p.HasRoleId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

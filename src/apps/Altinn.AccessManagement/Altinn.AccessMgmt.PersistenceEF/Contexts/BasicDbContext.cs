@@ -1,6 +1,6 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Configurations;
-using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -21,11 +21,11 @@ public class BasicDbContext : DbContext
 
     public DbSet<AssignmentResource> AssignmentResources => Set<AssignmentResource>();
 
-    public DbSet<Connection> Connections => Set<Connection>();
+    //public DbSet<Connection> Connections => Set<Connection>();
 
-    public DbSet<ConnectionPackage> ConnectionPackages => Set<ConnectionPackage>();
+    //public DbSet<ConnectionPackage> ConnectionPackages => Set<ConnectionPackage>();
 
-    public DbSet<ConnectionResource> ConnectionResources => Set<ConnectionResource>();
+    //public DbSet<ConnectionResource> ConnectionResources => Set<ConnectionResource>();
 
     public DbSet<Delegation> Delegations => Set<Delegation>();
 
@@ -51,7 +51,7 @@ public class BasicDbContext : DbContext
 
     public DbSet<ProviderType> ProviderTypes => Set<ProviderType>();
 
-    public DbSet<Relation> Relations => Set<Relation>();
+    //public DbSet<Relation> Relations => Set<Relation>();
 
     public DbSet<Resource> Resources => Set<Resource>();
 
@@ -71,14 +71,21 @@ public class BasicDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        ApplyBasicConfiguration(modelBuilder);
+
+        modelBuilder.UseLowerCaseNamingConvention();
+    }
+
+    private void ApplyBasicConfiguration(ModelBuilder modelBuilder)
+    {
         modelBuilder.ApplyConfiguration<Area>(new AreaConfiguration());
         modelBuilder.ApplyConfiguration<AreaGroup>(new AreaGroupConfiguration());
         modelBuilder.ApplyConfiguration<Assignment>(new AssignmentConfiguration());
         modelBuilder.ApplyConfiguration<AssignmentPackage>(new AssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<AssignmentResource>(new AssignmentResourceConfiguration());
-        modelBuilder.ApplyConfiguration<Connection>(new ConnectionConfiguration());
-        modelBuilder.ApplyConfiguration<ConnectionPackage>(new ConnectionPackageConfiguration());
-        modelBuilder.ApplyConfiguration<ConnectionResource>(new ConnectionResourceConfiguration());
+        //modelBuilder.ApplyConfiguration<Connection>(new ConnectionConfiguration());
+        //modelBuilder.ApplyConfiguration<ConnectionPackage>(new ConnectionPackageConfiguration());
+        //modelBuilder.ApplyConfiguration<ConnectionResource>(new ConnectionResourceConfiguration());
         modelBuilder.ApplyConfiguration<Delegation>(new DelegationConfiguration());
         modelBuilder.ApplyConfiguration<DelegationPackage>(new DelegationPackageConfiguration());
         modelBuilder.ApplyConfiguration<DelegationResource>(new DelegationResourceConfiguration());
@@ -91,7 +98,7 @@ public class BasicDbContext : DbContext
         modelBuilder.ApplyConfiguration<PackageResource>(new PackageResourceConfiguration());
         modelBuilder.ApplyConfiguration<Provider>(new ProviderConfiguration());
         modelBuilder.ApplyConfiguration<ProviderType>(new ProviderTypeConfiguration());
-        modelBuilder.ApplyConfiguration<Relation>(new RelationConfiguration());
+        //modelBuilder.ApplyConfiguration<Relation>(new RelationConfiguration());
         modelBuilder.ApplyConfiguration<Resource>(new ResourceConfiguration());
         modelBuilder.ApplyConfiguration<ResourceType>(new ResourceTypeConfiguration());
         modelBuilder.ApplyConfiguration<Role>(new RoleConfiguration());

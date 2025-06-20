@@ -36,3 +36,19 @@ public class ExtEntityVariantRole : EntityVariantRole
     /// </summary>
     public Role Role { get; set; }
 }
+
+/// <summary>
+/// Extended EntityVariantRole
+/// </summary>
+public class ExtendedEntityVariantRole : EntityVariantRole
+{
+    /// <summary>
+    /// Variant
+    /// </summary>
+    public ExtendedEntityVariant Variant { get; set; }
+
+    /// <summary>
+    /// Role
+    /// </summary>
+    public ExtendedRole Role { get; set; }
+}

@@ -22,11 +22,11 @@ public partial class AuditDbContext : DbContext
 
     public DbSet<AuditAssignmentResource> AssignmentResources => Set<AuditAssignmentResource>();
 
-    public DbSet<AuditConnection> Connections => Set<AuditConnection>();
+    //public DbSet<AuditConnection> Connections => Set<AuditConnection>();
 
-    public DbSet<AuditConnectionPackage> ConnectionPackages => Set<AuditConnectionPackage>();
+    //public DbSet<AuditConnectionPackage> ConnectionPackages => Set<AuditConnectionPackage>();
 
-    public DbSet<AuditConnectionResource> ConnectionResources => Set<AuditConnectionResource>();
+    //public DbSet<AuditConnectionResource> ConnectionResources => Set<AuditConnectionResource>();
 
     public DbSet<AuditDelegation> Delegations => Set<AuditDelegation>();
 
@@ -52,7 +52,7 @@ public partial class AuditDbContext : DbContext
 
     public DbSet<AuditProviderType> ProviderTypes => Set<AuditProviderType>();
 
-    public DbSet<AuditRelation> Relations => Set<AuditRelation>();
+    //public DbSet<AuditRelation> Relations => Set<AuditRelation>();
 
     public DbSet<AuditResource> Resources => Set<AuditResource>();
 
@@ -77,9 +77,9 @@ public partial class AuditDbContext : DbContext
         modelBuilder.ApplyConfiguration<AuditAssignment>(new AuditAssignmentConfiguration());
         modelBuilder.ApplyConfiguration<AuditAssignmentPackage>(new AuditAssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditAssignmentResource>(new AuditAssignmentResourceConfiguration());
-        modelBuilder.ApplyConfiguration<AuditConnection>(new AuditConnectionConfiguration());
-        modelBuilder.ApplyConfiguration<AuditConnectionPackage>(new AuditConnectionPackageConfiguration());
-        modelBuilder.ApplyConfiguration<AuditConnectionResource>(new AuditConnectionResourceConfiguration());
+        //modelBuilder.ApplyConfiguration<AuditConnection>(new AuditConnectionConfiguration());
+        //modelBuilder.ApplyConfiguration<AuditConnectionPackage>(new AuditConnectionPackageConfiguration());
+        //modelBuilder.ApplyConfiguration<AuditConnectionResource>(new AuditConnectionResourceConfiguration());
         modelBuilder.ApplyConfiguration<AuditDelegation>(new AuditDelegationConfiguration());
         modelBuilder.ApplyConfiguration<AuditDelegationPackage>(new AuditDelegationPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditDelegationResource>(new AuditDelegationResourceConfiguration());
@@ -92,7 +92,7 @@ public partial class AuditDbContext : DbContext
         modelBuilder.ApplyConfiguration<AuditPackageResource>(new AuditPackageResourceConfiguration());
         modelBuilder.ApplyConfiguration<AuditProvider>(new AuditProviderConfiguration());
         modelBuilder.ApplyConfiguration<AuditProviderType>(new AuditProviderTypeConfiguration());
-        modelBuilder.ApplyConfiguration<AuditRelation>(new AuditRelationConfiguration());
+        //modelBuilder.ApplyConfiguration<AuditRelation>(new AuditRelationConfiguration());
         modelBuilder.ApplyConfiguration<AuditResource>(new AuditResourceConfiguration());
         modelBuilder.ApplyConfiguration<AuditResourceType>(new AuditResourceTypeConfiguration());
         modelBuilder.ApplyConfiguration<AuditRole>(new AuditRoleConfiguration());

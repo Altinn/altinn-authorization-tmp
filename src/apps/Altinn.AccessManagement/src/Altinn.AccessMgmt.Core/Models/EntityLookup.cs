@@ -60,3 +60,14 @@ public class ExtEntityLookup : EntityLookup
     /// </summary>
     public Entity Entity { get; set; }
 }
+
+/// <summary>
+/// Extended Entity Lookup
+/// </summary>
+public class ExtendedEntityLookup : EntityLookup
+{
+    /// <summary>
+    /// Entity
+    /// </summary>
+    public ExtendedEntity Entity { get; set; }
+}

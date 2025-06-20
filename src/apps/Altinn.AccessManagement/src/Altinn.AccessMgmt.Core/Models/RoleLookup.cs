@@ -60,3 +60,14 @@ public class ExtRoleLookup : RoleLookup
     /// </summary>
     public Role Role { get; set; }
 }
+
+/// <summary>
+/// Extended role lookup
+/// </summary>
+public class ExtendedRoleLookup : RoleLookup
+{
+    /// <summary>
+    /// Role
+    /// </summary>
+    public ExtendedRole Role { get; set; }
+}

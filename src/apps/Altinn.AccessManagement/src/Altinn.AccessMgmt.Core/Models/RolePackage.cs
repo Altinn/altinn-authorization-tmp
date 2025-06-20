@@ -85,3 +85,24 @@ public class ExtRolePackage : RolePackage
     /// </summary>
     public EntityVariant EntityVariant { get; set; }
 }
+
+/// <summary>
+/// Extended RolePackage
+/// </summary>
+public class ExtendedRolePackage : RolePackage
+{
+    /// <summary>
+    /// Role
+    /// </summary>
+    public ExtendedRole Role { get; set; }
+
+    /// <summary>
+    /// Package
+    /// </summary>
+    public ExtendedPackage Package { get; set; }
+
+    /// <summary>
+    /// Variant (optional)
+    /// </summary>
+    public ExtendedEntityVariant EntityVariant { get; set; }
+}

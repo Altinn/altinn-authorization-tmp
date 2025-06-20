@@ -21,9 +21,9 @@ public class EntityVariantConfiguration : IEntityTypeConfiguration<EntityVariant
     }
 }
 
-public class ExtendedEntityVariantConfiguration : IEntityTypeConfiguration<ExtEntityVariant>
+public class ExtendedEntityVariantConfiguration : IEntityTypeConfiguration<ExtendedEntityVariant>
 {
-    public void Configure(EntityTypeBuilder<ExtEntityVariant> builder)
+    public void Configure(EntityTypeBuilder<ExtendedEntityVariant> builder)
     {
         builder.ToTable("EntityVariant", "dbo");
         builder.HasOne(p => p.Type).WithMany().HasForeignKey(p => p.TypeId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

@@ -19,4 +19,9 @@ public class ProviderTypeConfiguration : IEntityTypeConfiguration<ProviderType> 
     }
 }
 
+public class ExtendedProviderTypeConfiguration : IEntityTypeConfiguration<ExtendedProviderType>
+{
+    public void Configure(EntityTypeBuilder<ExtendedProviderType> builder) { }
+}
+
 public class AuditProviderTypeConfiguration : AuditConfiguration<AuditProviderType> { public AuditProviderTypeConfiguration() : base("ProviderType") { } }

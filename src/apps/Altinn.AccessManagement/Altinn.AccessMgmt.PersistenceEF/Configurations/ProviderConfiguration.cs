@@ -23,8 +23,8 @@ public class ProviderConfiguration : IEntityTypeConfiguration<Provider> {
     }
 }
 
-public class ExtendedProviderConfiguration : IEntityTypeConfiguration<ExtProvider> {
-    public void Configure(EntityTypeBuilder<ExtProvider> builder)
+public class ExtendedProviderConfiguration : IEntityTypeConfiguration<ExtendedProvider> {
+    public void Configure(EntityTypeBuilder<ExtendedProvider> builder)
     {
         builder.ToTable("Provider", "dbo");
         builder.HasOne(p => p.Type).WithMany().HasForeignKey(p => p.TypeId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

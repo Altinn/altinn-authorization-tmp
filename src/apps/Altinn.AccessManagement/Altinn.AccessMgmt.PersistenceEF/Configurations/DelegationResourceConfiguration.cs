@@ -20,9 +20,9 @@ public class DelegationResourceConfiguration : IEntityTypeConfiguration<Delegati
     }
 }
 
-public class ExtendedDelegationResourceConfiguration : IEntityTypeConfiguration<ExtDelegationResource>
+public class ExtendedDelegationResourceConfiguration : IEntityTypeConfiguration<ExtendedDelegationResource>
 {
-    public void Configure(EntityTypeBuilder<ExtDelegationResource> builder)
+    public void Configure(EntityTypeBuilder<ExtendedDelegationResource> builder)
     {
         builder.ToTable("DelegationResource", "dbo");
         builder.HasOne(p => p.Delegation).WithMany().HasForeignKey(p => p.DelegationId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);

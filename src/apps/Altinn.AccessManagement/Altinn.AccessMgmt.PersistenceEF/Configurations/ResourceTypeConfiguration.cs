@@ -19,4 +19,12 @@ public class ResourceTypeConfiguration : IEntityTypeConfiguration<ResourceType> 
     }
 }
 
+public class ExtendedResourceTypeConfiguration : IEntityTypeConfiguration<ExtendedResourceType>
+{
+    public void Configure(EntityTypeBuilder<ExtendedResourceType> builder)
+    {
+        
+    }
+}
+
 public class AuditResourceTypeConfiguration : AuditConfiguration<AuditResourceType> { public AuditResourceTypeConfiguration() : base("ResourceType") { } }

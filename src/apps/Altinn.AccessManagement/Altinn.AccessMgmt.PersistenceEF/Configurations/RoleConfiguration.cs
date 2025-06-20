@@ -28,8 +28,8 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role> {
     }
 }
 
-public class ExtendedRoleConfiguration : IEntityTypeConfiguration<ExtRole> {
-    public void Configure(EntityTypeBuilder<ExtRole> builder)
+public class ExtendedRoleConfiguration : IEntityTypeConfiguration<ExtendedRole> {
+    public void Configure(EntityTypeBuilder<ExtendedRole> builder)
     {
         builder.ToTable("Role", "dbo");
         builder.HasOne(p => p.Provider).WithMany().HasForeignKey(p => p.ProviderId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Restrict);

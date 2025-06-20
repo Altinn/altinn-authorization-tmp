@@ -22,12 +22,14 @@ public class ResourceConfiguration : IEntityTypeConfiguration<Resource> {
         //// builder.HasIndex(t => t.Name).IsUnique();
     }
 }
-public class ExtendedResourceConfiguration : IEntityTypeConfiguration<ExtResource> {
-    public void Configure(EntityTypeBuilder<ExtResource> builder)
+
+public class ExtendedResourceConfiguration : IEntityTypeConfiguration<ExtendedResource> {
+    public void Configure(EntityTypeBuilder<ExtendedResource> builder)
     {
         builder.ToTable("Resource", "dbo");
         builder.HasOne(p => p.Type).WithMany().HasForeignKey(p => p.TypeId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(p => p.Provider).WithMany().HasForeignKey(p => p.ProviderId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);
     }
 }
+
 public class AuditResourceConfiguration : AuditConfiguration<AuditResource> { public AuditResourceConfiguration() : base("Resource") { } }
