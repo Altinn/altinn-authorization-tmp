@@ -53,7 +53,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             if (string.IsNullOrWhiteSpace(scope))
             {
-                return resources.Where(r => r.ResourceType == ResourceType.MaskinportenSchema && r.ResourceReferences != null);
+                return resources.Where(r => r.ResourceType == ResourceType.MaskinportenSchema && r.ResourceReferences != null && r.ResourceReferences.Any(rf => rf.ReferenceType == ReferenceType.MaskinportenScope));
             }
             else
             {
