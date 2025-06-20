@@ -45,11 +45,9 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<ServiceResource>> GetResources(string scope)
+        public async Task<IEnumerable<ServiceResource>> GetResources(string scope, CancellationToken cancellationToken)
         {
-            List<ServiceResource> filteredResources = new List<ServiceResource>();
-
-            List<ServiceResource> resources = await _contextRetrievalService.GetResources();
+            List<ServiceResource> resources = await _contextRetrievalService.GetResources(cancellationToken);
 
             if (string.IsNullOrWhiteSpace(scope))
             {

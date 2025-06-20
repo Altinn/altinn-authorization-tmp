@@ -358,7 +358,7 @@ namespace Altinn.AccessManagement.Core.Services
         {
             List<Delegation> delegations = new List<Delegation>();
 
-            IEnumerable<ServiceResource> resources = await _resourceAdministrationPoint.GetResources(scopes);
+            IEnumerable<ServiceResource> resources = await _resourceAdministrationPoint.GetResources(scopes, cancellationToken);
             if (!resources.Any())
             {
                 return delegations;
