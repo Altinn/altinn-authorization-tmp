@@ -35,7 +35,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
     /// Test class for <see cref="MaskinportenSchemaController"></see>
     /// </summary>
     [Collection("MaskinportenSchemaController Tests")]
-    public class MaskinportenSchemaControllerSuperTest : IClassFixture<CustomWebApplicationFactory<MaskinportenSchemaController>>
+    public class MaskinportenSchemaControllerTest : IClassFixture<CustomWebApplicationFactory<MaskinportenSchemaController>>
     {
         private readonly CustomWebApplicationFactory<MaskinportenSchemaController> _factory;
         private HttpClient _client;
@@ -46,7 +46,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
         /// Constructor setting up factory, test client and dependencies
         /// </summary>
         /// <param name="factory">CustomWebApplicationFactory</param>
-        public MaskinportenSchemaControllerSuperTest(CustomWebApplicationFactory<MaskinportenSchemaController> factory)
+        public MaskinportenSchemaControllerTest(CustomWebApplicationFactory<MaskinportenSchemaController> factory)
         {
             _factory = factory;
             _client = GetTestClient();
@@ -506,7 +506,7 @@ namespace Altinn.AccessManagement.Tests.Controllers
         public async Task GetMaskinportenDelegations_ServiceOwnerLookup_WithoutScope()
         {
             // Arrange
-            string token = PrincipalUtil.GetOrgToken("SKD", "974761076", "altinn:maskinporten/delegations", new[] { "skd" });
+            string token = PrincipalUtil.GetOrgToken("SKD", "974761076", "altinn:maskinporten/delegations", null,  new[] { "skd" });
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             string expected = "Not authorized for lookup of delegations without specifying parameter: scope";
