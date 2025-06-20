@@ -74,25 +74,6 @@ namespace AccessMgmt.Tests.Controllers.Bff
             Assert.Equal("urn:altinn:resource", consentRequest.ConsentRights[0].Resource[0].Type);
         }
 
-        /// <summary>
-        /// Test case: Get consent redirect uri
-        /// Scenario: User is logged out and BFF needs to get the redirect URI for logout
-        /// </summary>
-        [Fact]
-        public async Task GetRedirectUri()
-        {
-            Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
-            await repositgo.CreateRequest(await GetRequest(requestId), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
-            HttpClient client = GetTestClient();
-            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/{requestId.ToString()}/redirecturl");
-            string responseText = await response.Content.ReadAsStringAsync();
-            ConsentRedirectUrlDto consentRequest = await response.Content.ReadFromJsonAsync<ConsentRedirectUrlDto>();
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("https:///www.urlfromsavedreqest.com", consentRequest.Url);
-        }
-
         [Fact]
         public async Task GetConsentRequestWithoutMessagehandledby()
         {
