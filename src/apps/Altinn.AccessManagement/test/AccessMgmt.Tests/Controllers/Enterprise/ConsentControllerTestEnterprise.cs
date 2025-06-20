@@ -540,6 +540,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
 
             string getUrl = $"/accessmanagement/api/v1/enterprise/consentrequests/{consentInfo.Id}";
+            token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.read", "810418192");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage getResponse = await client.GetAsync(location);
             string getResponseConsent = await getResponse.Content.ReadAsStringAsync();
 

@@ -138,7 +138,7 @@
         /// <summary>
         /// Scope giving access to creating consentrequests
         /// </summary>
-        public const string SCOPE_CONSENTREQUEST_READ = " altinn:consentrequests.read";
+        public const string SCOPE_CONSENTREQUEST_READ = "altinn:consentrequests.read";
 
         /// <summary>
         /// Claim for scopes from maskinporten token

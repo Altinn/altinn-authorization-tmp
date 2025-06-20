@@ -86,7 +86,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
         /// <summary>
         /// Returns the consent request. Only returns request details for the authenticated party.
         /// </summary>
-        [Authorize]
+        [Authorize(Policy = AuthzConstants.POLICY_CONSENTREQUEST_READ)]
         [HttpGet]
         [Route("consentrequests/{consentRequestId:guid}", Name= GetRouteName)]
         [Produces(MediaTypeNames.Application.Json)]
