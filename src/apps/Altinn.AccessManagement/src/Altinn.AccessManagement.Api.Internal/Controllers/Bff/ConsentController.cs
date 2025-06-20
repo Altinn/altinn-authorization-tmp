@@ -106,22 +106,6 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         }
 
         /// <summary>
-        /// Endpoint to get the redirect URL for a consent request.
-        /// </summary>
-        [HttpGet]
-        [Route("consentrequests/{requestId}/redirecturl")]
-        public async Task<IActionResult> GetConsentRedirectUrl([FromRoute] Guid requestId, CancellationToken cancellationToken = default)
-        {
-            string redirectUrl = await consentService.GetRequestRedirectUrl(requestId, cancellationToken);
-            if (string.IsNullOrEmpty(redirectUrl))
-            {
-                return NotFound("Redirect URL not found for the consent request.");
-            }
-
-            return Ok(new ConsentRedirectUrlDto() { Url = redirectUrl });
-        }
-
-        /// <summary>
         /// Endpoint to approve a consent request
         /// The authenticated user must fullfill the requirements to approve the request.
         /// - Have right for accessmanagement for the party that is requesting the consent
