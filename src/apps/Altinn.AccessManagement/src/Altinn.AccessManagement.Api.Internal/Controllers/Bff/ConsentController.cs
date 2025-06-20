@@ -9,7 +9,6 @@ using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Common.PEP.Helpers;
 using Altinn.Common.PEP.Interfaces;
-using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -64,7 +63,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 }
             }
 
-            return Unauthorized();
+            return Forbid();
         }
 
         /// <summary>
@@ -102,7 +101,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 }
             }
 
-            return Unauthorized();
+            return Forbid();
         }
 
         /// <summary>
@@ -141,7 +140,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
 
                 if (!isAuthorized)
                 {
-                    return Unauthorized();
+                    return Forbid();
                 }
             }
 
@@ -185,7 +184,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
 
                 if (!isAuthorized)
                 {
-                    return Unauthorized();
+                    return Forbid();
                 }
             }
 
@@ -226,7 +225,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
 
                 if (!isAuthorized)
                 {
-                    return Unauthorized();
+                    return Forbid();
                 }
             }
 
