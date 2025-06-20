@@ -506,7 +506,8 @@ namespace Altinn.AccessManagement.Tests.Controllers
         public async Task GetMaskinportenDelegations_Admin_Valid_DelegationsEmpty()
         {
             // Arrange
-            string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", scope: "altinn:maskinporten/delegations.admin");
+            // Getting token
+            string token = PrincipalUtil.GetOrgToken("DIGDIR", "991825827", scope: "altinn:maskinporten/delegations.admin", null, null);
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             string expected = "[]";
