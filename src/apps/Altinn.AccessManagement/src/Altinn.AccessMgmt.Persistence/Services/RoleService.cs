@@ -5,6 +5,8 @@ using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.AccessMgmt.Repo.Definitions;
 using Authorization.Platform.Authorization.Models;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Newtonsoft.Json.Linq;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
@@ -116,30 +118,25 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
 
         foreach (var role in roles)
         {
-            if (roleLookup.FirstOrDefault(x => x.RoleId == role.Id && x.Key == "LegacyCode") != null)
+            var legacyRoleCode = roleLookup.FirstOrDefault(x => x.RoleId == role.Id && x.Key == "LegacyCode");
+            if (legacyRoleCode != null)
             {
-                role.LegacyRoleCode = roleLookup.FirstOrDefault(x => x.Role.Code == role.Code && x.Key == "LegacyCode").Value;
-            }
-
-            if (roleLookup.FirstOrDefault(x => x.RoleId == role.Id && x.Key == "Urn") != null)
-            {
-                role.LegacyUrn = roleLookup.FirstOrDefault(x => x.Role.Code == role.Code && x.Key == "Urn").Value;
+                role.LegacyRoleCode = legacyRoleCode.Value;
+                role.LegacyUrn = $"urn:altinn:rolecode:{legacyRoleCode.Value}";
             }
         }
     }
 
     private async Task GetSingleLegacyRoleCodeAndUrn(ExtRole extRole)
     {
-        var roleLookup = await roleLookupRepository.GetExtended();
-
-        if (roleLookup.FirstOrDefault(x => x.RoleId == extRole.Id && x.Key == "LegacyRoleCode") != null)
+        var filter = roleLookupRepository.CreateFilterBuilder();
+        filter.Add(t => t.RoleId, extRole.Id, Core.Helpers.FilterComparer.Equals);
+        var res = await roleLookupRepository.GetExtended(filter);
+        var legacyRoleCode = res.Data.FirstOrDefault(x => x.RoleId == extRole.Id && x.Key == "LegacyCode");
+        if (legacyRoleCode != null)
         {
-            extRole.LegacyRoleCode = roleLookup.FirstOrDefault(x => x.Role.Code == extRole.Code && x.Key == "LegacyCode").Value;
-        }
-
-        if (roleLookup.FirstOrDefault(x => x.RoleId == extRole.Id && x.Key == "Urn") != null)
-        {
-            extRole.LegacyUrn = roleLookup.FirstOrDefault(x => x.Role.Code == extRole.Code && x.Key == "Urn").Value;
+            extRole.LegacyRoleCode = legacyRoleCode.Value;
+            extRole.LegacyUrn = $"urn:altinn:rolecode:{legacyRoleCode.Value}";
         }
     }
 }
