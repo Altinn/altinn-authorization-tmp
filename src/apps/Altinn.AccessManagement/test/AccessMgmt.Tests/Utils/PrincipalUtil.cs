@@ -96,6 +96,7 @@ namespace Altinn.AccessManagement.Tests.Util
         /// <param name="org">Org code</param>
         /// <param name="orgNumber">Organization number</param>
         /// <param name="scope">Scopes to add to token</param>
+        /// <param name="supplier">The supplier</param>
         /// <param name="consumerPrefix">If maskinporten token sets the scope prefixes the organization owns or authorized for</param>
         /// <returns>Claims principal</returns>
         public static ClaimsPrincipal GetClaimsPrincipal(string org, string orgNumber, string scope = null, string supplier = null,  string[] consumerPrefix = null)
@@ -143,6 +144,7 @@ namespace Altinn.AccessManagement.Tests.Util
         /// <param name="org">Org code</param>
         /// <param name="orgNumber">Organization number</param>
         /// <param name="scope">Scopes to add to token</param>
+        /// <param name="supplier">The supplier</param>
         /// <param name="consumerPrefix">If maskinporten token sets the scope prefixes the organization owns or authorized for</param>
         /// <returns>Altinn org-token</returns>
         public static string GetOrgToken(string org, string orgNumber = "991825827", string scope = null, string supplier = null, string[] consumerPrefix = null)
