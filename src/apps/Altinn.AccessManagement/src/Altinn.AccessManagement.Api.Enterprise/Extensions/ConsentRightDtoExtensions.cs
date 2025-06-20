@@ -6,25 +6,25 @@ namespace Altinn.AccessManagement.Api.Enterprise.Extensions
     /// <summary>
     /// Provides extension methods for transforming ConsentRight to ConsentRightExternal.
     /// </summary>
-    public static class ConsentRightExternalExtensions
+    public static class ConsentRightDtoExtensions
     {
         /// <summary>
         /// Converts a <see cref="ConsentRightDto"/> object to a <see cref="ConsentRight"/> object.
         /// </summary>
-        /// <param name="core">The <see cref="ConsentRightDto"/> object to convert.</param>
+        /// <param name="dto">The <see cref="ConsentRightDto"/> object to convert.</param>
         /// <returns>A <see cref="ConsentRight"/> object representing the converted data.</returns>
-        public static ConsentRight ToConsentRightExternal(this ConsentRightDto external)
+        public static ConsentRight ToConsentRight(this ConsentRightDto dto)
         {
             ConsentRight consentRight = new ConsentRight
             {
-                Action = external.Action,
-                Resource = external.Resource.Select(static x => x.ToConsentResourceAttribute()).ToList()
+                Action = dto.Action,
+                Resource = dto.Resource.Select(static x => x.ToConsentResourceAttribute()).ToList()
             };
 
-            if (external.Metadata != null)
+            if (dto.Metadata != null)
             {
                 consentRight.Metadata = new MetadataDictionary();
-                foreach (var item in external.Metadata)
+                foreach (var item in dto.Metadata)
                 {
                     consentRight.Metadata.Add(item.Key, item.Value);
                 }

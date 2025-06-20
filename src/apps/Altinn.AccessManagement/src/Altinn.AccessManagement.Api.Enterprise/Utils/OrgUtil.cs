@@ -10,6 +10,9 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
     /// </summary>
     public static class OrgUtil
     {
+        /// <summary>
+        /// Returns the scopes for the Maskinporten client from the claims principal.
+        /// </summary>
         public static string? GetMaskinportenScopes(ClaimsPrincipal claimsPrincipal)
         {
             string? scopes = claimsPrincipal.FindFirstValue("scope");

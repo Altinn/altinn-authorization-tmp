@@ -24,7 +24,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Utils
                     ? ToCore(consentRequestExternal.RequiredDelegator)
                     : null,
                 ValidTo = consentRequestExternal.ValidTo,
-                ConsentRights = consentRequestExternal.ConsentRights.Select(static x => x.ToConsentRightExternal()).ToList(),
+                ConsentRights = consentRequestExternal.ConsentRights.Select(static x => x.ToConsentRight()).ToList(),
                 RequestMessage = consentRequestExternal.RequestMessage,
                 RedirectUrl = consentRequestExternal.RedirectUrl
             };

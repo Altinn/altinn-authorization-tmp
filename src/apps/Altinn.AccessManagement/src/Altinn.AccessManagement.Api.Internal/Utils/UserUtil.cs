@@ -14,7 +14,7 @@ namespace Altinn.AccessManagement.Api.Internal.Utils
         {
             if (claimsPrincipal != null && claimsPrincipal.Claims != null)
             {
-                Claim partyClaim = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:party:uuid"));
+                Claim? partyClaim = claimsPrincipal.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:party:uuid"));
                 if (partyClaim != null && Guid.TryParse(partyClaim.Value, out Guid partyUid))
                 {
                     return partyUid;
