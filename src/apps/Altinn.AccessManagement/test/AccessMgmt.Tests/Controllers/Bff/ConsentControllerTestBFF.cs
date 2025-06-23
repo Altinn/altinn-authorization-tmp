@@ -26,9 +26,9 @@ using Xunit.Abstractions;
 
 namespace AccessMgmt.Tests.Controllers.Bff
 {
-    public class ConsentControllerTestBFF(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
+    public class ConsentControllerTestBFF(WebApplicationFixture fixture, ITestOutputHelper output) : IClassFixture<WebApplicationFixture>
     {
-        private readonly ITestOutputHelper _output;
+        private readonly ITestOutputHelper _output = output;
 
         private WebApplicationFactory<Program> Fixture { get; } = fixture.WithWebHostBuilder(builder =>
         {
