@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using AccessMgmt.Tests.Utils;
 using Altinn.AccessManagement.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
@@ -218,6 +219,10 @@ public class PostgresDatabase(string dbname, string connectionString) : IOptions
         Username = PostgresServer.DbAdminName,
         Password = PostgresServer.DbPassword,
         IncludeErrorDetail = true,
+        Pooling = true,      // or "false" to disable pooling entirely
+        MaxPoolSize = 5,         // no more than 5 simultaneous connections
+        MinPoolSize = 0,
+        ConnectionIdleLifetime = 30,  // (optional) return idle connections quickly
     };
 
     /// <summary>
@@ -230,6 +235,10 @@ public class PostgresDatabase(string dbname, string connectionString) : IOptions
         Username = PostgresServer.DbUserName,
         Password = PostgresServer.DbPassword,
         IncludeErrorDetail = true,
+        Pooling = true,      // or "false" to disable pooling entirely
+        MaxPoolSize = 5,         // no more than 5 simultaneous connections
+        MinPoolSize = 0,
+        ConnectionIdleLifetime = 30,  // (optional) return idle connections quickly
     };
 
     /// <summary>
