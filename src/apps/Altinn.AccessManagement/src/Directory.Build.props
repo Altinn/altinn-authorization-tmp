@@ -2,8 +2,7 @@
     <Import Project="..\..\Directory.Build.props" />
 
     <PropertyGroup>
-        <IsProductProject>true</IsProductProject>
-        <NoWarn>CS1591</NoWarn>
+        <IsAppProject>true</IsAppProject>
     </PropertyGroup>
 
 </Project>

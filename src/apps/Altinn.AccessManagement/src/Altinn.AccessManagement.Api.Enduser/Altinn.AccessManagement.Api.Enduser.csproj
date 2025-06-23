@@ -3,12 +3,12 @@
         <PackageReference Include="Altinn.Common.PEP" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="Swashbuckle.AspNetCore" />
         <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
         <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj" />
         <ProjectReference Include="..\Altinn.AccessMgmt.Persistence\Altinn.AccessMgmt.Persistence.csproj" />
     </ItemGroup>
