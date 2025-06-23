@@ -269,6 +269,13 @@ namespace AccessMgmt.Tests.Controllers.Bff
             HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consents/{requestId.ToString()}");
             string responseContent = await response.Content.ReadAsStringAsync();
 
+            if (!response.IsSuccessStatusCode)
+            {
+                _output.WriteLine($"❌ Request failed with status code: {response.StatusCode}");
+                _output.WriteLine("Response content:");
+                _output.WriteLine(responseContent);
+            }
+
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Consent consentRequest = await response.Content.ReadFromJsonAsync<Consent>();
             Assert.Equal(requestId, consentRequest.Id);
