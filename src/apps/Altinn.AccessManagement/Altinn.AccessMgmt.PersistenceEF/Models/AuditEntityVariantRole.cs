@@ -7,5 +7,26 @@ namespace Altinn.AccessMgmt.PersistenceEF.Models;
 public class AuditEntityVariantRole : EntityVariantRole, IAudit 
 {
     /// <inheritdoc />
-    public AuditInfo Audit { get; set; }
+    public DateTime ValidFrom { get; set; }
+
+    /// <inheritdoc />
+    public DateTime? ValidTo { get; set; }
+
+    /// <inheritdoc />
+    public Guid? ChangedBy { get; set; }
+
+    /// <inheritdoc />
+    public Guid? ChangedBySystem { get; set; }
+
+    /// <inheritdoc />
+    public string ChangeOperation { get; set; }
+
+    /// <inheritdoc />
+    public Guid? DeletedBy { get; set; }
+
+    /// <inheritdoc />
+    public Guid? DeletedBySystem { get; set; }
+
+    /// <inheritdoc />
+    public string DeleteOperation { get; set; }
 }

@@ -57,16 +57,6 @@ public interface IAssignmentService
     Task<Assignment> GetAssignment(Guid fromId, Guid toId, string roleCode, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Fetches inherited assignments.
-    /// </summary>
-    Task<IEnumerable<InheritedAssignment>> GetInheritedAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Fetches inherited assignments.
-    /// </summary>
-    Task<IEnumerable<InheritedAssignment>> GetInheritedAssignment(Guid fromId, Guid toId, string roleCode, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Fetches Client assignments.
     /// </summary>
     /// <returns></returns>

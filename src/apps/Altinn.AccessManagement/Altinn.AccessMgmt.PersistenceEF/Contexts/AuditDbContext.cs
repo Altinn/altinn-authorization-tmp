@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
 /// <inheritdoc />
-public partial class AuditDbContext : DbContext
+public class AuditDbContext : DbContext
 {
     public AuditDbContext(DbContextOptions<AuditDbContext> options) : base(options) { }
 

@@ -11,7 +11,6 @@ public class PackageConfiguration : IEntityTypeConfiguration<Package>
     public void Configure(EntityTypeBuilder<Package> builder)
     {
         builder.ToTable("package", "dbo");
-        builder.HasDiscriminator<string>("discriminator").HasValue<Package>("package").HasValue<ExtPackage>("package");
 
         builder.HasKey(p => p.Id);
 
@@ -44,18 +43,4 @@ public class ExtendedPackageConfiguration : IEntityTypeConfiguration<ExtendedPac
 public class AuditPackageConfiguration : AuditConfiguration<AuditPackage>
 {
     public AuditPackageConfiguration() : base("package") { }
-}
-
-/// <inheritdoc />
-public abstract partial class BasicDbContext : DbContext
-{
-    public DbSet<Package> Packages => Set<Package>();
-
-    public DbSet<ExtPackage> ExtendedPackages => Set<ExtPackage>();
-}
-
-/// <inheritdoc />
-public partial class AuditDbContext : DbContext
-{
-    public DbSet<AuditPackage> AuditPackages => Set<AuditPackage>();
 }
