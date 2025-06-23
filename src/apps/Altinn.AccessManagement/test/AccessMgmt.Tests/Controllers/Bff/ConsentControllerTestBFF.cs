@@ -1,9 +1,4 @@
-﻿using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
-using Altinn.AccessManagement.Api.Internal.Extensions;
+﻿using Altinn.AccessManagement.Api.Internal.Extensions;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
@@ -22,11 +17,19 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using Xunit.Abstractions;
 
 namespace AccessMgmt.Tests.Controllers.Bff
 {
     public class ConsentControllerTestBFF(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
     {
+        private readonly ITestOutputHelper _output;
+
         private WebApplicationFactory<Program> Fixture { get; } = fixture.WithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
@@ -156,9 +159,9 @@ namespace AccessMgmt.Tests.Controllers.Bff
             string responseText = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"❌ Request failed with status code: {response.StatusCode}");
-                Console.WriteLine("Response content:");
-                Console.WriteLine(responseText);
+                _output.WriteLine($"❌ Request failed with status code: {response.StatusCode}");
+                _output.WriteLine("Response content:");
+                _output.WriteLine(responseText);
             }
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
