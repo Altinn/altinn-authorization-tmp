@@ -104,11 +104,6 @@ public class CompactEntity
     public string Variant { get; set; }
 
     /// <summary>
-    /// RefId
-    /// </summary>
-    public string RefId { get; set; }
-
-    /// <summary>
     /// Parent
     /// </summary>
     public CompactEntity Parent { get; set; }
