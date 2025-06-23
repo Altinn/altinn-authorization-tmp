@@ -5,6 +5,7 @@
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
     <GlobalPackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.25" PrivateAssets="all" />
+    <GlobalPackageReference Include="ReferenceTrimmer" Version="3.3.11" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Altinn.ApiClients.Maskinporten" Version="9.2.1" />

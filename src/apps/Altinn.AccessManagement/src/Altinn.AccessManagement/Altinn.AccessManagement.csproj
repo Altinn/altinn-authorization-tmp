@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+    		<PackageReference Include="Blazored.LocalStorage" />
         <PackageReference Include="Altinn.Authorization.ProblemDetails" />
         <PackageReference Include="Altinn.Authorization.ServiceDefaults" />
         <PackageReference Include="Altinn.Authorization.ABAC" />
