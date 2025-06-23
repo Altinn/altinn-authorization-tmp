@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Reflection;
-using AccessMgmt.Tests.Utils;
 using Altinn.AccessManagement.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
