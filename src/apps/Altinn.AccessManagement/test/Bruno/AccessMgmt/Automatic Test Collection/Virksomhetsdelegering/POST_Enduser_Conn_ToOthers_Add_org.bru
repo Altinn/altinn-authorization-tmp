@@ -24,7 +24,6 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/enduser/${bru.getEnvVar("tokenEnv")}.json`);
   
-  
   bru.setVar("party", testdata.hovedorg_delegates_tilgangspakke.partyuuid);
   bru.setVar("toOrg", testdata.esek_type_org.partyuuid);
   

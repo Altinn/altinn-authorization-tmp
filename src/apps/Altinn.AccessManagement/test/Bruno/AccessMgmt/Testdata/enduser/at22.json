@@ -97,7 +97,6 @@
         "partyid": 50847574,
         "userid": 21108057,
         "partyuuid": "E7C1F744-5C5B-4715-B8BE-53465A95EAD0"
-<<<<<<< HEAD
       },
       "systemuser": {
         "name": "Klient_delegation_VanligPakke",
@@ -164,9 +163,6 @@
       },
       "pakketoDelegate" : "urn:altinn:accesspackage:reviorattesterer"
 
-=======
-      }
->>>>>>> f74df765012b0f6b139f95f3d0a7973961218e70
     }
-
   }
+
