@@ -130,11 +130,16 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
 
         var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
-        return res.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermission()
+        if (res is { } && res.Any() && res.Where(r => r.Package is { }) is var packages)
         {
-            Package = permission.Package,
-            Permissions = res.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
-        });
+            return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermission()
+            {
+                Package = permission.Package,
+                Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
+            });
+        }
+
+        return [];
     }
 
     /// <inheritdoc />
@@ -154,12 +159,16 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
         }
 
         var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
-
-        return res.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermission()
+        if (res is { } && res.Any() && res.Where(r => r.Package is { }) is var packages)
         {
-            Package = permission.Package,
-            Permissions = res.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
-        });
+            return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermission()
+            {
+                Package = permission.Package,
+                Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
+            });
+        }
+
+        return [];
     }
 
     /// <inheritdoc />
@@ -185,11 +194,16 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
 
         var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
-        return res.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
+        if (res is { } && res.Any() && res.Where(r => r.Resource is { } && r.Package is { }) is var resources)
         {
-            Resource = permission.Resource,
-            Permissions = res.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
-        });
+            return resources.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
+            {
+                Resource = permission.Resource,
+                Permissions = resources.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
+            });
+        }
+
+        return [];
     }
 
     /// <inheritdoc />
@@ -215,11 +229,16 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
 
         var res = await relationPermissionRepository.GetExtended(filter, cancellationToken: cancellationToken);
 
-        return res.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
+        if (res is { } && res.Any() && res.Where(r => r.Resource is { } && r.Package is { }) is var resources)
         {
-            Resource = permission.Resource,
-            Permissions = res.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
-        });
+            return resources.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
+            {
+                Resource = permission.Resource,
+                Permissions = resources.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
+            });
+        }
+
+        return [];
     }
 
     #region Extractors and Converters
@@ -250,7 +269,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
         {
             Party = relation.To,
             Roles = res.Where(t => t.To.Id == relation.To.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.To.Id == relation.To.Id).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.To.Id == relation.To.Id && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubConnectionToOthers(res, relation.To.Id).ToList() : new()
         });
     }
@@ -261,14 +280,14 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
         {
             Party = relation.To,
             Roles = res.Where(t => t.To.Id == relation.To.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.To.Id == relation.To.Id).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.To.Id == relation.To.Id && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
             Connections = new()
         });
     }
 
     private IEnumerable<CompactRelationDto> ExtractConnectionsFromOthers(IEnumerable<ExtCompactRelation> res, bool includeSubConnections = false)
     {
-        return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.From.Id).Select(relation => new CompactRelationDto()
+        return res.DistinctBy(t => t.From.Id).Select(relation => new CompactRelationDto()
         {
             Party = relation.From,
             Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
@@ -278,22 +297,22 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
 
     private IEnumerable<RelationDto> ExtractConnectionsFromOthers(IEnumerable<ExtRelation> res, bool includeSubConnections = false)
     {
-        return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.From.Id).Select(relation => new RelationDto()
+        return res.DistinctBy(t => t.From.Id).Select(relation => new RelationDto()
         {
             Party = relation.From,
             Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.From.Id == relation.From.Id).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.From.Id == relation.From.Id && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubConnectionFromOthers(res, relation.From.Id).ToList() : new()
         });
     }
 
     private IEnumerable<CompactRelationDto> ExtractSubConnectionFromOthers(IEnumerable<ExtCompactRelation> res, Guid party)
     {
-        return res.Where(t => t.Reason != "Direct" && t.Via.Id == party).DistinctBy(t => t.From.Id).Select(relation => new CompactRelationDto() 
-        { 
-            Party = relation.From, 
-            Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(), 
-            Connections = new() 
+        return res.Where(t => t.Reason != "Direct" && t.Via.Id == party).DistinctBy(t => t.From.Id).Select(relation => new CompactRelationDto()
+        {
+            Party = relation.From,
+            Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Connections = new()
         });
     }
 
@@ -303,7 +322,7 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
         {
             Party = relation.From,
             Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.From.Id == relation.From.Id).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.From.Id == relation.From.Id && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
             Connections = new()
         });
     }

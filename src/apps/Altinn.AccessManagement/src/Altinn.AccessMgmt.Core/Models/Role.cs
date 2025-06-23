@@ -86,10 +86,10 @@ public class CompactRole
     /// <summary>
     /// Value
     /// </summary>
-    public string Value { get; set; }
+    public string Code { get; set; }
 
     /// <summary>
     /// Children
     /// </summary>
-    public List<CompactEntity> Children { get; set; }
+    public List<CompactRole> Children { get; set; }
 }
