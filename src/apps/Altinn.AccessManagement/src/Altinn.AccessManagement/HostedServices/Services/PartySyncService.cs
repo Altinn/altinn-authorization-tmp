@@ -60,7 +60,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         EntityTypes = (await entityTypeRepository.Get(cancellationToken: cancellationToken)).ToList();
         EntityVariants = (await entityVariantRepository.Get(cancellationToken: cancellationToken)).ToList();
 
-        await foreach (var page in await Register.StreamParties(RegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await Register.StreamParties(AltinnRegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -285,7 +285,8 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             {
                 EntityId = Guid.Parse(model.PartyUuid),
                 Key = "PersonIdentifier",
-                Value = model.PersonIdentifier
+                Value = model.PersonIdentifier,
+                IsProtected = true
             });
         }
         else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))

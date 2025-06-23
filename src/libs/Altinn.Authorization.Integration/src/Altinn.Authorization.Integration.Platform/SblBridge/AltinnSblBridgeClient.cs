@@ -1,18 +1,18 @@
 using Microsoft.Extensions.Options;
 
-namespace Altinn.Authorization.Integration.Platform.AccessManagement;
+namespace Altinn.Authorization.Integration.Platform.SblBridge;
 
 /// <summary>
 /// Client for interacting with the Altinn Register service.
 /// </summary>
 /// <param name="HttpClientFactory">Factory for creating HTTP clients.</param>
-/// <param name="Options">Configuration options for the Altinn Register service.</param>
 /// <param name="PlatformOptions">Options for configuring platform integration services.</param>
-public partial class AltinnAccessManagementClient(
+/// <param name="Options">Configuration options for the Altinn Register service.</param>
+public partial class AltinnSblBridgeClient(
     IHttpClientFactory HttpClientFactory,
-    IOptions<AltinnAccessManagementClient> Options,
-    IOptions<AltinnIntegrationOptions> PlatformOptions
-) : IAltinnAccessManagement
+    IOptions<AltinnIntegrationOptions> PlatformOptions,
+    IOptions<AltinnSblBridgeOptions> Options
+) : IAltinnSblBridge
 {
     private HttpClient HttpClient => HttpClientFactory.CreateClient(PlatformOptions.Value.HttpClientName);
 }
@@ -20,6 +20,6 @@ public partial class AltinnAccessManagementClient(
 /// <summary>
 /// Interface for interacting with the Altinn Register service.
 /// </summary>
-public interface IAltinnAccessManagement
+public interface IAltinnSblBridge
 {
 }
