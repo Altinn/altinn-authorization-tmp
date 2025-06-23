@@ -154,6 +154,13 @@ namespace AccessMgmt.Tests.Controllers.Bff
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/bff/consentrequests/{requestId.ToString()}/accept/", httpContent);
             string responseText = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"❌ Request failed with status code: {response.StatusCode}");
+                Console.WriteLine("Response content:");
+                Console.WriteLine(responseText);
+            }
+
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             ConsentRequestDetailsBFFDto consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBFFDto>();
             Assert.Equal(2, consentInfo.ConsentRequestEvents.Count);
@@ -186,6 +193,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             HttpContent httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
             HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/bff/consentrequests/{requestId.ToString()}/accept/", httpContent);
             string responseContent = await response.Content.ReadAsStringAsync();
+
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
             Assert.Equal("AM-00002", problemDetails.ErrorCode.ToString());
