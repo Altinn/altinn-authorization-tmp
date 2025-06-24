@@ -125,9 +125,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
                 return;
             }
 
-            var resources = new List<Resource>();
-            var failed = new List<Failed>();
-
             foreach (var updatedResource in page.Content.Data)
             {
                 try
@@ -137,10 +134,9 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
                     {
                         continue;
                     }
-                    
+
                     if (updatedResource.Deleted)
                     {
-                        await Flush();
                         await DeleteUpdatedSubject(options, updatedResource, resource, cancellationToken);
                     }
                     else
@@ -150,36 +146,11 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
                 }
                 catch (Exception ex)
                 {
-                    var failure = new Failed
-                    {
-                        Exception = ex,
-                        UpdatedModel = updatedResource,
-                    };
-
-                    failed.Add(failure);
-                    if (failed.Count > 10)
-                    {
-                        /// FIX: We should break here, but waiting for role import. 
-                        // break;
-                    }
+                    Log.FailedToWriteUpdateSubjectForResource(_logger, ex, updatedResource.SubjectUrn, updatedResource.ResourceUrn);
                 }
             }
 
-            foreach (var failure in failed)
-            {
-                Console.WriteLine(failure.UpdatedModel.ResourceUrn);
-                Console.WriteLine(failure.Exception.Message);
-            }
-
-            await Flush();
-
             await UpdateLease(ls, data => data.ResourceNextPageLink = page.Content.Links.Next, cancellationToken);
-
-            async Task Flush()
-            {
-                await _ingestService.IngestAndMergeData(resources, options: options, ["RefId", "ProviderId"], cancellationToken: cancellationToken);
-                resources.Clear();
-            }
         }
     }
 
@@ -376,6 +347,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 
     private static partial class Log
     {
+
         [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Unable to retrieve resource '{resource}' from the resource registry.")]
         internal static partial void FailedToGetResource(ILogger logger, string resource);
 
@@ -384,23 +356,8 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 
         [LoggerMessage(EventId = 3, Level = LogLevel.Error, Message = "Failed to retrieve list of service owners from the resource registry.")]
         internal static partial void FailedToReadResourceOwners(ILogger logger);
+
+        [LoggerMessage(EventId = 4, Level = LogLevel.Error, Message = "failed to write update subject {subjectUrn} for resource {resourceId} .")]
+        internal static partial void FailedToWriteUpdateSubjectForResource(ILogger logger, Exception ex, string subjectUrn, string resourceId);
     }
-}
-
-internal class Failed
-{
-    /// <summary>
-    /// Model from page
-    /// </summary>
-    internal ResourceUpdatedModel UpdatedModel { get; set; }
-
-    /// <summary>
-    /// Single resource from Registry
-    /// </summary>
-    internal ResourceModel RawResource { get; set; }
-
-    /// <summary>
-    /// Exception
-    /// </summary>
-    internal Exception Exception { get; set; }
 }

@@ -68,38 +68,24 @@ public partial class RegisterHostedService(
             if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesResourceRegisterSync, cancellationToken))
             {
                 await using var ls = await _lease.TryAquireNonBlocking<ResourceRegisterLease>("access_management_resource_register_sync", cancellationToken);
-                try
+                if (!ls.HasLease || cancellationToken.IsCancellationRequested)
                 {
-                    if (!ls.HasLease || cancellationToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    await SyncResourceRegister(ls, options, cancellationToken);
-                }
-                finally
-                {
-                    ls.Dispose();
-                }
+                await SyncResourceRegister(ls, options, cancellationToken);
             }
 
             if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
             {
                 await using var ls = await _lease.TryAquireNonBlocking<RegisterLease>("access_management_register_sync", cancellationToken);
-                try
+                if (!ls.HasLease || cancellationToken.IsCancellationRequested)
                 {
-                    if (!ls.HasLease || cancellationToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    await SyncRegisterParty(ls, options, cancellationToken);
-                    await SyncRegisterRoles(ls, options, cancellationToken);
-                }
-                finally
-                {
-                    ls.Dispose();
-                }
+                await SyncRegisterParty(ls, options, cancellationToken);
+                await SyncRegisterRoles(ls, options, cancellationToken);
             }
 
             _logger.LogInformation("Register sync completed!");
@@ -151,7 +137,7 @@ public partial class RegisterHostedService(
         }
     }
 
-    private async Task SyncRegisterParty(LeaseResult<RegisterLease> ls, ChangeRequestOptions options,  CancellationToken cancellationToken)
+    private async Task SyncRegisterParty(LeaseResult<RegisterLease> ls, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
         var partyStatus = await statusService.GetOrCreateRecord(Guid.Parse("C18B67F6-B07E-482C-AB11-7FE12CD1F48D"), "accessmgmt-sync-register-party", options, 5);
         var canRunPartySync = await statusService.TryToRun(partyStatus, options);
