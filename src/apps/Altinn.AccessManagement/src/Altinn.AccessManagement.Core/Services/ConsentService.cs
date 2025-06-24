@@ -274,7 +274,6 @@ namespace Altinn.AccessManagement.Core.Services
                 details.To = await MapToExternalIdentity(details.To, cancellationToken);
                 details.From = await MapToExternalIdentity(details.From, cancellationToken);
 
-
                 if (details.HandledBy != null)
                 {
                     details.HandledBy = await MapToExternalIdentity(details.HandledBy, cancellationToken);

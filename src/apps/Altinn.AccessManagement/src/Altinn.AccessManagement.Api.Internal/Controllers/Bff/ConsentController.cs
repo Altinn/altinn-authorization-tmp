@@ -26,6 +26,8 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
         private readonly IConsent _consentService = consentService;
         private readonly IPDP _pdp = pdp;
 
+        private readonly string accessManagementResource = "altinn_access_management";
+
         /// <summary>
         /// Get a specific consent. 
         /// Requires the following.
@@ -55,7 +57,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             // Check if the user is authorized to view the consent request. Anyone with read access to access management can view the consent request details.
             if (consentRequest.Value.From.IsPartyUuid(out Guid resourePartUuuid))
             {
-                bool isAuthorized = await AuthorizeResourceAccess("altinn_access_management", resourePartUuuid, User, "read");
+                bool isAuthorized = await AuthorizeResourceAccess(accessManagementResource, resourePartUuuid, User, "read");
 
                 if (isAuthorized)
                 {
@@ -93,7 +95,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             // Check if the user is authorized to view the consent request. Anyone with read access to access management can view the consent request details.
             if (consent.Value != null && consent.Value.From.IsPartyUuid(out Guid resourePartUuuid))
             {
-                bool isAuthorized = await AuthorizeResourceAccess("altinn_access_management", resourePartUuuid, User, "read");
+                bool isAuthorized = await AuthorizeResourceAccess(accessManagementResource, resourePartUuuid, User, "read");
 
                 if (isAuthorized)
                 {
@@ -136,7 +138,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             // Check if the user is authorized to accept consent request in general. 
             if (consentRequest.Value.From.IsPartyUuid(out Guid resourePartUuuid))
             {
-                bool isAuthorized = await AuthorizeResourceAccess("altinn_access_management", resourePartUuuid, User, "write");
+                bool isAuthorized = await AuthorizeResourceAccess(accessManagementResource, resourePartUuuid, User, "write");
 
                 if (!isAuthorized)
                 {
@@ -180,7 +182,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             // Check if the user is authorized to reject consent request in general. 
             if (consentRequest.Value.From.IsPartyUuid(out Guid resourePartUuuid))
             {
-                bool isAuthorized = await AuthorizeResourceAccess("altinn_access_management", resourePartUuuid, User, "write");
+                bool isAuthorized = await AuthorizeResourceAccess(accessManagementResource, resourePartUuuid, User, "write");
 
                 if (!isAuthorized)
                 {
@@ -221,7 +223,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             // Check if the user is authorized to view the consent request. Anyone with read access to access management can view the consent request details.
             if (consent.Value != null && consent.Value.From.IsPartyUuid(out Guid resourePartUuuid))
             {
-                bool isAuthorized = await AuthorizeResourceAccess("altinn_access_management", resourePartUuuid, User, "write");
+                bool isAuthorized = await AuthorizeResourceAccess(accessManagementResource, resourePartUuuid, User, "write");
 
                 if (!isAuthorized)
                 {
@@ -241,12 +243,12 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
 
         private async Task<bool> AuthorizeResourceAccess(string resource, Guid resourceParty, ClaimsPrincipal userPrincipal,  string action)
         {
-            XacmlJsonRequestRoot request = DecisionHelper.CreateDecisionRequestForResourceRegistryResource(resource, resourceParty, userPrincipal, "read");
+            XacmlJsonRequestRoot request = DecisionHelper.CreateDecisionRequestForResourceRegistryResource(resource, resourceParty, userPrincipal, action);
             XacmlJsonResponse response = await _pdp.GetDecisionForRequest(request);
 
             if (response?.Response == null)
             {
-                throw new ArgumentNullException("response");
+                throw new InvalidOperationException("response");
             }
 
             if (!DecisionHelper.ValidatePdpDecision(response.Response, userPrincipal))
