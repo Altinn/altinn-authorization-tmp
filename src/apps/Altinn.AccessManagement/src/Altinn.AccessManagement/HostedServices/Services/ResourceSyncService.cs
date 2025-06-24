@@ -376,9 +376,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 
     private static partial class Log
     {
-        [LoggerMessage(EventId = 0, Level = LogLevel.Warning, Message = "Cannot perform operation '{operation}' for Altinn roles as they have not yet been synced to the database.")]
-        internal static partial void MissingAltinnRoles(ILogger logger, string operation);
-
         [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Unable to retrieve resource '{resource}' from the resource registry.")]
         internal static partial void FailedToGetResource(ILogger logger, string resource);
 
