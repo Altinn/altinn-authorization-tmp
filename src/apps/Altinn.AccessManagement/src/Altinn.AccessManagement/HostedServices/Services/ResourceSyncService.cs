@@ -186,7 +186,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     private Task UpsertUpdatedSubject(ChangeRequestOptions options, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken) => updatedResource.SubjectUrn switch
     {
         var s when s.StartsWith("urn:altinn:rolecode:", StringComparison.OrdinalIgnoreCase) => UpsertRoleCodeResource(updatedResource, resource, options, cancellationToken),
-        var s when s.StartsWith("urn:altinn:role:", StringComparison.OrdinalIgnoreCase) => UpsertAltinnRoleResource(updatedResource, resource, options, cancellationToken),
         var s when s.StartsWith("urn:altinn:accesspackage:", StringComparison.OrdinalIgnoreCase) => UpsertAccessPackageResource(updatedResource, resource, options, cancellationToken),
         _ => Task.CompletedTask,
     };
@@ -194,7 +193,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     private Task DeleteUpdatedSubject(ChangeRequestOptions options, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken) => updatedResource.SubjectUrn switch
     {
         var s when s.StartsWith("urn:altinn:rolecode:", StringComparison.OrdinalIgnoreCase) => DeleteRoleCodeResource(updatedResource, resource, options, cancellationToken),
-        var s when s.StartsWith("urn:altinn:role:", StringComparison.OrdinalIgnoreCase) => DeleteAltinnRoleResource(updatedResource, resource, options, cancellationToken),
         var s when s.StartsWith("urn:altinn:accesspackage:", StringComparison.OrdinalIgnoreCase) => DeleteAccessPackageResource(updatedResource, resource, options, cancellationToken),
         _ => Task.CompletedTask,
     };
@@ -214,16 +212,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 
             await _roleResourceRepository.Delete(filter, options, cancellationToken: cancellationToken);
         }
-    }
-
-    private Task DeleteAltinnRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
-    {
-        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:role:", StringComparison.OrdinalIgnoreCase))
-        {
-            Log.MissingAltinnRoles(_logger, "delete");
-        }
-
-        return Task.CompletedTask;
     }
 
     private async Task DeleteAccessPackageResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
@@ -264,16 +252,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 
             await _packageResourceRepository.Upsert(packageResource, updateProps, cmpProps, options, cancellationToken: cancellationToken);
         }
-    }
-
-    private Task UpsertAltinnRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
-    {
-        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:role:", StringComparison.OrdinalIgnoreCase))
-        {
-            Log.MissingAltinnRoles(_logger, "upsert");
-        }
-
-        return Task.CompletedTask;
     }
 
     private async Task UpsertRoleCodeResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
