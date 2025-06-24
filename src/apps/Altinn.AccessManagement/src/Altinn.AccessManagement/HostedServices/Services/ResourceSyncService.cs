@@ -115,7 +115,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
             ChangedBySystem = AuditDefaults.ResourceRegisterImportSystem
         };
 
-        Providers = [.. await _providerRepository.Get()];
         ResourceTypes = [.. await _resourceTypeRepository.Get()];
 
         await foreach (var page in await _resourceRegister.StreamResources(ls.Data?.ResourceNextPageLink, cancellationToken))
@@ -134,18 +133,19 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
                 try
                 {
                     var resource = await UpsertResource(updatedResource, options, cancellationToken);
+                    if (resource is null)
+                    {
+                        continue;
+                    }
+                    
                     if (updatedResource.Deleted)
                     {
                         await Flush();
-                        await DeleteERRoleMap(updatedResource, resource, options, cancellationToken);
-                        await DeleteAltinnRoleResource(updatedResource, resource, options, cancellationToken);
-                        await DeleteAccessPackageMap(updatedResource, resource, options, cancellationToken);
+                        await DeleteUpdatedSubject(options, updatedResource, resource, cancellationToken);
                     }
                     else
                     {
-                        await UpsertERRoleResource(updatedResource, resource, options, cancellationToken);
-                        await UpsertAltinnRoleResource(updatedResource, resource, options, cancellationToken);
-                        await UpsertAccessPackageMap(updatedResource, resource, options, cancellationToken);
+                        await UpsertUpdatedSubject(options, updatedResource, resource, cancellationToken);
                     }
                 }
                 catch (Exception ex)
@@ -183,135 +183,128 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         }
     }
 
-    private async Task<bool> DeleteERRoleMap(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    private Task UpsertUpdatedSubject(ChangeRequestOptions options, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken) => updatedResource.SubjectUrn switch
     {
-        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:rolecode:", StringComparison.OrdinalIgnoreCase))
+        var s when s.StartsWith("urn:altinn:rolecode:", StringComparison.OrdinalIgnoreCase) => UpsertRoleCodeResource(updatedResource, resource, options, cancellationToken),
+        var s when s.StartsWith("urn:altinn:role:", StringComparison.OrdinalIgnoreCase) => UpsertAltinnRoleResource(updatedResource, resource, options, cancellationToken),
+        var s when s.StartsWith("urn:altinn:accesspackage:", StringComparison.OrdinalIgnoreCase) => UpsertAccessPackageResource(updatedResource, resource, options, cancellationToken),
+        _ => Task.CompletedTask,
+    };
+
+    private Task DeleteUpdatedSubject(ChangeRequestOptions options, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken) => updatedResource.SubjectUrn switch
+    {
+        var s when s.StartsWith("urn:altinn:rolecode:", StringComparison.OrdinalIgnoreCase) => DeleteRoleCodeResource(updatedResource, resource, options, cancellationToken),
+        var s when s.StartsWith("urn:altinn:role:", StringComparison.OrdinalIgnoreCase) => DeleteAltinnRoleResource(updatedResource, resource, options, cancellationToken),
+        var s when s.StartsWith("urn:altinn:accesspackage:", StringComparison.OrdinalIgnoreCase) => DeleteAccessPackageResource(updatedResource, resource, options, cancellationToken),
+        _ => Task.CompletedTask,
+    };
+
+    private async Task DeleteRoleCodeResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    {
+        var roleLookupFilter = _roleLookupRepository.CreateFilterBuilder()
+            .Add(r => r.Key, "LegacyCode", FilterComparer.Like)
+            .Add(r => r.Value, updatedResource.SubjectUrn.Split(":").Last(), FilterComparer.Like);
+
+        var roleLookups = await _roleLookupRepository.GetExtended(roleLookupFilter, cancellationToken: cancellationToken);
+        if (roleLookups.Single().Role is var role && role != null)
         {
-            var roleLookupFilter = _roleLookupRepository.CreateFilterBuilder()
-                .Add(r => r.Key, "ERCode", FilterComparer.Like)
-                .Add(r => r.Value, updatedResource.SubjectUrn.Split(":").Last(), FilterComparer.Like);
+            var filter = _roleResourceRepository.CreateFilterBuilder()
+                .Equal(f => f.ResourceId, resource.Id)
+                .Equal(f => f.RoleId, role.Id);
 
-            var roleLookups = await _roleLookupRepository.GetExtended(roleLookupFilter, cancellationToken: cancellationToken);
-            if (roleLookups.Single().Role is var role && role != null)
-            {
-                var filter = _roleResourceRepository.CreateFilterBuilder()
-                    .Equal(f => f.ResourceId, resource.Id)
-                    .Equal(f => f.RoleId, role.Id);
-
-                await _roleResourceRepository.Delete(filter, options, cancellationToken: cancellationToken);
-            }
+            await _roleResourceRepository.Delete(filter, options, cancellationToken: cancellationToken);
         }
-
-        return false;
     }
 
-    private async Task<bool> DeleteAltinnRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    private Task DeleteAltinnRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
         if (updatedResource.SubjectUrn.StartsWith("urn:altinn:role:", StringComparison.OrdinalIgnoreCase))
         {
             Log.MissingAltinnRoles(_logger, "delete");
         }
 
-        return await Task.FromResult(false);
+        return Task.CompletedTask;
     }
 
-    private async Task<bool> DeleteAccessPackageMap(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    private async Task DeleteAccessPackageResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
-        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:accesspackage:", StringComparison.OrdinalIgnoreCase))
+        var packages = await _packageRepository.Get(r => r.Urn, updatedResource.SubjectUrn, cancellationToken: cancellationToken);
+        if (packages.Single() is var package && package != null)
         {
-            var packages = await _packageRepository.Get(r => r.Urn, updatedResource.SubjectUrn, cancellationToken: cancellationToken);
-            if (packages.Single() is var package && package != null)
-            {
-                var filter = _packageResourceRepository.CreateFilterBuilder()
-                    .Equal(f => f.ResourceId, resource.Id)
-                    .Equal(f => f.PackageId, package.Id);
+            var filter = _packageResourceRepository.CreateFilterBuilder()
+                .Equal(f => f.ResourceId, resource.Id)
+                .Equal(f => f.PackageId, package.Id);
 
-                await _packageResourceRepository.Delete(filter, options, cancellationToken: cancellationToken);
-                return true;
-            }
+            await _packageResourceRepository.Delete(filter, options, cancellationToken: cancellationToken);
         }
-
-        return false;
     }
 
-    private async Task<bool> UpsertAccessPackageMap(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    private async Task UpsertAccessPackageResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
-        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:accesspackage:", StringComparison.OrdinalIgnoreCase))
+        var packages = await _packageRepository.Get(r => r.Urn, updatedResource.SubjectUrn, cancellationToken: cancellationToken);
+        if (packages.Single() is var package && package != null)
         {
-            var packages = await _packageRepository.Get(r => r.Urn, updatedResource.SubjectUrn, cancellationToken: cancellationToken);
-            if (packages.Single() is var package && package != null)
+            var packageResource = new PackageResource
             {
-                var packageResource = new PackageResource
-                {
-                    PackageId = package.Id,
-                    ResourceId = resource.Id,
-                };
+                PackageId = package.Id,
+                ResourceId = resource.Id,
+            };
 
-                var cmpProps = new List<Expression<Func<PackageResource, object>>>()
+            var cmpProps = new List<Expression<Func<PackageResource, object>>>()
                 {
                     p => p.PackageId,
                     p => p.ResourceId,
                 };
 
-                var updateProps = new List<Expression<Func<PackageResource, object>>>()
+            var updateProps = new List<Expression<Func<PackageResource, object>>>()
                 {
                     r => r.PackageId,
                     r => r.ResourceId,
                 };
 
-                await _packageResourceRepository.Upsert(packageResource, updateProps, cmpProps, options, cancellationToken: cancellationToken);
-                return true;
-            }
+            await _packageResourceRepository.Upsert(packageResource, updateProps, cmpProps, options, cancellationToken: cancellationToken);
         }
-
-        return false;
     }
 
-    private async Task<bool> UpsertAltinnRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    private Task UpsertAltinnRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
         if (updatedResource.SubjectUrn.StartsWith("urn:altinn:role:", StringComparison.OrdinalIgnoreCase))
         {
             Log.MissingAltinnRoles(_logger, "upsert");
         }
 
-        return await Task.FromResult(false);
+        return Task.CompletedTask;
     }
 
-    private async Task<bool> UpsertERRoleResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
+    private async Task UpsertRoleCodeResource(ResourceUpdatedModel updatedResource, Resource resource, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
-        if (updatedResource.SubjectUrn.StartsWith("urn:altinn:rolecode:", StringComparison.OrdinalIgnoreCase))
+        var roleLookupFilter = _roleLookupRepository.CreateFilterBuilder()
+            .Add(r => r.Key, "LegacyCode", FilterComparer.Like)
+            .Add(r => r.Value, updatedResource.SubjectUrn.Split(":").Last(), FilterComparer.Like);
+
+        var roleLookups = await _roleLookupRepository.GetExtended(roleLookupFilter, cancellationToken: cancellationToken);
+        if (roleLookups.Single().Role is var role && role != null)
         {
-            var roleLookupFilter = _roleLookupRepository.CreateFilterBuilder()
-                .Add(r => r.Key, "LegacyCode", FilterComparer.Like)
-                .Add(r => r.Value, updatedResource.SubjectUrn.Split(":").Last(), FilterComparer.Like);
-
-            var roleLookups = await _roleLookupRepository.GetExtended(roleLookupFilter, cancellationToken: cancellationToken);
-            if (roleLookups.Single().Role is var role && role != null)
+            var roleResource = new RoleResource
             {
-                var roleResource = new RoleResource
-                {
-                    ResourceId = resource.Id,
-                    RoleId = role.Id,
-                };
+                ResourceId = resource.Id,
+                RoleId = role.Id,
+            };
 
-                var cmpProps = new List<Expression<Func<RoleResource, object>>>()
+            var cmpProps = new List<Expression<Func<RoleResource, object>>>()
                 {
                     r => r.ResourceId,
                     r => r.RoleId,
                 };
 
-                var updateProps = new List<Expression<Func<RoleResource, object>>>()
+            var updateProps = new List<Expression<Func<RoleResource, object>>>()
                 {
                     r => r.ResourceId,
                     r => r.RoleId,
                 };
 
-                await _roleResourceRepository.Upsert(roleResource, updateProps, cmpProps, options, cancellationToken: cancellationToken);
-                return true;
-            }
+            await _roleResourceRepository.Upsert(roleResource, updateProps, cmpProps, options, cancellationToken: cancellationToken);
         }
-
-        return false;
     }
 
     private async Task<Resource> UpsertResource(ResourceUpdatedModel resourceUpdated, ChangeRequestOptions options, CancellationToken cancellationToken)
@@ -324,6 +317,10 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         }
 
         var repositoryResource = await ConvertToResource(response.Content, options, cancellationToken);
+        if (repositoryResource is null)
+        {
+            return null;
+        }
 
         var cmpProps = new List<Expression<Func<Resource, object>>>()
         {
@@ -344,19 +341,26 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         return resources.First();
     }
 
-    public IEnumerable<Provider> Providers { get; set; }
-
     public IEnumerable<ResourceType> ResourceTypes { get; set; }
 
     private async Task<Resource> ConvertToResource(ResourceModel model, ChangeRequestOptions options, CancellationToken cancellationToken)
     {
-        var provider = await GetOrCreateProvider(model, options, cancellationToken) ?? throw new Exception("Unable to get or create provider");
+        var providerFilter = _providerRepository.CreateFilterBuilder()
+            .Equal(p => p.Code, model.HasCompetentAuthority.Orgcode.ToLowerInvariant());
+
+        var providers = await _providerRepository.Get(providerFilter, cancellationToken: cancellationToken);
+        if (providers is null || !providers.Any())
+        {
+            return null;
+        }
+
         var resourceType = await GetOrCreateResourceType(model, options, cancellationToken) ?? throw new Exception("Unable to get or create resourcetype");
 
+        var provider = providers.Single();
         return new Resource()
         {
-            Name = model.Title.Nb,
-            Description = "-",
+            Name = model.Title?.Nb ?? model.Identifier,
+            Description = model.Description?.Nb ?? "-",
             RefId = model.Identifier,
             ProviderId = provider.Id,
             TypeId = resourceType.Id
@@ -390,77 +394,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         }
 
         return type;
-    }
-
-    private async Task LoadProviders()
-    {
-        Providers = await _providerRepository.Get();
-    }
-
-    private async Task<Provider> GetOrCreateProvider(ResourceModel model, ChangeRequestOptions options, CancellationToken cancellationToken)
-    {
-        if (Providers == null || !Providers.Any())
-        {
-            await LoadProviders();
-        }
-
-        var orgNo = model.HasCompetentAuthority.Organization.ToString() ?? string.Empty;
-        var orgCode = model.HasCompetentAuthority.Orgcode.ToString() ?? string.Empty;
-
-        var provider = Providers.Where(t => !string.IsNullOrEmpty(t.RefId)).FirstOrDefault(t => t.RefId.Equals(orgNo, StringComparison.OrdinalIgnoreCase));
-
-        if (provider == null)
-        {
-            provider = Providers.Where(t => !string.IsNullOrEmpty(t.Code)).FirstOrDefault(t => t.Code.Equals(orgCode, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (provider == null)
-        {
-            if (model.HasCompetentAuthority != null)
-            {
-                var providerType = (await _providerTypeRepository.Get(t => t.Name, "Tjenesteeier")).FirstOrDefault();
-                if (providerType == null)
-                {
-                    throw new Exception("Provider type 'ServiceOwner' not found");
-                }
-
-                provider = new Provider()
-                {
-                    Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.Nb,
-                    RefId = model.HasCompetentAuthority.Organization,
-                    Code = model.HasCompetentAuthority.Orgcode,
-                    TypeId = providerType.Id,
-                };
-                
-                await _providerRepository.Create(provider, options: options, cancellationToken: cancellationToken);
-
-                //if (model.HasCompetentAuthority.Name != null && model.HasCompetentAuthority.Name.En != null)
-                //{
-                //    provider = new Provider()
-                //    {
-                //        Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.En,
-                //        RefId = model.HasCompetentAuthority.Orgcode
-                //    };
-
-                //    await _providerRepository.CreateTranslation(provider, "eng", options: options, cancellationToken: cancellationToken);
-                //}
-
-                //if (model.HasCompetentAuthority.Name != null && model.HasCompetentAuthority.Name.Nn != null)
-                //{
-                //    provider = new Provider()
-                //    {
-                //        Name = model.HasCompetentAuthority.Name == null ? model.HasCompetentAuthority.Orgcode : model.HasCompetentAuthority.Name.Nn,
-                //        RefId = model.HasCompetentAuthority.Orgcode
-                //    };
-
-                //    await _providerRepository.CreateTranslation(provider, "nno", options: options, cancellationToken: cancellationToken);
-                //}
-
-                await LoadProviders();
-            }
-        }
-
-        return provider;
     }
 
     private static partial class Log
