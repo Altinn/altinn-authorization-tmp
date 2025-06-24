@@ -224,7 +224,7 @@ public class DelegationService(
 
             // Find ClientAssignment
             var clientAssignment = await GetAssignment(client.Id, facilitator.Id, clientRole.Id) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
-            var clientPackages = await GetConnectionPackages(client.Id, facilitator.Id);
+            var clientPackages = await assignmentService.GetPackagesForAssignment(clientAssignment.Id);
 
             Delegation delegation = null;
             foreach (var package in rp.Value)
@@ -232,7 +232,7 @@ public class DelegationService(
                 var filter = connectionPackageRepository.CreateFilterBuilder();
 
                 // TODO: Add "&& t.CanAssign" when data is ready
-                ExtConnectionPackage clientPackage = clientPackages.FirstOrDefault(t => t.PackageId == package.Id);
+                var clientPackage = clientPackages.FirstOrDefault(t => t.PackageId == package.Id);
                 if (clientPackage == null)
                 {
                     throw new Exception(string.Format("Party does not have the package '{0}'", package.Urn));
@@ -254,8 +254,8 @@ public class DelegationService(
                 }
 
                 // Find AssignmentPackageId or RolePackageId
-                Guid? assignmentPackageId = null;
-                Guid? rolePackageId = null;
+                Guid? assignmentPackageId = clientPackage.AssignmentPackageId;
+                Guid? rolePackageId = clientPackage.RolePackageId;
 
                 // Find or Create DelegationPackage
                 var delegationPackage = await GetOrCreateDelegationPackage(delegation.Id, package.Id, assignmentPackageId, rolePackageId, options);
@@ -302,8 +302,17 @@ public class DelegationService(
         var delegationPackageFilter = delegationPackageRepository.CreateFilterBuilder();
         delegationPackageFilter.Equal(t => t.DelegationId, delegationId);
         delegationPackageFilter.Equal(t => t.PackageId, packageId);
-        delegationPackageFilter.Equal(t => t.AssignmentPackageId, assignmentPackageId);
-        delegationPackageFilter.Equal(t => t.RolePackageId, rolePackageId);
+
+        if (assignmentPackageId != null)
+        {
+            delegationPackageFilter.Equal(t => t.AssignmentPackageId, assignmentPackageId);
+        }
+
+        if (rolePackageId != null)
+        {
+            delegationPackageFilter.Equal(t => t.RolePackageId, rolePackageId);
+        }
+
         var delegationPackage = (await delegationPackageRepository.Get(delegationPackageFilter)).FirstOrDefault();
         if (delegationPackage == null)
         {
