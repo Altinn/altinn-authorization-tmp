@@ -14,7 +14,7 @@ namespace Altinn.AccessManagement.Api.Internal.Extensions
         /// <param name="details">The ConsentRequestDetails object to convert.</param>
         /// <returns>A ConsentRequestDetailsBFF object.</returns>
         /// <exception cref="ArgumentException">Thrown when an unknown consent party URN is encountered.</exception>
-        public static ConsentRequestDetailsBFFDto ToConsentRequestDetailsBFF(this ConsentRequestDetails details)
+        public static ConsentRequestDetailsBffDto ToConsentRequestDetailsBFF(this ConsentRequestDetails details)
         {
             Authorization.Api.Contracts.Consent.ConsentPartyUrn to;
             if (details.To.IsPartyUuid(out Guid toPartyUuid))
@@ -48,7 +48,7 @@ namespace Altinn.AccessManagement.Api.Internal.Extensions
                 handledBy = Authorization.Api.Contracts.Consent.ConsentPartyUrn.PartyUuid.Create(handledByUuid);
             }
 
-            return new ConsentRequestDetailsBFFDto
+            return new ConsentRequestDetailsBffDto
             {
                 Id = details.Id,
                 From = from,

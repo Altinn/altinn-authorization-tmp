@@ -67,7 +67,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/{requestId.ToString()}");
             string responseText = await response.Content.ReadAsStringAsync();
-            ConsentRequestDetailsBFFDto consentRequest = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBFFDto>();
+            ConsentRequestDetailsBffDto consentRequest = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBffDto>();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(requestId, consentRequest.Id);
             Assert.True(consentRequest.ConsentRights.Count > 0);
@@ -89,7 +89,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/{requestId.ToString()}");
             string responseText = await response.Content.ReadAsStringAsync();
-            ConsentRequestDetailsBFFDto consentRequest = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBFFDto>();
+            ConsentRequestDetailsBffDto consentRequest = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBffDto>();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(requestId, consentRequest.Id);
             Assert.True(consentRequest.ConsentRights.Count > 0);
@@ -127,7 +127,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/bff/consentrequests/{requestId.ToString()}/accept/", httpContent);
             string responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            ConsentRequestDetailsBFFDto consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBFFDto>();
+            ConsentRequestDetailsBffDto consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBffDto>();
             Assert.Equal(2, consentInfo.ConsentRequestEvents.Count);
             Assert.Equal(Altinn.Authorization.Api.Contracts.Consent.ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(Altinn.Authorization.Api.Contracts.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -165,7 +165,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             }
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            ConsentRequestDetailsBFFDto consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBFFDto>();
+            ConsentRequestDetailsBffDto consentInfo = await response.Content.ReadFromJsonAsync<ConsentRequestDetailsBffDto>();
             Assert.Equal(2, consentInfo.ConsentRequestEvents.Count);
             Assert.Equal(Altinn.Authorization.Api.Contracts.Consent.ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(Altinn.Authorization.Api.Contracts.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), consentInfo.ConsentRequestEvents[0].PerformedBy);
@@ -311,7 +311,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             HttpResponseMessage response = await client.PostAsync($"accessmanagement/api/v1/bff/consents/{requestId.ToString()}/revoke/", null);
             string responseContent = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            ConsentRequestDetailsBFFDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsBFFDto>(responseContent, _jsonOptions);
+            ConsentRequestDetailsBffDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsBffDto>(responseContent, _jsonOptions);
             Assert.Equal(3,consentInfo.ConsentRequestEvents.Count);
             Assert.Equal(Altinn.Authorization.Api.Contracts.Consent.ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(Altinn.Authorization.Api.Contracts.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), consentInfo.ConsentRequestEvents[0].PerformedBy);

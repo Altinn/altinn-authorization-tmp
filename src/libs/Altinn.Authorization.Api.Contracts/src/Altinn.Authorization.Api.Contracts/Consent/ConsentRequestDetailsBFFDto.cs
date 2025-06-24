@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a consent request. Model used internally in the BFF (Backend for Frontend) layer to handle consent requests.
     /// </summary>
-    public class ConsentRequestDetailsBFFDto
+    public class ConsentRequestDetailsBffDto
     {
         /// <summary>
         /// The id of the consent request.
