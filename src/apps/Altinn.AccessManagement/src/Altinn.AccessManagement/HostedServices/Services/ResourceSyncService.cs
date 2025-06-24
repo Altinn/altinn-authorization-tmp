@@ -42,7 +42,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         IResourceRepository resourceRepository,
         IProviderRepository providerRepository,
         IPackageRepository packageRepository,
-        IRoleRepository roleRepository,
         IPackageResourceRepository packageResourceRepository,
         IRoleResourceRepository roleResourceRepository,
         IRoleLookupRepository roleLookupRepository,
@@ -347,7 +346,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 
     private static partial class Log
     {
-
         [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Unable to retrieve resource '{resource}' from the resource registry.")]
         internal static partial void FailedToGetResource(ILogger logger, string resource);
 
