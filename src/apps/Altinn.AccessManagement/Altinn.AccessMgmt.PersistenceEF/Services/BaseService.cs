@@ -26,8 +26,12 @@ public class BaseService<TBasic, TExtended, TAudit>
     public virtual async ValueTask<TExtended?> GetExtended(Guid id) =>
         await _extendedDb.Set<TExtended>().SingleOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
 
-    public virtual async ValueTask<TAudit?> GetAudit(Guid id) =>
-        await _auditDb.Set<TAudit>().SingleOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
+    public virtual async ValueTask<TAudit?> GetAudit(Guid id, DateTime asOf) =>
+        await _auditDb.Set<TAudit>().SingleOrDefaultAsync(e => 
+        EF.Property<Guid>(e, "Id") == id && 
+        EF.Property<DateTime>(e, "ValidFrom") <= asOf &&
+        EF.Property<DateTime>(e, "ValidTo") > asOf
+        );
 
     public virtual async ValueTask<TBasic?> Create(TBasic obj)
     {

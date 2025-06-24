@@ -21,12 +21,6 @@ public class BasicDbContext : DbContext
 
     public DbSet<AssignmentResource> AssignmentResources => Set<AssignmentResource>();
 
-    //public DbSet<Connection> Connections => Set<Connection>();
-
-    //public DbSet<ConnectionPackage> ConnectionPackages => Set<ConnectionPackage>();
-
-    //public DbSet<ConnectionResource> ConnectionResources => Set<ConnectionResource>();
-
     public DbSet<Delegation> Delegations => Set<Delegation>();
 
     public DbSet<DelegationPackage> DelegationPackages => Set<DelegationPackage>();
@@ -83,9 +77,6 @@ public class BasicDbContext : DbContext
         modelBuilder.ApplyConfiguration<Assignment>(new AssignmentConfiguration());
         modelBuilder.ApplyConfiguration<AssignmentPackage>(new AssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<AssignmentResource>(new AssignmentResourceConfiguration());
-        //modelBuilder.ApplyConfiguration<Connection>(new ConnectionConfiguration());
-        //modelBuilder.ApplyConfiguration<ConnectionPackage>(new ConnectionPackageConfiguration());
-        //modelBuilder.ApplyConfiguration<ConnectionResource>(new ConnectionResourceConfiguration());
         modelBuilder.ApplyConfiguration<Delegation>(new DelegationConfiguration());
         modelBuilder.ApplyConfiguration<DelegationPackage>(new DelegationPackageConfiguration());
         modelBuilder.ApplyConfiguration<DelegationResource>(new DelegationResourceConfiguration());

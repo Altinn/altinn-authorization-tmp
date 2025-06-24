@@ -37,8 +37,6 @@ builder.Services.AddDbContext<AuditDbContext>((sp, options) =>
     //.AddInterceptors(interceptor);
 });
 
-var connStr = builder.Configuration["Database:Postgres:AppConnectionString"];
-
 builder.Services.AddScoped<PackageService>();
 builder.Services.AddScoped<AreaGroupService>();
 
@@ -55,7 +53,9 @@ app.MapGet("/test3", async ([FromServices] ExtendedDbContext db, Guid id) => { r
 app.MapGet("/create", async ([FromServices] BasicDbContext db, [FromServices] AreaGroupService service) => 
 {
     var org = await db.EntityTypes.SingleAsync(t => t.Name == "Organisasjon") ?? throw new Exception("EntityType not found");
+
     var areaGroup = new Altinn.AccessMgmt.Core.Models.AreaGroup() { Id = Guid.CreateVersion7(), Name = "TEST", Description = "Bare en test", Urn = "urn:areagroup:test", EntityTypeId = org.Id };
+
     await service.Create(areaGroup, audit: new AuditValues(ChangedBy: AuditDefaultsTemp.StaticDataIngest, ChangedBySystem: AuditDefaultsTemp.StaticDataIngest, OperationId: Guid.CreateVersion7().ToString()));
 });
 

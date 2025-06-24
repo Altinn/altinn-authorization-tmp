@@ -158,7 +158,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     entityid = table.Column<Guid>(type: "uuid", nullable: false),
                     key = table.Column<string>(type: "text", nullable: false),
-                    value = table.Column<string>(type: "text", nullable: false)
+                    value = table.Column<string>(type: "text", nullable: false),
+                    isprotected = table.Column<bool>(type: "text", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
