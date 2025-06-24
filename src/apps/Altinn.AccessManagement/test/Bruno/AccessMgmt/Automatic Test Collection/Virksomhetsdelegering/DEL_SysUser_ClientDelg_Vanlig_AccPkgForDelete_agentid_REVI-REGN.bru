@@ -1,7 +1,7 @@
 meta {
   name: DEL_SysUser_ClientDelg_Vanlig_AccPkgForDelete_agentid_REVI/REGN
   type: http
-  seq: 16
+  seq: 17
 }
 
 delete {
@@ -42,7 +42,7 @@ script:pre-request {
 }
 
 tests {
-  test("Verify deletion of delegation with agentId should give 200 ok", function() {
+  test("Verify deletion of delegation with agentId should give 200 ok - virksomhetsdelegering", function() {
     expect(res.status).to.equal(200);
   });
 }

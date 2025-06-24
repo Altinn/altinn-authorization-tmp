@@ -44,7 +44,7 @@ script:pre-request {
 }
 
 tests {
-  test("GET all delegated packages from Org1 to Org2", function() {
+  test("GET all delegated packages which is delegated from Org1 to Org2", function() {
     const testdata = require(`./Testdata/enduser/${bru.getEnvVar("tokenEnv")}.json`);
      const data = res.getBody();
       var packageId = bru.getEnvVar("packageId");

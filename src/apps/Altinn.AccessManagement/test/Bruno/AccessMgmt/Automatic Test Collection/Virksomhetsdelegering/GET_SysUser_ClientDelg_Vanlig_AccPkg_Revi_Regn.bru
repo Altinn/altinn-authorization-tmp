@@ -1,7 +1,7 @@
 meta {
   name: GET_SysUser_ClientDelg_Vanlig_AccPkg_Revi_Regn
   type: http
-  seq: 14
+  seq: 15
 }
 
 get {
@@ -43,7 +43,7 @@ script:pre-request {
 }
 
 tests {
-  test("Client org has delegated to systembruker", function() {
+  test("REGN- Client org has delegated to systembruker", function() {
   const testdata = require(`./Testdata/enduser/${bru.getEnvVar("tokenEnv")}.json`);
     
       const data = res.getBody();

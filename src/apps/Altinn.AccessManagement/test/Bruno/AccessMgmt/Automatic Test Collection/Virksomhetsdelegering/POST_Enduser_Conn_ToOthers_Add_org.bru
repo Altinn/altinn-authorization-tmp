@@ -41,7 +41,7 @@ script:pre-request {
 }
 
 tests {
-  test("To add Org1 og Org2 for access package delegation", function() {
+  test("To add Org1 og Org2 for access package delegation - virksomhetsdelegering", function() {
     
     const testdata = require(`./Testdata/enduser/${bru.getEnvVar("tokenEnv")}.json`); 
     const data = res.getBody();

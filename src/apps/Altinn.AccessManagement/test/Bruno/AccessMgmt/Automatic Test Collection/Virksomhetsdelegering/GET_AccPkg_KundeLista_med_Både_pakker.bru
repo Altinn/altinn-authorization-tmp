@@ -1,7 +1,7 @@
 meta {
-  name: GET_AccPkg_KundeLista_systembruker_With_REVI_REGN
+  name: GET_AccPkg_KundeLista_med_Både_pakker
   type: http
-  seq: 11
+  seq: 12
 }
 
 get {
@@ -18,6 +18,7 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/enduser/${bru.getEnvVar("tokenEnv")}.json`);
   
+  
   bru.setVar("party", testdata.regn_type_org.partyuuid);
   
   
@@ -31,17 +32,17 @@ script:pre-request {
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
-  bru.setVar("bearerToken",  token);
+  bru.setVar("bearerToken", token);
 }
 
 tests {
-  test("Verify that Org1 appears in the client list for Org2 after Org2 receives delegated access package from Org1.", function() {
+  test("Verify that Org1 appears in the client list for Org2 after Org2 receives delegated access via the access package from Org1 : ToOthers", function() {
     const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
-    const testdata = require(`./Testdata/enduser/${bru.getEnvVar("tokenEnv")}.json`);
-    const data = res.getBody();
-    expect(res.status).to.equal(200);
-    expect(data[0].party).to.have.property('name', testdata.Konkursbo_type_org.name);
-    expect(data[0].party).to.have.property('organizationNumber', testdata.Konkursbo_type_org.orgno);
+      const testdata = require(`./Testdata/enduser/${bru.getEnvVar("tokenEnv")}.json`);
+      const data = res.getBody();
+      expect(res.status).to.equal(200);
+      expect(data[0].party).to.have.property('name', testdata.regn_type_org.klient_org.name);
+      expect(data[0].party).to.have.property('organizationNumber', testdata.regn_type_org.klient_org.orgno);
     
     });
 }
