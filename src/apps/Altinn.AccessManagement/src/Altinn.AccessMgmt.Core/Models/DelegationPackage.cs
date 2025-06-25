@@ -70,7 +70,6 @@ public class ExtDelegationPackage : DelegationPackage
     /// </summary>
     public Package Package { get; set; }
 
-
     /// <summary>
     /// Role dependency
     /// </summary>

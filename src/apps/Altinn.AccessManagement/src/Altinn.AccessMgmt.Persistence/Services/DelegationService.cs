@@ -410,15 +410,6 @@ public class DelegationService(
         return (await assignmentRepository.Get(filter)).FirstOrDefault();
     }
 
-    private async Task<IEnumerable<ExtConnectionPackage>> GetConnectionPackages(Guid from, Guid to)
-    {
-        var filter = connectionPackageRepository.CreateFilterBuilder();
-        filter.Equal(t => t.FromId, from);
-        filter.Equal(t => t.ToId, to);
-
-        return await connectionPackageRepository.GetExtended(filter);
-    }
-
     private async Task<Assignment> GetOrCreateAssignment(Entity from, Entity to, Role role, ChangeRequestOptions options)
     {
         var filter = assignmentRepository.CreateFilterBuilder();

@@ -459,7 +459,7 @@ public class AssignmentService(
             return result;
         }
 
-        var assignment = assignmentResult.FirstOrDefault();
+        var assignment = assignmentResult.First();
 
         // Get AssignmentPackages
         QueryResponse<AssignmentPackage> assignmentPackageResult = null;
