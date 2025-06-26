@@ -320,7 +320,9 @@ public class DelegationService(
                 new DelegationPackage()
                 {
                     DelegationId = delegationId,
-                    PackageId = packageId
+                    PackageId = packageId,
+                    AssignmentPackageId = assignmentPackageId.HasValue ? assignmentPackageId.Value : null,
+                    RolePackageId = rolePackageId.HasValue ? rolePackageId.Value : null
                 },
                 options: options
             );

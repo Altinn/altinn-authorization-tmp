@@ -47,12 +47,12 @@ public class DelegationPackage
     /// <summary>
     /// Role dependency
     /// </summary>
-    public Guid RolePackageId { get; set; }
+    public Guid? RolePackageId { get; set; }
 
     /// <summary>
     /// Assignment dependency
     /// </summary>
-    public Guid AssignmentPackageId { get; set; }
+    public Guid? AssignmentPackageId { get; set; }
 }
 
 /// <summary>
