@@ -85,7 +85,11 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
             return null;
         }
 
-        return res.Select(t => new RoleDto(t.Role));
+        var id = res.Select(t => t.Role).First().Id;
+        ExtRole role = await roleRepository.GetExtended(id);
+        await GetSingleLegacyRoleCodeAndUrn(role);
+
+        return res.Select(t => new RoleDto(role));
     }
 
     /// <inheritdoc />
