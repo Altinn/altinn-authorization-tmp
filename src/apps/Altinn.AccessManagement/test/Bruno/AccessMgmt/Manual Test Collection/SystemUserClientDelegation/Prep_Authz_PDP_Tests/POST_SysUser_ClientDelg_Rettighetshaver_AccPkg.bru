@@ -1,19 +1,17 @@
 meta {
-  name: GET_SysUser_ClientDelg_GetRegnskapforerClients
+  name: POST_SysUser_ClientDelg_Rettighetshaver_AccPkg
   type: http
-  seq: 12
+  seq: 3
 }
 
-get {
-  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation/clients?party={{party}}&roles=regnskapsforer
+post {
+  url: {{baseUrl}}/accessmanagement/api/v1/internal/systemuserclientdelegation?party={{party}}
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  roles: regnskapsforer
-  ~packages: regnskapsforer-med-signeringsrettighet
 }
 
 headers {
@@ -21,13 +19,30 @@ headers {
   Accept: application/json
 }
 
+body:json {
+  {
+    "clientId": "{{clientId}}",
+    "agentId": "{{systemUser}}",
+    "agentName": "Fiken",
+    "agentRole": "agent",
+    "rolePackages": [
+      {
+        "roleIdentifier": "rettighetshaver",
+        "packageUrn": "urn:altinn:accesspackage:skatt-naering"
+      }
+    ]
+  }
+}
+
 script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "GET_SysUser_ClientDelg_GetRegnskapforerClients");
+  bru.setVar("requestName", "POST_SysUser_ClientDelg_Rettighetshaver_AccPkg");
   bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
   bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
+  bru.setVar("clientId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_USENSUELL_UVIRKSOM_TIGER.partyUuid);
+  bru.setVar("packageToDelegate", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_USENSUELL_UVIRKSOM_TIGER.directPackageToDelegate);
   
   var getTokenParameters = {
     auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
