@@ -2,7 +2,7 @@
     <Import Project="..\..\Directory.Build.props" />
 
     <PropertyGroup>
-        <IsAppProject>true</IsAppProject>
+        <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
 </Project>

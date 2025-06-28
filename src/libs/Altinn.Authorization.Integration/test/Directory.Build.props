@@ -2,7 +2,8 @@
     <Import Project="..\..\Directory.Build.props" />
 
     <PropertyGroup>
-        <IsAppProject>true</IsAppProject>
+        <XUnitVersion>v3</XUnitVersion>
+        <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
 </Project>
