@@ -8,8 +8,6 @@ using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.ProblemDetails;
@@ -19,7 +17,6 @@ namespace Altinn.AccessMgmt.Persistence.Services;
 
 /// <inheritdoc/>
 public class AuthorizedPartyRepoService(
-    IEntityRepository entityRepository,
     IDelegationMetadataRepository resourceDelegationRepository,
     IRelationService relationService,
     IContextRetrievalService contextRetrievalService
@@ -29,16 +26,6 @@ public class AuthorizedPartyRepoService(
     public async Task<Result<IEnumerable<AuthorizedParty>>> Get(Guid toId, CancellationToken cancellationToken = default)
     {
         Dictionary<Guid, AuthorizedParty> parties = new();
-        ValidationErrorBuilder errors = default;
-
-        var toEntity = await entityRepository.GetExtended(toId, cancellationToken: cancellationToken);
-        ValidatePartyIsNotNull(toId, toEntity, ref errors, "$QUERY/to");
-        ValidatePartyIsSystemUser(toEntity, ref errors, "$QUERY/to");
-
-        if (errors.TryBuild(out var errorResult))
-        {
-            return errorResult;
-        }
 
         // Get AccessPackage Delegations
         var connections = await relationService.GetConnectionsFromOthers(toId, null, null, null, cancellationToken: cancellationToken);
@@ -63,7 +50,7 @@ public class AuthorizedPartyRepoService(
                 parties[connection.Party.Id] = party;
             }
 
-            var packages = connection.Packages?.Select(cp => cp?.Value.Split(":").Last());
+            var packages = connection.Packages?.Select(cp => cp?.Urn.Split(":").Last());
             party.EnrichWithAccessPackage(packages);
         }
     }
@@ -97,7 +84,7 @@ public class AuthorizedPartyRepoService(
 
         if (entity.Type == "Organisasjon")
         {
-            party.OrganizationNumber = entity.RefId;
+            party.OrganizationNumber = entity.KeyValues["OrganizationIdentifier"];
             party.Type = AuthorizedPartyType.Organization;
             party.UnitType = entity.Variant;
             
@@ -117,7 +104,7 @@ public class AuthorizedPartyRepoService(
         }
         else
         {
-            party.PersonId = entity.RefId;
+            party.PersonId = entity.KeyValues["PersonIdentifier"];
             party.Type = AuthorizedPartyType.Person;
         }
 

@@ -96,7 +96,7 @@ public class CompactRole
     /// <summary>
     /// Value
     /// </summary>
-    public string Value { get; set; }
+    public string Code { get; set; }
 
     /// <summary>
     /// Children

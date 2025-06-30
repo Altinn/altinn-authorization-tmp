@@ -136,8 +136,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendFormat(
             "INSERT INTO session_audit_context (changed_by, changed_by_system, change_operation_id)\n" +
             "VALUES ('{0}', '{1}', '{2}');\n",
-            options.ChangedBy, 
-            options.ChangedBySystem, 
+            options.ChangedBy,
+            options.ChangedBySystem,
             options.ChangeOperationId);
 
         return sb.ToString();
@@ -633,6 +633,14 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             scriptCollection.AddScripts(CreateAuditDeleteTrigger(isTranslation: true));
         }
 
+        if (_definition.ManualPostMigrationScripts.Any())
+        {
+            foreach (var dep in _definition.ManualPostMigrationScripts)
+            {
+                scriptCollection.AddScripts($"PostMigrationScript({dep.Key})", dep.Value);
+            }
+        }
+
         return scriptCollection;
     }
 
@@ -683,7 +691,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         var translationHistoryScript = CreateTableScript(translationHistoryName, primaryKeyDefinition, _definition.EnableAudit, isHistory: true, isTranslation: true);
 
         scripts.Add($"CREATE TABLE {dboName}", dboScript);
-        
+
         if (_definition.EnableTranslation)
         {
             string fkName = $"FK_Translation_{_definition.ModelType.Name}_id";
