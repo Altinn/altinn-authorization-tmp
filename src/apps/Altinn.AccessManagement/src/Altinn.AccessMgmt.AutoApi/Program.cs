@@ -4,6 +4,8 @@ using Altinn.AccessMgmt.PersistenceEF.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +38,9 @@ builder.Services.AddDbContext<AuditDbContext>((sp, options) =>
     options.UseNpgsql(builder.Configuration["Database:Postgres:AppConnectionString"]);
     //.AddInterceptors(interceptor);
 });
+
+builder.Services.Replace(ServiceDescriptor.Singleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>());
+
 
 builder.Services.AddScoped<PackageService>();
 builder.Services.AddScoped<AreaGroupService>();
