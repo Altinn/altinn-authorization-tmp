@@ -14,7 +14,7 @@ public partial class AltinnSblBridgeClient
     {
         List<Action<HttpRequestMessage>> request = [
             RequestComposer.WithHttpVerb(HttpMethod.Get),
-            RequestComposer.WithSetUri(Options.Value.Endpoint, $"/roledelegationevent/api/getevents?subscriptionId={subscriptionId}"),
+            RequestComposer.WithSetUri(Options.Value.Endpoint, $"roledelegationevent/api/getevents?subscriptionId={subscriptionId}"),
             RequestComposer.WithSetUri(nextPage)
         ];
 
