@@ -133,7 +133,7 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 List<AttributeMatch> userRoleAttributeMatches = RightsHelper.GetRoleAttributeMatches(userRoles);
                 RightSourceType policyType = resourceMatchType == ResourceAttributeMatchType.ResourceRegistry ? RightSourceType.ResourceRegistryPolicy : RightSourceType.AppPolicy;
-                EnrichRightsDictionaryWithRightsFromPolicy(result, policy, policyType, userRoleAttributeMatches, minimumAuthenticationLevel: minimumAuthenticationLevel, returnAllPolicyRights: returnAllPolicyRights, getDelegableRights: getDelegableRights);
+                EnrichRightsDictionaryWithRightsFromPolicy(result, policy, rightsQuery.Resource.AuthorizationReference, policyType, userRoleAttributeMatches, minimumAuthenticationLevel: minimumAuthenticationLevel, returnAllPolicyRights: returnAllPolicyRights, getDelegableRights: getDelegableRights);
             }
 
             // Delegation Policy Rights
@@ -143,7 +143,7 @@ namespace Altinn.AccessManagement.Core.Services
             {
                 XacmlPolicy delegationPolicy = await _prp.GetPolicyVersionAsync(delegation.BlobStoragePolicyPath, delegation.BlobStorageVersionId, cancellationToken);
                 List<AttributeMatch> subjects = RightsHelper.GetDelegationSubjectAttributeMatches(delegation);
-                EnrichRightsDictionaryWithRightsFromPolicy(result, delegationPolicy, RightSourceType.DelegationPolicy, subjects, minimumAuthenticationLevel: minimumAuthenticationLevel, delegationOfferedByPartyId: delegation.OfferedByPartyId, getDelegableRights: getDelegableRights);
+                EnrichRightsDictionaryWithRightsFromPolicy(result, delegationPolicy, rightsQuery.Resource.AuthorizationReference, RightSourceType.DelegationPolicy, subjects, minimumAuthenticationLevel: minimumAuthenticationLevel, delegationOfferedByPartyId: delegation.OfferedByPartyId, getDelegableRights: getDelegableRights);
             }
 
             if (returnAllPolicyRights)
@@ -172,7 +172,7 @@ namespace Altinn.AccessManagement.Core.Services
 
             int minimumAuthenticationLevel = PolicyHelper.GetMinimumAuthenticationLevelFromXacmlPolicy(policy);
             RightSourceType policyType = rightsQuery.Resource.ResourceType == ResourceType.AltinnApp ? RightSourceType.AppPolicy : RightSourceType.ResourceRegistryPolicy;
-            EnrichRightsDictionaryWithRightsFromPolicy(result, policy, policyType, rightsQuery.To, minimumAuthenticationLevel: minimumAuthenticationLevel, returnAllPolicyRights: false, getDelegableRights: true);
+            EnrichRightsDictionaryWithRightsFromPolicy(result, policy, rightsQuery.Resource.AuthorizationReference, policyType, rightsQuery.To, minimumAuthenticationLevel: minimumAuthenticationLevel, returnAllPolicyRights: false, getDelegableRights: true);
 
             return result.Values.Where(r => r.CanDelegate.HasValue && r.CanDelegate.Value).ToList();
         }
@@ -550,7 +550,7 @@ namespace Altinn.AccessManagement.Core.Services
             }
         }
 
-        private static void EnrichRightsDictionaryWithRightsFromPolicy(Dictionary<string, Right> rights, XacmlPolicy policy, RightSourceType policySourceType, List<AttributeMatch> subjectMatches, int minimumAuthenticationLevel = 0, int delegationOfferedByPartyId = 0, bool returnAllPolicyRights = false, bool getDelegableRights = false)
+        private static void EnrichRightsDictionaryWithRightsFromPolicy(Dictionary<string, Right> rights, XacmlPolicy policy, List<AttributeMatch> policyResource, RightSourceType policySourceType, List<AttributeMatch> subjectMatches, int minimumAuthenticationLevel = 0, int delegationOfferedByPartyId = 0, bool returnAllPolicyRights = false, bool getDelegableRights = false)
         {
             PolicyDecisionPoint pdp = new PolicyDecisionPoint();
 
@@ -563,6 +563,12 @@ namespace Altinn.AccessManagement.Core.Services
                 ICollection<Right> ruleRights = PolicyHelper.GetRightsFromXacmlRules(rule.SingleToList());
                 foreach (Right ruleRight in ruleRights)
                 {
+                    // If rule from policy does not match the resource of the originating policy, skip it
+                    if (!policyResource.All(pr => ruleRight.Resource.Any(r => pr.Id.Equals(r.Id, StringComparison.OrdinalIgnoreCase) && pr.Value.Equals(r.Value, StringComparison.OrdinalIgnoreCase))))
+                    {
+                        continue;
+                    }
+
                     ICollection<XacmlContextAttributes> contextAttributes = PolicyHelper.GetContextAttributes(subjectMatches, ruleRight.Resource, ruleRight.Action.SingleToList());
                     XacmlContextRequest authRequest = new XacmlContextRequest(false, false, contextAttributes);
 
