@@ -38,7 +38,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
         private readonly IIngestService _ingestService;
 
         /// <inheritdoc />
-        public async Task SyncAllAltinnRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+        public async Task SyncAllAltinnRoles(LeaseResult<AllAltinnRoleLease> ls, CancellationToken cancellationToken)
         {
             var batchData = new List<Assignment>();
             Guid batchId = Guid.CreateVersion7();

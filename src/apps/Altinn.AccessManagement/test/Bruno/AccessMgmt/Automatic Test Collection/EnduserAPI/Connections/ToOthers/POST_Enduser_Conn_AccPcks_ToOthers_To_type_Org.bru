@@ -1,7 +1,7 @@
 meta {
   name: POST_Enduser_Conn_AccPcks_ToOthers_To_type_Org
   type: http
-  seq: 12
+  seq: 13
 }
 
 post {
@@ -50,7 +50,7 @@ script:post-response {
 }
 
 tests {
-  test("Delegate access package from org1 to org2 : ToOthers", function() {
+  test("Delegate access package from org1 to org2 : styrets leder", function() {
     const data = res.getBody();
     var packageId = bru.getEnvVar("packageId");
     

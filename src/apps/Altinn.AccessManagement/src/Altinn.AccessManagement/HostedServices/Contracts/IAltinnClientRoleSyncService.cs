@@ -14,6 +14,6 @@ namespace Altinn.AccessManagement.HostedServices.Contracts
         /// </summary>
         /// <param name="ls">The lease result containing the lease data and status.</param>
         /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-        Task SyncClientRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken);
+        Task SyncClientRoles(LeaseResult<AltinnClientRoleLease> ls, CancellationToken cancellationToken);
     }
 }

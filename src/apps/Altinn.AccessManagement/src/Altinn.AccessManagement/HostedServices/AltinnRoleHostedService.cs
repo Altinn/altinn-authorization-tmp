@@ -55,7 +55,7 @@ namespace Altinn.AccessManagement.HostedServices
 
             var cancellationToken = (CancellationToken)state;
 
-            await using var ls = await _lease.TryAquireNonBlocking<LeaseContent>("access_management_altinnrole_sync", cancellationToken);
+            await using var ls = await _lease.TryAquireNonBlocking<AllAltinnRoleLease>("access_management_altinnrole_sync", cancellationToken);
             if (!ls.HasLease || cancellationToken.IsCancellationRequested)
             {
                 return;
