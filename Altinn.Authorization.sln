@@ -33,7 +33,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api.Internal", "src\apps\Altinn.AccessManagement\src\Altinn.AccessManagement.Api.Internal\Altinn.AccessManagement.Api.Internal.csproj", "{97295915-9DC6-43B2-9110-3F930C8F48B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api.Maskinporten", "src\apps\Altinn.AccessManagement\src\Altinn.AccessManagement.API.Maskinporten\Altinn.AccessManagement.Api.Maskinporten.csproj", "{8DDD2285-9F48-4E1F-A533-DCED2217A3D3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api.Maskinporten", "src\apps\Altinn.AccessManagement\src\Altinn.AccessManagement.Api.Maskinporten\Altinn.AccessManagement.Api.Maskinporten.csproj", "{8DDD2285-9F48-4E1F-A533-DCED2217A3D3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessManagement.Api.Metadata", "src\apps\Altinn.AccessManagement\src\Altinn.AccessManagement.Api.Metadata\Altinn.AccessManagement.Api.Metadata.csproj", "{F3E9145F-286B-4B87-8AF4-E451D323364F}"
 EndProject
