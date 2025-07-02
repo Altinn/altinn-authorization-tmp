@@ -43,12 +43,12 @@ namespace Altinn.AccessManagement.Tests.Utils
             if (!issuer.Equals("sbl.authorization") && !issuer.Equals("www.altinn.no") && !issuer.Equals("UnitTest"))
             {
                 certPath = $"{issuer}-org.pfx";
-
-                X509Certificate2 certIssuer = new X509Certificate2(certPath);
+                X509Certificate2 certIssuer = X509CertificateLoader.LoadCertificateFromFile(certPath);
                 return new X509SigningCredentials(certIssuer, SecurityAlgorithms.RsaSha256);
             }
 
-            X509Certificate2 cert = new X509Certificate2(certPath, "qwer1234");
+            X509Certificate2 cert = X509CertificateLoader.LoadPkcs12FromFile(certPath, "qwer1234");
+
             return new X509SigningCredentials(cert, SecurityAlgorithms.RsaSha256);
         }
     }
