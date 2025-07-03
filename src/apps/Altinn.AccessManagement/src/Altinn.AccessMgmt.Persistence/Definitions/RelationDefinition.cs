@@ -66,37 +66,11 @@ public class RelationDefinition : BaseDbDefinition<Relation>, IDbDefinition
         NULL::uuid     AS viaid,
         NULL::uuid     AS viaroleid,
         a.toid,
-        NULL::uuid as packageid,
-        ar.resourceid,
-        'Direct'::text AS reason
-        FROM dbo.assignment a
-        JOIN dbo.assignmentresource ar ON ar.assignmentid = a.id
-
-        UNION ALL
-
-        SELECT a.fromid,
-        a.roleid,
-        NULL::uuid     AS viaid,
-        NULL::uuid     AS viaroleid,
-        a.toid,
         rp.packageid,
         null::uuid as resourceid,
         'Direct'::text AS reason
         FROM dbo.assignment a
         JOIN dbo.rolepackage rp ON rp.roleid = a.roleid
-
-        UNION ALL
-
-        SELECT a.fromid,
-        a.roleid,
-        NULL::uuid     AS viaid,
-        NULL::uuid     AS viaroleid,
-        a.toid,
-        null::uuid as packageid,
-        rr.resourceid,
-        'Direct'::text AS reason
-        FROM dbo.assignment a
-        JOIN dbo.roleresource rr ON rr.roleid = a.roleid
 
         UNION ALL
 
@@ -111,20 +85,6 @@ public class RelationDefinition : BaseDbDefinition<Relation>, IDbDefinition
         FROM dbo.assignment a
         JOIN dbo.rolemap rm on a.roleid = rm.hasroleid
         JOIN dbo.rolepackage rp ON rp.roleid = rm.getroleid
-
-        UNION ALL
-
-        SELECT a.fromid,
-        a.roleid,
-        NULL::uuid     AS viaid,
-        NULL::uuid     AS viaroleid,
-        a.toid,
-        null::uuid as packageid,
-        rr.resourceid,
-        'Direct'::text AS reason
-        FROM dbo.assignment a
-        JOIN dbo.rolemap rm on a.roleid = rm.hasroleid
-        JOIN dbo.roleresource rr ON rr.roleid = rm.getroleid
 
         UNION ALL
 
@@ -148,21 +108,6 @@ public class RelationDefinition : BaseDbDefinition<Relation>, IDbDefinition
         a.toid          AS viaid,
         a2.roleid       AS viaroleid,
         a2.toid,
-        null::uuid as packageid,
-        ar.resourceid,
-        'KeyRole'::text AS reason
-        FROM dbo.assignment a
-        JOIN dbo.assignment a2 ON a.toid = a2.fromid
-        JOIN dbo.role r ON a2.roleid = r.id AND r.iskeyrole = true
-        JOIN dbo.assignmentresource ar ON ar.assignmentid = a.id
-
-        UNION ALL
-
-        SELECT a.fromid,
-        a.roleid,
-        a.toid          AS viaid,
-        a2.roleid       AS viaroleid,
-        a2.toid,
         rp.packageid,
         null::uuid as resourceid,
         'KeyRole'::text AS reason
@@ -170,21 +115,6 @@ public class RelationDefinition : BaseDbDefinition<Relation>, IDbDefinition
         JOIN dbo.assignment a2 ON a.toid = a2.fromid
         JOIN dbo.role r ON a2.roleid = r.id AND r.iskeyrole = true
         JOIN dbo.rolepackage rp ON rp.roleid = a.roleid
-
-        UNION ALL
-
-        SELECT a.fromid,
-        a.roleid,
-        a.toid          AS viaid,
-        a2.roleid       AS viaroleid,
-        a2.toid,
-        null::uuid as packageid,
-        rr.resourceid,
-        'KeyRole'::text AS reason
-        FROM dbo.assignment a
-        JOIN dbo.assignment a2 ON a.toid = a2.fromid
-        JOIN dbo.role r ON a2.roleid = r.id AND r.iskeyrole = true
-        JOIN dbo.roleresource rr ON rr.roleid = a.roleid
 
         UNION ALL
 
@@ -200,21 +130,6 @@ public class RelationDefinition : BaseDbDefinition<Relation>, IDbDefinition
         JOIN dbo.assignment fa ON fa.id = d.fromid
         JOIN dbo.assignment ta ON ta.id = d.toid
         JOIN dbo.delegationpackage dp ON dp.delegationid = d.id
-
-        UNION ALL
-
-        SELECT fa.fromid,
-        fa.roleid,
-        fa.toid            AS viaid,
-        ta.roleid          AS viaroleid,
-        ta.toid,
-        null::uuid as packageid,
-        dr.resourceid,
-        'Delegation'::text AS reason
-        FROM dbo.delegation d
-        JOIN dbo.assignment fa ON fa.id = d.fromid
-        JOIN dbo.assignment ta ON ta.id = d.toid
-        JOIN dbo.delegationresource dr ON dr.delegationid = d.id
 
         UNION ALL
 
