@@ -70,7 +70,7 @@ public class RelationDefinition : BaseDbDefinition<Relation>, IDbDefinition
         null::uuid as resourceid,
         'Direct'::text AS reason
         FROM dbo.assignment a
-        JOIN dbo.rolepackage rp ON rp.roleid = a.roleid
+        JOIN dbo.rolepackage rp ON rp.roleid = a.roleid AND rp.hasaccess = true
 
         UNION ALL
 
@@ -84,7 +84,7 @@ public class RelationDefinition : BaseDbDefinition<Relation>, IDbDefinition
         'Direct'::text AS reason
         FROM dbo.assignment a
         JOIN dbo.rolemap rm on a.roleid = rm.hasroleid
-        JOIN dbo.rolepackage rp ON rp.roleid = rm.getroleid
+        JOIN dbo.rolepackage rp ON rp.roleid = rm.getroleid and rp.hasaccess = true
 
         UNION ALL
 
@@ -114,7 +114,7 @@ public class RelationDefinition : BaseDbDefinition<Relation>, IDbDefinition
         FROM dbo.assignment a
         JOIN dbo.assignment a2 ON a.toid = a2.fromid
         JOIN dbo.role r ON a2.roleid = r.id AND r.iskeyrole = true
-        JOIN dbo.rolepackage rp ON rp.roleid = a.roleid
+        JOIN dbo.rolepackage rp ON rp.roleid = a.roleid and rp.hasaccess = true
 
         UNION ALL
 
