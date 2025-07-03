@@ -39,7 +39,8 @@ namespace Altinn.Platform.Authorization.IntegrationTests
                 new RegisterServiceMock(),
                 new PolicyRetrievalPointMock(httpContextAccessorMock.Object, null),
                 new AccessManagementWrapperMock(httpContextAccessorMock.Object),
-                featureManageMock.Object);
+                featureManageMock.Object,
+                new ResourceRegistryMock());
         }
 
         /// <summary>
