@@ -1,4 +1,6 @@
-﻿using Altinn.AccessManagement.Core.Enums;
+﻿using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
+using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
@@ -19,8 +21,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 
 namespace Altinn.AccessManagement.Persistence.Extensions;
 

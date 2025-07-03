@@ -37,18 +37,24 @@ namespace Altinn.AccessManagement.Tests.Utils
             return serializedToken;
         }
 
-        private static SigningCredentials GetSigningCredentials(string issuer)
+        private static X509SigningCredentials GetSigningCredentials(string issuer)
         {
             string certPath = "selfSignedTestCertificate.pfx";
+            string certPassword = "qwer1234"; // Use config or env var in real app
+
             if (!issuer.Equals("sbl.authorization") && !issuer.Equals("www.altinn.no") && !issuer.Equals("UnitTest"))
             {
                 certPath = $"{issuer}-org.pfx";
-
-                X509Certificate2 certIssuer = new X509Certificate2(certPath);
-                return new X509SigningCredentials(certIssuer, SecurityAlgorithms.RsaSha256);
             }
 
-            X509Certificate2 cert = new X509Certificate2(certPath, "qwer1234");
+            var certificates = X509CertificateLoader.LoadPkcs12CollectionFromFile(certPath, certPassword);
+            var cert = certificates.FirstOrDefault(c => c.HasPrivateKey);
+
+            if (cert is null)
+            {
+                throw new Exception($"No valid certificate with private key found in {certPath}");
+            }
+
             return new X509SigningCredentials(cert, SecurityAlgorithms.RsaSha256);
         }
     }
