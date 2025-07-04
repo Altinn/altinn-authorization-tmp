@@ -83,9 +83,9 @@ public class CompactEntity
     public string Variant { get; set; }
 
     /// <summary>
-    /// RefId
+    /// Values from entityLoookup
     /// </summary>
-    public string RefId { get; set; }
+    public Dictionary<string,string> KeyValues { get; set; }
 
     /// <summary>
     /// Parent
@@ -96,9 +96,4 @@ public class CompactEntity
     /// Children
     /// </summary>
     public List<CompactEntity> Children { get; set; }
-
-    /// <summary>
-    /// Values from entityLoookup
-    /// </summary>
-    public Dictionary<string,string> KeyValues { get; set; }
 }

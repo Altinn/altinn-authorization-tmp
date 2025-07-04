@@ -85,22 +85,22 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 4);
         }
 
-        if (migrationService.NeedMigration<Entity>(dataKey, 2))
+        if (migrationService.NeedMigration<Entity>(dataKey, 3))
         {
             await IngestSystemEntity(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Entity>(dataKey, string.Empty, 2);
+            await migrationService.LogMigration<Entity>(dataKey, string.Empty, 3);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 10))
+        if (migrationService.NeedMigration<Role>(dataKey, 12))
         {
             await IngestRole(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 10);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 12);
         }
 
-        if (migrationService.NeedMigration<RoleMap>(dataKey, 4))
+        if (migrationService.NeedMigration<RoleMap>(dataKey, 5))
         {
             await IngestRoleMap(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 4);
+            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 5);
         }
 
         if (migrationService.NeedMigration<AreaGroup>(dataKey, 4))
@@ -115,16 +115,16 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Area>(dataKey, string.Empty, 5);
         }
 
-        if (migrationService.NeedMigration<Package>(dataKey, 6))
+        if (migrationService.NeedMigration<Package>(dataKey, 7))
         {
             await IngestPackage(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Package>(dataKey, string.Empty, 6);
+            await migrationService.LogMigration<Package>(dataKey, string.Empty, 7);
         }
 
-        if (migrationService.NeedMigration<RolePackage>(dataKey, 4))
+        if (migrationService.NeedMigration<RolePackage>(dataKey, 5))
         {
             await IngestRolePackage(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 4);
+            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 5);
         }
 
         if (migrationService.NeedMigration<EntityVariantRole>(dataKey, 2))
@@ -448,6 +448,7 @@ public class DbDataMigrationService(
             // Static data ingest
             new Entity() { Id = AuditDefaults.StaticDataIngest, Name = "StaticDataIngest", RefId = "sys-static-data-ingest", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
             new Entity() { Id = AuditDefaults.RegisterImportSystem, Name = "RegisterImportSystem", RefId = "sys-register-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            new Entity() { Id = AuditDefaults.ResourceRegistryImportSystem, Name = nameof(AuditDefaults.ResourceRegistryImportSystem), RefId = "sys-resource-register-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
             new Entity() { Id = AuditDefaults.EnduserApi, Name = "EnduserApi", RefId = "accessmgmt-enduser-api", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
         };
 
@@ -582,10 +583,10 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("3c99647d-10b5-447e-9f0b-7bef1c7880f7"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Samferdsel",                                   Code = "UILUF",               Description = "Rollen gir rettighet til tjenester relatert til samferdsel. For eksempel tjenester fra Statens Vegvesen, Sjøfartsdirektoratet og Luftfartstilsynet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rolen gir.", Urn = "urn:altinn:rolecode:UILUF", IsKeyRole = false },
             new Role() { Id = Guid.Parse("dbaae9f8-107a-4222-9afd-d9f95cd5319c"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Utfyller/Innsender",                           Code = "UTINN",               Description = "Denne rollen gir rettighet til et bredt utvalg skjema og tjenester som ikke har så strenge krav til autorisasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:UTINN", IsKeyRole = false },
             new Role() { Id = Guid.Parse("af338fd5-3f1d-4ab5-8326-9dfecad26f71"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Energi, miljø og klima",                       Code = "UTOMR",               Description = "Tilgang til tjenester relatert til energi, miljø og klima. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:UTOMR", IsKeyRole = false },
-            
-            new Role() { Id = Guid.Parse("478f710a-4af1-412d-9c67-de976fd0b229"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Hovedrolle for sensitive tjeneste",            Code = "SENS",               Description = "Hovedrolle for sensitive tjeneste", Urn = "urn:altinn:rolecode:SENS", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("1c6eeec1-fe70-4fc5-8b45-df4a2255dea6"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Privatperson",                                 Code = "PRIV",               Description = "Denne rollen er hentet fra Folkeregisteret og gir rettighet til flere tjenester.", Urn = "urn:altinn:rolecode:PRIV", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("e16ab886-1e1e-4f45-8f79-46f06f720f3e"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Selvregistrert bruker",                        Code = "SELN",               Description = "Selvregistrert bruker", Urn = "urn:altinn:rolecode:SELN", IsKeyRole = false }
+            new Role() { Id = Guid.Parse("478f710a-4af1-412d-9c67-de976fd0b229"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Hovedrolle for sensitive tjeneste",            Code = "SENS",                Description = "Hovedrolle for sensitive tjeneste", Urn = "urn:altinn:rolecode:SENS", IsKeyRole = false },
+
+            new Role() { Id = Guid.Parse("1c6eeec1-fe70-4fc5-8b45-df4a2255dea6"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Privatperson",                                 Code = "privatperson",        Description = "Denne rollen er hentet fra Folkeregisteret og gir rettighet til flere tjenester.", Urn = "urn:altinn:role:privatperson", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("e16ab886-1e1e-4f45-8f79-46f06f720f3e"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Selvregistrert bruker",                        Code = "selvregistrert",      Description = "Selvregistrert bruker", Urn = "urn:altinn:role:selvregistrert", IsKeyRole = false }
         };
 
         var rolesEng = new List<Role>()
@@ -625,7 +626,7 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("d78dd1d8-a3f3-4ae6-807e-ea5149f47035"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Part of a Church Council",                            Code = "kirkelig-fellesraad",                   Description = "Part of a Church Council", Urn = "urn:altinn:external-role:ccr:kirkelig-fellesraad" },
             new Role() { Id = Guid.Parse("185f623b-f614-4a83-839c-1788764bd253"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Information about the Company in the Home Country",   Code = "hovedforetak",                          Description = "Information about the company in the home country", Urn = "urn:altinn:external-role:ccr:hovedforetak" },
             new Role() { Id = Guid.Parse("46e27685-b3ba-423e-8b42-faab54de5817"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Accountant",                                          Code = "regnskapsforer",                        Description = "Accountant", Urn = "urn:altinn:external-role:ccr:regnskapsforer" },
-            
+
             new Role() { Id = Guid.Parse("c497b499-7e98-423d-9fe7-ad5a6c3b71ad"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Primary industry and foodstuff",                    Code = "A0212",               Description = "Import, processing, production and/or sales of primary products and other foodstuff. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides.", Urn = "urn:altinn:rolecode:A0212" },
             new Role() { Id = Guid.Parse("151955ec-d8aa-4c14-a435-ffa96b26a9fb"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Mail/archive",                                      Code = "A0236",               Description = "Access to read correpondences. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides.", Urn = "urn:altinn:rolecode:A0236" },
             new Role() { Id = Guid.Parse("c2884487-a634-4537-95b4-bafb917b62a8"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Auditor in charge",                                 Code = "A0237",               Description = "Delegateble auditor role with signing right. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides.", Urn = "urn:altinn:rolecode:A0237" },
@@ -668,10 +669,10 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("3c99647d-10b5-447e-9f0b-7bef1c7880f7"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Transport",                                         Code = "UILUF",               Description = "Access to services related to transport. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides.", Urn = "urn:altinn:rolecode:UILUF" },
             new Role() { Id = Guid.Parse("dbaae9f8-107a-4222-9afd-d9f95cd5319c"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Reporter/sender",                                   Code = "UTINN",               Description = "This role provides right to a wide selection of forms and services that do not have very strict requirements for authorization. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provide", Urn = "urn:altinn:rolecode:UTINN" },
             new Role() { Id = Guid.Parse("af338fd5-3f1d-4ab5-8326-9dfecad26f71"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Energy, environment and climate",                   Code = "UTOMR",               Description = "Access to services related to energy, environment and climate. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides.", Urn = "urn:altinn:rolecode:UTOMR" },
-            
             new Role() { Id = Guid.Parse("478f710a-4af1-412d-9c67-de976fd0b229"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Hovedrolle for sensitive tjeneste",                 Code = "SENS",                Description = "Hovedrolle for sensitive tjeneste", Urn = "urn:altinn:rolecode:SENS", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("1c6eeec1-fe70-4fc5-8b45-df4a2255dea6"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Private person",                                    Code = "PRIV",                Description = "Private person", Urn = "urn:altinn:rolecode:PRIV", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("e16ab886-1e1e-4f45-8f79-46f06f720f3e"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Self registered user",                              Code = "SELN",                Description = "Self registered user", Urn = "urn:altinn:rolecode:SELN", IsKeyRole = false }
+
+            new Role() { Id = Guid.Parse("1c6eeec1-fe70-4fc5-8b45-df4a2255dea6"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Private person",                                    Code = "privatperson",        Description = "Private person", Urn = "urn:altinn:role:privatperson", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("e16ab886-1e1e-4f45-8f79-46f06f720f3e"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Self registered user",                              Code = "selvregistrert",      Description = "Self registered user", Urn = "urn:altinn:role:selvregistrert", IsKeyRole = false }
 
         };
 
@@ -712,7 +713,7 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("d78dd1d8-a3f3-4ae6-807e-ea5149f47035"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Inngår i kyrkjeleg fellesråd",                        Code = "kirkelig-fellesraad",                   Description = "Inngår i kyrkjeleg fellesråd", Urn = "urn:altinn:external-role:ccr:kirkelig-fellesraad" },
             new Role() { Id = Guid.Parse("185f623b-f614-4a83-839c-1788764bd253"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Opplysningar om foretaket i heimalandet",             Code = "hovedforetak",                          Description = "Opplysningar om foretaket i heimalandet", Urn = "urn:altinn:external-role:ccr:hovedforetak" },
             new Role() { Id = Guid.Parse("46e27685-b3ba-423e-8b42-faab54de5817"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Reknskapsførar",                                      Code = "regnskapsforer",                        Description = "Reknskapsførar", Urn = "urn:altinn:external-role:ccr:regnskapsforer" },
-            
+
             new Role() { Id = Guid.Parse("c497b499-7e98-423d-9fe7-ad5a6c3b71ad"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Primærnæring og næringsmiddel",             Code = "A0212",               Description = "Import, foredling, produksjon og/eller sal av primærnæringsprodukter og andre næringsmiddel. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir", Urn = "urn:altinn:rolecode:A0212" },
             new Role() { Id = Guid.Parse("151955ec-d8aa-4c14-a435-ffa96b26a9fb"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Post/arkiv",                                Code = "A0236",               Description = "Rolle som gjer rett til å lese meldingstenester. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir", Urn = "urn:altinn:rolecode:A0236" },
             new Role() { Id = Guid.Parse("c2884487-a634-4537-95b4-bafb917b62a8"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Ansvarleg revisor",                         Code = "A0237",               Description = "Delegerbar revisorrolle med signeringsrett. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir", Urn = "urn:altinn:rolecode:A0237" },
@@ -755,10 +756,10 @@ public class DbDataMigrationService(
             new Role() { Id = Guid.Parse("3c99647d-10b5-447e-9f0b-7bef1c7880f7"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Samferdsel",                                Code = "UILUF",               Description = "Tilgang til tenester relatert til samferdsel. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir", Urn = "urn:altinn:rolecode:UILUF" },
             new Role() { Id = Guid.Parse("dbaae9f8-107a-4222-9afd-d9f95cd5319c"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Utfyllar/innsendar",                        Code = "UTINN",               Description = "Denne rolla gir rett til eit breitt utval skjema og tenester som ikkje har så strenge krav til autorisasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir", Urn = "urn:altinn:rolecode:UTINN" },
             new Role() { Id = Guid.Parse("af338fd5-3f1d-4ab5-8326-9dfecad26f71"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Energi, miljø og klima",                    Code = "UTOMR",               Description = "Tilgang til tenester relatert til energi, miljø og klima. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir", Urn = "urn:altinn:rolecode:UTOMR" },
-            
             new Role() { Id = Guid.Parse("478f710a-4af1-412d-9c67-de976fd0b229"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Hovudrolle for sensitive tenester",         Code = "SENS",                Description = "Hovudrolle for sensitive teneste", Urn = "urn:altinn:rolecode:SENS", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("1c6eeec1-fe70-4fc5-8b45-df4a2255dea6"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Privatperson",                              Code = "PRIV",                Description = "Privatperson", Urn = "urn:altinn:rolecode:PRIV", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("e16ab886-1e1e-4f45-8f79-46f06f720f3e"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Sjølregistrert brukar",                     Code = "SELN",               Description = "Sjølregistrert brukar", Urn = "urn:altinn:rolecode:SELN", IsKeyRole = false }
+
+            new Role() { Id = Guid.Parse("1c6eeec1-fe70-4fc5-8b45-df4a2255dea6"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Privatperson",                              Code = "privatperson",        Description = "Privatperson", Urn = "urn:altinn:role:privatperson", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("e16ab886-1e1e-4f45-8f79-46f06f720f3e"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Sjølregistrert brukar",                     Code = "selvregistrert",      Description = "Sjølregistrert brukar", Urn = "urn:altinn:role:selvregistrert", IsKeyRole = false }
         };
 
         await ingestService.IngestAndMergeData(roles, options, cancellationToken: cancellationToken);
@@ -785,6 +786,7 @@ public class DbDataMigrationService(
             new RoleLookup() { RoleId = roles.First(t => t.Code == "tilgangsstyrer").Id, Key = "Urn", Value = "urn:altinn:role:tilgangsstyrer" },
             new RoleLookup() { RoleId = roles.First(t => t.Code == "hovedadministrator").Id, Key = "Urn", Value = "urn:altinn:role:hovedadministrator" },
             new RoleLookup() { RoleId = roles.First(t => t.Code == "maskinporten-administrator").Id, Key = "Urn", Value = "urn:altinn:role:maskinporten-administrator" },
+
             new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-ados").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:kontaktperson-ados" },
             new RoleLookup() { RoleId = roles.First(t => t.Code == "nestleder").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:nestleder" },
             new RoleLookup() { RoleId = roles.First(t => t.Code == "kontorfelleskapmedlem").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:kontorfelleskapmedlem" },
@@ -812,39 +814,200 @@ public class DbDataMigrationService(
             new RoleLookup() { RoleId = roles.First(t => t.Code == "konkursdebitor").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:konkursdebitor" },
             new RoleLookup() { RoleId = roles.First(t => t.Code == "kirkelig-fellesraad").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:kirkelig-fellesraad" },
             new RoleLookup() { RoleId = roles.First(t => t.Code == "hovedforetak").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:hovedforetak" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "regnskapsforer").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:regnskapsforer" }
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "regnskapsforer").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:regnskapsforer" },
+
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "regnskapsforeradressat").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:regnskapsforeradressat" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "signerer").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:signerer" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "fusjonsovertaker").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:fusjonsovertaker" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "fisjonsovertaker").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:fisjonsovertaker" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "hovedenhet").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:hovedenhet" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "ikke-naeringsdrivende-hovedenhet").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:ikke-naeringsdrivende-hovedenhet" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "prokurist-fellesskap").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:prokurist-fellesskap" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "prokurist-hver-for-seg").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:prokurist-hver-for-seg" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "prokurist").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:prokurist" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "revisoradressat").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:revisoradressat" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "sameier").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:sameier" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "signerer-fellesskap").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:signerer-fellesskap" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "signerer-hver-for-seg").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:signerer-hver-for-seg" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-kommune").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:kontaktperson-kommune" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "parti-organ-leder").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:parti-organ-leder" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "elektronisk-signeringsrettig").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:elektronisk-signeringsrettig" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "elektronisk-signeringsrett-tildeler").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:elektronisk-signeringsrett-tildeler" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "foretaksgruppe-med").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:foretaksgruppe-med" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "konsern-datter").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:konsern-datter" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "konsern-grunnlag").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:konsern-grunnlag" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "konsern-mor").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:konsern-mor" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "forestaar-avvikling").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:forestaar-avvikling" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "felles-registrert-med").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:felles-registrert-med" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "utleiebygg").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:utleiebygg" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "virksomhet-fellesskap-drifter").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:virksomhet-fellesskap-drifter" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "mva-utfyller").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:mva-utfyller" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "mva-signerer").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:mva-signerer" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-revisor").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:kontaktperson-revisor" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "stifter").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:stifter" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "parti-organ-varamedlem").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:parti-organ-varamedlem" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "parti-organ-nestleder").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:parti-organ-nestleder" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "parti-organ-styremedlem").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:parti-organ-styremedlem" },
+
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "privatperson").Id, Key = "Urn", Value = "urn:altinn:role:privatperson" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "selvregistrert").Id, Key = "Urn", Value = "urn:altinn:role:selvregistrert" },
+            
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0212").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0212" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0236").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0236" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0237").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0237" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0238").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0238" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0239").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0239" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0240").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0240" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0241").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0241" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0278").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0278" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0282").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0282" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0286").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0286" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0287").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0287" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0288").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0288" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0293").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0293" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0294").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0294" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0298").Id, Key = "Urn", Value = "urn:altinn:rolecode:A0298" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "ADMAI").Id, Key = "Urn", Value = "urn:altinn:rolecode:ADMAI" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "APIADM").Id, Key = "Urn", Value = "urn:altinn:rolecode:APIADM" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "APIADMNUF").Id, Key = "Urn", Value = "urn:altinn:rolecode:APIADMNUF" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "ATTST").Id, Key = "Urn", Value = "urn:altinn:rolecode:ATTST" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "BOADM").Id, Key = "Urn", Value = "urn:altinn:rolecode:BOADM" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "BOBEL").Id, Key = "Urn", Value = "urn:altinn:rolecode:BOBEL" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "BOBES").Id, Key = "Urn", Value = "urn:altinn:rolecode:BOBES" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "ECKEYROLE").Id, Key = "Urn", Value = "urn:altinn:rolecode:ECKEYROLE" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "EKTJ").Id, Key = "Urn", Value = "urn:altinn:rolecode:EKTJ" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "GKBHT").Id, Key = "Urn", Value = "urn:altinn:rolecode:GKBHT" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "HADM").Id, Key = "Urn", Value = "urn:altinn:rolecode:HADM" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "HVASK").Id, Key = "Urn", Value = "urn:altinn:rolecode:HVASK" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "KLADM").Id, Key = "Urn", Value = "urn:altinn:rolecode:KLADM" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "KOMAB").Id, Key = "Urn", Value = "urn:altinn:rolecode:KOMAB" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "LOPER").Id, Key = "Urn", Value = "urn:altinn:rolecode:LOPER" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "PASIG").Id, Key = "Urn", Value = "urn:altinn:rolecode:PASIG" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "PAVAD").Id, Key = "Urn", Value = "urn:altinn:rolecode:PAVAD" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "PRIUT").Id, Key = "Urn", Value = "urn:altinn:rolecode:PRIUT" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "REGNA").Id, Key = "Urn", Value = "urn:altinn:rolecode:REGNA" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "REVAI").Id, Key = "Urn", Value = "urn:altinn:rolecode:REVAI" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "SENS01").Id, Key = "Urn", Value = "urn:altinn:rolecode:SENS01" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "SIGNE").Id, Key = "Urn", Value = "urn:altinn:rolecode:SIGNE" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "SISKD").Id, Key = "Urn", Value = "urn:altinn:rolecode:SISKD" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "UIHTL").Id, Key = "Urn", Value = "urn:altinn:rolecode:UIHTL" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "UILUF").Id, Key = "Urn", Value = "urn:altinn:rolecode:UILUF" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "UTINN").Id, Key = "Urn", Value = "urn:altinn:rolecode:UTINN" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "UTOMR").Id, Key = "Urn", Value = "urn:altinn:rolecode:UTOMR" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "SENS").Id, Key = "Urn", Value = "urn:altinn:rolecode:SENS" }
         };
 
-        var erCodes = new List<RoleLookup>
+        var legacyCodes = new List<RoleLookup>
         {
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-ados").Id, Key = "ERCode", Value = "ADOS" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "nestleder").Id, Key = "ERCode", Value = "NEST" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontorfelleskapmedlem").Id, Key = "ERCode", Value = "KTRF" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "organisasjonsledd-offentlig-sektor").Id, Key = "ERCode", Value = "ORGL" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "saerskilt-oppdelt-enhet").Id, Key = "ERCode", Value = "OPMV" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "daglig-leder").Id, Key = "ERCode", Value = "DAGL" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "deltaker-delt-ansvar").Id, Key = "ERCode", Value = "DTPR" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "innehaver").Id, Key = "ERCode", Value = "INNH" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "deltaker-fullt-ansvar").Id, Key = "ERCode", Value = "DTSO" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "varamedlem").Id, Key = "ERCode", Value = "VARA" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "observator").Id, Key = "ERCode", Value = "OBS" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "styremedlem").Id, Key = "ERCode", Value = "MEDL" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "styreleder").Id, Key = "ERCode", Value = "LEDE" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "personlige-konkurs").Id, Key = "ERCode", Value = "KENK" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "norsk-representant").Id, Key = "ERCode", Value = "REPR" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson").Id, Key = "ERCode", Value = "KONT" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-nuf").Id, Key = "ERCode", Value = "KNUF" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "bestyrende-reder").Id, Key = "ERCode", Value = "BEST" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "eierkommune").Id, Key = "ERCode", Value = "EIKM" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "bostyrer").Id, Key = "ERCode", Value = "BOBE" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "helseforetak").Id, Key = "ERCode", Value = "HLSE" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "revisor").Id, Key = "ERCode", Value = "REVI" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "forretningsforer").Id, Key = "ERCode", Value = "FFØR" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "komplementar").Id, Key = "ERCode", Value = "KOMP" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "konkursdebitor").Id, Key = "ERCode", Value = "KDEB" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "kirkelig-fellesraad").Id, Key = "ERCode", Value = "KIRK" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "hovedforetak").Id, Key = "ERCode", Value = "HFOR" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "regnskapsforer").Id, Key = "ERCode", Value = "REGN" }
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-ados").Id, Key = "LegacyCode", Value = "ADOS" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "nestleder").Id, Key = "LegacyCode", Value = "NEST" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontorfelleskapmedlem").Id, Key = "LegacyCode", Value = "KTRF" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "organisasjonsledd-offentlig-sektor").Id, Key = "LegacyCode", Value = "ORGL" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "saerskilt-oppdelt-enhet").Id, Key = "LegacyCode", Value = "OPMV" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "daglig-leder").Id, Key = "LegacyCode", Value = "DAGL" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "deltaker-delt-ansvar").Id, Key = "LegacyCode", Value = "DTPR" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "innehaver").Id, Key = "LegacyCode", Value = "INNH" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "deltaker-fullt-ansvar").Id, Key = "LegacyCode", Value = "DTSO" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "varamedlem").Id, Key = "LegacyCode", Value = "VARA" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "observator").Id, Key = "LegacyCode", Value = "OBS" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "styremedlem").Id, Key = "LegacyCode", Value = "MEDL" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "styreleder").Id, Key = "LegacyCode", Value = "LEDE" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "personlige-konkurs").Id, Key = "LegacyCode", Value = "KENK" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "norsk-representant").Id, Key = "LegacyCode", Value = "REPR" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson").Id, Key = "LegacyCode", Value = "KONT" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-nuf").Id, Key = "LegacyCode", Value = "KNUF" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "bestyrende-reder").Id, Key = "LegacyCode", Value = "BEST" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "eierkommune").Id, Key = "LegacyCode", Value = "EIKM" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "bostyrer").Id, Key = "LegacyCode", Value = "BOBE" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "helseforetak").Id, Key = "LegacyCode", Value = "HLSE" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "revisor").Id, Key = "LegacyCode", Value = "REVI" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "forretningsforer").Id, Key = "LegacyCode", Value = "FFØR" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "komplementar").Id, Key = "LegacyCode", Value = "KOMP" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "konkursdebitor").Id, Key = "LegacyCode", Value = "KDEB" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "kirkelig-fellesraad").Id, Key = "LegacyCode", Value = "KIRK" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "hovedforetak").Id, Key = "LegacyCode", Value = "HFOR" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "regnskapsforer").Id, Key = "LegacyCode", Value = "REGN" },
+
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "regnskapsforeradressat").Id, Key = "LegacyCode", Value = "RFAD" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "signerer").Id, Key = "LegacyCode", Value = "SIGN" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "fusjonsovertaker").Id, Key = "LegacyCode", Value = "FUSJ" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "fisjonsovertaker").Id, Key = "LegacyCode", Value = "FISJ" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "hovedenhet").Id, Key = "LegacyCode", Value = "BEDR" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "ikke-naeringsdrivende-hovedenhet").Id, Key = "LegacyCode", Value = "AAFY" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "prokurist-fellesskap").Id, Key = "LegacyCode", Value = "POFE" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "prokurist-hver-for-seg").Id, Key = "LegacyCode", Value = "POHV" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "prokurist").Id, Key = "LegacyCode", Value = "PROK" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "revisoradressat").Id, Key = "LegacyCode", Value = "READ" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "sameier").Id, Key = "LegacyCode", Value = "SAM" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "signerer-fellesskap").Id, Key = "LegacyCode", Value = "SIFE" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "signerer-hver-for-seg").Id, Key = "LegacyCode", Value = "SIHV" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-kommune").Id, Key = "LegacyCode", Value = "KOMK" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "parti-organ-leder").Id, Key = "LegacyCode", Value = "HLED" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "elektronisk-signeringsrettig").Id, Key = "LegacyCode", Value = "ESGR" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "elektronisk-signeringsrett-tildeler").Id, Key = "LegacyCode", Value = "ETDL" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "foretaksgruppe-med").Id, Key = "LegacyCode", Value = "FGRP" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "konsern-datter").Id, Key = "LegacyCode", Value = "KDAT" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "konsern-grunnlag").Id, Key = "LegacyCode", Value = "KGRL" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "konsern-mor").Id, Key = "LegacyCode", Value = "KMOR" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "forestaar-avvikling").Id, Key = "LegacyCode", Value = "AVKL" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "felles-registrert-med").Id, Key = "LegacyCode", Value = "FEMV" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "utleiebygg").Id, Key = "LegacyCode", Value = "UTBG" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "virksomhet-fellesskap-drifter").Id, Key = "LegacyCode", Value = "VIFE" },
+
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "mva-utfyller").Id, Key = "LegacyCode", Value = "MVAU" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "mva-signerer").Id, Key = "LegacyCode", Value = "MVAG" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-revisor").Id, Key = "LegacyCode", Value = "SREVA" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "stifter").Id, Key = "LegacyCode", Value = "STFT" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "parti-organ-varamedlem").Id, Key = "LegacyCode", Value = "HVAR" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "parti-organ-nestleder").Id, Key = "LegacyCode", Value = "HNST" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "parti-organ-styremedlem").Id, Key = "LegacyCode", Value = "HMDL" },
+
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "privatperson").Id, Key = "LegacyCode", Value = "PRIV" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "selvregistrert").Id, Key = "LegacyCode", Value = "SELN" },
+            
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0212").Id, Key = "LegacyCode", Value = "A0212" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0236").Id, Key = "LegacyCode", Value = "A0236" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0237").Id, Key = "LegacyCode", Value = "A0237" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0238").Id, Key = "LegacyCode", Value = "A0238" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0239").Id, Key = "LegacyCode", Value = "A0239" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0240").Id, Key = "LegacyCode", Value = "A0240" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0241").Id, Key = "LegacyCode", Value = "A0241" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0278").Id, Key = "LegacyCode", Value = "A0278" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0282").Id, Key = "LegacyCode", Value = "A0282" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0286").Id, Key = "LegacyCode", Value = "A0286" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0287").Id, Key = "LegacyCode", Value = "A0287" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0288").Id, Key = "LegacyCode", Value = "A0288" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0293").Id, Key = "LegacyCode", Value = "A0293" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0294").Id, Key = "LegacyCode", Value = "A0294" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "A0298").Id, Key = "LegacyCode", Value = "A0298" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "ADMAI").Id, Key = "LegacyCode", Value = "ADMAI" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "APIADM").Id, Key = "LegacyCode", Value = "APIADM" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "APIADMNUF").Id, Key = "LegacyCode", Value = "APIADMNUF" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "ATTST").Id, Key = "LegacyCode", Value = "ATTST" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "BOADM").Id, Key = "LegacyCode", Value = "BOADM" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "BOBEL").Id, Key = "LegacyCode", Value = "BOBEL" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "BOBES").Id, Key = "LegacyCode", Value = "BOBES" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "ECKEYROLE").Id, Key = "LegacyCode", Value = "ECKEYROLE" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "EKTJ").Id, Key = "LegacyCode", Value = "EKTJ" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "GKBHT").Id, Key = "LegacyCode", Value = "GKBHT" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "HADM").Id, Key = "LegacyCode", Value = "HADM" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "HVASK").Id, Key = "LegacyCode", Value = "HVASK" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "KLADM").Id, Key = "LegacyCode", Value = "KLADM" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "KOMAB").Id, Key = "LegacyCode", Value = "KOMAB" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "LOPER").Id, Key = "LegacyCode", Value = "LOPER" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "PASIG").Id, Key = "LegacyCode", Value = "PASIG" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "PAVAD").Id, Key = "LegacyCode", Value = "PAVAD" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "PRIUT").Id, Key = "LegacyCode", Value = "PRIUT" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "REGNA").Id, Key = "LegacyCode", Value = "REGNA" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "REVAI").Id, Key = "LegacyCode", Value = "REVAI" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "SENS01").Id, Key = "LegacyCode", Value = "SENS01" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "SIGNE").Id, Key = "LegacyCode", Value = "SIGNE" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "SISKD").Id, Key = "LegacyCode", Value = "SISKD" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "UIHTL").Id, Key = "LegacyCode", Value = "UIHTL" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "UILUF").Id, Key = "LegacyCode", Value = "UILUF" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "UTINN").Id, Key = "LegacyCode", Value = "UTINN" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "UTOMR").Id, Key = "LegacyCode", Value = "UTOMR" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "SENS").Id, Key = "LegacyCode", Value = "SENS" }
         };
 
         var mergeFilter = new List<string>()
@@ -852,7 +1015,7 @@ public class DbDataMigrationService(
             "RoleId", "Key"
         };
 
-        await ingestService.IngestAndMergeData(erCodes, options: options, mergeFilter, cancellationToken);
+        await ingestService.IngestAndMergeData(legacyCodes, options: options, mergeFilter, cancellationToken);
         await ingestService.IngestAndMergeData(urn, options: options, mergeFilter, cancellationToken);
     }
 
@@ -864,75 +1027,135 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestRoleMap(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        /*DAGL*/ var roleDagl  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:daglig-leder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "daglig-leder"));
-        /*LEDE*/ var roleLede  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:styreleder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "styreleder"));
-        /*INNH*/ var roleInnh  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:innehaver")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "innehaver"));
-        /*DTSO*/ var roleDtso  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:deltaker-fullt-ansvar")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "deltaker-fullt-ansvar"));
-        /*DTPR*/ var roleDtpr  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:deltaker-delt-ansvar")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "deltaker-delt-ansvar"));
-        /*KOMP*/ var roleKomp  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:komplementar")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "komplementar"));
-        /*BEST*/ var roleBest  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:bestyrende-reder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "bestyrende-reder"));
-        /*BOBE*/ var roleBobe  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:bostyrer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "bostyrer"));
-        /*REGN*/ var roleRegn  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:regnskapsforer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "regnskapsforer"));
-        /*REVI*/ var roleRevi  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:revisor")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "revisor"));
-        /*KNUF*/ var roleKnuf  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-nuf")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-nuf"));
-        
-        /*FFØR*/ var roleFfor  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:forretningsforer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "forretningsforer"));
-        /*KEMN*/ var roleKemn  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-ados")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-ados"));
-        /*PRIV*/ var rolePriv  = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:PRIV")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "Privatperson"));
-        /*KOMK*/ var roleKomk  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-kommune")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-kommune"));
-        /*KONT*/ var roleKont  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson"));
-        /*MEDL*/ var roleMedl  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:styremedlem")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "styremedlem"));
-        /*MVAG*/ var roleMvag  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:mva-signerer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "mva-signerer"));
-        /*MVAU*/ var roleMvau  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:mva-utfyller")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "mva-utfyller"));
-        /*NEST*/ var roleNest  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:nestleder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "nestleder"));
-        /*REPR*/ var roleRepr  = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:norsk-representant")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "norsk-representant"));
-        /*SAM*/  var roleSam   = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:sameier")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "sameier"));
-        /*SENS*/ var roleSens  = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:SENS")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "Sensitive-tjenester"));
-        /*SREVA*/var roleSreva = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-revisor")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-revisor"));
+        /*DAGL*/
+        var roleDagl = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:daglig-leder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "daglig-leder"));
+        /*LEDE*/
+        var roleLede = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:styreleder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "styreleder"));
+        /*INNH*/
+        var roleInnh = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:innehaver")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "innehaver"));
+        /*DTSO*/
+        var roleDtso = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:deltaker-fullt-ansvar")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "deltaker-fullt-ansvar"));
+        /*DTPR*/
+        var roleDtpr = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:deltaker-delt-ansvar")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "deltaker-delt-ansvar"));
+        /*KOMP*/
+        var roleKomp = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:komplementar")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "komplementar"));
+        /*BEST*/
+        var roleBest = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:bestyrende-reder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "bestyrende-reder"));
+        /*BOBE*/
+        var roleBobe = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:bostyrer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "bostyrer"));
+        /*REGN*/
+        var roleRegn = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:regnskapsforer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "regnskapsforer"));
+        /*REVI*/
+        var roleRevi = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:revisor")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "revisor"));
+        /*KNUF*/
+        var roleKnuf = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-nuf")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-nuf"));
 
+        /*FFØR*/
+        var roleFfor = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:forretningsforer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "forretningsforer"));
+        /*KEMN*/
+        var roleKemn = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-ados")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-ados"));
+        /*PRIV*/
+        var rolePriv = (await roleService.Get(t => t.Urn, "urn:altinn:role:privatperson")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "privatperson"));
+        /*KOMK*/
+        var roleKomk = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-kommune")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-kommune"));
+        /*KONT*/
+        var roleKont = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson"));
+        /*MEDL*/
+        var roleMedl = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:styremedlem")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "styremedlem"));
+        /*MVAG*/
+        var roleMvag = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:mva-signerer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "mva-signerer"));
+        /*MVAU*/
+        var roleMvau = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:mva-utfyller")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "mva-utfyller"));
+        /*NEST*/
+        var roleNest = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:nestleder")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "nestleder"));
+        /*REPR*/
+        var roleRepr = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:norsk-representant")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "norsk-representant"));
+        /*SAM*/
+        var roleSam = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:sameier")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "sameier"));
+        /*SENS*/
+        var roleSens = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:SENS")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "Sensitive-tjenester"));
+        /*SREVA*/
+        var roleSreva = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-revisor")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-revisor"));
 
         var roleKLA = (await roleService.Get(t => t.Urn, "urn:altinn:role:klientadministrator")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "klientadministrator"));
         var roleTS = (await roleService.Get(t => t.Urn, "urn:altinn:role:tilgangsstyrer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "tilgangsstyrer"));
         var roleHA = (await roleService.Get(t => t.Urn, "urn:altinn:role:hovedadministrator")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "hovedadministrator"));
         var roleMPA = (await roleService.Get(t => t.Urn, "urn:altinn:role:maskinporten-administrator")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "maskinporten-administrator"));
-        /*A0212*/    var roleA0212     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0212")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0212"));
-        /*A0236*/    var roleA0236     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0236")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0236"));
-        /*A0237*/    var roleA0237     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0237")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0237"));
-        /*A0238*/    var roleA0238     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0238")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0238"));
-        /*A0239*/    var roleA0239     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0239")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0239"));
-        /*A0240*/    var roleA0240     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0240")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0240"));
-        /*A0241*/    var roleA0241     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0241")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0241"));
-        /*A0278*/    var roleA0278     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0278")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0278"));
-        /*A0282*/    var roleA0282     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0282")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0282"));
-        /*A0286*/    var roleA0286     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0286")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0286"));
-        /*A0293*/    var roleA0293     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0293")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0293"));
-        /*A0294*/    var roleA0294     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0294")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0294"));
-        /*A0298*/    var roleA0298     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0298")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0298"));
-        /*ADMAI*/    var roleADMAI     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:ADMAI")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "ADMAI"));
-        /*APIADM*/   var roleAPIADM    = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:APIADM")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "APIADM"));
-        /*APIADMNUF*/var roleAPIADMNUF = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:APIADMNUF")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "APIADMNUF"));
-        /*ATTST*/    var roleATTST     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:ATTST")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "ATTST"));
-        /*BOADM*/    var roleBOADM     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:BOADM")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "BOADM"));
-        /*BOBEL*/    var roleBOBEL     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:BOBEL")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "BOBEL"));
-        /*BOBES*/    var roleBOBES     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:BOBES")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "BOBES"));
-        /*ECKEYROLE*/var roleECKEYROLE = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:ECKEYROLE")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "ECKEYROLE"));
-        /*EKTJ*/     var roleEKTJ      = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:EKTJ")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "EKTJ"));
-        /*HADM*/     var roleHADM      = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:HADM")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "HADM"));
-        /*HVASK*/    var roleHVASK     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:HVASK")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "HVASK"));
-        /*KLADM*/    var roleKLADM     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:KLADM")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "KLADM"));
-        /*KOMAB*/    var roleKOMAB     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:KOMAB")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "KOMAB"));
-        /*LOPER*/    var roleLOPER     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:LOPER")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "LOPER"));
-        /*PASIG*/    var rolePASIG     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:PASIG")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "PASIG"));
-        /*PAVAD*/    var rolePAVAD     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:PAVAD")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "PAVAD"));
-        /*PRIUT*/    var rolePRIUT     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:PRIUT")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "PRIUT"));
-        /*REGNA*/    var roleREGNA     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:REGNA")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "REGNA"));
-        /*SIGNE*/    var roleSIGNE     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:SIGNE")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "SIGNE"));
-        /*SISKD*/    var roleSISKD     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:SISKD")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "SISKD"));
-        /*UIHTL*/    var roleUIHTL     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:UIHTL")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UIHTL"));
-        /*UILUF*/    var roleUILUF     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:UILUF")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UILUF"));
-        /*UTINN*/    var roleUTINN     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:UTINN")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UTINN"));
-        /*UTOMR*/    var roleUTOMR     = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:UTOMR")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UTOMR"));
-        
+        /*A0212*/
+        var roleA0212 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0212")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0212"));
+        /*A0236*/
+        var roleA0236 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0236")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0236"));
+        /*A0237*/
+        var roleA0237 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0237")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0237"));
+        /*A0238*/
+        var roleA0238 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0238")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0238"));
+        /*A0239*/
+        var roleA0239 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0239")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0239"));
+        /*A0240*/
+        var roleA0240 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0240")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0240"));
+        /*A0241*/
+        var roleA0241 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0241")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0241"));
+        /*A0278*/
+        var roleA0278 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0278")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0278"));
+        /*A0282*/
+        var roleA0282 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0282")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0282"));
+        /*A0286*/
+        var roleA0286 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0286")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0286"));
+        /*A0293*/
+        var roleA0293 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0293")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0293"));
+        /*A0294*/
+        var roleA0294 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0294")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0294"));
+        /*A0298*/
+        var roleA0298 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0298")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0298"));
+        /*ADMAI*/
+        var roleADMAI = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:ADMAI")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "ADMAI"));
+        /*APIADM*/
+        var roleAPIADM = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:APIADM")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "APIADM"));
+        /*APIADMNUF*/
+        var roleAPIADMNUF = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:APIADMNUF")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "APIADMNUF"));
+        /*ATTST*/
+        var roleATTST = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:ATTST")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "ATTST"));
+        /*BOADM*/
+        var roleBOADM = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:BOADM")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "BOADM"));
+        /*BOBEL*/
+        var roleBOBEL = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:BOBEL")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "BOBEL"));
+        /*BOBES*/
+        var roleBOBES = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:BOBES")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "BOBES"));
+        /*ECKEYROLE*/
+        var roleECKEYROLE = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:ECKEYROLE")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "ECKEYROLE"));
+        /*EKTJ*/
+        var roleEKTJ = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:EKTJ")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "EKTJ"));
+        /*HADM*/
+        var roleHADM = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:HADM")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "HADM"));
+        /*HVASK*/
+        var roleHVASK = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:HVASK")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "HVASK"));
+        /*KLADM*/
+        var roleKLADM = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:KLADM")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "KLADM"));
+        /*KOMAB*/
+        var roleKOMAB = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:KOMAB")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "KOMAB"));
+        /*LOPER*/
+        var roleLOPER = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:LOPER")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "LOPER"));
+        /*PASIG*/
+        var rolePASIG = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:PASIG")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "PASIG"));
+        /*PAVAD*/
+        var rolePAVAD = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:PAVAD")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "PAVAD"));
+        /*PRIUT*/
+        var rolePRIUT = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:PRIUT")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "PRIUT"));
+        /*REGNA*/
+        var roleREGNA = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:REGNA")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "REGNA"));
+        /*SIGNE*/
+        var roleSIGNE = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:SIGNE")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "SIGNE"));
+        /*SISKD*/
+        var roleSISKD = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:SISKD")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "SISKD"));
+        /*UIHTL*/
+        var roleUIHTL = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:UIHTL")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UIHTL"));
+        /*UILUF*/
+        var roleUILUF = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:UILUF")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UILUF"));
+        /*UTINN*/
+        var roleUTINN = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:UTINN")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UTINN"));
+        /*UTOMR*/
+        var roleUTOMR = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:UTOMR")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UTOMR"));
+
         var roleMaps = new List<RoleMap>()
         {
             new RoleMap() { HasRoleId = roleDagl, GetRoleId = roleKLA },
@@ -970,7 +1193,7 @@ public class DbDataMigrationService(
             new RoleMap() { HasRoleId = roleBest, GetRoleId = roleMPA },
             new RoleMap() { HasRoleId = roleBobe, GetRoleId = roleMPA },
             new RoleMap() { HasRoleId = roleKnuf, GetRoleId = roleMPA },
-            
+
             new RoleMap() { HasRoleId = roleBest, GetRoleId = roleA0212 },
             new RoleMap() { HasRoleId = roleDagl, GetRoleId = roleA0212 },
             new RoleMap() { HasRoleId = roleDtpr, GetRoleId = roleA0212 },
@@ -1518,7 +1741,7 @@ public class DbDataMigrationService(
             new Package() { Id = Guid.Parse("a03af7d5-74b9-4f18-aead-5d47edc36be5"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_miljo_ulykke_og_sikkerhet, Urn = "urn:altinn:accesspackage:ulykke", Name = "Ulykke", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til ulykke. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("fa84bffc-ac17-40cd-af9c-61c89f92e44c"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_miljo_ulykke_og_sikkerhet, Urn = "urn:altinn:accesspackage:yrkesskade", Name = "Yrkesskade", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til yrkesskade. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("91cf61ae-69ab-49d5-b51a-80591c91f255"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_post_og_arkiv, Urn = "urn:altinn:accesspackage:ordinaer-post-til-virksomheten", Name = "Ordinær post til virksomheten", Description = "Denne fullmakten gir tilgang til all mottatt post som ikke innholder sensitiv/taushetsbelagt informasjon som sendes virksomheten. Fullmakten gis normalt til de i virksomheten som håndterer mottak av post. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
-            new Package() { Id = Guid.Parse("bb0569a6-2268-49b5-9d38-8158b26124c3"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_post_og_arkiv, Urn = "urn:altinn:accesspackage:post-til-virksomheten-med-taushetsbelagt-innhold", Name = "Post til virksomheten med taushetsbelagt innhold", Description = "Denne fullmakten gir tilgang til all mottatt post som innholder sensitiv/taushetsbelagt informasjon som sendes virksomheten. Fullmakten gis normalt til de i virksomheten som håndterer mottak av post som har taushetsbelagt innhold. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = false },
+            new Package() { Id = Guid.Parse("bb0569a6-2268-49b5-9d38-8158b26124c3"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_post_og_arkiv, Urn = "urn:altinn:accesspackage:post-til-virksomheten-med-taushetsbelagt-innhold", Name = "Post til virksomheten med taushetsbelagt innhold", Description = "Denne fullmakten gir tilgang til all mottatt post som innholder sensitiv/taushetsbelagt informasjon som sendes virksomheten. Fullmakten gis normalt til de i virksomheten som håndterer mottak av post som har taushetsbelagt innhold. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("06c13400-8683-4985-9802-cef13e247f24"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_forhold_ved_virksomheten, Urn = "urn:altinn:accesspackage:generelle-helfotjenester", Name = "Generelle helfotjenester", Description = "Denne fullmakten gir tilgang til ordinære tjenester knyttet til virksomhetens dialog med Helfo der bruker kan få tilgang til personopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("2ee6e972-2423-4f3a-bd3c-d4871fcc9876"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_forhold_ved_virksomheten, Urn = "urn:altinn:accesspackage:helfo-saerlig-kategori", Name = "Helfotjenester med personopplysninger av særlig kategori", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til virksomhetens dialog med Helfo der bruker kan få tilgang til personopplysninger av særlig kategori. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("956cfcf0-ab4c-44d8-98a2-d68c4d59321b"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_forhold_ved_virksomheten, Urn = "urn:altinn:accesspackage:starte-drive-endre-avikle-virksomhet", Name = "Starte, endre og avvikle virksomhet", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til å starte, endre og avvikle en virksomhet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
@@ -2050,6 +2273,7 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:reindrift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:reindrift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:reindrift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:reindrift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2057,6 +2281,7 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:skogbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:skogbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:skogbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2080,6 +2305,7 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:akvakultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:akvakultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:akvakultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:akvakultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2223,6 +2449,7 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2230,6 +2457,7 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:barnevern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:barnevern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:barnevern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },

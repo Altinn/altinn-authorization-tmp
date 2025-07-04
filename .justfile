@@ -16,7 +16,7 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 
 [private]
 @default:
-  just --list
+  just --choose
 
 # Install node packages required to run scripts - uses pnpm to install the packages
 [private]
@@ -35,6 +35,9 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 @update-sln-files *ARGS: install-script-packages-frozen
   #!{{shebang}}
   node ./.github/scripts/update-sln-files.mts -- {{ARGS}}
+
+@dotnet-reference-trimmer:
+  dotnet build -p:EnableReferenceTrimmer=true
 
 # Print all projects metadata
 @get-metadata: install-script-packages-frozen

@@ -13,7 +13,7 @@ namespace Altinn.Authorization.Integration.Platform.Appsettings
         /// <remarks>
         /// The endpoint should be a valid URI, typically pointing to an API service.
         /// </remarks>
-        public EndpointOptions ResourceRegister { get; set; } = new();
+        public EndpointOptions ResourceRegistry { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the endpoint URI for the Register service.
@@ -23,6 +23,22 @@ namespace Altinn.Authorization.Integration.Platform.Appsettings
         /// The endpoint should be a valid URI, typically pointing to an API service.
         /// </remarks>
         public EndpointOptions Register { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the endpoint URI for SBL Bridge.
+        /// </summary>
+        /// <remarks>
+        /// The endpoint should be a valid URI
+        /// </remarks>
+        public EndpointOptions SblBridge { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the endpoint URI for Access Management API.
+        /// </summary>
+        /// <remarks>
+        /// The endpoint should be a valid URI
+        /// </remarks>
+        public EndpointOptions AccessManagement { get; set; } = new();
 
         /// <summary>
         /// Gets or sets the token-related configuration options.
