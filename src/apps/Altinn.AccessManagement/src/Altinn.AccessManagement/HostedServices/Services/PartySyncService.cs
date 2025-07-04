@@ -149,7 +149,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     {
         if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
+            var type = EntityTypes.FirstOrDefault(t => t.Code == "person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "person"));
             var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person");
             if (variant == null)
             {
@@ -174,7 +174,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         }
         else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
+            var type = EntityTypes.FirstOrDefault(t => t.Code == "organization") ?? throw new Exception(string.Format("Unable to find type '{0}'", "organization"));
             var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase));
             if (variant == null)
             {
@@ -199,7 +199,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         }
         else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
+            var type = EntityTypes.FirstOrDefault(t => t.Code == "person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "person"));
             var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "SI") ?? throw new Exception(string.Format("Unable to find variant '{0}' for type '{1}'", "SI", type.Name));
             if (variant == null)
             {

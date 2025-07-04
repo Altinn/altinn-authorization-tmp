@@ -19,6 +19,11 @@ public class EntityType
     /// Name
     /// </summary>
     public string Name { get; set; }
+
+    /// <summary>
+    /// Short identifing code
+    /// </summary>
+    public string Code { get; set; }
 }
 
 /// <summary>
