@@ -47,7 +47,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         IRoleLookupRepository roleLookupRepository,
         IProviderTypeRepository providerTypeRepository,
         ILogger<ResourceSyncService> logger
-        ) : base(lease, featureManager, register)
+        ) : base(lease, featureManager)
     {
         _logger = logger;
         _resourceRegistry = resourceRegistry;
