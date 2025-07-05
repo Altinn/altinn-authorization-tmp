@@ -60,3 +60,19 @@ public class ExtAssignmentResource : AssignmentResource
     /// </summary>
     public Resource Resource { get; set; }
 }
+
+/// <summary>
+/// Extended AssignmentPackage
+/// </summary>
+public class ExtendedAssignmentResource : AssignmentResource
+{
+    /// <summary>
+    /// Assignment
+    /// </summary>
+    public ExtendedAssignment Assignment { get; set; }
+
+    /// <summary>
+    /// Resource
+    /// </summary>
+    public ExtendedResource Resource { get; set; }
+}

@@ -58,6 +58,27 @@ public class ExtEntity : Entity
 }
 
 /// <summary>
+/// Extended Entity
+/// </summary>
+public class ExtendedEntity : Entity
+{
+    /// <summary>
+    /// Type
+    /// </summary>
+    public ExtendedEntityType Type { get; set; }
+
+    /// <summary>
+    /// Variant
+    /// </summary>
+    public ExtendedEntityVariant Variant { get; set; }
+
+    /// <summary>
+    /// Parent
+    /// </summary>
+    public ExtendedEntity Parent { get; set; }
+}
+
+/// <summary>
 /// Compact Entity Model
 /// </summary>
 public class CompactEntity

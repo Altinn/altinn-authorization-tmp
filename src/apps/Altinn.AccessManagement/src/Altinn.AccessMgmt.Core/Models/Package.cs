@@ -78,6 +78,27 @@ public class ExtPackage : Package
 }
 
 /// <summary>
+/// Extended Package
+/// </summary>
+public class ExtendedPackage : Package
+{
+    /// <summary>
+    /// Provider
+    /// </summary>
+    public ExtendedProvider Provider { get; set; }
+
+    /// <summary>
+    /// EntityType
+    /// </summary>
+    public ExtendedEntityType EntityType { get; set; }
+
+    /// <summary>
+    /// Area
+    /// </summary>
+    public ExtendedArea Area { get; set; }
+}
+
+/// <summary>
 /// Compact Package Model
 /// </summary>
 public class CompactPackage

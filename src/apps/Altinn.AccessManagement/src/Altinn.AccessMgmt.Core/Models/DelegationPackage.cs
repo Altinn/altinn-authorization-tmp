@@ -80,3 +80,19 @@ public class ExtDelegationPackage : DelegationPackage
     /// </summary>
     public AssignmentPackage AssignmentPackage { get; set; }
 }
+
+/// <summary>
+/// Extended delgation package
+/// </summary>
+public class ExtendedDelegationPackage : DelegationPackage
+{
+    /// <summary>
+    /// Delegation
+    /// </summary>
+    public ExtendedDelegation Delegation { get; set; }
+
+    /// <summary>
+    /// Package
+    /// </summary>
+    public ExtendedPackage Package { get; set; }
+}

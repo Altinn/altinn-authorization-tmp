@@ -61,3 +61,19 @@ public class ExtRoleMap : RoleMap
     /// </summary>
     public Role GetRole { get; set; }
 }
+
+/// <summary>
+/// Extended RoleMap
+/// </summary>
+public class ExtendedRoleMap : RoleMap
+{
+    /// <summary>
+    /// HasRole (Role)
+    /// </summary>
+    public ExtendedRole HasRole { get; set; }
+
+    /// <summary>
+    /// GetRole (Role)
+    /// </summary>
+    public ExtendedRole GetRole { get; set; }
+}
