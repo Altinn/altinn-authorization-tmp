@@ -9,11 +9,11 @@ public static class ModelBuilderExtensions
     {
         foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {
-            // Lowercase tabellnavn
+            // Lowercase tables
             entity.SetTableName(entity.GetTableName()?.ToLowerInvariant());
             entity.SetSchema(entity.GetSchema()?.ToLowerInvariant());
 
-            // Lowercase kolonnenavn
+            // Lowercase columns
             foreach (var property in entity.GetProperties())
             {
                 property.SetColumnName(property.GetColumnName(StoreObjectIdentifier.Table(entity.GetTableName(), entity.GetSchema()))?.ToLowerInvariant());
@@ -31,7 +31,7 @@ public static class ModelBuilderExtensions
                 fk.SetConstraintName(fk.GetConstraintName()?.ToLowerInvariant());
             }
 
-            // Lowercase index-navn
+            // Lowercase index
             foreach (var index in entity.GetIndexes())
             {
                 index.SetDatabaseName(index.GetDatabaseName()?.ToLowerInvariant());

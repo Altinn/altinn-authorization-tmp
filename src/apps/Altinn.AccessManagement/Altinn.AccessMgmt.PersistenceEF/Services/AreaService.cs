@@ -1,6 +1,6 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
-using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Services;
 

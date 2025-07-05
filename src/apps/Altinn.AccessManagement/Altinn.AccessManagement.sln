@@ -59,6 +59,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Api.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.PersistenceEF", "Altinn.AccessMgmt.PersistenceEF\Altinn.AccessMgmt.PersistenceEF.csproj", "{28B07D82-824E-47FD-9823-357FD2722886}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pkgs", "pkgs", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.PEP", "..\..\pkgs\Altinn.Authorization.PEP\src\Altinn.Authorization.PEP\Altinn.Authorization.PEP.csproj", "{B70D2140-42EC-6865-2AB2-6B3C20BBA411}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -321,6 +325,30 @@ Global
 		{34273E63-EBDF-457D-8655-9F9D3E7B5E03}.Release|x64.Build.0 = Release|Any CPU
 		{34273E63-EBDF-457D-8655-9F9D3E7B5E03}.Release|x86.ActiveCfg = Release|Any CPU
 		{34273E63-EBDF-457D-8655-9F9D3E7B5E03}.Release|x86.Build.0 = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|x64.Build.0 = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Debug|x86.Build.0 = Debug|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|x64.ActiveCfg = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|x64.Build.0 = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|x86.ActiveCfg = Release|Any CPU
+		{28B07D82-824E-47FD-9823-357FD2722886}.Release|x86.Build.0 = Release|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Debug|x64.Build.0 = Debug|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Debug|x86.Build.0 = Debug|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Release|x64.ActiveCfg = Release|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Release|x64.Build.0 = Release|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Release|x86.ActiveCfg = Release|Any CPU
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -350,5 +378,9 @@ Global
 		{E2F70293-FB86-48C6-9246-CC37B4EFE77A} = {DD9B9820-8A3B-57C2-9B1B-A9BE0AF659EC}
 		{4392B746-A7D8-2795-8659-69830AAF5C4B} = {6C4D298B-81FB-2B6B-5AB6-46205EDDC72C}
 		{34273E63-EBDF-457D-8655-9F9D3E7B5E03} = {4392B746-A7D8-2795-8659-69830AAF5C4B}
+		{B70D2140-42EC-6865-2AB2-6B3C20BBA411} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7E091FE0-EC9B-410B-9087-FB89517072B5}
 	EndGlobalSection
 EndGlobal

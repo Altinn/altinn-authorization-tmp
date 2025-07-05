@@ -1,4 +1,4 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
+﻿namespace Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 
 /// <summary>
 /// Adds audit properties to model

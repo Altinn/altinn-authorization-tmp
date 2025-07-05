@@ -1,4 +1,4 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models.Base;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -30,6 +30,8 @@ public class TranslationService : ITranslationService
         {
             return source;
         }
+
+        //// Add support for history dbcontext
 
         var transMap = await _db.Set<TranslationEntry>()
             .Where(t => t.Type == typeName &&

@@ -1,4 +1,4 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models.Base;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

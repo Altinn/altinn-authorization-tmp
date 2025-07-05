@@ -39,6 +39,7 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
         if (entityType?.FindAnnotation("EnableTranslation")?.Value as bool? == true)
         {
             // Find all properties with annotation "Translate"
+            // Moved to TranslationService
         }
     }
 

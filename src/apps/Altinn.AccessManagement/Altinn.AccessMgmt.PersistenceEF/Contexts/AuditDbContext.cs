@@ -1,7 +1,7 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Configurations;
 using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
-using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
