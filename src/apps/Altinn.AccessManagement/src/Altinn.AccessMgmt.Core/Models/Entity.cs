@@ -104,6 +104,11 @@ public class CompactEntity
     public string Variant { get; set; }
 
     /// <summary>
+    /// Values from entityLoookup
+    /// </summary>
+    public Dictionary<string,string> KeyValues { get; set; }
+
+    /// <summary>
     /// Parent
     /// </summary>
     public CompactEntity Parent { get; set; }
@@ -112,9 +117,4 @@ public class CompactEntity
     /// Children
     /// </summary>
     public List<CompactEntity> Children { get; set; }
-
-    /// <summary>
-    /// Values from entityLoookup
-    /// </summary>
-    public Dictionary<string,string> KeyValues { get; set; }
 }
