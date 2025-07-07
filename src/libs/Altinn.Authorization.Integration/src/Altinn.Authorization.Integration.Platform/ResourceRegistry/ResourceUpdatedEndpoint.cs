@@ -20,6 +20,11 @@ public partial class AltinnResourceRegistryClient
 
         if (string.IsNullOrEmpty(nextPage))
         {
+            if (DateTime.Compare(since, DateTime.UnixEpoch) < 0)
+            {
+                since = DateTime.UnixEpoch;
+            }
+
             request.Add(RequestComposer.WithAppendQueryParam("since", since.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz", DateTimeFormatInfo.InvariantInfo)));
         }
 
