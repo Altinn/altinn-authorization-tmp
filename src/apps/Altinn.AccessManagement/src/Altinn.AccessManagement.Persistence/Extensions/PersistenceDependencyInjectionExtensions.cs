@@ -186,13 +186,13 @@ public static class PersistenceDependencyInjectionExtensions
             foreach (var enumValue in enumValues)
             {
                 var memberName = enumValue.ToString();
-                var pgName = resolver(enumValue);
-                if (pgName is null)
+                var name = resolver(enumValue);
+                if (name is null)
                 {
                     ThrowHelper.ThrowInvalidOperationException($"Missing mapping for enum member '{memberName}' in type '{typeof(TEnum).FullName}'");
                 }
 
-                builder.Add((memberName, pgName));
+                builder.Add((memberName, name));
             }
 
             builder.Sort(static (l, r) => string.CompareOrdinal(l.MemberName, r.MemberName));
