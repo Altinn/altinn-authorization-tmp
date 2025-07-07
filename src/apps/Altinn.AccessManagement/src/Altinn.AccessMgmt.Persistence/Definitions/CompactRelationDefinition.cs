@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.Core.Models;
+﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 
