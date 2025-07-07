@@ -1,13 +1,7 @@
-using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
-
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.X509;
 
 namespace Altinn.AccessManagement.Tests.Utils
 {
