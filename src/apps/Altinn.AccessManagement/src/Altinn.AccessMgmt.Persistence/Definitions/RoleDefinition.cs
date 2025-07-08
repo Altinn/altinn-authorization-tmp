@@ -40,6 +40,7 @@ public class RoleDefinition : BaseDbDefinition<Role>, IDbDefinition
 
             def.AddManualPreMigrationScript(1, GetPreMigrationScript_EntityTypeIdUniqueConstraint());
             def.AddManualPreMigrationScript(2, GetPreMigrationScript_EntityTypeIdNullable());
+            def.AddManualPreMigrationScript(3, GetPreMigrationScript_DeleteOldAdminRoles());
         });
     }
 
@@ -69,6 +70,29 @@ public class RoleDefinition : BaseDbDefinition<Role>, IDbDefinition
               IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'dbo' AND table_name = 'role' AND column_name = 'entitytypeid' AND is_nullable = 'NO') THEN
                 ALTER TABLE dbo.role ALTER COLUMN entitytypeid DROP NOT NULL;
               END IF;
+            END
+            $$;
+            """;
+    }
+
+    private string GetPreMigrationScript_DeleteOldAdminRoles()
+    {
+        return """
+            DO
+            $$
+            BEGIN
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'dbo' AND table_name = 'role') THEN
+                
+                    CREATE TEMP TABLE session_audit_context ON COMMIT DROP AS
+                    SELECT 
+                      '3296007F-F9EA-4BD0-B6A6-C8462D54633A'::uuid AS changed_by,
+                      '3296007F-F9EA-4BD0-B6A6-C8462D54633A'::uuid AS changed_by_system,
+                      '3296007F-F9EA-4BD0-B6A6-C8462D54633A'::text AS change_operation_id;
+
+                    DELETE FROM dbo.role
+                    WHERE urn IN ('urn:altinn:role:klientadministrator', 'urn:altinn:role:tilgangsstyrer', 'urn:altinn:role:maskinporten-administrator');
+
+                END IF;
             END
             $$;
             """;
