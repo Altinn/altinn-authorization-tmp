@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
@@ -34,7 +35,7 @@ public static partial class DbAccessHostExtensions
     /// </summary>
     public static IApplicationBuilder UseDbAudit(this IApplicationBuilder builder)
     {
-        builder.UseMiddleware<AuditMiddleware>();
+        builder.UseMiddleware<AuditService>();
         return builder;
     }
 
@@ -67,7 +68,7 @@ public static partial class DbAccessHostExtensions
             }
         }
 
-        builder.Services.AddSingleton<AuditMiddleware>();
+        builder.Services.AddSingleton<AuditService>();
         builder.Services.AddSingleton<IDbAudit, AuditFactory>();
         builder.Services.AddSingleton<IDbAuditService, AuditFactory>();
 
@@ -91,6 +92,9 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<DbSchemaMigrationService>();
         builder.Services.AddSingleton<DbDataMigrationService>();
         builder.Services.AddSingleton<MockDataService>();
+
+        // Core interfaces & implementations
+        builder.Services.AddSingleton<IAmPartyRepository, AMPartyService>();
 
         builder.Services.Add(Marker.ServiceDescriptor);
 
@@ -124,8 +128,9 @@ public static partial class DbAccessHostExtensions
     /// Initializes and applies database migrations and data ingestion processes.
     /// </summary>
     /// <param name="host">The application host.</param>
+    /// <param name="generateBasicData">Optional flag to generate basic data for test</param>
     /// <returns>The updated host after applying database changes.</returns>
-    public static async Task<IHost> UseAccessMgmtDb(this IHost host)
+    public static async Task<IHost> UseAccessMgmtDb(this IHost host, bool? generateBasicData = false)
     {
         // Make sure migration don't run if DB is not enabled
         if (host.Services.GetService(Marker.Type) == null)
@@ -151,6 +156,13 @@ public static partial class DbAccessHostExtensions
         // await mockService.GeneratePackageResources();
         // await mockService.SystemUserClientDelegation();
         */
+        if (generateBasicData == true)
+        {
+            var mockService = host.Services.GetRequiredService<MockDataService>();
+            await mockService.GenerateBasicData();
+
+            // await mockService.GeneratePackageResources();
+        }
 
         return host;
     }

@@ -15,7 +15,6 @@ namespace Altinn.AccessManagement.HostedServices.Services;
 /// <inheritdoc />
 public class RoleSyncService : BaseSyncService, IRoleSyncService
 {
-
     public RoleSyncService(
         IAltinnLease lease,
         IAltinnRegister register,
@@ -49,7 +48,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     private readonly IIngestService _ingestService;
 
     /// <inheritdoc />
-    public async Task SyncRoles(LeaseResult<LeaseContent> ls, CancellationToken cancellationToken)
+    public async Task SyncRoles(LeaseResult<RegisterLease> ls, CancellationToken cancellationToken)
     {
         var batchData = new List<Assignment>();
         Guid batchId = Guid.CreateVersion7();
@@ -156,7 +155,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             }
         }
     }
-    
+
     private async Task SetParent(Guid childId, Guid parentId, ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         try
@@ -248,5 +247,4 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             new GenericFilter("toid", "toid"),
             new GenericFilter("roleid", "roleid"),
         };
-
 }
