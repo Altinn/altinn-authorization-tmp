@@ -61,7 +61,6 @@ export function setup() {
 }
 
 export default function (data) {
-    console.log(data[exec.vu.idInTest - 1].length);
     const systemUser = randomItem(data[exec.vu.idInTest - 1]);
     getDelegations(systemUser);
 }
