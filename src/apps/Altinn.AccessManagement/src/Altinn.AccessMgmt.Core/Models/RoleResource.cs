@@ -60,3 +60,19 @@ public class ExtRoleResource : RoleResource
     /// </summary>
     public Resource Resource { get; set; }
 }
+
+/// <summary>
+/// Extended Role Resource
+/// </summary>
+public class ExtendedRoleResource : RoleResource
+{
+    /// <summary>
+    /// Role
+    /// </summary>
+    public ExtendedRole Role { get; set; }
+
+    /// <summary>
+    /// Resource
+    /// </summary>
+    public ExtendedResource Resource { get; set; }
+}

@@ -31,3 +31,14 @@ public class ExtEntityType : EntityType
     /// </summary>
     public Provider Provider { get; set; }
 }
+
+/// <summary>
+/// Extended EntityType
+/// </summary>
+public class ExtendedEntityType : EntityType
+{
+    /// <summary>
+    /// Provider
+    /// </summary>
+    public ExtendedProvider Provider { get; set; }
+}

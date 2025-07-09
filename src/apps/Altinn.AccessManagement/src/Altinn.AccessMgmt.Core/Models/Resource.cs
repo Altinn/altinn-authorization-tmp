@@ -77,6 +77,22 @@ public class ExtResource : Resource
 }
 
 /// <summary>
+/// Extended Resource
+/// </summary>
+public class ExtendedResource : Resource
+{
+    /// <summary>
+    /// Provider
+    /// </summary>
+    public ExtendedProvider Provider { get; set; }
+
+    /// <summary>
+    /// Type
+    /// </summary>
+    public ExtendedResourceType Type { get; set; }
+}
+
+/// <summary>
 /// Compact versjon of resource
 /// </summary>
 public class CompactResource

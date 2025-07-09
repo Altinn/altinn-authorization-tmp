@@ -74,6 +74,22 @@ public class ExtRole : Role
 }
 
 /// <summary>
+/// Extended Role
+/// </summary>
+public class ExtendedRole : Role
+{
+    /// <summary>
+    /// EntityType
+    /// </summary>
+    public ExtendedEntityType EntityType { get; set; }
+
+    /// <summary>
+    /// Provider
+    /// </summary>
+    public ExtendedProvider Provider { get; set; }
+}
+
+/// <summary>
 /// Compact Role Model
 /// </summary>
 public class CompactRole

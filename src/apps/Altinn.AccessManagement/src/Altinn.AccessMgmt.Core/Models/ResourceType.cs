@@ -17,3 +17,13 @@ public class ResourceType
     /// </summary>
     public string Name { get; set; }
 }
+
+/// <summary>
+/// Define the types of Resources
+/// </summary>
+public class ExtResourceType : ResourceType { }
+
+/// <summary>
+/// Define the types of Resources
+/// </summary>
+public class ExtendedResourceType : ResourceType { }

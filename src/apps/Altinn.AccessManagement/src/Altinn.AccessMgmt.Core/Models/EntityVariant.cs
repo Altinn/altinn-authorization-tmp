@@ -36,3 +36,14 @@ public class ExtEntityVariant : EntityVariant
     /// </summary>
     public EntityType Type { get; set; }
 }
+
+/// <summary>
+/// Extended EntityVariant
+/// </summary>
+public class ExtendedEntityVariant : EntityVariant
+{
+    /// <summary>
+    /// Type
+    /// </summary>
+    public ExtendedEntityType Type { get; set; }
+}

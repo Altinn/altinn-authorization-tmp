@@ -60,3 +60,19 @@ public class ExtAssignmentPackage : AssignmentPackage
     /// </summary>
     public Package Package { get; set; }
 }
+
+/// <summary>
+/// Extended AssignmentPackage
+/// </summary>
+public class ExtendedAssignmentPackage : AssignmentPackage
+{
+    /// <summary>
+    /// Assignment
+    /// </summary>
+    public ExtendedAssignment Assignment { get; set; }
+
+    /// <summary>
+    /// Package
+    /// </summary>
+    public ExtendedPackage Package { get; set; }
+}

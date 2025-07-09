@@ -62,3 +62,19 @@ public class ExtDelegationResource : DelegationResource
     /// </summary>
     public Resource Resource { get; set; }
 }
+
+/// <summary>
+/// Extended delegation resource
+/// </summary>
+public class ExtendedDelegationResource : DelegationResource
+{
+    /// <summary>
+    /// Delegation
+    /// </summary>
+    public ExtendedDelegation Delegation { get; set; }
+
+    /// <summary>
+    /// Resource
+    /// </summary>
+    public ExtendedResource Resource { get; set; }
+}

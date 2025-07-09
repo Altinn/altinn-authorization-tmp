@@ -46,3 +46,14 @@ public class ExtProvider : Provider
     /// </summary>
     public ProviderType Type { get; set; }
 }
+
+/// <summary>
+/// Extended Provider
+/// </summary>
+public class ExtendedProvider : Provider
+{
+    /// <summary>
+    /// The type of provider
+    /// </summary>
+    public ExtendedProviderType Type { get; set; }
+}
