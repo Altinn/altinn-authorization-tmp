@@ -98,6 +98,10 @@ jobs:
     - name: Run K6 tests (${{ inputs.testSuitePath }})
       run: |
         echo "Running k6 test suite ${{ inputs.testSuitePath }} with ${{ inputs.vus }} VUs for ${{ inputs.duration }} on ${{ inputs.parallelism }} parallelism"
+        start_time=$(date +%s)
+        echo "Start time: $start_time"
+        end_time=$(date -d "${{ inputs.duration }}" +%s)
+        echo "End time: $end_time"
         k6configName=$(basename "${{ inputs.testSuitePath }}" .js)
         k6configName="k6-${k6configName}"
         ./src/apps/Altinn.Authorization/test/K6/performance/run-test-in-k8s.sh \
