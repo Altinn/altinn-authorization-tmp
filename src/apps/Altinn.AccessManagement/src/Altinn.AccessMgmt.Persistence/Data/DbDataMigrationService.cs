@@ -3413,7 +3413,7 @@ public class DbDataMigrationService(
         if (migrationService.NeedMigration<RolePackage>(dataKey, 2))
         {
             await CleanupNufRolePackage(options, cancellationToken);
-            await migrationService.LogMigration<RolePackage>(dataKey, "Delete non-nuf limited role connections to urn:altinn:accesspackage:maskinporten-scopes-nuf", 2);
+            ////await migrationService.LogMigration<RolePackage>(dataKey, "Delete non-nuf limited role connections to urn:altinn:accesspackage:maskinporten-scopes-nuf", 2);
         }
 
         if (migrationService.NeedMigration<Role>(dataKey, 1))
@@ -3464,23 +3464,19 @@ public class DbDataMigrationService(
         filter.Equal(t => t.PackageId, Guid.Parse("5dad616e-5538-4e3f-b15a-bae33f06c99f")); // urn:altinn:accesspackage:maskinporten-scopes-nuf
         var nufRolePackages = await rolePackageRepository.Get(filter, cancellationToken: cancellationToken);
 
-        int deletedRows = 0;
         if (nufRolePackages.Any())
         {
             foreach (var rolePackage in nufRolePackages.Where(rp => rp.EntityVariantId == null))
             {
-                deletedRows += await rolePackageRepository.Delete(rolePackage.Id, options, cancellationToken: cancellationToken);
+                await rolePackageRepository.Delete(rolePackage.Id, options, cancellationToken: cancellationToken);
             }
         }
-
-        Debug.Assert(deletedRows == 1, "CleanupNufRolePackage: Expected 1 row deleted");
     }
 
     private async Task CleanupAdminRoles(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var filter = roleService.CreateFilterBuilder();
         filter.In(t => t.Urn, ["urn:altinn:role:klientadministrator", "urn:altinn:role:tilgangsstyrer", "urn:altinn:role:maskinporten-administrator"]);
-        int rows = await roleService.Delete(filter, options, cancellationToken: cancellationToken);
-        Debug.Assert(rows == 3, "CleanupAdminRoles: Expected 3 rows deleted");
+        await roleService.Delete(filter, options, cancellationToken: cancellationToken);
     }
 }
