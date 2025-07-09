@@ -1,10 +1,9 @@
-﻿using Altinn.AccessMgmt.Core.Models;
+﻿using System.Diagnostics;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.AccessMgmt.Persistence.Services.Models;
 using Microsoft.Extensions.Configuration;
 
 namespace Altinn.AccessMgmt.Persistence.Data;
@@ -3404,10 +3403,23 @@ public class DbDataMigrationService(
     private async Task Cleanup(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var dataKey = "<cleanup-data>";
+
         if (migrationService.NeedMigration<RolePackage>(dataKey, 1))
         {
             await CleanupRolePackage(options, cancellationToken);
             await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 1);
+        }
+
+        if (migrationService.NeedMigration<RolePackage>(dataKey, 2))
+        {
+            await CleanupNufRolePackage(options, cancellationToken);
+            await migrationService.LogMigration<RolePackage>(dataKey, "Delete non-nuf limited role connections to urn:altinn:accesspackage:maskinporten-scopes-nuf", 2);
+        }
+
+        if (migrationService.NeedMigration<Role>(dataKey, 1))
+        {
+            await CleanupAdminRoles(options, cancellationToken);
+            await migrationService.LogMigration<Role>(dataKey, "Delete old admin roles urn:altinn:role:klientadministrator, urn:altinn:role:tilgangsstyrer, urn:altinn:role:maskinporten-administrator", 1);
         }
     }
 
@@ -3443,5 +3455,32 @@ public class DbDataMigrationService(
         {
 
         }
+    }
+
+    private async Task CleanupNufRolePackage(ChangeRequestOptions options, CancellationToken cancellationToken = default)
+    {
+        var filter = rolePackageRepository.CreateFilterBuilder();
+        filter.Equal(t => t.RoleId, Guid.Parse("69c4397a-9e34-4e73-9f69-534bc1bb74c8")); // urn:altinn:external-role:ccr:kontaktperson-nuf
+        filter.Equal(t => t.PackageId, Guid.Parse("5dad616e-5538-4e3f-b15a-bae33f06c99f")); // urn:altinn:accesspackage:maskinporten-scopes-nuf
+        var nufRolePackages = await rolePackageRepository.Get(filter, cancellationToken: cancellationToken);
+
+        int deletedRows = 0;
+        if (nufRolePackages.Any())
+        {
+            foreach (var rolePackage in nufRolePackages.Where(rp => rp.EntityVariantId == null))
+            {
+                deletedRows += await rolePackageRepository.Delete(rolePackage.Id, options, cancellationToken: cancellationToken);
+            }
+        }
+
+        Debug.Assert(deletedRows == 1, "CleanupNufRolePackage: Expected 1 row deleted");
+    }
+
+    private async Task CleanupAdminRoles(ChangeRequestOptions options, CancellationToken cancellationToken = default)
+    {
+        var filter = roleService.CreateFilterBuilder();
+        filter.In(t => t.Urn, ["urn:altinn:role:klientadministrator", "urn:altinn:role:tilgangsstyrer", "urn:altinn:role:maskinporten-administrator"]);
+        int rows = await roleService.Delete(filter, options, cancellationToken: cancellationToken);
+        Debug.Assert(rows == 3, "CleanupAdminRoles: Expected 3 rows deleted");
     }
 }

@@ -36,7 +36,6 @@ public class RolePackageDefinition : BaseDbDefinition<RolePackage>, IDbDefinitio
 
             def.AddManualPreMigrationScript(1, GetPreMigrationScript_UniqueConstraint());
             def.AddManualPreMigrationScript(2, GetPreMigrationScript_RemoveDuplicates());
-            def.AddManualPreMigrationScript(3, GetPreMigrationScript_RemoveOldKontaktpersonNufRolePackage());
         });
     }
 
@@ -74,31 +73,6 @@ public class RolePackageDefinition : BaseDbDefinition<RolePackage>, IDbDefinitio
                     DELETE FROM dbo.rolepackage AS m
                     USING dups AS d
                     WHERE m.id = d.id AND d.rn > 1;
-                END IF;
-            END;
-            $$;
-            """;
-    }
-
-    private string GetPreMigrationScript_RemoveOldKontaktpersonNufRolePackage()
-    {
-        return """
-            DO
-            $$
-            BEGIN
-                IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'dbo' AND table_name = 'rolepackage') THEN
-
-                    CREATE TEMP TABLE session_audit_context ON COMMIT DROP AS
-                    SELECT 
-                      '3296007F-F9EA-4BD0-B6A6-C8462D54633A'::uuid AS changed_by,
-                      '3296007F-F9EA-4BD0-B6A6-C8462D54633A'::uuid AS changed_by_system,
-                      '3296007F-F9EA-4BD0-B6A6-C8462D54633A'::text AS change_operation_id;
-
-                    DELETE FROM dbo.rolepackage
-                    WHERE roleid = '69c4397a-9e34-4e73-9f69-534bc1bb74c8' -- Kontaktperson NUF
-                    AND packageid = '5dad616e-5538-4e3f-b15a-bae33f06c99f' -- Delegerbare Maskinporten scopes - NUF
-                    AND entityvariantid IS NULL;
-
                 END IF;
             END;
             $$;
