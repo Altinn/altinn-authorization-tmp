@@ -66,6 +66,23 @@ export function getAuthorizeClientToken(client) {
     return token;
 }
 
+export function getConsentToken(org) {
+    const tokenOpts = {
+        scopes: "altinn:consentrequests.write",
+        orgNo: org,
+    }
+    const token = getEnterpriseToken(tokenOpts);
+    return token;
+}
+
+export function getApproveToken(userId) {
+    const tokenOptions = {
+        scopes: "altinn:portal/enduser",
+        userId: userId
+    }
+    return getPersonalToken(tokenOptions);
+}
+
 export function buildOptions(mylabels = labels) {
     let options = {
         summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(95)', 'p(99)', 'count'],

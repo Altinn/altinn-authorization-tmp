@@ -26,7 +26,8 @@ export function setup() {
 }
 
 export default function (token) {
-    const systemUser = randomItem(systemUsers);
+    //const systemUser = randomItem(systemUsers);
+    const systemUser = systemUsers[__ITER ]
     getAuthorizedParties(systemUser, token);
 }
 
@@ -42,6 +43,9 @@ function getAuthorizedParties(systemUser, token) {
     const url = new URL(getAuthorizedPartiesUrl);
     describe('Get authorized parties', () => {
         let r = http.post(url.toString(), JSON.stringify(body), params);
+        if (r.timings.duration > 2000.0) {
+            console.log(__ITER, systemUser.systemuserUuid, r.timings.duration, r.json().length);
+        }
         if (r.status != 200) {
             console.log(r.status, r.status_text);
             console.log(r.body);
