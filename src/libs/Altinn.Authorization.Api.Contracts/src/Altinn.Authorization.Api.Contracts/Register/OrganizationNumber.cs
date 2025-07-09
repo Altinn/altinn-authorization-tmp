@@ -142,4 +142,8 @@ public class OrganizationNumber : ISpanParsable<OrganizationNumber>,
             writer.WriteStringValue(value._value);
         }
     }
+
+    public override bool Equals(object? obj) => Equals(obj as OrganizationNumber);
+
+    public override int GetHashCode() => _value.GetHashCode();
 }
