@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
 using Microsoft.FeatureManagement;
 
