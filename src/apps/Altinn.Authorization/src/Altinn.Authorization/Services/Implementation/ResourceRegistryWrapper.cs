@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Models.Register;
 using Altinn.Authorization.Models.ResourceRegistry;
@@ -22,7 +14,7 @@ using Altinn.ResourceRegistry.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
-namespace Altinn.Platform.Authorization.Services.Implementation
+namespace Altinn.Authorization.Services.Implementation
 {
     /// <summary>
     /// Wrapper for resource registry
@@ -85,7 +77,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     Stream policyBlob = await response.Content.ReadAsStreamAsync(cancellationToken);
                     using (policyBlob)
                     {
-                        policy = (policyBlob.Length > 0) ? PolicyHelper.ParsePolicy(policyBlob) : null;
+                        policy = policyBlob.Length > 0 ? PolicyHelper.ParsePolicy(policyBlob) : null;
                     }
 
                     PutInCache(cacheKey, _generalSettings.PolicyCacheTimeout, policy);
