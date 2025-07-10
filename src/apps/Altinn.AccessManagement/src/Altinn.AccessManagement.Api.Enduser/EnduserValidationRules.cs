@@ -259,7 +259,7 @@ public static class EnduserValidationRules
         };
 
         /// <summary>
-        /// Checks the list of packages all are assignable to the recipient entity type.
+        /// Checks the list of packages that all are assignable to the recipient entity type.
         /// </summary>
         /// <param name="packages">list of packages</param>
         /// <param name="toEntity">entity the assignment is to be made to</param>
@@ -270,14 +270,17 @@ public static class EnduserValidationRules
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
 
-            var packagesNotAssignableToOrg = packages
+            if (toEntity.Type.Id == EntityTypeId.Organization)
+            {
+                var packagesNotAssignableToOrg = packages
                 .Where(p => p.Package.Urn.Equals("urn:altinn:accesspackage:hovedadministrator"))
                 .Select(p => p.Package.Urn);
 
-            if (toEntity.Type.Id == EntityTypeId.Organization && packagesNotAssignableToOrg.Any())
-            {
-                return (ref ValidationErrorBuilder errors) =>
-                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableToOrg)} are not assignable to an organization.")]);
+                if (packagesNotAssignableToOrg.Any())
+                {
+                    return (ref ValidationErrorBuilder errors) =>
+                        errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableToOrg)} are not assignable to an organization.")]);
+                }
             }
 
             return null;
