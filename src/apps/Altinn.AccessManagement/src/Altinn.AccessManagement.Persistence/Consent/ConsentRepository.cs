@@ -1,8 +1,9 @@
-﻿using System.Data;
-using Altinn.AccessManagement.Core.Models.Consent;
+﻿using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
+using Altinn.AccessManagement.Persistence.Extensions;
 using Npgsql;
 using NpgsqlTypes;
+using System.Data;
 
 namespace Altinn.AccessManagement.Persistence.Consent
 {
@@ -118,19 +119,12 @@ namespace Altinn.AccessManagement.Persistence.Consent
             command.CommandText = consentRquestQuery;
             command.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid,  consentRequest.Id);
             command.Parameters.AddWithValue("templateId", NpgsqlDbType.Text, consentRequest.TemplateId);
-       
-            if (consentRequest.TemplateVersion != null)
-            {
-                command.Parameters.AddWithValue("templateVersion", NpgsqlDbType.Integer, consentRequest.TemplateVersion);
-            }
-            else
-            {
-                command.Parameters.AddWithValue("templateVersion", NpgsqlDbType.Integer, DBNull.Value);
-            }
+
+            command.Parameters.Add<int?>("templateVersion", NpgsqlDbType.Integer).TypedValue = consentRequest.TemplateVersion;
 
             if (consentRequest.From.IsPartyUuid(out Guid fromPartyGuid))
             {
-                command.Parameters.AddWithValue("fromPartyUuid", NpgsqlDbType.Uuid, fromPartyGuid);
+                command.Parameters.Add<Guid>("fromPartyUuid", NpgsqlDbType.Uuid).TypedValue = fromPartyGuid;
             }
             else
             {
@@ -139,48 +133,41 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             if (consentRequest.HandledBy != null && consentRequest.HandledBy.IsPartyUuid(out Guid handledByPartyGuid))
             {
-                command.Parameters.AddWithValue("handledByPartyUuid", NpgsqlDbType.Uuid, handledByPartyGuid);
+                command.Parameters.Add<Guid?>("handledByPartyUuid", NpgsqlDbType.Uuid).TypedValue = handledByPartyGuid;
             }
             else
             {
-                command.Parameters.AddWithValue("handledByPartyUuid", NpgsqlDbType.Uuid, DBNull.Value);
+                command.Parameters.Add<Guid?>("handledByPartyUuid", NpgsqlDbType.Uuid).TypedValue = null;
             }
 
             if (consentRequest.RequiredDelegator != null && consentRequest.RequiredDelegator.IsPartyUuid(out Guid requiredDelegatorGuid))
             {
-                command.Parameters.AddWithValue("requiredDelegatorUuid", NpgsqlDbType.Uuid, requiredDelegatorGuid);
+                command.Parameters.Add<Guid?>("requiredDelegatorUuid", NpgsqlDbType.Uuid).TypedValue = requiredDelegatorGuid;
             }
             else
             {
-                command.Parameters.AddWithValue("requiredDelegatorUuid", NpgsqlDbType.Uuid, DBNull.Value);
+                command.Parameters.Add<Guid?>("requiredDelegatorUuid", NpgsqlDbType.Uuid).TypedValue = null;
             }
 
             if (consentRequest.To.IsPartyUuid(out Guid toPartyGuid))
             {
-                command.Parameters.AddWithValue("toPartyUuid", NpgsqlDbType.Uuid, toPartyGuid);
+                command.Parameters.Add<Guid?>("toPartyUuid", NpgsqlDbType.Uuid).TypedValue = toPartyGuid;
             }
             else
             {
                 throw new InvalidDataException("Invalid toPartyUuid");
             }
 
-            if (consentRequest.RequestMessage != null)
-            {
-                command.Parameters.AddWithValue("requestMessage", NpgsqlDbType.Hstore, consentRequest.RequestMessage);
-            }
-            else
-            {
-                command.Parameters.AddWithValue("requestMessage", NpgsqlDbType.Hstore, DBNull.Value);
-            }
+            command.Parameters.Add<Dictionary<string,string>>("requestMessage", NpgsqlDbType.Hstore).TypedValue = consentRequest.RequestMessage;
 
-            command.Parameters.AddWithValue("redirectUrl", NpgsqlDbType.Text, consentRequest.RedirectUrl);
+            command.Parameters.Add<string>("redirectUrl", NpgsqlDbType.Text).TypedValue = consentRequest.RedirectUrl;
 
-            command.Parameters.AddWithValue("validTo", NpgsqlDbType.TimestampTz, consentRequest.ValidTo.ToOffset(TimeSpan.Zero));
+            command.Parameters.Add<DateTimeOffset>("validTo", NpgsqlDbType.TimestampTz).TypedValue = consentRequest.ValidTo.ToOffset(TimeSpan.Zero);
+
             await command.PrepareAsync(cancellationToken);
             try
             { 
                 await command.ExecuteNonQueryAsync(cancellationToken);
-                await command.UnprepareAsync(cancellationToken);
             }
             catch (NpgsqlException ex) when (ex.SqlState == "23505")
             {
@@ -209,7 +196,6 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
                 await rightsCommand.PrepareAsync(cancellationToken);
                 await rightsCommand.ExecuteNonQueryAsync(cancellationToken);
-                await rightsCommand.UnprepareAsync(cancellationToken);
 
                 // Bulding up the query for the resource attributes. Typical this is only one, but in theory it can be multiple attributes identifying a resource.
                 List<string> values = [];
@@ -234,7 +220,6 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 resourceCommand.CommandText = $"INSERT INTO consent.resourceattribute (consentRightId, type, value, version) VALUES {string.Join(", ", values)}";
                 await resourceCommand.PrepareAsync(cancellationToken);
                 await resourceCommand.ExecuteNonQueryAsync(cancellationToken);
-                await resourceCommand.UnprepareAsync(cancellationToken);
 
                 if (consentRight.Metadata != null && consentRight.Metadata.Count > 0)
                 {
@@ -253,7 +238,6 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     metadatacommand.CommandText = $"INSERT INTO consent.metadata (consentrightid, id, value) VALUES {string.Join(", ", metaValues)}";
                     await metadatacommand.PrepareAsync(cancellationToken);
                     await metadatacommand.ExecuteNonQueryAsync(cancellationToken);
-                    await metadatacommand.UnprepareAsync(cancellationToken);
                 }
             }
 
@@ -274,7 +258,6 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             await eventCommand.PrepareAsync(cancellationToken);
             await eventCommand.ExecuteNonQueryAsync(cancellationToken);
-            await eventCommand.UnprepareAsync(cancellationToken);
 
             await tx.CommitAsync(cancellationToken); 
 
