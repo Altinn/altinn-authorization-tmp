@@ -130,22 +130,24 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 throw new InvalidDataException("Invalid fromPartyUuid");
             }
 
+            var handledByParam = command.Parameters.Add<Guid?>("handledByPartyUuid", NpgsqlDbType.Uuid);
             if (consentRequest.HandledBy != null && consentRequest.HandledBy.IsPartyUuid(out Guid handledByPartyGuid))
             {
-                command.Parameters.Add<Guid?>("handledByPartyUuid", NpgsqlDbType.Uuid).TypedValue = handledByPartyGuid;
+                handledByParam.TypedValue = handledByPartyGuid;
             }
             else
             {
-                command.Parameters.Add<Guid?>("handledByPartyUuid", NpgsqlDbType.Uuid).TypedValue = null;
+                handledByParam.TypedValue = null;
             }
 
+            var requiredParam = command.Parameters.Add<Guid?>("requiredDelegatorUuid", NpgsqlDbType.Uuid);
             if (consentRequest.RequiredDelegator != null && consentRequest.RequiredDelegator.IsPartyUuid(out Guid requiredDelegatorGuid))
             {
-                command.Parameters.Add<Guid?>("requiredDelegatorUuid", NpgsqlDbType.Uuid).TypedValue = requiredDelegatorGuid;
+                requiredParam.TypedValue = requiredDelegatorGuid;
             }
             else
             {
-                command.Parameters.Add<Guid?>("requiredDelegatorUuid", NpgsqlDbType.Uuid).TypedValue = null;
+                requiredParam.TypedValue = null;
             }
 
             if (consentRequest.To.IsPartyUuid(out Guid toPartyGuid))
