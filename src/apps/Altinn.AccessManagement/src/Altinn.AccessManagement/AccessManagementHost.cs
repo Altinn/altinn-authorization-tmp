@@ -131,6 +131,7 @@ internal static partial class AccessManagementHost
 
         builder.Services.AddHostedService<AltinnRoleHostedService>();
         builder.Services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
+        builder.Services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
 
         return builder;
     }

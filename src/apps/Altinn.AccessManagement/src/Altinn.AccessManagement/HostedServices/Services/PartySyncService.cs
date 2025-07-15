@@ -19,6 +19,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 {
     private readonly ILogger<RegisterHostedService> _logger;
     private readonly IIngestService _ingestService;
+    private readonly IAltinnRegister _register;
     private readonly IEntityTypeRepository _entityTypeRepository;
     private readonly IEntityVariantRepository _entityVariantRepository;
     private readonly IEntityLookupRepository _lookupRepository;

@@ -91,23 +91,22 @@ namespace Altinn.AccessManagement.HostedServices
 
         private async Task SyncAltinnClientRoles(LeaseResult<AltinnClientRoleLease> ls, ChangeRequestOptions options, CancellationToken cancellationToken)
         {
-            var allAltinnRoleStatus = await statusService.GetOrCreateRecord(Guid.Parse("3CB11D2A-AEC0-4895-91E0-9976C1BE84AF"), "accessmgmt-sync-sblbridge-clientrole", options, 5);
-            var canRunAllAltinnRoleSync = await statusService.TryToRun(allAltinnRoleStatus, options);
+            var altinnClientRoleStatus = await statusService.GetOrCreateRecord(Guid.Parse("3CB11D2A-AEC0-4895-91E0-9976C1BE84AF"), "accessmgmt-sync-sblbridge-clientrole", options, 5);
+            var canRunAltinnClientRoleSync = await statusService.TryToRun(altinnClientRoleStatus, options);
 
             try
             {
-                if (canRunAllAltinnRoleSync)
+                if (canRunAltinnClientRoleSync)
                 {
                     await altinnClientRoleSyncService.SyncClientRoles(ls, cancellationToken);
-                    await statusService.RunSuccess(allAltinnRoleStatus, options);
+                    await statusService.RunSuccess(altinnClientRoleStatus, options);
                 }
             }
             catch (Exception ex)
             {
                 Log.SyncError(_logger, ex);
-                await statusService.RunFailed(allAltinnRoleStatus, ex, options);
+                await statusService.RunFailed(altinnClientRoleStatus, ex, options);
             }
-
         }
 
         private async Task SyncAllAltinnRoles(LeaseResult<AllAltinnRoleLease> ls, ChangeRequestOptions options, CancellationToken cancellationToken)

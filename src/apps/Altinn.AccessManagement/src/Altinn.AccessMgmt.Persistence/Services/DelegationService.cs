@@ -541,7 +541,7 @@ public class DelegationService(
         var delegationPackage = (await delegationPackageRepository.Get(delegationPackageFilter)).FirstOrDefault();
         if (delegationPackage != null)
         {
-            var res = await delegationPackageRepository.Delete(packageId, options, cancellationToken);
+            var res = await delegationPackageRepository.Delete(delegationPackage.Id, options, cancellationToken);
             return res > 0;
         }
         else
