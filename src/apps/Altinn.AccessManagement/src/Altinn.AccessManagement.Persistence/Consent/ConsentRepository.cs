@@ -180,6 +180,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
             try
             { 
                 await command.ExecuteNonQueryAsync(cancellationToken);
+                await command.UnprepareAsync(cancellationToken);
             }
             catch (NpgsqlException ex) when (ex.SqlState == "23505")
             {
@@ -208,6 +209,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
                 await rightsCommand.PrepareAsync(cancellationToken);
                 await rightsCommand.ExecuteNonQueryAsync(cancellationToken);
+                await rightsCommand.UnprepareAsync(cancellationToken);
 
                 // Bulding up the query for the resource attributes. Typical this is only one, but in theory it can be multiple attributes identifying a resource.
                 List<string> values = [];
@@ -232,6 +234,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 resourceCommand.CommandText = $"INSERT INTO consent.resourceattribute (consentRightId, type, value, version) VALUES {string.Join(", ", values)}";
                 await resourceCommand.PrepareAsync(cancellationToken);
                 await resourceCommand.ExecuteNonQueryAsync(cancellationToken);
+                await resourceCommand.UnprepareAsync(cancellationToken);
 
                 if (consentRight.Metadata != null && consentRight.Metadata.Count > 0)
                 {
@@ -250,6 +253,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     metadatacommand.CommandText = $"INSERT INTO consent.metadata (consentrightid, id, value) VALUES {string.Join(", ", metaValues)}";
                     await metadatacommand.PrepareAsync(cancellationToken);
                     await metadatacommand.ExecuteNonQueryAsync(cancellationToken);
+                    await metadatacommand.UnprepareAsync(cancellationToken);
                 }
             }
 
@@ -270,6 +274,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
             await eventCommand.PrepareAsync(cancellationToken);
             await eventCommand.ExecuteNonQueryAsync(cancellationToken);
+            await eventCommand.UnprepareAsync(cancellationToken);
 
             await tx.CommitAsync(cancellationToken); 
 
