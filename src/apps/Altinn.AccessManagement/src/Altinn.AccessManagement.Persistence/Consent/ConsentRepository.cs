@@ -117,9 +117,8 @@ namespace Altinn.AccessManagement.Persistence.Consent
             await using NpgsqlTransaction tx = await conn.BeginTransactionAsync(cancellationToken);
             await using NpgsqlCommand command = conn.CreateCommand();
             command.CommandText = consentRquestQuery;
-            command.Parameters.AddWithValue(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid,  consentRequest.Id);
-            command.Parameters.AddWithValue("templateId", NpgsqlDbType.Text, consentRequest.TemplateId);
-
+            command.Parameters.Add<Guid>(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid).TypedValue = consentRequest.Id;
+            command.Parameters.Add<string>("templateId", NpgsqlDbType.Text).TypedValue = consentRequest.TemplateId;
             command.Parameters.Add<int?>("templateVersion", NpgsqlDbType.Integer).TypedValue = consentRequest.TemplateVersion;
 
             if (consentRequest.From.IsPartyUuid(out Guid fromPartyGuid))
