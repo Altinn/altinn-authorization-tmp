@@ -77,7 +77,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 @contextId,
                 @consentRequestId, 
                 @language)
-                RETURNING consentRequestId;
+                RETURNING consentRequestId
                 ";
             Guid contextId = Guid.CreateVersion7();
             await using NpgsqlCommand contextCommand = conn.CreateCommand();
@@ -108,7 +108,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 @templateId, 
                 @templateVersion, 
                 @redirectUrl)
-                RETURNING consentRequestId;
+                RETURNING consentRequestId
                 ";
 
             await using NpgsqlConnection conn = await _db.OpenConnectionAsync(default);
@@ -184,7 +184,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                 @consentRequestId, 
                 @action
                 )
-                RETURNING consentRightId;
+                RETURNING consentRightId
                 ";
 
                 await using NpgsqlCommand rightsCommand = conn.CreateCommand();
