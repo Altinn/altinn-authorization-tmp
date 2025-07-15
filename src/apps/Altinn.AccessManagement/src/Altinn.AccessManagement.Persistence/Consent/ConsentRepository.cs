@@ -189,7 +189,9 @@ namespace Altinn.AccessManagement.Persistence.Consent
 
                 await using NpgsqlCommand rightsCommand = conn.CreateCommand();
                 rightsCommand.CommandText = rightsQuery;
-                rightsCommand.Parameters.Add<Guid>(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid).TypedValue = consentRightGuid;
+                rightsCommand.Parameters.Add<Guid>(PARAM_CONSENT_RIGHT_ID, NpgsqlDbType.Uuid).TypedValue = consentRightGuid;
+                rightsCommand.Parameters.Add<Guid>(PARAM_CONSENT_REQUEST_ID, NpgsqlDbType.Uuid).TypedValue = consentRequest.Id;
+
                 rightsCommand.Parameters.Add<List<string>>("action", NpgsqlDbType.Array | NpgsqlDbType.Text).TypedValue = consentRight.Action;
 
                 await rightsCommand.PrepareAsync(cancellationToken);
