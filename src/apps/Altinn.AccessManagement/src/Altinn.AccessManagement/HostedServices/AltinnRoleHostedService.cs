@@ -24,14 +24,16 @@ namespace Altinn.AccessManagement.HostedServices
         IStatusService statusService,
         ILogger<AltinnRoleHostedService> logger,
         IAllAltinnRoleSyncService allAltinnRoleSyncService,
-        IAltinnClientRoleSyncService altinnClientRoleSyncService) : IHostedService, IDisposable
+        IAltinnClientRoleSyncService altinnClientRoleSyncService,
+        IAltinnBankruptcyEstateRoleSyncService altinnBankruptcyEstateRoleSyncService) : IHostedService, IDisposable
     {
         private readonly IAltinnLease _lease = lease;
         private readonly ILogger<AltinnRoleHostedService> _logger = logger;
         private readonly IFeatureManager _featureManager = featureManager;
-        private readonly IStatusService statusService = statusService;
-        private readonly IAllAltinnRoleSyncService allAltinnRoleSyncService = allAltinnRoleSyncService;
-        private readonly IAltinnClientRoleSyncService altinnClientRoleSyncService = altinnClientRoleSyncService;
+        private readonly IStatusService _statusService = statusService;
+        private readonly IAllAltinnRoleSyncService _allAltinnRoleSyncService = allAltinnRoleSyncService;
+        private readonly IAltinnClientRoleSyncService _altinnClientRoleSyncService = altinnClientRoleSyncService;
+        private readonly IAltinnBankruptcyEstateRoleSyncService _altinnBankruptcyEstateRoleSyncService = altinnBankruptcyEstateRoleSyncService;
 
         private Timer _timerAltinnRoles = null;
         private readonly CancellationTokenSource _stop = new();
@@ -82,6 +84,17 @@ namespace Altinn.AccessManagement.HostedServices
 
                     await SyncAltinnClientRoles(ls, options, cancellationToken);
                 }
+
+                if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesAltinnBancruptcyEstateRoleSync))
+                {
+                    await using var ls = await _lease.TryAquireNonBlocking<AltinnBankruptcyEstateRoleLease>("access_management_altinnbancruptcyestaterole_sync", cancellationToken);
+                    if (!ls.HasLease || cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    await SyncAltinnBancruptcyEstateRoles(ls, options, cancellationToken);
+                }
             }
             catch (Exception ex)
             {
@@ -89,43 +102,63 @@ namespace Altinn.AccessManagement.HostedServices
             }            
         }
 
+        private async Task SyncAltinnBancruptcyEstateRoles(LeaseResult<AltinnBankruptcyEstateRoleLease> ls, ChangeRequestOptions options, CancellationToken cancellationToken)
+        {
+            var altinnBankruptcyEstateRoleStatus = await _statusService.GetOrCreateRecord(Guid.Parse("90A9EF96-3488-43A0-9030-C88CEDC6D4A7"), "accessmgmt-sync-sblbridge-bancruptcyestaterole", options, 5);
+            var canRunAltinnBankruptcyEstateRoleSync = await _statusService.TryToRun(altinnBankruptcyEstateRoleStatus, options);
+
+            try
+            {
+                if (canRunAltinnBankruptcyEstateRoleSync)
+                {
+                    await altinnBankruptcyEstateRoleSyncService.SyncBankruptcyEstateRoles(ls, cancellationToken);
+                    await _statusService.RunSuccess(altinnBankruptcyEstateRoleStatus, options);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.SyncError(_logger, ex);
+                await _statusService.RunFailed(altinnBankruptcyEstateRoleStatus, ex, options);
+            }
+        }
+
         private async Task SyncAltinnClientRoles(LeaseResult<AltinnClientRoleLease> ls, ChangeRequestOptions options, CancellationToken cancellationToken)
         {
-            var altinnClientRoleStatus = await statusService.GetOrCreateRecord(Guid.Parse("3CB11D2A-AEC0-4895-91E0-9976C1BE84AF"), "accessmgmt-sync-sblbridge-clientrole", options, 5);
-            var canRunAltinnClientRoleSync = await statusService.TryToRun(altinnClientRoleStatus, options);
+            var altinnClientRoleStatus = await _statusService.GetOrCreateRecord(Guid.Parse("3CB11D2A-AEC0-4895-91E0-9976C1BE84AF"), "accessmgmt-sync-sblbridge-clientrole", options, 5);
+            var canRunAltinnClientRoleSync = await _statusService.TryToRun(altinnClientRoleStatus, options);
 
             try
             {
                 if (canRunAltinnClientRoleSync)
                 {
-                    await altinnClientRoleSyncService.SyncClientRoles(ls, cancellationToken);
-                    await statusService.RunSuccess(altinnClientRoleStatus, options);
+                    await _altinnClientRoleSyncService.SyncClientRoles(ls, cancellationToken);
+                    await _statusService.RunSuccess(altinnClientRoleStatus, options);
                 }
             }
             catch (Exception ex)
             {
                 Log.SyncError(_logger, ex);
-                await statusService.RunFailed(altinnClientRoleStatus, ex, options);
+                await _statusService.RunFailed(altinnClientRoleStatus, ex, options);
             }
         }
 
         private async Task SyncAllAltinnRoles(LeaseResult<AllAltinnRoleLease> ls, ChangeRequestOptions options, CancellationToken cancellationToken)
         {
-            var allAltinnRoleStatus = await statusService.GetOrCreateRecord(Guid.Parse("8B05CEB5-43D4-4FF1-A831-4790F5792B93"), "accessmgmt-sync-sblbridge-altinnrole", options, 5);
-            var canRunAllAltinnRoleSync = await statusService.TryToRun(allAltinnRoleStatus, options);
+            var allAltinnRoleStatus = await _statusService.GetOrCreateRecord(Guid.Parse("8B05CEB5-43D4-4FF1-A831-4790F5792B93"), "accessmgmt-sync-sblbridge-altinnrole", options, 5);
+            var canRunAllAltinnRoleSync = await _statusService.TryToRun(allAltinnRoleStatus, options);
 
             try
             {
                 if (canRunAllAltinnRoleSync)
                 {
-                    await allAltinnRoleSyncService.SyncAllAltinnRoles(ls, cancellationToken);
-                    await statusService.RunSuccess(allAltinnRoleStatus, options);
+                    await _allAltinnRoleSyncService.SyncAllAltinnRoles(ls, cancellationToken);
+                    await _statusService.RunSuccess(allAltinnRoleStatus, options);
                 }
             }
             catch (Exception ex)
             {
                 Log.SyncError(_logger, ex);
-                await statusService.RunFailed(allAltinnRoleStatus, ex, options);
+                await _statusService.RunFailed(allAltinnRoleStatus, ex, options);
             }
             
         }

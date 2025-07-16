@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.Core.Models.Authentication;
+﻿using Altinn.AccessManagement.Core.Models.Authentication;
 using Altinn.AccessManagement.Enduser.Services;
 using Altinn.AccessManagement.HostedServices.Contracts;
 using Altinn.AccessManagement.HostedServices.Leases;
@@ -19,7 +19,7 @@ using Microsoft.FeatureManagement;
 namespace Altinn.AccessManagement.HostedServices.Services
 {
     /// <inheritdoc />
-    public class AltinnClientRoleSyncService : BaseSyncService, IAltinnClientRoleSyncService
+    public class AltinnBankruptcyEstateRoleSyncService : BaseSyncService, IAltinnBankruptcyEstateRoleSyncService
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AltinnClientRoleSyncService"/> class.
@@ -30,12 +30,12 @@ namespace Altinn.AccessManagement.HostedServices.Services
         /// <param name="connectionService">The connection service used for managing connections.</param>
         /// <param name="logger">The logger instance for logging information and errors.</param>
         /// <param name="featureManager">The feature manager for handling feature flags.</param>
-        public AltinnClientRoleSyncService(
+        public AltinnBankruptcyEstateRoleSyncService(
             IAltinnLease lease,
             IAltinnSblBridge role,
             IDelegationService delegationService,
             IConnectionService connectionService,
-            ILogger<AltinnClientRoleSyncService> logger,
+            ILogger<AltinnBankruptcyEstateRoleSyncService> logger,
             IFeatureManager featureManager           
         ) : base(lease, featureManager)
         {
@@ -48,13 +48,13 @@ namespace Altinn.AccessManagement.HostedServices.Services
         private readonly IAltinnSblBridge _role;
         private readonly IDelegationService _delegationService;
         private readonly IConnectionService _connectionService;
-        private readonly ILogger<AltinnClientRoleSyncService> _logger;
+        private readonly ILogger<AltinnBankruptcyEstateRoleSyncService> _logger;
 
 
         /// <inheritdoc />
-        public async Task SyncClientRoles(LeaseResult<AltinnClientRoleLease> ls, CancellationToken cancellationToken)
+        public async Task SyncBankruptcyEstateRoles(LeaseResult<AltinnBankruptcyEstateRoleLease> ls, CancellationToken cancellationToken)
         {
-            var clientDelegations = await _role.StreamRoles("12", ls.Data?.AltinnClientRoleStreamNextPageLink, cancellationToken);
+            var clientDelegations = await _role.StreamRoles("14", ls.Data?.AltinnBankruptcyEstateRoleStreamNextPageLink, cancellationToken);
 
             await foreach (var page in clientDelegations)
             {
@@ -84,6 +84,8 @@ namespace Altinn.AccessManagement.HostedServices.Services
                             ChangedAt = item.DelegationChangeDateTime ?? DateTime.UtcNow,
                         };
 
+                        //TODO: Fix the actual work of BAnkruptcyEstate delegations
+                        /*
                         string packageUrn = GetClientPackageFromRoleTypeCode(item.RoleTypeCode, cancellationToken);
 
                         // Convert RoleDelegationModel to Client Delegation 
@@ -92,8 +94,8 @@ namespace Altinn.AccessManagement.HostedServices.Services
                         if (item.DelegationAction == DelegationAction.Revoke)
                         {
                             // If the action is Revoke, we should delete the delegation
-                            bool deleted = await DeleteClientDelegation(item.FromPartyUuid, item.ToUserPartyUuid ?? Guid.Empty, item.PerformedByPartyUuid ?? Guid.Empty, packageUrn, options, cancellationToken);
-                            if (!deleted)
+                            int deleted = await _delegationService.RevokeClientDelegation(delegationData, options, cancellationToken);
+                            if (deleted <= 0)
                             {
                                 _logger.LogWarning(
                                     "Failed to delete delegation for FromParty: {FromParty}, ToParty: {ToParty}, Facilitator: {Facilitator}, PackageUrn: {packageUrn}", 
@@ -116,9 +118,9 @@ namespace Altinn.AccessManagement.HostedServices.Services
                                 continue;
                             }
 
-                            IEnumerable<Delegation> delegations = await _delegationService.ImportClientDelegation(delegationData, options);
+                            IEnumerable<Delegation> delegations = await _delegationService.ImportClientDelegation(delegationData, options, cancellationToken);
                         }
-                            
+                        */                            
                     }
                 }
 
@@ -127,54 +129,8 @@ namespace Altinn.AccessManagement.HostedServices.Services
                     return;
                 }
 
-                await UpdateLease(ls, data => data.AltinnClientRoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
+                await UpdateLease(ls, data => data.AltinnBankruptcyEstateRoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
             }
-        }
-
-        private async Task<bool> DeleteClientDelegation(ImportClientDelegationRequestDto delegationData, ChangeRequestOptions options, CancellationToken cancellationToken = default)
-        {
-            var dbResult = await _connectionService.Get(fromId: delegationData.ClientId , toId: delegationData.AgentId, facilitatorId: delegationData.Facilitator);
-            
-            foreach (var connection in dbResult)
-            {
-                if (connection.PackageUrn == delegationData.RolePackages.FirstOrDefault()?.PackageUrn)
-                {
-                    return await _delegationService.DeleteClientDelegation(connection.Id, options, cancellationToken);
-                }
-            }
-
-            IEnumerable<ExtDelegation> delegations = await _delegationService.Get<ExtDelegation>() //fromParty, toParty, facilitatorId, cancellationToken);
-            if (connections?.Count() == 0)
-            {
-                // No connection found
-                return false;
-            }
-
-            //TODO: Find package Guid from packageUrn
-            Guid packageId = Guid.Empty;
-            
-            //find packages in the connections
-            bool packageFound = false;
-            foreach (var connection in connections)
-            {
-                connection.
-
-                if (package.Id == packageId)
-                {
-                    packageFound = true;
-                    break;
-                }
-            }
-            if (!packageFound)
-            {
-                // No package found
-                return false;
-            }
-
-            var res = await delegationRepository.Delete(delegationId, options: options);
-            return res > 0;
-            
-            return false;            
         }
 
         private async Task<ImportClientDelegationRequestDto> CreateClientDelegationRequest(RoleDelegationModel delegationModel, CancellationToken cancellationToken = default)
