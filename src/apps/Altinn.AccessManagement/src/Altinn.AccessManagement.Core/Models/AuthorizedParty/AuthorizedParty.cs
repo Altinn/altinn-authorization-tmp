@@ -1,3 +1,4 @@
+using Altinn.Authorization.Shared;
 ﻿using Altinn.AccessManagement.Core.Enums;
 using Altinn.Platform.Register.Models;
 

@@ -1,3 +1,4 @@
+using Altinn.Authorization.Shared;
 ﻿using System.Globalization;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Urn;

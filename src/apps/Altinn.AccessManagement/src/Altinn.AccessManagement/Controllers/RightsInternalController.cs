@@ -8,9 +8,9 @@ using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessManagement.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Rights;
 using Altinn.AccessManagement.Utilities;
-using AutoMapper;
+using Altinn.AccessManagement.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
@@ -25,7 +25,6 @@ namespace Altinn.AccessManagement.Controllers
     public class RightsInternalController : ControllerBase
     {
         private readonly ILogger _logger;
-        private readonly IMapper _mapper;
         private readonly IPolicyInformationPoint _pip;
         private readonly ISingleRightsService _rights;
         private readonly IAltinn2RightsService _rightsForAltinn2;
@@ -38,10 +37,9 @@ namespace Altinn.AccessManagement.Controllers
         /// <param name="policyInformationPoint">The policy information point</param>
         /// <param name="singleRightsService">Service implementation for providing rights operations for BFF and external integrations</param>
         /// <param name="rightsForAltinn2">Service implementation for providing rights operations for Altinn 2 integrations</param>
-        public RightsInternalController(ILogger<RightsInternalController> logger, IMapper mapper, IPolicyInformationPoint policyInformationPoint, ISingleRightsService singleRightsService, IAltinn2RightsService rightsForAltinn2)
+        public RightsInternalController(ILogger<RightsInternalController> logger,  IPolicyInformationPoint policyInformationPoint, ISingleRightsService singleRightsService, IAltinn2RightsService rightsForAltinn2)
         {
             _logger = logger;
-            _mapper = mapper;
             _pip = policyInformationPoint;
             _rights = singleRightsService;
             _rightsForAltinn2 = rightsForAltinn2;

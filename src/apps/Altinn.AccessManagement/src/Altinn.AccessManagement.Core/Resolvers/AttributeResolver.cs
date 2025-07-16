@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 
 namespace Altinn.AccessManagement.Core.Resolvers;
 

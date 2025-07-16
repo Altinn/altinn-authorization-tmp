@@ -1,14 +1,15 @@
 using System.Net.Mime;
+using Altinn.AccessManagement.Api.Enduser.Mappers;
 using Altinn.AccessManagement.Api.Enduser.Models;
+using Altinn.AccessManagement.Api.Enduser.Services;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Enduser.Services;
 using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Connection;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,35 +24,37 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [Route("accessmanagement/api/v1/enduser/connections")]
 [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-public class ConnectionsController(IEnduserConnectionService connectionService) : ControllerBase
+public class ConnectionsController(ConnectionAdapter connectionAdapter) : ControllerBase
 {
-    private IEnduserConnectionService ConnectionService { get; } = connectionService;
+    private ConnectionAdapter ConnectionService { get; } = connectionAdapter;
 
     /// <summary>
     /// Get connections between the authenticated user's selected party and the specified target party.
     /// </summary>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-    [ProducesResponseType<PaginatedResult<CompactRelationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<PaginatedResult<CompactConnectionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetConnections([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetConnections([FromQuery] ConnectionInputDto connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
         if (EnduserValidationRules.EnduserReadConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
 
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
-        var result = await ConnectionService.Get(fromUuid, toUuid, cancellationToken: cancellationToken);
+        var coreInput = ConnectionMappers.ToCore(connection);
+        var fromId = Guid.TryParse(coreInput.From, out var fromGuid) ? fromGuid : null as Guid?;
+        var toId = Guid.TryParse(coreInput.To, out var toGuid) ? toGuid : null as Guid?;
+        var result = await ConnectionService.Get(fromId, toId, cancellationToken: cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
         }
 
-        return Ok(PaginatedResult.Create(result.Value, null));
+        var dtos = LegacyBridgeMappers.ToDto(result.Value);
+        return Ok(PaginatedResult.Create(dtos, null));
     }
 
     /// <summary>
@@ -60,26 +63,28 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [HttpPost]
     [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ProducesResponseType<Assignment>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> AddAssignment([FromQuery] ConnectionInput connection, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddAssignment([FromQuery] ConnectionInputDto connection, CancellationToken cancellationToken = default)
     {
         if (EnduserValidationRules.EnduserAddConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
 
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
-        var result = await ConnectionService.AddAssignment(fromUuid, toUuid, "rettighetshaver", cancellationToken);
+        var coreInput = ConnectionMappers.ToCore(connection);
+        var fromId = Guid.TryParse(coreInput.From, out var fromGuid) ? fromGuid : null as Guid?;
+        var toId = Guid.TryParse(coreInput.To, out var toGuid) ? toGuid : null as Guid?;
+        var result = await ConnectionService.AddAssignment(fromId!.Value, toId!.Value, "rettighetshaver", cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
         }
 
-        return Ok(result.Value);
+        var dto = LegacyBridgeMappers.ToDto(result.Value);
+        return Ok(dto);
     }
 
     /// <summary>
@@ -92,16 +97,17 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RemoveAssignment([FromQuery] ConnectionInput connection, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> RemoveAssignment([FromQuery] ConnectionInputDto connection, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
         if (EnduserValidationRules.EnduserRemoveConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
 
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
-        problem = await ConnectionService.RemoveAssignment(fromUuid, toUuid, "rettighetshaver", cascade, cancellationToken);
+        var coreInput = ConnectionMappers.ToCore(connection);
+        var fromId = Guid.TryParse(coreInput.From, out var fromGuid) ? fromGuid : null as Guid?;
+        var toId = Guid.TryParse(coreInput.To, out var toGuid) ? toGuid : null as Guid?;
+        problem = await ConnectionService.RemoveAssignment(fromId!.Value, toId!.Value, "rettighetshaver", cascade, cancellationToken);
         if (problem is { })
         {
             return problem.ToActionResult();
@@ -116,26 +122,28 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [HttpGet("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
     [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
-    [ProducesResponseType<PaginatedResult<PackagePermission>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<PaginatedResult<PackagePermissionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetPackages([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetPackages([FromQuery] ConnectionInputDto connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
         if (EnduserValidationRules.EnduserReadConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
 
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
-        var result = await ConnectionService.GetPackages(fromUuid, toUuid, cancellationToken);
+        var coreInput = ConnectionMappers.ToCore(connection);
+        var fromId = Guid.TryParse(coreInput.From, out var fromGuid) ? fromGuid : null as Guid?;
+        var toId = Guid.TryParse(coreInput.To, out var toGuid) ? toGuid : null as Guid?;
+        var result = await ConnectionService.GetPackages(fromId, toId, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
         }
 
-        return Ok(PaginatedResult.Create(result.Value, null));
+        var dtos = LegacyBridgeMappers.ToDto(result.Value);
+        return Ok(PaginatedResult.Create(dtos, null));
     }
 
     /// <summary>
@@ -144,27 +152,28 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [HttpPost("accesspackages")]
     [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ProducesResponseType<AssignmentPackage>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AssignmentPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> AddPackages([FromQuery] ConnectionInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddPackages([FromQuery] ConnectionInputDto connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
     {
         if (EnduserValidationRules.EnduserAddConnectionPackage(connection.Party, connection.From, connection.To, packageId, package) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
 
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
+        var coreInput = ConnectionMappers.ToCore(connection);
+        var fromId = Guid.TryParse(coreInput.From, out var fromGuid) ? fromGuid : null as Guid?;
+        var toId = Guid.TryParse(coreInput.To, out var toGuid) ? toGuid : null as Guid?;
         async Task<Result<AssignmentPackage>> AddPackage()
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.AddPackage(fromUuid, toUuid, "rettighetshaver", packageId.Value, cancellationToken);
+                return await ConnectionService.AddPackage(fromId!.Value, toId!.Value, "rettighetshaver", packageId.Value, cancellationToken);
             }
 
-            return await ConnectionService.AddPackage(fromUuid, toUuid, "rettighetshaver", package, cancellationToken);
+            return await ConnectionService.AddPackage(fromId!.Value, toId!.Value, "rettighetshaver", package, cancellationToken);
         }
 
         var result = await AddPackage();
@@ -173,7 +182,8 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
             return result.Problem.ToActionResult();
         }
 
-        return Ok(result.Value);
+        var dto = LegacyBridgeMappers.ToDto(result.Value);
+        return Ok(dto);
     }
 
     /// <summary>
@@ -186,23 +196,24 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RemovePackages([FromQuery] ConnectionInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> RemovePackages([FromQuery] ConnectionInputDto connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
     {
         if (EnduserValidationRules.EnduserRemoveConnectionPacakge(connection.Party, connection.From, connection.To, packageId, package) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
 
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
+        var coreInput = ConnectionMappers.ToCore(connection);
+        var fromId = Guid.TryParse(coreInput.From, out var fromGuid) ? fromGuid : null as Guid?;
+        var toId = Guid.TryParse(coreInput.To, out var toGuid) ? toGuid : null as Guid?;
         async Task<ValidationProblemInstance> RemovePackage()
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.RemovePackage(fromUuid, toUuid, "rettighetshaver", packageId.Value, cancellationToken);
+                return await ConnectionService.RemovePackage(fromId!.Value, toId!.Value, "rettighetshaver", packageId.Value, cancellationToken);
             }
 
-            return await ConnectionService.RemovePackage(fromUuid, toUuid, "rettighetshaver", package, cancellationToken);
+            return await ConnectionService.RemovePackage(fromId!.Value, toId!.Value, "rettighetshaver", package, cancellationToken);
         }
 
         problem = await RemovePackage();

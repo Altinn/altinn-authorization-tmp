@@ -1,3 +1,4 @@
+using Altinn.Authorization.Shared;
 using System.Text.Json.Serialization;
 
 namespace Altinn.AccessManagement.Core.Models.SblBridge

@@ -6,7 +6,7 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
-using AutoMapper;
+using Altinn.AccessManagement.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
@@ -21,7 +21,6 @@ namespace Altinn.AccessManagement.Controllers;
 public class AuthorizedPartiesController : ControllerBase
 {
     private readonly ILogger _logger;
-    private readonly IMapper _mapper;
     private readonly IAuthorizedPartiesService _authorizedPartiesService;
     private readonly IContextRetrievalService _contextRetrievalService;
 
@@ -29,17 +28,14 @@ public class AuthorizedPartiesController : ControllerBase
     /// Initializes a new instance of the <see cref="AuthorizedPartiesController"/> class.
     /// </summary>
     /// <param name="logger">logger service</param>
-    /// <param name="mapper">mapper service</param>
     /// <param name="authorizedPartiesService">service implementation for authorized parties</param>
     /// <param name="contextRetrievalService">service implementation for getting information regaring users, party etc.</param>
     public AuthorizedPartiesController(
         ILogger<AuthorizedPartiesController> logger,
-        IMapper mapper,
         IAuthorizedPartiesService authorizedPartiesService,
         IContextRetrievalService contextRetrievalService)
     {
         _logger = logger;
-        _mapper = mapper;
         _authorizedPartiesService = authorizedPartiesService;
         _contextRetrievalService = contextRetrievalService;
     }
@@ -69,13 +65,13 @@ public class AuthorizedPartiesController : ControllerBase
             int userId = AuthenticationHelper.GetUserId(HttpContext);
             if (userId != 0)
             {
-                return _mapper.Map<List<AuthorizedPartyExternal>>(await _authorizedPartiesService.GetAuthorizedPartiesForUser(userId, includeAltinn2, includeAuthorizedResourcesThroughRoles: false, cancellationToken));
+                return (await _authorizedPartiesService.GetAuthorizedPartiesForUser(userId, includeAltinn2, includeAuthorizedResourcesThroughRoles: false, cancellationToken)).ToExternal();
             }
 
             string systemUserId = AuthenticationHelper.GetSystemUserUuid(HttpContext);
             if (!string.IsNullOrWhiteSpace(systemUserId))
             {
-                return _mapper.Map<List<AuthorizedPartyExternal>>(await _authorizedPartiesService.GetAuthorizedPartiesForSystemUser(systemUserId, cancellationToken));
+                return (await _authorizedPartiesService.GetAuthorizedPartiesForSystemUser(systemUserId, cancellationToken)).ToExternal();
             }
 
             return Unauthorized();
@@ -126,7 +122,7 @@ public class AuthorizedPartiesController : ControllerBase
                 return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
             }
 
-            return _mapper.Map<AuthorizedPartyExternal>(authorizedParty);
+            return authorizedParty.ToExternal();
         }
         catch (Exception ex)
         {
@@ -168,7 +164,7 @@ public class AuthorizedPartiesController : ControllerBase
 
             List<AuthorizedParty> authorizedParties = await _authorizedPartiesService.GetAuthorizedPartiesForParty(subject.PartyId, includeAltinn2, includeAuthorizedResourcesThroughRoles: false, cancellationToken);
 
-            return _mapper.Map<List<AuthorizedPartyExternal>>(authorizedParties);
+            return authorizedParties.ToExternal();
         }
         catch (ArgumentException ex)
         {

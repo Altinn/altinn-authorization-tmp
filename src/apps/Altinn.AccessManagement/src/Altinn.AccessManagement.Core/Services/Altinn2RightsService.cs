@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Platform.Register.Enums;
 

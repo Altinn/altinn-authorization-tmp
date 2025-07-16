@@ -9,6 +9,10 @@
   <ItemGroup>
     <PackageReference Include="Altinn.Urn" />
     <PackageReference Include="Altinn.Urn.Swashbuckle" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
   </ItemGroup>
 
 </Project>

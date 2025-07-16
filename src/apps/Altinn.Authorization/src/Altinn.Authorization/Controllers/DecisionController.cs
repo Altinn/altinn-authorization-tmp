@@ -26,7 +26,7 @@ using Altinn.Platform.Authorization.Services.Interface;
 using Altinn.Platform.Authorization.Services.Interfaces;
 using Altinn.Platform.Register.Models;
 using Altinn.Platform.Storage.Interface.Models;
-using AutoMapper;
+using Altinn.Platform.Authorization.Mappers;
 using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -56,7 +56,6 @@ namespace Altinn.Platform.Authorization.Controllers
         private readonly IResourceRegistry _resourceRegistry;
         private readonly IRegisterService _registerService;
         private readonly IAccessListAuthorization _accessListAuthorization;
-        private readonly IMapper _mapper;
 
         private readonly SortedDictionary<string, AuthInfo> _appInstanceInfo = new();
 
@@ -75,7 +74,6 @@ namespace Altinn.Platform.Authorization.Controllers
         /// <param name="memoryCache">memory cache</param>
         /// <param name="eventLog">the authorization event logger</param>
         /// <param name="featureManager">the feature manager</param>
-        /// <param name="mapper">The model mapper</param>
         public DecisionController(
             IAccessManagementWrapper accessManagement,
             IResourceRegistry resourceRegistry,
@@ -88,8 +86,7 @@ namespace Altinn.Platform.Authorization.Controllers
             ILogger<DecisionController> logger,
             IMemoryCache memoryCache,
             IEventLog eventLog,
-            IFeatureManager featureManager,
-            IMapper mapper)
+            IFeatureManager featureManager)
         {
             _pdp = new PolicyDecisionPoint();
             _prp = policyRetrievalPoint;
@@ -103,7 +100,6 @@ namespace Altinn.Platform.Authorization.Controllers
             _resourceRegistry = resourceRegistry;
             _registerService = registerService;
             _accessListAuthorization = accessListAuthorization;
-            _mapper = mapper;
         }
 
         /// <summary>
@@ -159,9 +155,9 @@ namespace Altinn.Platform.Authorization.Controllers
         {
             try
             {
-                XacmlJsonRequestRoot jsonRequest = _mapper.Map<XacmlJsonRequestRoot>(authorizationRequest);
+                XacmlJsonRequestRoot jsonRequest = authorizationRequest.ToInternal();
                 XacmlJsonResponse xacmlResponse = await Authorize(jsonRequest.Request, true, cancellationToken);
-                return _mapper.Map<XacmlJsonResponseExternal>(xacmlResponse);
+                return xacmlResponse.ToExternal();
             }
             catch (Exception ex)
             {
@@ -181,7 +177,7 @@ namespace Altinn.Platform.Authorization.Controllers
 
                 XacmlContextResponse xacmlContextResponse = new XacmlContextResponse(result);
                 XacmlJsonResponse jsonResult = XacmlJsonXmlConverter.ConvertResponse(xacmlContextResponse);
-                return _mapper.Map<XacmlJsonResponseExternal>(jsonResult);
+                return jsonResult.ToExternal();
             }
         }
 

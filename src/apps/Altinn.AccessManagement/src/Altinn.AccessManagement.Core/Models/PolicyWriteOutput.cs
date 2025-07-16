@@ -1,3 +1,4 @@
+using Altinn.Authorization.Shared;
 ﻿using Altinn.AccessManagement.Core.Repositories.Interfaces;
 
 namespace Altinn.AccessManagement.Core.Models
