@@ -109,7 +109,7 @@ namespace Altinn.Authorization.Services.Implementation
         }
 
         /// <inheritdoc/>
-        public async Task<IEnumerable<AccessListInfoDto>> GetMembershipsForParty(PartyUrn partyUrn, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<AccessListInfoDto>> GetMembershipsForParty(PartyUrn.PartyUuid partyUrn, CancellationToken cancellationToken = default)
         {
             string cacheKey = $"AccListMemb|{partyUrn}";
             if (!_memoryCache.TryGetValue(cacheKey, out IEnumerable<AccessListInfoDto> memberships))

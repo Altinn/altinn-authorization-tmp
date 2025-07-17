@@ -494,7 +494,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
 
             if (policySubjectAttributes.ContainsKey(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessListAttribute) && subjectPartyUuid != Guid.Empty)
             {
-                PartyUrn partyUrn = PartyUrn.PartyUuid.Create(subjectPartyUuid);
+                PartyUrn.PartyUuid partyUrn = PartyUrn.PartyUuid.Create(subjectPartyUuid);
                 IEnumerable<AccessListInfoDto> memberShip = await _resourceRegistry.GetMembershipsForParty(partyUrn, cancellationToken);
                 if (memberShip != null && memberShip.Count() > 0)
                 {

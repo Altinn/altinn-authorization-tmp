@@ -44,5 +44,5 @@ public interface IResourceRegistry
     /// <param name="partyUrn">Urn identifying the party</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns></returns>
-    Task<IEnumerable<AccessListInfoDto>> GetMembershipsForParty(PartyUrn partyUrn, CancellationToken cancellationToken = default);
+    Task<IEnumerable<AccessListInfoDto>> GetMembershipsForParty(PartyUrn.PartyUuid partyUrn, CancellationToken cancellationToken = default);
 }

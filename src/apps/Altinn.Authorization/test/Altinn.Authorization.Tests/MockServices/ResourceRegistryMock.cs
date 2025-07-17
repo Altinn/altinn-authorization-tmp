@@ -148,7 +148,7 @@ public class ResourceRegistryMock : IResourceRegistry
         _memoryCache.Set(cachekey, cacheObject, cacheEntryOptions);
     }
 
-    public Task<IEnumerable<AccessListInfoDto>> GetMembershipsForParty(PartyUrn partyUrn, CancellationToken cancellationToken = default)
+    public Task<IEnumerable<AccessListInfoDto>> GetMembershipsForParty(PartyUrn.PartyUuid partyUrn, CancellationToken cancellationToken = default)
     {
         if (partyUrn.IsPartyUuid(out Guid partyUuid))
         {
