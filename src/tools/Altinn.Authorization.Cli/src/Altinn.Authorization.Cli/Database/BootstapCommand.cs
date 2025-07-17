@@ -363,31 +363,24 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
 
     private static NpgsqlConnectionStringBuilder CreateConnectionString(AppsConfig config, Settings settings, Result user, string serverUrl)
     {
-        if (settings.UsePgbouncer)
+        var connectionString = new NpgsqlConnectionStringBuilder()
         {
-            return new NpgsqlConnectionStringBuilder()
-            {
-                NoResetOnClose = true,
-                Pooling = true,
-                Username = user.RoleName,
-                Password = user.Password,
-                Host = serverUrl,
-                Database = config.Database.Name,
-                Port = 6432,
-                SslMode = SslMode.Require,
-            };
-        }
-
-        return new NpgsqlConnectionStringBuilder()
-        {
-            Pooling = true,
+            Host = serverUrl,
             Username = user.RoleName,
             Password = user.Password,
-            Host = serverUrl,
             Database = config.Database.Name,
-            Port = 5432,
             SslMode = SslMode.Require,
+            Port = 5432,
+            Pooling = true,
         };
+
+        if (settings.UsePgbouncer)
+        {
+            connectionString.NoResetOnClose = true;
+            connectionString.Port = 6432;
+        }
+
+        return connectionString;
     }
 
     private async Task<PasswordResult> GetOrCreatePassword(SecretClient secretClient, string roleName, Settings settings, CancellationToken cancellationToken)
