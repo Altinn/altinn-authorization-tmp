@@ -317,15 +317,7 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
 
     private async Task StoreConnectionString(AppsConfig config, Result user, string serverUrl, SecretClient secretClient, Settings settings, CancellationToken cancellationToken)
     {
-        var connectionStringBuilder = new NpgsqlConnectionStringBuilder()
-        {
-            Username = user.RoleName,
-            Password = user.Password,
-            Host = serverUrl,
-            Database = config.Database.Name,
-            Port = 5432,
-            SslMode = SslMode.Require,
-        };
+        NpgsqlConnectionStringBuilder connectionStringBuilder = CreateConnectionString(config, settings, user, serverUrl);
 
         if (settings.MaxPoolSize.HasValue)
         {
@@ -367,6 +359,35 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
             WriteOperationFailed($"Update '{key}' containing connection string to key vault.");
             throw;
         }
+    }
+
+    private static NpgsqlConnectionStringBuilder CreateConnectionString(AppsConfig config, Settings settings, Result user, string serverUrl)
+    {
+        if (settings.UsePgbouncer)
+        {
+            return new NpgsqlConnectionStringBuilder()
+            {
+                NoResetOnClose = true,
+                Pooling = true,
+                Username = user.RoleName,
+                Password = user.Password,
+                Host = serverUrl,
+                Database = config.Database.Name,
+                Port = 6432,
+                SslMode = SslMode.Require,
+            };
+        }
+
+        return new NpgsqlConnectionStringBuilder()
+        {
+            Pooling = true,
+            Username = user.RoleName,
+            Password = user.Password,
+            Host = serverUrl,
+            Database = config.Database.Name,
+            Port = 5432,
+            SslMode = SslMode.Require,
+        };
     }
 
     private async Task<PasswordResult> GetOrCreatePassword(SecretClient secretClient, string roleName, Settings settings, CancellationToken cancellationToken)
@@ -480,6 +501,10 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
         [Description("Name of the Key Vault.")]
         [ExpandEnvironmentVariables]
         public required string KeyVaultName { get; init; }
+
+        [CommandOption("--use-pgbouncer <USE_PGBOUNCER>")]
+        [Description("Indicates that the connection should use the PgBouncer port.")]
+        public bool UsePgbouncer { get; init; }
 
         /// <summary>
         /// Gets the maximum pool size for the database connection.
