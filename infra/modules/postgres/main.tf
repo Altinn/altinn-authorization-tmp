@@ -117,11 +117,11 @@ resource "azurerm_postgresql_flexible_server_configuration" "configuration" {
   depends_on = [azurerm_postgresql_flexible_server_configuration.use_pgbouncer]
 }
 
+# Must be enabled first if azurerm_postgresql_flexible_server_configuration.configuration modifies any pgbouncer settings.
 resource "azurerm_postgresql_flexible_server_configuration" "use_pgbouncer" {
   server_id = azurerm_postgresql_flexible_server.postgres_server.id
   name      = "pgbouncer.enabled"
   value     = var.use_pgbouncer
-  for_each  = local.configuration
 }
 
 
