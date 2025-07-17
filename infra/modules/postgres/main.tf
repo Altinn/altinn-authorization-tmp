@@ -17,7 +17,7 @@ locals {
   }
   sku_name = "${local.sku[var.compute_tier]}_${var.compute_size}"
 
-  pgbouncer_config = {
+  pgbouncer_default_config = {
     "pgbouncer.enabled" : "true"
     "pgbouncer.max_prepared_statements" : "5000",
     "pgbouncer.max_client_conn" : "5000",
@@ -26,7 +26,7 @@ locals {
 
   # latest key takes precedence
   configuration = merge(
-    var.enable_pgbouncer ? local.pgbouncer_config : {},
+    var.enable_pgbouncer ? local.pgbouncer_default_config : {},
     var.configurations,
   )
 }
