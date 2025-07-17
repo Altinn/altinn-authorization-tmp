@@ -2,6 +2,7 @@
 using System.Data;
 using System.Reflection;
 using System.Text.Json;
+using Altinn.AccessMgmt.Persistence.Core.Models;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Utilities;
 
@@ -32,17 +33,25 @@ public sealed class DbConverter : IDbConverter
         }
     }
 
-    /// <summary>
-    /// ConvertToObjects
-    /// </summary>
-    /// <typeparam name="T">Type</typeparam>
-    /// <param name="reader">IDataReader</param>
-    /// <returns></returns>
-    public List<T> ConvertToObjects<T>(IDataReader reader)
+    /// <inheritdoc />
+    public QueryResponse<T> ConvertToResult<T>(IDataReader reader)
+    where T : new()
+    {
+        var converted = ConvertToObjects<T>(reader, true);
+        return new QueryResponse<T>()
+        {
+            Data = converted.Data,
+            Page = converted.PageInfo
+        };
+    }
+
+    private (List<T> Data, QueryPageInfo PageInfo) ConvertToObjects<T>(IDataReader reader, bool includePageColumns)
     where T : new()
     {
         var properties = GetPropertiesWithPrefix<T>();
         var result = new List<T>();
+
+        var pageInfo = new QueryPageInfo();
 
         while (reader.Read())
         {
@@ -53,6 +62,34 @@ public sealed class DbConverter : IDbConverter
             {
                 string columnName = reader.GetName(i).ToLower();
                 object value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+
+                if (includePageColumns)
+                {
+                    if (columnName == "_rownumber")
+                    {
+                        if (pageInfo.FirstRowOnPage == 0)
+                        {
+                            pageInfo.FirstRowOnPage = (int)value;
+                        }
+
+                        pageInfo.LastRowOnPage = (int)value;
+                    }
+
+                    if (pageInfo.TotalSize == 0 && columnName == "_totalItemCount")
+                    {
+                        pageInfo.TotalSize = (int)value;
+                    }
+
+                    if (pageInfo.PageSize == 0 && columnName == "_pageSize")
+                    {
+                        pageInfo.PageSize = (int)value;
+                    }
+
+                    if (pageInfo.PageNumber == 0 && columnName == "_pageNumber")
+                    {
+                        pageInfo.PageNumber = (int)value;
+                    }
+                }
 
                 foreach (var (property, prefix, elementType) in properties)
                 {
@@ -120,14 +157,19 @@ public sealed class DbConverter : IDbConverter
             result.Add(instance);
         }
 
-        return result;
+        return (result, pageInfo);
     }
 
     private static readonly ConcurrentDictionary<Type, Dictionary<string, (PropertyInfo Property, Type ElementType)>> PropertyCache = new();
 
-    private Dictionary<string, (PropertyInfo Property, Type ElementType)> CreatePropertyCacheWithPrefix(Type type, string prefix)
+    private Dictionary<string, (PropertyInfo Property, Type ElementType)> CreatePropertyCacheWithPrefix(Type type, string prefix, int level)
     {
         var properties = new Dictionary<string, (PropertyInfo, Type)>();
+
+        if (level > 3)
+        {
+            return properties;
+        }
 
         foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
@@ -141,7 +183,7 @@ public sealed class DbConverter : IDbConverter
             // If property is complex and not a list/enumerable, cache properties with prefix
             if (elementType == null && property.PropertyType.IsClass && property.PropertyType != typeof(string))
             {
-                var subProperties = CreatePropertyCacheWithPrefix(property.PropertyType, propertyKey + "_");
+                var subProperties = CreatePropertyCacheWithPrefix(property.PropertyType, propertyKey + "_", level + 1);
                 foreach (var subProperty in subProperties)
                 {
                     properties[subProperty.Key] = subProperty.Value;
@@ -159,7 +201,7 @@ public sealed class DbConverter : IDbConverter
 
     private List<(PropertyInfo Property, string Prefix, Type ElementType)> GetPropertiesWithPrefix(Type type)
     {
-        return PropertyCache.GetOrAdd(type, type => CreatePropertyCacheWithPrefix(type, string.Empty))
+        return PropertyCache.GetOrAdd(type, type => CreatePropertyCacheWithPrefix(type, string.Empty, 1))
                             .Select(kv =>
                             {
                                 string prefix = kv.Key.Contains('_') ? kv.Key.Substring(0, kv.Key.LastIndexOf('_') + 1) : string.Empty;
@@ -213,6 +255,11 @@ public sealed class DbConverter : IDbConverter
             else if (property.PropertyType == typeof(DateTimeOffset))
             {
                 value = string.IsNullOrWhiteSpace(value.ToString()) ? null : DateTimeOffset.Parse(value.ToString());
+            }
+            else if (property.PropertyType.Namespace.StartsWith("Altinn"))
+            {
+                value = JsonSerializer.Deserialize(value?.ToString() ?? "{}", property.PropertyType, options: new JsonSerializerOptions(JsonSerializerDefaults.Web));
+                property.SetValue(target, value);
             }
             else
             {

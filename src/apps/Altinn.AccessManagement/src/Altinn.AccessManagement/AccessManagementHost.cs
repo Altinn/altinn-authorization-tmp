@@ -4,7 +4,6 @@ using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
-using Altinn.AccessManagement.Core.Filters;
 using Altinn.AccessManagement.Health;
 using Altinn.AccessManagement.HostedServices.Contracts;
 using Altinn.AccessManagement.HostedServices.Services;
@@ -14,6 +13,7 @@ using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.Authorization.AccessManagement;
+using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Database;
 using Altinn.Authorization.Host.Lease;
@@ -30,11 +30,14 @@ using Altinn.Common.PEP.Clients;
 using Altinn.Common.PEP.Implementation;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using OpenTelemetry;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace Altinn.AccessManagement;
@@ -53,11 +56,12 @@ internal static partial class AccessManagementHost
     public static WebApplication Create(string[] args)
     {
         Log.CreateAltinnHost(Logger);
-        var builder = AltinnHost.CreateWebApplicationBuilder("access-management", args);
+        var builder = AltinnHost.CreateWebApplicationBuilder("access-management", args, opts => opts.ConfigureEnabledServices(services => services.DisableApplicationInsights()));
         builder.ConfigureAppsettings();
         builder.ConfigureLibsHost();
         builder.Services.AddMemoryCache();
         builder.Services.AddAutoMapper(typeof(Program));
+        builder.Services.AddRouting(options => options.LowercaseUrls = true);
         builder.Services.AddControllers();
         builder.Services.AddFeatureManagement();
         builder.Services.AddHttpContextAccessor();
@@ -65,7 +69,6 @@ internal static partial class AccessManagementHost
             .AddCheck<HealthCheck>("authorization_admin_health_check");
 
         builder.ConfigureLibsIntegrations();
-
         builder.ConfigureAppsettings();
         builder.AddAltinnDatabase(opt =>
         {
@@ -82,9 +85,19 @@ internal static partial class AccessManagementHost
 
             opt.AppSource = new(string.Format(connectionStringFmt, connectionStringPwd));
             opt.MigrationSource = new(string.Format(adminConnectionStringFmt, adminConnectionStringPwd));
-            opt.Telemetry.EnableMetrics = true;
-            opt.Telemetry.EnableTraces = true;
         });
+
+        if (!builder.Environment.IsDevelopment())
+        {
+            if (builder.Configuration.GetValue<string>("ApplicationInsights:InstrumentationKey") is var key && !string.IsNullOrEmpty(key))
+            {
+                builder.Services.AddOpenTelemetry()
+                    .UseAzureMonitor(m =>
+                    {
+                        m.ConnectionString = string.Format("InstrumentationKey={0}", key);
+                    });
+            }
+        }
 
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
@@ -189,13 +202,21 @@ internal static partial class AccessManagementHost
                 Type = SecuritySchemeType.ApiKey
             });
             options.OperationFilter<SecurityRequirementsOperationFilter>();
+            options.EnableAnnotations();
 
             var originalIdSelector = options.SchemaGeneratorOptions.SchemaIdSelector;
             options.SchemaGeneratorOptions.SchemaIdSelector = (Type t) =>
             {
                 if (!t.IsNested)
                 {
-                    return originalIdSelector(t);
+                    var orig = originalIdSelector(t);
+
+                    if (t.Assembly == typeof(OrganizationNumber).Assembly)
+                    {
+                        orig = $"AMCoreModels.{orig}";
+                    }
+
+                    return orig;
                 }
 
                 var chain = new List<string>();
@@ -266,12 +287,15 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_READ, policy => policy.Requirements.Add(new ResourceAccessRequirement("read", "altinn_maskinporten_scope_delegation")))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_WRITE, policy => policy.Requirements.Add(new ResourceAccessRequirement("write", "altinn_maskinporten_scope_delegation")))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATIONS_PROXY, policy => policy.Requirements.Add(new ScopeAccessRequirement(["altinn:maskinporten/delegations", "altinn:maskinporten/delegations.admin"])))
+            .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_CONSENT_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement(["altinn:maskinporten/consent.read"])))
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ, policy => policy.Requirements.Add(new ResourceAccessRequirement("read", "altinn_access_management")))
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_WRITE, policy => policy.Requirements.Add(new ResourceAccessRequirement("write", "altinn_access_management")))
-            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_enduser_access_management", false)))
-            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_enduser_access_management", false)))
-            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ_WITH_PASS_TROUGH, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_enduser_access_management", true)))
+            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_access_management", false)))
+            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_access_management", false)))
+            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ_WITH_PASS_TROUGH, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_access_management", true)))
             .AddPolicy(AuthzConstants.POLICY_RESOURCEOWNER_AUTHORIZEDPARTIES, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_AUTHORIZEDPARTIES_RESOURCEOWNER, AuthzConstants.SCOPE_AUTHORIZEDPARTIES_ADMIN])))
+            .AddPolicy(AuthzConstants.POLICY_CONSENTREQUEST_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_CONSENTREQUEST_ORG, AuthzConstants.SCOPE_CONSENTREQUEST_WRITE])))
+            .AddPolicy(AuthzConstants.POLICY_CONSENTREQUEST_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_CONSENTREQUEST_ORG, AuthzConstants.SCOPE_CONSENTREQUEST_READ, AuthzConstants.SCOPE_CONSENTREQUEST_WRITE])))
             .AddPolicy(AuthzConstants.POLICY_CLIENTDELEGATION_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_client_administration")))
             .AddPolicy(AuthzConstants.POLICY_CLIENTDELEGATION_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_client_administration")))
             .AddPolicy(AuthzConstants.SCOPE_PORTAL_ENDUSER, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER])));
@@ -281,7 +305,6 @@ internal static partial class AccessManagementHost
         builder.Services.AddScoped<IAuthorizationHandler, ResourceAccessHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, EndUserResourceAccessHandler>();
         builder.Services.AddScoped<IAuthorizationHandler, ScopeAccessHandler>();
-        builder.Services.AddScoped<AuthorizePartyUuidClaimFilter>();
     }
 
     private static void ConfigurePostgreSqlConfiguration(this WebApplicationBuilder builder)

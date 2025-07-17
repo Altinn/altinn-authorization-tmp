@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
+using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Executors;
@@ -11,6 +13,7 @@ using Altinn.AccessMgmt.Persistence.Data.Mock;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.Host.Startup;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -26,6 +29,15 @@ public static partial class DbAccessHostExtensions
     /// Logger instance for logging database configuration messages.
     /// </summary>
     private static ILogger Logger { get; } = StartupLoggerFactory.Create(nameof(DbAccessHostExtensions));
+
+    /// <summary>
+    /// Adds Db Audit Middleware
+    /// </summary>
+    public static IApplicationBuilder UseDbAudit(this IApplicationBuilder builder)
+    {
+        builder.UseMiddleware<AuditService>();
+        return builder;
+    }
 
     /// <summary>
     /// Adds database access services to the application builder.
@@ -56,15 +68,21 @@ public static partial class DbAccessHostExtensions
             }
         }
 
+        builder.Services.AddSingleton<AuditService>();
+        builder.Services.AddSingleton<IDbAudit, AuditFactory>();
+        builder.Services.AddSingleton<IDbAuditService, AuditFactory>();
+
         builder.Services.AddSingleton<DbDefinitionRegistry>();
         builder.Services.AddSingleton(typeof(ISearchCache<>), typeof(SearchCache<>));
 
+        builder.Services.AddSingleton<IRelationService, RelationService>();
         builder.Services.AddSingleton<IConnectionService, ConnectionService>();
         builder.Services.AddSingleton<IAssignmentService, AssignmentService>();
         builder.Services.AddSingleton<IDelegationService, DelegationService>();
         builder.Services.AddSingleton<IPackageService, PackageService>();
         builder.Services.AddSingleton<IRoleService, RoleService>();
         builder.Services.AddSingleton<IStatusService, StatusService>();
+        builder.Services.AddSingleton<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
 
         builder.Services.AddSingleton<IIngestService, PostgresIngestService>();
         builder.Services.AddSingleton<IDbExecutor, PostgresDbExecutor>();
@@ -74,6 +92,9 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<DbSchemaMigrationService>();
         builder.Services.AddSingleton<DbDataMigrationService>();
         builder.Services.AddSingleton<MockDataService>();
+
+        // Core interfaces & implementations
+        builder.Services.AddSingleton<IAmPartyRepository, AMPartyService>();
 
         builder.Services.Add(Marker.ServiceDescriptor);
 
@@ -107,8 +128,9 @@ public static partial class DbAccessHostExtensions
     /// Initializes and applies database migrations and data ingestion processes.
     /// </summary>
     /// <param name="host">The application host.</param>
+    /// <param name="generateBasicData">Optional flag to generate basic data for test</param>
     /// <returns>The updated host after applying database changes.</returns>
-    public static async Task<IHost> UseAccessMgmtDb(this IHost host)
+    public static async Task<IHost> UseAccessMgmtDb(this IHost host, bool? generateBasicData = false)
     {
         // Make sure migration don't run if DB is not enabled
         if (host.Services.GetService(Marker.Type) == null)
@@ -132,7 +154,15 @@ public static partial class DbAccessHostExtensions
         // var mockService = host.Services.GetRequiredService<MockDataService>();
         // await mockService.GenerateBasicData();
         // await mockService.GeneratePackageResources();
+        // await mockService.SystemUserClientDelegation();
         */
+        if (generateBasicData == true)
+        {
+            var mockService = host.Services.GetRequiredService<MockDataService>();
+            await mockService.GenerateBasicData();
+
+            // await mockService.GeneratePackageResources();
+        }
 
         return host;
     }

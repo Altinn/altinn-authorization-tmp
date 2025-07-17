@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
@@ -18,17 +20,139 @@ public class AssignmentService(
     IRoleRepository roleRepository,
     IRolePackageRepository rolePackageRepository,
     IEntityRepository entityRepository,
+    IEntityVariantRepository entityVariantRepository,
     IDelegationRepository delegationRepository
     ) : IAssignmentService
 {
-    private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
-    private readonly IInheritedAssignmentRepository inheritedAssignmentRepository = inheritedAssignmentRepository;
-    private readonly IPackageRepository packageRepository = packageRepository;
-    private readonly IAssignmentPackageRepository assignmentPackageRepository = assignmentPackageRepository;
-    private readonly IRoleRepository roleRepository = roleRepository;
-    private readonly IRolePackageRepository rolePackageRepository = rolePackageRepository;
-    private readonly IEntityRepository entityRepository = entityRepository;
-    private readonly IDelegationRepository delegationRepository = delegationRepository;
+    private static readonly string RETTIGHETSHAVER = "rettighetshaver";
+    private static readonly Guid PartyTypeOrganizationUuid = new Guid("8c216e2f-afdd-4234-9ba2-691c727bb33d");
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<ClientDto>> GetClients(Guid toId, string[] roles, string[] packages, CancellationToken cancellationToken = default)
+    {
+        // Fetch role metadata
+        var roleFilter = roleRepository.CreateFilterBuilder();
+        roleFilter.In(t => t.Code, roles);
+        var roleResult = await roleRepository.Get(roleFilter, cancellationToken: cancellationToken);
+
+        if (roleResult == null || !roleResult.Any() || roleResult.Count() != roles.Length)
+        {
+            throw new ArgumentException($"Filter: {nameof(roles)}, provided contains one or more role identifiers which cannot be found.");
+        }
+
+        var filterRoleIds = roleResult.Select(r => r.Id).ToList();
+
+        // Fetch role-package metadata
+        var rolePackFilter = rolePackageRepository.CreateFilterBuilder();
+        rolePackFilter.In(t => t.RoleId, filterRoleIds);
+        var rolePackageResult = await rolePackageRepository.Get(rolePackFilter, cancellationToken: cancellationToken);
+
+        // Fetch package metadata
+        var packageResult = await packageRepository.Get(cancellationToken: cancellationToken);
+
+        if (!packages.All(p => packageResult.Select(pr => pr.Urn).Contains($"urn:altinn:accesspackage:{p}")))
+        {
+            throw new ArgumentException($"Filter: {nameof(packages)}, provided contains one or more package identifiers which cannot be found.");
+        }
+
+        // Fetch client assignments
+        var clientFilter = assignmentRepository.CreateFilterBuilder();
+        clientFilter.Equal(t => t.ToId, toId);
+        clientFilter.In(t => t.RoleId, filterRoleIds);
+        var clientAssignmentResult = await assignmentRepository.GetExtended(clientFilter, cancellationToken: cancellationToken);
+
+        // Discard non-organization clients (for now). To be opened up for private individuals in the future.
+        var clients = clientAssignmentResult.Where(c => c.From.TypeId == PartyTypeOrganizationUuid);
+
+        // Fetch assignment packages
+        QueryResponse<AssignmentPackage> assignmentPackageResult = null;
+        if (roles.Contains(RETTIGHETSHAVER))
+        {
+            var rettighetshaverClients = clients.Where(c => c.RoleId == roleResult.First(r => r.Code == RETTIGHETSHAVER).Id);
+            if (rettighetshaverClients.Any())
+            {
+                var assignmentPackageFilter = assignmentPackageRepository.CreateFilterBuilder();
+                assignmentPackageFilter.In(t => t.AssignmentId, rettighetshaverClients.Select(p => p.Id));
+
+                assignmentPackageResult = await assignmentPackageRepository.Get(assignmentPackageFilter, cancellationToken: cancellationToken);
+            }
+        }
+
+        return await GetFilteredClientsFromAssignments(clients, assignmentPackageResult, roleResult, packageResult, rolePackageResult, packages, cancellationToken);
+    }
+
+    private async Task<List<ClientDto>> GetFilteredClientsFromAssignments(IEnumerable<ExtAssignment> assignments, IEnumerable<AssignmentPackage> assignmentPackages, QueryResponse<Role> roles, QueryResponse<Package> packages, QueryResponse<RolePackage> rolePackages, string[] filterPackages, CancellationToken ct)
+    {
+        Dictionary<Guid, ClientDto> clients = new();
+
+        // Fetch Entity metadata
+        var entityVariants = await entityVariantRepository.Get(cancellationToken: ct);
+
+        foreach (var assignment in assignments)
+        {
+            var roleName = roles.First(r => r.Id == assignment.RoleId).Code;
+            var assignmentPackageIds = assignmentPackages != null ? assignmentPackages.Where(ap => ap.AssignmentId == assignment.Id).Select(ap => ap.PackageId) : [];
+            var assignmentPackageNames = assignmentPackageIds.Any() ? assignmentPackageIds.Select(ap => packages.First(p => p.Id == ap).Urn.Split(":").Last()).ToArray() : [];
+            var rolePackageIds = rolePackages.Where(rp => rp.RoleId == assignment.RoleId && (!rp.EntityVariantId.HasValue || rp.EntityVariantId == assignment.From.VariantId)).Select(rp => rp.PackageId);
+            var rolePackageNames = rolePackageIds.Select(rp => packages.First(p => p.Id == rp).Urn.Split(":").Last()).ToArray();
+
+            // Skip client if connection provides neither assignment-packages or role-packages
+            if (assignmentPackageNames.Length == 0 && rolePackageNames.Length == 0)
+            {
+                continue;
+            }
+
+            // Add client to dictionary if not already present
+            if (!clients.TryGetValue(assignment.FromId, out ClientDto client))
+            {
+                client = new ClientDto()
+                {
+                    Party = new ClientDto.ClientParty
+                    {
+                        Id = assignment.FromId,
+                        Name = assignment.From.Name,
+                        OrganizationNumber = assignment.From.RefId,
+                        UnitType = entityVariants.FirstOrDefault(ev => ev.Id == assignment.From.VariantId)?.Name
+                    }
+                };
+
+                clients.Add(assignment.FromId, client);
+            }
+
+            // Add packages client has been assigned
+            if (assignmentPackageNames.Length > 0)
+            {
+                client.Access.Add(new ClientDto.ClientRoleAccessPackages
+                {
+                    Role = roleName,
+                    Packages = assignmentPackageNames
+                });
+            }
+
+            // Add packages client has through role
+            if (rolePackageNames.Length > 0)
+            {
+                client.Access.Add(new ClientDto.ClientRoleAccessPackages
+                {
+                    Role = roleName,
+                    Packages = rolePackageNames
+                });
+            }
+        }
+
+        // Return only clients having all required filterpackages
+        List<ClientDto> result = new();
+        foreach (var client in clients.Keys)
+        {
+            var allClientPackages = clients[client].Access.SelectMany(rp => rp.Packages).Distinct();
+            if (filterPackages.All(allClientPackages.Contains))
+            {
+                result.Add(clients[client]);
+            }
+        }
+
+        return result;
+    }
 
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default)
@@ -121,7 +245,7 @@ public class AssignmentService(
                 AssignmentId = assignmentId,
                 PackageId = packageId
             },
-            options: options, 
+            options: options,
             cancellationToken: cancellationToken
         );
 
@@ -280,18 +404,20 @@ public class AssignmentService(
             throw new Exception(string.Format("Multiple inheirited assignment exists. Use Force = true to create anyway."));
         }
 
-        await assignmentRepository.Create(
-            new Assignment()
-            {
-                FromId = fromEntityId,
-                ToId = toEntityId,
-                RoleId = role.Id
-            },
-            options: options, 
-            cancellationToken: cancellationToken
-        );
+        assignment = new Assignment()
+        {
+            FromId = fromEntityId,
+            ToId = toEntityId,
+            RoleId = role.Id
+        };
 
-        throw new NotImplementedException();
+        var result = await assignmentRepository.Create(assignment, options: options, cancellationToken: cancellationToken);
+        if (result == 0)
+        {
+            Unreachable();
+        }
+
+        return assignment;
     }
 
     /// <inheritdoc/>
@@ -318,11 +444,53 @@ public class AssignmentService(
         return await GetInheritedAssignment(fromId, toId, roleId, cancellationToken: cancellationToken);
     }
 
+    /// <inheritdoc/>
+    public async Task<IEnumerable<AssignmentOrRolePackageAccess>> GetPackagesForAssignment(Guid assignmentId, CancellationToken cancellationToken = default)
+    {
+        List<AssignmentOrRolePackageAccess> result = new();
+
+        // Get Assignment
+        var assignmentFilter = assignmentRepository.CreateFilterBuilder();
+        assignmentFilter.Equal(t => t.Id, assignmentId);
+        var assignmentResult = await assignmentRepository.GetExtended(assignmentFilter, cancellationToken: cancellationToken);
+
+        if (!assignmentResult.Any())
+        {
+            return result;
+        }
+
+        var assignment = assignmentResult.First();
+
+        // Get AssignmentPackages
+        QueryResponse<AssignmentPackage> assignmentPackageResult = null;
+        var assignmentPackageFilter = assignmentPackageRepository.CreateFilterBuilder();
+        assignmentPackageFilter.Equal(t => t.AssignmentId, assignmentId);
+
+        assignmentPackageResult = await assignmentPackageRepository.Get(assignmentPackageFilter, cancellationToken: cancellationToken);
+
+        foreach (var assignmentPackage in assignmentPackageResult)
+        {
+            result.Add(new AssignmentOrRolePackageAccess { AssignmentId = assignment.Id, RoleId = assignment.RoleId, PackageId = assignmentPackage.PackageId, AssignmentPackageId = assignmentPackage.Id });
+        }
+
+        // Get RolePackages
+        var rolePackFilter = rolePackageRepository.CreateFilterBuilder();
+        rolePackFilter.Equal(t => t.RoleId, assignment.RoleId);
+        var rolePackageResult = await rolePackageRepository.Get(rolePackFilter, cancellationToken: cancellationToken);
+
+        foreach (var rolePackage in rolePackageResult)
+        {
+            result.Add(new AssignmentOrRolePackageAccess { AssignmentId = assignment.Id, RoleId = assignment.RoleId, PackageId = rolePackage.PackageId, RolePackageId = rolePackage.Id });
+        }
+
+        return result;
+    }
+
     private static void ValidatePartyIsNotNull(Guid id, ExtEntity entity, ref ValidationErrorBuilder errors, string param)
     {
         if (entity is null)
         {
-            errors.Add(ValidationErrors.MissingPartyInDb, param, [new("partyId", id.ToString())]);
+            errors.Add(ValidationErrors.EntityNotExists, param, [new("partyId", id.ToString())]);
         }
     }
 
@@ -330,7 +498,7 @@ public class AssignmentService(
     {
         if (entity is not null && !entity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
         {
-            errors.Add(ValidationErrors.InvalidPartyType, param, [new("partyId", $"expected party of type 'Organisasjon' got '{entity.Type.Name}'.")]);
+            errors.Add(ValidationErrors.InvalidQueryParameter, param, [new("partyId", $"expected party of type 'Organisasjon' got '{entity.Type.Name}'.")]);
         }
     }
 

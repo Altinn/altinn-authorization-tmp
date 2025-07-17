@@ -28,6 +28,11 @@ public class DbDefinition(Type type)
     public List<DbPropertyDefinition> Properties { get; set; } = new();
 
     /// <summary>
+    /// Gets or sets the collection of column definitions for the entity.
+    /// </summary>
+    public List<DbExtendedPropertyDefinition> ExtendedProperties { get; set; } = new();
+
+    /// <summary>
     /// Gets or sets the collection of foreign key definitions representing relationships to other tables.
     /// </summary>
     public List<DbRelationDefinition> Relations { get; set; } = new();
@@ -56,6 +61,16 @@ public class DbDefinition(Type type)
     /// The SQL query used for extended type
     /// </summary>
     public string ExtendedQuery { get; set; }
+
+    /// <summary>
+    /// Scripts to run before migrations
+    /// </summary>
+    public Dictionary<int, string> ManualPreMigrationScripts { get; set; } = new();
+
+    /// <summary>
+    /// Scripts to run after migrations
+    /// </summary>
+    public Dictionary<int, string> ManualPostMigrationScripts { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the collection of types that this entity depends on in views.

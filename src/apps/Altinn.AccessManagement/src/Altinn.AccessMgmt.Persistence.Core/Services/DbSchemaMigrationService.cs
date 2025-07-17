@@ -35,12 +35,12 @@ public class DbSchemaMigrationService
     private async Task PreMigration(CancellationToken cancellationToken = default)
     {
         var config = this.options.Value;
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseSchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationSchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.IngestSchema};", new List<GenericParameter>(), cancellationToken);
-        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.ArchiveSchema};", new List<GenericParameter>(), cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseSchema};", new List<GenericParameter>(), cancellationToken: cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationSchema};", new List<GenericParameter>(), cancellationToken: cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.BaseHistorySchema};", new List<GenericParameter>(), cancellationToken: cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.TranslationHistorySchema};", new List<GenericParameter>(), cancellationToken: cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.IngestSchema};", new List<GenericParameter>(), cancellationToken: cancellationToken);
+        await executor.ExecuteMigrationCommand($"CREATE SCHEMA IF NOT EXISTS {config.ArchiveSchema};", new List<GenericParameter>(), cancellationToken: cancellationToken);
     }
 
     private async Task PostMigration(CancellationToken cancellationToken = default)
@@ -69,6 +69,135 @@ public class DbSchemaMigrationService
         await executor.ExecuteMigrationCommand(tableGrant);
     }
 
+    private async Task MigrateFunctions()
+    {
+        var entityChildrenPlaceholderFunction = """
+        DO
+        $do$
+        BEGIN
+          IF NOT EXISTS (SELECT 1 FROM information_schema.routines WHERE routine_schema = 'public' AND routine_name = 'entitychildren' AND routine_type = 'FUNCTION' ) THEN
+
+            CREATE FUNCTION entitychildren(_id uuid) returns jsonb stable language sql as
+            $func$
+            SELECT jsonb_build_object(
+                'Id', e.Id,
+                'Name', e.Name
+                )
+            FROM dbo.Entity e
+            WHERE e.ParentId = _id
+            GROUP BY e.Id
+            $func$;
+
+          END IF;
+        END;
+        $do$;
+        """;
+        await executor.ExecuteMigrationCommand(entityChildrenPlaceholderFunction);
+
+        var entityLookupValuesFunction = """
+        create or replace function entityLookupValues(_id uuid) returns jsonb stable language sql as
+        $$
+        SELECT jsonb_object_agg(el.key, el.value)
+        FROM dbo.EntityLookup el
+        WHERE el.entityid = _id
+        $$;
+        """;
+        await executor.ExecuteMigrationCommand(entityLookupValuesFunction);
+
+        var roleLookupValuesFunction = """
+        create or replace function roleLookupValues(_id uuid) returns jsonb stable language sql as
+        $$
+        SELECT jsonb_object_agg(rl.key, rl.value)
+        FROM dbo.RoleLookup rl
+        WHERE rl.roleid = _id
+        $$;
+        """;
+        await executor.ExecuteMigrationCommand(roleLookupValuesFunction);
+
+        var compactEntityFunction = """
+            create or replace function compactentity(_id uuid, _include_children boolean DEFAULT true, _include_lookups boolean DEFAULT true) returns jsonb stable language sql as
+            $$
+            SELECT jsonb_build_object(
+                'Id', e.Id,
+                'Name', e.Name,
+                'Type', et.Name,
+                'Variant', ev.Name,
+                'Parent', compactentity(e.parentid, false, true),
+                'Children', CASE WHEN _include_children THEN entitychildren(e.id) ELSE NULL END,
+                'KeyValues', CASE WHEN _include_lookups THEN entitylookupvalues(e.id) ELSE NULL END
+                )
+            FROM dbo.Entity e
+            JOIN dbo.EntityType et ON e.TypeId = et.Id
+            JOIN dbo.EntityVariant ev ON e.VariantId = ev.Id
+            LEFT OUTER JOIN dbo.Entity as ce on e.Id = ce.ParentId
+            LEFT OUTER JOIN dbo.EntityLookup as el on e.Id = el.entityid
+            WHERE e.Id = _Id
+            GROUP BY e.Id, e.Name, e.RefId, et.Name, ev.Name;
+            $$;
+            """;
+        await executor.ExecuteMigrationCommand(compactEntityFunction);
+
+        var entityChildrenFunction = """
+        create or replace function entitychildren(_id uuid) returns jsonb stable language sql as
+        $$
+        SELECT COALESCE(json_agg(compactentity(e.Id, false, true)) FILTER (WHERE e.Id IS NOT NULL), NULL)
+        FROM dbo.Entity e
+        WHERE e.ParentId = _id
+        GROUP BY e.Id;
+        $$;
+        """;
+        await executor.ExecuteMigrationCommand(entityChildrenFunction);
+
+        var compactRoleFunction = """
+            create or replace function public.compactRole(_id uuid) returns jsonb stable language sql as
+            $$
+            SELECT jsonb_build_object(
+                'Id', r.Id,
+                'Code', r.Code,
+                'Children', COALESCE(
+                                json_agg(json_build_object('Id', rmr.Id, 'Value', rmr.Code, 'Children', null))
+                                FILTER (WHERE rmr.Id IS NOT NULL), NULL)
+            )
+            FROM dbo.role r
+            left outer join dbo.RoleMap as rm on rm.HasRoleId = r.Id
+            left outer join dbo.Role as rmr on rm.GetRoleId = rmr.Id
+            WHERE r.id = _Id
+            group by r.Id, r.Name;
+            $$;
+            """;
+        await executor.ExecuteMigrationCommand(compactRoleFunction);
+
+        var compactPackageFunction = """
+            create or replace function compactpackage(_id uuid) returns jsonb stable language sql as
+            $$
+            select jsonb_build_object('Id', p.Id,'Urn', p.Urn, 'AreaId', p.AreaId)
+            from dbo.Package as p
+            where p.id = _id;
+            $$;
+            """;
+        await executor.ExecuteMigrationCommand(compactPackageFunction);
+
+        var compactResourceFunction = """
+            create or replace function compactresource(_id uuid) returns jsonb stable language sql as
+            $$
+            select jsonb_build_object('Id', r.Id,'Value', r.RefId)
+            from dbo.Resource as r
+            where r.id = _id;
+            $$;
+            """;
+        await executor.ExecuteMigrationCommand(compactResourceFunction);
+
+        var nameFunctions = """
+        create or replace function namerole(_id uuid) returns text stable language sql as $$ select code from dbo.role where id = _id; $$;
+        create or replace function nameentity(_id uuid) returns text stable language sql as $$ select e.name || ' (' || ev.name || ')' from dbo.entity as e inner join dbo.entityvariant as ev on e.variantid = ev.id where e.id = _id; $$;
+        create or replace function namepackage(_id uuid) returns text stable language sql as $$ select name from dbo.package where id = _id; $$;
+        create or replace function nameassignment(_id uuid) returns text stable language sql as $$ select nameentity(a.fromid) || ' - ' || namerole(a.roleid) || ' - '  || nameentity(a.toid) from dbo.assignment as a where id = _id; $$;
+        create or replace function namedelegation(_id uuid) returns text stable language sql as $$ select nameassignment(d.fromid) || ' | ' || nameentity(d.facilitatorid) || ' | ' || nameassignment(d.toid) from dbo.delegation as d where id = _id; $$;
+        """;
+
+        await executor.ExecuteMigrationCommand(nameFunctions);
+    }
+
     /// <summary>
     /// MigrateAll
     /// </summary>
@@ -83,6 +212,7 @@ public class DbSchemaMigrationService
         await PreMigration(cancellationToken: cancellationToken);
         await ExecuteMigration(cancellationToken: cancellationToken);
         await PostMigration(cancellationToken: cancellationToken);
+        await MigrateFunctions();
     }
 
     /// <summary>
@@ -117,6 +247,28 @@ public class DbSchemaMigrationService
             retry[key] = 0;
         }
 
+        Console.WriteLine("Verifing migrations");
+        var verificationFailures = 0;
+        var verificationSuccess = 0;
+        foreach (var scriptCollection in Scripts)
+        {
+            foreach (var script in scriptCollection.Value.Scripts)
+            {
+                var verified = migrationService.VerifyMigration(scriptCollection.Key.Name, script.Key, script.Value);
+                if (!verified)
+                {
+                    verificationFailures++;
+                    await migrationService.UndoMigration(scriptCollection.Key, script.Key);
+                }
+                else
+                {
+                    verificationSuccess++;
+                }
+            }
+        }
+
+        Console.WriteLine($"Verification complete: Success: {verificationSuccess} Failed: {verificationFailures}");
+
         while (status.Values.Contains(false) && !failed.Any() && !cancellationToken.IsCancellationRequested)
         {
             foreach (var script in Scripts)
@@ -134,26 +286,38 @@ public class DbSchemaMigrationService
 
                 bool needMigration = migrationService.NeedAnyMigration(script.Key, script.Value.Scripts.Select(t => t.Key).ToList());
 
-                if (script.Key.Name == "Area")
-                {
-                    needMigration = true;
-                }
-
                 if (!needMigration)
                 {
-                    status[script.Key] = true;
-                    retry[script.Key] = 0;
-                    continue;
+                    bool verified = true;
+                    foreach (var s in script.Value.Scripts)
+                    {
+                        var res = migrationService.VerifyMigration(script.Key, s.Key, s.Value);
+                        if (!res)
+                        {
+                            verified = false;
+                            break;
+                        }
+                    }
+
+                    if (verified)
+                    {
+                        status[script.Key] = true;
+                        retry[script.Key] = 0;
+                        continue;
+                    }
                 }
 
                 if (!script.Value.Dependencies.Any())
                 {
                     try
                     {
-                        await ExecuteMigration(script.Key, script.Value);
-                        status[script.Key] = true;
-                        retry[script.Key] = 0;
-                        continue;
+                        var res = await ExecuteMigration(script.Key, script.Value, retry[script.Key]);
+                        if (res)
+                        {
+                            status[script.Key] = true;
+                            retry[script.Key] = 0;
+                            continue;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -175,10 +339,13 @@ public class DbSchemaMigrationService
 
                 try
                 {
-                    await ExecuteMigration(script.Key, script.Value);
-                    status[script.Key] = true;
-                    retry[script.Key] = 0;
-                    continue;
+                    var res = await ExecuteMigration(script.Key, script.Value, retry[script.Key]);
+                    if (res)
+                    {
+                        status[script.Key] = true;
+                        retry[script.Key] = 0;
+                        continue;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -198,23 +365,18 @@ public class DbSchemaMigrationService
         }
     }
 
-    private async Task ExecuteMigration(Type type, DbMigrationScriptCollection collection)
+    private async Task<bool> ExecuteMigration(Type type, DbMigrationScriptCollection collection, int retryAttempt)
     {
         var dbDefinition = definitionRegistry.TryGetDefinition(type) ?? throw new Exception($"GetOrAddDefinition for '{type.Name}' not found.");
-        bool any = migrationService.NeedAnyMigration(type, collection.Scripts.Keys.ToList()); //// TODO: This needs to be refined to not allways run everything
-        bool ver = migrationService.NeedMigration(type, "Version", 1);
+
+        bool allGood = true;
 
         foreach (var script in collection.Scripts)
         {
             // Run all if any (temp)
-            if (any || ver || migrationService.NeedMigration(type, script.Key))
+            if (migrationService.NeedMigration(type, script.Key))
             {
-                if (script.Key.StartsWith("ADD CONSTRAINT") && !migrationService.NeedMigration(type, script.Key))
-                {
-                    continue;
-                }
-
-                if (script.Key.Contains("PK_")) 
+                if (script.Key.Contains("PK_"))
                 {
                     //// TODO: Hack ... Remove from scripts ...
                     continue;
@@ -230,11 +392,13 @@ public class DbSchemaMigrationService
                     Console.WriteLine($"ERROR :: Migration '{script.Key}' failed");
                     Console.WriteLine(ex.Message);
                     Console.WriteLine(script.Value);
-                    throw;
+                    allGood = false;
                 }
             }
         }
 
         await migrationService.LogMigration(type, "Version", string.Empty, 1);
+
+        return allGood;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
+using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
@@ -20,27 +21,28 @@ namespace Altinn.AccessManagement.Controllers;
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class SystemUserClientDelegationController : ControllerBase
 {
-    private readonly IConnectionRepository connectionRepository;
     private readonly IConnectionService connectionService;
+    private readonly IAssignmentService assignmentService;
     private readonly IDelegationService delegationService;
     private readonly IDelegationRepository delegationRepository;
     private readonly IAssignmentRepository assignmentRepository;
     private readonly IRoleRepository roleRepository;
+    private readonly string[] validClientRoles = ["regnskapsforer", "revisor", "forretningsforer", "rettighetshaver"];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemUserClientDelegationController"/> class.
     /// </summary>
     public SystemUserClientDelegationController(
-        IConnectionRepository connectionRepository,
         IConnectionService connectionService,
+        IAssignmentService assignmentService,
         IDelegationService delegationService, 
         IDelegationRepository delegationRepository,
         IAssignmentRepository assignmentRepository,
         IRoleRepository roleRepository
         )
     {
-        this.connectionRepository = connectionRepository;
         this.connectionService = connectionService;
+        this.assignmentService = assignmentService;
         this.delegationService = delegationService;
         this.delegationRepository = delegationRepository;
         this.assignmentRepository = assignmentRepository;
@@ -51,10 +53,12 @@ public class SystemUserClientDelegationController : ControllerBase
     /// Gets all clients for a given facilitator
     /// </summary>
     /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
-    /// <returns><seealso cref="ConnectionDto"/>List of connections</returns>
+    /// <param name="roles"> The list of role codes to filter the connections by</param>
+    /// <param name="packages"> The list of package identifiers to filter the connections by</param>
+    /// <returns>List of Clients<seealso cref="ClientDto"/></returns>
     [HttpGet("clients")]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
-    public async Task<ActionResult<ConnectionDto>> GetClientDelegations([FromQuery] Guid party)
+    public async Task<ActionResult> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)
@@ -62,7 +66,27 @@ public class SystemUserClientDelegationController : ControllerBase
             return Unauthorized();
         }
 
-        return Ok(await connectionService.GetGiven(party));
+        if (roles != null && roles.Length > 0)
+        {
+            var invalidRoles = roles.Where(role => !validClientRoles.Contains(role));
+            if (invalidRoles.Any())
+            {
+                return BadRequest($"Invalid role filter: '{string.Join(",", invalidRoles)}'. Valid Client roles are: '{string.Join(", ", validClientRoles)}'");
+            }
+        }
+        else
+        {
+            roles = validClientRoles;
+        }
+
+        if (packages == null || packages.Length == 0)
+        {
+            packages = [];
+        }
+
+        var clients = await assignmentService.GetClients(party, roles, packages);
+
+        return Ok(clients);
     }
 
     /// <summary>
@@ -81,14 +105,14 @@ public class SystemUserClientDelegationController : ControllerBase
             return Unauthorized();
         }
 
-        var f = connectionRepository.CreateFilterBuilder();
-        f.Equal(t => t.ToId, systemUser);
-        f.Equal(t => t.FacilitatorId, party);
+        var dbResult = await connectionService.Get(fromId: null, toId: systemUser, facilitatorId: party);
         var res = new List<ConnectionDto>();
-
-        foreach (var r in await connectionRepository.GetExtended(f))
+        foreach (var r in dbResult)
         {
-            res.Add(ConnectionConverter.ConvertToDto(r));
+            if (r.Delegation != null)
+            {
+                res.Add(ConnectionConverter.ConvertToDto(r));
+            }
         }
        
         return Ok(res);
@@ -121,7 +145,7 @@ public class SystemUserClientDelegationController : ControllerBase
         var result = new List<CreateDelegationResponse>();
         foreach (var delegation in delegations)
         {
-            result.Add(ConnectionConverter.ConvertToResponseModel(await connectionRepository.Get(delegation.Id)));
+            result.Add(ConnectionConverter.ConvertToResponseModel(await delegationRepository.GetExtended(delegation.Id)));
         }
 
         // Remark: Kan ikke garantere at det KUN er delegeringer som er opprettet i denne handlingen som blir returnert.

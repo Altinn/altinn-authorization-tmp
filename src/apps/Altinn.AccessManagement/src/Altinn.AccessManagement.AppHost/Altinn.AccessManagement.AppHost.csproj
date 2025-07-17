@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <Sdk Name="Aspire.AppHost.Sdk" Version="9.2.0" />
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.3.1" />
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -17,7 +17,6 @@
         <ProjectReference Include="..\Altinn.AccessManagement.Api.Metadata\Altinn.AccessManagement.Api.Metadata.csproj" />
         <ProjectReference Include="..\Altinn.AccessManagement.Api.ServiceOwner\Altinn.AccessManagement.Api.ServiceOwner.csproj" />
         <ProjectReference Include="..\Altinn.AccessManagement\Altinn.AccessManagement.csproj" />
-        <ProjectReference Include="..\Altinn.AccessMgmt.AutoApi\Altinn.AccessMgmt.AutoApi.csproj" />
     </ItemGroup>
 
 </Project>

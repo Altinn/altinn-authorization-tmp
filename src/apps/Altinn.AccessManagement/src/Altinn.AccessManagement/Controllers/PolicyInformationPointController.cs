@@ -1,7 +1,9 @@
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessManagement.Enduser.Services;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
+using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -17,22 +19,19 @@ public class PolicyInformationPointController : ControllerBase
 {
     private readonly IPolicyInformationPoint _pip;
     private readonly IMapper _mapper;
-    private readonly IConnectionRepository _connectionRepository;
-    private readonly IConnectionPackageRepository _connectionPackageRepository;
+    private readonly IRelationService _relationService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PolicyInformationPointController"/> class.
     /// </summary>
     /// <param name="pip">The policy information point</param>
     /// <param name="mapper">The mapper</param>
-    /// <param name="connectionRepository">Connection repo</param>
-    /// <param name="connectionPackageRepository">ConnectionPackage repo</param>
-    public PolicyInformationPointController(IPolicyInformationPoint pip, IMapper mapper, IConnectionRepository connectionRepository, IConnectionPackageRepository connectionPackageRepository)
+    /// <param name="relationService">Relation Service</param>
+    public PolicyInformationPointController(IPolicyInformationPoint pip, IMapper mapper, IRelationService relationService)
     {
         _pip = pip;
         _mapper = mapper;
-        _connectionRepository = connectionRepository;
-        _connectionPackageRepository = connectionPackageRepository;
+        _relationService = relationService;
     }
 
     /// <summary>
@@ -75,18 +74,11 @@ public class PolicyInformationPointController : ControllerBase
     {
         List<AccessPackageUrn> packages = new();
 
-        var conFilter = _connectionRepository.CreateFilterBuilder();
-        conFilter.Equal(t => t.FromId, from);
-        conFilter.Equal(t => t.ToId, to);
-        var connections = await _connectionRepository.Get(conFilter);
+        var connectionPackages = await _relationService.GetPackagePermissionsFromOthers(partyId: to, fromId: from, cancellationToken: cancellationToken);
 
-        if (connections.Count() > 0)
+        if (connectionPackages != null)
         {
-            var conPackFilter = _connectionPackageRepository.CreateFilterBuilder();
-            conPackFilter.In(t => t.Id, connections.Select(t => t.Id));
-            var conPackages = await _connectionPackageRepository.GetExtended(conPackFilter);
-
-            packages.AddRange(conPackages.Select(conPackage => AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked(conPackage.Package.Urn.Split(':').Last()))));
+            packages.AddRange(connectionPackages.Select(conPackage => AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked(conPackage.Package.Urn.Split(':').Last()))));
         }
 
         return Ok(packages);

@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Security.Cryptography;
 using System.Text;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
@@ -135,8 +136,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendFormat(
             "INSERT INTO session_audit_context (changed_by, changed_by_system, change_operation_id)\n" +
             "VALUES ('{0}', '{1}', '{2}');\n",
-            options.ChangedBy, 
-            options.ChangedBySystem, 
+            options.ChangedBy,
+            options.ChangedBySystem,
             options.ChangeOperationId);
 
         return sb.ToString();
@@ -144,21 +145,6 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
     private static string GetAuditVariables(ChangeRequestOptions options)
     {
-        /*
-        private static readonly Guid DefaultPerformedBy = Guid.Parse("1201FF5A-172E-40C1-B0A4-1C121D41475F");
-        
-        if (options.ChangedBySystem == Guid.Empty)
-        {
-            options.ChangedBySystem = DefaultPerformedBy;
-        }
-        */
-
-        /*
-        sb.AppendLine("SELECT current_setting('app.current_user', false) INTO current_user;");
-        sb.AppendLine("SELECT current_setting('app.current_system', false) INTO current_system;");
-        sb.AppendLine("SELECT current_setting('app.current_operation', false) INTO current_operation;");
-        */
-
         return string.Format("SET LOCAL app.changed_by = '{0}'; SET LOCAL app.changed_by_system = '{1}'; SET LOCAL app.change_operation_id = '{2}';", options.ChangedBy, options.ChangedBySystem, options.ChangeOperationId);
     }
 
@@ -181,63 +167,42 @@ public class PostgresQueryBuilder : IDbQueryBuilder
     }
 
     /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters, ChangeRequestOptions options, bool forTranslation = false)
+    public string BuildUpsertQuery(List<GenericParameter> insertProperties, IEnumerable<string> updateProperties, IEnumerable<string> compareFilter, ChangeRequestOptions options, bool forTranslation = false)
     {
-        return BuildMergeQuery(parameters, [new GenericFilter("id", "id")], options, forTranslation);
-
-        /*
-        var sb = new StringBuilder();
-        sb.AppendLine($"INSERT INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)})");
-        sb.AppendLine(" ON CONFLICT (id) DO ");
-        sb.AppendLine($"UPDATE SET {UpdateSetStatement(parameters)}");
-        return sb.ToString();
-        */
-    }
-
-    /// <inheritdoc/>
-    public string BuildUpsertQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, ChangeRequestOptions options, bool forTranslation = false)
-    {
-        if (mergeFilter == null || !mergeFilter.Any())
+        if (compareFilter == null || !compareFilter.Any())
         {
-            mergeFilter.Add(new GenericFilter("id", "id"));
+            compareFilter = new List<string>()
+            {
+                "Id"
+            };
         }
 
-        return BuildMergeQuery(parameters, mergeFilter, options, forTranslation);
+        return BuildMergeQuery(insertProperties.Select(t => t.Key), updateProperties, compareFilter, options, forTranslation);
     }
 
-    private string BuildMergeQuery(List<GenericParameter> parameters, List<GenericFilter> mergeFilter, ChangeRequestOptions options, bool forTranslation = false)
+    private string BuildMergeQuery(IEnumerable<string> insertProperties, IEnumerable<string> updateProperties, IEnumerable<string> compareFilter, ChangeRequestOptions options, bool forTranslation = false)
     {
-        if (mergeFilter == null || !mergeFilter.Any())
-        {
-            throw new ArgumentException("Missing mergefilter");
-        }
-
-        var mergeUpdateUnMatchStatement = string.Join(" OR ", parameters.Where(t => mergeFilter.Count(y => y.PropertyName.Equals(t.Key, StringComparison.OrdinalIgnoreCase)) == 0).Select(t => $"T.{t.Key} <> @{t.Key}"));
-        var mergeUpdateStatement = string.Join(" , ", parameters.Where(t => mergeFilter.Count(y => y.PropertyName.Equals(t.Key, StringComparison.OrdinalIgnoreCase)) == 0).Select(t => $"{t.Key} = @{t.Key}"));
-
         var sb = new StringBuilder();
         sb.AppendLine($"{GetAuditVariables(options)}");
-        sb.AppendLine("WITH N AS ( SELECT ");
-        sb.AppendLine("@id as id");
+        sb.AppendLine("WITH N AS (");
+        sb.AppendLine("SELECT ");
+        sb.AppendLine(string.Join(",", compareFilter.Select(t => $"@{t} as {t}")));
         if (forTranslation)
         {
             sb.AppendLine(", @language as language");
         }
 
         sb.AppendLine(")");
-
-        var mergeStatementFilter = string.Join(" AND ", mergeFilter.Select(t => $"T.{t.PropertyName} = N.{t.PropertyName}"));
-
-        sb.AppendLine($"MERGE INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} AS T USING N ON {mergeStatementFilter}");
+        sb.AppendLine($"MERGE INTO {GetTableName(includeAlias: false, useTranslation: forTranslation)} AS T USING N ON {string.Join(" AND ", compareFilter.Select(t => $"t.{t} = n.{t}"))}");
         if (forTranslation)
         {
             sb.AppendLine(" AND T.language = N.language");
         }
 
-        sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN");
-        sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
+        sb.AppendLine($"WHEN MATCHED AND ({string.Join(" OR ", updateProperties.Select(t => $"T.{t} <> @{t}"))}) THEN");
+        sb.AppendLine($"UPDATE SET {string.Join(",", updateProperties.Select(t => $"{t} = @{t}"))}");
         sb.AppendLine("WHEN NOT MATCHED THEN");
-        sb.AppendLine($"INSERT ({InsertColumns(parameters)}) VALUES({InsertValues(parameters)});");
+        sb.AppendLine($"INSERT ({InsertColumns(insertProperties)}) VALUES({InsertValues(insertProperties)});");
 
         return sb.ToString();
     }
@@ -297,15 +262,24 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         bool useTranslation = !string.IsNullOrEmpty(options.Language) && _definition.EnableTranslation;
         var columns = new List<string>();
 
-        foreach (var p in _definition.Properties.Select(t => t.Property))
+        foreach (var p in _definition.Properties)
         {
-            if (useTranslation && p.PropertyType == typeof(string))
+            if (_definition.ExtendedProperties.Count(t => t.Name == p.Name) > 0)
             {
-                columns.Add($"coalesce(T_{_definition.ModelType.Name}.{p.Name}, {_definition.ModelType.Name}.{p.Name}) AS {p.Name}");
+                var ep = _definition.ExtendedProperties.First(t => t.Name == p.Name);
+                columns.Add($"{ep.Function}({_definition.ModelType.Name}.{p.Name}) AS {ep.ExtendedProperty.Name}");
             }
             else
             {
-                columns.Add($"{_definition.ModelType.Name}.{p.Name} AS {p.Name}");
+                var property = p.Property;
+                if (useTranslation && property.PropertyType == typeof(string))
+                {
+                    columns.Add($"coalesce(T_{_definition.ModelType.Name}.{property.Name}, {_definition.ModelType.Name}.{property.Name}) AS {property.Name}");
+                }
+                else
+                {
+                    columns.Add($"{_definition.ModelType.Name}.{property.Name} AS {property.Name}");
+                }
             }
         }
 
@@ -387,6 +361,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
                 FilterComparer.StartsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 FilterComparer.EndsWith => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 FilterComparer.Contains => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
+                FilterComparer.Like => $"{tableAlias}.{filter.PropertyName} ILIKE @{filter.PropertyName}",
                 _ => throw new NotSupportedException($"Comparer '{filter.Comparer}' is not supported.")
             };
 
@@ -419,7 +394,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
             if (inList.Any())
             {
-                conditions.Add($"{tableAlias}.{m} IN ({string.Join(",", notInList)})");
+                conditions.Add($"{tableAlias}.{m} IN ({string.Join(",", inList)})");
             }
 
             if (notInList.Any())
@@ -443,7 +418,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         sb.AppendLine(query);
         sb.AppendLine(")");
         sb.AppendLine("SELECT *");
-        sb.AppendLine("FROM pagedresult, (SELECT MAX(pagedresult._rownum) AS totalitems FROM pagedresult) AS pageinfo");
+        sb.AppendLine($"FROM pagedresult, (SELECT MAX(pagedresult._rownum) AS _totalItemCount, {options.PageSize} as _pageSize, {options.PageNumber} as _pageNumber FROM pagedresult) AS _totalItemCount");
         sb.AppendLine($"ORDER BY _rownum OFFSET {options.PageSize * (options.PageNumber - 1)} ROWS FETCH NEXT {options.PageSize} ROWS ONLY");
 
         return sb.ToString();
@@ -569,6 +544,14 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         var scriptCollection = new DbMigrationScriptCollection(_definition.ModelType);
         scriptCollection.Version = _definition.Version;
 
+        if (_definition.ManualPreMigrationScripts.Any())
+        {
+            foreach (var dep in _definition.ManualPreMigrationScripts)
+            {
+                scriptCollection.AddScripts($"PreMigrationScript({dep.Key})", dep.Value);
+            }
+        }
+
         //// Create view
         if (_definition.DefinitionType == DbDefinitionType.View)
         {
@@ -650,6 +633,14 @@ public class PostgresQueryBuilder : IDbQueryBuilder
             scriptCollection.AddScripts(CreateAuditDeleteTrigger(isTranslation: true));
         }
 
+        if (_definition.ManualPostMigrationScripts.Any())
+        {
+            foreach (var dep in _definition.ManualPostMigrationScripts)
+            {
+                scriptCollection.AddScripts($"PostMigrationScript({dep.Key})", dep.Value);
+            }
+        }
+
         return scriptCollection;
     }
 
@@ -658,7 +649,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         var scripts = new OrderedDictionary<string, string>();
 
         var query = $"""
-        CREATE OR REPLACE VIEW {GetTableName(includeAlias: false)} AS
+        DROP VIEW IF EXISTS {GetTableName(includeAlias: false)};
+        CREATE VIEW {GetTableName(includeAlias: false)} AS
         {_definition.Query}
         """;
 
@@ -699,11 +691,12 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         var translationHistoryScript = CreateTableScript(translationHistoryName, primaryKeyDefinition, _definition.EnableAudit, isHistory: true, isTranslation: true);
 
         scripts.Add($"CREATE TABLE {dboName}", dboScript);
-        
+
         if (_definition.EnableTranslation)
         {
+            string foreignKey = $"FK_Translation_{_definition.ModelType.Name}_id";
             scripts.Add($"CREATE TABLE {translationName}", translationScript);
-            var translationForeignKey = $"ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} ADD CONSTRAINT FK_Translation_{_definition.ModelType.Name}_id FOREIGN KEY (id) REFERENCES {GetSchemaName()}.{GetTableName(includeAlias: false, includeSchema: false)} (id) ON DELETE CASCADE;";
+            var translationForeignKey = $"ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} DROP CONSTRAINT IF EXISTS {foreignKey}; ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} ADD CONSTRAINT {foreignKey} FOREIGN KEY (id) REFERENCES {GetSchemaName()}.{GetTableName(includeAlias: false, includeSchema: false)} (id) ON DELETE CASCADE;";
             scripts.Add($"ADD CONSTRAINT FK_Translation_{_definition.ModelType.Name}_id", translationForeignKey);
         }
 
@@ -758,8 +751,9 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         {
             if (isTranslation)
             {
+                string foreignKey = $"FK_{_definition.ModelType.Name}_id";
                 script.AppendLine($", CONSTRAINT PK_{_definition.ModelType.Name} PRIMARY KEY ({string.Join(',', _definition.Constraints.First(t => t.IsPrimaryKey).Properties.Select(t => $"{t.Key}"))}, language)");
-                var query = $"ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} ADD CONSTRAINT FK_{_definition.ModelType.Name}_id FOREIGN KEY (id) REFERENCES {GetSchemaName()}.{GetTableName(includeAlias: false, includeSchema: false)} (id) ON DELETE CASCADE;";
+                var query = $"ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} DROP CONSTRAINT IF EXISTS {foreignKey}; ALTER TABLE {GetSchemaName(useTranslation: true)}.{GetTableName(includeAlias: false, includeSchema: false)} ADD CONSTRAINT {foreignKey} FOREIGN KEY (id) REFERENCES {GetSchemaName()}.{GetTableName(includeAlias: false, includeSchema: false)} (id) ON DELETE CASCADE;";
             }
             else
             {
@@ -814,28 +808,156 @@ public class PostgresQueryBuilder : IDbQueryBuilder
 
         string name = string.IsNullOrEmpty(constraint.Name) ? _definition.ModelType.Name : constraint.Name;
 
-        var props = _definition.ModelType.GetProperties();
-
-        foreach (var property in constraint.Properties)
+        var allPropsOnModel = _definition.ModelType.GetProperties().Select(p => p.Name).ToHashSet();
+        foreach (var prop in constraint.Properties.Keys)
         {
-            if (_definition.ModelType.GetProperties().Count(t => t.Name.Equals(property.Key)) == 0)
+            if (!allPropsOnModel.Contains(prop))
             {
-                throw new Exception($"Property {property.Key} not found on {_definition.ModelType.Name}");
+                throw new Exception($"Property {prop} not found on {_definition.ModelType.Name}");
             }
         }
 
-        string key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
-        string query = $"ALTER TABLE {GetTableName(includeAlias: false)} DROP CONSTRAINT IF EXISTS {name}; ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} UNIQUE ({string.Join(',', constraint.Properties.Keys)});";
+        foreach (var prop in constraint.NullableProperties.Keys)
+        {
+            if (!allPropsOnModel.Contains(prop))
+            {
+                throw new Exception($"Property {prop} not found on {_definition.ModelType.Name}");
+            }
+        }
 
-        res.Add(key, query);
+        var nullableProps = constraint.NullableProperties.Keys.ToList();
+        var allProps = constraint.Properties.Keys.ToList();
+        var nonNullableProps = allProps.Where(p => !nullableProps.Contains(p)).ToList();
 
-        var idxName = $"uc_{_definition.ModelType.Name}_{string.Join('_', constraint.Properties.Keys)}_idx".ToLower();
-        var idxKey = $"CREATE INDEX {idxName}";
-        var idxQuery = $"CREATE UNIQUE INDEX IF NOT EXISTS {idxName} ON {GetTableName(includeAlias: false)} ({string.Join(',', constraint.Properties.Keys)}) {(constraint.IncludedProperties.Any() ? $"INCLUDE ({string.Join(',', constraint.IncludedProperties.Keys)})" : string.Empty)};";
+        string tableName = GetTableName(includeAlias: false);
 
-        res.Add(idxKey, idxQuery);
+        string dropConstraintKey = $"ALTER TABLE {tableName} DROP CONSTRAINT IF EXISTS {name}";
+        string dropConstraintQuery = $"ALTER TABLE {tableName} DROP CONSTRAINT IF EXISTS {name};";
+        res.Add(dropConstraintKey, dropConstraintQuery);
+
+        if (!constraint.NullableProperties.Any())
+        {
+            string colsCsv = string.Join(", ", allProps);
+
+            string addConstraintKey = $"ALTER TABLE {tableName} ADD CONSTRAINT {name}";
+            string addConstraintQuery = $"ALTER TABLE {tableName} ADD CONSTRAINT {name} UNIQUE ({colsCsv});";
+            res.Add(addConstraintKey, addConstraintQuery);
+
+            string idxName = $"uc_{_definition.ModelType.Name}_{string.Join("_", allProps)}_idx".ToLowerInvariant();
+            if (idxName.Length > 63)
+            {
+                idxName = GenerateUniqueConstraintName(_definition.ModelType.Name, allProps, 0);
+            }
+
+            string idxKey = $"CREATE INDEX {idxName}";
+            string idxQuery =
+                $"CREATE UNIQUE INDEX IF NOT EXISTS {idxName} " +
+                $"ON {tableName} ({colsCsv}) " +
+                $"{(constraint.IncludedProperties.Any()
+                    ? $"INCLUDE ({string.Join(", ", constraint.IncludedProperties.Keys)}) "
+                    : string.Empty)};";
+            res.Add(idxKey, idxQuery);
+
+            return res;
+        }
+
+        int nullablePropertyCount = nullableProps.Count;
+        int totalCombinations = 1 << nullablePropertyCount;
+
+        for (int mask = 0; mask < totalCombinations; mask++)
+        {
+            var whereConditions = new List<string>();
+            var indexColumns = new List<string>(nonNullableProps);
+            for (int bit = 0; bit < nullablePropertyCount; bit++)
+            {
+                string nullableCol = nullableProps[bit];
+                bool isNotNull = ((mask >> bit) & 1) == 1;
+                if (isNotNull)
+                {
+                    indexColumns.Add(nullableCol);
+                    whereConditions.Add($"{nullableCol} IS NOT NULL");
+                }
+                else
+                {
+                    whereConditions.Add($"{nullableCol} IS NULL");
+                }
+            }
+
+            string idxName = GenerateUniqueConstraintName(_definition.ModelType.Name, allProps, mask);
+
+            string columnsList = string.Join(", ", indexColumns);
+            string whereClause = string.Join(" AND ", whereConditions);
+            string idxKey = $"CREATE INDEX {idxName}";
+            string idxQuery =
+                $"CREATE UNIQUE INDEX IF NOT EXISTS {idxName}" +
+                $" ON {tableName} ({columnsList})" +
+                $"{(constraint.IncludedProperties.Any() 
+                    ? $" INCLUDE ({string.Join(',', constraint.IncludedProperties.Keys)})" 
+                    : string.Empty)}" +
+                $" WHERE {whereClause};";
+
+            res.Add(idxKey, idxQuery);
+        }
 
         return res;
+    }
+
+    private string GenerateUniqueConstraintName(string modelName, IList<string> indexColumns, int mask)
+    {
+        const int MaxPgNameLength = 63;
+
+        string columnsPart = string.Join("_", indexColumns).ToLowerInvariant();
+        string baseName = $"uc_{modelName}_{columnsPart}_m{mask}".ToLowerInvariant();
+
+        if (baseName.Length <= MaxPgNameLength)
+        {
+            return baseName;
+        }
+
+        byte[] hashBytes;
+        using (var sha1 = SHA1.Create())
+        {
+            hashBytes = sha1.ComputeHash(Encoding.UTF8.GetBytes(baseName));
+        }
+
+        string fullHashHex = BitConverter.ToString(hashBytes).Replace("-", string.Empty).ToLowerInvariant();
+        string shortHash = fullHashHex.Substring(0, 8);
+
+        int maskLength = mask.ToString().Length;
+        int reservedLen = /* "uc_" */ 3
+                         + modelName.Length
+                         + /* "_" between modelName and columns */ 1
+                         + /* "_m" + mask */ 2 + maskLength
+                         + /* "_" before hash */ 1
+                         + shortHash.Length;
+
+        int availForColumns = MaxPgNameLength - reservedLen;
+        if (availForColumns < 1)
+        {
+            int reservedMinimal = 3 + modelName.Length + 1 + shortHash.Length;
+            if (reservedMinimal <= MaxPgNameLength)
+            {
+                return $"uc_{modelName}_{shortHash}";
+            }
+            else
+            {
+                int availForModel = MaxPgNameLength - (3 /*"uc_"*/ + 1 /*"_"*/ + shortHash.Length);
+                string truncatedModel = modelName.Substring(0, Math.Max(0, availForModel));
+                return $"uc_{truncatedModel}_{shortHash}";
+            }
+        }
+
+        string truncatedColumns;
+        if (columnsPart.Length <= availForColumns)
+        {
+            truncatedColumns = columnsPart;
+        }
+        else
+        {
+            truncatedColumns = columnsPart.Substring(0, availForColumns);
+        }
+
+        return $"uc_{modelName}_{truncatedColumns}_m{mask}_{shortHash}";
     }
 
     private OrderedDictionary<string, string> CreateForeignKeyConstraint(DbRelationDefinition foreignKey)
@@ -861,7 +983,7 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string name = string.IsNullOrEmpty(foreignKey.Name) ? $"{_definition.ModelType.Name}_{foreignKey.BaseProperty}" : foreignKey.Name;
 
         var key = $"ADD CONSTRAINT {GetTableName(includeAlias: false)}.{name}";
-        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
+        var query = $"ALTER TABLE {GetTableName(includeAlias: false)} DROP CONSTRAINT IF EXISTS {name}; ALTER TABLE {GetTableName(includeAlias: false)} ADD CONSTRAINT {name} FOREIGN KEY ({foreignKey.BaseProperty}) REFERENCES {GetTableName(targetDef, includeAlias: false)} ({foreignKey.RefProperty}) {(foreignKey.UseCascadeDelete ? "ON DELETE CASCADE" : "ON DELETE SET NULL")};";
 
         res.Add(key, query);
 
@@ -888,7 +1010,8 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string baseColumns = $"{columnDefinitions}, audit_validfrom, now() as audit_validto, audit_changedby, audit_changedbysystem, audit_changeoperation, null::uuid AS audit_deletedby, null::uuid AS audit_deletedbysystem, null::text AS audit_deleteoperation";
 
         string viewQuery = $"""
-        CREATE OR REPLACE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: isTranslation)} AS
+        DROP VIEW IF EXISTS {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: isTranslation)};
+        CREATE VIEW {GetTableName(includeAlias: false, useHistory: true, useHistoryView: true, useTranslation: isTranslation)} AS
         SELECT {historyColumns}
         FROM  {GetTableName(useHistory: true, useTranslation: isTranslation)}
         WHERE audit_validfrom <= coalesce(current_setting('app.asof', true)::timestamptz, now())
@@ -937,13 +1060,16 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string modelName = _definition.ModelType.Name;
         string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
         string functionName = $"set_audit_metadata_fn";
+        string triggerName = $"{modelName}_Meta";
         string tableName = GetTableName(includeAlias: false, useTranslation: isTranslation);
 
         var sb = new StringBuilder();
-        sb.AppendLine($"CREATE OR REPLACE TRIGGER {modelName}_Meta BEFORE INSERT OR UPDATE ON {tableName}");
+        sb.AppendLine($"DO $$ BEGIN IF NOT EXISTS (SELECT * FROM pg_trigger t WHERE t.tgname ILIKE '{triggerName}' AND t.tgrelid = '{tableName}'::regclass) THEN");
+        sb.AppendLine($"CREATE OR REPLACE TRIGGER {triggerName} BEFORE INSERT OR UPDATE ON {tableName}");
         sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION dbo.{functionName}();");
+        sb.AppendLine($"END IF; END $$;");
 
-        scripts.Add($"CREATE TRIGGER {schema}.{modelName}_Meta", sb.ToString());
+        scripts.Add($"CREATE TRIGGER {schema}.{triggerName}", sb.ToString());
 
         return scripts;
     }
@@ -1037,13 +1163,16 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string modelName = _definition.ModelType.Name;
         string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
         string functionName = $"audit_{modelName}_update_fn";
+        string triggerName = $"{modelName}_Audit_Update";
         string tableName = GetTableName(includeAlias: false, useTranslation: isTranslation);
 
         var sb = new StringBuilder();
-        sb.AppendLine($"CREATE OR REPLACE TRIGGER {modelName}_Audit_Update AFTER UPDATE ON {tableName}");
+        sb.AppendLine($"DO $$ BEGIN IF NOT EXISTS (SELECT * FROM pg_trigger t WHERE t.tgname ILIKE '{triggerName}' AND t.tgrelid = '{tableName}'::regclass) THEN");
+        sb.AppendLine($"CREATE OR REPLACE TRIGGER {triggerName} AFTER UPDATE ON {tableName}");
         sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {schema}.{functionName}();");
+        sb.AppendLine($"END IF; END $$;");
 
-        scripts.Add($"CREATE TRIGGER {schema}.{modelName}_Audit_Update", sb.ToString());
+        scripts.Add($"CREATE TRIGGER {schema}.{triggerName}", sb.ToString());
 
         return scripts;
     }
@@ -1055,13 +1184,16 @@ public class PostgresQueryBuilder : IDbQueryBuilder
         string modelName = _definition.ModelType.Name;
         string schema = GetSchemaName(useHistory: false, useTranslation: isTranslation);
         string functionName = $"audit_{modelName}_delete_fn";
+        string triggerName = $"{modelName}_Audit_Delete";
         string tableName = GetTableName(includeAlias: false, useTranslation: isTranslation);
 
         var sb = new StringBuilder();
-        sb.AppendLine($"CREATE OR REPLACE  TRIGGER {modelName}_Audit_Delete AFTER DELETE ON {tableName}");
+        sb.AppendLine($"DO $$ BEGIN IF NOT EXISTS (SELECT * FROM pg_trigger t WHERE t.tgname ILIKE '{triggerName}' AND t.tgrelid = '{tableName}'::regclass) THEN");
+        sb.AppendLine($"CREATE OR REPLACE TRIGGER {triggerName} AFTER DELETE ON {tableName}");
         sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {schema}.{functionName}();");
+        sb.AppendLine($"END IF; END $$;");
 
-        scripts.Add($"CREATE TRIGGER {schema}.{modelName}_Audit_Delete", sb.ToString());
+        scripts.Add($"CREATE TRIGGER {schema}.{triggerName}", sb.ToString());
 
         return scripts;
     }

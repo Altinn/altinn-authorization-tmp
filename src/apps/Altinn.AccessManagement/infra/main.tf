@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.26.0"
+      version = "4.34.0"
     }
     static = {
       source  = "tiwood/static"
@@ -10,7 +10,7 @@ terraform {
     }
     time = {
       source  = "hashicorp/time"
-      version = "0.13.0"
+      version = "0.13.1"
     }
   }
 
@@ -210,6 +210,12 @@ module "appsettings" {
   ]
 
   feature_flags = [
+    {
+      name        = "AccessManagement.HostedServices.ResourceRegistrySync"
+      description = "Specifies if the resource register data should streamed from resource register service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
     {
       name        = "AccessManagement.HostedServices.RegisterSync"
       description = "Specifies if the register data should streamed from register service to access management database"

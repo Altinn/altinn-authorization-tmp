@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
@@ -223,16 +224,18 @@ public class DelegationService(
 
             // Find ClientAssignment
             var clientAssignment = await GetAssignment(client.Id, facilitator.Id, clientRole.Id) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
+            var clientPackages = await assignmentService.GetPackagesForAssignment(clientAssignment.Id);
 
             Delegation delegation = null;
             foreach (var package in rp.Value)
             {
-                // Find AssignmentPackage from Client
-                var clientPackages = await connectionPackageRepository.GetB(clientAssignment.Id);
-                var assignmentPackage = clientPackages.FirstOrDefault(t => t.Id == package.Id);
-                if (assignmentPackage == null)
+                var filter = connectionPackageRepository.CreateFilterBuilder();
+
+                // TODO: Add "&& t.CanAssign" when data is ready
+                var clientPackage = clientPackages.FirstOrDefault(t => t.PackageId == package.Id);
+                if (clientPackage == null)
                 {
-                    throw new Exception(string.Format("ClientPartyId assignment does not have the package '{0}'", package.Urn));
+                    throw new Exception(string.Format("Party does not have the package '{0}'", package.Urn));
                 }
 
                 if (delegation == null)
@@ -250,8 +253,12 @@ public class DelegationService(
                     delegation = await GetOrCreateDelegation(clientAssignment, agentAssignment, facilitator, options) ?? throw new Exception(string.Format("Could not find or create delegation '{0}' - {1} - {2}", client.Name, facilitator.Name, agentAssignment.Id));
                 }
 
+                // Find AssignmentPackageId or RolePackageId
+                Guid? assignmentPackageId = clientPackage.AssignmentPackageId;
+                Guid? rolePackageId = clientPackage.RolePackageId;
+
                 // Find or Create DelegationPackage
-                var delegationPackage = await GetOrCreateDelegationPackage(delegation.Id, package.Id, options);
+                var delegationPackage = await GetOrCreateDelegationPackage(delegation.Id, package.Id, assignmentPackageId, rolePackageId, options);
                 if (delegationPackage == null)
                 {
                     throw new Exception("Unable to add package to delegation");
@@ -290,11 +297,22 @@ public class DelegationService(
         return rolepacks;
     }
 
-    private async Task<DelegationPackage> GetOrCreateDelegationPackage(Guid delegationId, Guid packageId, ChangeRequestOptions options)
+    private async Task<DelegationPackage> GetOrCreateDelegationPackage(Guid delegationId, Guid packageId, Guid? assignmentPackageId, Guid? rolePackageId, ChangeRequestOptions options)
     {
         var delegationPackageFilter = delegationPackageRepository.CreateFilterBuilder();
         delegationPackageFilter.Equal(t => t.DelegationId, delegationId);
         delegationPackageFilter.Equal(t => t.PackageId, packageId);
+
+        if (assignmentPackageId != null)
+        {
+            delegationPackageFilter.Equal(t => t.AssignmentPackageId, assignmentPackageId);
+        }
+
+        if (rolePackageId != null)
+        {
+            delegationPackageFilter.Equal(t => t.RolePackageId, rolePackageId);
+        }
+
         var delegationPackage = (await delegationPackageRepository.Get(delegationPackageFilter)).FirstOrDefault();
         if (delegationPackage == null)
         {
@@ -302,7 +320,9 @@ public class DelegationService(
                 new DelegationPackage()
                 {
                     DelegationId = delegationId,
-                    PackageId = packageId
+                    PackageId = packageId,
+                    AssignmentPackageId = assignmentPackageId.HasValue ? assignmentPackageId.Value : null,
+                    RolePackageId = rolePackageId.HasValue ? rolePackageId.Value : null
                 },
                 options: options
             );
@@ -407,7 +427,9 @@ public class DelegationService(
         else
         {
             var roleProvider = await providerRepository.Get(role.ProviderId);
-            if (roleProvider.Code != "sys-altinn3") // Get system from token
+            
+            // Get system from token
+            if (roleProvider.Code != "sys-altinn3")
             {
                 throw new Exception(string.Format("You cannot create assignment with the role '{0}' ({1})", role.Name, role.Code));
             }
