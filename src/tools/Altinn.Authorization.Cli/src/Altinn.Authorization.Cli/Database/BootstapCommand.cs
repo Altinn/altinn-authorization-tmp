@@ -317,7 +317,22 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
 
     private async Task StoreConnectionString(AppsConfig config, Result user, string serverUrl, SecretClient secretClient, Settings settings, CancellationToken cancellationToken)
     {
-        NpgsqlConnectionStringBuilder connectionStringBuilder = CreateConnectionString(config, settings, user, serverUrl);
+        var connectionStringBuilder = new NpgsqlConnectionStringBuilder()
+        {
+            Host = serverUrl,
+            Username = user.RoleName,
+            Password = user.Password,
+            Database = config.Database.Name,
+            SslMode = SslMode.Require,
+            Port = 5432,
+            Pooling = true,
+        };
+
+        if (settings.UsePgbouncer)
+        {
+            connectionStringBuilder.NoResetOnClose = true;
+            connectionStringBuilder.Port = 6432;
+        }
 
         if (settings.MaxPoolSize.HasValue)
         {
@@ -359,28 +374,6 @@ public sealed class BootstapCommand(CancellationToken cancellationToken)
             WriteOperationFailed($"Update '{key}' containing connection string to key vault.");
             throw;
         }
-    }
-
-    private static NpgsqlConnectionStringBuilder CreateConnectionString(AppsConfig config, Settings settings, Result user, string serverUrl)
-    {
-        var connectionString = new NpgsqlConnectionStringBuilder()
-        {
-            Host = serverUrl,
-            Username = user.RoleName,
-            Password = user.Password,
-            Database = config.Database.Name,
-            SslMode = SslMode.Require,
-            Port = 5432,
-            Pooling = true,
-        };
-
-        if (settings.UsePgbouncer)
-        {
-            connectionString.NoResetOnClose = true;
-            connectionString.Port = 6432;
-        }
-
-        return connectionString;
     }
 
     private async Task<PasswordResult> GetOrCreatePassword(SecretClient secretClient, string roleName, Settings settings, CancellationToken cancellationToken)
