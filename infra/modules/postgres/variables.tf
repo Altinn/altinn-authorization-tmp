@@ -43,7 +43,7 @@ variable "configurations" {
   default = {}
 }
 
-variable "enable_pgbouncer" {
+variable "use_pgbouncer" {
   type = bool
   default = false
 }

@@ -26,7 +26,7 @@ locals {
 
   # latest key takes precedence
   configuration = merge(
-    var.enable_pgbouncer ? local.pgbouncer_default_config : {},
+    var.use_pgbouncer ? local.pgbouncer_default_config : {},
     var.configurations,
   )
 }
