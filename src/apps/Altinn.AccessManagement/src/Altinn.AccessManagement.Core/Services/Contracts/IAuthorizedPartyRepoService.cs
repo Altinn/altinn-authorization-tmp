@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Core.Services.Contracts;

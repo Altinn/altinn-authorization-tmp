@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 using Authorization.Platform.Authorization.Models;
 
 namespace Altinn.AccessManagement.Core.Clients.Interfaces;

@@ -1,4 +1,5 @@
 using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 using Azure.Storage.Queues.Models;
 
 namespace Altinn.AccessManagement.Core.Repositories.Interfaces

@@ -6,9 +6,9 @@ using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessManagement.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement.MaskinportenDelegation;
 using Altinn.AccessManagement.Utilities;
-using AutoMapper;
+using Altinn.AccessManagement.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
@@ -24,22 +24,18 @@ namespace Altinn.AccessManagement.Controllers
     {
         private readonly ILogger _logger;
         private readonly IMaskinportenSchemaService _delegation;
-        private readonly IMapper _mapper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MaskinportenSchemaController"/> class.
         /// </summary>
         /// <param name="logger">logger instance</param>
         /// <param name="delegationsService">Handler for the delegation service</param>
-        /// <param name="mapper">mapper handler</param>
         public MaskinportenSchemaController(
             ILogger<MaskinportenSchemaController> logger,
-            IMaskinportenSchemaService delegationsService,
-            IMapper mapper)
+            IMaskinportenSchemaService delegationsService)
         {
             _logger = logger;
             _delegation = delegationsService;
-            _mapper = mapper;
         }
 
         /// <summary>

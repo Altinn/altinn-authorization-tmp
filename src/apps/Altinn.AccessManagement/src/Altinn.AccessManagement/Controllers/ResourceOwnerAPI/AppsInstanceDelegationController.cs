@@ -6,9 +6,9 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessManagement.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement.InstanceDelegation;
 using Altinn.Authorization.ProblemDetails;
-using AutoMapper;
+using Altinn.AccessManagement.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,7 +21,6 @@ namespace Altinn.AccessManagement.Controllers;
 [Route("accessmanagement/api")]
 public class AppsInstanceDelegationController : ControllerBase
 {
-    private readonly IMapper _mapper;
     private readonly IAppsInstanceDelegationService _appInstanceDelegationService;
 
     /// <summary>
@@ -30,10 +29,9 @@ public class AppsInstanceDelegationController : ControllerBase
     /// <param name="mapper">mapper service</param>
     /// <param name="appInstanceDelegationService">app instance delegation handler</param>
     public AppsInstanceDelegationController(
-        IMapper mapper,
+        
         IAppsInstanceDelegationService appInstanceDelegationService)
     {
-        _mapper = mapper;
         _appInstanceDelegationService = appInstanceDelegationService;
     }
 

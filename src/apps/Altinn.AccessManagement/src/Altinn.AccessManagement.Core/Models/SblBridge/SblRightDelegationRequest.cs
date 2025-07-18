@@ -1,3 +1,4 @@
+using Altinn.Authorization.Shared;
 ﻿namespace Altinn.AccessManagement.Core.Models
 {
     /// <summary>

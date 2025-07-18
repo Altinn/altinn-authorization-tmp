@@ -1,3 +1,4 @@
+using Altinn.Authorization.Shared;
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace Altinn.AccessManagement.Core.Models

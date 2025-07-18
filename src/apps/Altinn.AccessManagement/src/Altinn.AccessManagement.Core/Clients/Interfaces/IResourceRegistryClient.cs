@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 

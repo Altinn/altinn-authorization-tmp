@@ -20,6 +20,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Api.Contracts\src\Altinn.Authorization.Api.Contracts\Altinn.Authorization.Api.Contracts.csproj" />
+      <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Shared\Altinn.Authorization.Shared.csproj" />
     </ItemGroup>
 
 </Project>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Microsoft.AspNetCore.Http;

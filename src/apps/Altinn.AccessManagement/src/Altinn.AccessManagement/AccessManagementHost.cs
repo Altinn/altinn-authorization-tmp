@@ -60,7 +60,6 @@ internal static partial class AccessManagementHost
         builder.ConfigureAppsettings();
         builder.ConfigureLibsHost();
         builder.Services.AddMemoryCache();
-        builder.Services.AddAutoMapper(typeof(Program));
         builder.Services.AddRouting(options => options.LowercaseUrls = true);
         builder.Services.AddControllers();
         builder.Services.AddFeatureManagement();

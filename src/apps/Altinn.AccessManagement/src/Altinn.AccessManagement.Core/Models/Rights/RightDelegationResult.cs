@@ -1,3 +1,4 @@
+using Altinn.Authorization.Shared;
 ﻿using System.ComponentModel.DataAnnotations;
 using Altinn.AccessManagement.Core.Enums;
 

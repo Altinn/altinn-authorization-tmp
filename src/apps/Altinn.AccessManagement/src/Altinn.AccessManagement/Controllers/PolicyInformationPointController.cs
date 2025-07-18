@@ -1,11 +1,11 @@
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Enduser.Services;
-using Altinn.AccessManagement.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Delegation;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.Models;
-using AutoMapper;
+using Altinn.AccessManagement.Mappers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Controllers;
@@ -18,19 +18,16 @@ namespace Altinn.AccessManagement.Controllers;
 public class PolicyInformationPointController : ControllerBase
 {
     private readonly IPolicyInformationPoint _pip;
-    private readonly IMapper _mapper;
     private readonly IRelationService _relationService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PolicyInformationPointController"/> class.
     /// </summary>
     /// <param name="pip">The policy information point</param>
-    /// <param name="mapper">The mapper</param>
     /// <param name="relationService">Relation Service</param>
-    public PolicyInformationPointController(IPolicyInformationPoint pip, IMapper mapper, IRelationService relationService)
+    public PolicyInformationPointController(IPolicyInformationPoint pip, IRelationService relationService)
     {
         _pip = pip;
-        _mapper = mapper;
         _relationService = relationService;
     }
 
@@ -57,7 +54,7 @@ public class PolicyInformationPointController : ControllerBase
             return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
         }
 
-        return _mapper.Map<List<DelegationChangeExternal>>(response.DelegationChanges);
+        return response.DelegationChanges.ToExternal();
     }
 
     /// <summary>

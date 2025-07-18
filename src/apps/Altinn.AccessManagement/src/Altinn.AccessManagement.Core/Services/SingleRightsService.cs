@@ -6,6 +6,7 @@ using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 using Altinn.AccessManagement.Core.Models.AccessList;
 using Altinn.AccessManagement.Core.Models.Authentication;
 using Altinn.AccessManagement.Core.Models.Profile;

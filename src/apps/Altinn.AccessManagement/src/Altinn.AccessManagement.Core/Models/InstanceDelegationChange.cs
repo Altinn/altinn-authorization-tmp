@@ -1,3 +1,4 @@
+using Altinn.Authorization.Shared;
 ﻿using System.Text.Json.Serialization;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Enums;

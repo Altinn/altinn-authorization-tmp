@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 
 namespace Altinn.AccessManagement.Core.Services.Interfaces
 {

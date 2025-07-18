@@ -1,4 +1,5 @@
 using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 using Altinn.AccessManagement.Resolvers;
 using Microsoft.Extensions.DependencyInjection;
 

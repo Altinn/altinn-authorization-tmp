@@ -3,8 +3,8 @@ using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessManagement.Models;
-using AutoMapper;
+using Altinn.Authorization.Api.Contracts.AccessManagement.AuthorizedParty;
+using Altinn.AccessManagement.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
@@ -19,7 +19,6 @@ namespace Altinn.AccessManagement.Controllers;
 public class ResourceOwnerAuthorizedPartiesController : ControllerBase
 {
     private readonly ILogger _logger;
-    private readonly IMapper _mapper;
     private readonly IAuthorizedPartiesService _authorizedPartiesService;
 
     /// <summary>
@@ -30,11 +29,10 @@ public class ResourceOwnerAuthorizedPartiesController : ControllerBase
     /// <param name="authorizedPartiesService">service implementation for authorized parties</param>
     public ResourceOwnerAuthorizedPartiesController(
         ILogger<ResourceOwnerAuthorizedPartiesController> logger,
-        IMapper mapper,
+        
         IAuthorizedPartiesService authorizedPartiesService)
     {
         _logger = logger;
-        _mapper = mapper;
         _authorizedPartiesService = authorizedPartiesService;
     }
 

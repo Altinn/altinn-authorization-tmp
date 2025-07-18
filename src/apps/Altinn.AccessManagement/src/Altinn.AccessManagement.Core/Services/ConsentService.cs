@@ -5,6 +5,7 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;

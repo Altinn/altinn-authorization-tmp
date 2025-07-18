@@ -1,3 +1,4 @@
+using Altinn.Authorization.Shared;
 ﻿#nullable enable
 using System.Text.Json.Serialization;
 using Altinn.AccessManagement.Enums;

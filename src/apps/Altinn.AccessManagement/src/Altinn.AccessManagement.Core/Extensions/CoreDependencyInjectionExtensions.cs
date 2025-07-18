@@ -1,6 +1,7 @@
 using Altinn.AccessManagement.Core.Asserters;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.Authorization.Shared;
 using Altinn.AccessManagement.Core.Resolvers;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Implementation;
