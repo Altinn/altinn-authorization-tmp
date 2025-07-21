@@ -59,11 +59,16 @@ variable "db_compute_size" {
 
 variable "db_storage_tier" {
   type    = string
-  default = "P4"
+  default = "P10"
 }
 
 variable "sbl_endpoint" {
   type = string
+}
+
+variable "use_pgbouncer" {
+  type    = bool
+  default = false
 }
 
 variable "features" {
