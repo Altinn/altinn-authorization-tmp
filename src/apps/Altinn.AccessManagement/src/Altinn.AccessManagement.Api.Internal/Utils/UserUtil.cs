@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace Altinn.AccessManagement.Api.Internal.Utils
+namespace Altinn.AccessManagement.Api.Enduser.Utils
 {
     /// <summary>
     /// Utility class for user related operations

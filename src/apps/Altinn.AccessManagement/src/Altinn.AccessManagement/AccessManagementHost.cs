@@ -107,6 +107,7 @@ internal static partial class AccessManagementHost
         builder.ConfigureAccessManagementPersistence();
         builder.ConfigureHostedServices();
         builder.AddAccessManagementEnduser();
+        builder.AddAccessManagementInternal();
 
         return builder.Build();
     }

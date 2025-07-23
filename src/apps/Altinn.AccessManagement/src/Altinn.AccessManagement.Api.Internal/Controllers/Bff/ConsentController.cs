@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
-using Altinn.AccessManagement.Api.Internal.Extensions;
-using Altinn.AccessManagement.Api.Internal.Utils;
+using Altinn.AccessManagement.Api.Enduser.Extensions;
+using Altinn.AccessManagement.Api.Enduser.Utils;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -12,7 +12,7 @@ using Altinn.Common.PEP.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
+namespace Altinn.AccessManagement.Api.Enduser.Controllers.Bff
 {
     /// <summary>
     /// API controller for managing consent information for end users.
