@@ -4,7 +4,7 @@ using Altinn.Authorization.Host.Lease;
 namespace Altinn.AccessManagement.HostedServices.Contracts
 {
     /// <summary>
-    /// Service for synchronizing Altinn admin roles.
+    /// Service for synchronizing Altinn client roles.
     /// </summary>
     public interface IAltinnAdminRoleSyncService
     {

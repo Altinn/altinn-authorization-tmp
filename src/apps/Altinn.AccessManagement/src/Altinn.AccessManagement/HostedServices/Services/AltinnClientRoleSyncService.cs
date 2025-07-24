@@ -27,29 +27,24 @@ namespace Altinn.AccessManagement.HostedServices.Services
         /// <param name="lease">The lease service used for managing leases.</param>
         /// <param name="role">The role service used for streaming roles.</param>
         /// <param name="delegationService">The delegation service used for managing delegations.</param>
-        /// <param name="connectionService">The connection service used for managing connections.</param>
         /// <param name="logger">The logger instance for logging information and errors.</param>
         /// <param name="featureManager">The feature manager for handling feature flags.</param>
         public AltinnClientRoleSyncService(
             IAltinnLease lease,
             IAltinnSblBridge role,
             IDelegationService delegationService,
-            IConnectionService connectionService,
             ILogger<AltinnClientRoleSyncService> logger,
             IFeatureManager featureManager           
         ) : base(lease, featureManager)
         {
             _role = role;
             _delegationService = delegationService;
-            _connectionService = connectionService;
             _logger = logger;
         }
 
         private readonly IAltinnSblBridge _role;
         private readonly IDelegationService _delegationService;
-        private readonly IConnectionService _connectionService;
         private readonly ILogger<AltinnClientRoleSyncService> _logger;
-
 
         /// <inheritdoc />
         public async Task SyncClientRoles(LeaseResult<AltinnClientRoleLease> ls, CancellationToken cancellationToken)
@@ -84,8 +79,6 @@ namespace Altinn.AccessManagement.HostedServices.Services
                             ChangedAt = item.DelegationChangeDateTime ?? DateTime.UtcNow,
                         };
 
-                        string packageUrn = GetClientPackageFromRoleTypeCode(item.RoleTypeCode, cancellationToken);
-
                         // Convert RoleDelegationModel to Client Delegation 
                         var delegationData = await CreateClientDelegationRequest(item, cancellationToken);
 
@@ -100,7 +93,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                                     item.FromPartyUuid,
                                     item.ToUserPartyUuid,
                                     item.PerformedByPartyUuid,
-                                    packageUrn);
+                                    delegationData.RolePackages.First().PackageUrn);
                             }
                         }
                         else
@@ -112,7 +105,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                                     "The delegation is missing facilitator data so it is not a valid client delegation {FromParty}, ToParty: {ToParty}, PackageUrn: {PackageUrn}",
                                     item.FromPartyUuid,
                                     item.ToUserPartyUuid,
-                                    packageUrn);
+                                    delegationData.RolePackages.First().PackageUrn);
                                 continue;
                             }
 
@@ -144,14 +137,14 @@ namespace Altinn.AccessManagement.HostedServices.Services
                 Facilitator = facilitatorPartyId,
             };
 
-            var delegationContent = CreateSystemDelegationRolePackageDtoForClientDelegation(delegationModel.RoleTypeCode, cancellationToken);
+            var delegationContent = await CreateSystemDelegationRolePackageDtoForClientDelegation(delegationModel.RoleTypeCode, cancellationToken);
             request.RolePackages.Add(delegationContent);
             request.AgentRole = "agent";
 
             return request;
         }
 
-        private CreateSystemDelegationRolePackageDto CreateSystemDelegationRolePackageDtoForClientDelegation(string roleTypeCode, CancellationToken cancellationToken = default)
+        private Task<CreateSystemDelegationRolePackageDto> CreateSystemDelegationRolePackageDtoForClientDelegation(string roleTypeCode, CancellationToken cancellationToken = default)
         {
             string urn = string.Empty;
             string clientRoleCode = string.Empty;
@@ -185,32 +178,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                 PackageUrn = urn
             };
 
-            return accessPackage;
-        }
-
-        private string GetClientPackageFromRoleTypeCode(string roleTypeCode, CancellationToken cancellationToken = default)
-        {
-            string urn = string.Empty;
-            switch (roleTypeCode)
-            {
-                case "A0237":
-                    urn = "urn:altinn:accesspackage:ansvarlig-revisor";
-                    break;
-                case "A0238":
-                    urn = "urn:altinn:accesspackage:revisormedarbeider";
-                    break;
-                case "A0239":
-                    urn = "urn:altinn:accesspackage:regnskapsforer-med-signeringsrettighet";
-                    break;
-                case "A0240":
-                    urn = "urn:altinn:accesspackage:regnskapsforer-uten-signeringsrettighet";
-                    break;
-                case "A0241":
-                    urn = "urn:altinn:accesspackage:regnskapsforer-lonn";
-                    break;
-            }
-
-            return urn;
+            return Task.FromResult(accessPackage);
         }
     }
 }

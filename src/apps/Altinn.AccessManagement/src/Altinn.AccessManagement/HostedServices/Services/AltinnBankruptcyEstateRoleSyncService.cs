@@ -50,7 +50,6 @@ namespace Altinn.AccessManagement.HostedServices.Services
         private readonly IConnectionService _connectionService;
         private readonly ILogger<AltinnBankruptcyEstateRoleSyncService> _logger;
 
-
         /// <inheritdoc />
         public async Task SyncBankruptcyEstateRoles(LeaseResult<AltinnBankruptcyEstateRoleLease> ls, CancellationToken cancellationToken)
         {

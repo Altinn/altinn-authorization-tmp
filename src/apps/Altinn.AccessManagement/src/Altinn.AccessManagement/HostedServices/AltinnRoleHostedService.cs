@@ -25,7 +25,8 @@ namespace Altinn.AccessManagement.HostedServices
         ILogger<AltinnRoleHostedService> logger,
         IAllAltinnRoleSyncService allAltinnRoleSyncService,
         IAltinnClientRoleSyncService altinnClientRoleSyncService,
-        IAltinnBankruptcyEstateRoleSyncService altinnBankruptcyEstateRoleSyncService) : IHostedService, IDisposable
+        IAltinnBankruptcyEstateRoleSyncService altinnBankruptcyEstateRoleSyncService,
+        IAltinnAdminRoleSyncService altinnAdminRoleSyncService) : IHostedService, IDisposable
     {
         private readonly IAltinnLease _lease = lease;
         private readonly ILogger<AltinnRoleHostedService> _logger = logger;
@@ -43,7 +44,7 @@ namespace Altinn.AccessManagement.HostedServices
         {
             Log.StartAltinnRoleSync(_logger);
 
-            _timerAltinnRoles = new Timer(async state => await SyncAllAltinnRoleDispatcher(state), _stop.Token, TimeSpan.Zero, TimeSpan.FromMinutes(2));
+            _timerAltinnRoles = new Timer(async state => await SyncAltinnRoleDispatcher(state), _stop.Token, TimeSpan.Zero, TimeSpan.FromMinutes(2));
 
             return Task.CompletedTask;
         }
@@ -52,7 +53,7 @@ namespace Altinn.AccessManagement.HostedServices
         /// Dispatches the Altinn roles synchronization process in a separate task.
         /// </summary>
         /// <param name="state">Cancellation token for stopping execution.</param>
-        private async Task SyncAllAltinnRoleDispatcher(object state)
+        private async Task SyncAltinnRoleDispatcher(object state)
         {
             var cancellationToken = (CancellationToken)state;
             try
@@ -95,11 +96,42 @@ namespace Altinn.AccessManagement.HostedServices
 
                     await SyncAltinnBancruptcyEstateRoles(ls, options, cancellationToken);
                 }
+
+                if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesAltinnAdminRoleSync))
+                {
+                    await using var ls = await _lease.TryAquireNonBlocking<AltinnAdminRoleLease>("access_management_altinnadminrole_sync", cancellationToken);
+                    if (!ls.HasLease || cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    await SyncAltinnAdminRoles(ls, options, cancellationToken);
+                }
             }
             catch (Exception ex)
             {
                 Log.SyncError(_logger, ex);
             }            
+        }
+
+        private async Task SyncAltinnAdminRoles(LeaseResult<AltinnAdminRoleLease> ls, ChangeRequestOptions options, CancellationToken cancellationToken)
+        {
+            var altinnAdminRoleStatus = await _statusService.GetOrCreateRecord(Guid.Parse("C8E97435-40F6-4C23-8886-29EBB3696DAC"), "accessmgmt-sync-sblbridge-adminrole", options, 5);
+            var canRunAltinnAdminRoleSync = await _statusService.TryToRun(altinnAdminRoleStatus, options);
+
+            try
+            {
+                if (canRunAltinnAdminRoleSync)
+                {
+                    await altinnAdminRoleSyncService.SyncAdminRoles(ls, cancellationToken);
+                    await _statusService.RunSuccess(altinnAdminRoleStatus, options);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.SyncError(_logger, ex);
+                await _statusService.RunFailed(altinnAdminRoleStatus, ex, options);
+            }
         }
 
         private async Task SyncAltinnBancruptcyEstateRoles(LeaseResult<AltinnBankruptcyEstateRoleLease> ls, ChangeRequestOptions options, CancellationToken cancellationToken)
