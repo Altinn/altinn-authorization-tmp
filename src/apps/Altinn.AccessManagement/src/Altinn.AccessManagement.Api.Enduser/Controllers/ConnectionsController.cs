@@ -214,4 +214,47 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Remove package from connection (assignment or delegation)
+    /// </summary>
+    [HttpGet("accesspackages/delegationcheck")]
+    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> RemovePackages([FromQuery] Guid party, [FromQuery] IEnumerable<Guid>? packageIds, [FromQuery] IEnumerable<string> packages, CancellationToken cancellationToken = default)
+    {
+        var problem = EnduserValidationRules.Validate(
+            EnduserValidationRules.QueryParameters.PackageReferences(packageIds, packages)
+        );
+
+        if (problem is { })
+        {
+            return problem.ToActionResult();
+        }
+        
+        async Task<Result<IEnumerable<DelegationCheck>>> CheckPackage()
+        {
+            if (packageIds is { } && packageIds.Any())
+            {
+                return await ConnectionService.CheckPackage(party, packageIds, cancellationToken);
+            }
+
+            return await ConnectionService.CheckPackage(party, packages, cancellationToken);
+        }
+
+        var result = await CheckPackage();
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(result.Value);
+    }
 }
+
+
+// GET /accessmanagement/api/v1/enduser/connections/accesspackages/delegationcheck?party={party}&packageId={packageId}&package={packageUrnValue}

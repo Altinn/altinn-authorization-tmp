@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
@@ -353,6 +354,47 @@ public class ConnectionService(
         return null;
     }
 
+    public Task<Result<IEnumerable<DelegationCheck>>> CheckPackage(Guid party, IEnumerable<Guid> packageId, CancellationToken cancellationToken = default)
+    {
+        return CheckPackage(party, packageId, "packageIds", cancellationToken);
+    }
+
+    public async Task<Result<IEnumerable<DelegationCheck>>> CheckPackage(Guid party, IEnumerable<string> packageUrns, CancellationToken cancellationToken = default)
+    {
+        packageUrns = packageUrns.Select(p => p.StartsWith("urn:", StringComparison.Ordinal) || p.StartsWith(':') ? p : ":" + p);
+
+        var filter = PackageRepository.CreateFilterBuilder()
+            .In(t => t.Urn, packageUrns);
+
+        var packages = await PackageRepository.Get(filter, callerName: SpanName("Get packages using URNs"), cancellationToken: cancellationToken);
+        var problem = EnduserValidationRules.Validate(EnduserValidationRules.QueryParameters.PackageUrnLookup(packages, packageUrns));
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        return await CheckPackage(party, packages.Select(p => p.Id), "packages", cancellationToken);
+    }
+
+    public async Task<Result<IEnumerable<DelegationCheck>>> CheckPackage(Guid partyId, IEnumerable<Guid> packageIds, string queryParamName, CancellationToken cancellationToken)
+    {
+        var filter = ConnectionPackageRepository.CreateFilterBuilder()
+            .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
+            .Equal(t => t.FromId, partyId)
+            .In(t => t.PackageId, packageIds);
+
+        var assignedPackages = await ConnectionPackageRepository.GetExtended(filter, callerName: SpanName("Get packages assigned to calling user"), cancellationToken: cancellationToken);
+
+        return assignedPackages.Select(p =>
+        {
+            return new DelegationCheck
+            {
+                Id = p.PackageId,
+                CanAssign = p.CanAssign,
+            };
+        }).ToList();
+    }
+
     private ValidationProblemInstance? ValidateAssignmentData(ExtEntity entityFrom, ExtEntity entityTo, IEnumerable<Role> roles)
     {
         var problem = EnduserValidationRules.Validate(
@@ -389,6 +431,7 @@ public class ConnectionService(
 
     private static string SpanName(string spanName) =>
         $"{nameof(ConnectionService)}: {spanName}";
+
 }
 
 /// <summary>
@@ -498,4 +541,30 @@ public interface IEnduserConnectionService
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
     Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, string role, string package, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
+    /// </summary>
+    /// <param name="party">ID of the person.</param>
+    /// <param name="packageId">Unique identifier of the package.</param>
+    /// <param name="cancellationToken">
+    /// Token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// </returns>
+    Task<Result<IEnumerable<DelegationCheck>>> CheckPackage(Guid party, IEnumerable<Guid> packageId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
+    /// </summary>
+    /// <param name="party">ID of the person.</param>
+    /// <param name="package">Urn value of the package.</param>
+    /// <param name="cancellationToken">
+    /// Token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// </returns>
+    Task<Result<IEnumerable<DelegationCheck>>> CheckPackage(Guid party, IEnumerable<string> package, CancellationToken cancellationToken = default);
 }
