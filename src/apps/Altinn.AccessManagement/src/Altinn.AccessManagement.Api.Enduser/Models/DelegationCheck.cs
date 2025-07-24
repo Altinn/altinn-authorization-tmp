@@ -1,10 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Annotations;
-
 namespace Altinn.AccessManagement.Api.Enduser.Models;
 
 /// <summary>
-/// Input for connection controller.
+/// Delegation Check Api Model
 /// </summary>
 public class DelegationCheck
 {
