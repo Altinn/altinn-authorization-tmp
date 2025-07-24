@@ -9,47 +9,23 @@ using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.ProblemDetails;
 
-namespace Altinn.AccessManagement.Enduser.Services;
+namespace Altinn.AccessManagement.Internal.Services;
 
 /// <summary>
 /// Service for managing connections.
 /// </summary>
-public class ConnectionService(
-    IDbAudit dbAudit,
-    IPackageRepository packageRepository,
-    IRoleRepository roleRepository,
-    IConnectionPackageRepository connectionPackageRepository,
-    IAssignmentRepository assignmentRepository,
-    IDelegationRepository delegationRepository,
-    IAssignmentPackageRepository assignmentPackageRepository,
-    IEntityRepository entityRepository,
-    IRelationService relationService,
-    IRelationPermissionRepository relationPermissionRepository,
-    IRelationRepository relationRepository
-    ) : IEnduserConnectionService
+public class InternalConnectionsService(
+    IDbAudit DbAudit,
+    IPackageRepository PackageRepository,
+    IRoleRepository RoleRepository,
+    IConnectionPackageRepository ConnectionPackageRepository,
+    IAssignmentRepository AssignmentRepository,
+    IDelegationRepository DelegationRepository,
+    IAssignmentPackageRepository AssignmentPackageRepository,
+    IEntityRepository EntityRepository,
+    IRelationService RelationService
+    ) : IInternalConnectionService
 {
-    private IDbAudit DbAudit { get; } = dbAudit;
-
-    private IRelationService RelationService { get; } = relationService;
-
-    private IRelationRepository RelationRepository { get; } = relationRepository;
-
-    private IPackageRepository PackageRepository { get; } = packageRepository;
-
-    private IRoleRepository RoleRepository { get; } = roleRepository;
-
-    private IConnectionPackageRepository ConnectionPackageRepository { get; } = connectionPackageRepository;
-
-    private IAssignmentRepository AssignmentRepository { get; } = assignmentRepository;
-
-    private IDelegationRepository DelegationRepository { get; } = delegationRepository;
-
-    private IAssignmentPackageRepository AssignmentPackageRepository { get; } = assignmentPackageRepository;
-
-    private IEntityRepository EntityRepository { get; } = entityRepository;
-
-    private IRelationPermissionRepository RelationPermissionRepository { get; } = relationPermissionRepository;
-
     /// <inheritdoc />
     public async Task<Result<List<CompactRelationDto>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default)
     {
@@ -135,10 +111,10 @@ public class ConnectionService(
             var delegationsFrom = await DelegationRepository.Get(f => f.FromId, existingAssignment.Id, callerName: SpanName("Get existing package delegations (From)"), cancellationToken: cancellationToken);
             var delegationsTo = await DelegationRepository.Get(f => f.ToId, existingAssignment.Id, callerName: SpanName("Get existing package delegations (To)"), cancellationToken: cancellationToken);
 
-            problem = EnduserValidationRules.Validate(
-                EnduserValidationRules.QueryParameters.HasPackagesAssigned(packages),
-                EnduserValidationRules.QueryParameters.HasDelegationsAssigned(delegationsFrom),
-                EnduserValidationRules.QueryParameters.HasDelegationsAssigned(delegationsTo)
+            problem = InternalValidationRules.Validate(
+                InternalValidationRules.QueryParameters.HasPackagesAssigned(packages),
+                InternalValidationRules.QueryParameters.HasDelegationsAssigned(delegationsFrom),
+                InternalValidationRules.QueryParameters.HasDelegationsAssigned(delegationsTo)
             );
             if (problem is { })
             {
@@ -183,7 +159,7 @@ public class ConnectionService(
             .Add(t => t.Urn, package, FilterComparer.EndsWith);
 
         var packages = await PackageRepository.Get(filter, callerName: SpanName("Get packages using URN"), cancellationToken: cancellationToken);
-        var problem = EnduserValidationRules.Validate(EnduserValidationRules.QueryParameters.PackageUrnLookup(packages, package));
+        var problem = InternalValidationRules.Validate(InternalValidationRules.QueryParameters.PackageUrnLookup(packages, package));
         if (problem is { })
         {
             return problem;
@@ -214,7 +190,7 @@ public class ConnectionService(
             .Equal(t => t.RoleId, roleId);
 
         var existingAssignments = await AssignmentRepository.Get(filter, callerName: SpanName("Get existing assignments"), cancellationToken: cancellationToken);
-        problem = EnduserValidationRules.Validate(EnduserValidationRules.QueryParameters.VerifyAssignmentRoleExists(existingAssignments, role));
+        problem = InternalValidationRules.Validate(InternalValidationRules.QueryParameters.VerifyAssignmentRoleExists(existingAssignments, role));
         Assignment assignment;
         if (problem is { })
         {
@@ -243,11 +219,11 @@ public class ConnectionService(
         var userpackage = userPackags.Where(p => p.PackageId == packageId)
             .ToList();
 
-        problem = EnduserValidationRules.Validate(
-            EnduserValidationRules.QueryParameters.AnyPackages(userpackage, queryParamName),
-            EnduserValidationRules.QueryParameters.PackageIsAssignableByDefinition(userpackage, queryParamName),
-            EnduserValidationRules.QueryParameters.PackageIsAssignableByUser(userpackage, queryParamName),
-            EnduserValidationRules.QueryParameters.PackageIsAssignableToRecipient(userpackage, dependencies.EntityTo, queryParamName)
+        problem = InternalValidationRules.Validate(
+            InternalValidationRules.QueryParameters.AnyPackages(userpackage, queryParamName),
+            InternalValidationRules.QueryParameters.PackageIsAssignableByDefinition(userpackage, queryParamName),
+            InternalValidationRules.QueryParameters.PackageIsAssignableByUser(userpackage, queryParamName),
+            InternalValidationRules.QueryParameters.PackageIsAssignableToRecipient(userpackage, dependencies.EntityTo, queryParamName)
         );
 
         if (problem is { })
@@ -290,7 +266,7 @@ public class ConnectionService(
             .Add(t => t.Urn, package, FilterComparer.EndsWith);
 
         var packages = await PackageRepository.Get(filter, callerName: SpanName("Get packages using URN"), cancellationToken: cancellationToken);
-        var problem = EnduserValidationRules.Validate(EnduserValidationRules.QueryParameters.PackageUrnLookup(packages, package));
+        var problem = InternalValidationRules.Validate(InternalValidationRules.QueryParameters.PackageUrnLookup(packages, package));
         if (problem is { })
         {
             return problem;
@@ -355,11 +331,11 @@ public class ConnectionService(
 
     private ValidationProblemInstance? ValidateAssignmentData(ExtEntity entityFrom, ExtEntity entityTo, IEnumerable<Role> roles)
     {
-        var problem = EnduserValidationRules.Validate(
-            EnduserValidationRules.QueryParameters.PartyExists(entityFrom, "from"),
-            EnduserValidationRules.QueryParameters.PartyExists(entityTo, "to"),
-            EnduserValidationRules.QueryParameters.PartyIsEntityType(entityFrom, "Organisasjon", "from"),
-            EnduserValidationRules.QueryParameters.PartyIsEntityType(entityTo, "Organisasjon", "to")
+        var problem = InternalValidationRules.Validate(
+            InternalValidationRules.QueryParameters.PartyExists(entityFrom, "from"),
+            InternalValidationRules.QueryParameters.PartyExists(entityTo, "to"),
+            InternalValidationRules.QueryParameters.PartyIsEntityType(entityFrom, "Organisasjon", "from"),
+            InternalValidationRules.QueryParameters.PartyIsEntityType(entityTo, "Systembruker", "to")
         );
 
         if (problem is { })
@@ -388,13 +364,13 @@ public class ConnectionService(
         throw new UnreachableException();
 
     private static string SpanName(string spanName) =>
-        $"{nameof(ConnectionService)}: {spanName}";
+        $"{nameof(InternalConnectionsService)}: {spanName}";
 }
 
 /// <summary>
 /// Interface for managing connections.
 /// </summary>
-public interface IEnduserConnectionService
+public interface IInternalConnectionService
 {
     /// <summary>
     /// Retrieves a list of external connections, optionally filtered by origin and/or destination entity IDs.
