@@ -29,7 +29,7 @@ resource "azurerm_role_assignment" "grafana_admin" {
   scope                = azurerm_resource_group.hub.id
   role_definition_name = "Grafana Admin"
   principal_id         = each.value
-  for_each             = toset(var.developer_prod_principal_ids)
+  for_each             = toset(var.maintainers_principal_ids)
 }
 
 resource "azurerm_role_assignment" "grafana_editors" {
