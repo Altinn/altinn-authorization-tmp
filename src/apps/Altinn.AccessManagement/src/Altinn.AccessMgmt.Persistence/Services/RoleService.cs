@@ -6,6 +6,8 @@ using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.AccessMgmt.Repo.Definitions;
 using Authorization.Platform.Authorization.Models;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Azure;
 using Newtonsoft.Json.Linq;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
@@ -26,9 +28,11 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
             return null;
         }
 
-        await GetSingleLegacyRoleCodeAndUrn(extRole);
+        var roleDto = new RoleDto(extRole);
 
-        return new RoleDto(extRole);
+        await GetSingleLegacyRoleCodeAndUrn(roleDto);
+
+        return roleDto;
     }
 
     /// <inheritdoc/>
@@ -40,9 +44,8 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
             return null;
         }
 
-        await GetLegacyRoleCodeAndUrn(roles);
-
-        return roles.Select(t => new RoleDto(t));
+        var roleDtos = roles.Select(t => new RoleDto(t));
+        return await GetLegacyRoleCodeAndUrn(roleDtos);
     }
 
     /// <inheritdoc />
@@ -54,9 +57,8 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
             return null;
         }
 
-        await GetLegacyRoleCodeAndUrn(roles);
-
-        return roles.Select(t => new RoleDto(t));
+        var roleDtos = roles.Select(t => new RoleDto(t));
+        return await GetLegacyRoleCodeAndUrn(roleDtos);
     }
 
     /// <inheritdoc />
@@ -68,13 +70,12 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
             return null;
         }
 
-        await GetLegacyRoleCodeAndUrn(roles);
-
-        return roles.Select(t => new RoleDto(t));
+        var roleDtos = roles.Select(t => new RoleDto(t));
+        return await GetLegacyRoleCodeAndUrn(roleDtos);
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RoleDto>> GetByKeyValue(string key, string value)
+    public async Task<RoleDto> GetByKeyValue(string key, string value)
     {
         var filter = roleLookupRepository.CreateFilterBuilder();
         filter.Add(t => t.Key, key, Core.Helpers.FilterComparer.Like);
@@ -86,10 +87,9 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
         }
 
         var id = res.Select(t => t.Role).First().Id;
-        ExtRole role = await roleRepository.GetExtended(id);
-        await GetSingleLegacyRoleCodeAndUrn(role);
-
-        return res.Select(t => new RoleDto(role));
+        var roleDto = new RoleDto(await roleRepository.GetExtended(id));
+        await GetSingleLegacyRoleCodeAndUrn(roleDto);
+        return roleDto;
     }
 
     /// <inheritdoc />
@@ -113,12 +113,15 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
             return null;
         }
 
+        //TODO: legg til legacycode og urn her
+
         return rolePackages.Select(t => new RolePackageDto(t));
     }
 
-    private async Task GetLegacyRoleCodeAndUrn(QueryResponse<ExtRole> roles)
+    private async Task<IEnumerable<RoleDto>> GetLegacyRoleCodeAndUrn(IEnumerable<RoleDto> roles)
     {
         var roleLookup = await roleLookupRepository.GetExtended();
+        var roleDtos = new List<RoleDto>();
 
         foreach (var role in roles)
         {
@@ -128,10 +131,13 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
                 role.LegacyRoleCode = legacyRoleCode.Value;
                 role.LegacyUrn = $"urn:altinn:rolecode:{legacyRoleCode.Value}";
             }
+            roleDtos.Add(role);
         }
+
+        return roleDtos;
     }
 
-    private async Task GetSingleLegacyRoleCodeAndUrn(ExtRole extRole)
+    private async Task GetSingleLegacyRoleCodeAndUrn(RoleDto extRole)
     {
         var filter = roleLookupRepository.CreateFilterBuilder();
         filter.Add(t => t.RoleId, extRole.Id, Core.Helpers.FilterComparer.Equals);

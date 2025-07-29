@@ -70,8 +70,8 @@ public class RoleDto
         Code = role.Code;
         Description = role.Description;
         IsKeyRole = role.IsKeyRole;
-        LegacyRoleCode = role.LegacyRoleCode;
-        LegacyUrn = role.LegacyUrn;
+        LegacyRoleCode = null;
+        LegacyUrn = null;
     }
 
     /// <summary>
@@ -86,8 +86,8 @@ public class RoleDto
         Code = role.Code;
         Description = role.Description;
         IsKeyRole = role.IsKeyRole;
-        LegacyRoleCode = role.LegacyRoleCode;
-        LegacyUrn = role.LegacyUrn;
+        LegacyRoleCode = null;
+        LegacyUrn = null;
         Provider = role.Provider;
     }
 
