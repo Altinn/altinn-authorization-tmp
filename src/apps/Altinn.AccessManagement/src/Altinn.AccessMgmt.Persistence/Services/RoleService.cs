@@ -113,9 +113,18 @@ public class RoleService(IRoleRepository roleRepository, IRoleLookupRepository r
             return null;
         }
 
-        //TODO: legg til legacycode og urn her
+        var roleDto = new RoleDto(rolePackages.First().Role);
+        await GetSingleLegacyRoleCodeAndUrn(roleDto);
 
-        return rolePackages.Select(t => new RolePackageDto(t));
+        var rolePackageDtos = new List<RolePackageDto>();
+        foreach (var rolePackage in rolePackages)
+        {
+            var rolePackageDto = new RolePackageDto(rolePackage);
+            rolePackageDto.Role = roleDto;
+            rolePackageDtos.Add(rolePackageDto);
+        }
+
+        return rolePackageDtos;
     }
 
     private async Task<IEnumerable<RoleDto>> GetLegacyRoleCodeAndUrn(IEnumerable<RoleDto> roles)
