@@ -12,20 +12,13 @@ public class ConnectionInput
     /// making request on behalf of.
     /// </summary>
     [FromQuery(Name = "party")]
-    [SwaggerSchema(Description = "party", Format = "<me, uuid>")]
-    public string Party { get; set; }
-
-    /// <summary>
-    /// from party
-    /// </summary>
-    [FromQuery(Name = "from")]
-    [SwaggerSchema(Description = "from", Format = "<me, all | blank, uuid>")]
-    public string From { get; set; }
+    [SwaggerSchema(Description = "party")]
+    public Guid Party { get; set; }
 
     /// <summary>
     /// to party
     /// </summary>
     [FromQuery(Name = "to")]
-    [SwaggerSchema(Description = "to", Format = "<me, all | blank, uuid>")]
-    public string To { get; set; }
+    [SwaggerSchema(Description = "to")]
+    public Guid To { get; set; }
 }

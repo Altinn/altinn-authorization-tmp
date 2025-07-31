@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Headers;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
@@ -28,7 +27,7 @@ public class InternalConnectionsService(
     ) : IInternalConnectionService
 {
     /// <inheritdoc />
-    public async Task<Result<List<CompactRelationDto>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default)
+    public async Task<Result<List<CompactRelationDto>>> Get(Guid fromId, Guid? toId = null, CancellationToken cancellationToken = default)
     {
         var result = await GetRelations(fromId, toId, cancellationToken);
 
@@ -44,25 +43,13 @@ public class InternalConnectionsService(
             })
             .ToList();
 
-        async Task<IEnumerable<CompactRelationDto>> GetRelations(Guid? fromId, Guid? toId, CancellationToken cancellationToken)
+        async Task<IEnumerable<CompactRelationDto>> GetRelations(Guid fromId, Guid? toId, CancellationToken cancellationToken)
         {
-            if (fromId is { } && fromId.Value != Guid.Empty)
+            var fromEntity = await EntityRepository.GetExtended(fromId, cancellationToken: cancellationToken);
+            if (fromEntity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
             {
-                var fromEntity = await EntityRepository.GetExtended(fromId.Value, cancellationToken: cancellationToken);
-                if (fromEntity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    var result = await RelationService.GetConnectionsToOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken: cancellationToken);
-                    return result;
-                }
-            }
-            else if (toId is { } && toId != Guid.Empty)
-            {
-                var toEntity = await EntityRepository.GetExtended(toId.Value, cancellationToken: cancellationToken);
-                if (toEntity.Type.Name.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    var result = await RelationService.GetConnectionsFromOthers(toId.Value, fromId is { } && fromId.Value != Guid.Empty ? fromId : null, null, cancellationToken: cancellationToken);
-                    return result;
-                }
+                var result = await RelationService.GetConnectionsToOthers(fromId, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken: cancellationToken);
+                return result;
             }
 
             return [];
@@ -156,7 +143,7 @@ public class InternalConnectionsService(
     }
 
     /// <inheritdoc />
-    public async Task<Result<List<PackagePermission>>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default)
+    public async Task<Result<List<PackagePermission>>> GetPackages(Guid fromId, Guid? toId, CancellationToken cancellationToken = default)
     {
         var result = await GetPackages(fromId, toId, cancellationToken);
 
@@ -168,28 +155,14 @@ public class InternalConnectionsService(
 
             return r;
         }).ToList();
-      
-        async Task<IEnumerable<PackagePermission>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken)
-        {
-            if (fromId is { } && fromId.Value != Guid.Empty)
-            {
-                var fromEntity = await EntityRepository.GetExtended(fromId.Value, cancellationToken: cancellationToken);
-                if (fromEntity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    var result = await RelationService.GetPackagePermissionsToOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken);
-                    return result;
-                }
 
-                return [];
-            }
-            else if (toId is { } && toId.Value != Guid.Empty)
+        async Task<IEnumerable<PackagePermission>> GetPackages(Guid fromId, Guid? toId, CancellationToken cancellationToken)
+        {
+            var fromEntity = await EntityRepository.GetExtended(fromId, cancellationToken: cancellationToken);
+            if (fromEntity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
             {
-                var toEntity = await EntityRepository.GetExtended(toId.Value, cancellationToken: cancellationToken);
-                if (toEntity.Type.Name.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    var result = await RelationService.GetPackagePermissionsToOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken);
-                    return result;
-                }
+                var result = await RelationService.GetPackagePermissionsToOthers(fromId, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken);
+                return result;
             }
 
             return [];
@@ -427,7 +400,7 @@ public interface IInternalConnectionService
     /// <returns>
     /// A <see cref="Result{T}"/> containing a list of <see cref="ExtConnection"/> instances matching the criteria.
     /// </returns>
-    Task<Result<List<CompactRelationDto>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default);
+    Task<Result<List<CompactRelationDto>>> Get(Guid fromId, Guid? toId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a role assignment between two entities.
@@ -463,7 +436,7 @@ public interface IInternalConnectionService
     /// <returns>
     /// A <see cref="Result{T}"/> containing a list of <see cref="ConnectionPackage"/> instances.
     /// </returns>
-    Task<Result<List<PackagePermission>>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default);
+    Task<Result<List<PackagePermission>>> GetPackages(Guid fromId, Guid? toId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a package to an assignment (by package ID) based on the role between two entities.

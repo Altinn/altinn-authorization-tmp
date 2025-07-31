@@ -38,14 +38,7 @@ public class InternalConnectionsController(IInternalConnectionService connection
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetConnections([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
-        if (InternalValidationRules.ReadConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
-        {
-            return problem.ToActionResult();
-        }
-
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
-        var result = await ConnectionService.Get(fromUuid, toUuid, cancellationToken: cancellationToken);
+        var result = await ConnectionService.Get(connection.Party, connection.To, cancellationToken: cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -66,14 +59,7 @@ public class InternalConnectionsController(IInternalConnectionService connection
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddAssignment([FromQuery] ConnectionInput connection, CancellationToken cancellationToken = default)
     {
-        if (InternalValidationRules.AddConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
-        {
-            return problem.ToActionResult();
-        }
-
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
-        var result = await ConnectionService.AddAssignment(fromUuid, toUuid, "rettighetshaver", cancellationToken);
+        var result = await ConnectionService.AddAssignment(connection.Party, connection.To, "rettighetshaver", cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -94,14 +80,7 @@ public class InternalConnectionsController(IInternalConnectionService connection
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemoveAssignment([FromQuery] ConnectionInput connection, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
-        if (InternalValidationRules.RemoveConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
-        {
-            return problem.ToActionResult();
-        }
-
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
-        problem = await ConnectionService.RemoveAssignment(fromUuid, toUuid, "rettighetshaver", cascade, cancellationToken);
+        var problem = await ConnectionService.RemoveAssignment(connection.Party, connection.To, "rettighetshaver", cascade, cancellationToken);
         if (problem is { })
         {
             return problem.ToActionResult();
@@ -122,14 +101,7 @@ public class InternalConnectionsController(IInternalConnectionService connection
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetPackages([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
-        if (InternalValidationRules.ReadConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
-        {
-            return problem.ToActionResult();
-        }
-
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
-        var result = await ConnectionService.GetPackages(fromUuid, toUuid, cancellationToken);
+        var result = await ConnectionService.GetPackages(connection.Party, connection.To, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -150,21 +122,14 @@ public class InternalConnectionsController(IInternalConnectionService connection
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddPackages([FromQuery] ConnectionInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
     {
-        if (InternalValidationRules.AddConnectionPackage(connection.Party, connection.From, connection.To, packageId, package) is var problem && problem is { })
-        {
-            return problem.ToActionResult();
-        }
-
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
         async Task<Result<AssignmentPackage>> AddPackage()
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.AddPackage(fromUuid, toUuid, "rettighetshaver", packageId.Value, cancellationToken);
+                return await ConnectionService.AddPackage(connection.Party, connection.To, "rettighetshaver", packageId.Value, cancellationToken);
             }
 
-            return await ConnectionService.AddPackage(fromUuid, toUuid, "rettighetshaver", package, cancellationToken);
+            return await ConnectionService.AddPackage(connection.Party, connection.To, "rettighetshaver", package, cancellationToken);
         }
 
         var result = await AddPackage();
@@ -188,24 +153,17 @@ public class InternalConnectionsController(IInternalConnectionService connection
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemovePackages([FromQuery] ConnectionInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
     {
-        if (InternalValidationRules.RemoveConnectionPacakge(connection.Party, connection.From, connection.To, packageId, package) is var problem && problem is { })
-        {
-            return problem.ToActionResult();
-        }
-
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
         async Task<ValidationProblemInstance> RemovePackage()
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.RemovePackage(fromUuid, toUuid, "rettighetshaver", packageId.Value, cancellationToken);
+                return await ConnectionService.RemovePackage(connection.Party, connection.To, "rettighetshaver", packageId.Value, cancellationToken);
             }
 
-            return await ConnectionService.RemovePackage(fromUuid, toUuid, "rettighetshaver", package, cancellationToken);
+            return await ConnectionService.RemovePackage(connection.Party, connection.To, "rettighetshaver", package, cancellationToken);
         }
 
-        problem = await RemovePackage();
+        var problem = await RemovePackage();
 
         if (problem is { })
         {
