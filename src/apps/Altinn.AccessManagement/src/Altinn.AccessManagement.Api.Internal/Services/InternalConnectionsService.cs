@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http.Headers;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
@@ -29,20 +30,43 @@ public class InternalConnectionsService(
     /// <inheritdoc />
     public async Task<Result<List<CompactRelationDto>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default)
     {
-        if (fromId is { } && fromId.Value != Guid.Empty)
-        {
-            var result = await RelationService.GetConnectionsToOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken: cancellationToken);
-            return result.ToList();
-        }
+        var result = await GetRelations(fromId, toId, cancellationToken);
 
-        if (toId is { } && toId != Guid.Empty)
-        {
-            var result = await RelationService.GetConnectionsFromOthers(toId.Value, fromId is { } && fromId.Value != Guid.Empty ? fromId : null, null, cancellationToken: cancellationToken);
-            return result.ToList();
-        }
+        return result
+            .Where(r => r.Party.Type.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
+            .Select(r =>
+            {
+                r.Connections = r.Connections
+                    .Where(c => c.Party.Type.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
+                    .ToList();
 
-        Unreachable();
-        return default;
+                return r;
+            })
+            .ToList();
+
+        async Task<IEnumerable<CompactRelationDto>> GetRelations(Guid? fromId, Guid? toId, CancellationToken cancellationToken)
+        {
+            if (fromId is { } && fromId.Value != Guid.Empty)
+            {
+                var fromEntity = await EntityRepository.GetExtended(fromId.Value, cancellationToken: cancellationToken);
+                if (fromEntity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var result = await RelationService.GetConnectionsToOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken: cancellationToken);
+                    return result;
+                }
+            }
+            else if (toId is { } && toId != Guid.Empty)
+            {
+                var toEntity = await EntityRepository.GetExtended(toId.Value, cancellationToken: cancellationToken);
+                if (toEntity.Type.Name.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var result = await RelationService.GetConnectionsFromOthers(toId.Value, fromId is { } && fromId.Value != Guid.Empty ? fromId : null, null, cancellationToken: cancellationToken);
+                    return result;
+                }
+            }
+
+            return [];
+        }
     }
 
     /// <inheritdoc />
@@ -134,20 +158,42 @@ public class InternalConnectionsService(
     /// <inheritdoc />
     public async Task<Result<List<PackagePermission>>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default)
     {
-        if (fromId is { } && fromId.Value != Guid.Empty)
-        {
-            var result = await RelationService.GetPackagePermissionsToOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken);
-            return result.ToList();
-        }
+        var result = await GetPackages(fromId, toId, cancellationToken);
 
-        if (toId is { } && toId.Value != Guid.Empty)
+        return result.Select(r =>
         {
-            var result = await RelationService.GetPackagePermissionsFromOthers(toId.Value, fromId is { } && fromId.Value != Guid.Empty ? fromId : null, null, cancellationToken);
-            return result.ToList();
-        }
+            r.Permissions = r.Permissions
+                .Where(c => c.To.Type.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
+                .ToList();
 
-        Unreachable();
-        return default;
+            return r;
+        }).ToList();
+      
+        async Task<IEnumerable<PackagePermission>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken)
+        {
+            if (fromId is { } && fromId.Value != Guid.Empty)
+            {
+                var fromEntity = await EntityRepository.GetExtended(fromId.Value, cancellationToken: cancellationToken);
+                if (fromEntity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var result = await RelationService.GetPackagePermissionsToOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken);
+                    return result;
+                }
+
+                return [];
+            }
+            else if (toId is { } && toId.Value != Guid.Empty)
+            {
+                var toEntity = await EntityRepository.GetExtended(toId.Value, cancellationToken: cancellationToken);
+                if (toEntity.Type.Name.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var result = await RelationService.GetPackagePermissionsToOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken);
+                    return result;
+                }
+            }
+
+            return [];
+        }
     }
 
     /// <inheritdoc />
