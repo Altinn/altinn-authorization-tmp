@@ -1,7 +1,7 @@
 ﻿using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.Authorization.Api.Contracts.Consent;
 
-namespace Altinn.AccessManagement.Api.Enduser.Extensions
+namespace Altinn.AccessManagement.Api.Internal.Extensions
 {
     /// <summary>
     /// Provides extension methods for transforming ConsentRequestDetails to ConsentRequestDetailsBFF.

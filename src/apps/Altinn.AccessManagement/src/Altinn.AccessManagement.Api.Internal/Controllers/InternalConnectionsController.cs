@@ -17,7 +17,7 @@ using Microsoft.FeatureManagement.Mvc;
 namespace Altinn.AccessManagement.Api.Internal.Controllers;
 
 /// <summary>
-/// Controller for en user api operations for connections
+/// Controller for managing direct assigment of packages for system users.  
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/internal/connections")]
@@ -28,7 +28,7 @@ public class InternalConnectionsController(IInternalConnectionService connection
     private IInternalConnectionService ConnectionService { get; } = connectionService;
 
     /// <summary>
-    /// Get connections between the authenticated user's selected party and the specified target party.
+    /// Get connections between organizations and systemusers.
     /// </summary>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
@@ -55,7 +55,7 @@ public class InternalConnectionsController(IInternalConnectionService connection
     }
 
     /// <summary>
-    /// Add package to connection (assignment or delegation)
+    /// Creates "rettighetshaver" relation between an organization and systemuser.
     /// </summary>
     [HttpPost]
     [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
@@ -83,7 +83,7 @@ public class InternalConnectionsController(IInternalConnectionService connection
     }
 
     /// <summary>
-    /// Remove package from connection (assignment or delegation)
+    /// Removes "rettighetshaver" relation between an organization and systemuser.
     /// </summary>
     [HttpDelete]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
@@ -111,7 +111,7 @@ public class InternalConnectionsController(IInternalConnectionService connection
     }
 
     /// <summary>
-    /// Creates an assignment between the authenticated user's selected party and the specified target party.
+    /// Lists all packages assigned from to / systemuser and organization. 
     /// </summary>
     [HttpGet("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
@@ -139,7 +139,7 @@ public class InternalConnectionsController(IInternalConnectionService connection
     }
 
     /// <summary>
-    /// Add package to connection (assignment or delegation)
+    /// Assigns package to system user from organization. 
     /// </summary>
     [HttpPost("accesspackages")]
     [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
@@ -177,7 +177,7 @@ public class InternalConnectionsController(IInternalConnectionService connection
     }
 
     /// <summary>
-    /// Remove package from connection (assignment or delegation)
+    /// Removes package given to system user from an organization. 
     /// </summary>
     [HttpDelete("accesspackages")]
     [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
