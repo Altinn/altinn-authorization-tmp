@@ -2,7 +2,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Altinn.AccessManagement.Api.Enduser.Extensions;
+using Altinn.AccessManagement.Api.Internal.Extensions;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models.Consent;
