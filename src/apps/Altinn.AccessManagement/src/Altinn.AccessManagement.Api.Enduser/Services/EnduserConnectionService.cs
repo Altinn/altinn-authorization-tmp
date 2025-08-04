@@ -330,28 +330,28 @@ public class EnduserConnectionService(
         return null;
     }
 
-    public async Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid party, IEnumerable<string> packageUrns, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
     {
-        packageUrns = packageUrns.Select(p => p.StartsWith("urn:", StringComparison.Ordinal) || p.StartsWith(':') ? p : ":" + p);
+        packages = packages.Select(p => p.StartsWith("urn:", StringComparison.Ordinal) || p.StartsWith(':') ? p : ":" + p);
 
         var filter = PackageRepository.CreateFilterBuilder()
-            .In(t => t.Urn, packageUrns);
+            .In(t => t.Urn, packages);
 
-        var packages = await PackageRepository.Get(filter, callerName: SpanName("Get packages using URNs"), cancellationToken: cancellationToken);
-        var problem = EnduserValidationRules.Validate(EnduserValidationRules.QueryParameters.PackageUrnLookup(packages, packageUrns));
+        var allPackages = await PackageRepository.Get(filter, callerName: SpanName("Get packages using URNs"), cancellationToken: cancellationToken);
+        var problem = EnduserValidationRules.Validate(EnduserValidationRules.QueryParameters.PackageUrnLookup(allPackages, packages));
         if (problem is { })
         {
             return problem;
         }
 
-        return await CheckPackage(party, (List<Guid>)[.. packageIds, .. packages.Select(p => p.Id)], cancellationToken);
+        return await CheckPackage(party, (List<Guid>)[.. packageIds, .. allPackages.Select(p => p.Id)], cancellationToken);
     }
 
-    public async Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid partyId, IEnumerable<Guid>? packageIds = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid party, IEnumerable<Guid>? packageIds = null, CancellationToken cancellationToken = default)
     {
         var assignablePackages = await RelationService.GetAssignablePackagePermissions(
             DbAudit.Value.ChangedBy,
-            partyId,
+            party,
             packageIds,
             cancellationToken: cancellationToken);
 
@@ -366,7 +366,7 @@ public class EnduserConnectionService(
                     Urn = firstPackage.Package.Urn,
                     AreaId = firstPackage.Package.AreaId
                 },
-                Result = group.Any(p => p.Result == true),
+                Result = group.Any(p => p.Result),
                 Reasons = group.Select(p => new PackageDelegationCheckReasonDto
                 {
                     Description = p.Reason.Description,

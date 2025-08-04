@@ -37,7 +37,7 @@ public class RelationPermissionRepository : ExtendedRepository<Relation, ExtRela
             cancellationToken: cancellationToken);
     }
 
-    private string AssignableAccessPackagesQuery()
+    private static string AssignableAccessPackagesQuery()
     {
         return $"""
         WITH mainUnit AS (	

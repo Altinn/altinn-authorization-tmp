@@ -352,7 +352,7 @@ public static class EnduserValidationRules
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
 
-            if (packages?.Count() == 0)
+            if (packages.Any())
             {
                 var msg = string.Join(",", packageName.Select(p => p.ToString()));
                 return (ref ValidationErrorBuilder errors) =>
@@ -360,7 +360,7 @@ public static class EnduserValidationRules
                 );
             }
 
-            if (packages?.Count() != packageName.Count())
+            if (packages.Count() != packageName.Count())
             {
                 var pkgsNotFound = packageName.Where(n => packages.Any(p => p.Name.Equals(n, StringComparison.InvariantCultureIgnoreCase)));
                 return (ref ValidationErrorBuilder errors) =>
@@ -369,7 +369,6 @@ public static class EnduserValidationRules
             }
 
             return null;
-
         };
 
         /// <summary>
