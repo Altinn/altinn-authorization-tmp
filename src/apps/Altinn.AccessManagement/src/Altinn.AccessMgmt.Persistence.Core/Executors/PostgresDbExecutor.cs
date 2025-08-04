@@ -130,8 +130,14 @@ public class PostgresDbExecutor(IAltinnDatabase databaseFactory, IDbConverter db
     }
 
     /// <summary>
-    /// Executes a query and return the npgsql data reader for the caller to handle the result.
+    /// Execute a custom query and return data mapped to return type using the provided mapping function.
     /// </summary>
+    /// <param name="query">Query to execute</param>
+    /// <param name="parameters">Parameters</param>
+    /// <param name="map">Function to map the data reader to the specific return type</param>
+    /// <param name="callerName">Used for setting span name.</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
     public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, List<GenericParameter> parameters, Func<NpgsqlDataReader, ValueTask<T>> map, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
     {
         using var conn = _databaseFactory.CreatePgsqlConnection(SourceType.App);

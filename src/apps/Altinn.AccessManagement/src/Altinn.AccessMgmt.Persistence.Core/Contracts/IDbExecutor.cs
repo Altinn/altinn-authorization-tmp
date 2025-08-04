@@ -53,7 +53,7 @@ public interface IDbExecutor
     where T : new();
 
     /// <summary>
-    /// Execute a query and return npgsql data reader
+    /// Execute a custom query and return data mapped to return type using the provided mapping function.
     /// </summary>
     /// <param name="query">Query to execute</param>
     /// <param name="parameters">Parameters</param>
