@@ -216,7 +216,7 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     }
 
     /// <summary>
-    /// Remove package from connection (assignment or delegation)
+    /// API for delegation check of access packages, for which packages the authenticated user has permission to assign to others on behalf of the specified party.
     /// </summary>
     [HttpGet("accesspackages/delegationcheck")]
     [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
@@ -225,25 +225,16 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RemovePackages([FromQuery] Guid party, [FromQuery] IEnumerable<Guid>? packageIds, [FromQuery] IEnumerable<string> packages, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> CheckPackage([FromQuery] Guid party, [FromQuery] IEnumerable<Guid>? packageIds, [FromQuery] IEnumerable<string>? packages, CancellationToken cancellationToken = default)
     {
-        var problem = EnduserValidationRules.Validate(
-            EnduserValidationRules.QueryParameters.PackageReferences(packageIds, packages)
-        );
-
-        if (problem is { })
+        async Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage()
         {
-            return problem.ToActionResult();
-        }
-        
-        async Task<Result<IEnumerable<DelegationCheck>>> CheckPackage()
-        {
-            if (packageIds is { } && packageIds.Any())
+            if (packages.Any())
             {
-                return await ConnectionService.CheckPackage(party, packageIds, cancellationToken);
+                return await ConnectionService.CheckPackage(party, packages, packageIds, cancellationToken);
             }
 
-            return await ConnectionService.CheckPackage(party, packages, cancellationToken);
+            return await ConnectionService.CheckPackage(party, packageIds, cancellationToken);
         }
 
         var result = await CheckPackage();
@@ -252,9 +243,6 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
             return result.Problem.ToActionResult();
         }
 
-        return Ok(result.Value);
+        return Ok(PaginatedResult.Create(result.Value, null));
     }
 }
-
-
-// GET /accessmanagement/api/v1/enduser/connections/accesspackages/delegationcheck?party={party}&packageId={packageId}&package={packageUrnValue}

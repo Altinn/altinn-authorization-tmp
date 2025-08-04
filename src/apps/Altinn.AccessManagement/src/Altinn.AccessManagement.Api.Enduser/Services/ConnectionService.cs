@@ -354,12 +354,7 @@ public class ConnectionService(
         return null;
     }
 
-    public Task<Result<IEnumerable<DelegationCheck>>> CheckPackage(Guid party, IEnumerable<Guid> packageId, CancellationToken cancellationToken = default)
-    {
-        return CheckPackage(party, packageId, "packageIds", cancellationToken);
-    }
-
-    public async Task<Result<IEnumerable<DelegationCheck>>> CheckPackage(Guid party, IEnumerable<string> packageUrns, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid party, IEnumerable<string> packageUrns, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
     {
         packageUrns = packageUrns.Select(p => p.StartsWith("urn:", StringComparison.Ordinal) || p.StartsWith(':') ? p : ":" + p);
 
@@ -373,24 +368,43 @@ public class ConnectionService(
             return problem;
         }
 
-        return await CheckPackage(party, packages.Select(p => p.Id), "packages", cancellationToken);
+        return await CheckPackage(party, (List<Guid>)[.. packageIds, .. packages.Select(p => p.Id)], cancellationToken);
     }
 
-    public async Task<Result<IEnumerable<DelegationCheck>>> CheckPackage(Guid partyId, IEnumerable<Guid> packageIds, string queryParamName, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid partyId, IEnumerable<Guid>? packageIds = null, CancellationToken cancellationToken = default)
     {
-        var filter = ConnectionPackageRepository.CreateFilterBuilder()
-            .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
-            .Equal(t => t.FromId, partyId)
-            .In(t => t.PackageId, packageIds);
+        var assignablePackages = await relationPermissionRepository.GetAssignableAccessPackages(
+            partyId,
+            DbAudit.Value.ChangedBy,
+            packageIds,
+            cancellationToken: cancellationToken);
 
-        var assignedPackages = await ConnectionPackageRepository.GetExtended(filter, callerName: SpanName("Get packages assigned to calling user"), cancellationToken: cancellationToken);
-
-        return assignedPackages.Select(p =>
+        return assignablePackages.GroupBy(p => p.Package.Id).Select(group =>
         {
-            return new DelegationCheck
+            var firstPackage = group.First();
+            return new PackageDelegationCheckDto
             {
-                Id = p.PackageId,
-                CanAssign = p.CanAssign,
+                Package = new CompactPackageDto
+                {
+                    Id = firstPackage.Package.Id,
+                    Urn = firstPackage.Package.Urn,
+                    AreaId = firstPackage.Package.AreaId
+                },
+                Result = group.Any(p => p.Result == true),
+                Reasons = group.Select(p => new PackageDelegationCheckReasonDto
+                {
+                    Description = p.Reason.Description,
+                    RoleId = p.Reason.RoleId,
+                    RoleUrn = p.Reason.RoleUrn,
+                    FromId = p.Reason.FromId,
+                    FromName = p.Reason.FromName,
+                    ToId = p.Reason.ToId,
+                    ToName = p.Reason.ToName,
+                    ViaId = p.Reason.ViaId,
+                    ViaName = p.Reason.ViaName,
+                    ViaRoleId = p.Reason.ViaRoleId,
+                    ViaRoleUrn = p.Reason.ViaRoleUrn
+                })
             };
         }).ToList();
     }
@@ -546,25 +560,26 @@ public interface IEnduserConnectionService
     /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
     /// </summary>
     /// <param name="party">ID of the person.</param>
-    /// <param name="packageId">Unique identifier of the package.</param>
+    /// <param name="packageIds">Filter param using unique package identifiers.</param>
     /// <param name="cancellationToken">
     /// Token to monitor for cancellation requests.
     /// </param>
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
-    Task<Result<IEnumerable<DelegationCheck>>> CheckPackage(Guid party, IEnumerable<Guid> packageId, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
     /// </summary>
     /// <param name="party">ID of the person.</param>
-    /// <param name="package">Urn value of the package.</param>
+    /// <param name="packages">Filter param using urn package identifiers.</param>
+    /// <param name="packageIds">Filter param using unique package identifiers.</param>
     /// <param name="cancellationToken">
     /// Token to monitor for cancellation requests.
     /// </param>
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
-    Task<Result<IEnumerable<DelegationCheck>>> CheckPackage(Guid party, IEnumerable<string> package, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default);
 }
