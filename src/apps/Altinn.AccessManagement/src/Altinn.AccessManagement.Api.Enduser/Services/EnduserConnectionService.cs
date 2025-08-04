@@ -349,9 +349,9 @@ public class EnduserConnectionService(
 
     public async Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid partyId, IEnumerable<Guid>? packageIds = null, CancellationToken cancellationToken = default)
     {
-        var assignablePackages = await relationPermissionRepository.GetAssignableAccessPackages(
-            partyId,
+        var assignablePackages = await RelationService.GetAssignablePackagePermissions(
             DbAudit.Value.ChangedBy,
+            partyId,
             packageIds,
             cancellationToken: cancellationToken);
 
