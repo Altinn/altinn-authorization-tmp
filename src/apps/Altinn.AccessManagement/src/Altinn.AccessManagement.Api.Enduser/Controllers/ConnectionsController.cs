@@ -221,7 +221,7 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [HttpGet("accesspackages/delegationcheck")]
     [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<PaginatedResult<PackageDelegationCheckDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
