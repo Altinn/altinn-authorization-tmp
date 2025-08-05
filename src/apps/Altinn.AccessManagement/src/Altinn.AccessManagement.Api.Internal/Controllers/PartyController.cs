@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Api.Internal.Extensions;
+﻿using System.IdentityModel.Tokens.Jwt;
+using Altinn.AccessManagement.Api.Internal.Extensions;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
@@ -10,8 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Controllers
 {
-    [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER)]
-    [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_APP_AUTHENTICATION)]
+    [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
     public class PartyController : ControllerBase
     {
         private readonly ILogger _logger;
@@ -27,8 +27,13 @@ namespace Altinn.AccessManagement.Controllers
 
         [HttpPost]
         [Route("accessmanagement/api/v1/internal/party")]
-        public async Task<ActionResult<AddPartyResultDto>> AddParty([FromBody] PartyBaseDto party, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<AddPartyResultDto>> AddParty([FromBody] PartyBaseDto party, [FromHeader(Name = "PlatformAccessToken")] string token, CancellationToken cancellationToken = default)
         {
+            if (!CheckValidAppClaim(token))
+            {
+                return Unauthorized("Invalid app claim in platform access token.");
+            }
+
             var options = new ChangeRequestOptions()
             {
                 ChangedBy = party.CreatedBy ?? AuditDefaults.InternalApiImportSystem,
@@ -43,6 +48,25 @@ namespace Altinn.AccessManagement.Controllers
             }
 
             return Ok(res.Value.ToPartyResultDto());
+        }
+
+        /// <summary>
+        /// Validate app-claim from the platform token
+        /// </summary>
+        private static bool CheckValidAppClaim(string token)
+        {
+            if (!string.IsNullOrEmpty(token))
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtSecurityToken = handler.ReadJwtToken(token);
+                var appidentifier = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == AltinnXacmlConstants.MatchAttributeIdentifiers.AppAttribute);
+                if (appidentifier != null)
+                {
+                    return appidentifier.Value.Equals("authentication", StringComparison.OrdinalIgnoreCase);
+                }
+            }
+
+            return false;
         }
     }
 }

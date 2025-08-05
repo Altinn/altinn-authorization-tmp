@@ -11,11 +11,6 @@
         public const string ALTINNII_AUTHORIZATION = "AltinnIIAuthorizationAccess";
 
         /// <summary>
-        /// Appname used by Authentication in Platform Access Tokens
-        /// </summary>
-        public const string PLATFORM_ACCESSTOKEN_APP_AUTHENTICATION = "authentication";
-
-        /// <summary>
         /// Policy tag for authorizing internal Altinn.Platform.Authorization API access
         /// </summary>
         public const string INTERNAL_AUTHORIZATION = "InternalAuthorizationAccess";
@@ -26,9 +21,9 @@
         public const string PLATFORM_ACCESS_AUTHORIZATION = "PlatformAccess";
 
         /// <summary>
-        /// Policy tag for authorizing platform access tokens with issuer platform
+        /// Policy used to authorize that platform access token is issued by Altinn Platform
         /// </summary>
-        public const string PLATFORM_ACCESSTOKEN_ISSUER = "platform";
+        public const string PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM = "platform";
 
         /// <summary>
         /// Policy tag for reading an maskinporten delegation

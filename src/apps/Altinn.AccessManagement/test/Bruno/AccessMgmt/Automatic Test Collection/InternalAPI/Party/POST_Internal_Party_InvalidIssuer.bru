@@ -1,5 +1,5 @@
 meta {
-  name: GET_Internal_PartyPush_InvalidEntityType
+  name: POST_Internal_Party_InvalidIssuer
   type: http
   seq: 1
 }
@@ -7,36 +7,37 @@ meta {
 post {
   url: {{baseUrl}}/accessmanagement/api/v1/internal/party
   body: json
-  auth: inherit
+  auth: none
 }
 
 headers {
   Accept: application/json
+  PlatformAccessToken: {{platformAccessToken}}
 }
 
 body:json {
   {
     "PartyUuid": "90A99F77-F801-4658-8EDA-A73CF7AE1021",
-    "EntityType": "Person",
-    "EntityVariantType": "Person",
-    "DisplayName": "Ola Nordmann",
-    "CreatedBy": "ee007db6-0db4-4e55-ac21-2a888f04d846"
+    "EntityType": "SystemUser",
+    "EntityVariantType": "System",
+    "DisplayName": "InvalidPlatformTokenIssuer_ThisShouldNotExist",
+    "CreatedBy": null
   }
 }
 
 script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   
-  bru.setVar("requestName", "GET_Internal_PartyPush_InvalidEntityType");
+  bru.setVar("requestName", "POST_Internal_Party_SystemUser");
   
   var getTokenParameters = {
     auth_org: "",
     auth_app: "authentication",
-    auth_tokenType: sharedtestdata.authTokenType.platformAccess
+    auth_tokenType: sharedtestdata.authTokenType.platformToken // Invalid issuer
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
-  bru.setVar("bearerToken", token);
+  bru.setVar("platformAccessToken", token);
   
 }
 
@@ -46,8 +47,7 @@ tests {
     const body = res.getBody();
     const data = body;
     
-    expect(res.status).to.equal(400);
-    assert.equal(data.detail, "The Entitytype is not supported");
+    expect(res.status).to.equal(401);
     
   });
 }
