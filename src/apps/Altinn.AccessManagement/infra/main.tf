@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.34.0"
+      version = "4.37.0"
     }
     static = {
       source  = "tiwood/static"
@@ -231,6 +231,12 @@ module "appsettings" {
     {
       name        = "AccessManagement.Enduser.Connections"
       description = "Specifies if feature access connections are enabled for endusers."
+      label       = "${lower(var.environment)}-access-management"
+      value       = true
+    },
+    {
+      name        = "AccessManagement.Internal.Connections"
+      description = "Specifies if feature access connections are enabled for internal usage."
       label       = "${lower(var.environment)}-access-management"
       value       = true
     },

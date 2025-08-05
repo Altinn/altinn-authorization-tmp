@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
@@ -14,42 +15,18 @@ namespace Altinn.AccessManagement.Enduser.Services;
 /// <summary>
 /// Service for managing connections.
 /// </summary>
-public class ConnectionService(
-    IDbAudit dbAudit,
-    IPackageRepository packageRepository,
-    IRoleRepository roleRepository,
-    IConnectionPackageRepository connectionPackageRepository,
-    IAssignmentRepository assignmentRepository,
-    IDelegationRepository delegationRepository,
-    IAssignmentPackageRepository assignmentPackageRepository,
-    IEntityRepository entityRepository,
-    IRelationService relationService,
-    IRelationPermissionRepository relationPermissionRepository,
-    IRelationRepository relationRepository
+public class EnduserConnectionService(
+    IDbAudit DbAudit,
+    IPackageRepository PackageRepository,
+    IRoleRepository RoleRepository,
+    IConnectionPackageRepository ConnectionPackageRepository,
+    IAssignmentRepository AssignmentRepository,
+    IDelegationRepository DelegationRepository,
+    IAssignmentPackageRepository AssignmentPackageRepository,
+    IEntityRepository EntityRepository,
+    IRelationService RelationService
     ) : IEnduserConnectionService
 {
-    private IDbAudit DbAudit { get; } = dbAudit;
-
-    private IRelationService RelationService { get; } = relationService;
-
-    private IRelationRepository RelationRepository { get; } = relationRepository;
-
-    private IPackageRepository PackageRepository { get; } = packageRepository;
-
-    private IRoleRepository RoleRepository { get; } = roleRepository;
-
-    private IConnectionPackageRepository ConnectionPackageRepository { get; } = connectionPackageRepository;
-
-    private IAssignmentRepository AssignmentRepository { get; } = assignmentRepository;
-
-    private IDelegationRepository DelegationRepository { get; } = delegationRepository;
-
-    private IAssignmentPackageRepository AssignmentPackageRepository { get; } = assignmentPackageRepository;
-
-    private IEntityRepository EntityRepository { get; } = entityRepository;
-
-    private IRelationPermissionRepository RelationPermissionRepository { get; } = relationPermissionRepository;
-
     /// <inheritdoc />
     public async Task<Result<List<CompactRelationDto>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default)
     {
@@ -353,6 +330,61 @@ public class ConnectionService(
         return null;
     }
 
+    public async Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
+    {
+        packages = packages.Select(p => p.StartsWith("urn:", StringComparison.Ordinal) || p.StartsWith(':') ? p : ":" + p);
+
+        var filter = PackageRepository.CreateFilterBuilder()
+            .In(t => t.Urn, packages);
+
+        var allPackages = await PackageRepository.Get(filter, callerName: SpanName("Get packages using URNs"), cancellationToken: cancellationToken);
+        var problem = EnduserValidationRules.Validate(EnduserValidationRules.QueryParameters.PackageUrnLookup(allPackages, packages));
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        return await CheckPackage(party, (List<Guid>)[.. packageIds, .. allPackages.Select(p => p.Id)], cancellationToken);
+    }
+
+    public async Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid party, IEnumerable<Guid>? packageIds = null, CancellationToken cancellationToken = default)
+    {
+        var assignablePackages = await RelationService.GetAssignablePackagePermissions(
+            DbAudit.Value.ChangedBy,
+            party,
+            packageIds,
+            cancellationToken: cancellationToken);
+
+        return assignablePackages.GroupBy(p => p.Package.Id).Select(group =>
+        {
+            var firstPackage = group.First();
+            return new PackageDelegationCheckDto
+            {
+                Package = new CompactPackageDto
+                {
+                    Id = firstPackage.Package.Id,
+                    Urn = firstPackage.Package.Urn,
+                    AreaId = firstPackage.Package.AreaId
+                },
+                Result = group.Any(p => p.Result),
+                Reasons = group.Select(p => new PackageDelegationCheckReasonDto
+                {
+                    Description = p.Reason.Description,
+                    RoleId = p.Reason.RoleId,
+                    RoleUrn = p.Reason.RoleUrn,
+                    FromId = p.Reason.FromId,
+                    FromName = p.Reason.FromName,
+                    ToId = p.Reason.ToId,
+                    ToName = p.Reason.ToName,
+                    ViaId = p.Reason.ViaId,
+                    ViaName = p.Reason.ViaName,
+                    ViaRoleId = p.Reason.ViaRoleId,
+                    ViaRoleUrn = p.Reason.ViaRoleUrn
+                })
+            };
+        }).ToList();
+    }
+
     private ValidationProblemInstance? ValidateAssignmentData(ExtEntity entityFrom, ExtEntity entityTo, IEnumerable<Role> roles)
     {
         var problem = EnduserValidationRules.Validate(
@@ -388,7 +420,7 @@ public class ConnectionService(
         throw new UnreachableException();
 
     private static string SpanName(string spanName) =>
-        $"{nameof(ConnectionService)}: {spanName}";
+        $"{nameof(EnduserConnectionService)}: {spanName}";
 }
 
 /// <summary>
@@ -498,4 +530,31 @@ public interface IEnduserConnectionService
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
     Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, string role, string package, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
+    /// </summary>
+    /// <param name="party">ID of the person.</param>
+    /// <param name="packageIds">Filter param using unique package identifiers.</param>
+    /// <param name="cancellationToken">
+    /// Token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// </returns>
+    Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
+    /// </summary>
+    /// <param name="party">ID of the person.</param>
+    /// <param name="packages">Filter param using urn package identifiers.</param>
+    /// <param name="packageIds">Filter param using unique package identifiers.</param>
+    /// <param name="cancellationToken">
+    /// Token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// </returns>
+    Task<Result<IEnumerable<PackageDelegationCheckDto>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default);
 }
