@@ -88,6 +88,6 @@ public static class Problems
     = _factory.Create(18, HttpStatusCode.BadRequest, $"The Entitytype is not found");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
-    public static ProblemDescriptor EntityVariantNotFound { get; }
-    = _factory.Create(19, HttpStatusCode.BadRequest, $"The EntityVariant is not found");
+    public static ProblemDescriptor EntityVariantNotFoundOrInvalid { get; }
+    = _factory.Create(19, HttpStatusCode.BadRequest, $"The EntityVariant is not found or not valid for the given EntityType");
 }

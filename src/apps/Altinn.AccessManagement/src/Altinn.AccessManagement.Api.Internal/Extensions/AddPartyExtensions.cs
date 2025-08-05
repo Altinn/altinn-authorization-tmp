@@ -12,7 +12,7 @@ namespace Altinn.AccessManagement.Api.Internal.Extensions
         /// </summary>
         /// <param name="core">The <see cref="AddPartyResult"/> object to convert.</param>
         /// <returns>A <see cref="AddPartyResultDto"/> object representing the converted data.</returns>
-        public static AddPartyResultDto ToConsentRightExternal(this AddPartyResult core)
+        public static AddPartyResultDto ToPartyResultDto(this AddPartyResult core)
         {
             return new AddPartyResultDto
             {

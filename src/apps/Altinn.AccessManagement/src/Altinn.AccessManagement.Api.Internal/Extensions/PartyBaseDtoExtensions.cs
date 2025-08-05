@@ -21,7 +21,6 @@ namespace Altinn.AccessManagement.Api.Internal.Extensions
                 EntityType = core.EntityType,
                 EntityVariantType = core.EntityVariantType,
                 DisplayName = core.DisplayName,
-                ParentPartyUuid = core.ParentPartyUuid,
                 CreatedBy = core.CreatedBy
             };
         }

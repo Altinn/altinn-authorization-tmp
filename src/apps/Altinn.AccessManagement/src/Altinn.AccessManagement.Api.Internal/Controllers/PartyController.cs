@@ -1,16 +1,17 @@
 ﻿using Altinn.AccessManagement.Api.Internal.Extensions;
-using Altinn.AccessManagement.Core.Models.Party;
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.Authorization.Api.Contracts.Party;
 using Altinn.Authorization.ProblemDetails;
-using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Controllers
 {
-    // TODO: Add proper authorization and authentication attributes to the controller
+    [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER)]
+    [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_APP_AUTHENTICATION)]
     public class PartyController : ControllerBase
     {
         private readonly ILogger _logger;
@@ -41,7 +42,7 @@ namespace Altinn.AccessManagement.Controllers
                 return res.Problem.ToActionResult();
             }
 
-            return Ok(res.Value.ToConsentRightExternal());
+            return Ok(res.Value.ToPartyResultDto());
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
@@ -39,26 +38,25 @@ namespace Altinn.AccessMgmt.Persistence.Services
                     return Problems.UnsuportedEntityType.Create([new("entityType", party.EntityType.ToString())]);
                 }
 
-                var entityTypeId = (await _entityTypeRepository.Get(t => t.Name, party.EntityType)).FirstOrDefault()?.Id;
-                if (entityTypeId == null)
+                var entityType = (await _entityTypeRepository.Get(t => t.Name, party.EntityType)).FirstOrDefault();
+                if (entityType == null)
                 {
                     return Problems.EntityTypeNotFound.Create([new("entityType", party.EntityType)]);
                 }
 
-                var entityVariantId = (await _entityVariantRepository.Get(t => t.TypeId, entityTypeId)).FirstOrDefault(t => t.Name.Equals(party.EntityVariantType, StringComparison.OrdinalIgnoreCase))?.Id;
-                if (entityVariantId == null)
+                var entityVariant = (await _entityVariantRepository.Get(t => t.TypeId, entityType.Id)).FirstOrDefault(t => t.Name.Equals(party.EntityVariantType, StringComparison.OrdinalIgnoreCase));
+                if (entityVariant == null)
                 {
-                    return Problems.EntityVariantNotFound.Create([new("entityVariantId", party.EntityVariantType)]);
+                    return Problems.EntityVariantNotFoundOrInvalid.Create([new("entityVariantId", party.EntityVariantType)]);
                 }
 
                 Entity entity = new Entity
                 {
                     Id = party.PartyUuid,
                     Name = party.DisplayName,
-                    TypeId = entityTypeId.Value,
-                    VariantId = entityVariantId.Value,
-                    RefId = party.PartyUuid.ToString(),
-                    ParentId = party.ParentPartyUuid
+                    TypeId = entityType.Id,
+                    VariantId = entityVariant.Id,
+                    RefId = party.PartyUuid.ToString()
                 };
 
                 var res = await _entityRepository.Create(entity, options, cancellationToken);

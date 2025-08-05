@@ -1,0 +1,53 @@
+meta {
+  name: GET_Internal_PartyPush_InvalidEntityVariantType
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/accessmanagement/api/v1/internal/party
+  body: json
+  auth: inherit
+}
+
+headers {
+  Accept: application/json
+}
+
+body:json {
+  {
+    "PartyUuid": "90A99F77-F801-4658-8EDA-A73CF7AE1021",
+    "EntityType": "Systembruker",
+    "EntityVariantType": "Person",
+    "DisplayName": "I am person",
+    "CreatedBy": "ee007db6-0db4-4e55-ac21-2a888f04d846"
+  }
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
+  
+  bru.setVar("requestName", "GET_Internal_PartyPush_InvalidEntityType");
+  
+  var getTokenParameters = {
+    auth_org: "",
+    auth_app: "authentication",
+    auth_tokenType: sharedtestdata.authTokenType.platformAccess
+  }
+  
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken", token);
+  
+}
+
+tests {
+  
+  test(bru.getVar("requestName"), function() {
+    const body = res.getBody();
+    const data = body;
+    
+    expect(res.status).to.equal(400);
+    assert.equal(data.detail, "EntityVariant is not found or not valid for the given EntityType");
+    
+  });
+}

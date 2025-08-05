@@ -11,6 +11,11 @@
         public const string ALTINNII_AUTHORIZATION = "AltinnIIAuthorizationAccess";
 
         /// <summary>
+        /// Appname used by Authentication in Platform Access Tokens
+        /// </summary>
+        public const string PLATFORM_ACCESSTOKEN_APP_AUTHENTICATION = "authentication";
+
+        /// <summary>
         /// Policy tag for authorizing internal Altinn.Platform.Authorization API access
         /// </summary>
         public const string INTERNAL_AUTHORIZATION = "InternalAuthorizationAccess";
@@ -19,7 +24,12 @@
         /// Policy tag for authorizing Altinn.Platform.Authorization API access
         /// </summary>
         public const string PLATFORM_ACCESS_AUTHORIZATION = "PlatformAccess";
-        
+
+        /// <summary>
+        /// Policy tag for authorizing platform access tokens with issuer platform
+        /// </summary>
+        public const string PLATFORM_ACCESSTOKEN_ISSUER = "platform";
+
         /// <summary>
         /// Policy tag for reading an maskinporten delegation
         /// </summary>
