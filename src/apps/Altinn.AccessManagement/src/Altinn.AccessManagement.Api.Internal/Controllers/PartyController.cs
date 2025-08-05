@@ -12,21 +12,17 @@ using Microsoft.AspNetCore.Mvc;
 namespace Altinn.AccessManagement.Controllers
 {
     [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
+    [Route("accessmanagement/api/v1/internal/party")]
     public class PartyController : ControllerBase
     {
-        private readonly ILogger _logger;
         private readonly IPartyService _partyService;
 
-        public PartyController(
-            ILogger<PartyController> logger,
-            IPartyService partyService)
+        public PartyController(IPartyService partyService)
         {
-            _logger = logger;
             _partyService = partyService;
         }
 
         [HttpPost]
-        [Route("accessmanagement/api/v1/internal/party")]
         public async Task<ActionResult<AddPartyResultDto>> AddParty([FromBody] PartyBaseDto party, [FromHeader(Name = "PlatformAccessToken")] string token, CancellationToken cancellationToken = default)
         {
             if (!CheckValidAppClaim(token))

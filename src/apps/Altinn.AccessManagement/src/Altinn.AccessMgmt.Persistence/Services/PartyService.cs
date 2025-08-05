@@ -12,14 +12,12 @@ namespace Altinn.AccessMgmt.Persistence.Services
     public class PartyService(
         IEntityRepository entityRepository,
         IEntityTypeRepository entityTypeRepository,
-        IEntityVariantRepository entityVariantRepository,
-        IEntityLookupRepository entityLookupRepository
+        IEntityVariantRepository entityVariantRepository
         ) : IPartyService
     {
         private readonly IEntityRepository _entityRepository = entityRepository;
         private readonly IEntityTypeRepository _entityTypeRepository = entityTypeRepository;
         private readonly IEntityVariantRepository _entityVariantRepository = entityVariantRepository;
-        private readonly IEntityLookupRepository _entityLookupRepository = entityLookupRepository;
 
         public async Task<Result<AddPartyResult>> AddParty(PartyBaseInternal party, ChangeRequestOptions options, CancellationToken cancellationToken = default)
         {
@@ -30,7 +28,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
             if (!entityExist.Any())
             {
                 /*
-                 * TODO: For now this is restricted to SystemUser as it does not have any logic to set the correct RefId based on entity type Organisation number for Organisation and Fødselsnummer for Person. 
+                 * Info: For now this is restricted to SystemUser as it does not have any logic to set the correct RefId based on entity type Organisation number for Organisation and Fødselsnummer for Person. 
                  * Also there should be a matching record in the EntityLookup table for required lookup values SystemUSer does not have any lookup values as the only id it has is its PartyUuid.
                  */
                 if (!party.EntityType.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))

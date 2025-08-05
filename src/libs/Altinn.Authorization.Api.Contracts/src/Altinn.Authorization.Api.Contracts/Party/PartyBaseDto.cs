@@ -12,17 +12,17 @@ namespace Altinn.Authorization.Api.Contracts.Party
         /// <summary>
         /// Gets or sets the type of the PArty Uuid.
         /// </summary>
-        public string EntityType { get; set; }
+        public required string EntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the entity variant.
         /// </summary>
-        public string EntityVariantType { get; set; }
+        public required string EntityVariantType { get; set; }
 
         /// <summary>
         /// Gets or sets the display name.
         /// </summary>
-        public string DisplayName { get; set; }
+        public required string DisplayName { get; set; }
 
         /// <summary>
         /// Gets or sets the identifier of the user who created the entity.
