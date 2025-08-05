@@ -1,6 +1,8 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Util;
 using Altinn.Authorization.Api.Contracts.Party;
@@ -15,24 +17,24 @@ using Microsoft.Extensions.Options;
 namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
 {
     [Collection("Internal PartyController Test")]
-    public class PartyControllerTests : IClassFixture<WebApplicationFactory<Program>>
+    public class PartyControllerTests(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
     {
-        private readonly WebApplicationFactory<Program> _factory;
-        private readonly HttpClient _client;
         private readonly JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-        public PartyControllerTests(WebApplicationFactory<Program> factory)
+        private WebApplicationFactory<Program> Fixture { get; } = fixture.WithWebHostBuilder(builder =>
         {
-            // TODO: Set up a correct WebApplicationFactory that spins up a default db to run the test in, that can be scrapped afterwards to ensure equal result each time. WebApplicationFactory//CustomWebApplicationFactory
-            _factory = factory;
-            _client = _factory.WithWebHostBuilder(builder =>
+            builder.ConfigureTestServices(services =>
             {
-                builder.ConfigureTestServices(services =>
-                {
-                    services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                    services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
-                });
-            }).CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+                services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
+                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+            });
+        });
+
+        private HttpClient GetClient()
+        {
+            HttpClient client = Fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            return client;
         }
 
         [Fact]
@@ -55,7 +57,7 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
+            HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -81,7 +83,7 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
+            HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -107,7 +109,7 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
+            HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -136,7 +138,7 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
             };
 
             // Act
-            HttpResponseMessage response = await _client.SendAsync(httpRequestMessage);
+            HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -145,23 +147,27 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
             Assert.Equal("The EntityVariant is not found or not valid for the given EntityType", actual.Detail);
         }
 
-        /* ToDo: Revisit these tests when factory and test container database is set up correctly.
         [Fact]
         public async Task AddParty_ValidParty_ReturnsOkAndTrue()
         {
             // Arrange
-            var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Add("PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "authentication"));
-            var party = new PartyBaseDto
+            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/accessmanagement/api/v1/internal/party")
             {
-                PartyUuid = Guid.NewGuid(),
-                EntityType = "Systembruker",
-                EntityVariantType = "System",
-                DisplayName = "Test User"
+                Content = JsonContent.Create(new PartyBaseDto
+                {
+                    PartyUuid = Guid.NewGuid(),
+                    EntityType = "Systembruker",
+                    EntityVariantType = "System",
+                    DisplayName = "Test User"
+                }),
+                Headers =
+                {
+                    { "PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "authentication") }
+                }
             };
 
             // Act
-            var response = await client.PostAsJsonAsync("/accessmanagement/api/v1/internal/party", party);
+            HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -169,30 +175,5 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
             var result = await response.Content.ReadFromJsonAsync<AddPartyResultDto>();
             Assert.True(result.PartyCreated);
         }
-
-        [Fact]
-        public async Task AddParty_ValidParty_PartyUuidExists_ReturnsOkAndFalse()
-        {
-            // Arrange
-            var client = _factory.CreateClient();
-            client.DefaultRequestHeaders.Add("PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "authentication"));
-            var party = new PartyBaseDto
-            {
-                PartyUuid = Guid.NewGuid(),
-                EntityType = "Systembruker",
-                EntityVariantType = "System",
-                DisplayName = "Test User"
-            };
-
-            // Act
-            var response = await client.PostAsJsonAsync("/accessmanagement/api/v1/internal/party", party);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var result = await response.Content.ReadFromJsonAsync<AddPartyResultDto>();
-            Assert.False(result.PartyCreated);
-        }
-        */
     }
 }
