@@ -211,7 +211,7 @@ public class EnduserConnectionService(
             assignment = existingAssignments.First();
         }
 
-        var check = await CheckPackage(fromId, packageIds: [fromId], cancellationToken);
+        var check = await CheckPackage(fromId, packageIds: [packageId], cancellationToken);
         if (check.IsProblem)
         {
             return check.Problem;
