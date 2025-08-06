@@ -1,3 +1,4 @@
+using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.Authorization.ProblemDetails;
 
@@ -366,6 +367,17 @@ public static class EnduserValidationRules
                 return (ref ValidationErrorBuilder errors) =>
                     errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("packages", $"Packages with name(s) was not found '{pkgsNotFound}'.")]
                 );
+            }
+
+            return null;
+        };
+
+        internal static RuleExpression AuthorizePackageAssignment(IEnumerable<PackageDelegationCheckDto> packages, string paramName = "packageId") => () =>
+        {
+            if (packages.Any(p => !p.Result))
+            {
+                var packageUrns = string.Join(", ", packages.Select(p => p.Package.Urn));
+                return (ref ValidationErrorBuilder errors) => errors.Add(ValidationErrors.UserNotAuthorized, $"QUERY/{paramName}", [new("packages", $"User are not allowed to assign following package(s) '{packageUrns}'.")]);
             }
 
             return null;

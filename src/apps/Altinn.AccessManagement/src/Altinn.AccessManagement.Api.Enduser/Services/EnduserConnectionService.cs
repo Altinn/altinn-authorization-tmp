@@ -211,20 +211,14 @@ public class EnduserConnectionService(
             assignment = existingAssignments.First();
         }
 
-        var userPackageFilter = ConnectionPackageRepository.CreateFilterBuilder()
-            .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
-            .Equal(t => t.FromId, fromId)
-            .Equal(t => t.PackageId, packageId);
-
-        var userPackags = await ConnectionPackageRepository.GetExtended(userPackageFilter, callerName: SpanName("Get extended packages assignments"), cancellationToken: cancellationToken);
-        var userpackage = userPackags.Where(p => p.PackageId == packageId)
-            .ToList();
+        var check = await CheckPackage(fromId, packageIds: [fromId], cancellationToken);
+        if (check.IsProblem)
+        {
+            return check.Problem;
+        }
 
         problem = EnduserValidationRules.Validate(
-            EnduserValidationRules.QueryParameters.AnyPackages(userpackage, queryParamName),
-            EnduserValidationRules.QueryParameters.PackageIsAssignableByDefinition(userpackage, queryParamName),
-            EnduserValidationRules.QueryParameters.PackageIsAssignableByUser(userpackage, queryParamName),
-            EnduserValidationRules.QueryParameters.PackageIsAssignableToRecipient(userpackage, dependencies.EntityTo, queryParamName)
+            EnduserValidationRules.QueryParameters.AuthorizePackageAssignment(check.Value)
         );
 
         if (problem is { })
