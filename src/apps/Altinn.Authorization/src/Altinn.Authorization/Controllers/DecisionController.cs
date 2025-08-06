@@ -27,7 +27,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.FeatureManagement;
-using Newtonsoft.Json;
 
 namespace Altinn.Platform.Authorization.Controllers
 {
@@ -276,7 +275,7 @@ namespace Altinn.Platform.Authorization.Controllers
             {
                 PropertyNameCaseInsensitive = true
             };
-            XacmlJsonRequestRoot jsonRequest = System.Text.Json.JsonSerializer.Deserialize<XacmlJsonRequestRoot>(model.BodyContent, options);
+            XacmlJsonRequestRoot jsonRequest = JsonSerializer.Deserialize<XacmlJsonRequestRoot>(model.BodyContent, options);
 
             XacmlJsonResponse jsonResponse = await Authorize(jsonRequest.Request, cancellationToken: cancellationToken);
 
