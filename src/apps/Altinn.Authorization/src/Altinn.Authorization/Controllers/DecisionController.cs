@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text.Json;
 using System.Xml;
 using Altinn.Authorization.ABAC;
 using Altinn.Authorization.ABAC.Utils;
@@ -31,7 +26,6 @@ using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using Newtonsoft.Json;
 
@@ -280,7 +274,11 @@ namespace Altinn.Platform.Authorization.Controllers
         {
             try
             {
-                XacmlJsonRequestRoot jsonRequestTemp = System.Text.Json.JsonSerializer.Deserialize<XacmlJsonRequestRoot>(model.BodyContent);
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+                XacmlJsonRequestRoot jsonRequestTemp = System.Text.Json.JsonSerializer.Deserialize<XacmlJsonRequestRoot>(model.BodyContent, options);
                 var decisionRequest = jsonRequestTemp.Request;
                 bool isValid = decisionRequest.MultiRequests == null || decisionRequest.MultiRequests.RequestReference == null
                     || decisionRequest.MultiRequests.RequestReference.Count < 2;
