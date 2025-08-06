@@ -246,11 +246,6 @@ public class InternalConnectionsService(
             return problem;
         }
 
-        if (problem is { })
-        {
-            return problem;
-        }
-
         var assignmentPackageFilter = AssignmentPackageRepository
             .CreateFilterBuilder()
             .Equal(t => t.AssignmentId, assignment.Id)
