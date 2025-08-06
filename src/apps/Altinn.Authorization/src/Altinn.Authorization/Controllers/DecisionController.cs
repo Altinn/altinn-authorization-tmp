@@ -278,7 +278,19 @@ namespace Altinn.Platform.Authorization.Controllers
 
         private async Task<ActionResult> AuthorizeJsonRequest(XacmlRequestApiModel model, CancellationToken cancellationToken = default)
         {
-            XacmlJsonRequestRoot jsonRequest = System.Text.Json.JsonSerializer.Deserialize<XacmlJsonRequestRoot>(model.BodyContent);
+            try
+            {
+                XacmlJsonRequestRoot jsonRequestTemp = System.Text.Json.JsonSerializer.Deserialize<XacmlJsonRequestRoot>(model.BodyContent);
+                var decisionRequest = jsonRequestTemp.Request;
+                bool isValid = decisionRequest.MultiRequests == null || decisionRequest.MultiRequests.RequestReference == null
+                    || decisionRequest.MultiRequests.RequestReference.Count < 2;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Serialize debug {BodyContent}", model.BodyContent);
+            }
+
+            XacmlJsonRequestRoot jsonRequest = JsonConvert.DeserializeObject<XacmlJsonRequestRoot>(model.BodyContent);
 
             XacmlJsonResponse jsonResponse = await Authorize(jsonRequest.Request, cancellationToken: cancellationToken);
 
