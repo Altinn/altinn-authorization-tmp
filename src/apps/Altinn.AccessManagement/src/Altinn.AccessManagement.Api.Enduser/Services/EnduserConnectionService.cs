@@ -217,18 +217,9 @@ public class EnduserConnectionService(
             return check.Problem;
         }
 
-        var userPackageFilter = ConnectionPackageRepository.CreateFilterBuilder()
-            .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
-            .Equal(t => t.FromId, fromId)
-            .Equal(t => t.PackageId, packageId);
-
-        var userPackages = await ConnectionPackageRepository.GetExtended(userPackageFilter, callerName: SpanName("Get extended packages assignments"), cancellationToken: cancellationToken);
-        var userpackage = userPackages.Where(p => p.PackageId == packageId)
-            .ToList();
-
         problem = EnduserValidationRules.Validate(
             EnduserValidationRules.QueryParameters.AuthorizePackageAssignment(check.Value),
-            EnduserValidationRules.QueryParameters.PackageIsAssignableToRecipient(userpackage, dependencies.EntityTo, queryParamName)
+            EnduserValidationRules.QueryParameters.PackageIsAssignableToRecipient(check.Value.Select(p => p.Package.Urn), dependencies.EntityTo, queryParamName)
         );
 
         if (problem is { })
