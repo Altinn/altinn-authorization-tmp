@@ -377,7 +377,7 @@ public static class EnduserValidationRules
             if (packages.Any(p => !p.Result))
             {
                 var packageUrns = string.Join(", ", packages.Select(p => p.Package.Urn));
-                return (ref ValidationErrorBuilder errors) => errors.Add(ValidationErrors.UserNotAuthorized, $"QUERY/{paramName}", [new("packages", $"User are not allowed to assign following package(s) '{packageUrns}'.")]);
+                return (ref ValidationErrorBuilder errors) => errors.Add(ValidationErrors.UserNotAuthorized, $"QUERY/{paramName}", [new("packages", $"User is not allowed to assign the following package(s) '{packageUrns}'.")]);
             }
 
             return null;
