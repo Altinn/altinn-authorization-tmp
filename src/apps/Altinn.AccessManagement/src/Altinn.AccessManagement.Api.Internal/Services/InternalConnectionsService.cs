@@ -7,6 +7,7 @@ using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Internal.Services;
@@ -229,21 +230,21 @@ public class InternalConnectionsService(
             assignment = existingAssignments.First();
         }
 
-        var userPackageFilter = ConnectionPackageRepository.CreateFilterBuilder()
-            .Equal(t => t.ToId, DbAudit.Value.ChangedBy)
-            .Equal(t => t.FromId, fromId)
-            .Equal(t => t.PackageId, packageId);
-
-        var userPackags = await ConnectionPackageRepository.GetExtended(userPackageFilter, callerName: SpanName("Get extended packages assignments"), cancellationToken: cancellationToken);
-        var userpackage = userPackags.Where(p => p.PackageId == packageId)
-            .ToList();
+        var check = await CheckPackage(fromId, packageIds: [packageId], cancellationToken);
+        if (check.IsProblem)
+        {
+            return check.Problem;
+        }
 
         problem = InternalValidationRules.Validate(
-            InternalValidationRules.QueryParameters.AnyPackages(userpackage, queryParamName),
-            InternalValidationRules.QueryParameters.PackageIsAssignableByDefinition(userpackage, queryParamName),
-            InternalValidationRules.QueryParameters.PackageIsAssignableByUser(userpackage, queryParamName),
-            InternalValidationRules.QueryParameters.PackageIsAssignableToRecipient(userpackage, dependencies.EntityTo, queryParamName)
+            InternalValidationRules.QueryParameters.AuthorizePackageAssignment(check.Value),
+            InternalValidationRules.QueryParameters.PackageIsAssignableToRecipient(check.Value.Select(p => p.Package.Urn), dependencies.EntityTo, queryParamName)
         );
+
+        if (problem is { })
+        {
+            return problem;
+        }
 
         if (problem is { })
         {
@@ -346,6 +347,66 @@ public class InternalConnectionsService(
         }
 
         return null;
+    }
+
+    public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
+    {
+        packages = packages.Select(p =>
+            p.StartsWith("urn:", StringComparison.Ordinal)
+                ? p
+                : (p.StartsWith(':')
+                    ? $"urn:altinn:accesspackage{p}"
+                    : $"urn:altinn:accesspackage:{p}"));
+
+        var filter = PackageRepository.CreateFilterBuilder()
+            .In(t => t.Urn, packages);
+
+        var allPackages = await PackageRepository.Get(filter, callerName: SpanName("Get packages using URNs"), cancellationToken: cancellationToken);
+        var problem = InternalValidationRules.Validate(InternalValidationRules.QueryParameters.PackageUrnLookup(allPackages, packages));
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        return await CheckPackage(party, (List<Guid>)[.. packageIds, .. allPackages.Select(p => p.Id)], cancellationToken);
+    }
+
+    public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid>? packageIds = null, CancellationToken cancellationToken = default)
+    {
+        var assignablePackages = await RelationService.GetAssignablePackagePermissions(
+            DbAudit.Value.ChangedBy,
+            party,
+            packageIds,
+            cancellationToken: cancellationToken);
+
+        return assignablePackages.GroupBy(p => p.Package.Id).Select(group =>
+        {
+            var firstPackage = group.First();
+            return new AccessPackageDto.Check
+            {
+                Package = new AccessPackageDto.Compact
+                {
+                    Id = firstPackage.Package.Id,
+                    Urn = firstPackage.Package.Urn,
+                    AreaId = firstPackage.Package.AreaId
+                },
+                Result = group.Any(p => p.Result),
+                Reasons = group.Select(p => new AccessPackageDto.Check.Reason
+                {
+                    Description = p.Reason.Description,
+                    RoleId = p.Reason.RoleId,
+                    RoleUrn = p.Reason.RoleUrn,
+                    FromId = p.Reason.FromId,
+                    FromName = p.Reason.FromName,
+                    ToId = p.Reason.ToId,
+                    ToName = p.Reason.ToName,
+                    ViaId = p.Reason.ViaId,
+                    ViaName = p.Reason.ViaName,
+                    ViaRoleId = p.Reason.ViaRoleId,
+                    ViaRoleUrn = p.Reason.ViaRoleUrn
+                })
+            };
+        }).ToList();
     }
 
     private ValidationProblemInstance? ValidateAssignmentData(ExtEntity entityFrom, ExtEntity entityTo, IEnumerable<Role> roles)
@@ -493,4 +554,31 @@ public interface IInternalConnectionService
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
     Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, string role, string package, CancellationToken cancellationToken = default);
+
+        /// <summary>
+    /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
+    /// </summary>
+    /// <param name="party">ID of the person.</param>
+    /// <param name="packageIds">Filter param using unique package identifiers.</param>
+    /// <param name="cancellationToken">
+    /// Token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// </returns>
+    Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
+    /// </summary>
+    /// <param name="party">ID of the person.</param>
+    /// <param name="packages">Filter param using urn package identifiers.</param>
+    /// <param name="packageIds">Filter param using unique package identifiers.</param>
+    /// <param name="cancellationToken">
+    /// Token to monitor for cancellation requests.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
+    /// </returns>
+    Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default);
 }
