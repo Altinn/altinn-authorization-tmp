@@ -344,28 +344,6 @@ public class InternalConnectionsService(
         return null;
     }
 
-    public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
-    {
-        packages = packages.Select(p =>
-            p.StartsWith("urn:", StringComparison.Ordinal)
-                ? p
-                : (p.StartsWith(':')
-                    ? $"urn:altinn:accesspackage{p}"
-                    : $"urn:altinn:accesspackage:{p}"));
-
-        var filter = PackageRepository.CreateFilterBuilder()
-            .In(t => t.Urn, packages);
-
-        var allPackages = await PackageRepository.Get(filter, callerName: SpanName("Get packages using URNs"), cancellationToken: cancellationToken);
-        var problem = InternalValidationRules.Validate(InternalValidationRules.QueryParameters.PackageUrnLookup(allPackages, packages));
-        if (problem is { })
-        {
-            return problem;
-        }
-
-        return await CheckPackage(party, (List<Guid>)[.. packageIds, .. allPackages.Select(p => p.Id)], cancellationToken);
-    }
-
     public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid>? packageIds = null, CancellationToken cancellationToken = default)
     {
         var assignablePackages = await RelationService.GetAssignablePackagePermissions(
@@ -550,7 +528,7 @@ public interface IInternalConnectionService
     /// </returns>
     Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, string role, string package, CancellationToken cancellationToken = default);
 
-        /// <summary>
+    /// <summary>
     /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
     /// </summary>
     /// <param name="party">ID of the person.</param>
@@ -562,18 +540,4 @@ public interface IInternalConnectionService
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
     Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Checks if an authpenticated user is an access manager and has the necessary permissions to delegate a specific access package.
-    /// </summary>
-    /// <param name="party">ID of the person.</param>
-    /// <param name="packages">Filter param using urn package identifiers.</param>
-    /// <param name="packageIds">Filter param using unique package identifiers.</param>
-    /// <param name="cancellationToken">
-    /// Token to monitor for cancellation requests.
-    /// </param>
-    /// <returns>
-    /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
-    /// </returns>
-    Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default);
 }
