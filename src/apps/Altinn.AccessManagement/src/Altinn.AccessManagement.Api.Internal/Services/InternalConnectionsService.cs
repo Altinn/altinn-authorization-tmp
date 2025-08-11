@@ -27,12 +27,13 @@ public class InternalConnectionsService(
     IRelationService RelationService
     ) : IInternalConnectionService
 {
+    /// <inheritdoc />
     public async Task<Result<List<CompactRelationDto>>> Get(Guid fromId, Guid? toId = null, CancellationToken cancellationToken = default)
     {
         var relations = await GetRelations(fromId, toId, cancellationToken);
 
         var result = relations
-            .Where(r => r.Party.Type.Equals("Systembruker", StringComparison.OrdinalIgnoreCase))
+            .Where(r => r.Party.Type.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
             .ToList();
 
         return result;
@@ -40,7 +41,7 @@ public class InternalConnectionsService(
         async Task<IEnumerable<CompactRelationDto>> GetRelations(Guid fromId, Guid? toId, CancellationToken ct)
         {
             var fromEntity = await EntityRepository.GetExtended(fromId, cancellationToken: ct);
-            if (fromEntity.Type.Name.Equals("Organisasjon", StringComparison.OrdinalIgnoreCase))
+            if (fromEntity.Type.Name.Equals("Organisasjon", StringComparison.InvariantCultureIgnoreCase))
             {
                 return await RelationService.GetConnectionsToOthers(fromId, toId is { } validId && validId != Guid.Empty ? validId : null, null, cancellationToken: ct);
             }
