@@ -10,38 +10,12 @@ terraform {
 data "azurerm_client_config" "current" {}
 
 locals {
-  sku = {
-    "Burstable"       = "B",
-    "GeneralPurpose"  = "GP",
-    "MemoryOptimized" = "MO"
-  }
-  sku_name = "${local.sku[var.compute_tier]}_${var.compute_size}"
-
-  connections_table = {
-    # D2
-    "Standard_D2s_v3"   = 859
-    "Standard_D2ds_v4"  = 859
-    "Standard_D2ds_v5"  = 859
-    "Standard_D2ads_v5" = 859
-
-    # D4
-    "Standard_D4s_v3"   = 1718
-    "Standard_D4ds_v4"  = 1718
-    "Standard_D4ds_v5"  = 1718
-    "Standard_D4ads_v5" = 1718
-
-    # D8
-    "Standard_D8s_v3"   = 3437
-    "Standard_D8ds_v4"  = 3437
-    "Standard_D8ds_v5"  = 3437
-    "Standard_D8ads_v5" = 3437
-  }
-  max_connections = lookup(local.connections_table, var.compute_size, 5000)
+  compute_sku = local.compute_skus[var.compute_sku]
 
   default_config = {
     "metrics.autovacuum_diagnostics"      = "on"
     "metrics.collector_database_activity" = "on"
-    "max_connections"                     = tostring(local.max_connections)
+    "max_connections"                     = tostring(local.compute_sku.max_connections)
   }
 
   pgbouncer_default_config = {
@@ -115,7 +89,7 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
   }
 
   create_mode = "Default"
-  sku_name    = local.sku_name
+  sku_name    = local.compute_sku.sku_name
 
   lifecycle {
     ignore_changes  = [zone, storage_mb]
