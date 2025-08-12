@@ -17,16 +17,38 @@ locals {
   }
   sku_name = "${local.sku[var.compute_tier]}_${var.compute_size}"
 
+  connections_table = {
+    # D2
+    "Standard_D2s_v3"   = 859
+    "Standard_D2ds_v4"  = 859
+    "Standard_D2ds_v5"  = 859
+    "Standard_D2ads_v5" = 859
+
+    # D4
+    "Standard_D4s_v3"   = 1718
+    "Standard_D4ds_v4"  = 1718
+    "Standard_D4ds_v5"  = 1718
+    "Standard_D4ads_v5" = 1718
+
+    # D8
+    "Standard_D8s_v3"   = 3437
+    "Standard_D8ds_v4"  = 3437
+    "Standard_D8ds_v5"  = 3437
+    "Standard_D8ads_v5" = 3437
+  }
+  max_connections = lookup(local.connections_table, var.compute_size, 5000)
+
   default_config = {
-    "metrics.autovacuum_diagnostics" : "on",
-    "metrics.collector_database_activity" : "on",
+    "metrics.autovacuum_diagnostics"      = "on"
+    "metrics.collector_database_activity" = "on"
+    "max_connections"                     = tostring(local.max_connections)
   }
 
   pgbouncer_default_config = {
-    "pgbouncer.max_prepared_statements" : "5000",
-    "pgbouncer.max_client_conn" : "5000",
-    "pgbouncer.pool_mode" : "TRANSACTION",
-    "metrics.pgbouncer_diagnostics" : "on",
+    "pgbouncer.max_prepared_statements" = "5000"
+    "pgbouncer.max_client_conn"         = "5000"
+    "pgbouncer.pool_mode"               = "TRANSACTION"
+    "metrics.pgbouncer_diagnostics"     = "on"
   }
 
   # latest key takes precedence
