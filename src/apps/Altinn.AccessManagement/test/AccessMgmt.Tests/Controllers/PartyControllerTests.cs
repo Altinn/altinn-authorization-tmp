@@ -170,7 +170,7 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
             HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
             var result = await response.Content.ReadFromJsonAsync<AddPartyResultDto>();
             Assert.True(result.PartyCreated);
@@ -199,7 +199,7 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
             HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
             var result = await response.Content.ReadFromJsonAsync<AddPartyResultDto>();
             Assert.True(result.PartyCreated);
