@@ -14,7 +14,6 @@ using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
-using Altinn.AccessMgmt.PersistenceEF.Repositories;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.Host;
@@ -127,52 +126,15 @@ internal static partial class AccessManagementHost
 
         builder.Services.AddDbContext<BasicDbContext>((sp, options) =>
         {
+            // var readonlyInterceptor = sp.GetRequiredService<ReadOnlyInterceptor>();
             var auditInterceptior = sp.GetRequiredService<AuditConnectionInterceptor>();
             options.UseNpgsql(builder.Configuration["Database:Postgres:AppConnectionString"])
+            //// .AddInterceptors(readonlyInterceptor)
+            //// .EnableSensitiveDataLogging()
             .AddInterceptors(auditInterceptior);
         });
 
-        builder.Services.AddDbContext<ExtendedDbContext>((sp, options) =>
-        {
-            var readonlyInterceptor = sp.GetRequiredService<ReadOnlyInterceptor>();
-            options.UseNpgsql(builder.Configuration["Database:Postgres:AppConnectionString"]);
-                options.AddInterceptors(readonlyInterceptor);
-            options.EnableSensitiveDataLogging();
-        });
-
-        builder.Services.AddDbContext<AuditDbContext>((sp, options) =>
-        {
-            var readonlyInterceptor = sp.GetRequiredService<ReadOnlyInterceptor>();
-            options.UseNpgsql(builder.Configuration["Database:Postgres:AppConnectionString"]);
-            options.AddInterceptors(readonlyInterceptor);
-        });
-
         builder.Services.Replace(ServiceDescriptor.Singleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>());
-
-        builder.Services.AddScoped<AreaRepository>();
-        builder.Services.AddScoped<AreaGroupRepository>();
-        builder.Services.AddScoped<AssignmentRepository>();
-        builder.Services.AddScoped<AssignmentPackageRepository>();
-        builder.Services.AddScoped<AssignmentResourceRepository>();
-        builder.Services.AddScoped<DelegationRepository>();
-        builder.Services.AddScoped<DelegationPackageRepository>();
-        builder.Services.AddScoped<DelegationResourceRepository>();
-        builder.Services.AddScoped<EntityRepository>();
-        builder.Services.AddScoped<EntityLookupRepository>();
-        builder.Services.AddScoped<EntityTypeRepository>();
-        builder.Services.AddScoped<EntityVariantRepository>();
-        builder.Services.AddScoped<EntityVariantRoleRepository>();
-        builder.Services.AddScoped<PackageRepository>();
-        builder.Services.AddScoped<PackageResourceRepository>();
-        builder.Services.AddScoped<ProviderRepository>();
-        builder.Services.AddScoped<ProviderTypeRepository>();
-        builder.Services.AddScoped<ResourceRepository>();
-        builder.Services.AddScoped<ResourceTypeRepository>();
-        builder.Services.AddScoped<RoleRepository>();
-        builder.Services.AddScoped<RoleLookupRepository>();
-        builder.Services.AddScoped<RoleMapRepository>();
-        builder.Services.AddScoped<RolePackageRepository>();
-        builder.Services.AddScoped<RoleResourceRepository>();
 
         return builder;
     }
