@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Persistence.Extensions;
-using Microsoft.FeatureManagement;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
 
 AppDomain domain = AppDomain.CurrentDomain;
@@ -9,10 +9,21 @@ domain.SetData("REGEX_DEFAULT_MATCH_TIMEOUT", TimeSpan.FromSeconds(2));
 
 WebApplication app = AccessManagementHost.Create(args);
 
-if (await app.Services.GetRequiredService<FeatureManager>().IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
+var appsettings = app.Services.GetRequiredService<IOptions<AccessManagementAppsettings>>().Value;
+if (appsettings.Database.MigrateDb || appsettings.Database.MigrateDbAndTerminate)
 {
-    bool generateBasicData = await app.Services.GetRequiredService<FeatureManager>().IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbWithBasicData);
-    await app.UseAccessMgmtDb(generateBasicData);
+    using var scope = app.Services.CreateScope();
+
+    // Do Something like this when using EF
+    // scope.ServiceProvider.GetRequiredService<AppDbContext>().MigrateAsync();
+
+    // Current framework
+    await app.UseAccessMgmtDb(true);
+    
+    if (appsettings.Database.MigrateDbAndTerminate)
+    {
+        return;
+    }
 }
 
 app.AddDefaultAltinnMiddleware(errorHandlingPath: "/accessmanagement/api/v1/error");
