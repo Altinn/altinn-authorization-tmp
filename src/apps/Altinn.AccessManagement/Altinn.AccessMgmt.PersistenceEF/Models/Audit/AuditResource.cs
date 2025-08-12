@@ -1,10 +1,10 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
+using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 
 /// <inheritdoc />
-public class AuditResource : Resource, IAudit 
+public class AuditResource : BaseResource, IAudit 
 {
     /// <inheritdoc />
     public DateTime ValidFrom { get; set; }

@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
+﻿using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -7,18 +8,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
 public abstract class AuditConfiguration<T> : IEntityTypeConfiguration<T>, IAuditDbConfiguration
     where T : class, IAudit
 {
-    private readonly string _tableName;
-    private readonly string _schema;
-
-    protected AuditConfiguration(string tableName, string schema = "history")
-    {
-        _tableName = tableName;
-        _schema = schema;
-    }
-
     public virtual void Configure(EntityTypeBuilder<T> builder)
     {
-        builder.ToTable(_tableName, _schema);
+        builder.ToDefaultAuditTable();
         builder.HasKey(["Id", "ChangeOperation"]);
 
         builder.Property(e => e.ValidFrom).HasColumnName("audit_validfrom");

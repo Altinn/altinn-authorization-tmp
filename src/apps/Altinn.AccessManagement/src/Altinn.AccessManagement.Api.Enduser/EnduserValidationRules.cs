@@ -1,4 +1,5 @@
-using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models.Base;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Core.Errors;
@@ -220,7 +221,7 @@ public static class ValidationRules
         /// <param name="packages">Lists of packages</param>
         /// <param name="paramName">name of query parameter</param>
         /// <returns></returns>
-        internal static RuleExpression AnyPackages(IEnumerable<ConnectionPackage> packages, string paramName = "packageId") => () =>
+        internal static RuleExpression AnyPackages(IEnumerable<BaseConnectionPackage> packages, string paramName = "packageId") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
@@ -235,7 +236,7 @@ public static class ValidationRules
         };
 
         /// <summary>
-        /// Checks the list of packages all <see cref="Package.IsAssignable"/> is set to true.
+        /// Checks the list of packages all <see cref="BasePackage.IsAssignable"/> is set to true.
         /// </summary>
         /// <param name="packages">list of packages</param>
         /// <param name="paramName">name of the query parameter</param>
@@ -259,12 +260,12 @@ public static class ValidationRules
         };
 
         /// <summary>
-        /// Checks is packages can be asigned by checking <see cref="ConnectionPackage.CanAssign"/> is set to to true.
+        /// Checks is packages can be asigned by checking <see cref="BaseConnectionPackage.CanAssign"/> is set to to true.
         /// </summary>
         /// <param name="packages">List of packages.</param>
         /// <param name="paramName">name of the query parameter.</param>
         /// <returns></returns>
-        internal static RuleExpression PackageIsAssignableByUser(IEnumerable<ConnectionPackage> packages, string paramName = "packageId") => () =>
+        internal static RuleExpression PackageIsAssignableByUser(IEnumerable<BaseConnectionPackage> packages, string paramName = "packageId") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
@@ -289,7 +290,7 @@ public static class ValidationRules
         /// <param name="packageName">Name of the package.</param>
         /// <param name="paramName">name of the query URN parameter.</param>
         /// <returns></returns>
-        internal static RuleExpression PackageUrnLookup(IEnumerable<Package> packages, string packageName, string paramName = "package") => () =>
+        internal static RuleExpression PackageUrnLookup(IEnumerable<BasePackage> packages, string packageName, string paramName = "package") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
@@ -317,7 +318,7 @@ public static class ValidationRules
         /// </summary>
         /// <param name="packages">List of packages.</param>
         /// <param name="paramName">name of the query parameter.</param>
-        internal static RuleExpression HasPackagesAssigned(IEnumerable<AssignmentPackage> packages, string paramName = "cascade") => () =>
+        internal static RuleExpression HasPackagesAssigned(IEnumerable<BaseAssignmentPackage> packages, string paramName = "cascade") => () =>
         {
             ArgumentNullException.ThrowIfNull(packages);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
@@ -338,7 +339,7 @@ public static class ValidationRules
         /// <param name="roleCode">The name of the role to verify.</param>
         /// <param name="paramNameFrom">The name of the source query parameter.</param>
         /// <param name="paramNameTo">The name of the target query parameter.</param>
-        internal static RuleExpression VerifyAssignmentRoleExists(IEnumerable<Assignment> packages, string roleCode, string paramNameFrom = "from", string paramNameTo = "to") => () =>
+        internal static RuleExpression VerifyAssignmentRoleExists(IEnumerable<BaseAssignment> packages, string roleCode, string paramNameFrom = "from", string paramNameTo = "to") => () =>
         {
             if (packages is { } && packages.Any())
             {
@@ -356,7 +357,7 @@ public static class ValidationRules
         /// </summary>
         /// <param name="delegations">List of delegations.</param>
         /// <param name="paramName">name of the query parameter.</param>
-        internal static RuleExpression HasDelegationsAssigned(IEnumerable<Delegation> delegations, string paramName = "cascade") => () =>
+        internal static RuleExpression HasDelegationsAssigned(IEnumerable<BaseDelegation> delegations, string paramName = "cascade") => () =>
         {
             ArgumentNullException.ThrowIfNull(delegations);
             if (delegations.Any())
@@ -372,7 +373,7 @@ public static class ValidationRules
         /// Checks if party exists
         /// </summary>
         /// <returns></returns>
-        internal static RuleExpression PartyExists(Entity party, string paramName = "party") => () =>
+        internal static RuleExpression PartyExists(BaseEntity party, string paramName = "party") => () =>
         {
             if (party is { })
             {
@@ -383,7 +384,7 @@ public static class ValidationRules
                 errors.Add(ValidationErrors.EntityNotExists, $"QUERY/{paramName}", [new("party", $"Entity do not exists.")]);
         };
 
-        internal static RuleExpression PartyIsEntityType(ExtEntity party, string entityType, string paramName = "party") => () =>
+        internal static RuleExpression PartyIsEntityType(Entity party, string entityType, string paramName = "party") => () =>
         {
             if (party is { })
             {

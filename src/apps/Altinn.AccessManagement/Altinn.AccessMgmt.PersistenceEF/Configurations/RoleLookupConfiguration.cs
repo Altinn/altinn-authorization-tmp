@@ -1,5 +1,6 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+﻿using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -10,11 +11,12 @@ public class RoleLookupConfiguration : IEntityTypeConfiguration<RoleLookup>
 {
     public void Configure(EntityTypeBuilder<RoleLookup> builder)
     {
-        builder.ToTable("RoleLookup", "dbo");
+        builder.ToDefaultTable();
+        builder.EnableAudit();
 
         builder.HasKey(p => p.Id);
 
-        builder.Property(t => t.RoleId).IsRequired();
+        builder.PropertyWithReference(navKey: t => t.Role, foreignKey: t => t.RoleId, principalKey: t => t.Id);
         builder.Property(t => t.Key).IsRequired();
         builder.Property(t => t.Value).IsRequired();
 
@@ -22,12 +24,4 @@ public class RoleLookupConfiguration : IEntityTypeConfiguration<RoleLookup>
     }
 }
 
-public class ExtendedRoleLookupConfiguration : IEntityTypeConfiguration<ExtendedRoleLookup> {
-    public void Configure(EntityTypeBuilder<ExtendedRoleLookup> builder)
-    {
-        builder.ToTable("RoleLookup", "dbo");
-        builder.HasOne(p => p.Role).WithMany().HasForeignKey(p => p.RoleId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);
-    }
-}
-
-public class AuditRoleLookupConfiguration : AuditConfiguration<AuditRoleLookup> { public AuditRoleLookupConfiguration() : base("RoleLookup") { } }
+public class AuditRoleLookupConfiguration : AuditConfiguration<AuditRoleLookup> { }

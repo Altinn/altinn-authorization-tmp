@@ -49,6 +49,22 @@ public class TranslationService : ITranslationService
 
         return source;
     }
+
+    public async Task UpsertTranslation(TranslationEntry translationEntry)
+    {
+        var entry = await _db.Set<TranslationEntry>().SingleOrDefaultAsync(t => t.Id == translationEntry.Id && t.LanguageCode == translationEntry.LanguageCode && t.FieldName == translationEntry.FieldName);
+
+        if (entry == null)
+        {
+            _db.Add(translationEntry);
+        }
+        else
+        {
+            _db.Update(translationEntry);
+        }
+
+        _db.SaveChanges();
+    }
 }
 
 /// <summary>
@@ -65,6 +81,8 @@ public interface ITranslationService
     /// <returns>A <see cref="ValueTask{T}"/> representing the asynchronous operation. The result contains the translated object
     /// of type <typeparamref name="T"/>.</returns>
     ValueTask<T> TranslateAsync<T>(T source, string languageCode);
+
+    Task UpsertTranslation(TranslationEntry translationEntry);
 }
 
 /// <summary>

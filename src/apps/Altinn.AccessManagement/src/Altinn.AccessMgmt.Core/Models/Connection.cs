@@ -98,3 +98,36 @@ public class ExtConnection : Connection
     /// </summary>
     public Role FacilitatorRole { get; set; }
 }
+
+/// <summary>
+/// Extended Connection
+/// </summary>
+public class ExtendedConnection : Connection
+{
+    /// <summary>
+    /// The entity the connection is from (origin, client, source etc)
+    /// For Assignments this is From for Delegations this is From.From
+    /// </summary>
+    public ExtendedEntity From { get; set; }
+
+    /// <summary>
+    /// The role To identifies as either to From or to Facilitator
+    /// </summary>
+    public ExtendedRole Role { get; set; }
+
+    /// <summary>
+    /// The entity the connection is to (destination, agent, etc)
+    /// For Assignments this is To for Delegations this is To.To
+    /// </summary>
+    public ExtendedEntity To { get; set; }
+
+    /// <summary>
+    /// The entity betweeen from and to. When connection is delegated.
+    /// </summary>
+    public ExtendedEntity Via { get; set; }
+
+    /// <summary>
+    /// The role the facilitator has to the client 
+    /// </summary>
+    public ExtendedRole ViaRole { get; set; }
+}

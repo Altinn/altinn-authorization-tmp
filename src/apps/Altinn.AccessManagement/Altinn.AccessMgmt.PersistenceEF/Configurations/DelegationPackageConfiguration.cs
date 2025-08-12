@@ -1,5 +1,6 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+﻿using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -10,24 +11,16 @@ public class DelegationPackageConfiguration : IEntityTypeConfiguration<Delegatio
 {
     public void Configure(EntityTypeBuilder<DelegationPackage> builder)
     {
-        builder.ToTable("DelegationPackage", "dbo");
+        builder.ToDefaultTable();
+        builder.EnableAudit();
 
         builder.HasKey(p => p.Id);
 
-        builder.Property(t => t.DelegationId).IsRequired();
-        builder.Property(t => t.PackageId).IsRequired();
+        builder.PropertyWithReference(navKey: t => t.Delegation, foreignKey: t => t.DelegationId, principalKey: t => t.Id);
+        builder.PropertyWithReference(navKey: t => t.Package, foreignKey: t => t.PackageId, principalKey: t => t.Id);
 
         builder.HasIndex(t => new { t.DelegationId, t.PackageId }).IsUnique();
     }
 }
 
-public class ExtendedDelegationPackageConfiguration : IEntityTypeConfiguration<ExtendedDelegationPackage> {
-    public void Configure(EntityTypeBuilder<ExtendedDelegationPackage> builder)
-    {
-        builder.ToTable("DelegationPackage", "dbo");
-        builder.HasOne(p => p.Delegation).WithMany().HasForeignKey(p => p.DelegationId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);
-        builder.HasOne(p => p.Package).WithMany().HasForeignKey(p => p.PackageId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);
-    }
-}
-
-public class AuditDelegationPackageConfiguration : AuditConfiguration<AuditDelegationPackage> { public AuditDelegationPackageConfiguration() : base("DelegationPackage") { } }
+public class AuditDelegationPackageConfiguration : AuditConfiguration<AuditDelegationPackage> { }

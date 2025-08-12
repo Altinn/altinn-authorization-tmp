@@ -1,5 +1,6 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+﻿using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -10,7 +11,8 @@ public class PackageConfiguration : IEntityTypeConfiguration<Package>
 {
     public void Configure(EntityTypeBuilder<Package> builder)
     {
-        builder.ToTable("package", "dbo");
+        builder.ToDefaultTable();
+        builder.EnableAudit();
 
         builder.HasKey(p => p.Id);
 
@@ -20,27 +22,13 @@ public class PackageConfiguration : IEntityTypeConfiguration<Package>
         builder.Property(t => t.IsAssignable).HasDefaultValue(false);
         builder.Property(t => t.IsDelegable).HasDefaultValue(false);
         builder.Property(t => t.HasResources);
-        builder.Property(t => t.ProviderId);
-        builder.Property(t => t.EntityTypeId);
-        builder.Property(t => t.AreaId);
+
+        builder.PropertyWithReference(navKey: t => t.Provider, foreignKey: t => t.ProviderId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.NoAction);
+        builder.PropertyWithReference(navKey: t => t.EntityType, foreignKey: t => t.EntityTypeId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.NoAction);
+        builder.PropertyWithReference(navKey: t => t.Area, foreignKey: t => t.AreaId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.NoAction);
 
         builder.HasIndex(t => new { t.ProviderId, t.Name }).IsUnique();
     }
 }
 
-public class ExtendedPackageConfiguration : IEntityTypeConfiguration<ExtendedPackage>
-{
-    public void Configure(EntityTypeBuilder<ExtendedPackage> builder)
-    {
-        builder.ToTable("package", "dbo");
-
-        builder.HasOne(p => p.Provider).WithMany().HasForeignKey(p => p.ProviderId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.NoAction);
-        builder.HasOne(p => p.EntityType).WithMany().HasForeignKey(p => p.EntityTypeId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.NoAction);
-        builder.HasOne(p => p.Area).WithMany().HasForeignKey(p => p.AreaId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.NoAction);
-    }
-}
-
-public class AuditPackageConfiguration : AuditConfiguration<AuditPackage>
-{
-    public AuditPackageConfiguration() : base("package") { }
-}
+public class AuditPackageConfiguration : AuditConfiguration<AuditPackage> { }

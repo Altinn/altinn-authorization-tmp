@@ -1,32 +1,26 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+﻿using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Configurations;
 
-public class AssignmentResourceConfiguration : IEntityTypeConfiguration<AssignmentResource> {
+public class AssignmentResourceConfiguration : IEntityTypeConfiguration<AssignmentResource> 
+{
     public void Configure(EntityTypeBuilder<AssignmentResource> builder)
     {
-        builder.ToTable("AssignmentResource", "dbo");
+        builder.ToDefaultTable();
+        builder.EnableAudit();
 
         builder.HasKey(p => p.Id);
 
-        builder.Property(t => t.AssignmentId).IsRequired();
-        builder.Property(t => t.ResourceId).IsRequired();
+        builder.PropertyWithReference(navKey: t => t.Assignment, foreignKey: t => t.AssignmentId, principalKey: t => t.Id);
+        builder.PropertyWithReference(navKey: t => t.Resource, foreignKey: t => t.ResourceId, principalKey: t => t.Id);
 
         builder.HasIndex(t => new { t.AssignmentId, t.ResourceId }).IsUnique();
     }
 }
 
-public class ExtendedAssignmentResourceConfiguration : IEntityTypeConfiguration<ExtendedAssignmentResource> {
-    public void Configure(EntityTypeBuilder<ExtendedAssignmentResource> builder)
-    {
-        builder.ToTable("AssignmentResource", "dbo");
-        builder.HasOne(p => p.Assignment).WithMany().HasForeignKey(p => p.AssignmentId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);
-        builder.HasOne(p => p.Resource).WithMany().HasForeignKey(p => p.ResourceId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);
-    }
-}
-
-public class AuditAssignmentResourceConfiguration : AuditConfiguration<AuditAssignmentResource> { public AuditAssignmentResourceConfiguration() : base("AssignmentResource") { } }
+public class AuditAssignmentResourceConfiguration : AuditConfiguration<AuditAssignmentResource> { }

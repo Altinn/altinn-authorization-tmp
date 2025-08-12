@@ -7,6 +7,7 @@ using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Enduser.Services;
@@ -15,17 +16,7 @@ namespace Altinn.AccessManagement.Enduser.Services;
 /// Service for managing connections.
 /// </summary>
 public class ConnectionService(
-    IDbAudit dbAudit,
-    IPackageRepository packageRepository,
-    IRoleRepository roleRepository,
-    IConnectionPackageRepository connectionPackageRepository,
-    IAssignmentRepository assignmentRepository,
-    IDelegationRepository delegationRepository,
-    IAssignmentPackageRepository assignmentPackageRepository,
-    IEntityRepository entityRepository,
-    IRelationService relationService,
-    IRelationPermissionRepository relationPermissionRepository,
-    IRelationRepository relationRepository
+    BasicDbContext dbContext
     ) : IEnduserConnectionService
 {
     private IDbAudit DbAudit { get; } = dbAudit;

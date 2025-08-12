@@ -1,9 +1,9 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+﻿using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Configurations;
 
@@ -11,11 +11,12 @@ public class EntityLookupConfiguration : IEntityTypeConfiguration<EntityLookup>
 {
     public void Configure(EntityTypeBuilder<EntityLookup> builder)
     {
-        builder.ToTable("EntityLookup", "dbo");
+        builder.ToDefaultTable();
+        builder.EnableAudit();
 
         builder.HasKey(p => p.Id);
 
-        builder.Property(t => t.EntityId).IsRequired();
+        builder.PropertyWithReference(navKey: t => t.Entity, foreignKey: t => t.EntityId, principalKey: t => t.Id);
         builder.Property(t => t.Key).IsRequired();
         builder.Property(t => t.Value).IsRequired();
 
@@ -23,13 +24,4 @@ public class EntityLookupConfiguration : IEntityTypeConfiguration<EntityLookup>
     }
 }
 
-public class ExtendedEntityLookupConfiguration : IEntityTypeConfiguration<ExtendedEntityLookup> 
-{
-    public void Configure(EntityTypeBuilder<ExtendedEntityLookup> builder)
-    {
-        builder.ToTable("EntityLookup", "dbo");
-        builder.HasOne(p => p.Entity).WithMany().HasForeignKey(p => p.EntityId).HasPrincipalKey(c => c.Id).OnDelete(DeleteBehavior.Cascade);
-    }
-}
-
-public class AuditEntityLookupConfiguration : AuditConfiguration<AuditEntityLookup> { public AuditEntityLookupConfiguration() : base("EntityLookup") { } }
+public class AuditEntityLookupConfiguration : AuditConfiguration<AuditEntityLookup> { }

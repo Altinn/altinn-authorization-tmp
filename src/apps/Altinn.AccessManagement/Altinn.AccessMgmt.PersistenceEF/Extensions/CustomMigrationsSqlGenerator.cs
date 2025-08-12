@@ -1,13 +1,8 @@
 ﻿using System.Text;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Migrations;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -27,8 +22,6 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
             et.GetTableName() == operation.Name &&
             et.GetSchema() == operation.Schema);
 
-        var enableAudit = model.FindAnnotation("EnableAudit"); // Easy?
-
         if (entityType?.FindAnnotation("EnableAudit")?.Value as bool? == true)
         {
             builder.AppendLine(GenerateAuditInsertFunctionAndTrigger(operation.Schema, operation.Name, new List<string>()));
@@ -47,6 +40,7 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
     {
         var sb = new StringBuilder();
 
+        // sb.AppendLine($"CREATE OR REPLACE FUNCTION {schema}.set_audit_{name}_insert_fn()"); // Option if generic is problamatic
         sb.AppendLine($"CREATE OR REPLACE FUNCTION {schema}.set_audit_generic_insert_fn()");
         sb.AppendLine("RETURNS TRIGGER AS $$");
         sb.AppendLine("DECLARE ctx RECORD;");
@@ -62,6 +56,7 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
 
         sb.AppendLine($"DO $$ BEGIN IF NOT EXISTS (SELECT * FROM pg_trigger t WHERE t.tgname ILIKE 'audit_{name}_insert_trg' AND t.tgrelid = '{name}'::regclass) THEN");
         sb.AppendLine($"CREATE OR REPLACE TRIGGER audit_{name}_insert_trg BEFORE INSERT OR UPDATE ON {schema}.{name}");
+        //// sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {schema}.audit_{name}_insert_fn();"); // Option if generic is problamatic
         sb.AppendLine($"FOR EACH ROW EXECUTE FUNCTION {schema}.audit_generic_insert_fn();");
         sb.AppendLine($"END IF; END $$;");
 

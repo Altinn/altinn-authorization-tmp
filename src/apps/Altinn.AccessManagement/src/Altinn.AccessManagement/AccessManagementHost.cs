@@ -14,7 +14,7 @@ using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
-using Altinn.AccessMgmt.PersistenceEF.Services;
+using Altinn.AccessMgmt.PersistenceEF.Repositories;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.Host;
@@ -121,38 +121,58 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureEF(this WebApplicationBuilder builder)
     {
-        // builder.Services.AddScoped<IAuditContextProvider, HttpContextAuditContextProvider>();
-        // builder.Services.AddScoped<AuditConnectionInterceptor>();
+        builder.Services.AddScoped<IAuditContextProvider, HttpContextAuditContextProvider>();
+        builder.Services.AddScoped<AuditConnectionInterceptor>();
+        builder.Services.AddScoped<ReadOnlyInterceptor>();
 
         builder.Services.AddDbContext<BasicDbContext>((sp, options) =>
         {
-            //var interceptor = sp.GetRequiredService<AuditConnectionInterceptor>();
-            options.UseNpgsql(builder.Configuration["Database:Postgres:AppConnectionString"]);
-            //.AddInterceptors(interceptor);
+            var auditInterceptior = sp.GetRequiredService<AuditConnectionInterceptor>();
+            options.UseNpgsql(builder.Configuration["Database:Postgres:AppConnectionString"])
+            .AddInterceptors(auditInterceptior);
         });
 
         builder.Services.AddDbContext<ExtendedDbContext>((sp, options) =>
         {
-            //var interceptor = sp.GetRequiredService<AuditConnectionInterceptor>();
+            var readonlyInterceptor = sp.GetRequiredService<ReadOnlyInterceptor>();
             options.UseNpgsql(builder.Configuration["Database:Postgres:AppConnectionString"]);
-            options.EnableSensitiveDataLogging(); // Viser verdier i parametre
-            //options.LogTo(Console.WriteLine, LogLevel.Information);
-            //options.AddInterceptors(interceptor);
-
+                options.AddInterceptors(readonlyInterceptor);
+            options.EnableSensitiveDataLogging();
         });
 
         builder.Services.AddDbContext<AuditDbContext>((sp, options) =>
         {
-            //var interceptor = sp.GetRequiredService<AuditConnectionInterceptor>();
+            var readonlyInterceptor = sp.GetRequiredService<ReadOnlyInterceptor>();
             options.UseNpgsql(builder.Configuration["Database:Postgres:AppConnectionString"]);
-            //.AddInterceptors(interceptor);
+            options.AddInterceptors(readonlyInterceptor);
         });
 
         builder.Services.Replace(ServiceDescriptor.Singleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>());
 
-
-        builder.Services.AddScoped<Altinn.AccessMgmt.PersistenceEF.Services.PackageService>();
-        builder.Services.AddScoped<Altinn.AccessMgmt.PersistenceEF.Services.AreaGroupService>();
+        builder.Services.AddScoped<AreaRepository>();
+        builder.Services.AddScoped<AreaGroupRepository>();
+        builder.Services.AddScoped<AssignmentRepository>();
+        builder.Services.AddScoped<AssignmentPackageRepository>();
+        builder.Services.AddScoped<AssignmentResourceRepository>();
+        builder.Services.AddScoped<DelegationRepository>();
+        builder.Services.AddScoped<DelegationPackageRepository>();
+        builder.Services.AddScoped<DelegationResourceRepository>();
+        builder.Services.AddScoped<EntityRepository>();
+        builder.Services.AddScoped<EntityLookupRepository>();
+        builder.Services.AddScoped<EntityTypeRepository>();
+        builder.Services.AddScoped<EntityVariantRepository>();
+        builder.Services.AddScoped<EntityVariantRoleRepository>();
+        builder.Services.AddScoped<PackageRepository>();
+        builder.Services.AddScoped<PackageResourceRepository>();
+        builder.Services.AddScoped<ProviderRepository>();
+        builder.Services.AddScoped<ProviderTypeRepository>();
+        builder.Services.AddScoped<ResourceRepository>();
+        builder.Services.AddScoped<ResourceTypeRepository>();
+        builder.Services.AddScoped<RoleRepository>();
+        builder.Services.AddScoped<RoleLookupRepository>();
+        builder.Services.AddScoped<RoleMapRepository>();
+        builder.Services.AddScoped<RolePackageRepository>();
+        builder.Services.AddScoped<RoleResourceRepository>();
 
         return builder;
     }
@@ -394,5 +414,21 @@ internal static partial class AccessManagementHost
 
         [LoggerMessage(EventId = 2, Level = LogLevel.Debug, Message = "Connection string(s) for pgsql server are missing")]
         internal static partial void PgsqlMissingConnectionString(ILogger logger);
+    }
+}
+
+public class HttpContextAuditContextProvider(IHttpContextAccessor accessor) : IAuditContextProvider
+{
+    public AuditValues Current
+    {
+        get
+        {
+            var user = accessor.HttpContext?.User;
+            var userId = Guid.Parse(user?.FindFirst("sub")?.Value ?? throw new Exception("Missing sub"));
+            var systemId = Guid.Parse("00000000-0000-0000-0000-000000000001"); // evt fra config
+            var operationId = Guid.NewGuid().ToString();
+
+            return new AuditValues(userId, systemId, operationId);
+        }
     }
 }
