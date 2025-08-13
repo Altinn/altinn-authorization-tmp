@@ -14,6 +14,7 @@
         <ProjectReference Include="..\..\Altinn.AccessMgmt.PersistenceEF\Altinn.AccessMgmt.PersistenceEF.csproj" />
         <ProjectReference Include="..\Altinn.AccessManagement.Core\Altinn.AccessManagement.Core.csproj" />
         <ProjectReference Include="..\Altinn.AccessMgmt.Persistence\Altinn.AccessMgmt.Persistence.csproj" />
+        <ProjectReference Include="..\..\..\..\libs\Altinn.Authorization.Api.Contracts\src\Altinn.Authorization.Api.Contracts\Altinn.Authorization.Api.Contracts.csproj" />
     </ItemGroup>
 
 </Project>

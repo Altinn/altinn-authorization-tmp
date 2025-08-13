@@ -1,6 +1,7 @@
 using Altinn.AccessManagement.Api.Enduser;
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationHandler;
 using Altinn.AccessManagement.Api.Enduser.Authorization.AuthorizationRequirement;
+using Altinn.AccessManagement.Api.Internal;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
@@ -33,7 +34,6 @@ using Altinn.Common.PEP.Implementation;
 using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
-using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -42,7 +42,6 @@ using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
-using OpenTelemetry;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace Altinn.AccessManagement;
@@ -114,6 +113,7 @@ internal static partial class AccessManagementHost
         builder.ConfigureAccessManagementPersistence();
         builder.ConfigureHostedServices();
         builder.AddAccessManagementEnduser();
+        builder.AddAccessManagementInternal();
 
         return builder.Build();
     }
@@ -314,6 +314,7 @@ internal static partial class AccessManagementHost
 
         builder.Services.AddAuthorizationBuilder()
             .AddPolicy(AuthzConstants.PLATFORM_ACCESS_AUTHORIZATION, policy => policy.Requirements.Add(new AccessTokenRequirement()))
+            .AddPolicy(AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM, policy => policy.Requirements.Add(new AccessTokenRequirement(AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)))
             .AddPolicy(AuthzConstants.ALTINNII_AUTHORIZATION, policy => policy.Requirements.Add(new ClaimAccessRequirement("urn:altinn:app", "sbl.authorization")))
             .AddPolicy(AuthzConstants.INTERNAL_AUTHORIZATION, policy => policy.Requirements.Add(new ClaimAccessRequirement("urn:altinn:app", "internal.authorization")))
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_DELEGATION_READ, policy => policy.Requirements.Add(new ResourceAccessRequirement("read", "altinn_maskinporten_scope_delegation")))
@@ -322,9 +323,9 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.POLICY_MASKINPORTEN_CONSENT_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement(["altinn:maskinporten/consent.read"])))
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ, policy => policy.Requirements.Add(new ResourceAccessRequirement("read", "altinn_access_management")))
             .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_WRITE, policy => policy.Requirements.Add(new ResourceAccessRequirement("write", "altinn_access_management")))
-            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_enduser_access_management", false)))
-            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_enduser_access_management", false)))
-            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ_WITH_PASS_TROUGH, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_enduser_access_management", true)))
+            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_access_management", false)))
+            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_access_management", false)))
+            .AddPolicy(AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ_WITH_PASS_TROUGH, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_access_management", true)))
             .AddPolicy(AuthzConstants.POLICY_RESOURCEOWNER_AUTHORIZEDPARTIES, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_AUTHORIZEDPARTIES_RESOURCEOWNER, AuthzConstants.SCOPE_AUTHORIZEDPARTIES_ADMIN])))
             .AddPolicy(AuthzConstants.POLICY_CONSENTREQUEST_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_CONSENTREQUEST_ORG, AuthzConstants.SCOPE_CONSENTREQUEST_WRITE])))
             .AddPolicy(AuthzConstants.POLICY_CONSENTREQUEST_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_CONSENTREQUEST_ORG, AuthzConstants.SCOPE_CONSENTREQUEST_READ, AuthzConstants.SCOPE_CONSENTREQUEST_WRITE])))

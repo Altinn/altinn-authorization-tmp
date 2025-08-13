@@ -241,7 +241,7 @@ public class DelegationService(
                     if (agentAssignment == null)
                     {
                         // Find or Create Agent Entity
-                        var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "System", options) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
+                        var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "AgentSystem", options) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
 
                         // Find or Create Agent Assignment
                         agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole, options) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
@@ -425,7 +425,9 @@ public class DelegationService(
         else
         {
             var roleProvider = await providerRepository.Get(role.ProviderId);
-            if (roleProvider.Code != "sys-altinn3") // Get system from token
+            
+            // Get system from token
+            if (roleProvider.Code != "sys-altinn3")
             {
                 throw new Exception(string.Format("You cannot create assignment with the role '{0}' ({1})", role.Name, role.Code));
             }

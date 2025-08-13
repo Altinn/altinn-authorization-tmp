@@ -35,7 +35,7 @@ variable "tags" {
 
 variable "storage_tier" {
   type    = string
-  default = "P4"
+  default = "P10"
 }
 
 variable "configurations" {
@@ -43,19 +43,19 @@ variable "configurations" {
   default = {}
 }
 
-variable "compute_tier" {
-  type = string
-  validation {
-    condition     = contains(["Burstable", "GeneralPurpose", "MemoryOptimized"], var.compute_tier)
-    error_message = "Possible values are Burstable, GeneralPurpose and MemoryOptimized"
-  }
-
-  default     = "Burstable" # Cheapest
-  description = "Compute tier"
+variable "use_pgbouncer" {
+  type    = bool
+  default = false
 }
 
-variable "compute_size" {
-  type = string
+variable "compute_sku" {
+  type    = string
+  default = "D2"
+
+  validation {
+    condition     = contains(keys(local.compute_skus), var.compute_sku)
+    error_message = "Must be one of [${join(", ", keys(local.compute_skus))}]"
+  }
 }
 
 variable "backup_retention_days" {

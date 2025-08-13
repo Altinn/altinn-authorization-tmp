@@ -1,8 +1,8 @@
-﻿using Altinn.AccessMgmt.Core.Models;
+﻿using System.Diagnostics;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Microsoft.Extensions.Configuration;
 
@@ -79,52 +79,52 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 4);
         }
 
-        if (migrationService.NeedMigration<EntityVariant>(dataKey, 4))
+        if (migrationService.NeedMigration<EntityVariant>(dataKey, 5))
         {
             await IngestEntityVariant(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 4);
+            await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 5);
         }
 
-        if (migrationService.NeedMigration<Entity>(dataKey, 3))
+        if (migrationService.NeedMigration<Entity>(dataKey, 4))
         {
             await IngestSystemEntity(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Entity>(dataKey, string.Empty, 3);
+            await migrationService.LogMigration<Entity>(dataKey, string.Empty, 4);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 12))
+        if (migrationService.NeedMigration<Role>(dataKey, 13))
         {
             await IngestRole(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 12);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 13);
         }
 
-        if (migrationService.NeedMigration<RoleMap>(dataKey, 5))
+        if (migrationService.NeedMigration<RoleMap>(dataKey, 6))
         {
             await IngestRoleMap(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 5);
+            await migrationService.LogMigration<RoleMap>(dataKey, string.Empty, 6);
         }
 
-        if (migrationService.NeedMigration<AreaGroup>(dataKey, 4))
+        if (migrationService.NeedMigration<AreaGroup>(dataKey, 5))
         {
             await IngestAreaGroup(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 4);
+            await migrationService.LogMigration<AreaGroup>(dataKey, string.Empty, 5);
         }
 
-        if (migrationService.NeedMigration<Area>(dataKey, 5))
+        if (migrationService.NeedMigration<Area>(dataKey, 6))
         {
             await IngestArea(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Area>(dataKey, string.Empty, 5);
+            await migrationService.LogMigration<Area>(dataKey, string.Empty, 6);
         }
 
-        if (migrationService.NeedMigration<Package>(dataKey, 7))
+        if (migrationService.NeedMigration<Package>(dataKey, 8))
         {
             await IngestPackage(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Package>(dataKey, string.Empty, 7);
+            await migrationService.LogMigration<Package>(dataKey, string.Empty, 8);
         }
 
-        if (migrationService.NeedMigration<RolePackage>(dataKey, 5))
+        if (migrationService.NeedMigration<RolePackage>(dataKey, 7))
         {
             await IngestRolePackage(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 5);
+            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 7);
         }
 
         if (migrationService.NeedMigration<EntityVariantRole>(dataKey, 2))
@@ -257,7 +257,7 @@ public class DbDataMigrationService(
     {
         var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Organisasjon"));
         var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Person"));
-        var systemTypeId = (await entityTypeService.Get(t => t.Name, "Systembruker")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "System"));
+        var systemTypeId = (await entityTypeService.Get(t => t.Name, "Systembruker")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Systembruker"));
         var internalTypeId = (await entityTypeService.Get(t => t.Name, "Intern")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
 
         var entityVariants = new List<EntityVariant>()
@@ -307,7 +307,8 @@ public class DbDataMigrationService(
             new EntityVariant() { Id = Guid.Parse("d7208d54-067d-4b5c-a906-f0da3d3de0f1"), TypeId = orgTypeId, Name = "KBO", Description = "Konkursbo" },
             new EntityVariant() { Id = Guid.Parse("ea460099-515f-4e54-88d8-fbe53a807276"), TypeId = orgTypeId, Name = "BA", Description = "Selskap med begrenset ansvar" },
             new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId, Name = "Person", Description = "Person" },
-            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
+            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "AgentSystem", Description = "AgentSystem" },
+            new EntityVariant() { Id = Guid.Parse("f948baa3-8f6b-4790-a35c-85064c1b7f9b"), TypeId = systemTypeId, Name = "StandardSystem", Description = "StandardSystem" },
             new EntityVariant() { Id = Guid.Parse("03D08113-40D0-48BD-85B6-BD4430CCC182"), TypeId = persTypeId, Name = "SI", Description = "Selvidentifisert bruker" },
             new EntityVariant() { Id = Guid.Parse("CBE2834D-3DB0-4A14-BAA2-D32DE004D6D7"), TypeId = internalTypeId, Name = "Standard", Description = "Standard intern entitet" },
         };
@@ -359,7 +360,8 @@ public class DbDataMigrationService(
             new EntityVariant() { Id = Guid.Parse("d7208d54-067d-4b5c-a906-f0da3d3de0f1"), TypeId = orgTypeId, Name = "KBO", Description = "Bankruptcy estate" },
             new EntityVariant() { Id = Guid.Parse("ea460099-515f-4e54-88d8-fbe53a807276"), TypeId = orgTypeId, Name = "BA", Description = "Limited liability company" },
             new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId, Name = "Person", Description = "Person" },
-            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
+            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "AgentSystem", Description = "AgentSystem" },
+            new EntityVariant() { Id = Guid.Parse("f948baa3-8f6b-4790-a35c-85064c1b7f9b"), TypeId = systemTypeId, Name = "StandardSystem", Description = "StandardSystem" },
             new EntityVariant() { Id = Guid.Parse("03D08113-40D0-48BD-85B6-BD4430CCC182"), TypeId = persTypeId, Name = "SI", Description = "Self-identified user" },
             new EntityVariant() { Id = Guid.Parse("CBE2834D-3DB0-4A14-BAA2-D32DE004D6D7"), TypeId = internalTypeId, Name = "Default", Description = "Default internal entity" },
         };
@@ -411,7 +413,8 @@ public class DbDataMigrationService(
             new EntityVariant() { Id = Guid.Parse("d7208d54-067d-4b5c-a906-f0da3d3de0f1"), TypeId = orgTypeId, Name = "KBO", Description = "Konkursbo" },
             new EntityVariant() { Id = Guid.Parse("ea460099-515f-4e54-88d8-fbe53a807276"), TypeId = orgTypeId, Name = "BA", Description = "Selskap med avgrensa ansvar" },
             new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId, Name = "PERS", Description = "Person" },
-            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
+            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "AgentSystem", Description = "AgentSystem" },
+            new EntityVariant() { Id = Guid.Parse("f948baa3-8f6b-4790-a35c-85064c1b7f9b"), TypeId = systemTypeId, Name = "StandardSystem", Description = "StandardSystem" },
             new EntityVariant() { Id = Guid.Parse("03D08113-40D0-48BD-85B6-BD4430CCC182"), TypeId = persTypeId, Name = "SI", Description = "Sjølvidentifisert brukar" },
             new EntityVariant() { Id = Guid.Parse("CBE2834D-3DB0-4A14-BAA2-D32DE004D6D7"), TypeId = internalTypeId, Name = "Standard", Description = "Standard intern entitet" },
         };
@@ -450,6 +453,8 @@ public class DbDataMigrationService(
             new Entity() { Id = AuditDefaults.RegisterImportSystem, Name = "RegisterImportSystem", RefId = "sys-register-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
             new Entity() { Id = AuditDefaults.ResourceRegistryImportSystem, Name = nameof(AuditDefaults.ResourceRegistryImportSystem), RefId = "sys-resource-register-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
             new Entity() { Id = AuditDefaults.EnduserApi, Name = "EnduserApi", RefId = "accessmgmt-enduser-api", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            new Entity() { Id = AuditDefaults.InternalApi, Name = "InternalApi", RefId = "accessmgmt-internal-api", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            new Entity() { Id = AuditDefaults.InternalApiImportSystem, Name = nameof(AuditDefaults.InternalApiImportSystem), RefId = "sys-internal-api-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
         };
 
         foreach (var item in systemEntities)
@@ -472,15 +477,11 @@ public class DbDataMigrationService(
         var a3ProviderId = (await providerRepository.Get(t => t.Code, "sys-altinn3")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 3"));
         var a2ProviderId = (await providerRepository.Get(t => t.Code, "sys-altinn2")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 2"));
 
-
         var roles = new List<Role>()
         {
             new Role() { Id = Guid.Parse("42CAE370-2DC1-4FDC-9C67-C2F4B0F0F829"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Rettighetshaver",              Code = "rettighetshaver",               Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten", Urn = "urn:altinn:role:rettighetshaver", IsKeyRole = false, IsAssignable = true },
             new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = persEntityTypeId, ProviderId = a3ProviderId, Name = "Agent",                       Code = "agent",                         Description = "Gir mulighet til å motta delegerte fullmakter for virksomheten", Urn = "urn:altinn:role:agent", IsKeyRole = false, IsAssignable = true },
-            new Role() { Id = Guid.Parse("6795081e-e69c-4efd-8d42-2bfccd346777"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Klientadministrator",          Code = "klientadministrator",           Description = "Gir mulighet til å administrere tilgang til tjenester videre til ansatte på vegne av deres kunder", Urn = "urn:altinn:role:klientadministrator", IsKeyRole = false, IsAssignable = true },
-            new Role() { Id = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Tilgangsstyrer",               Code = "tilgangsstyrer",                Description = "Gir mulighet til å gi videre tilganger for virksomheten som man selv har mottatt", Urn = "urn:altinn:role:tilgangsstyrer", IsKeyRole = false, IsAssignable = true },
-            new Role() { Id = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Hovedadministrator",           Code = "hovedadministrator",            Description = "Gir mulighet til å administrere alle tilganger for virksomheten", Urn = "urn:altinn:role:hovedadministrator", IsKeyRole = false, IsAssignable = true },
-            new Role() { Id = Guid.Parse("b3f5c1e8-4e3b-4d2a-8c3e-1f2b3d4e5f6a"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Maskinporten administrator",   Code = "maskinporten-administrator",    Description = "Gir bruker mulighet til å administrere tilgang til maskinporten scopes", Urn = "urn:altinn:role:maskinporten-administrator", IsKeyRole = false, IsAssignable = true },
+            new Role() { Id = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Hovedadministrator",           Code = "hovedadministrator",            Description = "Intern rolle for å samle alle delegerbare fullmakter en hovedadministrator kan utføre for virksomheten", Urn = "urn:altinn:role:hovedadministrator", IsKeyRole = false, IsAssignable = false },
 
             new Role() { Id = Guid.Parse("66ad5542-4f4a-4606-996f-18690129ce00"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Administrativ enhet - offentlig sektor",      /*"ADOS"*/  Code = "administrativ-enhet-offentlig-sektor",  Description = "Administrativ enhet - offentlig sektor", Urn = "urn:altinn:external-role:ccr:administrativ-enhet-offentlig-sektor", IsKeyRole = false, IsAssignable = false },
             new Role() { Id = Guid.Parse("29a24eab-a25f-445d-b56d-e3b914844853"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Nestleder",                                   /*"NEST"*/  Code = "nestleder",                             Description = "Styremedlem som opptrer som styreleder ved leders fravær", Urn = "urn:altinn:external-role:ccr:nestleder", IsKeyRole = false, IsAssignable = false },
@@ -596,12 +597,9 @@ public class DbDataMigrationService(
 
         var rolesEng = new List<Role>()
         {
-            new Role() { Id = Guid.Parse("42CAE370-2DC1-4FDC-9C67-C2F4B0F0F829"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId,    Name = "Rightholder",                  Code = "rettighetshaver",               Description = "Allows receiving delegated authorizations for the business", Urn = "urn:altinn:role:rettighetshaver", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("42CAE370-2DC1-4FDC-9C67-C2F4B0F0F829"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId,    Name = "Rightholder",                  Code = "rettighetshaver",               Description = "Allows receiving delegated authorizations for the business", Urn = "urn:altinn:role:rettighetshaver" },
             new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = persEntityTypeId, ProviderId = a3ProviderId,   Name = "Agent",                        Code = "agent",                         Description = "Allows receiving delegated authorizations for the business", Urn = "urn:altinn:role:agent" },
-            new Role() { Id = Guid.Parse("6795081e-e69c-4efd-8d42-2bfccd346777"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId,    Name = "Client Administrator",         Code = "klientadministrator",           Description = "Allows managing access to services for employees on behalf of their clients", Urn = "urn:altinn:role:klientadministrator" },
-            new Role() { Id = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId,    Name = "Access Manager",               Code = "tilgangsstyrer",                Description = "Allows granting further accesses for the business that have been received", Urn = "urn:altinn:role:tilgangsstyrer" },
-            new Role() { Id = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId,    Name = "Main Administrator",           Code = "hovedadministrator",            Description = "Allows managing all accesses for the business", Urn = "urn:altinn:role:hovedadministrator" },
-            new Role() { Id = Guid.Parse("b3f5c1e8-4e3b-4d2a-8c3e-1f2b3d4e5f6a"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId,    Name = "Maskinporten Administrator",   Code = "maskinporten-administrator",    Description = "Allows the user to manage access to Maskinporten scopes", Urn = "urn:altinn:role:maskinporten-administrator" },
+            new Role() { Id = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId,    Name = "Main Administrator",           Code = "hovedadministrator",            Description = "Internal role to collect all delegable access a main administrator can perform for the business", Urn = "urn:altinn:role:hovedadministrator" },
 
             new Role() { Id = Guid.Parse("66ad5542-4f4a-4606-996f-18690129ce00"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Administrative Unit - Public Sector",                 Code = "administrativ-enhet-offentlig-sektor",  Description = "Administrative Unit - Public Sector", Urn = "urn:altinn:external-role:ccr:administrativ-enhet-offentlig-sektor" },
             new Role() { Id = Guid.Parse("29a24eab-a25f-445d-b56d-e3b914844853"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Deputy Leader",                                       Code = "nestleder",                             Description = "Board member who acts as chair in the absence of the leader", Urn = "urn:altinn:external-role:ccr:nestleder" },
@@ -678,17 +676,13 @@ public class DbDataMigrationService(
 
             new Role() { Id = Guid.Parse("1c6eeec1-fe70-4fc5-8b45-df4a2255dea6"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Private person",                                    Code = "privatperson",        Description = "Private person", Urn = "urn:altinn:role:privatperson", IsKeyRole = false },
             new Role() { Id = Guid.Parse("e16ab886-1e1e-4f45-8f79-46f06f720f3e"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Self registered user",                              Code = "selvregistrert",      Description = "Self registered user", Urn = "urn:altinn:role:selvregistrert", IsKeyRole = false }
-
         };
 
         var rolesNno = new List<Role>()
         {
             new Role() { Id = Guid.Parse("42CAE370-2DC1-4FDC-9C67-C2F4B0F0F829"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId,  Name = "Rettshavar",                      Code = "rettighetshaver",               Description = "Gjev høve til å motta delegerte fullmakter for verksemda", Urn = "urn:altinn:role:rettighetshaver", IsKeyRole = false },
             new Role() { Id = Guid.Parse("FF4C33F5-03F7-4445-85ED-1E60B8AAFB30"), EntityTypeId = persEntityTypeId, ProviderId = a3ProviderId, Name = "Agent",                           Code = "agent",                         Description = "Gjev høve til å motta delegerte fullmakter for verksemda", Urn = "urn:altinn:role:agent" },
-            new Role() { Id = Guid.Parse("6795081e-e69c-4efd-8d42-2bfccd346777"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Klientadministrator",              Code = "klientadministrator",           Description = "Gjev høve til å administrere tilgang til tenester vidare til tilsette på vegne av kundane deira", Urn = "urn:altinn:role:klientadministrator" },
-            new Role() { Id = Guid.Parse("6c1fbcb9-609c-4ab8-a048-3be8d7da5a82"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Tilgangsstyrer",                   Code = "tilgangsstyrer",                Description = "Gjev høve til å vidareformidle tilgongar for verksemda som ein sjølv har motteke", Urn = "urn:altinn:role:tilgangsstyrer" },
-            new Role() { Id = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Hovudadministrator",               Code = "hovedadministrator",            Description = "Gjev høve til å administrere alle tilgongar for verksemda", Urn = "urn:altinn:role:hovedadministrator" },
-            new Role() { Id = Guid.Parse("b3f5c1e8-4e3b-4d2a-8c3e-1f2b3d4e5f6a"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Maskinporten administrator",       Code = "maskinporten-administrator",    Description = "Gjev høve til å administrere tilgongar for Maskinporten scopes", Urn = "urn:altinn:role:maskinporten-administrator" },
+            new Role() { Id = Guid.Parse("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7"), EntityTypeId = orgEntityTypeId, ProviderId = a3ProviderId, Name = "Hovudadministrator",               Code = "hovedadministrator",            Description = "Intern rolle for å samla alle delegerbare fullmakter ein hovudadministrator kan utføra for verksemda", Urn = "urn:altinn:role:hovedadministrator" },
 
             new Role() { Id = Guid.Parse("66ad5542-4f4a-4606-996f-18690129ce00"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Administrativ eining - offentleg sektor",             Code = "administrativ-enhet-offentlig-sektor",  Description = "Administrativ eining - offentleg sektor", Urn = "urn:altinn:external-role:ccr:administrativ-enhet-offentlig-sektor" },
             new Role() { Id = Guid.Parse("29a24eab-a25f-445d-b56d-e3b914844853"), EntityTypeId = orgEntityTypeId, ProviderId = ccrProviderId, Name = "Nestleiar",                                           Code = "nestleder",                             Description = "Styremedlem som fungerer som styreleiar ved leiarens fråvær", Urn = "urn:altinn:external-role:ccr:nestleder" },
@@ -787,10 +781,7 @@ public class DbDataMigrationService(
         var urn = new List<RoleLookup>
         {
             new RoleLookup() { RoleId = roles.First(t => t.Code == "agent").Id, Key = "Urn", Value = "urn:altinn:role:agent" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "klientadministrator").Id, Key = "Urn", Value = "urn:altinn:role:klientadministrator" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "tilgangsstyrer").Id, Key = "Urn", Value = "urn:altinn:role:tilgangsstyrer" },
             new RoleLookup() { RoleId = roles.First(t => t.Code == "hovedadministrator").Id, Key = "Urn", Value = "urn:altinn:role:hovedadministrator" },
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "maskinporten-administrator").Id, Key = "Urn", Value = "urn:altinn:role:maskinporten-administrator" },
 
             new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-ados").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:kontaktperson-ados" },
             new RoleLookup() { RoleId = roles.First(t => t.Code == "nestleder").Id, Key = "Urn", Value = "urn:altinn:external-role:ccr:nestleder" },
@@ -1054,7 +1045,6 @@ public class DbDataMigrationService(
         var roleRevi = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:revisor")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "revisor"));
         /*KNUF*/
         var roleKnuf = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-nuf")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-nuf"));
-
         /*FFØR*/
         var roleFfor = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:forretningsforer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "forretningsforer"));
         /*KEMN*/
@@ -1081,11 +1071,7 @@ public class DbDataMigrationService(
         var roleSens = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:SENS")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "Sensitive-tjenester"));
         /*SREVA*/
         var roleSreva = (await roleService.Get(t => t.Urn, "urn:altinn:external-role:ccr:kontaktperson-revisor")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-revisor"));
-
-        var roleKLA = (await roleService.Get(t => t.Urn, "urn:altinn:role:klientadministrator")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "klientadministrator"));
-        var roleTS = (await roleService.Get(t => t.Urn, "urn:altinn:role:tilgangsstyrer")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "tilgangsstyrer"));
-        var roleHA = (await roleService.Get(t => t.Urn, "urn:altinn:role:hovedadministrator")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "hovedadministrator"));
-        var roleMPA = (await roleService.Get(t => t.Urn, "urn:altinn:role:maskinporten-administrator")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "maskinporten-administrator"));
+        
         /*A0212*/
         var roleA0212 = (await roleService.Get(t => t.Urn, "urn:altinn:rolecode:A0212")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0212"));
         /*A0236*/
@@ -1163,42 +1149,6 @@ public class DbDataMigrationService(
 
         var roleMaps = new List<RoleMap>()
         {
-            new RoleMap() { HasRoleId = roleDagl, GetRoleId = roleKLA },
-            new RoleMap() { HasRoleId = roleLede, GetRoleId = roleKLA },
-            new RoleMap() { HasRoleId = roleInnh, GetRoleId = roleKLA },
-            new RoleMap() { HasRoleId = roleDtso, GetRoleId = roleKLA },
-            new RoleMap() { HasRoleId = roleDtpr, GetRoleId = roleKLA },
-            new RoleMap() { HasRoleId = roleKomp, GetRoleId = roleKLA },
-            new RoleMap() { HasRoleId = roleBest, GetRoleId = roleKLA },
-            new RoleMap() { HasRoleId = roleBobe, GetRoleId = roleKLA },
-
-            new RoleMap() { HasRoleId = roleDagl, GetRoleId = roleTS },
-            new RoleMap() { HasRoleId = roleLede, GetRoleId = roleTS },
-            new RoleMap() { HasRoleId = roleInnh, GetRoleId = roleTS },
-            new RoleMap() { HasRoleId = roleDtso, GetRoleId = roleTS },
-            new RoleMap() { HasRoleId = roleDtpr, GetRoleId = roleTS },
-            new RoleMap() { HasRoleId = roleKomp, GetRoleId = roleTS },
-            new RoleMap() { HasRoleId = roleBest, GetRoleId = roleTS },
-            new RoleMap() { HasRoleId = roleBobe, GetRoleId = roleTS },
-            new RoleMap() { HasRoleId = roleKnuf, GetRoleId = roleTS },
-
-            new RoleMap() { HasRoleId = roleDagl, GetRoleId = roleHA },
-            new RoleMap() { HasRoleId = roleLede, GetRoleId = roleHA },
-            new RoleMap() { HasRoleId = roleInnh, GetRoleId = roleHA },
-            new RoleMap() { HasRoleId = roleDtso, GetRoleId = roleHA },
-            new RoleMap() { HasRoleId = roleDtpr, GetRoleId = roleHA },
-            new RoleMap() { HasRoleId = roleBobe, GetRoleId = roleHA },
-
-            new RoleMap() { HasRoleId = roleDagl, GetRoleId = roleMPA },
-            new RoleMap() { HasRoleId = roleLede, GetRoleId = roleMPA },
-            new RoleMap() { HasRoleId = roleInnh, GetRoleId = roleMPA },
-            new RoleMap() { HasRoleId = roleDtso, GetRoleId = roleMPA },
-            new RoleMap() { HasRoleId = roleDtpr, GetRoleId = roleMPA },
-            new RoleMap() { HasRoleId = roleKomp, GetRoleId = roleMPA },
-            new RoleMap() { HasRoleId = roleBest, GetRoleId = roleMPA },
-            new RoleMap() { HasRoleId = roleBobe, GetRoleId = roleMPA },
-            new RoleMap() { HasRoleId = roleKnuf, GetRoleId = roleMPA },
-
             new RoleMap() { HasRoleId = roleBest, GetRoleId = roleA0212 },
             new RoleMap() { HasRoleId = roleDagl, GetRoleId = roleA0212 },
             new RoleMap() { HasRoleId = roleDtpr, GetRoleId = roleA0212 },
@@ -1723,6 +1673,11 @@ public class DbDataMigrationService(
 
         var packages = new List<Package>()
         {
+            new Package() { Id = Guid.Parse("0195efb8-7c80-7e82-9b4f-7d63e773bbca"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_administrere_tilganger, Urn = "urn:altinn:accesspackage:klientadministrator", Name = "Klientadministrator", Description = "Gir mulighet til å administrere tilgang til tjenester videre til ansatte på vegne av deres kunder", IsDelegable = false, HasResources = false, IsAssignable = true },
+            new Package() { Id = Guid.Parse("0195efb8-7c80-7a95-ad36-900c3d8ad300"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_administrere_tilganger, Urn = "urn:altinn:accesspackage:tilgangsstyrer", Name = "Tilgangsstyrer", Description = "Gir mulighet til å gi videre tilganger for virksomheten som man selv har mottatt", IsDelegable = false, HasResources = false, IsAssignable = true },
+            new Package() { Id = Guid.Parse("0195efb8-7c80-7e16-ab0c-36dc8ab1a29d"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_administrere_tilganger, Urn = "urn:altinn:accesspackage:hovedadministrator", Name = "Hovedadministrator", Description = "Gir mulighet til å administrere alle tilganger for virksomheten", IsDelegable = false, HasResources = false, IsAssignable = true },
+            new Package() { Id = Guid.Parse("0195efb8-7c80-7b30-a84d-f37fed9fb89c"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_administrere_tilganger, Urn = "urn:altinn:accesspackage:maskinporten-administrator", Name = "Maskinporten administrator", Description = "Gir bruker mulighet til å administrere tilgang til maskinporten scopes", IsDelegable = false, HasResources = false, IsAssignable = true },
+            new Package() { Id = Guid.Parse("0195efb8-7c80-7e9c-95c1-48937e23960a"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_administrere_tilganger, Urn = "urn:altinn:accesspackage:konkursbo-tilgangsstyrer", Name = "Konkursbo administrator", Description = "Gir bruker mulighet til å administrere konkursbo", IsDelegable = false, HasResources = false, IsAssignable = true },
             new Package() { Id = Guid.Parse("1dba50d6-f604-48e9-bd41-82321b13e85c"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_skatt_avgift_regnskap_og_toll, Urn = "urn:altinn:accesspackage:skatt-naering", Name = "Skatt næring", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til skatt for næringer. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("4c859601-9b2b-4662-af39-846f4117ad7a"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_skatt_avgift_regnskap_og_toll, Urn = "urn:altinn:accesspackage:skattegrunnlag", Name = "Skattegrunnlag", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til innhenting av skattegrunnlag. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("9a61b136-7810-4939-ab6d-84938e9a12c6"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_skatt_avgift_regnskap_og_toll, Urn = "urn:altinn:accesspackage:merverdiavgift", Name = "Merverdiavgift", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til merverdiavgift. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
@@ -1877,15 +1832,77 @@ public class DbDataMigrationService(
             variants.Add(variant.Name, variant.Id);
         }
 
+        var roleDagl = roles["urn:altinn:external-role:ccr:daglig-leder"];
+        var roleLede = roles["urn:altinn:external-role:ccr:styreleder"];
+        var roleInnh = roles["urn:altinn:external-role:ccr:innehaver"];
+        var roleDtso = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"];
+        var roleDtpr = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"];
+        var roleKomp = roles["urn:altinn:external-role:ccr:komplementar"];
+        var roleBest = roles["urn:altinn:external-role:ccr:bestyrende-reder"];
+        var roleBobe = roles["urn:altinn:external-role:ccr:bostyrer"];
+        var roleKnuf = roles["urn:altinn:external-role:ccr:kontaktperson-nuf"];
+        var roleHadm = roles["urn:altinn:role:hovedadministrator"];
+
+        var packageKA = packages["urn:altinn:accesspackage:klientadministrator"];
+        var packageTS = packages["urn:altinn:accesspackage:tilgangsstyrer"];
+        var packageHA = packages["urn:altinn:accesspackage:hovedadministrator"];
+        var packageMPA = packages["urn:altinn:accesspackage:maskinporten-administrator"];
+        var packageKTS = packages["urn:altinn:accesspackage:konkursbo-tilgangsstyrer"];
+
         var rolePackages = new List<RolePackage>()
         {
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-med-signeringsrettighet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-uten-signeringsrettighet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-lonn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:revisor"], PackageId = packages["urn:altinn:accesspackage:ansvarlig-revisor"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:revisor"], PackageId = packages["urn:altinn:accesspackage:revisormedarbeider"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDagl, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleLede, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleInnh, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtso, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtpr, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKomp, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBest, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBobe, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleHadm, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
+            new RolePackage() { RoleId = roleDagl, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleLede, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleInnh, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtso, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtpr, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKomp, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBest, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBobe, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKnuf, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleHadm, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
+            new RolePackage() { RoleId = roleDagl, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleLede, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleInnh, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtso, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtpr, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBobe, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
+            new RolePackage() { RoleId = roleDagl, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleLede, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleInnh, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtso, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtpr, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKomp, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBest, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBobe, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKnuf, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleHadm, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-med-signeringsrettighet"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-uten-signeringsrettighet"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-lonn"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
+
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:revisor"], PackageId = packages["urn:altinn:accesspackage:ansvarlig-revisor"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:revisor"], PackageId = packages["urn:altinn:accesspackage:revisormedarbeider"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
+
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["ESEK"], CanDelegate = false, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["BRL"], CanDelegate = false, HasAccess = true },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:konkursbo-lesetilgang"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:konkursbo-skrivetilgang"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:ordinaer-post-til-virksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:ordinaer-post-til-virksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:ordinaer-post-til-virksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1894,6 +1911,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:ordinaer-post-til-virksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:ordinaer-post-til-virksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:ordinaer-post-til-virksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:ordinaer-post-til-virksomheten"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1902,6 +1921,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:veitransport"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:transport-i-ror"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:transport-i-ror"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:transport-i-ror"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1910,6 +1931,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:transport-i-ror"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:transport-i-ror"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:transport-i-ror"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:transport-i-ror"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:sjofart"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:sjofart"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:sjofart"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1918,6 +1941,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:sjofart"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:sjofart"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:sjofart"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:sjofart"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:lufttransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:lufttransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:lufttransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1926,6 +1951,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:lufttransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:lufttransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:lufttransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:lufttransport"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:jernbanetransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:jernbanetransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:jernbanetransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1934,6 +1961,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:jernbanetransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:jernbanetransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:jernbanetransport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:jernbanetransport"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:lagring-og-andre-tjenester-tilknyttet-transport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:lagring-og-andre-tjenester-tilknyttet-transport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:lagring-og-andre-tjenester-tilknyttet-transport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1942,6 +1971,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:lagring-og-andre-tjenester-tilknyttet-transport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:lagring-og-andre-tjenester-tilknyttet-transport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:lagring-og-andre-tjenester-tilknyttet-transport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:lagring-og-andre-tjenester-tilknyttet-transport"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:skatt-naering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:skatt-naering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:skatt-naering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1950,6 +1981,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:skatt-naering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:skatt-naering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:skatt-naering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:skatt-naering"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:skattegrunnlag"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:skattegrunnlag"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:skattegrunnlag"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1958,6 +1991,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:skattegrunnlag"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:skattegrunnlag"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:skattegrunnlag"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:skattegrunnlag"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:merverdiavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:merverdiavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:merverdiavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1966,6 +2001,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:merverdiavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:merverdiavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:merverdiavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:merverdiavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:motorvognavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:motorvognavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:motorvognavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1974,6 +2011,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:motorvognavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:motorvognavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:motorvognavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:motorvognavgift"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:saeravgifter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:saeravgifter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:saeravgifter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1982,6 +2021,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:saeravgifter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:saeravgifter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:saeravgifter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:saeravgifter"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:krav-og-utlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:krav-og-utlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:krav-og-utlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1990,6 +2031,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:krav-og-utlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:krav-og-utlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:krav-og-utlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:krav-og-utlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:kreditt-og-oppgjoer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:kreditt-og-oppgjoer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:kreditt-og-oppgjoer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1998,6 +2041,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:kreditt-og-oppgjoer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:kreditt-og-oppgjoer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:kreditt-og-oppgjoer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:kreditt-og-oppgjoer"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:regnskap-okonomi-rapport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:regnskap-okonomi-rapport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:regnskap-okonomi-rapport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2006,6 +2051,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:regnskap-okonomi-rapport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:regnskap-okonomi-rapport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:regnskap-okonomi-rapport"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:regnskap-okonomi-rapport"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:reviorattesterer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:reviorattesterer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:reviorattesterer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2014,6 +2061,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:reviorattesterer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:reviorattesterer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:reviorattesterer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:reviorattesterer"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:toll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:toll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:toll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2022,6 +2071,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:toll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:toll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:toll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:toll"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:ansettelsesforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:ansettelsesforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:ansettelsesforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2030,6 +2081,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:ansettelsesforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:ansettelsesforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:ansettelsesforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:ansettelsesforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:lonn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:lonn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:lonn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2038,6 +2091,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:lonn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:lonn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:lonn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:lonn"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:pensjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:pensjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:pensjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2045,6 +2100,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:pensjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:pensjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:pensjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:pensjon"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:permisjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:permisjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:permisjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2053,6 +2110,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:permisjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:permisjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:permisjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:permisjon"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:sykefravaer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2061,6 +2120,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:sykefravaer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:sykefravaer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:sykefravaer"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:a-ordning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:a-ordning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:a-ordning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2069,6 +2130,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:a-ordning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:a-ordning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:a-ordning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:a-ordning"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:barnehageeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:barnehageeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:barnehageeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2076,6 +2139,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:barnehageeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:barnehageeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:barnehageeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:barnehageeier"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:barnehageleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:barnehageleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:barnehageleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2083,6 +2148,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:barnehageleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:barnehageleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:barnehageleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:barnehageleder"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:barnehagemyndighet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:barnehagemyndighet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:barnehagemyndighet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2090,6 +2157,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:barnehagemyndighet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:barnehagemyndighet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:barnehagemyndighet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:barnehagemyndighet"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-barnehage"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-barnehage"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-barnehage"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2097,6 +2166,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-barnehage"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-barnehage"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-barnehage"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-barnehage"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-skole-og-opplearing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-skole-og-opplearing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-skole-og-opplearing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2104,6 +2175,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-skole-og-opplearing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-skole-og-opplearing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-skole-og-opplearing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:statsforvalter-skole-og-opplearing"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:skoleeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:skoleeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:skoleeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2111,6 +2184,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:skoleeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:skoleeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:skoleeier"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:skoleeier"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:skoleleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:skoleleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:skoleleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2118,6 +2193,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:skoleleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:skoleleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:skoleleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:skoleleder"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:opplaeringskontorleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:opplaeringskontorleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:opplaeringskontorleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2125,6 +2202,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:opplaeringskontorleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:opplaeringskontorleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:opplaeringskontorleder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:opplaeringskontorleder"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:ppt-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:ppt-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:ppt-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2132,6 +2211,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:ppt-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:ppt-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:ppt-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:ppt-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:sfo-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:sfo-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:sfo-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2139,6 +2220,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:sfo-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:sfo-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:sfo-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:sfo-leder"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:hoyere-utdanning-og-hoyere-yrkesfaglig-utdanning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:hoyere-utdanning-og-hoyere-yrkesfaglig-utdanning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:hoyere-utdanning-og-hoyere-yrkesfaglig-utdanning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2146,6 +2229,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:hoyere-utdanning-og-hoyere-yrkesfaglig-utdanning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:hoyere-utdanning-og-hoyere-yrkesfaglig-utdanning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:hoyere-utdanning-og-hoyere-yrkesfaglig-utdanning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:hoyere-utdanning-og-hoyere-yrkesfaglig-utdanning"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-personell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-personell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-personell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2153,6 +2238,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-personell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-personell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-personell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-personell"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-utdanningsvirksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-utdanningsvirksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-utdanningsvirksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2160,6 +2247,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-utdanningsvirksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-utdanningsvirksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-utdanningsvirksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:godkjenning-av-utdanningsvirksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:renovasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:renovasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:renovasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2168,6 +2257,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:renovasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:renovasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:renovasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:renovasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:miljorydding-miljorensing-og-lignende"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:miljorydding-miljorensing-og-lignende"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:miljorydding-miljorensing-og-lignende"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2176,6 +2267,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:miljorydding-miljorensing-og-lignende"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:miljorydding-miljorensing-og-lignende"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:miljorydding-miljorensing-og-lignende"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:miljorydding-miljorensing-og-lignende"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:baerekraft"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:baerekraft"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:baerekraft"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2183,6 +2276,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:baerekraft"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:baerekraft"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:baerekraft"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:baerekraft"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:sikkerhet-og-internkontroll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:sikkerhet-og-internkontroll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:sikkerhet-og-internkontroll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2191,6 +2286,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:sikkerhet-og-internkontroll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:sikkerhet-og-internkontroll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:sikkerhet-og-internkontroll"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:sikkerhet-og-internkontroll"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:ulykke"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:ulykke"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:ulykke"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2199,6 +2296,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:ulykke"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:ulykke"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:ulykke"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:ulykke"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:yrkesskade"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:yrkesskade"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:yrkesskade"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2207,6 +2306,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:yrkesskade"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:yrkesskade"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:yrkesskade"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:yrkesskade"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:kunst-og-underholdning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:kunst-og-underholdning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:kunst-og-underholdning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2215,6 +2316,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:kunst-og-underholdning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:kunst-og-underholdning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:kunst-og-underholdning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:kunst-og-underholdning"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:biblioteker-museer-arkiver-og-annen-kultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:biblioteker-museer-arkiver-og-annen-kultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:biblioteker-museer-arkiver-og-annen-kultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2223,6 +2326,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:biblioteker-museer-arkiver-og-annen-kultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:biblioteker-museer-arkiver-og-annen-kultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:biblioteker-museer-arkiver-og-annen-kultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:biblioteker-museer-arkiver-og-annen-kultur"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:lotteri-og-spill"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:lotteri-og-spill"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:lotteri-og-spill"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2231,6 +2336,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:lotteri-og-spill"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:lotteri-og-spill"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:lotteri-og-spill"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:lotteri-og-spill"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:sport-og-fritid"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:sport-og-fritid"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:sport-og-fritid"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2239,6 +2346,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:sport-og-fritid"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:sport-og-fritid"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:sport-og-fritid"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:sport-og-fritid"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:fornoyelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:fornoyelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:fornoyelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2247,6 +2356,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:fornoyelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:fornoyelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:fornoyelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:fornoyelser"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:politikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:politikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:politikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2255,6 +2366,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:politikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:politikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:politikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:politikk"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:jordbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:jordbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:jordbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2262,6 +2375,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:jordbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:jordbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:jordbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:jordbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:jordbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:dyrehold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:dyrehold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2271,6 +2386,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:dyrehold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:dyrehold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:dyrehold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:dyrehold"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:reindrift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:reindrift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:reindrift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2279,6 +2396,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:reindrift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:reindrift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:reindrift"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:reindrift"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2287,6 +2406,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:jakt-og-viltstell"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:skogbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:skogbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:skogbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2295,6 +2416,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:skogbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:skogbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:skogbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:skogbruk"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:fiske"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:fiske"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:fiske"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2303,6 +2426,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:fiske"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:fiske"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:fiske"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:fiske"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:akvakultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:akvakultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:akvakultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2311,6 +2436,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:akvakultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:akvakultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:akvakultur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:akvakultur"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2319,7 +2446,11 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:kontaktperson-nuf"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes-nuf"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:kontaktperson-nuf"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes-nuf"], EntityVariantId = variants["NUF"], CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes-nuf"], EntityVariantId = variants["NUF"], CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:maskinlesbare-hendelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:maskinlesbare-hendelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:maskinlesbare-hendelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2328,6 +2459,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:maskinlesbare-hendelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:maskinlesbare-hendelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:maskinlesbare-hendelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:maskinlesbare-hendelser"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:naeringsmidler-drikkevarer-og-tobakk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:naeringsmidler-drikkevarer-og-tobakk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:naeringsmidler-drikkevarer-og-tobakk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2336,6 +2469,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:naeringsmidler-drikkevarer-og-tobakk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:naeringsmidler-drikkevarer-og-tobakk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:naeringsmidler-drikkevarer-og-tobakk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:naeringsmidler-drikkevarer-og-tobakk"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:tekstiler-klaer-laervarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:tekstiler-klaer-laervarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:tekstiler-klaer-laervarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2344,6 +2479,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:tekstiler-klaer-laervarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:tekstiler-klaer-laervarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:tekstiler-klaer-laervarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:tekstiler-klaer-laervarer"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:trelast-trevarer-papirvarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:trelast-trevarer-papirvarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:trelast-trevarer-papirvarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2352,6 +2489,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:trelast-trevarer-papirvarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:trelast-trevarer-papirvarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:trelast-trevarer-papirvarer"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:trelast-trevarer-papirvarer"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:trykkerier-reproduksjon-opptak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:trykkerier-reproduksjon-opptak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:trykkerier-reproduksjon-opptak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2360,6 +2499,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:trykkerier-reproduksjon-opptak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:trykkerier-reproduksjon-opptak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:trykkerier-reproduksjon-opptak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:trykkerier-reproduksjon-opptak"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:oljeraffinering-kjemisk-farmasoytisk-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:oljeraffinering-kjemisk-farmasoytisk-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:oljeraffinering-kjemisk-farmasoytisk-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2368,6 +2509,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:oljeraffinering-kjemisk-farmasoytisk-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:oljeraffinering-kjemisk-farmasoytisk-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:oljeraffinering-kjemisk-farmasoytisk-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:oljeraffinering-kjemisk-farmasoytisk-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:gummi-plast-og-ikkemetallholdige-mineralprodukter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:gummi-plast-og-ikkemetallholdige-mineralprodukter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:gummi-plast-og-ikkemetallholdige-mineralprodukter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2376,6 +2519,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:gummi-plast-og-ikkemetallholdige-mineralprodukter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:gummi-plast-og-ikkemetallholdige-mineralprodukter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:gummi-plast-og-ikkemetallholdige-mineralprodukter"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:gummi-plast-og-ikkemetallholdige-mineralprodukter"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:metallvarer-elektrisk-utstyr-og-maskiner"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:metallvarer-elektrisk-utstyr-og-maskiner"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:metallvarer-elektrisk-utstyr-og-maskiner"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2384,6 +2529,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:metallvarer-elektrisk-utstyr-og-maskiner"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:metallvarer-elektrisk-utstyr-og-maskiner"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:metallvarer-elektrisk-utstyr-og-maskiner"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:metallvarer-elektrisk-utstyr-og-maskiner"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:metaller-og-mineraler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:metaller-og-mineraler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:metaller-og-mineraler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2392,6 +2539,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:metaller-og-mineraler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:metaller-og-mineraler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:metaller-og-mineraler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:metaller-og-mineraler"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:verft-og-andre-transportmidler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:verft-og-andre-transportmidler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:verft-og-andre-transportmidler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2400,6 +2549,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:verft-og-andre-transportmidler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:verft-og-andre-transportmidler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:verft-og-andre-transportmidler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:verft-og-andre-transportmidler"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:mobler-og-annen-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:mobler-og-annen-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:mobler-og-annen-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2408,6 +2559,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:mobler-og-annen-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:mobler-og-annen-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:mobler-og-annen-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:mobler-og-annen-industri"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:reparasjon-og-installasjon-av-maskiner-og-utstyr"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:reparasjon-og-installasjon-av-maskiner-og-utstyr"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:reparasjon-og-installasjon-av-maskiner-og-utstyr"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2416,6 +2569,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:reparasjon-og-installasjon-av-maskiner-og-utstyr"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:reparasjon-og-installasjon-av-maskiner-og-utstyr"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:reparasjon-og-installasjon-av-maskiner-og-utstyr"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:reparasjon-og-installasjon-av-maskiner-og-utstyr"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:bergverk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:bergverk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:bergverk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2424,6 +2579,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:bergverk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:bergverk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:bergverk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:bergverk"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:kommuneoverlege"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:kommuneoverlege"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:kommuneoverlege"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2431,6 +2588,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:kommuneoverlege"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:kommuneoverlege"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:kommuneoverlege"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:kommuneoverlege"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2439,6 +2598,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:helsetjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2447,6 +2608,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:helsetjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:helsetjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:helsetjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2455,6 +2618,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2463,6 +2628,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:barnevern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:barnevern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:barnevern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2470,6 +2637,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:barnevern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:barnevern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:barnevern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:barnevern"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:familievern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:familievern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:familievern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2477,6 +2646,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:familievern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:familievern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:familievern"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:familievern"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:varehandel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:varehandel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:varehandel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2485,6 +2656,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:varehandel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:varehandel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:varehandel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:varehandel"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:overnatting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:overnatting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:overnatting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2493,6 +2666,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:overnatting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:overnatting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:overnatting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:overnatting"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2501,6 +2676,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:generelle-helfotjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:generelle-helfotjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:generelle-helfotjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2509,6 +2686,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:generelle-helfotjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:generelle-helfotjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:generelle-helfotjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:generelle-helfotjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:helfo-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:helfo-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:helfo-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2517,6 +2696,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:helfo-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:helfo-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:helfo-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:helfo-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:starte-drive-endre-avikle-virksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:starte-drive-endre-avikle-virksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:starte-drive-endre-avikle-virksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2524,6 +2705,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:starte-drive-endre-avikle-virksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:starte-drive-endre-avikle-virksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:starte-drive-endre-avikle-virksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:starte-drive-endre-avikle-virksomhet"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:aksjer-og-eierforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:aksjer-og-eierforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:aksjer-og-eierforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2532,6 +2715,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:aksjer-og-eierforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:aksjer-og-eierforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:aksjer-og-eierforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:aksjer-og-eierforhold"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:attester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:attester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:attester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2540,6 +2725,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:attester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:attester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:attester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:attester"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:dokumentbasert-tilsyn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:dokumentbasert-tilsyn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:dokumentbasert-tilsyn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2548,6 +2735,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:dokumentbasert-tilsyn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:dokumentbasert-tilsyn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:dokumentbasert-tilsyn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:dokumentbasert-tilsyn"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:infrastruktur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:infrastruktur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:infrastruktur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2555,6 +2744,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:infrastruktur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:infrastruktur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:infrastruktur"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:infrastruktur"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:patent-varemerke-design"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:patent-varemerke-design"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:patent-varemerke-design"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2563,6 +2754,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:patent-varemerke-design"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:patent-varemerke-design"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:patent-varemerke-design"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:patent-varemerke-design"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:tilskudd-stotte-erstatning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:tilskudd-stotte-erstatning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:tilskudd-stotte-erstatning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2571,6 +2764,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:tilskudd-stotte-erstatning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:tilskudd-stotte-erstatning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:tilskudd-stotte-erstatning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:tilskudd-stotte-erstatning"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:mine-sider-kommune"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:mine-sider-kommune"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:mine-sider-kommune"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2579,6 +2774,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:mine-sider-kommune"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:mine-sider-kommune"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:mine-sider-kommune"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:mine-sider-kommune"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:politi-og-domstol"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:politi-og-domstol"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:politi-og-domstol"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2586,6 +2783,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:politi-og-domstol"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:politi-og-domstol"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:politi-og-domstol"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:politi-og-domstol"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:rapportering-statistikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:rapportering-statistikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:rapportering-statistikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2594,6 +2793,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:rapportering-statistikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:rapportering-statistikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:rapportering-statistikk"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:rapportering-statistikk"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:forskning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:forskning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:forskning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2602,6 +2803,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:forskning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:forskning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:forskning"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:forskning"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:elektrisitet-produsere-overfore-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:elektrisitet-produsere-overfore-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:elektrisitet-produsere-overfore-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2610,6 +2813,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:elektrisitet-produsere-overfore-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:elektrisitet-produsere-overfore-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:elektrisitet-produsere-overfore-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:elektrisitet-produsere-overfore-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:damp-varmtvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:damp-varmtvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:damp-varmtvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2618,6 +2823,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:damp-varmtvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:damp-varmtvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:damp-varmtvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:damp-varmtvann"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:vann-kilde-rense-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:vann-kilde-rense-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:vann-kilde-rense-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2626,6 +2833,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:vann-kilde-rense-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:vann-kilde-rense-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:vann-kilde-rense-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:vann-kilde-rense-distrubere"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:samle-behandle-avlopsvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:samle-behandle-avlopsvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:samle-behandle-avlopsvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2634,6 +2843,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:samle-behandle-avlopsvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:samle-behandle-avlopsvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:samle-behandle-avlopsvann"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:samle-behandle-avlopsvann"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:avfall-behandle-gjenvinne"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:avfall-behandle-gjenvinne"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:avfall-behandle-gjenvinne"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2642,6 +2853,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:avfall-behandle-gjenvinne"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:avfall-behandle-gjenvinne"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:avfall-behandle-gjenvinne"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:avfall-behandle-gjenvinne"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:miljorydding-rensing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:miljorydding-rensing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:miljorydding-rensing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2650,6 +2863,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:miljorydding-rensing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:miljorydding-rensing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:miljorydding-rensing"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:miljorydding-rensing"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:utvinning-raaolje-naturgass-kull"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:utvinning-raaolje-naturgass-kull"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:utvinning-raaolje-naturgass-kull"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2658,6 +2873,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:utvinning-raaolje-naturgass-kull"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:utvinning-raaolje-naturgass-kull"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:utvinning-raaolje-naturgass-kull"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:utvinning-raaolje-naturgass-kull"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:post-og-telekommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:post-og-telekommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:post-og-telekommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2666,6 +2883,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:post-og-telekommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:post-og-telekommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:post-og-telekommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:post-og-telekommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:informasjon-og-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:informasjon-og-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:informasjon-og-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2674,6 +2893,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:informasjon-og-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:informasjon-og-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:informasjon-og-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:informasjon-og-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:finansiering-og-forsikring"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:finansiering-og-forsikring"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:finansiering-og-forsikring"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2681,6 +2902,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:finansiering-og-forsikring"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:finansiering-og-forsikring"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:finansiering-og-forsikring"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:finansiering-og-forsikring"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:annen-tjenesteyting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:annen-tjenesteyting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:annen-tjenesteyting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2689,6 +2912,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:annen-tjenesteyting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:annen-tjenesteyting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:annen-tjenesteyting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:annen-tjenesteyting"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:byggesoknad"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:byggesoknad"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:byggesoknad"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2697,6 +2922,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:byggesoknad"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:byggesoknad"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:byggesoknad"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:byggesoknad"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:plansak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:plansak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:plansak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2705,6 +2932,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:plansak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:plansak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:plansak"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:plansak"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:motta-nabo-og-planvarsel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:motta-nabo-og-planvarsel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:motta-nabo-og-planvarsel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2713,6 +2942,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:motta-nabo-og-planvarsel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:motta-nabo-og-planvarsel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:motta-nabo-og-planvarsel"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:motta-nabo-og-planvarsel"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:oppforing-bygg-anlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:oppforing-bygg-anlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:oppforing-bygg-anlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2721,6 +2952,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:oppforing-bygg-anlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:oppforing-bygg-anlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:oppforing-bygg-anlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:oppforing-bygg-anlegg"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:kjop-og-salg-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:kjop-og-salg-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:kjop-og-salg-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2729,6 +2962,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:kjop-og-salg-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:kjop-og-salg-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:kjop-og-salg-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:kjop-og-salg-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:utleie-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:utleie-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:utleie-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2737,6 +2972,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:utleie-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:utleie-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:utleie-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:utleie-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:eiendomsmegler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:eiendomsmegler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:eiendomsmegler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2745,6 +2982,8 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:eiendomsmegler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:eiendomsmegler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:eiendomsmegler"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:eiendomsmegler"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:folkeregister"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:folkeregister"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:folkeregister"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2753,6 +2992,7 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:folkeregister"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:folkeregister"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:folkeregister"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:folkeregister"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -2761,9 +3001,7 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["ESEK"], CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["BRL"], CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:tinglysing-eiendom"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:post-til-virksomheten-med-taushetsbelagt-innhold"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:eksplisitt"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
@@ -3169,13 +3407,27 @@ public class DbDataMigrationService(
 
         await ingestService.IngestAndMergeData(variantRoles, options: options, null, cancellationToken);
     }
+
     private async Task Cleanup(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
         var dataKey = "<cleanup-data>";
+
         if (migrationService.NeedMigration<RolePackage>(dataKey, 1))
         {
             await CleanupRolePackage(options, cancellationToken);
             await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 1);
+        }
+
+        if (migrationService.NeedMigration<RolePackage>(dataKey, 2))
+        {
+            await CleanupNufRolePackage(options, cancellationToken);
+            await migrationService.LogMigration<RolePackage>(dataKey, "Delete non-nuf limited role connections to urn:altinn:accesspackage:maskinporten-scopes-nuf", 2);
+        }
+
+        if (migrationService.NeedMigration<Role>(dataKey, 1))
+        {
+            await CleanupAdminRoles(options, cancellationToken);
+            await migrationService.LogMigration<Role>(dataKey, "Delete old admin roles urn:altinn:role:klientadministrator, urn:altinn:role:tilgangsstyrer, urn:altinn:role:maskinporten-administrator", 1);
         }
     }
 
@@ -3207,9 +3459,31 @@ public class DbDataMigrationService(
             filter.Equal(t => t.EntityVariantId, variants["BBL"]);
             await rolePackageRepository.Delete(filter, options, cancellationToken: cancellationToken);
         }
-        catch (Exception e)
+        catch (Exception)
         {
-
         }
+    }
+
+    private async Task CleanupNufRolePackage(ChangeRequestOptions options, CancellationToken cancellationToken = default)
+    {
+        var filter = rolePackageRepository.CreateFilterBuilder();
+        filter.Equal(t => t.RoleId, Guid.Parse("69c4397a-9e34-4e73-9f69-534bc1bb74c8")); // urn:altinn:external-role:ccr:kontaktperson-nuf
+        filter.Equal(t => t.PackageId, Guid.Parse("5dad616e-5538-4e3f-b15a-bae33f06c99f")); // urn:altinn:accesspackage:maskinporten-scopes-nuf
+        var nufRolePackages = await rolePackageRepository.Get(filter, cancellationToken: cancellationToken);
+
+        if (nufRolePackages.Any())
+        {
+            foreach (var rolePackage in nufRolePackages.Where(rp => rp.EntityVariantId == null))
+            {
+                await rolePackageRepository.Delete(rolePackage.Id, options, cancellationToken: cancellationToken);
+            }
+        }
+    }
+
+    private async Task CleanupAdminRoles(ChangeRequestOptions options, CancellationToken cancellationToken = default)
+    {
+        var filter = roleService.CreateFilterBuilder();
+        filter.In(t => t.Urn, ["urn:altinn:role:klientadministrator", "urn:altinn:role:tilgangsstyrer", "urn:altinn:role:maskinporten-administrator"]);
+        await roleService.Delete(filter, options, cancellationToken: cancellationToken);
     }
 }

@@ -49,21 +49,22 @@ variable "db_max_pool_size" {
   default = 4
 }
 
-variable "db_compute_tier" {
-  type = string
-}
-
-variable "db_compute_size" {
+variable "db_compute_sku" {
   type = string
 }
 
 variable "db_storage_tier" {
   type    = string
-  default = "P4"
+  default = "P10"
 }
 
 variable "sbl_endpoint" {
   type = string
+}
+
+variable "use_pgbouncer" {
+  type    = bool
+  default = false
 }
 
 variable "features" {

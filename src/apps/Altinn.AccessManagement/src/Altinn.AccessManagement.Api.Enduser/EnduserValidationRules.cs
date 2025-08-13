@@ -1,4 +1,6 @@
+using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessMgmt.Core.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Core.Errors;
@@ -6,7 +8,7 @@ namespace Altinn.AccessManagement.Core.Errors;
 /// <summary>
 /// A utility class that provides methods for validating data using a series of rules.
 /// </summary>
-public static class ValidationRules
+public static class EnduserValidationRules
 {
     /// <summary>
     /// A delegate representing a validation rule that accepts a reference to a <see cref="ValidationErrorBuilder"/>
@@ -259,7 +261,35 @@ public static class ValidationRules
         };
 
         /// <summary>
-        /// Checks is packages can be asigned by checking <see cref="BaseConnectionPackage.CanAssign"/> is set to to true.
+        /// Checks the list of packages that all are assignable to the recipient entity type.
+        /// </summary>
+        /// <param name="packageUrns">list of packages</param>
+        /// <param name="toEntity">entity the assignment is to be made to</param>
+        /// <param name="paramName">name of the query parameter</param>
+        /// <returns></returns>
+        internal static RuleExpression PackageIsAssignableToRecipient(IEnumerable<string> packageUrns, ExtEntity toEntity, string paramName = "packageId") => () =>
+        {
+            ArgumentNullException.ThrowIfNull(packageUrns);
+            ArgumentException.ThrowIfNullOrEmpty(paramName);
+
+            if (toEntity.Type.Id == EntityTypeId.Organization)
+            {
+                var packagesNotAssignableToOrg = packageUrns
+                    .Where(p => p.Equals("urn:altinn:accesspackage:hovedadministrator"))
+                    .Select(p => p);
+
+                if (packagesNotAssignableToOrg.Any())
+                {
+                    return (ref ValidationErrorBuilder errors) =>
+                        errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableToOrg)} are not assignable to an organization.")]);
+                }
+            }
+
+            return null;
+        };
+
+        /// <summary>
+        /// Checks is packages can be asigned by checking <see cref="ConnectionPackage.CanAssign"/> is set to to true.
         /// </summary>
         /// <param name="packages">List of packages.</param>
         /// <param name="paramName">name of the query parameter.</param>
@@ -310,6 +340,48 @@ public static class ValidationRules
             return (ref ValidationErrorBuilder errors) =>
                 errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("packages", $"Multiple packages were found with the name '{packageName}'.")]
                 );
+        };
+
+        /// <summary>
+        /// Used to check if package exists by check URN and resulkt of the DB lookup.
+        /// </summary>
+        /// <param name="packageLookupResult">Lookup result of packages based on input</param>
+        /// <param name="packageName">Name of the package.</param>
+        /// <param name="paramName">name of the query URN parameter.</param>
+        /// <returns></returns>
+        internal static RuleExpression PackageUrnLookup(IEnumerable<Package> packageLookupResult, IEnumerable<string> packageName, string paramName = "package") => () =>
+        {
+            ArgumentNullException.ThrowIfNull(packageLookupResult);
+            ArgumentException.ThrowIfNullOrEmpty(paramName);
+
+            if (!packageLookupResult.Any())
+            {
+                var msg = string.Join(",", packageName.Select(p => p.ToString()));
+                return (ref ValidationErrorBuilder errors) =>
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("packages", $"No packages were found with the names '{msg}'.")]
+                );
+            }
+
+            if (packageLookupResult.Count() != packageName.Count())
+            {
+                var pkgsNotFound = packageName.Where(n => packageLookupResult.Any(p => p.Name.Equals(n, StringComparison.InvariantCultureIgnoreCase)));
+                return (ref ValidationErrorBuilder errors) =>
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("packages", $"Packages with name(s) was not found '{pkgsNotFound}'.")]
+                );
+            }
+
+            return null;
+        };
+
+        internal static RuleExpression AuthorizePackageAssignment(IEnumerable<AccessPackageDto.Check> packages, string paramName = "packageId") => () =>
+        {
+            if (packages.Any(p => !p.Result))
+            {
+                var packageUrns = string.Join(", ", packages.Select(p => p.Package.Urn));
+                return (ref ValidationErrorBuilder errors) => errors.Add(ValidationErrors.UserNotAuthorized, $"QUERY/{paramName}", [new("packages", $"User is not allowed to assign the following package(s) '{packageUrns}'.")]);
+            }
+
+            return null;
         };
 
         /// <summary>
@@ -513,7 +585,7 @@ public static class ValidationRules
         /// </summary>
         /// <param name="party">The value of the party query parameter to validate.</param>
         /// <param name="paramName">The name of the query parameter (used for error reporting).</param>
-        /// <param name="values"></param>
+        /// <param name="values">values to assert</param>
         /// <returns>
         /// A validation rule that adds an error if the party value is not a valid UUID
         /// and does not match any of the predefined keywords <see cref="ParamKeywords"/>.
@@ -617,6 +689,48 @@ public static class ValidationRules
             {
                 errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Either a package URN or a package ID must be provided.")]);
                 errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Either a package URN or a package ID must be provided.")]);
+            };
+        };
+
+        /// <summary>
+        /// Validates packages ID
+        /// </summary>
+        /// <param name="packageIds">Package ID.</param>
+        /// <param name="packageUrns">Package URN.</param>
+        /// <param name="paramNamePackageId">query param name for package UUID.</param>
+        /// <param name="paramNamePackage">query param name for package URN.</param>
+        internal static RuleExpression PackageReferences(IEnumerable<Guid>? packageIds, IEnumerable<string> packageUrns, string paramNamePackageId = "packageIds", string paramNamePackage = "packages") => () =>
+        {
+            bool hasIds = packageIds?.Any() == true;
+            bool hasUrns = packageUrns?.Any() == true;
+
+            // Early success if only one of them is present and valid
+            if ((hasIds ^ hasUrns) && (!hasIds || packageIds!.All(g => g != Guid.Empty)))
+            {
+                return null;
+            }
+
+            return (ref ValidationErrorBuilder errors) =>
+            {
+                // Both present
+                if (hasIds && hasUrns)
+                {
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Either list of package URNs or a package IDs must be provided, not both.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Either list of package URNs or a package IDs must be provided, not both.")]);
+                }
+
+                // Both missing
+                if (!hasIds && !hasUrns)
+                {
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Either a package URN or a package ID must be provided.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Either a package URN or a package ID must be provided.")]);
+                }
+
+                // Invalid Guids
+                if (hasIds && packageIds!.Any(g => g == Guid.Empty))
+                {
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Package IDs must be non-empty GUIDs.")]);
+                }
             };
         };
     }

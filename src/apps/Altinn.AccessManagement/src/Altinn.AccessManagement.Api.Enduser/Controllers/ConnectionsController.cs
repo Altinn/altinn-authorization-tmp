@@ -8,6 +8,7 @@ using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,7 +38,7 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetConnections([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
-        if (ValidationRules.EnduserReadConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
+        if (EnduserValidationRules.EnduserReadConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
@@ -65,7 +66,7 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddAssignment([FromQuery] ConnectionInput connection, CancellationToken cancellationToken = default)
     {
-        if (ValidationRules.EnduserAddConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
+        if (EnduserValidationRules.EnduserAddConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
@@ -93,7 +94,7 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemoveAssignment([FromQuery] ConnectionInput connection, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
-        if (ValidationRules.EnduserRemoveConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
+        if (EnduserValidationRules.EnduserRemoveConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
@@ -121,7 +122,7 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetPackages([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
-        if (ValidationRules.EnduserReadConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
+        if (EnduserValidationRules.EnduserReadConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
@@ -149,7 +150,7 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddPackages([FromQuery] ConnectionInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
     {
-        if (ValidationRules.EnduserAddConnectionPackage(connection.Party, connection.From, connection.To, packageId, package) is var problem && problem is { })
+        if (EnduserValidationRules.EnduserAddConnectionPackage(connection.Party, connection.From, connection.To, packageId, package) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
@@ -187,7 +188,7 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemovePackages([FromQuery] ConnectionInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
     {
-        if (ValidationRules.EnduserRemoveConnectionPacakge(connection.Party, connection.From, connection.To, packageId, package) is var problem && problem is { })
+        if (EnduserValidationRules.EnduserRemoveConnectionPacakge(connection.Party, connection.From, connection.To, packageId, package) is var problem && problem is { })
         {
             return problem.ToActionResult();
         }
@@ -212,5 +213,36 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
         }
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// API for delegation check of access packages, for which packages the authenticated user has permission to assign to others on behalf of the specified party.
+    /// </summary>
+    [HttpGet("accesspackages/delegationcheck")]
+    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
+    [ProducesResponseType<PaginatedResult<AccessPackageDto.Check>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> CheckPackage([FromQuery] Guid party, [FromQuery] IEnumerable<Guid>? packageIds, [FromQuery] IEnumerable<string>? packages, CancellationToken cancellationToken = default)
+    {
+        async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage()
+        {
+            if (packages.Any())
+            {
+                return await ConnectionService.CheckPackage(party, packages, packageIds, cancellationToken);
+            }
+
+            return await ConnectionService.CheckPackage(party, packageIds, cancellationToken);
+        }
+
+        var result = await CheckPackage();
+        if (result.IsProblem)
+        {
+            return result.Problem.ToActionResult();
+        }
+
+        return Ok(PaginatedResult.Create(result.Value, null));
     }
 }

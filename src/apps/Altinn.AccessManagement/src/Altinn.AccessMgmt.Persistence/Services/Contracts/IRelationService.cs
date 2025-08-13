@@ -11,6 +11,7 @@ public interface IRelationService
     /// Get Connections given from party
     /// </summary>
     /// <param name="partyId">Filter for party</param>
+    /// <param name="toId">to party</param>
     /// <param name="roleId">Filter for role</param>
     /// <param name="packageId">Filter for package</param>
     /// <param name="resourceId">Filter for resource</param>
@@ -22,6 +23,7 @@ public interface IRelationService
     /// Get Connections recived from party
     /// </summary>
     /// <param name="partyId">Filter for party</param>
+    /// <param name="fromId">to party</param>
     /// <param name="roleId">Filter for role</param>
     /// <param name="packageId">Filter for package</param>
     /// <param name="resourceId">Filter for resource</param>
@@ -33,6 +35,7 @@ public interface IRelationService
     /// Get connections given from party
     /// </summary>
     /// <param name="partyId">Filter for party</param>
+    /// <param name="toId">to party</param>
     /// <param name="roleId">Filter for role</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
@@ -42,6 +45,7 @@ public interface IRelationService
     /// Get Connections recived from party
     /// </summary>
     /// <param name="partyId">Filter for party</param>
+    /// <param name="fromId">to party</param>
     /// <param name="roleId">Filter for role</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
@@ -51,6 +55,11 @@ public interface IRelationService
     /// Get list of packages with a list of parties you have this permission at
     /// </summary>
     Task<IEnumerable<PackagePermission>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get list of packages with for a party, where you have permission to assign the packages to others
+    /// </summary>
+    Task<IEnumerable<PackageDelegationCheck>> GetAssignablePackagePermissions(Guid partyId, Guid fromId, IEnumerable<Guid>? packageIds = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get list of packages with a list of parties that have this permission

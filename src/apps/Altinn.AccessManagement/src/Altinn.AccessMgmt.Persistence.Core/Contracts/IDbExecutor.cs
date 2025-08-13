@@ -3,6 +3,7 @@ using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.QueryBuilders;
+using Npgsql;
 
 namespace Altinn.AccessMgmt.Persistence.Core.Contracts;
 
@@ -16,6 +17,7 @@ public interface IDbExecutor
     /// </summary>
     /// <param name="query">Command to execute</param>
     /// <param name="parameters">Parameters</param>
+    /// <param name="callerName">Used for setting span name.</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
     Task<int> ExecuteCommand(string query, List<GenericParameter> parameters, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default);
@@ -25,6 +27,7 @@ public interface IDbExecutor
     /// </summary>
     /// <param name="query">Command to execute</param>
     /// <param name="parameters">Parameters</param>
+    /// <param name="callerName">Used for setting span name.</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
     Task<int> ExecuteMigrationCommand(string query, List<GenericParameter> parameters = null, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default);
@@ -33,6 +36,7 @@ public interface IDbExecutor
     /// Execute a command
     /// </summary>
     /// <param name="query">Command to execute</param>
+    /// <param name="callerName">Used for setting span name.</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
     Task<int> ExecuteCommand(string query, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default);
@@ -42,15 +46,28 @@ public interface IDbExecutor
     /// </summary>
     /// <param name="query">Query to execute</param>
     /// <param name="parameters">Parameters</param>
+    /// <param name="callerName">Used for setting span name.</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
     Task<QueryResponse<T>> ExecuteQuery<T>(string query, List<GenericParameter> parameters, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
     where T : new();
 
     /// <summary>
+    /// Execute a custom query and return data mapped to return type using the provided mapping function.
+    /// </summary>
+    /// <param name="query">Query to execute</param>
+    /// <param name="parameters">Parameters</param>
+    /// <param name="map">Function to map the data reader to the specific return type</param>
+    /// <param name="callerName">Used for setting span name.</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
+    Task<IEnumerable<T>> ExecuteQuery<T>(string query, List<GenericParameter> parameters, Func<NpgsqlDataReader, ValueTask<T>> map, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Execute a query
     /// </summary>
     /// <param name="query">Query to execute</param>
+    /// <param name="callerName">Used for setting span name.</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
     Task<QueryResponse<T>> ExecuteQuery<T>(string query, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)
@@ -60,6 +77,7 @@ public interface IDbExecutor
     /// Execute a query
     /// </summary>
     /// <param name="query">Query to execute</param>
+    /// <param name="callerName">Used for setting span name.</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
     Task<IEnumerable<T>> ExecuteMigrationQuery<T>(string query, [CallerMemberName] string callerName = "", CancellationToken cancellationToken = default)

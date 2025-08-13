@@ -10,12 +10,27 @@ terraform {
 data "azurerm_client_config" "current" {}
 
 locals {
-  sku = {
-    "Burstable"       = "B",
-    "GeneralPurpose"  = "GP",
-    "MemoryOptimized" = "MO"
+  compute_sku = local.compute_skus[var.compute_sku]
+
+  default_config = {
+    "metrics.autovacuum_diagnostics"      = "on"
+    "metrics.collector_database_activity" = "on"
+    "max_connections"                     = tostring(local.compute_sku.max_connections)
   }
-  sku_name = "${local.sku[var.compute_tier]}_${var.compute_size}"
+
+  pgbouncer_default_config = {
+    "pgbouncer.max_prepared_statements" = "5000"
+    "pgbouncer.max_client_conn"         = "5000"
+    "pgbouncer.pool_mode"               = "TRANSACTION"
+    "metrics.pgbouncer_diagnostics"     = "on"
+  }
+
+  # latest key takes precedence
+  configuration = merge(
+    var.use_pgbouncer ? local.pgbouncer_default_config : {},
+    local.default_config,
+    var.configurations,
+  )
 }
 
 resource "random_password" "pass" {
@@ -74,7 +89,7 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
   }
 
   create_mode = "Default"
-  sku_name    = local.sku_name
+  sku_name    = local.compute_sku.sku_name
 
   lifecycle {
     ignore_changes  = [zone, storage_mb]
@@ -100,8 +115,18 @@ resource "azurerm_postgresql_flexible_server_configuration" "configuration" {
   server_id = azurerm_postgresql_flexible_server.postgres_server.id
   name      = each.key
   value     = each.value
-  for_each  = var.configurations
+  for_each  = local.configuration
+
+  depends_on = [azurerm_postgresql_flexible_server_configuration.use_pgbouncer]
 }
+
+# Must be enabled first if azurerm_postgresql_flexible_server_configuration.configuration modifies any pgbouncer settings.
+resource "azurerm_postgresql_flexible_server_configuration" "use_pgbouncer" {
+  server_id = azurerm_postgresql_flexible_server.postgres_server.id
+  name      = "pgbouncer.enabled"
+  value     = var.use_pgbouncer
+}
+
 
 resource "azurerm_management_lock" "postgres" {
   name       = "Terraform Managed Lock"

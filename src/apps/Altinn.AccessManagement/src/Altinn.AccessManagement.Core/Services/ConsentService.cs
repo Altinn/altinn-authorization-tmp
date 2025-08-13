@@ -182,6 +182,7 @@ namespace Altinn.AccessManagement.Core.Services
                 Consent consent = new()
                 {
                     Id = consentRequest.Id,
+                    Consented = consentRequest.Consented.Value,
                     From = await MapToExternalIdentity(consentRequest.From, cancellationToken),
                     To = await MapToExternalIdentity(consentRequest.To, cancellationToken),
                     ValidTo = consentRequest.ValidTo,
@@ -788,7 +789,6 @@ namespace Altinn.AccessManagement.Core.Services
                     }
                 }
             }
-
         }
 
         private static ValidationErrorBuilder ValidateValidTo(ConsentRequest consentRequest, ValidationErrorBuilder errors)
