@@ -1,3 +1,4 @@
+using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
