@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 
@@ -6,7 +7,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 /// New Connection
 /// </summary>
 [NotMapped]
-public class BaseRelation
+public class BaseRelation : BaseAudit
 {
     /// <summary>
     /// The entity identity the connection is from (origin, client, source etc) 

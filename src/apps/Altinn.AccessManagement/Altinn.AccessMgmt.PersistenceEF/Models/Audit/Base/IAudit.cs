@@ -8,40 +8,40 @@ public interface IAudit
     /// <summary>
     /// ValidFrom
     /// </summary>
-    public DateTime ValidFrom { get; set; }
+    public DateTime Audit_ValidFrom { get; set; }
 
     /// <summary>
     /// ValidTo
     /// </summary>
-    public DateTime? ValidTo { get; set; }
+    public DateTime? Audit_ValidTo { get; set; }
 
     /// <summary>
     /// ChangedBy
     /// </summary>
-    public Guid? ChangedBy { get; set; }
+    public Guid? Audit_ChangedBy { get; set; }
 
     /// <summary>
     /// ChangedBySystem
     /// </summary>
-    public Guid? ChangedBySystem { get; set; }
+    public Guid? Audit_ChangedBySystem { get; set; }
 
     /// <summary>
     /// ChangeOperation
     /// </summary>
-    public string ChangeOperation { get; set; }
+    public string Audit_ChangeOperation { get; set; }
 
     /// <summary>
     /// DeletedBy
     /// </summary>
-    public Guid? DeletedBy { get; set; }
+    public Guid? Audit_DeletedBy { get; set; }
 
     /// <summary>
     /// DeletedBySystem
     /// </summary>
-    public Guid? DeletedBySystem { get; set; }
+    public Guid? Audit_DeletedBySystem { get; set; }
 
     /// <summary>
     /// DeleteOperation
     /// </summary>
-    public string DeleteOperation { get; set; }
+    public string Audit_DeleteOperation { get; set; }
 }

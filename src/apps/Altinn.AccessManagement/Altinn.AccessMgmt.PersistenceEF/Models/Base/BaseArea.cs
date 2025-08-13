@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 
@@ -6,12 +7,13 @@ namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 /// Area to organize accesspackages stuff
 /// </summary>
 [NotMapped]
-public class BaseArea
+public class BaseArea : BaseAudit
 {
     /// <summary>
     /// Id
     /// </summary>
     public Guid Id { get; set; }
+
 
     /// <summary>
     /// Name

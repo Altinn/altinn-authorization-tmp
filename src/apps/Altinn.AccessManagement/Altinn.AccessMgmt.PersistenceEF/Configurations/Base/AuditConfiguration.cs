@@ -11,15 +11,15 @@ public abstract class AuditConfiguration<T> : IEntityTypeConfiguration<T>, IAudi
     public virtual void Configure(EntityTypeBuilder<T> builder)
     {
         builder.ToDefaultAuditTable();
-        builder.HasKey(["Id", "ChangeOperation"]);
+        builder.HasKey(["id", "audit_changeoperation"]);
 
-        builder.Property(e => e.ValidFrom).HasColumnName("audit_validfrom");
-        builder.Property(e => e.ValidTo).HasColumnName("audit_validto");
-        builder.Property(e => e.ChangedBy).HasColumnName("audit_changedby");
-        builder.Property(e => e.ChangedBySystem).HasColumnName("audit_changedbysystem");
-        builder.Property(e => e.ChangeOperation).HasColumnName("audit_changeoperation");
-        builder.Property(e => e.DeletedBy).HasColumnName("audit_deletedby");
-        builder.Property(e => e.DeletedBySystem).HasColumnName("audit_deletedbysystem");
-        builder.Property(e => e.DeleteOperation).HasColumnName("audit_deleteoperation");
+        builder.Property(e => e.Audit_ValidFrom).HasColumnName("audit_validfrom");
+        builder.Property(e => e.Audit_ValidTo).HasColumnName("audit_validto");
+        builder.Property(e => e.Audit_ChangedBy).HasColumnName("audit_changedby");
+        builder.Property(e => e.Audit_ChangedBySystem).HasColumnName("audit_changedbysystem");
+        builder.Property(e => e.Audit_ChangeOperation).HasColumnName("audit_changeoperation");
+        builder.Property(e => e.Audit_DeletedBy).HasColumnName("audit_deletedby");
+        builder.Property(e => e.Audit_DeletedBySystem).HasColumnName("audit_deletedbysystem");
+        builder.Property(e => e.Audit_DeleteOperation).HasColumnName("audit_deleteoperation");
     }
 }

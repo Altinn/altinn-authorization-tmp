@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Altinn.AccessMgmt.PersistenceEF.Models.Extensions;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 
@@ -8,7 +9,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 /// Entities with a one roile can also get another one
 /// </summary>
 [NotMapped]
-public class BaseRoleMap
+public class BaseRoleMap : BaseAudit
 {
     private Guid _id;
 
