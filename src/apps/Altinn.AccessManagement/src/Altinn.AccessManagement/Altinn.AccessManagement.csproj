@@ -17,6 +17,10 @@
         <PackageReference Include="Azure.Identity" />
         <PackageReference Include="JWTCookieAuthentication" />
         <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+          <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" />
         <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" />
         <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />

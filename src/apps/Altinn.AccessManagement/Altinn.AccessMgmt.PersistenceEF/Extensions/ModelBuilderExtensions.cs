@@ -48,7 +48,7 @@ public static class ModelBuilderExtensions
     public static EntityTypeBuilder<TEntity> ToDefaultTable<TEntity>(this EntityTypeBuilder<TEntity> builder)
         where TEntity : class
     {
-        builder.ToTable(nameof(TEntity).ToLower(), BaseConfiguration.BaseSchema);
+        builder.ToTable(typeof(TEntity).Name.ToLower(), BaseConfiguration.BaseSchema);
 
         return builder;
     }
@@ -59,7 +59,7 @@ public static class ModelBuilderExtensions
     public static EntityTypeBuilder<TEntity> ToDefaultAuditTable<TEntity>(this EntityTypeBuilder<TEntity> builder)
         where TEntity : class
     {
-        builder.ToTable(nameof(TEntity).ToLower(), BaseConfiguration.AuditSchema);
+        builder.ToTable(typeof(TEntity).Name.ToLower(), BaseConfiguration.AuditSchema);
 
         return builder;
     }

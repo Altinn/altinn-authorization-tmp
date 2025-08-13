@@ -120,21 +120,25 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureEF(this WebApplicationBuilder builder)
     {
-        builder.Services.AddScoped<IAuditContextProvider, HttpContextAuditContextProvider>();
-        builder.Services.AddScoped<AuditConnectionInterceptor>();
+        //// builder.Services.Replace(ServiceDescriptor.Singleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>());
+        ///
+        //builder.Services.AddSingleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
+
+        //builder.Services.AddScoped<IAuditContextProvider, HttpContextAuditContextProvider>();
+        //builder.Services.AddScoped<AuditConnectionInterceptor>();
         builder.Services.AddScoped<ReadOnlyInterceptor>();
 
-        builder.Services.AddDbContext<BasicDbContext>((sp, options) =>
+        builder.Services.AddDbContext<AppDbContext>((sp, options) =>
         {
             // var readonlyInterceptor = sp.GetRequiredService<ReadOnlyInterceptor>();
-            var auditInterceptior = sp.GetRequiredService<AuditConnectionInterceptor>();
+            //var auditInterceptior = sp.GetRequiredService<AuditConnectionInterceptor>();
             options.UseNpgsql(builder.Configuration["Database:Postgres:AppConnectionString"])
             //// .AddInterceptors(readonlyInterceptor)
             //// .EnableSensitiveDataLogging()
-            .AddInterceptors(auditInterceptior);
+            //.AddInterceptors(auditInterceptior)
+            .ReplaceService<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
         });
 
-        builder.Services.Replace(ServiceDescriptor.Singleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>());
 
         return builder;
     }
@@ -379,18 +383,18 @@ internal static partial class AccessManagementHost
     }
 }
 
-public class HttpContextAuditContextProvider(IHttpContextAccessor accessor) : IAuditContextProvider
-{
-    public AuditValues Current
-    {
-        get
-        {
-            var user = accessor.HttpContext?.User;
-            var userId = Guid.Parse(user?.FindFirst("sub")?.Value ?? throw new Exception("Missing sub"));
-            var systemId = Guid.Parse("00000000-0000-0000-0000-000000000001"); // evt fra config
-            var operationId = Guid.NewGuid().ToString();
+//public class HttpContextAuditContextProvider(IHttpContextAccessor accessor) : IAuditContextProvider
+//{
+//    public AuditValues Current
+//    {
+//        get
+//        {
+//            var user = accessor.HttpContext?.User;
+//            var userId = Guid.Parse(user?.FindFirst("sub")?.Value ?? throw new Exception("Missing sub"));
+//            var systemId = Guid.Parse("00000000-0000-0000-0000-000000000001"); // evt fra config
+//            var operationId = Guid.NewGuid().ToString();
 
-            return new AuditValues(userId, systemId, operationId);
-        }
-    }
-}
+//            return new AuditValues(userId, systemId, operationId);
+//        }
+//    }
+//}

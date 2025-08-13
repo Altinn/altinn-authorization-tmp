@@ -141,13 +141,15 @@ public static partial class DbAccessHostExtensions
 
         // Add definitions to the database definition registry
         DefineAllModels(host.Services);
-
+        
+        /*
         var migration = host.Services.GetRequiredService<DbSchemaMigrationService>();
         migration.GenerateAll();
         await migration.MigrateAll();
 
         var dbIngest = host.Services.GetRequiredService<DbDataMigrationService>();
         await dbIngest.IngestAll();
+        */
 
         /*
         //// TODO: Add FeatureFlag
@@ -155,7 +157,6 @@ public static partial class DbAccessHostExtensions
         // await mockService.GenerateBasicData();
         // await mockService.GeneratePackageResources();
         // await mockService.SystemUserClientDelegation();
-        */
         if (generateBasicData == true)
         {
             var mockService = host.Services.GetRequiredService<MockDataService>();
@@ -163,6 +164,7 @@ public static partial class DbAccessHostExtensions
 
             // await mockService.GeneratePackageResources();
         }
+        */
 
         return host;
     }

@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
 /// <inheritdoc />
-public class BasicDbContext : DbContext
+public class AppDbContext : DbContext
 {
-    public BasicDbContext(DbContextOptions<BasicDbContext> options) : base(options) { }
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     #region DbSets
     
