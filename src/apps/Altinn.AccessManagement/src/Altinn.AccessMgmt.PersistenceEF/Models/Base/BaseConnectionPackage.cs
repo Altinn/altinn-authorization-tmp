@@ -1,13 +1,9 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
+﻿namespace Altinn.AccessMgmt.PersistenceEF.Models;
 
 /// <summary>
 /// Packages available on connections
 /// </summary>
-[NotMapped]
-public class BaseConnectionPackage : BaseAudit
+public class BaseConnectionPackage
 {
     /// <summary>
     /// Identifier, AssignmentId or DelegationId
@@ -83,47 +79,4 @@ public class BaseConnectionPackage : BaseAudit
     /// Text hint for reason for package
     /// </summary>
     public string PackageSource { get; set; }
-}
-
-/// <summary>
-/// Extended connection packages
-/// </summary>
-public class ExtConnectionPackage : BaseConnectionPackage
-{
-    /// <summary>
-    /// Connection
-    /// </summary>
-    public BaseConnection Connection { get; set; }
-
-    /// <summary>
-    /// The entity the connection is from (origin, client, source etc)
-    /// For Assignments this is From for Delegations this is From.From
-    /// </summary>
-    public BaseEntity From { get; set; }
-
-    /// <summary>
-    /// The role To identifies as either to From or to Facilitator
-    /// </summary>
-    public BaseRole Role { get; set; }
-
-    /// <summary>
-    /// The entity the connection is to (destination, agent, etc)
-    /// For Assignments this is To for Delegations this is To.To
-    /// </summary>
-    public BaseEntity To { get; set; }
-
-    /// <summary>
-    /// The entity betweeen from and to. When connection is delegated.
-    /// </summary>
-    public BaseEntity Facilitator { get; set; }
-
-    /// <summary>
-    /// The role the facilitator has to the client 
-    /// </summary>
-    public BaseRole FacilitatorRole { get; set; }
-
-    /// <summary>
-    /// Package
-    /// </summary>
-    public BasePackage Package { get; set; }
 }
