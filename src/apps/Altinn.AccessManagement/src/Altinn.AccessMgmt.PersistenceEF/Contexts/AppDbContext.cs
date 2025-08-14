@@ -11,8 +11,10 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+    public DbSet<Relation> Relations => Set<Relation>();
+
     #region DbSets
-    
+
     public DbSet<Area> Areas => Set<Area>();
     
     public DbSet<AreaGroup> AreaGroups => Set<AreaGroup>();

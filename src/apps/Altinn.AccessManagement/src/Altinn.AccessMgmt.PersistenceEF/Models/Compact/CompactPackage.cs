@@ -1,7 +1,7 @@
 ﻿namespace Altinn.AccessMgmt.PersistenceEF.Models;
 
 /// <summary>
-/// Compact Package Model
+/// Compact Package Model HELLO
 /// </summary>
 public class CompactPackage
 {

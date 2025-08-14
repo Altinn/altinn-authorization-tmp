@@ -1,6 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.ProblemDetails;
 
