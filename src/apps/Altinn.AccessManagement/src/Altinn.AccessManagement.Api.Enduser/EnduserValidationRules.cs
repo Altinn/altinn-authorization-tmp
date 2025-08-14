@@ -1,6 +1,6 @@
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 
@@ -268,7 +268,7 @@ public static class EnduserValidationRules
         /// <param name="toEntity">entity the assignment is to be made to</param>
         /// <param name="paramName">name of the query parameter</param>
         /// <returns></returns>
-        internal static RuleExpression PackageIsAssignableToRecipient(IEnumerable<string> packageUrns, ExtEntity toEntity, string paramName = "packageId") => () =>
+        internal static RuleExpression PackageIsAssignableToRecipient(IEnumerable<string> packageUrns, Entity toEntity, string paramName = "packageId") => () =>
         {
             ArgumentNullException.ThrowIfNull(packageUrns);
             ArgumentException.ThrowIfNullOrEmpty(paramName);
@@ -456,7 +456,7 @@ public static class EnduserValidationRules
                 errors.Add(ValidationErrors.EntityNotExists, $"QUERY/{paramName}", [new("party", $"Entity do not exists.")]);
         };
 
-        internal static RuleExpression PartyIsEntityType(ExtEntity party, string entityType, string paramName = "party") => () =>
+        internal static RuleExpression PartyIsEntityType(Entity party, string entityType, string paramName = "party") => () =>
         {
             if (party is { })
             {
