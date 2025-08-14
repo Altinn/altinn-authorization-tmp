@@ -103,7 +103,7 @@ internal static partial class AccessManagementHost
             }
         }
 
-        builder.ConfigureEF();
+        // builder.ConfigureEF();
 
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
