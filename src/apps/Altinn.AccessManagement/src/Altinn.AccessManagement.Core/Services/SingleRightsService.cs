@@ -554,7 +554,12 @@ namespace Altinn.AccessManagement.Core.Services
             foreach (Right right in rights)
             {
                 DelegationHelper.TryGetResourceFromAttributeMatch(right.Resource, out ResourceAttributeMatchType resourceMatchType, out string resourceRegistryId, out string org, out string app, out string serviceCode, out string serviceEditionCode);
-                string currentResourceKey = $"{resourceMatchType}{resourceRegistryId}{org}{app}{serviceCode}{serviceEditionCode}";
+                if (resourceMatchType == ResourceAttributeMatchType.AltinnAppId)
+                {
+                    resourceRegistryId = $"app_{org.ToLower()}_{app.ToLower()}";
+                }
+
+                string currentResourceKey = $"{resourceRegistryId}{serviceCode}{serviceEditionCode}";
 
                 if (firstResourceKey == string.Empty)
                 {
