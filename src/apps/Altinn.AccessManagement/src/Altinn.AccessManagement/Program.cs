@@ -1,7 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Persistence.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Logging;
 
 AppDomain domain = AppDomain.CurrentDomain;
@@ -14,16 +17,17 @@ if (appsettings.Database.MigrateDb || appsettings.Database.MigrateDbAndTerminate
 {
     using var scope = app.Services.CreateScope();
 
-    // Do Something like this when using EF
-    // scope.ServiceProvider.GetRequiredService<AppDbContext>().MigrateAsync();
+    await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
 
-    // Current framework
-    await app.UseAccessMgmtDb(true);
-    
     if (appsettings.Database.MigrateDbAndTerminate)
     {
         return;
     }
+}
+else if (await app.Services.GetRequiredService<FeatureManager>().IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
+{
+    bool generateBasicData = await app.Services.GetRequiredService<FeatureManager>().IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbWithBasicData);
+    await app.UseAccessMgmtDb(generateBasicData);
 }
 
 app.AddDefaultAltinnMiddleware(errorHandlingPath: "/accessmanagement/api/v1/error");
