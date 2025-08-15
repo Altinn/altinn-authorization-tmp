@@ -13,18 +13,14 @@ domain.SetData("REGEX_DEFAULT_MATCH_TIMEOUT", TimeSpan.FromSeconds(2));
 WebApplication app = AccessManagementHost.Create(args);
 
 var appsettings = app.Services.GetRequiredService<IOptions<AccessManagementAppsettings>>().Value;
-if (appsettings.Database.MigrateDb || appsettings.Database.MigrateDbAndTerminate)
+if (appsettings.RunInitOnly)
 {
     using var scope = app.Services.CreateScope();
-
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
-
-    if (appsettings.Database.MigrateDbAndTerminate)
-    {
-        return;
-    }
+    return;
 }
-else if (await app.Services.GetRequiredService<FeatureManager>().IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
+
+if (await app.Services.GetRequiredService<FeatureManager>().IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
 {
     bool generateBasicData = await app.Services.GetRequiredService<FeatureManager>().IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbWithBasicData);
     await app.UseAccessMgmtDb(generateBasicData);

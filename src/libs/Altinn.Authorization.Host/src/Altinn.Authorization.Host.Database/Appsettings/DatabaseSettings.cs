@@ -13,16 +13,6 @@ public class DatabaseSettings
     public PostgresSettings Postgres { get; set; } = new();
 
     /// <summary>
-    /// Specifies if application should migrate db and terminate.
-    /// </summary>
-    public bool MigrateDb { get; set; } = false;
-
-    /// <summary>
-    /// Migrates DB and terminates if true. Should be used with init containers.
-    /// </summary>
-    public bool MigrateDbAndTerminate { get; set; } = false;
-
-    /// <summary>
     /// Contains settings related to PostgreSQL database connections.
     /// </summary>
     public class PostgresSettings
