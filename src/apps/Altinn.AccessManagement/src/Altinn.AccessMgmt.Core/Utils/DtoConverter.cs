@@ -1,7 +1,7 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 
-namespace Altinn.AccessMgmt.Core;
+namespace Altinn.AccessMgmt.Core.Utils;
 
 /*
 ConnectionService => Deprecated 
@@ -9,6 +9,22 @@ ConnectionService => Deprecated
 
 public class DtoConverter
 {
+    public RoleDto Convert(Role obj)
+    {
+        return new RoleDto()
+        {
+            Id = obj.Id,
+            Name = obj.Name,
+            Description = obj.Description,
+            Code = obj.Code,
+            IsKeyRole = obj.IsKeyRole,
+            Urn = obj.Urn,
+            Provider = obj.Provider,
+            LegacyRoleCode = null,
+            LegacyUrn = null
+        };
+    }
+
     public IEnumerable<RelationPackageDto> ExtractRelationPackageDtoToOthers(IEnumerable<Relation> res, bool includeSubConnections = false)
     {
         return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.To.Id).Select(relation => new RelationPackageDto()
@@ -110,9 +126,9 @@ public class DtoConverter
         };
     }
 
-    public Permission ConvertToPermission(Relation connection)
+    public PermissionDto ConvertToPermission(Relation connection)
     {
-        return new Permission()
+        return new PermissionDto()
         {
             From = connection.From,
             To = connection.To,

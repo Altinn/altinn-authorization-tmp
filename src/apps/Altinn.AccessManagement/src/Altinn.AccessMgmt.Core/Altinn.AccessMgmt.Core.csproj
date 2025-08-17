@@ -2,4 +2,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Altinn.AccessMgmt.PersistenceEF\Altinn.AccessMgmt.PersistenceEF.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Altinn.Authorization.ProblemDetails" />
+  </ItemGroup>
 </Project>

@@ -1,12 +1,13 @@
-﻿using Altinn.AccessMgmt.Core;
-using Altinn.AccessMgmt.Core.Models;
+﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Persistence.Services;
 
 /// <inheritdoc />
-public class NewRelationService(AppDbContext dbContext, DtoConverter dtoConverter) : INewRelationService
+public class RelationService(AppDbContext dbContext, DtoConverter dtoConverter) : IRelationService
 {
     /// <inheritdoc />
     public async Task<IEnumerable<RelationPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
@@ -109,7 +110,7 @@ public class NewRelationService(AppDbContext dbContext, DtoConverter dtoConverte
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<PackagePermission>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {
         var q = dbContext.Relations.AsNoTracking().Where(t => t.ToId == partyId);
 
@@ -127,7 +128,7 @@ public class NewRelationService(AppDbContext dbContext, DtoConverter dtoConverte
 
         if (res is { } && res.Any() && res.Where(r => r.Package is { }) is var packages)
         {
-            return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermission()
+            return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
                 Package = permission.Package,
                 Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(dtoConverter.ConvertToPermission)
@@ -138,7 +139,7 @@ public class NewRelationService(AppDbContext dbContext, DtoConverter dtoConverte
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<PackagePermission>> GetPackagePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {
         var q = dbContext.Relations.AsNoTracking().Where(t => t.FromId == partyId);
 
@@ -156,7 +157,7 @@ public class NewRelationService(AppDbContext dbContext, DtoConverter dtoConverte
 
         if (res is { } && res.Any() && res.Where(r => r.Package is { }) is var packages)
         {
-            return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermission()
+            return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
                 Package = permission.Package,
                 Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(dtoConverter.ConvertToPermission)
@@ -582,79 +583,4 @@ public class NewRelationService(AppDbContext dbContext, DtoConverter dtoConverte
         """;
     }
 
-}
-
-/// <summary>
-/// Service for getting connections
-/// </summary>
-public interface INewRelationService
-{
-    /// <summary>
-    /// Get Connections given from party
-    /// </summary>
-    /// <param name="partyId">Filter for party</param>
-    /// <param name="toId">to party</param>
-    /// <param name="roleId">Filter for role</param>
-    /// <param name="packageId">Filter for package</param>
-    /// <param name="resourceId">Filter for resource</param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns></returns>
-    Task<IEnumerable<RelationPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get Connections recived from party
-    /// </summary>
-    /// <param name="partyId">Filter for party</param>
-    /// <param name="fromId">to party</param>
-    /// <param name="roleId">Filter for role</param>
-    /// <param name="packageId">Filter for package</param>
-    /// <param name="resourceId">Filter for resource</param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns></returns>
-    Task<IEnumerable<RelationPackageDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get connections given from party
-    /// </summary>
-    /// <param name="partyId">Filter for party</param>
-    /// <param name="toId">to party</param>
-    /// <param name="roleId">Filter for role</param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns></returns>
-    Task<IEnumerable<RelationDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get Connections recived from party
-    /// </summary>
-    /// <param name="partyId">Filter for party</param>
-    /// <param name="fromId">to party</param>
-    /// <param name="roleId">Filter for role</param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns></returns>
-    Task<IEnumerable<RelationDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get list of packages with a list of parties you have this permission at
-    /// </summary>
-    Task<IEnumerable<PackagePermission>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get list of packages with for a party, where you have permission to assign the packages to others
-    /// </summary>
-    Task<IEnumerable<PackageDelegationCheck>> GetAssignablePackagePermissions(Guid partyId, Guid fromId, IEnumerable<Guid>? packageIds = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get list of packages with a list of parties that have this permission
-    /// </summary>
-    Task<IEnumerable<PackagePermission>> GetPackagePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get list of resources with a list of parties you have this permission at
-    /// </summary>
-    Task<IEnumerable<ResourcePermission>> GetResourcePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get list of resources with a list of parties that have this permission
-    /// </summary>
-    Task<IEnumerable<ResourcePermission>> GetResourcePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default);
 }
