@@ -1,7 +1,7 @@
 meta {
   name: GET_SysUser_ESEK_ClientDelg_FFØR_AccPkg
   type: http
-  seq: 14
+  seq: 15
 }
 
 get {
@@ -42,23 +42,14 @@ script:pre-request {
   
 }
 
-script:post-response {
-  let data = typeof res.body === "string" ? JSON.parse(res.body) : res.body;
-  if (Array.isArray(data) && data.length > 0) {
-   const assignmentId = data[13].delegation.toId;
-   bru.setEnvVar("toId", assignmentId);
-  }
-}
-
 tests {
   test("ESEK_Client org has delegated FFØR access package to systembruker", function() {
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
       const data = res.getBody();
-      var delegationId = bru.getEnvVar("delegationId");
       expect(res.status).to.equal(200);
-      expect(data[13].facilitator).to.have.property('name', "FRYKTLØS FIRKANTET TIGER AS");
-    expect(data[13].role).to.have.property('code', "agent");
-    expect(data[13].facilitatorRole).to.have.property('code', "forretningsforer");
+      expect(data[0].facilitator).to.have.property('name', "FRYKTLØS FIRKANTET TIGER AS");
+    expect(data[0].role).to.have.property('code', "agent");
+    expect(data[0].facilitatorRole).to.have.property('code', "forretningsforer");
       
     });
 }
