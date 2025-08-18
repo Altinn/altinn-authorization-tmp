@@ -1,5 +1,5 @@
-using Altinn.AccessMgmt.Core.Errors;
-using Altinn.AccessMgmt.Core.Models.Party;
+using Altinn.AccessMgmt.Core;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public class PartyService(AppDbContext dbContext) : IPartyService
+public class PartyService(AppDbContext dbContext, DtoConverter dtoConverter) : INewPartyService
 {
     /// <inheritdoc />
     public async Task<Result<AddPartyResult>> AddParty(PartyBaseInternal party, ChangeRequestOptions options, CancellationToken cancellationToken = default)
@@ -70,7 +70,7 @@ public class PartyService(AppDbContext dbContext) : IPartyService
 /// <summary>
 /// Interface for party management services
 /// </summary>
-public interface IPartyService
+public interface INewPartyService
 {
     /// <summary>
     /// Adds a party to the system if it does not already exist
