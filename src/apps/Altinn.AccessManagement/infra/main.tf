@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.34.0"
+      version = "4.37.0"
     }
     static = {
       source  = "tiwood/static"
@@ -258,6 +258,12 @@ module "appsettings" {
       label       = "${lower(var.environment)}-access-management"
       value       = true
     },
+    {
+      name        = "AccessManagement.Internal.Connections"
+      description = "Specifies if feature access connections are enabled for internal usage."
+      label       = "${lower(var.environment)}-access-management"
+      value       = true
+    },
   ]
   providers = {
     azurerm.hub = azurerm.hub
@@ -279,8 +285,8 @@ module "postgres_server" {
     "azure.extensions" : "HSTORE"
   }
 
-  compute_tier = var.db_compute_tier
-  compute_size = var.db_compute_size
+  storage_tier = var.db_storage_tier
+  compute_sku  = var.db_compute_sku
 
   entraid_admins = concat([
     {

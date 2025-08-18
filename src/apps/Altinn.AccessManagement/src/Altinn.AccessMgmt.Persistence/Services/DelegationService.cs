@@ -1,5 +1,5 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Core.Models;
+﻿using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
@@ -11,7 +11,6 @@ namespace Altinn.AccessMgmt.Persistence.Services;
 /// <inheritdoc/>
 public class DelegationService(
     IRoleRepository roleRepository,
-    IInheritedAssignmentRepository inheritedAssignmentRepository,
     IAssignmentRepository assignmentRepository,
     IAssignmentPackageRepository assignmentPackageRepository,
     IAssignmentResourceRepository assignmentResourceRepository,
@@ -33,7 +32,6 @@ public class DelegationService(
     ) : IDelegationService
 {
     private readonly IRoleRepository roleRepository = roleRepository;
-    private readonly IInheritedAssignmentRepository inheritedAssignmentRepository = inheritedAssignmentRepository;
     private readonly IAssignmentRepository assignmentRepository = assignmentRepository;
     private readonly IAssignmentPackageRepository assignmentPackageRepository = assignmentPackageRepository;
     private readonly IAssignmentResourceRepository assignmentResourceRepository = assignmentResourceRepository;
@@ -56,12 +54,12 @@ public class DelegationService(
     {
         var role = (await roleRepository.Get(t => t.Code, roleCode)).First();
 
-        var filter = inheritedAssignmentRepository.CreateFilterBuilder();
+        var filter = assignmentRepository.CreateFilterBuilder();
         filter.Equal(t => t.FromId, fromId);
         filter.Equal(t => t.ToId, toId);
         filter.Equal(t => t.RoleId, role.Id);
 
-        var userAssignments = await assignmentRepository.Get();
+        var userAssignments = await assignmentRepository.Get(filter);
 
         if (userAssignments == null || !userAssignments.Any())
         {
@@ -453,7 +451,7 @@ public class DelegationService(
                     if (agentAssignment == null)
                     {
                         // Find or Create Agent Entity
-                        var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "System", options) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
+                        var agent = await GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "AgentSystem", options) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
 
                         // Find or Create Agent Assignment
                         agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole, options) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));

@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
-using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
+using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Microsoft.Extensions.Configuration;
 
@@ -79,22 +79,22 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<EntityType>(dataKey, string.Empty, 4);
         }
 
-        if (migrationService.NeedMigration<EntityVariant>(dataKey, 4))
+        if (migrationService.NeedMigration<EntityVariant>(dataKey, 5))
         {
             await IngestEntityVariant(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 4);
+            await migrationService.LogMigration<EntityVariant>(dataKey, string.Empty, 5);
         }
 
-        if (migrationService.NeedMigration<Entity>(dataKey, 3))
+        if (migrationService.NeedMigration<Entity>(dataKey, 4))
         {
             await IngestSystemEntity(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Entity>(dataKey, string.Empty, 3);
+            await migrationService.LogMigration<Entity>(dataKey, string.Empty, 4);
         }
 
-        if (migrationService.NeedMigration<Role>(dataKey, 13))
+        if (migrationService.NeedMigration<Role>(dataKey, 14))
         {
             await IngestRole(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Role>(dataKey, string.Empty, 13);
+            await migrationService.LogMigration<Role>(dataKey, string.Empty, 14);
         }
 
         if (migrationService.NeedMigration<RoleMap>(dataKey, 6))
@@ -121,10 +121,10 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Package>(dataKey, string.Empty, 8);
         }
 
-        if (migrationService.NeedMigration<RolePackage>(dataKey, 6))
+        if (migrationService.NeedMigration<RolePackage>(dataKey, 7))
         {
             await IngestRolePackage(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 6);
+            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 7);
         }
 
         if (migrationService.NeedMigration<EntityVariantRole>(dataKey, 2))
@@ -255,9 +255,9 @@ public class DbDataMigrationService(
     /// <returns></returns>
     public async Task IngestEntityVariant(ChangeRequestOptions options, CancellationToken cancellationToken = default)
     {
-        var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found", "Organisasjon"));
-        var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found", "Person"));
-        var systemTypeId = (await entityTypeService.Get(t => t.Name, "Systembruker")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType not found", "System"));
+        var orgTypeId = (await entityTypeService.Get(t => t.Name, "Organisasjon")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Organisasjon"));
+        var persTypeId = (await entityTypeService.Get(t => t.Name, "Person")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Person"));
+        var systemTypeId = (await entityTypeService.Get(t => t.Name, "Systembruker")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Systembruker"));
         var internalTypeId = (await entityTypeService.Get(t => t.Name, "Intern")).FirstOrDefault()?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
 
         var entityVariants = new List<EntityVariant>()
@@ -307,7 +307,8 @@ public class DbDataMigrationService(
             new EntityVariant() { Id = Guid.Parse("d7208d54-067d-4b5c-a906-f0da3d3de0f1"), TypeId = orgTypeId, Name = "KBO", Description = "Konkursbo" },
             new EntityVariant() { Id = Guid.Parse("ea460099-515f-4e54-88d8-fbe53a807276"), TypeId = orgTypeId, Name = "BA", Description = "Selskap med begrenset ansvar" },
             new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId, Name = "Person", Description = "Person" },
-            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
+            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "AgentSystem", Description = "AgentSystem" },
+            new EntityVariant() { Id = Guid.Parse("f948baa3-8f6b-4790-a35c-85064c1b7f9b"), TypeId = systemTypeId, Name = "StandardSystem", Description = "StandardSystem" },
             new EntityVariant() { Id = Guid.Parse("03D08113-40D0-48BD-85B6-BD4430CCC182"), TypeId = persTypeId, Name = "SI", Description = "Selvidentifisert bruker" },
             new EntityVariant() { Id = Guid.Parse("CBE2834D-3DB0-4A14-BAA2-D32DE004D6D7"), TypeId = internalTypeId, Name = "Standard", Description = "Standard intern entitet" },
         };
@@ -359,61 +360,63 @@ public class DbDataMigrationService(
             new EntityVariant() { Id = Guid.Parse("d7208d54-067d-4b5c-a906-f0da3d3de0f1"), TypeId = orgTypeId, Name = "KBO", Description = "Bankruptcy estate" },
             new EntityVariant() { Id = Guid.Parse("ea460099-515f-4e54-88d8-fbe53a807276"), TypeId = orgTypeId, Name = "BA", Description = "Limited liability company" },
             new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId, Name = "Person", Description = "Person" },
-            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
+            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "AgentSystem", Description = "AgentSystem" },
+            new EntityVariant() { Id = Guid.Parse("f948baa3-8f6b-4790-a35c-85064c1b7f9b"), TypeId = systemTypeId, Name = "StandardSystem", Description = "StandardSystem" },
             new EntityVariant() { Id = Guid.Parse("03D08113-40D0-48BD-85B6-BD4430CCC182"), TypeId = persTypeId, Name = "SI", Description = "Self-identified user" },
             new EntityVariant() { Id = Guid.Parse("CBE2834D-3DB0-4A14-BAA2-D32DE004D6D7"), TypeId = internalTypeId, Name = "Default", Description = "Default internal entity" },
         };
 
         var entityVariantsNno = new List<EntityVariant>()
         {
-            new EntityVariant() { Id = Guid.Parse("d786bc0e-8e9e-4116-bfc2-0344207c9127"), TypeId = orgTypeId,    Name = "SAM",    Description = "Tingsrettslig sameie" },
-            new EntityVariant() { Id = Guid.Parse("d0a08401-5ae0-4da9-a79a-1113a7746b60"), TypeId = orgTypeId,    Name = "VPFO",   Description = "Verdipapirfond" },
-            new EntityVariant() { Id = Guid.Parse("c161a605-3c72-40f2-8a5a-15e57e49638c"), TypeId = orgTypeId,    Name = "UTLA",   Description = "Utanlandsk eining" },
-            new EntityVariant() { Id = Guid.Parse("752f87dc-b04f-42cb-becd-173935ec6164"), TypeId = orgTypeId,    Name = "BO",     Description = "Andre bo" },
-            new EntityVariant() { Id = Guid.Parse("263762ec-54fc-4eae-b7a1-17e92eea9a5c"), TypeId = orgTypeId,    Name = "AS",     Description = "Aksjeselskap" },
-            new EntityVariant() { Id = Guid.Parse("6b2449e7-af5a-4c4e-b475-1b75998ba804"), TypeId = orgTypeId,    Name = "PK",     Description = "Pensjonskasse" },
-            new EntityVariant() { Id = Guid.Parse("ed5d05b6-588c-40fa-8885-2bd36f75ac34"), TypeId = orgTypeId,    Name = "PERS",   Description = "Andre enkeltpersonar som registrerast i tilknytta register" },
-            new EntityVariant() { Id = Guid.Parse("e0444411-a021-4774-854c-2ed876ffd64e"), TypeId = orgTypeId,    Name = "EOFG",   Description = "Europeisk økonomisk foretaksgruppe" },
-            new EntityVariant() { Id = Guid.Parse("441a2876-f15f-4007-9e2e-3d25acbd98ff"), TypeId = orgTypeId,    Name = "SE",     Description = "Europeisk selskap" },
-            new EntityVariant() { Id = Guid.Parse("3d5a890a-51aa-4e8a-b53d-3ec4111fe9e9"), TypeId = orgTypeId,    Name = "TVAM",   Description = "Tvangsregistrert for MVA" },
-            new EntityVariant() { Id = Guid.Parse("e5d4a90e-948a-4c61-965a-43dbbd0efddb"), TypeId = orgTypeId,    Name = "GFS",    Description = "Gjensidig forsikringsselskap" },
-            new EntityVariant() { Id = Guid.Parse("a581992e-c9dd-4250-8a9e-4e91d9b55424"), TypeId = orgTypeId,    Name = "FYLK",   Description = "Fylkeskommune" },
-            new EntityVariant() { Id = Guid.Parse("ab5013e9-4210-4ab3-9fc2-554fd78a1b03"), TypeId = orgTypeId,    Name = "IKJP",   Description = "Andre ikkje-juridiske personar" },
-            new EntityVariant() { Id = Guid.Parse("a90417b4-5fa9-4a01-bfd0-57a1069a000c"), TypeId = orgTypeId,    Name = "NUF",    Description = "Norskregistrert utanlandsk foretak" },
-            new EntityVariant() { Id = Guid.Parse("fca69e4d-453c-4404-b057-5e188c603f4b"), TypeId = orgTypeId,    Name = "ANS",    Description = "Ansvarleg selskap med solidarisk ansvar" },
-            new EntityVariant() { Id = Guid.Parse("64b05309-7b6e-40c8-bd29-62d8fa0bd5ec"), TypeId = orgTypeId,    Name = "KS",     Description = "Kommandittselskap" },
-            new EntityVariant() { Id = Guid.Parse("90b3eb3b-87cb-4ec3-bc44-65630cd02a67"), TypeId = orgTypeId,    Name = "SÆR",    Description = "Annet foretak i følgje særskild lov" },
-            new EntityVariant() { Id = Guid.Parse("d0648c3e-1567-48dc-a7cf-6837653dbc12"), TypeId = orgTypeId,    Name = "IKS",    Description = "Interkommunalt selskap" },
-            new EntityVariant() { Id = Guid.Parse("9d80264a-b968-45f8-b740-6a283cbc06ad"), TypeId = orgTypeId,    Name = "STI",    Description = "Stiftelse" },
-            new EntityVariant() { Id = Guid.Parse("8aa09ac2-dd61-492f-9613-6fc0558ab6fb"), TypeId = orgTypeId,    Name = "BBL",    Description = "Boligbyggelag" },
-            new EntityVariant() { Id = Guid.Parse("e9b021a9-b257-42c0-8460-717a95c883f6"), TypeId = orgTypeId,    Name = "KTRF",   Description = "Kontorfellesskap" },
-            new EntityVariant() { Id = Guid.Parse("2587990f-b036-4a6b-a7d9-815853be1382"), TypeId = orgTypeId,    Name = "ANNA",   Description = "Annan juridisk person" },
-            new EntityVariant() { Id = Guid.Parse("7d356f18-2f72-49b5-a6f2-83d7c0871991"), TypeId = orgTypeId,    Name = "SA",     Description = "Samvirkeforetak" },
-            new EntityVariant() { Id = Guid.Parse("e57cac52-e401-4c0f-a1cf-8bb4628fe671"), TypeId = orgTypeId,    Name = "ADOS",   Description = "Administrativ eining - offentleg sektor" },
-            new EntityVariant() { Id = Guid.Parse("3ae468d4-ea92-471d-b7b1-924e49b0d619"), TypeId = orgTypeId,    Name = "KF",     Description = "Kommunalt foretak" },
-            new EntityVariant() { Id = Guid.Parse("0c31bb8f-587a-416b-a3cd-980bb73c5612"), TypeId = orgTypeId,    Name = "AAFY",   Description = "Underenhet til ikkje-næringsdrivande" },
-            new EntityVariant() { Id = Guid.Parse("b3433097-38b9-4a47-bd50-a4bb794cab3d"), TypeId = orgTypeId,    Name = "DA",     Description = "Ansvarleg selskap med delt ansvar" },
-            new EntityVariant() { Id = Guid.Parse("4effb14f-8a1f-4272-aefb-b92ee302050f"), TypeId = orgTypeId,    Name = "OPMV",   Description = "Særskild oppdelt eining, jf. mval. § 2-2" },
-            new EntityVariant() { Id = Guid.Parse("4f6c04d2-7223-41cc-8135-bb91d79ed311"), TypeId = orgTypeId,    Name = "ORGL",   Description = "Organisasjonsledd" },
-            new EntityVariant() { Id = Guid.Parse("28157281-cc8f-46e0-9e2a-c20cb3b72930"), TypeId = orgTypeId,    Name = "STAT",   Description = "Staten" },
-            new EntityVariant() { Id = Guid.Parse("d5b0abc8-22e7-44bb-bb55-c33bd6d7df4d"), TypeId = orgTypeId,    Name = "SF",     Description = "Statsforetak" },
-            new EntityVariant() { Id = Guid.Parse("3aded080-d0d4-4893-8d30-c45dff4d7656"), TypeId = orgTypeId,    Name = "PRE",    Description = "Partrederi" },
-            new EntityVariant() { Id = Guid.Parse("7c0ae1b2-2fa9-4266-8911-c4cb82c1489b"), TypeId = orgTypeId,    Name = "BRL",    Description = "Borettslag" },
-            new EntityVariant() { Id = Guid.Parse("ed82281c-a5a1-4a28-9046-c70d95ce4658"), TypeId = orgTypeId,    Name = "KOMM",   Description = "Kommune" },
-            new EntityVariant() { Id = Guid.Parse("ecd6e878-9121-43e6-aec0-c74b562cd3da"), TypeId = orgTypeId,    Name = "FLI",    Description = "Forening/lag/innretting" },
-            new EntityVariant() { Id = Guid.Parse("80acaf52-3bf5-48c7-ab79-cb6f141a5b6f"), TypeId = orgTypeId,    Name = "SPA",    Description = "Sparebank" },
-            new EntityVariant() { Id = Guid.Parse("ca45ed3a-41b3-4d2b-add9-db0d41a4e42b"), TypeId = orgTypeId,    Name = "ASA",    Description = "Allmennaksjeselskap" },
-            new EntityVariant() { Id = Guid.Parse("1e2e44c0-e5e6-4962-8beb-e0ce16760a04"), TypeId = orgTypeId,    Name = "ESEK",   Description = "Eigarseksjonssameie" },
-            new EntityVariant() { Id = Guid.Parse("d78400f0-27d9-488a-886c-e264cc5c77ba"), TypeId = orgTypeId,    Name = "ENK",    Description = "Enkeltpersonforetak" },
-            new EntityVariant() { Id = Guid.Parse("6b798668-a98d-49f2-a6d9-e391bad99fb2"), TypeId = orgTypeId,    Name = "FKF",    Description = "Fylkeskommunalt foretak" },
-            new EntityVariant() { Id = Guid.Parse("7b43c6c2-e8ce-4f63-bb46-e4eb830fa222"), TypeId = orgTypeId,    Name = "KIRK",   Description = "Den norske kyrkja" },
-            new EntityVariant() { Id = Guid.Parse("1f1e3720-b8a8-490e-8304-e81da21e3d3b"), TypeId = orgTypeId,    Name = "BEDR",   Description = "Underenhet til næringsdrivande og offentleg forvaltning" },
-            new EntityVariant() { Id = Guid.Parse("d7208d54-067d-4b5c-a906-f0da3d3de0f1"), TypeId = orgTypeId,    Name = "KBO",    Description = "Konkursbo" },
-            new EntityVariant() { Id = Guid.Parse("ea460099-515f-4e54-88d8-fbe53a807276"), TypeId = orgTypeId,    Name = "BA",     Description = "Selskap med avgrensa ansvar" },
-            new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId,   Name = "PERS",   Description = "Person" },
-            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId, Name = "System", Description = "System" },
-            new EntityVariant() { Id = Guid.Parse("03D08113-40D0-48BD-85B6-BD4430CCC182"), TypeId = persTypeId, Name = "SI", Description = "Sjølvidentifisert brukar" },
-            new EntityVariant() { Id = Guid.Parse("CBE2834D-3DB0-4A14-BAA2-D32DE004D6D7"), TypeId = internalTypeId, Name = "Standard", Description = "Standard intern entitet" },
+            new EntityVariant() { Id = Guid.Parse("d786bc0e-8e9e-4116-bfc2-0344207c9127"), TypeId = orgTypeId,      Name = "SAM",            Description = "Tingsrettslig sameie" },
+            new EntityVariant() { Id = Guid.Parse("d0a08401-5ae0-4da9-a79a-1113a7746b60"), TypeId = orgTypeId,      Name = "VPFO",           Description = "Verdipapirfond" },
+            new EntityVariant() { Id = Guid.Parse("c161a605-3c72-40f2-8a5a-15e57e49638c"), TypeId = orgTypeId,      Name = "UTLA",           Description = "Utanlandsk eining" },
+            new EntityVariant() { Id = Guid.Parse("752f87dc-b04f-42cb-becd-173935ec6164"), TypeId = orgTypeId,      Name = "BO",             Description = "Andre bo" },
+            new EntityVariant() { Id = Guid.Parse("263762ec-54fc-4eae-b7a1-17e92eea9a5c"), TypeId = orgTypeId,      Name = "AS",             Description = "Aksjeselskap" },
+            new EntityVariant() { Id = Guid.Parse("6b2449e7-af5a-4c4e-b475-1b75998ba804"), TypeId = orgTypeId,      Name = "PK",             Description = "Pensjonskasse" },
+            new EntityVariant() { Id = Guid.Parse("ed5d05b6-588c-40fa-8885-2bd36f75ac34"), TypeId = orgTypeId,      Name = "PERS",           Description = "Andre enkeltpersonar som registrerast i tilknytta register" },
+            new EntityVariant() { Id = Guid.Parse("e0444411-a021-4774-854c-2ed876ffd64e"), TypeId = orgTypeId,      Name = "EOFG",           Description = "Europeisk økonomisk foretaksgruppe" },
+            new EntityVariant() { Id = Guid.Parse("441a2876-f15f-4007-9e2e-3d25acbd98ff"), TypeId = orgTypeId,      Name = "SE",             Description = "Europeisk selskap" },
+            new EntityVariant() { Id = Guid.Parse("3d5a890a-51aa-4e8a-b53d-3ec4111fe9e9"), TypeId = orgTypeId,      Name = "TVAM",           Description = "Tvangsregistrert for MVA" },
+            new EntityVariant() { Id = Guid.Parse("e5d4a90e-948a-4c61-965a-43dbbd0efddb"), TypeId = orgTypeId,      Name = "GFS",            Description = "Gjensidig forsikringsselskap" },
+            new EntityVariant() { Id = Guid.Parse("a581992e-c9dd-4250-8a9e-4e91d9b55424"), TypeId = orgTypeId,      Name = "FYLK",           Description = "Fylkeskommune" },
+            new EntityVariant() { Id = Guid.Parse("ab5013e9-4210-4ab3-9fc2-554fd78a1b03"), TypeId = orgTypeId,      Name = "IKJP",           Description = "Andre ikkje-juridiske personar" },
+            new EntityVariant() { Id = Guid.Parse("a90417b4-5fa9-4a01-bfd0-57a1069a000c"), TypeId = orgTypeId,      Name = "NUF",            Description = "Norskregistrert utanlandsk foretak" },
+            new EntityVariant() { Id = Guid.Parse("fca69e4d-453c-4404-b057-5e188c603f4b"), TypeId = orgTypeId,      Name = "ANS",            Description = "Ansvarleg selskap med solidarisk ansvar" },
+            new EntityVariant() { Id = Guid.Parse("64b05309-7b6e-40c8-bd29-62d8fa0bd5ec"), TypeId = orgTypeId,      Name = "KS",             Description = "Kommandittselskap" },
+            new EntityVariant() { Id = Guid.Parse("90b3eb3b-87cb-4ec3-bc44-65630cd02a67"), TypeId = orgTypeId,      Name = "SÆR",            Description = "Annet foretak i følgje særskild lov" },
+            new EntityVariant() { Id = Guid.Parse("d0648c3e-1567-48dc-a7cf-6837653dbc12"), TypeId = orgTypeId,      Name = "IKS",            Description = "Interkommunalt selskap" },
+            new EntityVariant() { Id = Guid.Parse("9d80264a-b968-45f8-b740-6a283cbc06ad"), TypeId = orgTypeId,      Name = "STI",            Description = "Stiftelse" },
+            new EntityVariant() { Id = Guid.Parse("8aa09ac2-dd61-492f-9613-6fc0558ab6fb"), TypeId = orgTypeId,      Name = "BBL",            Description = "Boligbyggelag" },
+            new EntityVariant() { Id = Guid.Parse("e9b021a9-b257-42c0-8460-717a95c883f6"), TypeId = orgTypeId,      Name = "KTRF",           Description = "Kontorfellesskap" },
+            new EntityVariant() { Id = Guid.Parse("2587990f-b036-4a6b-a7d9-815853be1382"), TypeId = orgTypeId,      Name = "ANNA",           Description = "Annan juridisk person" },
+            new EntityVariant() { Id = Guid.Parse("7d356f18-2f72-49b5-a6f2-83d7c0871991"), TypeId = orgTypeId,      Name = "SA",             Description = "Samvirkeforetak" },
+            new EntityVariant() { Id = Guid.Parse("e57cac52-e401-4c0f-a1cf-8bb4628fe671"), TypeId = orgTypeId,      Name = "ADOS",           Description = "Administrativ eining - offentleg sektor" },
+            new EntityVariant() { Id = Guid.Parse("3ae468d4-ea92-471d-b7b1-924e49b0d619"), TypeId = orgTypeId,      Name = "KF",             Description = "Kommunalt foretak" },
+            new EntityVariant() { Id = Guid.Parse("0c31bb8f-587a-416b-a3cd-980bb73c5612"), TypeId = orgTypeId,      Name = "AAFY",           Description = "Underenhet til ikkje-næringsdrivande" },
+            new EntityVariant() { Id = Guid.Parse("b3433097-38b9-4a47-bd50-a4bb794cab3d"), TypeId = orgTypeId,      Name = "DA",             Description = "Ansvarleg selskap med delt ansvar" },
+            new EntityVariant() { Id = Guid.Parse("4effb14f-8a1f-4272-aefb-b92ee302050f"), TypeId = orgTypeId,      Name = "OPMV",           Description = "Særskild oppdelt eining, jf. mval. § 2-2" },
+            new EntityVariant() { Id = Guid.Parse("4f6c04d2-7223-41cc-8135-bb91d79ed311"), TypeId = orgTypeId,      Name = "ORGL",           Description = "Organisasjonsledd" },
+            new EntityVariant() { Id = Guid.Parse("28157281-cc8f-46e0-9e2a-c20cb3b72930"), TypeId = orgTypeId,      Name = "STAT",           Description = "Staten" },
+            new EntityVariant() { Id = Guid.Parse("d5b0abc8-22e7-44bb-bb55-c33bd6d7df4d"), TypeId = orgTypeId,      Name = "SF",             Description = "Statsforetak" },
+            new EntityVariant() { Id = Guid.Parse("3aded080-d0d4-4893-8d30-c45dff4d7656"), TypeId = orgTypeId,      Name = "PRE",            Description = "Partrederi" },
+            new EntityVariant() { Id = Guid.Parse("7c0ae1b2-2fa9-4266-8911-c4cb82c1489b"), TypeId = orgTypeId,      Name = "BRL",            Description = "Borettslag" },
+            new EntityVariant() { Id = Guid.Parse("ed82281c-a5a1-4a28-9046-c70d95ce4658"), TypeId = orgTypeId,      Name = "KOMM",           Description = "Kommune" },
+            new EntityVariant() { Id = Guid.Parse("ecd6e878-9121-43e6-aec0-c74b562cd3da"), TypeId = orgTypeId,      Name = "FLI",            Description = "Forening/lag/innretting" },
+            new EntityVariant() { Id = Guid.Parse("80acaf52-3bf5-48c7-ab79-cb6f141a5b6f"), TypeId = orgTypeId,      Name = "SPA",            Description = "Sparebank" },
+            new EntityVariant() { Id = Guid.Parse("ca45ed3a-41b3-4d2b-add9-db0d41a4e42b"), TypeId = orgTypeId,      Name = "ASA",            Description = "Allmennaksjeselskap" },
+            new EntityVariant() { Id = Guid.Parse("1e2e44c0-e5e6-4962-8beb-e0ce16760a04"), TypeId = orgTypeId,      Name = "ESEK",           Description = "Eigarseksjonssameie" },
+            new EntityVariant() { Id = Guid.Parse("d78400f0-27d9-488a-886c-e264cc5c77ba"), TypeId = orgTypeId,      Name = "ENK",            Description = "Enkeltpersonforetak" },
+            new EntityVariant() { Id = Guid.Parse("6b798668-a98d-49f2-a6d9-e391bad99fb2"), TypeId = orgTypeId,      Name = "FKF",            Description = "Fylkeskommunalt foretak" },
+            new EntityVariant() { Id = Guid.Parse("7b43c6c2-e8ce-4f63-bb46-e4eb830fa222"), TypeId = orgTypeId,      Name = "KIRK",           Description = "Den norske kyrkja" },
+            new EntityVariant() { Id = Guid.Parse("1f1e3720-b8a8-490e-8304-e81da21e3d3b"), TypeId = orgTypeId,      Name = "BEDR",           Description = "Underenhet til næringsdrivande og offentleg forvaltning" },
+            new EntityVariant() { Id = Guid.Parse("d7208d54-067d-4b5c-a906-f0da3d3de0f1"), TypeId = orgTypeId,      Name = "KBO",            Description = "Konkursbo" },
+            new EntityVariant() { Id = Guid.Parse("ea460099-515f-4e54-88d8-fbe53a807276"), TypeId = orgTypeId,      Name = "BA",             Description = "Selskap med avgrensa ansvar" },
+            new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = persTypeId,     Name = "PERS",           Description = "Person" },
+            new EntityVariant() { Id = Guid.Parse("8CA2FFDB-B4A9-4C64-8A9A-ED0F8DD722A3"), TypeId = systemTypeId,   Name = "AgentSystem",    Description = "AgentSystem" },
+            new EntityVariant() { Id = Guid.Parse("f948baa3-8f6b-4790-a35c-85064c1b7f9b"), TypeId = systemTypeId,   Name = "StandardSystem", Description = "StandardSystem" },
+            new EntityVariant() { Id = Guid.Parse("03D08113-40D0-48BD-85B6-BD4430CCC182"), TypeId = persTypeId,     Name = "SI",             Description = "Sjølvidentifisert brukar" },
+            new EntityVariant() { Id = Guid.Parse("CBE2834D-3DB0-4A14-BAA2-D32DE004D6D7"), TypeId = internalTypeId, Name = "Standard",       Description = "Standard intern entitet" },
         };
 
         foreach (var item in entityVariants)
@@ -450,6 +453,8 @@ public class DbDataMigrationService(
             new Entity() { Id = AuditDefaults.RegisterImportSystem, Name = "RegisterImportSystem", RefId = "sys-register-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
             new Entity() { Id = AuditDefaults.ResourceRegistryImportSystem, Name = nameof(AuditDefaults.ResourceRegistryImportSystem), RefId = "sys-resource-register-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
             new Entity() { Id = AuditDefaults.EnduserApi, Name = "EnduserApi", RefId = "accessmgmt-enduser-api", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            new Entity() { Id = AuditDefaults.InternalApi, Name = "InternalApi", RefId = "accessmgmt-internal-api", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
+            new Entity() { Id = AuditDefaults.InternalApiImportSystem, Name = nameof(AuditDefaults.InternalApiImportSystem), RefId = "sys-internal-api-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
             new Entity() { Id = AuditDefaults.Altinn2RoleImportSystem, Name = "Altinn2ClientImportSystem", RefId = "sys-altinn2-client-import-system", ParentId = null, TypeId = internalTypeId, VariantId = internalVariantId },
         };
 
@@ -891,7 +896,8 @@ public class DbDataMigrationService(
 
         var legacyCodes = new List<RoleLookup>
         {
-            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-ados").Id, Key = "LegacyCode", Value = "ADOS" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "administrativ-enhet-offentlig-sektor").Id, Key = "LegacyCode", Value = "ADOS" },
+            new RoleLookup() { RoleId = roles.First(t => t.Code == "kontaktperson-ados").Id, Key = "LegacyCode", Value = "KEMN" },
             new RoleLookup() { RoleId = roles.First(t => t.Code == "nestleder").Id, Key = "LegacyCode", Value = "NEST" },
             new RoleLookup() { RoleId = roles.First(t => t.Code == "kontorfelleskapmedlem").Id, Key = "LegacyCode", Value = "KTRF" },
             new RoleLookup() { RoleId = roles.First(t => t.Code == "organisasjonsledd-offentlig-sektor").Id, Key = "LegacyCode", Value = "ORGL" },
@@ -1837,6 +1843,7 @@ public class DbDataMigrationService(
         var roleBest = roles["urn:altinn:external-role:ccr:bestyrende-reder"];
         var roleBobe = roles["urn:altinn:external-role:ccr:bostyrer"];
         var roleKnuf = roles["urn:altinn:external-role:ccr:kontaktperson-nuf"];
+        var roleHadm = roles["urn:altinn:role:hovedadministrator"];
 
         var packageKA = packages["urn:altinn:accesspackage:klientadministrator"];
         var packageTS = packages["urn:altinn:accesspackage:tilgangsstyrer"];
@@ -1854,6 +1861,7 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roleKomp, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBest, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleHadm, PackageId = packageKA, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roleDagl, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleLede, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1864,13 +1872,14 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roleBest, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleKnuf, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleHadm, PackageId = packageTS, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roleDagl, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleLede, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleInnh, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleDtso, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleDtpr, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleBobe, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBobe, PackageId = packageHA, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roleDagl, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleLede, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1881,16 +1890,17 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roleBest, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleBobe, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleKnuf, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleHadm, PackageId = packageMPA, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-med-signeringsrettighet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-uten-signeringsrettighet"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-lonn"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-med-signeringsrettighet"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-uten-signeringsrettighet"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:regnskapsforer"], PackageId = packages["urn:altinn:accesspackage:regnskapsforer-lonn"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
 
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:revisor"], PackageId = packages["urn:altinn:accesspackage:ansvarlig-revisor"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:revisor"], PackageId = packages["urn:altinn:accesspackage:revisormedarbeider"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:revisor"], PackageId = packages["urn:altinn:accesspackage:ansvarlig-revisor"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:revisor"], PackageId = packages["urn:altinn:accesspackage:revisormedarbeider"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
 
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["ESEK"], CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["BRL"], CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["ESEK"], CanDelegate = false, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["BRL"], CanDelegate = false, HasAccess = true },
 
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:konkursbo-lesetilgang"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:konkursbo-skrivetilgang"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
