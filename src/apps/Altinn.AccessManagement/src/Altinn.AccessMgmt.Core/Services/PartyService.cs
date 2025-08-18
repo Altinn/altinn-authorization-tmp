@@ -8,7 +8,7 @@ using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 
-namespace Altinn.AccessMgmt.Core.Services;
+namespace Altinn.AccessMgmt.Persistence.Services;
 
 /// <inheritdoc />
 public class PartyService(AppDbContext dbContext, DtoConverter dtoConverter) : INewPartyService
