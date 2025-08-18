@@ -1,11 +1,8 @@
-using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Models.Party;
-using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Persistence.Models;
-using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.AccessMgmt.Persistence.Services.Contracts;
-using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.AccessMgmt.Core.Errors;
+using Altinn.AccessMgmt.Core.Models.Party;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.Authorization.ProblemDetails;
+using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
