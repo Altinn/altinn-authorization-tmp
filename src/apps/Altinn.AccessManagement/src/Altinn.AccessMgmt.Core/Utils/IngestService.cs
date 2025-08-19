@@ -3,16 +3,16 @@ using System.Reflection;
 using System.Text;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.Authorization.Host.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Npgsql;
 using NpgsqlTypes;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Utils;
 
-public class NewIngestService(IDbConnection dbConnection, AppDbContext dbContext) : INewIngestService
+public class IngestService(IAltinnDatabase altinnDb, AppDbContext dbContext) : IIngestService
 {
-    public NpgsqlConnection DbConnection { get; set; } = (NpgsqlConnection)dbConnection;
+    public IAltinnDatabase DbConnection { get; set; } = altinnDb;
 
     public async Task<int> IngestData<T>(List<T> data, CancellationToken cancellationToken = default)
     {
@@ -122,7 +122,7 @@ public class NewIngestService(IDbConnection dbConnection, AppDbContext dbContext
 
     private async Task<int> WriteToIngest<T>(List<T> data, List<IngestColumnDefinition> ingestColumns, string tableName, CancellationToken cancellationToken = default)
     {
-        using var conn = new NpgsqlConnection(DbConnection.ConnectionString);
+        using var conn = DbConnection.CreatePgsqlConnection(SourceType.Migration);
         if (conn.State != ConnectionState.Open)
         {
             conn.Open();
@@ -200,7 +200,7 @@ public class NewIngestService(IDbConnection dbConnection, AppDbContext dbContext
 /// <summary>
 /// Ingest data service
 /// </summary>
-public interface INewIngestService
+public interface IIngestService
 {
     /// <summary>
     /// Ingest data
