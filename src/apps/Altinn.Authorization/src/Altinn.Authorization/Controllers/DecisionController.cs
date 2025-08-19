@@ -118,29 +118,29 @@ namespace Altinn.Platform.Authorization.Controllers
                 {
                     return await AuthorizeXmlRequest(model, cancellationToken);
                 }
-                }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "// DecisionController // Decision // Unexpected Exception");
+
+                XacmlContextResult result = new XacmlContextResult(XacmlContextDecision.Indeterminate)
                 {
-                    _logger.LogError(ex, "// DecisionController // Decision // Unexpected Exception");
+                    Status = new XacmlContextStatus(XacmlContextStatusCode.SyntaxError)
+                };
 
-                    XacmlContextResult result = new XacmlContextResult(XacmlContextDecision.Indeterminate)
-                    {
-                        Status = new XacmlContextStatus(XacmlContextStatusCode.SyntaxError)
-                    };
+                XacmlContextResponse xacmlContextResponse = new XacmlContextResponse(result);
 
-                    XacmlContextResponse xacmlContextResponse = new XacmlContextResponse(result);
-
-                    if (Request.ContentType.Contains("application/json"))
-                    {
-                        XacmlJsonResponse jsonResult = XacmlJsonXmlConverter.ConvertResponse(xacmlContextResponse);
-                        return Ok(jsonResult);
-                    }
-                    else
-                    {
-                        return CreateResponse(xacmlContextResponse);
-                    }
+                if (Request.ContentType.Contains("application/json"))
+                {
+                    XacmlJsonResponse jsonResult = XacmlJsonXmlConverter.ConvertResponse(xacmlContextResponse);
+                    return Ok(jsonResult);
+                }
+                else
+                {
+                    return CreateResponse(xacmlContextResponse);
                 }
             }
+        }
 
         /// <summary>
         /// External endpoint for autorization 
@@ -336,7 +336,7 @@ namespace Altinn.Platform.Authorization.Controllers
             {
                 await _eventLog.CreateAuthorizationEvent(_featureManager, decisionRequest, HttpContext, finalResponse, cancellationToken);
             }
-            
+
             return finalResponse;
         }
 
@@ -412,7 +412,7 @@ namespace Altinn.Platform.Authorization.Controllers
                     Status = new XacmlContextStatus(XacmlContextStatusCode.MissingAttribute) { StatusMessage = "Request not complete for authorization based on delegations." },
                 });
             }
-            
+
             // Look up delegations from (cached) AccessManagement PIP API
             IEnumerable<DelegationChangeExternal> delegations = new List<DelegationChangeExternal>();
             if (IsTypeApp(resourceAttributes))
