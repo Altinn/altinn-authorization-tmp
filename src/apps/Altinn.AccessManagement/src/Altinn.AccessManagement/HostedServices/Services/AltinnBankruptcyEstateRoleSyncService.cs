@@ -83,7 +83,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                             ChangedAt = item.DelegationChangeDateTime ?? DateTime.UtcNow,
                         };
 
-                        //TODO: Fix the actual work of BAnkruptcyEstate delegations
+                        // TODO: Fix the actual work of BankruptcyEstate delegations
                         /*
                         string packageUrn = GetClientPackageFromRoleTypeCode(item.RoleTypeCode, cancellationToken);
 
