@@ -1,20 +1,21 @@
 using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Models.Party;
-using Altinn.AccessMgmt.Persistence.Core.Models;
-using Altinn.AccessMgmt.Persistence.Models;
-using Altinn.AccessMgmt.Persistence.Services.Contracts;
-using Altinn.AccessMgmt.Persistence.Services.Models;
-using Altinn.Authorization.ProblemDetails;
+using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.Party;
+using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public class PartyService(AppDbContext dbContext, DtoConverter dtoConverter) : IPartyService
+public class PartyService(AppDbContext dbContext, DtoConverter dtoConverter, AuditValues auditValues) : IPartyService
 {
     /// <inheritdoc />
-    public async Task<Result<AddPartyResultDto>> AddParty(PartyBaseInternal party, ChangeRequestOptions options, CancellationToken cancellationToken = default)
+    public async Task<Result<AddPartyResultDto>> AddParty(PartyBaseInternal party, CancellationToken cancellationToken = default)
     {
         AddPartyResultDto result = new() { PartyUuid = party.PartyUuid, PartyCreated = false };
 
@@ -58,6 +59,7 @@ public class PartyService(AppDbContext dbContext, DtoConverter dtoConverter) : I
                 RefId = party.PartyUuid.ToString()
             };
 
+            dbContext.Database.SetAuditSession(auditValues);
             dbContext.Entities.Add(entity);
             var res = await dbContext.SaveChangesAsync(cancellationToken);
 
