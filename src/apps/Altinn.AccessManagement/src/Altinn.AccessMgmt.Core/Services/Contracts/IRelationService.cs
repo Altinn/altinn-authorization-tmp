@@ -57,11 +57,6 @@ public interface IRelationService
     Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Get list of packages with for a party, where you have permission to assign the packages to others
-    /// </summary>
-    Task<IEnumerable<PackageDelegationCheck>> GetAssignablePackagePermissions(Guid partyId, Guid fromId, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Get list of packages with a list of parties that have this permission
     /// </summary>
     Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, CancellationToken cancellationToken = default);

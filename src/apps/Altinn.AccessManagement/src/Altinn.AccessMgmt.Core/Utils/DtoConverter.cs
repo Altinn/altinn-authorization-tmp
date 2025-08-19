@@ -7,7 +7,7 @@ namespace Altinn.AccessMgmt.Core.Utils;
 ConnectionService => Deprecated 
 */
 
-public class DtoConverter
+public partial class DtoConverter
 {
     public RoleDto Convert(Role obj)
     {
