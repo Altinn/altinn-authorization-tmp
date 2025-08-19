@@ -104,11 +104,10 @@ function addEnvAndTtlToTokenOptions(tokenOptions, env) {
  *    ssn: '12345678901',
  *    appOwner: '12345678901'
  * }
- * @param {number} [iteration=0] - The iteration number for the token generation process.
  * @param {string} [env='yt01'] - The environment for which the token is being generated.
  * @returns {Promise} - A promise that resolves to the fetched token.
  */
-export function getEnterpriseToken(tokenOptions, iteration=0, env='yt01') {  
+export function getEnterpriseToken(tokenOptions, env='yt01') {  
     const url = new URL(`https://altinn-testtools-token-generator.azurewebsites.net/api/GetEnterpriseToken`);
     let extendedOptions = addEnvAndTtlToTokenOptions(tokenOptions, env);
     for (const key in extendedOptions) {
@@ -116,7 +115,7 @@ export function getEnterpriseToken(tokenOptions, iteration=0, env='yt01') {
             url.searchParams.append(key, extendedOptions[key]);
         }
     }
-    return fetchToken(url.toString(), extendedOptions, `enterprise iteration:${iteration})`);
+    return fetchToken(url.toString(), extendedOptions, `enterprise`);
 }
 
 export function getPersonalToken(tokenOptions, env='yt01') {

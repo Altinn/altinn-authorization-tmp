@@ -1,8 +1,11 @@
 const testBaseUrl = "https://platform.at22.altinn.cloud/authorization/";
+const stagingBaseUrl = "https://platform.tt02.altinn.no/authorization/";
 const yt01BaseUrl = "https://platform.yt01.altinn.cloud/authorization/";
-const testAuthenticationBaseUrl = "https://platform.yt01.altinn.cloud/authentication/"
+const testAuthenticationBaseUrl = "https://platform.at22.altinn.cloud/authentication/"
+const stagingAuthenticationBaseUrl = "https://platform.tt02.altinn.no/authentication/";
 const yt01AuthenticationBaseUrl = "https://platform.yt01.altinn.cloud/authentication/";
 const testAmBaseUrl = "https://platform.at22.altinn.cloud/accessmanagement/";
+const stagingAmBaseUrl = "https://platform.tt02.altinn.no/accessmanagement/";
 const yt01AmBaseUrl = "https://platform.yt01.altinn.cloud/accessmanagement/";
 
 const authorizeUrl = "api/v1/authorize";
@@ -19,26 +22,32 @@ export const urls = {
     v1: {
         authorizeUrl: {
             test: testBaseUrl + authorizeUrl,
+            staging: stagingBaseUrl + authorizeUrl,
             yt01: yt01BaseUrl + authorizeUrl
         },
         readSystemsUrl: {
             test: testAuthenticationBaseUrl + readSystemsUrl,
+            staging: stagingAuthenticationBaseUrl + readSystemsUrl,
             yt01: yt01AuthenticationBaseUrl + readSystemsUrl
         },
         systemUsersUrl: {
             test: testAuthenticationBaseUrl + systemUsersUrl,
+            staging: stagingAuthenticationBaseUrl + systemUsersUrl,
             yt01: yt01AuthenticationBaseUrl + systemUsersUrl
         },
         amDelegationUrl: {
             test: testAmBaseUrl + amDelegationUrl,
+            staging: stagingAmBaseUrl + amDelegationUrl,
             yt01: yt01AmBaseUrl + amDelegationUrl
         },
         authorizedPartiesUrl: {
             test: testAmBaseUrl + amAuthorizedPartiesUrl,
+            staging: stagingAmBaseUrl + amAuthorizedPartiesUrl,
             yt01: yt01AmBaseUrl + amAuthorizedPartiesUrl
         },
         consentUrl: {
             test: testAmBaseUrl + amConsentUrl,
+            staging: stagingAmBaseUrl + amConsentUrl,
             yt01: yt01AmBaseUrl + amConsentUrl
         },
         consentRequestUrl: {
@@ -63,4 +72,15 @@ export const getAmDelegationUrl = urls[__ENV.API_VERSION]["amDelegationUrl"][__E
 export const getAuthorizedPartiesUrl = urls[__ENV.API_VERSION]["authorizedPartiesUrl"][__ENV.API_ENVIRONMENT];
 export const postConsent = urls[__ENV.API_VERSION]["consentUrl"][__ENV.API_ENVIRONMENT];
 export const postConsentRequest = urls[__ENV.API_VERSION]["consentRequestUrl"][__ENV.API_ENVIRONMENT];
-export const tokenGeneratorEnv = __ENV.API_ENVIRONMENT == "yt01" ? "yt01" : "tt02"; // yt01 is the only environment that has a separate token generator environment
+export const tokenGeneratorEnv = (() => {
+  switch (__ENV.API_ENVIRONMENT) {
+    case 'yt01':
+      return 'yt01';
+    case 'staging':
+      return 'tt02';
+    case 'test':
+      return 'at22';
+    default:
+      return 'yt01';
+  }
+})();

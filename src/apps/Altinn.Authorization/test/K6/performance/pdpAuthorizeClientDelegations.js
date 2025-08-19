@@ -17,7 +17,7 @@ const systemUsers = new SharedArray('systemUsers', function () {
 export let options = buildOptions();
 
 export default function() {
-    const client = randomItem(systemUsers);
+    const client = systemUsers[0]; //randomItem(systemUsers);
     const resource = getResource(client);
     if (!resource) {
         console.log(`No resource for ${client.role}`);

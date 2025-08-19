@@ -9,6 +9,8 @@ const orgsDagl = new SharedArray('orgsDagl', function () {
   return readCsv(orgsDaglFilename);
 });
 
+const handledByOrg = "713431400"; // Altinn
+
 const requestlabel = "consentrequests";
 const approvelabel = "consentapprove";
 const labels = [requestlabel, approvelabel];
@@ -23,26 +25,28 @@ export default function() {
     } while (to === from);
     const id = requestConsent(from, to);
     console.log(id);
-    approveConsent(from, to, id);
+    //approveConsent(from, id);
     
 }
 
 function requestConsent(from, to) {
     const resource = "samtykke-performance-test";
     const token = getConsentToken(to.OrgNr);
+    //const token = getConsentToken(handledByOrg);
     const params = getAuthorizeParams(requestlabel, token);
     const fromOrg = `urn:altinn:organization:identifier-no:${from.OrgNr}`;
     const toOrg = `urn:altinn:organization:identifier-no:${to.OrgNr}`;
+    //const toPerson = `urn:altinn:person:identifier-no:${to.SSN}`;
     const fromPerson = `urn:altinn:person:identifier-no:${from.SSN}`;
+    const handledBy = `urn:altinn:organization:identifier-no:${handledByOrg}`;
     let fromSome = fromOrg;
     if (randomIntBetween(0, 1) === 0) {
         fromSome = fromPerson;
     }
-    const body = getBody(fromSome, toOrg, null, resource, "consent");
+    const body = getBody(fromSome, toOrg, null, null, resource, "consent");
     const url = new URL(postConsent);
     describe('POST Consent', () => {
         let r = http.post(url.toString(), JSON.stringify(body), params);
-        console.log(`Response: ${JSON.stringify(r.json(), null, 2)}`);
         expect(r.status, "response status").to.equal(201);
         expect(r, 'response').to.have.validJsonBody(); 
     });
@@ -53,6 +57,7 @@ function approveConsent(from, id) {
     const token = getApproveToken(from.UserId);
     const params = getAuthorizeParams(approvelabel, token);
     const body = { "language": "nb" };
+    console.log(`Approving consent request with id: ${id} for org: ${from.OrgNr}`);
     const url = new URL(`${postConsentRequest}${id}/approve`);
     console.log(url.toString());
     describe('POST Consent Approve', () => {
@@ -63,7 +68,7 @@ function approveConsent(from, id) {
     });
 }
 
-function getBody(from, to, delegator, resource, action) {
+function getBody(from, to, delegator, handledBy, resource, action) {
     const id = uuidv4();
     const body = {
         "id": id,
@@ -88,6 +93,9 @@ function getBody(from, to, delegator, resource, action) {
     }
     if (delegator) {
         body.requiredDelegator = delegator
+    }
+    if (handledBy) {
+        body.handledBy = handledBy;
     }
     return body;
 }

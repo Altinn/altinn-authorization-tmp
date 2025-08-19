@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { SharedArray } from "k6/data";
-import { getSystemsUrl, getSystemUsersUrl, getAmDelegationUrl } from "./common/config.js";
+import { getSystemsUrl, getSystemUsersUrl, getAmDelegationUrl, tokenGeneratorEnv } from "./common/config.js";
 import { expect, describe, randomItem, URL, getEnterpriseToken, getPersonalToken } from "./common/testimports.js";
 import { getParams, readCsv } from "./commonFunctions.js";
 
@@ -49,6 +49,28 @@ export default function (data) {
     }
 }
 
+function getSystemUsers() {
+  const systems = getSystems()
+  if (!systems) {
+      return [];
+  }
+  const systemUsers = [];
+  console.log(`Found ${systems.length} systems with access packages`);
+  var iterations = 0
+  for (const system of systems) {
+      const users = getSystemUsersForSystem(system.systemId, system.systemVendorOrgNumber);
+      systemUsers.push(...users);
+      iterations++;
+      if (iterations > 10) {
+          //break; // Limit to 10 systems to avoid too many requests
+      }
+  }
+  for (const systemUser of systemUsers) {
+      console.log(systemUser.id, systemUser.systemId, systemUser.reporteeOrgNo, systemUser.role);
+  }
+  return systemUsers;
+}
+
 function getSystems() {
     const params = getParams(getSystemsLabel);
     const url = getSystemsUrl
@@ -62,27 +84,8 @@ function getSystems() {
     if (!customer_list) {
         return null;
     }
-    customer_list = customer_list.filter(item => item.accessPackages.length > 0);
+    //customer_list = customer_list.filter(item => item?.accessPackages?.length > 0);
     return customer_list;
-}
-
-function getSystemUsers() {
-    const systems = getSystems()
-    if (!systems) {
-        return [];
-    }
-    const systemUsers = [];
-    console.log(`Found ${systems.length} systems with access packages`);
-    var iterations = 0
-    for (const system of systems) {
-        const users = getSystemUsersForSystem(system.systemId, system.systemVendorOrgNumber);
-        systemUsers.push(...users);
-        iterations++;
-        if (iterations > 10) {
-            break; // Limit to 10 systems to avoid too many requests
-        }
-    }
-    return systemUsers;
 }
 
 function getSystemUsersForSystem(systemId, systemOwner) {
@@ -96,6 +99,10 @@ function getSystemUsersForSystem(systemId, systemOwner) {
         expect(r, 'response').to.have.validJsonBody();
         systemUsers = r.json();
     });
+    if (!systemUsers || !systemUsers.data || systemUsers.data.length === 0) {
+        console.log(`No system users found for system ${systemId} with owner ${systemOwner}`);
+        return [];
+    }
     return systemUsers.data;
 }
 
@@ -143,7 +150,7 @@ function getSystemOwnerToken(systemOwner) {
         scopes: "altinn:authentication/systemregister.write altinn:authentication/systemuser.request.write altinn:authentication/systemuser.request.read altinn:authorization/authorize",
         orgno: systemOwner
     }
-    const token = getEnterpriseToken(tokenOptions);
+    const token = getEnterpriseToken(tokenOptions, tokenGeneratorEnv);
     return token;   
 }
 
@@ -152,7 +159,7 @@ function getPartyToken (systemOwner) {
         scopes: "altinn:register/partylookup.admin",
         orgno: systemOwner
     }
-    const token = getEnterpriseToken(tokenOptions);
+    const token = getEnterpriseToken(tokenOptions, tokenGeneratorEnv);
     return token;   
 }
 

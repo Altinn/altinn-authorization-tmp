@@ -14,6 +14,8 @@ on:
                 type: choice
                 options:
                 - yt01
+                - staging
+                - test
             tag:
                 description: 'tag the performance test'
                 required: true
@@ -96,6 +98,7 @@ jobs:
     - name: Setup k6
       uses: grafana/setup-k6-action@ffe7d7290dfa715e48c2ccc924d068444c94bde2
     - name: Run K6 tests (${{ inputs.testSuitePath }})
+      shell: bash
       run: |
         echo "Running k6 test suite ${{ inputs.testSuitePath }} with ${{ inputs.vus }} VUs for ${{ inputs.duration }} on ${{ inputs.parallelism }} parallelism"
         start_time=$(date +%s)
