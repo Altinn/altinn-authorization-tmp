@@ -4,7 +4,7 @@ using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 
-namespace Altinn.AccessMgmt.Persistence.Services;
+namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
 public class RelationService(AppDbContext dbContext, DtoConverter dtoConverter) : IRelationService
@@ -16,22 +16,22 @@ public class RelationService(AppDbContext dbContext, DtoConverter dtoConverter) 
 
         if (toId.HasValue)
         {
-            query.Where(t => t.ToId == toId.Value);
+            query = query.Where(t => t.ToId == toId.Value);
         }
 
         if (roleId.HasValue)
         {
-            query.Where(t => t.RoleId == roleId.Value);
+            query = query.Where(t => t.RoleId == roleId.Value);
         }
 
         if (packageId.HasValue)
         {
-            query.Where(t => t.PackageId == packageId.Value);
+            query = query.Where(t => t.PackageId == packageId.Value);
         }
 
         if (resourceId.HasValue)
         {
-            query.Where(t => t.ResourceId == resourceId.Value);
+            query = query.Where(t => t.ResourceId == resourceId.Value);
         }
 
         var res = await query.ToListAsync(cancellationToken);
@@ -46,12 +46,12 @@ public class RelationService(AppDbContext dbContext, DtoConverter dtoConverter) 
 
         if (toId.HasValue)
         {
-            query.Where(t => t.ToId == toId.Value);
+            query = query.Where(t => t.ToId == toId.Value);
         }
 
         if (roleId.HasValue)
         {
-            query.Where(t => t.RoleId == roleId.Value);
+            query = query.Where(t => t.RoleId == roleId.Value);
         }
 
         var res = await query.ToListAsync(cancellationToken);
@@ -66,22 +66,22 @@ public class RelationService(AppDbContext dbContext, DtoConverter dtoConverter) 
 
         if (fromId.HasValue)
         {
-            query.Where(t => t.FromId == fromId.Value);
+            query = query = query.Where(t => t.FromId == fromId.Value);
         }
 
         if (roleId.HasValue)
         {
-            query.Where(t => t.RoleId == roleId.Value);
+            query = query.Where(t => t.RoleId == roleId.Value);
         }
 
         if (packageId.HasValue)
         {
-            query.Where(t => t.PackageId == packageId.Value);
+            query = query.Where(t => t.PackageId == packageId.Value);
         }
 
         if (resourceId.HasValue)
         {
-            query.Where(t => t.ResourceId == resourceId.Value);
+            query = query.Where(t => t.ResourceId == resourceId.Value);
         }
 
         var res = await query.ToListAsync(cancellationToken);
@@ -96,12 +96,12 @@ public class RelationService(AppDbContext dbContext, DtoConverter dtoConverter) 
 
         if (fromId.HasValue)
         {
-            query.Where(t => t.FromId == fromId.Value);
+            query = query.Where(t => t.FromId == fromId.Value);
         }
 
         if (roleId.HasValue)
         {
-            query.Where(t => t.RoleId == roleId.Value);
+            query = query.Where(t => t.RoleId == roleId.Value);
         }
 
         var res = await query.ToListAsync(cancellationToken);
@@ -112,16 +112,16 @@ public class RelationService(AppDbContext dbContext, DtoConverter dtoConverter) 
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {
-        var q = dbContext.Relations.AsNoTracking().Where(t => t.ToId == partyId);
+        var q = dbContext.Relations.AsNoTracking().Include(t => t.Package).Where(t => t.ToId == partyId);
 
         if (fromId.HasValue)
         {
-            q.Where(t => t.FromId == fromId.Value);
+            q = q.Where(t => t.FromId == fromId.Value);
         }
 
         if (packageId.HasValue)
         {
-            q.Where(t => t.PackageId == packageId.Value);
+            q = q.Where(t => t.PackageId == packageId.Value);
         }
 
         var res = await q.ToListAsync(cancellationToken);
@@ -145,12 +145,12 @@ public class RelationService(AppDbContext dbContext, DtoConverter dtoConverter) 
 
         if (toId.HasValue)
         {
-            q.Where(t => t.ToId == toId.Value);
+            q = q.Where(t => t.ToId == toId.Value);
         }
 
         if (packageId.HasValue)
         {
-            q.Where(t => t.PackageId == packageId.Value);
+            q = q.Where(t => t.PackageId == packageId.Value);
         }
 
         var res = await q.ToListAsync(cancellationToken);
@@ -174,17 +174,17 @@ public class RelationService(AppDbContext dbContext, DtoConverter dtoConverter) 
 
         if (fromId.HasValue)
         {
-            q.Where(t => t.FromId == fromId.Value);
+            q = q.Where(t => t.FromId == fromId.Value);
         }
 
         if (packageId.HasValue)
         {
-            q.Where(t => t.PackageId == packageId.Value);
+            q = q.Where(t => t.PackageId == packageId.Value);
         }
 
         if (resourceId.HasValue)
         {
-            q.Where(t => t.ResourceId == resourceId.Value);
+            q = q.Where(t => t.ResourceId == resourceId.Value);
         }
 
         var res = await q.ToListAsync(cancellationToken);
@@ -208,17 +208,17 @@ public class RelationService(AppDbContext dbContext, DtoConverter dtoConverter) 
 
         if (toId.HasValue)
         {
-            q.Where(t => t.ToId == toId.Value);
+            q = q.Where(t => t.ToId == toId.Value);
         }
 
         if (packageId.HasValue)
         {
-            q.Where(t => t.PackageId == packageId.Value);
+            q = q.Where(t => t.PackageId == packageId.Value);
         }
 
         if (resourceId.HasValue)
         {
-            q.Where(t => t.ResourceId == resourceId.Value);
+            q = q.Where(t => t.ResourceId == resourceId.Value);
         }
 
         var res = await q.ToListAsync(cancellationToken);
