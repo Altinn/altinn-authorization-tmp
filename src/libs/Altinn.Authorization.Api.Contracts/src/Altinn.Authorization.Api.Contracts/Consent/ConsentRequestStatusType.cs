@@ -4,10 +4,10 @@ using System.Text.Json.Serialization;
 namespace Altinn.Authorization.Api.Contracts.Consent
 {
     /// <summary>
-    /// Enum for the type of consent event that has occurred.
+    /// Enum for the status of a consent request
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum ConsentRequestEventType
+    public enum ConsentRequestStatusType
     {
         [EnumMember(Value = "created")]
         Created = 0,

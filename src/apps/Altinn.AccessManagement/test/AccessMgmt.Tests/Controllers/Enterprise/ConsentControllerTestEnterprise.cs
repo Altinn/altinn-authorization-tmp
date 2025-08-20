@@ -105,6 +105,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestStatusType.Created, consentInfo.Status);
         }
 
         /// <summary>
@@ -171,6 +172,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("991825827")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestStatusType.Created, consentInfo.Status);
         }
 
         /// <summary>
@@ -251,6 +253,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Single(consentInfo2.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventType.Created, consentInfo2.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo2.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestStatusType.Created, consentInfo2.Status);
         }
 
         [Fact]
@@ -382,6 +385,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestStatusType.Created, consentInfo.Status);
 
             string getUrl = $"/accessmanagement/api/v1/enterprise/consentrequests/{consentInfo.Id}";
             HttpResponseMessage getResponse = await client.GetAsync(location);
@@ -399,6 +403,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventType.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestStatusType.Created, consentInfoFromGet.Status);
         }
 
         [Fact]
@@ -478,6 +483,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventType.Created, consentInfoFromGet.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfoFromGet.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestStatusType.Created, consentInfoFromGet.Status);
         }
 
         [Fact]
@@ -617,6 +623,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestStatusType.Created, consentInfo.Status);
         }
 
         /// <summary>
@@ -701,6 +708,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Single(consentInfo.ConsentRequestEvents);
             Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
             Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
+            Assert.Equal(ConsentRequestStatusType.Created, consentInfo.Status);
         }
 
         /// <summary>
