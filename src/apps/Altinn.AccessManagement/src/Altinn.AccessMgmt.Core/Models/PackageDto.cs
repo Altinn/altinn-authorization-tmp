@@ -46,23 +46,4 @@ public class PackageDto
     /// Gets or sets the collection of resources linked to the package.
     /// </summary>
     public IEnumerable<Resource> Resources { get; set; }
-
-    /// <summary>
-    /// Default constructor
-    /// </summary>
-    public PackageDto() { }
-
-    /// <summary>
-    /// Construct from Package
-    /// </summary>
-    /// <param name="package"><see cref="Package"/>Package</param>
-    public PackageDto(Package package)
-    {
-        Id = package.Id;
-        Name = package.Name;
-        Urn = package.Urn;
-        Description = package.Description;
-        IsDelegable = package.IsDelegable;
-        IsAssignable = package.IsAssignable;
-    }
 }

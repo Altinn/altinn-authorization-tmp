@@ -3,28 +3,11 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 
 namespace Altinn.AccessMgmt.Core.Utils;
 
-/*
-ConnectionService => Deprecated 
-*/
-
-public partial class DtoConverter
+/// <summary>
+/// Dto Mapping
+/// </summary>
+public partial class DtoMapper
 {
-    public RoleDto Convert(Role obj)
-    {
-        return new RoleDto()
-        {
-            Id = obj.Id,
-            Name = obj.Name,
-            Description = obj.Description,
-            Code = obj.Code,
-            IsKeyRole = obj.IsKeyRole,
-            Urn = obj.Urn,
-            Provider = obj.Provider,
-            LegacyRoleCode = null,
-            LegacyUrn = null
-        };
-    }
-
     public IEnumerable<RelationPackageDto> ExtractRelationPackageDtoToOthers(IEnumerable<Relation> res, bool includeSubConnections = false)
     {
         return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.To.Id).Select(relation => new RelationPackageDto()
@@ -56,8 +39,6 @@ public partial class DtoConverter
             Connections = new()
         });
     }
-
-
 
     public IEnumerable<RelationDto> ExtractRelationDtoToOthers(IEnumerable<Relation> res, bool includeSubConnections = false)
     {
@@ -114,8 +95,6 @@ public partial class DtoConverter
             Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.From.Id).ToList() : new()
         });
     }
-
-
 
     public CompactPermission ConvertToCompactPermission(Relation connection)
     {

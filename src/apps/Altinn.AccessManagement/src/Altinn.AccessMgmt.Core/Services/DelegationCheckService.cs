@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class DelegationCheckService(AppDbContext dbContext, DtoConverter dtoConverter) : IDelegationCheckService
+public class DelegationCheckService(AppDbContext dbContext) : IDelegationCheckService
 {
     /// <inheritdoc/>
     public async Task<IEnumerable<AccessPackageDto.Check>> GetAssignableAccessPackages(Guid toId, Guid fromId, IEnumerable<Guid> packageIds, CancellationToken cancellationToken)
@@ -17,7 +17,7 @@ public class DelegationCheckService(AppDbContext dbContext, DtoConverter dtoConv
 
         if (res is { } && res.Any())
         {
-            return dtoConverter.Convert(res);
+            return res.Select(DtoMapper.Convert);
         }
 
         return [];

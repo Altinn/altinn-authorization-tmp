@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public class RoleService(AppDbContext db, DtoConverter dtoConverter, AuditValues auditValues) : IRoleService
+public class RoleService(AppDbContext db, DtoMapper dtoConverter, AuditValues auditValues) : IRoleService
 {
     /// <inheritdoc />
     public async Task<RoleDto> GetById(Guid id, CancellationToken cancellationToken = default)
@@ -20,7 +20,7 @@ public class RoleService(AppDbContext db, DtoConverter dtoConverter, AuditValues
             return null;
         }
 
-        var roleDto = dtoConverter.Convert(role);
+        var roleDto = DtoMapper.Convert(role);
 
         await GetSingleLegacyRoleCodeAndUrn(roleDto, cancellationToken);
 
@@ -36,7 +36,7 @@ public class RoleService(AppDbContext db, DtoConverter dtoConverter, AuditValues
             return null;
         }
 
-        var roleDtos = roles.Select(dtoConverter.Convert);
+        var roleDtos = roles.Select(DtoMapper.Convert);
         return await GetLegacyRoleCodeAndUrn(roleDtos, cancellationToken);
     }
 
@@ -49,7 +49,7 @@ public class RoleService(AppDbContext db, DtoConverter dtoConverter, AuditValues
             return null;
         }
 
-        var roleDtos = roles.Select(dtoConverter.Convert);
+        var roleDtos = roles.Select(DtoMapper.Convert);
         return await GetLegacyRoleCodeAndUrn(roleDtos, cancellationToken);
     }
 
@@ -62,7 +62,7 @@ public class RoleService(AppDbContext db, DtoConverter dtoConverter, AuditValues
             return null;
         }
 
-        var roleDtos = roles.Select(dtoConverter.Convert);
+        var roleDtos = roles.Select(DtoMapper.Convert);
         return await GetLegacyRoleCodeAndUrn(roleDtos, cancellationToken);
     }
 
@@ -75,7 +75,7 @@ public class RoleService(AppDbContext db, DtoConverter dtoConverter, AuditValues
             return null;
         }
 
-        var roleDto = dtoConverter.Convert(res.Role);
+        var roleDto = DtoMapper.Convert(res.Role);
         await GetSingleLegacyRoleCodeAndUrn(roleDto, cancellationToken);
         return roleDto;
     }
@@ -106,13 +106,13 @@ public class RoleService(AppDbContext db, DtoConverter dtoConverter, AuditValues
             return null;
         }
 
-        var roleDto = dtoConverter.Convert(rolePackages.First().Role);
+        var roleDto = DtoMapper.Convert(rolePackages.First().Role);
         await GetSingleLegacyRoleCodeAndUrn(roleDto, cancellationToken);
 
         var rolePackageDtos = new List<RolePackageDto>();
         foreach (var rolePackage in rolePackages)
         {
-            var rolePackageDto = new RolePackageDto(rolePackage);
+            var rolePackageDto = DtoMapper.Convert(rolePackage);
             rolePackageDto.Role = roleDto;
             rolePackageDtos.Add(rolePackageDto);
         }

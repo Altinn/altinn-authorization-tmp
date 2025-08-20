@@ -11,8 +11,7 @@ namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
 public class PackageService(
-    AppDbContext db, 
-    DtoConverter dtoConverter,
+    AppDbContext db,
     ISearchCache<PackageDto> searchPackageCache
     ) : IPackageService
 {
@@ -74,11 +73,7 @@ public class PackageService(
         var result = new List<PackageDto>();
         foreach (var package in packages)
         {
-            result.Add(new PackageDto(package)
-            {
-                Area = areas.First(t => t.Id == package.AreaId),
-                Resources = await db.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken)
-            });
+            result.Add(DtoMapper.Convert(package, areas.First(t => t.Id == package.AreaId), await db.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken)));
         }
 
         searchPackageCache.SetData(result, TimeSpan.FromMinutes(5));
@@ -104,11 +99,7 @@ public class PackageService(
 
         var resources = await db.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken);
 
-        return new PackageDto(package)
-        {
-            Area = package.Area,
-            Resources = resources
-        };
+        return DtoMapper.Convert(package, package.Area, resources);
     }
 
     /// <inheritdoc/>
@@ -123,11 +114,7 @@ public class PackageService(
 
         var resources = await db.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken);
 
-        return new PackageDto(package)
-        {
-            Area = package.Area,
-            Resources = resources
-        };
+        return DtoMapper.Convert(package, package.Area, resources);
     }
 
     /// <inheritdoc/>
@@ -138,11 +125,7 @@ public class PackageService(
         var result = new List<PackageDto>();
         foreach (var package in packages)
         {
-            result.Add(new PackageDto(package)
-            {
-                Area = package.Area,
-                Resources = await db.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken)
-            });
+            result.Add(DtoMapper.Convert(package, package.Area, await db.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken)));
         }
 
         return result;
@@ -155,13 +138,13 @@ public class PackageService(
         var areas = await db.Areas.AsNoTracking().ToListAsync(cancellationToken);
         var packages = await db.Packages.AsNoTracking().ToListAsync(cancellationToken);
 
-        var result = groups.Select(t => ConvertToDto(t)).ToList();
+        var result = groups.Select(DtoMapper.Convert).ToList();
         foreach (var grp in result)
         {
-            grp.Areas = areas.Where(t => t.GroupId == grp.Id).Select(t => ConvertToDto(t)).ToList();
+            grp.Areas = areas.Where(t => t.GroupId == grp.Id).Select(DtoMapper.Convert).ToList();
             foreach (var area in grp.Areas)
             {
-                area.Packages = packages.Where(t => t.AreaId == area.Id).Select(t => new PackageDto(t)).ToList();
+                area.Packages = packages.Where(t => t.AreaId == area.Id).Select(DtoMapper.Convert).ToList();
             }
         }
 
@@ -197,32 +180,4 @@ public class PackageService(
     {
         return await db.PackageResources.AsNoTracking().Where(t => t.PackageId == packageId).Select(t => t.Resource).ToListAsync();
     }
-
-    #region Converters
-    private AreaGroupDto ConvertToDto(AreaGroup areaGroup)
-    {
-        return new AreaGroupDto()
-        {
-            Id = areaGroup.Id,
-            Name = areaGroup.Name,
-            Description = areaGroup.Description,
-            Type = areaGroup.EntityType.Name,
-            Urn = areaGroup.Urn,
-            Areas = new List<AreaDto>()
-        };
-    }
-
-    private AreaDto ConvertToDto(Area area)
-    {
-        return new AreaDto()
-        {
-            Id = area.Id,
-            Name = area.Name,
-            Urn = area.Urn,
-            Description = area.Description,
-            Icon = area.IconUrl,
-            Packages = new List<PackageDto>()
-        };
-    }
-    #endregion
 }

@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 
 namespace Altinn.AccessMgmt.Core.Models;
 
@@ -36,18 +37,4 @@ public class RolePackageDto
     /// CanDelegate
     /// </summary>
     public bool CanDelegate { get; set; }
-
-    /// <summary>
-    /// Construct from RolePackage
-    /// </summary>
-    /// <param name="rolePackage"><see cref="RolePackage"/>Role</param>
-    public RolePackageDto(RolePackage rolePackage)
-    {
-        Id = rolePackage.Id;
-        Role = new RoleDto(rolePackage.Role);
-        Package = new PackageDto(rolePackage.Package);
-        EntityVariant = rolePackage.EntityVariant;
-        HasAccess = rolePackage.HasAccess;
-        CanDelegate = rolePackage.CanDelegate;
-    }
 }

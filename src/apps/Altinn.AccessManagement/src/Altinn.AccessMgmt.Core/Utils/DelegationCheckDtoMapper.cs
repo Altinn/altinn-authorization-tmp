@@ -4,7 +4,7 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Utils;
 
-public partial class DtoConverter
+public partial class DtoMapper
 {
     public IEnumerable<AccessPackageDto.Check> Convert(IEnumerable<PackageDelegationCheck> packageDelegationCheck)
     {

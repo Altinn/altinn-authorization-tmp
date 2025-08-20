@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public class RelationService(AppDbContext dbContext, DtoConverter dtoConverter) : IRelationService
+public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : IRelationService
 {
     /// <inheritdoc />
     public async Task<IEnumerable<RelationPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)

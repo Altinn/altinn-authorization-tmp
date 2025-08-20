@@ -56,25 +56,4 @@ public class RoleDto
     /// Provider
     /// </summary>
     public Provider Provider { get; set; }
-
-    /// <summary>
-    /// Construct from Role
-    /// </summary>
-    /// <param name="role"><see cref="Role"/>Role</param>
-    public RoleDto(Role role)
-    {
-        Id = role.Id;
-        Name = role.Name;
-        Urn = role.Urn;
-        Code = role.Code;
-        Description = role.Description;
-        IsKeyRole = role.IsKeyRole;
-        LegacyRoleCode = null;
-        LegacyUrn = null;
-    }
-
-    /// <summary>
-    /// Construct from Role
-    /// </summary>
-    public RoleDto() { }
 }
