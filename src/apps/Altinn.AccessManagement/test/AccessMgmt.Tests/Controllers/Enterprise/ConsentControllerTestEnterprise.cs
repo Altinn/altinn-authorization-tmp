@@ -175,6 +175,65 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             Assert.Equal(ConsentRequestStatusType.Created, consentInfo.Status);
         }
 
+
+
+        /// <summary>
+        /// Test get consent. Expect a consent in response
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task CreateConsentRequestByOrg_InvalidUrl()
+        {
+            Guid requestID = Guid.CreateVersion7();
+            ConsentRequestDto consentRequest = new ConsentRequestDto
+            {
+                Id = requestID,
+                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
+                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
+                ValidTo = DateTimeOffset.UtcNow.AddDays(1),
+                ConsentRights = new List<ConsentRightDto>
+                {
+                    new ConsentRightDto
+                    {
+                        Action = new List<string> { "read" },
+                        Resource = new List<ConsentResourceAttributeDto>
+                        {
+                            new ConsentResourceAttributeDto
+                            {
+                                Type = "urn:altinn:resource",
+                                Value = "ttd_inntektsopplysninger"
+                            }
+                        },
+                        Metadata = new Dictionary<string, string>
+                        {
+                            { "INNTEKTSAAR", "ADSF" }
+                        }
+                    }
+                },
+                RequestMessage = new Dictionary<string, string>
+                {
+                    { "en", "Please approve this consent request" }
+                },
+                RedirectUrl = "hvddps://www.dnb.no"
+            };
+
+            HttpClient client = GetTestClient();
+            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            string token = PrincipalUtil.GetOrgToken(null, "991825827", "altinn:consentrequests.org");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            StringContent stringContent = new StringContent(JsonSerializer.Serialize(consentRequest, _jsonOptions), Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await client.PostAsync(url, stringContent);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.NotNull(responseContent);
+            AltinnValidationProblemDetails problemDetails = JsonSerializer.Deserialize<AltinnValidationProblemDetails>(responseContent, _jsonOptions);
+
+            Assert.Equal(StdProblemDescriptors.ErrorCodes.ValidationError, problemDetails.ErrorCode);
+            Assert.Single(problemDetails.Errors);
+            Assert.Equal(ValidationErrors.InvalidRedirectUrl.ErrorCode, problemDetails.Errors.ToList()[0].ErrorCode);
+        }
+
         /// <summary>
         /// Test get consent. Expect a consent in response
         /// </summary>
