@@ -161,5 +161,22 @@
       "partyuuid": "6662CC3A-810B-4533-AE44-40D6C42CB8EA"
     },
     "pakketoDelegate": "urn:altinn:accesspackage:reviorattesterer"
+  },
+  "internal_conn_org" : {
+    "org_type": "AS",
+    "name": "PATENT BERØMT TIGER AS",
+    "orgno": "312162504",
+    "partyuuid": "",
+    "dagligleder": {
+      "name": "REDELIG DIETT",
+      "pid": "27898999705",
+      "partyid": 99999999,
+      "userid": 99999999,
+      "partyuuid": ""
+    },
+    "systemuser": {
+      "partyuuid": ""
+    },
+    "package_to_delegate": "urn:altinn:accesspackage:skattegrunnlag"
   }
 }
