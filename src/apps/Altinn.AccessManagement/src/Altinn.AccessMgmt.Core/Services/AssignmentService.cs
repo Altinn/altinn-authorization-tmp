@@ -196,7 +196,7 @@ public class AssignmentService(AppDbContext db, AuditValues auditValues) : IAssi
         if (!hasPackage)
         {
             var roleMatches = await db.RolePackages.AsNoTracking().Where(t => t.PackageId == packageId && userAssignments.Select(t => t.RoleId).Distinct().Contains(t.RoleId)).ToListAsync(cancellationToken);
-            if (assignmentMatches != null && assignmentMatches.Any())
+            if (roleMatches != null && roleMatches.Any())
             {
                 hasPackage = true;
             }

@@ -82,11 +82,11 @@ public static class FuzzySearch
                     foreach (var word in words)
                     {
                         double jaroScore = JaroWinklerSimilarity(searchTerm, word.LowercaseContent);
-                        double levenshteinScore = 1.0 - LevenshteinDistance(searchTerm, word.LowercaseContent, fieldMaxDistance) / (double)Math.Max(searchTerm.Length, word.LowercaseContent.Length);
+                        double levenshteinScore = 1.0 - (LevenshteinDistance(searchTerm, word.LowercaseContent, fieldMaxDistance) / (double)Math.Max(searchTerm.Length, word.LowercaseContent.Length));
                         double trigramScore = TrigramSimilarity(searchTerm, word.LowercaseContent);
 
                         // Kombinert score med vekting
-                        double finalScore = jaroScore * JaroWeight + levenshteinScore * LevenshteinWeight + trigramScore * TrigramWeight;
+                        double finalScore = (jaroScore * JaroWeight) + (levenshteinScore * LevenshteinWeight) + (trigramScore * TrigramWeight);
                         bool isMatch = finalScore >= fieldThreshold;
 
                         if (isMatch)
@@ -213,9 +213,11 @@ public static class FuzzySearch
             return s1.Length;
         }
 
+        int beyond = (maxDistance == int.MaxValue) ? int.MaxValue : maxDistance + 1;
+
         if (Math.Abs(s1.Length - s2.Length) > maxDistance)
         {
-            return maxDistance + 1;
+            return beyond;
         }
 
         int[,] d = new int[s1.Length + 1, s2.Length + 1];
@@ -245,7 +247,7 @@ public static class FuzzySearch
 
             if (minRowValue > maxDistance)
             {
-                return maxDistance + 1;
+                return beyond;
             }
         }
 
