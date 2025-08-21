@@ -44,15 +44,14 @@ await app.RunAsync();
 
 async Task Init()
 {
-    if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
-    {
-        bool generateBasicData = await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbWithBasicData);
-        await app.UseAccessMgmtDb(generateBasicData);
-    }
-
     if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbEf))
     {
         await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
+    }
+    else if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
+    {
+        bool generateBasicData = await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbWithBasicData);
+        await app.UseAccessMgmtDb(generateBasicData);
     }
 }
 
