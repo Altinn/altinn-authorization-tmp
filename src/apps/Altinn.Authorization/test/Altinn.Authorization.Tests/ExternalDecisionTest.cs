@@ -276,6 +276,27 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         }
 
         /// <summary>
+        /// Scenario where systemuser has received delegation from the resource party for the resource. Should give Permit result.
+        /// </summary>
+        [Fact]
+        public async Task PDPExternal_Decision_SystemUserWithAppDelegation_MultipleObligationsBugFix_Permit()
+        {
+            string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
+            string testCase = "AltinnApps_SystemUserWithDelegation_Permit";
+            HttpClient client = GetTestClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act multiple times to ensure obligations is not cached multiple times
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, TestSetupUtil.CreateXacmlRequestExternal(testCase));
+            contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, TestSetupUtil.CreateXacmlRequestExternal(testCase));
+            contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, TestSetupUtil.CreateXacmlRequestExternal(testCase));
+
+            // Assert
+            Assert.True(contextResponse.Response[0].Obligations.Count() == 2, "Expected only the two instances of obligations from main app/resource policy in response");
+        }
+
+        /// <summary>
         /// Multi request scenario for 3 authorization checks in one request
         /// </summary>
         [Fact]
