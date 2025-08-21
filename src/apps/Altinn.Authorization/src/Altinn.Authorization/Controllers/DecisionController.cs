@@ -10,6 +10,7 @@ using Altinn.Authorization.Models;
 using Altinn.Authorization.Models.Register;
 using Altinn.Authorization.Models.ResourceRegistry;
 using Altinn.Authorization.ProblemDetails;
+using Altinn.Platform.Authorization.Configuration;
 using Altinn.Platform.Authorization.Constants;
 using Altinn.Platform.Authorization.Helpers;
 using Altinn.Platform.Authorization.ModelBinding;
@@ -52,6 +53,13 @@ namespace Altinn.Platform.Authorization.Controllers
         private readonly IMapper _mapper;
 
         private readonly SortedDictionary<string, AuthInfo> _appInstanceInfo = new();
+
+        private static JsonSerializerOptions jsonSerializerOptions = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = false,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DecisionController"/> class.
@@ -108,9 +116,11 @@ namespace Altinn.Platform.Authorization.Controllers
         [Route("authorization/api/v1/decision")]
         public async Task<ActionResult> Post([FromBody] XacmlRequestApiModel model, CancellationToken cancellationToken = default)
         {
+            bool isJson = Request.ContentType.Contains("application/json");
+
             try
             {
-                if (Request.ContentType.Contains("application/json"))
+                if (isJson)
                 {
                     return await AuthorizeJsonRequest(model, cancellationToken);
                 }
@@ -122,6 +132,13 @@ namespace Altinn.Platform.Authorization.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "// DecisionController // Decision // Unexpected Exception");
+
+                if (await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnError, cancellationToken))
+                {
+                    string modelString = DeserializeInput(model.BodyContent, isJson);
+                    string logString = isJson ? "DecisionController // Decision // JsonRequest content: {modelString}" : "DecisionController // Decision // XmlRequest content: {modelString}";
+                    _logger.LogError(logString, modelString);
+                }
 
                 XacmlContextResult result = new XacmlContextResult(XacmlContextDecision.Indeterminate)
                 {
@@ -159,6 +176,12 @@ namespace Altinn.Platform.Authorization.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "// DecisionController // External Decision // Unexpected Exception");
+
+                if (await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnError, cancellationToken))
+                {
+                    string jsonInputModel = JsonSerializer.Serialize(authorizationRequest, jsonSerializerOptions);
+                    _logger.LogError("DecisionController // Decision // Request content: {jsonInputModel}", jsonInputModel);
+                }
 
                 XacmlContextStatus status = new XacmlContextStatus(XacmlContextStatusCode.SyntaxError);
                 if (ex is ArgumentException)
@@ -271,11 +294,7 @@ namespace Altinn.Platform.Authorization.Controllers
 
         private async Task<ActionResult> AuthorizeJsonRequest(XacmlRequestApiModel model, CancellationToken cancellationToken = default)
         {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            XacmlJsonRequestRoot jsonRequest = JsonSerializer.Deserialize<XacmlJsonRequestRoot>(model.BodyContent, options);
+            XacmlJsonRequestRoot jsonRequest = JsonSerializer.Deserialize<XacmlJsonRequestRoot>(model.BodyContent, jsonSerializerOptions);
 
             XacmlJsonResponse jsonResponse = await Authorize(jsonRequest.Request, cancellationToken: cancellationToken);
 
@@ -378,6 +397,25 @@ namespace Altinn.Platform.Authorization.Controllers
             }
 
             return true;
+        }
+
+        private static string DeserializeInput(string input, bool isJson)
+        {
+            string result;
+            if (isJson)
+            {
+                XacmlJsonRequestRoot jsonRequest = JsonSerializer.Deserialize<XacmlJsonRequestRoot>(input, jsonSerializerOptions);
+                result = JsonSerializer.Serialize(jsonRequest, jsonSerializerOptions);
+            }
+            else
+            {
+                XacmlContextRequest request;
+                using XmlReader reader = XmlReader.Create(new StringReader(input));
+                request = XacmlParser.ReadContextRequest(reader);
+                result = JsonSerializer.Serialize(request, jsonSerializerOptions);
+            }
+
+            return result;
         }
 
         private static string CreateCacheKey(params string[] cacheKeys) =>
