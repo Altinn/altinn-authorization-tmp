@@ -1,8 +1,9 @@
 ﻿#nullable enable
 
+using Altinn;
 using Altinn.Authorization.ProblemDetails;
 
-namespace Altinn.AccessManagement.Core.Errors;
+namespace Altinn.AccessMgmt.Core.Utils.Models;
 
 /// <summary>
 /// Validation errors for the Access Management.
@@ -88,7 +89,7 @@ public static class ValidationErrors
     /// </summary>
     public static ValidationErrorDescriptor InvalidResourceContext { get; }
     = _factory.Create(25, $"Resource context does not match consent request rights");
-    
+
     public static ValidationErrorDescriptor UserNotAuthorized { get; }
     = _factory.Create(26, $"User not authorized for operation.");
 }
