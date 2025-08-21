@@ -336,7 +336,7 @@ namespace Altinn.Platform.Authorization.Controllers
             {
                 await _eventLog.CreateAuthorizationEvent(_featureManager, decisionRequest, HttpContext, finalResponse, cancellationToken);
             }
-            
+
             return finalResponse;
         }
 
@@ -412,7 +412,7 @@ namespace Altinn.Platform.Authorization.Controllers
                     Status = new XacmlContextStatus(XacmlContextStatusCode.MissingAttribute) { StatusMessage = "Request not complete for authorization based on delegations." },
                 });
             }
-            
+
             // Look up delegations from (cached) AccessManagement PIP API
             IEnumerable<DelegationChangeExternal> delegations = new List<DelegationChangeExternal>();
             if (IsTypeApp(resourceAttributes))
@@ -488,14 +488,17 @@ namespace Altinn.Platform.Authorization.Controllers
             return result;
         }
 
-        private async Task<XacmlContextResponse> ProcessDelegationResult(XacmlContextRequest decisionRequest, IEnumerable<DelegationChangeExternal> delegations, XacmlPolicy appPolicy, CancellationToken cancellationToken = default)
+        private async Task<XacmlContextResponse> ProcessDelegationResult(XacmlContextRequest decisionRequest, IEnumerable<DelegationChangeExternal> delegations, XacmlPolicy resourcePolicy, CancellationToken cancellationToken = default)
         {
             foreach (DelegationChangeExternal delegation in delegations.Where(d => d.DelegationChangeType != DelegationChangeType.RevokeLast))
             {
                 XacmlPolicy delegationPolicy = await _prp.GetPolicyVersionAsync(delegation.BlobStoragePolicyPath, delegation.BlobStorageVersionId, cancellationToken);
-                foreach (XacmlObligationExpression obligationExpression in appPolicy.ObligationExpressions)
+                if (delegationPolicy.ObligationExpressions.Count == 0)
                 {
-                    delegationPolicy.ObligationExpressions.Add(obligationExpression);
+                    foreach (XacmlObligationExpression obligationExpression in resourcePolicy.ObligationExpressions)
+                    {
+                        delegationPolicy.ObligationExpressions.Add(obligationExpression);
+                    }
                 }
 
                 XacmlContextResponse delegationContextResponse = _pdp.Authorize(decisionRequest, delegationPolicy);
