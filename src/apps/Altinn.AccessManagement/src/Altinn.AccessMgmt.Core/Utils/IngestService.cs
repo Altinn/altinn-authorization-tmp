@@ -83,7 +83,12 @@ public class IngestService(IAltinnDatabase altinnDb, AppDbContext dbContext) : I
                 )
         );
 
-        string mergeUpdateStatement = string.Join(", ", ingestColumns.Where(t => !matchColumns.Any(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase))).Select(t => $"{t.Name} = source.{t.Name}"));
+        /*
+        Info: '... ingestColumns.Where(t => !t.IsPK && ...' Disables updates on PK. Inserts are not affected.
+        Checkout IsPK and IsFK for new features.
+        */
+
+        string mergeUpdateStatement = string.Join(", ", ingestColumns.Where(t => !t.IsPK && !matchColumns.Any(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase))).Select(t => $"{t.Name} = source.{t.Name}"));
 
         var insertColumns = string.Join(", ", ingestColumns.Select(t => $"{t.Name}"));
         var insertValues = string.Join(", ", ingestColumns.Select(t => $"source.{t.Name}"));
@@ -92,6 +97,8 @@ public class IngestService(IAltinnDatabase altinnDb, AppDbContext dbContext) : I
 
         sb.AppendLine(GetAuditVariables(auditValues));
         sb.AppendLine($"MERGE INTO {table.SchemaName}.{table.TableName} AS target USING {ingestTableName} AS source ON {mergeMatchStatement}");
+        sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
+        sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
         sb.AppendLine($"WHEN NOT MATCHED THEN ");
         sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
 
@@ -193,7 +200,14 @@ public class IngestService(IAltinnDatabase altinnDb, AppDbContext dbContext) : I
 
         return et.GetProperties()
             .Where(n => !n.Name.StartsWith("audit_", StringComparison.OrdinalIgnoreCase))
-            .Select(p => new IngestColumnDefinition() { Name = p.GetColumnName(storeObject), Property = p.PropertyInfo, DbTypeName = p.GetColumnType() })
+            .Select(p => new IngestColumnDefinition() 
+            { 
+                Name = p.GetColumnName(storeObject), 
+                Property = p.PropertyInfo, 
+                DbTypeName = p.GetColumnType(),
+                IsFK = p.IsForeignKey(),
+                IsPK = p.IsPrimaryKey()
+            })
             .Distinct()
             .ToList()!;
     }
@@ -259,4 +273,14 @@ internal class IngestColumnDefinition
     /// PropertyInfo
     /// </summary>
     internal PropertyInfo Property { get; set; }
+
+    /// <summary>
+    /// Is column part of the primary key
+    /// </summary>
+    public bool IsPK { get; set; }
+
+    /// <summary>
+    /// Is column refrenced to from other tables
+    /// </summary>
+    public bool IsFK { get; set; }
 }
