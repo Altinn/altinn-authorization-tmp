@@ -57,8 +57,8 @@ on:
                 - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRoleDaglDeny.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRolePriv.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getClientDelegations.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedParties.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/pdploop.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForSystemUsers.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForPartiesIncludeAltinn2.js'
 
 
 permissions:

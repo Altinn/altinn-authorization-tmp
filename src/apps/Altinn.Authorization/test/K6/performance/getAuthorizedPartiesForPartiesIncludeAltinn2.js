@@ -5,9 +5,9 @@ import { expect, describe, randomItem, URL, getEnterpriseToken } from "./common/
 import { buildOptions, getParams, readCsv } from "./commonFunctions.js";
 
 
-const systemusersFilename = `./testData/systemusers.csv`;
+const systemusersFilename = `./testData/userParties.csv`;
 
-const systemUsers = new SharedArray('systemusers', function () {
+const userParties = new SharedArray('systemusers', function () {
   return readCsv(systemusersFilename);
 });
 
@@ -26,27 +26,27 @@ export function setup() {
 }
 
 export default function (token) {
-    //const systemUser = randomItem(systemUsers);
-    const systemUser = systemUsers[__ITER ]
-    getAuthorizedParties(systemUser, token);
+    const userParty = randomItem(userParties);
+    getAuthorizedParties(userParty.UserPartyId, token);
 }
 
-function getAuthorizedParties(systemUser, token) {
+function getAuthorizedParties(userPartyId, token) {
     const params = getParams(getAuthorizedPartiesLabel);
     params.headers.Authorization = "Bearer " + token;
 
     const body = {
-        "type": "urn:altinn:systemuser:uuid",
-        "value": systemUser.systemuserUuid
+        "type": "urn:altinn:partyid",
+        "value": userPartyId
     }
 
     const url = new URL(getAuthorizedPartiesUrl);
+    url.searchParams.append('includeAltinn2', 'true');
     describe('Get authorized parties', () => {
         let r = http.post(url.toString(), JSON.stringify(body), params);
-        if (r.timings.duration > 2000.0) {
-            console.log(__ITER, systemUser.systemuserUuid, r.timings.duration, r.json().length);
+        if (r.timings.duration > 20.0) {
+            console.log(__ITER, userPartyId, r.timings.duration, r.json().length);
         }
-        if (r.status != 200) {
+        if (r.status === 200) {
             console.log(r.status, r.status_text);
             console.log(r.body);
         }
