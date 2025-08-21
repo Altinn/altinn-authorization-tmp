@@ -176,8 +176,20 @@ public class IngestService(IAltinnDatabase altinnDb, AppDbContext dbContext) : I
     private List<IngestColumnDefinition> GetColumns<T>(IModel entityModel)
     {
         var typeName = typeof(T).Name;
-        var et = entityModel.GetEntityTypes().FirstOrDefault(x => x.GetTableName() == typeName && x.GetSchema() == BaseConfiguration.BaseSchema);
+
+        var entityTypes = entityModel.GetEntityTypes();
+        if (entityTypes is null || !entityTypes.Any()) 
+        { 
+            return null; 
+        }
+
+        var et = entityTypes.FirstOrDefault(x => x.GetTableName() == typeName && x.GetSchema() == BaseConfiguration.BaseSchema);
         var storeObject = StoreObjectIdentifier.Table(typeName, BaseConfiguration.BaseSchema);
+
+        if (et is null) 
+        { 
+            return null; 
+        }
 
         return et.GetProperties()
             .Where(n => !n.Name.StartsWith("audit_", StringComparison.OrdinalIgnoreCase))
@@ -223,7 +235,6 @@ public interface IIngestService
     Task<int> IngestAndMergeData<T>(List<T> data, AuditValues auditValues, IEnumerable<string> matchColumns = null, CancellationToken cancellationToken = default);
 }
 
-
 /// <summary>
 /// Definition of column to ingest
 /// </summary>
@@ -239,12 +250,10 @@ internal class IngestColumnDefinition
     /// </summary>
     internal NpgsqlDbType Type { get; set; }
 
-
     /// <summary>
     /// Db data type
     /// </summary>
     internal string DbTypeName { get; set; }
-
 
     /// <summary>
     /// PropertyInfo
