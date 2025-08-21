@@ -67,7 +67,7 @@ jobs:
     environment: "${{ inputs.environment }}"
     steps:
     - name: Checkout code
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
     - name: OIDC Login to Azure Public Cloud
       uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 #v2
       with:
@@ -93,7 +93,7 @@ jobs:
           exit 1
         fi
     - name: Setup k6
-      uses: grafana/setup-k6-action@8ad1c6ba82f79e0dd17fa74ce1843c7324d319a3
+      uses: grafana/setup-k6-action@057f597971c8681d94636c13b745475d36793ad5
     - name: Run K6 tests (${{ inputs.testSuitePath }})
       run: |
         echo "Running k6 test suite ${{ inputs.testSuitePath }} with ${{ inputs.vus }} VUs for ${{ inputs.duration }} on ${{ inputs.parallelism }} parallelism"

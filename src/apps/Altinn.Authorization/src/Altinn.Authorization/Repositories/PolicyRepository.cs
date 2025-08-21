@@ -190,7 +190,7 @@ namespace Altinn.Platform.Authorization.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to read policy file at {blobClient.Name}.", blobClient.Name);
+                _logger.LogError(ex, "Failed to read policy file at {BlobClientName}.", blobClient.Name);
                 throw;
             }
         }
@@ -210,16 +210,16 @@ namespace Altinn.Platform.Authorization.Repositories
             {
                 if (ex.Status == (int)HttpStatusCode.PreconditionFailed)
                 {
-                    _logger.LogError(ex, "Failed to save policy file {blobClient.Name}. Precondition failed", blobClient.Name);
+                    _logger.LogError(ex, "Failed to save policy file {BlobClientName}. Precondition failed", blobClient.Name);
                     throw;
                 }
 
-                _logger.LogError(ex, "Failed to save policy file {blobClient.Name}. RequestFailedException", blobClient.Name);
+                _logger.LogError(ex, "Failed to save policy file {BlobClientName}. RequestFailedException", blobClient.Name);
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to save policy file {blobClient.Name}. Unexpected exception", blobClient.Name);
+                _logger.LogError(ex, "Failed to save policy file {BlobClientName}. Unexpected exception", blobClient.Name);
                 throw;
             }
         }

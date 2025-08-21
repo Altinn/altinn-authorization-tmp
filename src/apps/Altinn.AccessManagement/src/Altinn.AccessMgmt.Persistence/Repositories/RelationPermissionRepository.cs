@@ -1,12 +1,11 @@
 ﻿using System.Data;
 using Altinn.AccessManagement.Persistence.Extensions;
-using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
+using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.AccessMgmt.Persistence.Services.Models;
 using Npgsql;
 
 namespace Altinn.AccessMgmt.Persistence.Repositories;
@@ -57,7 +56,6 @@ public class RelationPermissionRepository : ExtendedRepository<Relation, ExtRela
         	    p.isassignable,
         	    p.isdelegable
         	FROM dbo.package p
-        	WHERE (array_length(@packageIds, 1) IS NULL OR p.id = ANY(@packageIds))
         ),
         mainAdminPackages AS (
         	-- Get all packages for main administrator
@@ -369,6 +367,8 @@ public class RelationPermissionRepository : ExtendedRepository<Relation, ExtRela
         	LEFT JOIN dbo.entity toEntity ON toid = toEntity.id
         	LEFT JOIN dbo.entity viaEntity ON viaid = viaEntity.id
         	LEFT JOIN dbo.role viaRole ON viaroleid = viaRole.id
+        WHERE
+            (array_length(@packageIds, 1) IS NULL OR p.packageid = ANY(@packageIds))
         """;
     }
 
