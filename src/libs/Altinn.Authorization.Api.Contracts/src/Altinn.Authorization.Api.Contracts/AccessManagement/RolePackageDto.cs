@@ -1,7 +1,7 @@
-﻿using Altinn.AccessMgmt.Core.Utils;
+﻿//using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 
-namespace Altinn.AccessMgmt.Core.Models;
+namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
 /// RolePackage

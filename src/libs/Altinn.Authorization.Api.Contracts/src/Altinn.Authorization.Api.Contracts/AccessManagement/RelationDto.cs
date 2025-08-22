@@ -1,6 +1,6 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Models;
 
-namespace Altinn.AccessMgmt.Core.Models;
+namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
 /// Connection from one party to another

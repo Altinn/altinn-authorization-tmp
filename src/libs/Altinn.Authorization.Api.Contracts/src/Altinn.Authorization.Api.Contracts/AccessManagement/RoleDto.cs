@@ -1,6 +1,6 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Models;
 
-namespace Altinn.AccessMgmt.Core.Models;
+namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
 /// Represents a group of areas, categorized under a specific entity type.
