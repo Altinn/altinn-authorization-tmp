@@ -303,7 +303,7 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         [Fact]
         public async Task PDP_Decision_AltinnApps0028()
         {
-            string testCase = "AltinnApps0028";
+            string testCase = "AltinnApps0028"; 
 
             Mock<IFeatureManager> featureManageMock = new Mock<IFeatureManager>();
             featureManageMock
