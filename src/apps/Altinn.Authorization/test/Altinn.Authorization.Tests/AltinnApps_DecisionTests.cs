@@ -301,6 +301,21 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         }
 
         [Fact]
+        public async Task PDP_Decision_AltinnApps0028()
+        {
+            string testCase = "AltinnApps0028";
+            HttpClient client = GetTestClient(null, featureManageMock.Object);
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
+        [Fact]
         public async Task PDP_Decision_AltinnApps0001_Delegation()
         {
             string testCase = "AltinnApps0001Delegation";
