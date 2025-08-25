@@ -101,14 +101,14 @@ public class TranslationEntry
     public string Type { get; set; } = default!;
 
     /// <summary>
-    /// Field
-    /// </summary>
-    public string FieldName { get; set; } = default!;
-
-    /// <summary>
     /// Language
     /// </summary>
     public string LanguageCode { get; set; } = default!;
+
+    /// <summary>
+    /// Field
+    /// </summary>
+    public string FieldName { get; set; } = default!;
 
     /// <summary>
     /// Translated value
@@ -144,4 +144,42 @@ public class AuditTranslationEntry : TranslationEntry, IAudit
 
     /// <inheritdoc />
     public string Audit_DeleteOperation { get; set; }
+}
+
+/// <summary>
+/// Translation entry
+/// </summary>
+public class TranslationEntryList
+{
+    /// <summary>
+    /// Identity
+    /// </summary>
+    public Guid Id { get; set; }
+
+    /// <summary>
+    /// Type
+    /// </summary>
+    public string Type { get; set; } = default!;
+
+    /// <summary>
+    /// Language
+    /// </summary>
+    public string LanguageCode { get; set; } = default!;
+
+    /// <summary>
+    /// Fileds and Values
+    /// </summary>
+    public Dictionary<string, string> Translations { get; set; }
+
+    public List<TranslationEntry> SingleEntries()
+    {
+        var result = new List<TranslationEntry>();
+
+        foreach (var field in Translations)
+        {
+            result.Add(new TranslationEntry() { Id = this.Id, Type = this.Type, LanguageCode = this.LanguageCode, FieldName = field.Key, Value = field.Value });
+        }
+
+        return result;
+    }
 }
