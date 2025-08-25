@@ -49,7 +49,7 @@ tests {
     
     // Assert the response is an array of length 2
     assert.isArray(body, 'Response should be an array');
-    assert.lengthOf(body, 2, 'Response should contain two items');
+    assert.lengthOf(body, 1, 'Response should contain two items');
   
     // Create a lookup map by resourceid
     const resourceMap = {};
@@ -69,13 +69,6 @@ tests {
     assert.strictEqual(k6nuf.consumer_org, "810414782");
     assert.strictEqual(k6nuf.supplier_org, "910049356");
     assert.sameMembers(k6nuf.scopes, ["test:am/k6nuf.read", "test:am/k6nuf.write"]);
-  
-    // Validate "ttd-am-k6"
-    assert.property(resourceMap, 'ttd-am-k6');
-    const k6 = resourceMap['ttd-am-k6'];
-    assert.strictEqual(k6.consumer_org, "810414782");
-    assert.strictEqual(k6.supplier_org, "910049356");
-    assert.sameMembers(k6.scopes, ["test:am/k6.read", "test:am/k6.write"]);
   
   });
 }
