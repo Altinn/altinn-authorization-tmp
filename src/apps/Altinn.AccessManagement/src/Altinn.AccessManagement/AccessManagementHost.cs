@@ -189,8 +189,6 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureLibsHost(this WebApplicationBuilder builder)
     {
-        builder.Services.AddHostedService<RegisterHostedService>();
-        builder.Services.AddHostedService<AltinnRoleHostedService>();
         builder.AddAzureAppConfigurationDefaults(opts =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);

@@ -76,15 +76,9 @@ namespace Altinn.AccessManagement.HostedServices.Services
 
                         curretOptions = assignment.Options;
 
-                        if (batchData.Any(t => t.FromId == assignment.Assignment.FromId && t.ToId == assignment.Assignment.ToId && t.RoleId == assignment.Assignment.RoleId))
+                        if (batchData.Any(t => t.FromId == assignment.Assignment.FromId && t.ToId == assignment.Assignment.ToId && t.RoleId == assignment.Assignment.RoleId) || (previousOptions != null && curretOptions.ChangedBy != previousOptions.ChangedBy))
                         {
-                            // If changes on same assignment then execute as-is before continuing.
-                            await Flush(batchId);
-                        }
-
-                        if (previousOptions != null && curretOptions.ChangedBy != previousOptions.ChangedBy)
-                        {
-                            // if performer changes flush batch
+                            // If changes on same assignment or performed in a difrent user then execute as-is before continuing.
                             await Flush(batchId);
                         }
 

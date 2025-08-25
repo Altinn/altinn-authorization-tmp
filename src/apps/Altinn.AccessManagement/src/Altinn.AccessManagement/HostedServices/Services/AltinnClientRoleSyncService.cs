@@ -125,14 +125,13 @@ namespace Altinn.AccessManagement.HostedServices.Services
             {
                 ClientId = delegationModel.FromPartyUuid,
                 AgentId = delegationModel.ToUserPartyUuid ?? throw new Exception($"'delegationModel.ToUserPartyUuid' does not have value"),
-                AgentRole = string.Empty,
+                AgentRole = "agent",
                 RolePackages = new List<CreateSystemDelegationRolePackageDto>(),
                 Facilitator = facilitatorPartyId,
             };
 
             var delegationContent = await CreateSystemDelegationRolePackageDtoForClientDelegation(delegationModel.RoleTypeCode, cancellationToken);
             request.RolePackages.Add(delegationContent);
-            request.AgentRole = "agent";
 
             return request;
         }
