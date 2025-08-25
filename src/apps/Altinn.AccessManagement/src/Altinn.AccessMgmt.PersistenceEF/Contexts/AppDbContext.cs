@@ -47,7 +47,7 @@ public class AppDbContext : DbContext
     
     public DbSet<Provider> Providers => Set<Provider>();
 
-    public DbSet<ProviderType> ProviderTypes => Set<ProviderType>();
+    public DbSet<ProviderType> AreaGroupProviderTypes => Set<ProviderType>();
 
     public DbSet<Resource> Resources => Set<Resource>();
     

@@ -138,6 +138,9 @@ public partial class StaticDataIngest
             new Role() { Id = Guid.Parse("e16ab886-1e1e-4f45-8f79-46f06f720f3e"), EntityTypeId = null,  ProviderId = a2ProviderId, Name = "Selvregistrert bruker",                        Code = "selvregistrert",      Description = "Selvregistrert bruker", Urn = "urn:altinn:role:selvregistrert", IsKeyRole = false }
         };
 
+        //// Info: Alternativ løsning med TempDataMergeIngest
+        //// await ingestService.IngestAndMergeData<Role>(data, auditValues, ["Id"], cancellationToken);
+
         var translations = new List<TranslationEntryList>()
         {
             //// ENG
@@ -296,7 +299,7 @@ public partial class StaticDataIngest
             new TranslationEntryList() { Id = Guid.Parse("e16ab886-1e1e-4f45-8f79-46f06f720f3e"), LanguageCode = "nno", Type = nameof(Role), Translations = { { "Name" , "Sjølregistrert brukar" } ,                         { "Description" , "Sjølregistrert brukar" } } },
         };
 
-        db.Database.SetAuditSession(AuditValues);
+        db.Database.SetAuditSession(auditValues);
 
         foreach (var d in data)
         {

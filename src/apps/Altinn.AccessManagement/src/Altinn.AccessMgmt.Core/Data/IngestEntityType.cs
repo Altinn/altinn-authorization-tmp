@@ -39,7 +39,7 @@ public partial class StaticDataIngest
             new TranslationEntry() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), LanguageCode = "nno", Type = nameof(EntityType), FieldName = "Name", Value = "Intern" },
         };
 
-        db.Database.SetAuditSession(AuditValues);
+        db.Database.SetAuditSession(auditValues);
 
         foreach (var d in data)
         {

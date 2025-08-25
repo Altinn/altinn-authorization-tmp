@@ -23,7 +23,7 @@ public partial class StaticDataIngest
             new Provider() { Id = Guid.Parse("0195ea92-2080-758b-89db-7735c4f68320"), Name = "Enhetsregisteret", Code = "sys-ccr", TypeId = type.Id }
         };
 
-        db.Database.SetAuditSession(AuditValues);
+        db.Database.SetAuditSession(auditValues);
 
         foreach (var d in data)
         {
