@@ -344,7 +344,13 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "ResourceRegistry_NoSubject_Indeterminate";
-            HttpClient client = GetTestClient();
+
+            Mock<IFeatureManager> featureManageMock = new Mock<IFeatureManager>();
+            featureManageMock
+                .Setup(m => m.IsEnabledAsync("DecisionRequestLogRequestOnError", It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(true));
+
+            HttpClient client = GetTestClient(featureManager: featureManageMock.Object);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
@@ -364,7 +370,13 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {
             string token = PrincipalUtil.GetOrgToken("skd", "974761076", "altinn:authorization/authorize");
             string testCase = "ResourceRegistry_NoResource_Indeterminate";
-            HttpClient client = GetTestClient();
+
+            Mock<IFeatureManager> featureManageMock = new Mock<IFeatureManager>();
+            featureManageMock
+                .Setup(m => m.IsEnabledAsync("DecisionRequestLogRequestOnError", It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(true));
+
+            HttpClient client = GetTestClient(featureManager: featureManageMock.Object);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateXacmlRequestExternal(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);

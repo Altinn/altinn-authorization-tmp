@@ -304,7 +304,13 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_AltinnApps0028()
         {
             string testCase = "AltinnApps0028";
-            HttpClient client = GetTestClient(null, featureManageMock.Object);
+
+            Mock<IFeatureManager> featureManageMock = new Mock<IFeatureManager>();
+            featureManageMock
+                .Setup(m => m.IsEnabledAsync("DecisionRequestLogRequestOnError", It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(true));
+            
+            HttpClient client = GetTestClient(featureManager: featureManageMock.Object);
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
             XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
 
@@ -621,7 +627,7 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         {            
             featureManageMock
                 .Setup(m => m.IsEnabledAsync("AuditLog"))
-                .Returns(Task.FromResult(featureFlag));
+                .Returns(Task.FromResult(featureFlag));            
         }
 
         private void SetupDateTimeMock()
