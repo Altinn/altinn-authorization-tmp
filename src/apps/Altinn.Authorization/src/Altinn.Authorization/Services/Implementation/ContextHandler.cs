@@ -239,7 +239,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <returns>XacmlResourceAttributes</returns>
         protected XacmlResourceAttributes GetResourceAttributeValues(XacmlContextAttributes resourceContextAttributes)
         {
-            Guard.IsNotNull(resourceContextAttributes, nameof(resourceContextAttributes));
+            Guard.IsNotNull(resourceContextAttributes);
 
             XacmlResourceAttributes resourceAttributes = new XacmlResourceAttributes();
 
@@ -374,7 +374,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         {
             XacmlContextAttributes subjectContextAttributes = request.GetSubjectAttributes();
 
-            Guard.IsNotNull(subjectContextAttributes, nameof(subjectContextAttributes));
+            Guard.IsNotNull(subjectContextAttributes);
 
             int subjectUserId = 0;
             int.TryParse(resourceAttr.ResourcePartyValue, out int resourcePartyId);

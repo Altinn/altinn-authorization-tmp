@@ -140,22 +140,29 @@ namespace Altinn.Platform.Authorization.Controllers
 
                 XacmlContextResponse xacmlContextResponse = new XacmlContextResponse(result);
 
-                if (await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnError, cancellationToken))
+                bool logSingleRequest = await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnError, cancellationToken);
+                bool logMultiRequest = await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnErrorMultiRequest, cancellationToken);
+
+                if (logSingleRequest || logMultiRequest)
                 {
-                    XacmlContextRequest request = null;
-                    bool convertOk = true;
                     try
                     {
-                        request = GetRequestForLog(model.BodyContent, isJson);
+                        var requestList = GetRequestForLog(model.BodyContent, isJson);
+                        if (requestList.Count == 1 && logSingleRequest)
+                        {
+                            await _eventLog.CreateAuthorizationEvent(_featureManager, requestList[0], HttpContext, xacmlContextResponse, cancellationToken);
+                        }
+                        else if (logMultiRequest)
+                        {
+                            foreach (var req in requestList)
+                            {
+                                await _eventLog.CreateAuthorizationEvent(_featureManager, req, HttpContext, xacmlContextResponse, cancellationToken);
+                            }
+                        }
                     }
                     catch
                     {
-                        convertOk = false;
-                    }
-
-                    if (convertOk)
-                    {
-                        await _eventLog.CreateAuthorizationEvent(_featureManager, request, HttpContext, xacmlContextResponse, cancellationToken);
+                        // Ignore logging if request cannot be parsed
                     }
                 }
 
@@ -204,19 +211,30 @@ namespace Altinn.Platform.Authorization.Controllers
                 XacmlContextResponse xacmlContextResponse = new XacmlContextResponse(result);
                 XacmlJsonResponse jsonResult = XacmlJsonXmlConverter.ConvertResponse(xacmlContextResponse);
 
-                if (await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnError, cancellationToken))
+                bool logSingleRequest = await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnError, cancellationToken);
+                bool logMultiRequest = await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnErrorMultiRequest, cancellationToken);
+
+                if (logSingleRequest || logMultiRequest)
                 {
-                    XacmlContextRequest request;
                     try
                     {
-                        request = XacmlJsonXmlConverter.ConvertRequest(_mapper.Map<XacmlJsonRequestRoot>(authorizationRequest).Request);
+                        List<XacmlContextRequest> requestList = GetRequestForLog(_mapper.Map<XacmlJsonRequestRoot>(authorizationRequest).Request);
+                        if (requestList.Count == 1 && logSingleRequest)
+                        {
+                            await _eventLog.CreateAuthorizationEvent(_featureManager, requestList[0], HttpContext, xacmlContextResponse, cancellationToken);
+                        }
+                        else if (logMultiRequest)
+                        {
+                            foreach (var req in requestList)
+                            {
+                                await _eventLog.CreateAuthorizationEvent(_featureManager, req, HttpContext, xacmlContextResponse, cancellationToken);
+                            }
+                        }
                     }
                     catch
                     {
-                        return _mapper.Map<XacmlJsonResponseExternal>(jsonResult);
+                        // Ignore logging if request cannot be parsed
                     }
-
-                    await _eventLog.CreateAuthorizationEvent(_featureManager, request, HttpContext, xacmlContextResponse, cancellationToken);                    
                 }
 
                 return _mapper.Map<XacmlJsonResponseExternal>(jsonResult);
@@ -421,18 +439,88 @@ namespace Altinn.Platform.Authorization.Controllers
             return true;
         }
 
-        private static XacmlContextRequest GetRequestForLog(string input, bool isJson)
+        private static List<XacmlContextRequest> GetRequestForLog(XacmlJsonRequest decisionRequest)
         {
-            XacmlContextRequest result;
-            if (isJson)
+            List<XacmlContextRequest> result = [];
+            if (decisionRequest.MultiRequests == null || decisionRequest.MultiRequests.RequestReference == null
+                || decisionRequest.MultiRequests.RequestReference.Count < 2)
             {
-                XacmlJsonRequestRoot jsonRequest = JsonSerializer.Deserialize<XacmlJsonRequestRoot>(input, jsonSerializerOptions);
-                result = XacmlJsonXmlConverter.ConvertRequest(jsonRequest.Request);
+                XacmlContextRequest request = XacmlJsonXmlConverter.ConvertRequest(decisionRequest);
+                result.Add(request);
             }
             else
             {
+                SortedList<string, XacmlJsonCategory> sortedResources = new();
+                foreach (var resource in decisionRequest.Resource)
+                {
+                    sortedResources[resource.Id] = resource;
+                }
+
+                foreach (XacmlJsonRequestReference xacmlJsonRequestReference in decisionRequest.MultiRequests.RequestReference)
+                {
+                    XacmlJsonRequest jsonMultiRequestPart = new XacmlJsonRequest();
+
+                    foreach (string refer in xacmlJsonRequestReference.ReferenceId)
+                    {
+                        if (sortedResources.TryGetValue(refer, out XacmlJsonCategory resourceCategory))
+                        {
+                            if (jsonMultiRequestPart.Resource == null)
+                            {
+                                jsonMultiRequestPart.Resource = [resourceCategory];
+                            }
+                            else
+                            {
+                                jsonMultiRequestPart.Resource.Add(resourceCategory);
+                            }
+                        }
+
+                        IEnumerable<XacmlJsonCategory> subjectCategoriesPart = decisionRequest.AccessSubject.Where(i => i.Id.Equals(refer));
+
+                        if (subjectCategoriesPart != null && subjectCategoriesPart.Any())
+                        {
+                            if (jsonMultiRequestPart.AccessSubject == null)
+                            {
+                                jsonMultiRequestPart.AccessSubject = new List<XacmlJsonCategory>();
+                            }
+
+                            jsonMultiRequestPart.AccessSubject.AddRange(subjectCategoriesPart);
+                        }
+
+                        IEnumerable<XacmlJsonCategory> actionCategoriesPart = decisionRequest.Action.Where(i => i.Id.Equals(refer));
+
+                        if (actionCategoriesPart != null && actionCategoriesPart.Any())
+                        {
+                            if (jsonMultiRequestPart.Action == null)
+                            {
+                                jsonMultiRequestPart.Action = new List<XacmlJsonCategory>();
+                            }
+
+                            jsonMultiRequestPart.Action.AddRange(actionCategoriesPart);
+                        }
+                    }
+
+                    result.Add(XacmlJsonXmlConverter.ConvertRequest(jsonMultiRequestPart));
+                }
+            }
+
+            return result;
+        }
+
+        private static List<XacmlContextRequest> GetRequestForLog(string input, bool isJson)
+        {
+            List<XacmlContextRequest> result;
+            if (isJson)
+            {
+                XacmlJsonRequestRoot jsonRequest = JsonSerializer.Deserialize<XacmlJsonRequestRoot>(input, jsonSerializerOptions);
+                XacmlJsonRequest decisionRequest = jsonRequest.Request;
+                result = GetRequestForLog(decisionRequest);
+            }
+            else
+            {
+                result = [];
                 using XmlReader reader = XmlReader.Create(new StringReader(input));
-                result = XacmlParser.ReadContextRequest(reader);                 
+                var request = XacmlParser.ReadContextRequest(reader);
+                result.Add(request);
             }
 
             return result;
