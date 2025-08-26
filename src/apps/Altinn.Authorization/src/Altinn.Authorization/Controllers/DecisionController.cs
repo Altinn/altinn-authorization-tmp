@@ -10,6 +10,7 @@ using Altinn.Authorization.Models;
 using Altinn.Authorization.Models.Register;
 using Altinn.Authorization.Models.ResourceRegistry;
 using Altinn.Authorization.ProblemDetails;
+using Altinn.Platform.Authorization.Configuration;
 using Altinn.Platform.Authorization.Constants;
 using Altinn.Platform.Authorization.Helpers;
 using Altinn.Platform.Authorization.ModelBinding;
@@ -52,6 +53,13 @@ namespace Altinn.Platform.Authorization.Controllers
         private readonly IMapper _mapper;
 
         private readonly SortedDictionary<string, AuthInfo> _appInstanceInfo = new();
+
+        private static JsonSerializerOptions jsonSerializerOptions = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = false,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DecisionController"/> class.
@@ -108,9 +116,11 @@ namespace Altinn.Platform.Authorization.Controllers
         [Route("authorization/api/v1/decision")]
         public async Task<ActionResult> Post([FromBody] XacmlRequestApiModel model, CancellationToken cancellationToken = default)
         {
+            bool isJson = Request.ContentType.Contains("application/json");
+
             try
             {
-                if (Request.ContentType.Contains("application/json"))
+                if (isJson)
                 {
                     return await AuthorizeJsonRequest(model, cancellationToken);
                 }
@@ -130,7 +140,26 @@ namespace Altinn.Platform.Authorization.Controllers
 
                 XacmlContextResponse xacmlContextResponse = new XacmlContextResponse(result);
 
-                if (Request.ContentType.Contains("application/json"))
+                if (await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnError, cancellationToken))
+                {
+                    XacmlContextRequest request = null;
+                    bool convertOk = true;
+                    try
+                    {
+                        request = GetRequestForLog(model.BodyContent, isJson);
+                    }
+                    catch
+                    {
+                        convertOk = false;
+                    }
+
+                    if (convertOk)
+                    {
+                        await _eventLog.CreateAuthorizationEvent(_featureManager, request, HttpContext, xacmlContextResponse, cancellationToken);
+                    }
+                }
+
+                if (isJson)
                 {
                     XacmlJsonResponse jsonResult = XacmlJsonXmlConverter.ConvertResponse(xacmlContextResponse);
                     return Ok(jsonResult);
@@ -174,6 +203,22 @@ namespace Altinn.Platform.Authorization.Controllers
 
                 XacmlContextResponse xacmlContextResponse = new XacmlContextResponse(result);
                 XacmlJsonResponse jsonResult = XacmlJsonXmlConverter.ConvertResponse(xacmlContextResponse);
+
+                if (await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnError, cancellationToken))
+                {
+                    XacmlContextRequest request;
+                    try
+                    {
+                        request = XacmlJsonXmlConverter.ConvertRequest(_mapper.Map<XacmlJsonRequestRoot>(authorizationRequest).Request);
+                    }
+                    catch
+                    {
+                        return _mapper.Map<XacmlJsonResponseExternal>(jsonResult);
+                    }
+
+                    await _eventLog.CreateAuthorizationEvent(_featureManager, request, HttpContext, xacmlContextResponse, cancellationToken);                    
+                }
+
                 return _mapper.Map<XacmlJsonResponseExternal>(jsonResult);
             }
         }
@@ -271,11 +316,7 @@ namespace Altinn.Platform.Authorization.Controllers
 
         private async Task<ActionResult> AuthorizeJsonRequest(XacmlRequestApiModel model, CancellationToken cancellationToken = default)
         {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            XacmlJsonRequestRoot jsonRequest = JsonSerializer.Deserialize<XacmlJsonRequestRoot>(model.BodyContent, options);
+            XacmlJsonRequestRoot jsonRequest = JsonSerializer.Deserialize<XacmlJsonRequestRoot>(model.BodyContent, jsonSerializerOptions);
 
             XacmlJsonResponse jsonResponse = await Authorize(jsonRequest.Request, cancellationToken: cancellationToken);
 
@@ -378,6 +419,23 @@ namespace Altinn.Platform.Authorization.Controllers
             }
 
             return true;
+        }
+
+        private static XacmlContextRequest GetRequestForLog(string input, bool isJson)
+        {
+            XacmlContextRequest result;
+            if (isJson)
+            {
+                XacmlJsonRequestRoot jsonRequest = JsonSerializer.Deserialize<XacmlJsonRequestRoot>(input, jsonSerializerOptions);
+                result = XacmlJsonXmlConverter.ConvertRequest(jsonRequest.Request);
+            }
+            else
+            {
+                using XmlReader reader = XmlReader.Create(new StringReader(input));
+                result = XacmlParser.ReadContextRequest(reader);                 
+            }
+
+            return result;
         }
 
         private static string CreateCacheKey(params string[] cacheKeys) =>

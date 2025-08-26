@@ -19,5 +19,10 @@
         /// Feature flag for whether authorization of SystemUsers should include authorization through access packages
         /// </summary>
         public const string SystemUserAccessPackageAuthorization = nameof(SystemUserAccessPackageAuthorization);
+
+        /// <summary>
+        /// Feature flag for whether decision requests should be logged on error
+        /// </summary>
+        public const string DecisionRequestLogRequestOnError = nameof(DecisionRequestLogRequestOnError);
     }
 }
