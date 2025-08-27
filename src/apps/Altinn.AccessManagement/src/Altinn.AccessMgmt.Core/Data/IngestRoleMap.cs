@@ -12,129 +12,140 @@ public partial class StaticDataIngest
     /// <returns></returns>
     public async Task IngestRoleMap(CancellationToken cancellationToken = default)
     {
+        // Fetch all roles at once
+        var roles = await db.Roles.AsNoTracking().ToListAsync(cancellationToken);
+
+        // Helper to get role ID or throw
+        var roleDict = roles.ToDictionary(r => r.Urn, r => r.Id);
+
+        Guid GetRoleId(string urn, string name) =>
+            roleDict.TryGetValue(urn, out var id)
+                ? id
+                : throw new KeyNotFoundException(string.Format("Role not found '{0}'", name));
+
         /*DAGL*/
-        var roleDagl = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:daglig-leder", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "daglig-leder"));
+        var roleDagl = GetRoleId("urn:altinn:external-role:ccr:daglig-leder", "daglig-leder");
         /*LEDE*/
-        var roleLede = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:styreleder", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "styreleder"));
+        var roleLede = GetRoleId("urn:altinn:external-role:ccr:styreleder", "styreleder");
         /*INNH*/
-        var roleInnh = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:innehaver", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "innehaver"));
+        var roleInnh = GetRoleId("urn:altinn:external-role:ccr:innehaver", "innehaver");
         /*DTSO*/
-        var roleDtso = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:deltaker-fullt-ansvar", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "deltaker-fullt-ansvar"));
+        var roleDtso = GetRoleId("urn:altinn:external-role:ccr:deltaker-fullt-ansvar", "deltaker-fullt-ansvar");
         /*DTPR*/
-        var roleDtpr = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:deltaker-delt-ansvar", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "deltaker-delt-ansvar"));
+        var roleDtpr = GetRoleId("urn:altinn:external-role:ccr:deltaker-delt-ansvar", "deltaker-delt-ansvar");
         /*KOMP*/
-        var roleKomp = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:komplementar", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "komplementar"));
+        var roleKomp = GetRoleId("urn:altinn:external-role:ccr:komplementar", "komplementar");
         /*BEST*/
-        var roleBest = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:bestyrende-reder", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "bestyrende-reder"));
+        var roleBest = GetRoleId("urn:altinn:external-role:ccr:bestyrende-reder", "bestyrende-reder");
         /*BOBE*/
-        var roleBobe = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:bostyrer", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "bostyrer"));
+        var roleBobe = GetRoleId("urn:altinn:external-role:ccr:bostyrer", "bostyrer");
         /*REGN*/
-        var roleRegn = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:regnskapsforer", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "regnskapsforer"));
+        var roleRegn = GetRoleId("urn:altinn:external-role:ccr:regnskapsforer", "regnskapsforer");
         /*REVI*/
-        var roleRevi = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:revisor", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "revisor"));
+        var roleRevi = GetRoleId("urn:altinn:external-role:ccr:revisor", "revisor");
         /*KNUF*/
-        var roleKnuf = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:kontaktperson-nuf", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-nuf"));
+        var roleKnuf = GetRoleId("urn:altinn:external-role:ccr:kontaktperson-nuf", "kontaktperson-nuf");
         /*FFØR*/
-        var roleFfor = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:forretningsforer", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "forretningsforer"));
+        var roleFfor = GetRoleId("urn:altinn:external-role:ccr:forretningsforer", "forretningsforer");
         /*KEMN*/
-        var roleKemn = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:kontaktperson-ados", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-ados"));
+        var roleKemn = GetRoleId("urn:altinn:external-role:ccr:kontaktperson-ados", "kontaktperson-ados");
         /*PRIV*/
-        var rolePriv = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:role:privatperson", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "privatperson"));
+        var rolePriv = GetRoleId("urn:altinn:role:privatperson", "privatperson");
         /*KOMK*/
-        var roleKomk = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:kontaktperson-kommune", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-kommune"));
+        var roleKomk = GetRoleId("urn:altinn:external-role:ccr:kontaktperson-kommune", "kontaktperson-kommune");
         /*KONT*/
-        var roleKont = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:kontaktperson", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson"));
+        var roleKont = GetRoleId("urn:altinn:external-role:ccr:kontaktperson", "kontaktperson");
         /*MEDL*/
-        var roleMedl = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:styremedlem", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "styremedlem"));
+        var roleMedl = GetRoleId("urn:altinn:external-role:ccr:styremedlem", "styremedlem");
         /*MVAG*/
-        var roleMvag = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:mva-signerer", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "mva-signerer"));
+        var roleMvag = GetRoleId("urn:altinn:external-role:ccr:mva-signerer", "mva-signerer");
         /*MVAU*/
-        var roleMvau = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:mva-utfyller", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "mva-utfyller"));
+        var roleMvau = GetRoleId("urn:altinn:external-role:ccr:mva-utfyller", "mva-utfyller");
         /*NEST*/
-        var roleNest = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:nestleder", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "nestleder"));
+        var roleNest = GetRoleId("urn:altinn:external-role:ccr:nestleder", "nestleder");
         /*REPR*/
-        var roleRepr = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:norsk-representant", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "norsk-representant"));
+        var roleRepr = GetRoleId("urn:altinn:external-role:ccr:norsk-representant", "norsk-representant");
         /*SAM*/
-        var roleSam = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:sameier", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "sameier"));
+        var roleSam = GetRoleId("urn:altinn:external-role:ccr:sameier", "sameier");
         /*SENS*/
-        var roleSens = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:SENS", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "Sensitive-tjenester"));
+        var roleSens = GetRoleId("urn:altinn:rolecode:SENS", "Sensitive-tjenester");
         /*SREVA*/
-        var roleSreva = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:external-role:ccr:kontaktperson-revisor", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "kontaktperson-revisor"));
+        var roleSreva = GetRoleId("urn:altinn:external-role:ccr:kontaktperson-revisor", "kontaktperson-revisor");
 
         /*A0212*/
-        var roleA0212 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0212", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0212"));
+        var roleA0212 = GetRoleId("urn:altinn:rolecode:A0212", "A0212");
         /*A0236*/
-        var roleA0236 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0236", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0236"));
+        var roleA0236 = GetRoleId("urn:altinn:rolecode:A0236", "A0236");
         /*A0237*/
-        var roleA0237 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0237", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0237"));
+        var roleA0237 = GetRoleId("urn:altinn:rolecode:A0237", "A0237");
         /*A0238*/
-        var roleA0238 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0238", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0238"));
+        var roleA0238 = GetRoleId("urn:altinn:rolecode:A0238", "A0238");
         /*A0239*/
-        var roleA0239 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0239", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0239"));
+        var roleA0239 = GetRoleId("urn:altinn:rolecode:A0239", "A0239");
         /*A0240*/
-        var roleA0240 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0240", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0240"));
+        var roleA0240 = GetRoleId("urn:altinn:rolecode:A0240", "A0240");
         /*A0241*/
-        var roleA0241 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0241", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0241"));
+        var roleA0241 = GetRoleId("urn:altinn:rolecode:A0241", "A0241");
         /*A0278*/
-        var roleA0278 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0278", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0278"));
+        var roleA0278 = GetRoleId("urn:altinn:rolecode:A0278", "A0278");
         /*A0282*/
-        var roleA0282 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0282", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0282"));
+        var roleA0282 = GetRoleId("urn:altinn:rolecode:A0282", "A0282");
         /*A0286*/
-        var roleA0286 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0286", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0286"));
+        var roleA0286 = GetRoleId("urn:altinn:rolecode:A0286", "A0286");
         /*A0293*/
-        var roleA0293 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0293", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0293"));
+        var roleA0293 = GetRoleId("urn:altinn:rolecode:A0293", "A0293");
         /*A0294*/
-        var roleA0294 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0294", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0294"));
+        var roleA0294 = GetRoleId("urn:altinn:rolecode:A0294", "A0294");
         /*A0298*/
-        var roleA0298 = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:A0298", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "A0298"));
+        var roleA0298 = GetRoleId("urn:altinn:rolecode:A0298", "A0298");
         /*ADMAI*/
-        var roleADMAI = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:ADMAI", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "ADMAI"));
+        var roleADMAI = GetRoleId("urn:altinn:rolecode:ADMAI", "ADMAI");
         /*APIADM*/
-        var roleAPIADM = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:APIADM", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "APIADM"));
+        var roleAPIADM = GetRoleId("urn:altinn:rolecode:APIADM", "APIADM");
         /*APIADMNUF*/
-        var roleAPIADMNUF = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:APIADMNUF", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "APIADMNUF"));
+        var roleAPIADMNUF = GetRoleId("urn:altinn:rolecode:APIADMNUF", "APIADMNUF");
         /*ATTST*/
-        var roleATTST = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:ATTST", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "ATTST"));
+        var roleATTST = GetRoleId("urn:altinn:rolecode:ATTST", "ATTST");
         /*BOADM*/
-        var roleBOADM = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:BOADM", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "BOADM"));
+        var roleBOADM = GetRoleId("urn:altinn:rolecode:BOADM", "BOADM");
         /*BOBEL*/
-        var roleBOBEL = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:BOBEL", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "BOBEL"));
+        var roleBOBEL = GetRoleId("urn:altinn:rolecode:BOBEL", "BOBEL");
         /*BOBES*/
-        var roleBOBES = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:BOBES", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "BOBES"));
+        var roleBOBES = GetRoleId("urn:altinn:rolecode:BOBES", "BOBES");
         /*ECKEYROLE*/
-        var roleECKEYROLE = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:ECKEYROLE", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "ECKEYROLE"));
+        var roleECKEYROLE = GetRoleId("urn:altinn:rolecode:ECKEYROLE", "ECKEYROLE");
         /*EKTJ*/
-        var roleEKTJ = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:EKTJ", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "EKTJ"));
+        var roleEKTJ = GetRoleId("urn:altinn:rolecode:EKTJ", "EKTJ");
         /*HADM*/
-        var roleHADM = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:HADM", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "HADM"));
+        var roleHADM = GetRoleId("urn:altinn:rolecode:HADM", "HADM");
         /*HVASK*/
-        var roleHVASK = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:HVASK", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "HVASK"));
+        var roleHVASK = GetRoleId("urn:altinn:rolecode:HVASK", "HVASK");
         /*KLADM*/
-        var roleKLADM = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:KLADM", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "KLADM"));
+        var roleKLADM = GetRoleId("urn:altinn:rolecode:KLADM", "KLADM");
         /*KOMAB*/
-        var roleKOMAB = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:KOMAB", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "KOMAB"));
+        var roleKOMAB = GetRoleId("urn:altinn:rolecode:KOMAB", "KOMAB");
         /*LOPER*/
-        var roleLOPER = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:LOPER", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "LOPER"));
+        var roleLOPER = GetRoleId("urn:altinn:rolecode:LOPER", "LOPER");
         /*PASIG*/
-        var rolePASIG = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:PASIG", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "PASIG"));
+        var rolePASIG = GetRoleId("urn:altinn:rolecode:PASIG", "PASIG");
         /*PAVAD*/
-        var rolePAVAD = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:PAVAD", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "PAVAD"));
+        var rolePAVAD = GetRoleId("urn:altinn:rolecode:PAVAD", "PAVAD");
         /*PRIUT*/
-        var rolePRIUT = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:PRIUT", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "PRIUT"));
+        var rolePRIUT = GetRoleId("urn:altinn:rolecode:PRIUT", "PRIUT");
         /*REGNA*/
-        var roleREGNA = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:REGNA", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "REGNA"));
+        var roleREGNA = GetRoleId("urn:altinn:rolecode:REGNA", "REGNA");
         /*SIGNE*/
-        var roleSIGNE = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:SIGNE", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "SIGNE"));
+        var roleSIGNE = GetRoleId("urn:altinn:rolecode:SIGNE", "SIGNE");
         /*SISKD*/
-        var roleSISKD = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:SISKD", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "SISKD"));
+        var roleSISKD = GetRoleId("urn:altinn:rolecode:SISKD", "SISKD");
         /*UIHTL*/
-        var roleUIHTL = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:UIHTL", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UIHTL"));
+        var roleUIHTL = GetRoleId("urn:altinn:rolecode:UIHTL", "UIHTL");
         /*UILUF*/
-        var roleUILUF = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:UILUF", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UILUF"));
+        var roleUILUF = GetRoleId("urn:altinn:rolecode:UILUF", "UILUF");
         /*UTINN*/
-        var roleUTINN = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:UTINN", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UTINN"));
+        var roleUTINN = GetRoleId("urn:altinn:rolecode:UTINN", "UTINN");
         /*UTOMR*/
-        var roleUTOMR = (await db.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == "urn:altinn:rolecode:UTOMR", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Role not found '{0}'", "UTOMR"));
+        var roleUTOMR = GetRoleId("urn:altinn:rolecode:UTOMR", "UTOMR");
 
         var roleMaps = new List<RoleMap>()
         {
