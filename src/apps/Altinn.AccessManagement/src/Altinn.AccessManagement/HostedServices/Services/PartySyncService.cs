@@ -96,10 +96,8 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     await Flush(batchId);
                 }
 
-                // UpsertEntityLookup(model, options, cancellationToken: cancellationToken);
-
                 bulk.Add(entity);
-                bulkLookup.AddRange(ConvertPartyModelToLookup(item));
+                ////bulkLookup.AddRange(ConvertPartyModelToLookup(item)); // Disabled due to performance issues.
             }
 
             await Flush(batchId);
