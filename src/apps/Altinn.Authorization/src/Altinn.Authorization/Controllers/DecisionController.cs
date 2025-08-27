@@ -147,7 +147,7 @@ namespace Altinn.Platform.Authorization.Controllers
                 {
                     try
                     {
-                        var requestList = GetRequestForLog(model.BodyContent, isJson);
+                        List<XacmlContextRequest> requestList = GetRequestForLog(model.BodyContent, isJson);
                         if (requestList.Count == 1 && logSingleRequest)
                         {
                             await _eventLog.CreateAuthorizationEvent(_featureManager, requestList[0], HttpContext, xacmlContextResponse, cancellationToken);
