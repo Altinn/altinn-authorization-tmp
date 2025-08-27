@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -12,6 +13,8 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public DbSet<Relation> Relations => Set<Relation>();
+
+    public DbSet<TranslationEntry> TranslationEntries => Set<TranslationEntry>();
 
     #region DbSets
 
@@ -46,7 +49,9 @@ public class AppDbContext : DbContext
     public DbSet<PackageResource> PackageResources => Set<PackageResource>();
     
     public DbSet<Provider> Providers => Set<Provider>();
-    
+
+    public DbSet<ProviderType> ProviderTypes => Set<ProviderType>();
+
     public DbSet<Resource> Resources => Set<Resource>();
     
     public DbSet<Role> Roles => Set<Role>();
@@ -117,7 +122,13 @@ public class AppDbContext : DbContext
     {
         ApplyAuditConfiguration(modelBuilder);
         ApplyConfiguration(modelBuilder);
+        ApplyViewConfiguration(modelBuilder);
         modelBuilder.UseLowerCaseNamingConvention();
+    }
+
+    private void ApplyViewConfiguration(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfiguration<Relation>(new RelationConfiguration());
     }
 
     private void ApplyAuditConfiguration(ModelBuilder modelBuilder)
@@ -150,6 +161,8 @@ public class AppDbContext : DbContext
 
     private void ApplyConfiguration(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfiguration<TranslationEntry>(new TranslationEntryConfiguration());
+
         modelBuilder.ApplyConfiguration<Area>(new AreaConfiguration());
         modelBuilder.ApplyConfiguration<AreaGroup>(new AreaGroupConfiguration());
         modelBuilder.ApplyConfiguration<Assignment>(new AssignmentConfiguration());
@@ -166,6 +179,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration<Package>(new PackageConfiguration());
         modelBuilder.ApplyConfiguration<PackageResource>(new PackageResourceConfiguration());
         modelBuilder.ApplyConfiguration<Provider>(new ProviderConfiguration());
+        modelBuilder.ApplyConfiguration<ProviderType>(new ProviderTypeConfiguration());
         modelBuilder.ApplyConfiguration<Resource>(new ResourceConfiguration());
         modelBuilder.ApplyConfiguration<Role>(new RoleConfiguration());
         modelBuilder.ApplyConfiguration<RoleLookup>(new RoleLookupConfiguration());

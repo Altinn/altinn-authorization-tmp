@@ -2,6 +2,8 @@
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Services;
@@ -12,121 +14,67 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
     /// <inheritdoc />
     public async Task<IEnumerable<RelationPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
-        var query = dbContext.Relations.AsNoTracking().Where(t => t.FromId == partyId);
+        var result = await dbContext.Relations.AsNoTracking()
+            .Where(t => t.FromId == partyId)
+            .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
+            .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
+            .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
+            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
+            .ToListAsync(cancellationToken);
 
-        if (toId.HasValue)
-        {
-            query = query.Where(t => t.ToId == toId.Value);
-        }
-
-        if (roleId.HasValue)
-        {
-            query = query.Where(t => t.RoleId == roleId.Value);
-        }
-
-        if (packageId.HasValue)
-        {
-            query = query.Where(t => t.PackageId == packageId.Value);
-        }
-
-        if (resourceId.HasValue)
-        {
-            query = query.Where(t => t.ResourceId == resourceId.Value);
-        }
-
-        var res = await query.ToListAsync(cancellationToken);
-
-        return dtoConverter.ExtractRelationPackageDtoToOthers(res, includeSubConnections: false);
+        return dtoConverter.ExtractRelationPackageDtoToOthers(result, includeSubConnections: false);
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<RelationDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
     {
-        var query = dbContext.Relations.AsNoTracking().Where(t => t.FromId == partyId);
+        var result = await dbContext.Relations.AsNoTracking()
+            .Where(t => t.FromId == partyId)
+            .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
+            .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
+            .ToListAsync(cancellationToken);
 
-        if (toId.HasValue)
-        {
-            query = query.Where(t => t.ToId == toId.Value);
-        }
-
-        if (roleId.HasValue)
-        {
-            query = query.Where(t => t.RoleId == roleId.Value);
-        }
-
-        var res = await query.ToListAsync(cancellationToken);
-
-        return dtoConverter.ExtractRelationDtoToOthers(res, includeSubConnections: false);
+        return dtoConverter.ExtractRelationDtoToOthers(result, includeSubConnections: false);
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<RelationPackageDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
-        var query = dbContext.Relations.AsNoTracking().Where(t => t.ToId == partyId);
+        var result = await dbContext.Relations.AsNoTracking()
+            .Where(t => t.ToId == partyId)
+            .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
+            .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
+            .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
+            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
+            .ToListAsync(cancellationToken);
 
-        if (fromId.HasValue)
-        {
-            query = query = query.Where(t => t.FromId == fromId.Value);
-        }
-
-        if (roleId.HasValue)
-        {
-            query = query.Where(t => t.RoleId == roleId.Value);
-        }
-
-        if (packageId.HasValue)
-        {
-            query = query.Where(t => t.PackageId == packageId.Value);
-        }
-
-        if (resourceId.HasValue)
-        {
-            query = query.Where(t => t.ResourceId == resourceId.Value);
-        }
-
-        var res = await query.ToListAsync(cancellationToken);
-
-        return dtoConverter.ExtractRelationPackageDtoFromOthers(res, includeSubConnections: false);
+        return dtoConverter.ExtractRelationPackageDtoFromOthers(result, includeSubConnections: false);
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<RelationDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
     {
-        var query = dbContext.Relations.AsNoTracking().Where(t => t.ToId == partyId);
+        var result = await dbContext.Relations.AsNoTracking()
+            .Where(t => t.ToId == partyId)
+            .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
+            .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
+            .ToListAsync(cancellationToken);
 
-        if (fromId.HasValue)
-        {
-            query = query.Where(t => t.FromId == fromId.Value);
-        }
-
-        if (roleId.HasValue)
-        {
-            query = query.Where(t => t.RoleId == roleId.Value);
-        }
-
-        var res = await query.ToListAsync(cancellationToken);
-
-        return dtoConverter.ExtractRelationDtoFromOthers(res, includeSubConnections: false);
+        return dtoConverter.ExtractRelationDtoFromOthers(result, includeSubConnections: false);
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {
-        var q = dbContext.Relations.AsNoTracking().Include(t => t.Package).Where(t => t.ToId == partyId);
+        var result = await dbContext.Relations
+            .AsNoTracking()
+            .Include(t => t.Package)
+            .Where(t => t.ToId == partyId)
+            .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
+            .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
+            .ToListAsync(cancellationToken);
 
-        if (fromId.HasValue)
-        {
-            q = q.Where(t => t.FromId == fromId.Value);
-        }
-
-        if (packageId.HasValue)
-        {
-            q = q.Where(t => t.PackageId == packageId.Value);
-        }
-
-        var res = await q.ToListAsync(cancellationToken);
-
-        if (res is { } && res.Any() && res.Where(r => r.Package is { }) is var packages)
+        if (result is { } && result.Any() && result.Where(r => r.Package is { }) is var packages)
         {
             return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
@@ -141,21 +89,15 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {
-        var q = dbContext.Relations.AsNoTracking().Where(t => t.FromId == partyId);
+        var result = await dbContext.Relations
+            .AsNoTracking()
+            .Include(t => t.Package)
+            .Where(t => t.FromId == partyId)
+            .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
+            .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
+            .ToListAsync(cancellationToken);
 
-        if (toId.HasValue)
-        {
-            q = q.Where(t => t.ToId == toId.Value);
-        }
-
-        if (packageId.HasValue)
-        {
-            q = q.Where(t => t.PackageId == packageId.Value);
-        }
-
-        var res = await q.ToListAsync(cancellationToken);
-
-        if (res is { } && res.Any() && res.Where(r => r.Package is { }) is var packages)
+        if (result is { } && result.Any() && result.Where(r => r.Package is { }) is var packages)
         {
             return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
@@ -170,26 +112,17 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
     /// <inheritdoc />
     public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
-        var q = dbContext.Relations.AsNoTracking().Where(t => t.ToId == partyId);
+        var result = await dbContext.Relations
+            .AsNoTracking()
+            .Include(t => t.Package)
+            .Include(t => t.Resource)
+            .Where(t => t.ToId == partyId)
+            .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
+            .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
+            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
+            .ToListAsync(cancellationToken);
 
-        if (fromId.HasValue)
-        {
-            q = q.Where(t => t.FromId == fromId.Value);
-        }
-
-        if (packageId.HasValue)
-        {
-            q = q.Where(t => t.PackageId == packageId.Value);
-        }
-
-        if (resourceId.HasValue)
-        {
-            q = q.Where(t => t.ResourceId == resourceId.Value);
-        }
-
-        var res = await q.ToListAsync(cancellationToken);
-
-        if (res is { } && res.Any() && res.Where(r => r.Package is { }) is var packages)
+        if (result is { } && result.Any() && result.Where(r => r.Package is { }) is var packages)
         {
             return packages.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
             {
@@ -204,26 +137,17 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
     /// <inheritdoc />
     public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
-        var q = dbContext.Relations.AsNoTracking().Where(t => t.FromId == partyId);
+        var result = await dbContext.Relations
+            .AsNoTracking()
+            .Include(t => t.Package)
+            .Include(t => t.Resource)
+            .Where(t => t.FromId == partyId)
+            .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
+            .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
+            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
+            .ToListAsync(cancellationToken);
 
-        if (toId.HasValue)
-        {
-            q = q.Where(t => t.ToId == toId.Value);
-        }
-
-        if (packageId.HasValue)
-        {
-            q = q.Where(t => t.PackageId == packageId.Value);
-        }
-
-        if (resourceId.HasValue)
-        {
-            q = q.Where(t => t.ResourceId == resourceId.Value);
-        }
-
-        var res = await q.ToListAsync(cancellationToken);
-
-        if (res is { } && res.Any() && res.Where(r => r.Package is { }) is var packages)
+        if (result is { } && result.Any() && result.Where(r => r.Package is { }) is var packages)
         {
             return packages.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
             {

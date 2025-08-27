@@ -10,12 +10,12 @@ public class RelationDto
     /// <summary>
     /// Party
     /// </summary>
-    public CompactEntity Party { get; set; } = new();
+    public Entity Party { get; set; } = new();
 
     /// <summary>
     /// Roles the party has for given filter
     /// </summary>
-    public List<CompactRole> Roles { get; set; } = new();
+    public List<Role> Roles { get; set; } = new();
 
     /// <summary>
     /// Connections the party has
@@ -31,12 +31,12 @@ public class RelationPackageDto
     /// <summary>
     /// Party
     /// </summary>
-    public CompactEntity Party { get; set; } = new();
+    public Entity Party { get; set; } = new();
 
     /// <summary>
     /// Roles the party has for given filter
     /// </summary>
-    public List<CompactRole> Roles { get; set; } = new();
+    public List<Role> Roles { get; set; } = new();
 
     /// <summary>
     /// Connections the party has
@@ -46,5 +46,5 @@ public class RelationPackageDto
     /// <summary>
     /// Packages the party has
     /// </summary>
-    public List<CompactPackage> Packages { get; set; } = new();
+    public List<Package> Packages { get; set; } = new();
 }

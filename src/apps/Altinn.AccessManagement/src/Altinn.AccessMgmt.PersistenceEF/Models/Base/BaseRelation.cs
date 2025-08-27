@@ -7,7 +7,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 /// New Connection
 /// </summary>
 [NotMapped]
-public class BaseRelation : BaseAudit
+public class BaseRelation
 {
     /// <summary>
     /// The entity identity the connection is from (origin, client, source etc) 
@@ -37,12 +37,12 @@ public class BaseRelation : BaseAudit
     /// <summary>
     /// Package
     /// </summary>
-    public Guid PackageId { get; set; }
+    public Guid? PackageId { get; set; }
 
     /// <summary>
     /// Resource
     /// </summary>
-    public Guid ResourceId { get; set; }
+    public Guid? ResourceId { get; set; }
 
     /// <summary>
     /// Reason
