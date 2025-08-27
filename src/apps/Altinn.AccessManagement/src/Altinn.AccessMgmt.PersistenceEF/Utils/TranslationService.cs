@@ -82,7 +82,7 @@ public interface ITranslationService
     /// of type <typeparamref name="T"/>.</returns>
     ValueTask<T> TranslateAsync<T>(T source, string languageCode);
 
-    Task UpsertTranslation(TranslationEntry translationEntry);
+    Task UpsertTranslationAsync(TranslationEntry translationEntry);
 }
 
 /// <summary>
