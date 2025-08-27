@@ -17,7 +17,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.6")
+                .HasAnnotation("ProductVersion", "9.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -28,6 +28,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -74,11 +90,25 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("description")
-                        .HasAnnotation("Translate", true);
 
                     b.Property<Guid>("EntityTypeId")
                         .HasColumnType("uuid")
@@ -87,8 +117,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("name")
-                        .HasAnnotation("Translate", true);
 
                     b.Property<string>("Urn")
                         .IsRequired()
@@ -116,6 +144,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
 
                     b.Property<Guid>("FromId")
                         .HasColumnType("uuid")
@@ -161,6 +205,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assignmentid");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<Guid>("PackageId")
                         .HasColumnType("uuid")
                         .HasColumnName("packageid");
@@ -194,6 +254,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assignmentid");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<Guid>("ResourceId")
                         .HasColumnType("uuid")
                         .HasColumnName("resourceid");
@@ -219,32 +295,35 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditArea", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -266,49 +345,42 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("text")
                         .HasColumnName("urn");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditarea");
 
-                    b.ToTable("auditarea", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditAreaGroup", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -326,49 +398,42 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("text")
                         .HasColumnName("urn");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditareagroup");
 
-                    b.ToTable("auditareagroup", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditAssignment", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<Guid>("FromId")
                         .HasColumnType("uuid")
@@ -382,23 +447,14 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("toid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditassignment");
 
-                    b.ToTable("auditassignment", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditAssignmentPackage", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -410,47 +466,35 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assignmentid");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
-                    b.Property<Guid>("PackageId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("packageid");
-
-                    b.Property<DateTime>("ValidFrom")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<DateTime?>("ValidTo")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validto");
 
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditassignmentpackage");
 
-                    b.ToTable("auditassignmentpackage", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditAssignmentResource", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -462,73 +506,63 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assignmentid");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
-                    b.Property<Guid>("ResourceId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("resourceid");
-
-                    b.Property<DateTime>("ValidFrom")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<DateTime?>("ValidTo")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validto");
 
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditassignmentresource");
 
-                    b.ToTable("auditassignmentresource", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditDelegation", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<Guid>("FacilitatorId")
                         .HasColumnType("uuid")
@@ -542,23 +576,14 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("toid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditdelegation");
 
-                    b.ToTable("auditdelegation", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditDelegationPackage", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -570,29 +595,32 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assignmentpackageid");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
+
+                        .HasColumnType("text")
+                        .HasColumnName("audit_deleteoperation");
+
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_deletedby");
+
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<Guid>("DelegationId")
                         .HasColumnType("uuid")
                         .HasColumnName("delegationid");
-
-                    b.Property<string>("DeleteOperation")
-                        .HasColumnType("text")
-                        .HasColumnName("audit_deleteoperation");
-
-                    b.Property<Guid?>("DeletedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_deletedby");
-
-                    b.Property<Guid?>("DeletedBySystem")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_deletedbysystem");
 
                     b.Property<Guid>("PackageId")
                         .HasColumnType("uuid")
@@ -602,101 +630,77 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("rolepackageid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditdelegationpackage");
 
-                    b.ToTable("auditdelegationpackage", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditDelegationResource", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<Guid>("DelegationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("delegationid");
-
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
-                    b.Property<Guid>("ResourceId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("resourceid");
-
-                    b.Property<DateTime>("ValidFrom")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<DateTime?>("ValidTo")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validto");
 
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditdelegationresource");
 
-                    b.ToTable("auditdelegationresource", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditEntity", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<string>("Name")
                         .HasColumnType("text")
@@ -726,41 +730,42 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("variantid");
 
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditentity");
 
-                    b.ToTable("auditentity", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditEntityLookup", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<Guid>("EntityId")
                         .HasColumnType("uuid")
@@ -786,41 +791,42 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("text")
                         .HasColumnName("value");
 
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditentitylookup");
 
-                    b.ToTable("auditentitylookup", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditEntityType", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<string>("Name")
                         .HasColumnType("text")
@@ -830,49 +836,42 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("providerid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditentitytype");
 
-                    b.ToTable("auditentitytype", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditEntityVariant", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -886,75 +885,57 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("typeid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditentityvariant");
 
-                    b.ToTable("auditentityvariant", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditEntityVariantRole", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid")
                         .HasColumnName("roleid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
                     b.Property<Guid>("VariantId")
                         .HasColumnType("uuid")
                         .HasColumnName("variantid");
 
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditentityvariantrole");
 
-                    b.ToTable("auditentityvariantrole", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditPackage", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -966,25 +947,28 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("areaid");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -1018,49 +1002,42 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("text")
                         .HasColumnName("urn");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditpackage");
 
-                    b.ToTable("auditpackage", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditPackageResource", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<Guid>("PackageId")
                         .HasColumnType("uuid")
@@ -1070,53 +1047,46 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("resourceid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditpackageresource");
 
-                    b.ToTable("auditpackageresource", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditProvider", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
+
+                        .HasColumnType("text")
+                        .HasColumnName("audit_deleteoperation");
+
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_deletedby");
+
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<string>("Code")
                         .HasColumnType("text")
                         .HasColumnName("code");
-
-                    b.Property<string>("DeleteOperation")
-                        .HasColumnType("text")
-                        .HasColumnName("audit_deleteoperation");
-
-                    b.Property<Guid?>("DeletedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_deletedby");
-
-                    b.Property<Guid?>("DeletedBySystem")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_deletedbysystem");
 
                     b.Property<string>("LogoUrl")
                         .HasColumnType("text")
@@ -1134,97 +1104,77 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("typeid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditprovider");
 
-                    b.ToTable("auditprovider", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditProviderType", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<DateTime>("ValidFrom")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<DateTime?>("ValidTo")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validto");
 
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditprovidertype");
 
-                    b.ToTable("auditprovidertype", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditResource", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -1246,101 +1196,81 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("typeid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditresource");
 
-                    b.ToTable("auditresource", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditResourceType", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<DateTime>("ValidFrom")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
-                    b.Property<DateTime?>("ValidTo")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validto");
 
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditresourcetype");
 
-                    b.ToTable("auditresourcetype", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditRole", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
+
+                        .HasColumnType("text")
+                        .HasColumnName("audit_deleteoperation");
+
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_deletedby");
+
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<string>("Code")
                         .HasColumnType("text")
                         .HasColumnName("code");
-
-                    b.Property<string>("DeleteOperation")
-                        .HasColumnType("text")
-                        .HasColumnName("audit_deleteoperation");
-
-                    b.Property<Guid?>("DeletedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_deletedby");
-
-                    b.Property<Guid?>("DeletedBySystem")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_deletedbysystem");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -1370,49 +1300,42 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("text")
                         .HasColumnName("urn");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditrole");
 
-                    b.ToTable("auditrole", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditRoleLookup", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<string>("Key")
                         .HasColumnType("text")
@@ -1434,41 +1357,42 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("text")
                         .HasColumnName("value");
 
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditrolelookup");
 
-                    b.ToTable("auditrolelookup", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditRoleMap", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<Guid>("GetRoleId")
                         .HasColumnType("uuid")
@@ -1478,29 +1402,42 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("hasroleid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditrolemap");
 
-                    b.ToTable("auditrolemap", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditRolePackage", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
+
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                        .HasColumnType("text")
+                        .HasColumnName("audit_deleteoperation");
+
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_deletedby");
+
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<bool>("CanAssign")
                         .HasColumnType("boolean")
@@ -1509,26 +1446,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<bool>("CanDelegate")
                         .HasColumnType("boolean")
                         .HasColumnName("candelegate");
-
-                    b.Property<Guid?>("ChangedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_changedby");
-
-                    b.Property<Guid?>("ChangedBySystem")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_changedbysystem");
-
-                    b.Property<string>("DeleteOperation")
-                        .HasColumnType("text")
-                        .HasColumnName("audit_deleteoperation");
-
-                    b.Property<Guid?>("DeletedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_deletedby");
-
-                    b.Property<Guid?>("DeletedBySystem")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_deletedbysystem");
 
                     b.Property<Guid?>("EntityVariantId")
                         .HasColumnType("uuid")
@@ -1546,49 +1463,42 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("roleid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditrolepackage");
 
-                    b.ToTable("auditrolepackage", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditRoleResource", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("ChangeOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_changeoperation");
 
-                    b.Property<Guid?>("ChangedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedby");
 
-                    b.Property<Guid?>("ChangedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_changedbysystem");
 
-                    b.Property<string>("DeleteOperation")
                         .HasColumnType("text")
                         .HasColumnName("audit_deleteoperation");
 
-                    b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedby");
 
-                    b.Property<Guid?>("DeletedBySystem")
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
+                    b.Property<DateTime?>("Audit_ValidTo")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validto");
 
                     b.Property<Guid>("ResourceId")
                         .HasColumnType("uuid")
@@ -1598,18 +1508,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("roleid");
 
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.HasKey("Id", "ChangeOperation")
                         .HasName("pk_auditroleresource");
 
-                    b.ToTable("auditroleresource", "history");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Delegation", b =>
@@ -1618,6 +1518,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
 
                     b.Property<Guid>("FacilitatorId")
                         .HasColumnType("uuid")
@@ -1663,6 +1579,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("assignmentpackageid");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<Guid>("DelegationId")
                         .HasColumnType("uuid")
                         .HasColumnName("delegationid");
@@ -1700,6 +1632,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<Guid>("DelegationId")
                         .HasColumnType("uuid")
                         .HasColumnName("delegationid");
@@ -1730,6 +1678,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1778,6 +1742,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<Guid>("EntityId")
                         .HasColumnType("uuid")
                         .HasColumnName("entityid");
@@ -1820,6 +1800,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
@@ -1850,6 +1846,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -1887,6 +1899,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid")
                         .HasColumnName("roleid");
@@ -1923,6 +1951,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<Guid>("AreaId")
                         .HasColumnType("uuid")
                         .HasColumnName("areaid");
+
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -1988,6 +2032,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<Guid>("PackageId")
                         .HasColumnType("uuid")
                         .HasColumnName("packageid");
@@ -2020,6 +2080,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -2067,14 +2143,30 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("name");
 
                     b.HasKey("Id")
                         .HasName("pk_providertype");
 
-                    b.ToTable("providertype", (string)null);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Resource", b =>
@@ -2083,6 +2175,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -2127,6 +2235,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<string>("Name")
                         .HasColumnType("text")
                         .HasColumnName("name");
@@ -2143,6 +2267,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -2173,8 +2313,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("name")
-                        .HasAnnotation("Translate", true);
 
                     b.Property<Guid>("ProviderId")
                         .HasColumnType("uuid")
@@ -2216,6 +2354,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasColumnType("text")
@@ -2254,6 +2408,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<Guid>("GetRoleId")
                         .HasColumnType("uuid")
                         .HasColumnName("getroleid");
@@ -2286,6 +2456,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
 
                     b.Property<bool>("CanAssign")
                         .HasColumnType("boolean")
@@ -2345,6 +2531,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Audit_ChangeOperation")
+                        .HasColumnType("text")
+                        .HasColumnName("audit_changeoperation");
+
+                    b.Property<Guid?>("Audit_ChangedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedby");
+
+                    b.Property<Guid?>("Audit_ChangedBySystem")
+                        .HasColumnType("uuid")
+                        .HasColumnName("audit_changedbysystem");
+
+                    b.Property<DateTime>("Audit_ValidFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("audit_validfrom");
+
                     b.Property<Guid>("ResourceId")
                         .HasColumnType("uuid")
                         .HasColumnName("resourceid");
@@ -2369,6 +2571,34 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.ToTable("roleresource", "dbo");
 
                     b.HasAnnotation("EnableAudit", true);
+                });
+
+            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Utils.TranslationEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.Property<string>("LanguageCode")
+                        .HasColumnType("text")
+                        .HasColumnName("languagecode");
+
+                    b.Property<string>("FieldName")
+                        .HasColumnType("text")
+                        .HasColumnName("fieldname");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text")
+                        .HasColumnName("value");
+
+                    b.HasKey("Id", "Type", "LanguageCode", "FieldName")
+                        .HasName("pk_translationentry");
+
+                    b.ToTable("translationentry", "dbo");
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Area", b =>
