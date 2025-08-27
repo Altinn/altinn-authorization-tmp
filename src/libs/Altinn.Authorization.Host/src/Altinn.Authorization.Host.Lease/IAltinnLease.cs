@@ -7,6 +7,17 @@ namespace Altinn.Authorization.Host.Lease;
 public interface IAltinnLease
 {
     /// <summary>
+    /// Upserts data to lease and refreshes the lease.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="lease">lease implementation.</param>
+    /// <param name="configureLeaseContent">callback for configuring lease.</param>
+    /// <param name="cancellationToken">A token that can be used to observe and handle cancellation requests.</param>
+    /// <returns></returns>
+    Task UpsertLeastAndRefresh<T>(LeaseResult<T> lease, Action<T> configureLeaseContent, CancellationToken cancellationToken)
+        where T : class, new();
+
+    /// <summary>
     /// Attempts to acquire a lease without blocking.
     /// This method checks for the availability of a lease and returns the result of the acquisition.
     /// </summary>

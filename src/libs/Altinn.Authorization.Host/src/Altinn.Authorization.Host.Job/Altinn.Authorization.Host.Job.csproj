@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    
+    <ItemGroup>
+         <PackageReference Include="Microsoft.FeatureManagement.AspNetCore" />
+    </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Altinn.Authorization.Host\Altinn.Authorization.Host.csproj" />
+    <ProjectReference Include="..\Altinn.Authorization.Host.Lease\Altinn.Authorization.Host.Lease.csproj" />
+  </ItemGroup>
+
+</Project>

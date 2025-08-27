@@ -56,6 +56,25 @@ public class InMemoryLease : IAltinnLease
     }
 
     /// <inheritdoc/>
+    public async Task UpsertLeastAndRefresh<T>(LeaseResult<T> lease, Action<T> configureLeaseContent, CancellationToken cancellationToken)
+        where T : class, new()
+    {
+        if (lease.Data is { })
+        {
+            configureLeaseContent(lease.Data);
+            await Put(lease, lease.Data, cancellationToken);
+        }
+        else
+        {
+            var content = new T();
+            configureLeaseContent(content);
+            await Put(lease, content, cancellationToken);
+        }
+
+        await RefreshLease(lease, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public Task<LeaseResult<T>> RefreshLease<T>(LeaseResult<T> lease, CancellationToken cancellationToken = default)
         where T : class
     {

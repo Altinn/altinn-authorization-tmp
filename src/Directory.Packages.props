@@ -87,12 +87,13 @@
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.23.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Telemetry.Abstractions" Version="9.8.0" />
-    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.2.1" />
+    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.1.0" />
     <PackageVersion Include="Microsoft.IdentityModel.Logging" Version="8.14.0" />
     <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

@@ -34,7 +34,7 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 # Run the script to update solution files
 @update-sln-files *ARGS: install-script-packages-frozen
   #!{{shebang}}
-  node ./.github/scripts/update-sln-files.mts -- {{ARGS}}
+  npx tsx ./.github/scripts/update-sln-files.mts -- {{ARGS}}
 
 @dotnet-reference-trimmer:
   dotnet build -p:EnableReferenceTrimmer=true
@@ -42,7 +42,7 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 # Print all projects metadata
 @get-metadata: install-script-packages-frozen
   #!{{shebang}}
-  node ./.github/scripts/get-metadata.mts
+  npx tsx ./.github/scripts/get-metadata.mts
 
 # Print DB username and password for Entra ID auth for Azure postgres Flex Servers
 db-cred:

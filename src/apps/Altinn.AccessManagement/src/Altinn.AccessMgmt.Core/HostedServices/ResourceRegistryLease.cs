@@ -1,4 +1,4 @@
-namespace Altinn.Authorization.AccessManagement.HostedServices;
+namespace Altinn.AccessMgmt.Core.HostedServices;
 
 /// <summary>
 /// Lease content

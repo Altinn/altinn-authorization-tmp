@@ -4,6 +4,7 @@ import path from "node:path";
 import { verticals, type VerticalType, type Vertical } from "./_meta.mts";
 import fs from "node:fs";
 import { yargs } from "./_yargs.mts";
+import { Console } from "node:console";
 
 const argv = yargs()
   .option("purge", {

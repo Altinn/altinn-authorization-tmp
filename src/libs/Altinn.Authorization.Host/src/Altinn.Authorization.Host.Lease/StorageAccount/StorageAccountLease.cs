@@ -64,6 +64,25 @@ public partial class StorageAccountLease(IAzureClientFactory<BlobServiceClient> 
     }
 
     /// <inheritdoc/>
+    public async Task UpsertLeastAndRefresh<T>(LeaseResult<T> lease, Action<T> configureLeaseContent, CancellationToken cancellationToken)
+        where T : class, new()
+    {
+        if (lease.Data is { })
+        {
+            configureLeaseContent(lease.Data);
+            await Put(lease, lease.Data, cancellationToken);
+        }
+        else
+        {
+            var content = new T();
+            configureLeaseContent(content);
+            await Put(lease, content, cancellationToken);
+        }
+
+        await RefreshLease(lease, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<LeaseResult<T>> Put<T>(LeaseResult<T> lease, T data, CancellationToken cancellationToken = default)
         where T : class
     {
