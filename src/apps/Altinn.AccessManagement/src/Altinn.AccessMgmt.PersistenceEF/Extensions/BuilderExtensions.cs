@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 
-public static class ModelBuilderExtensions
+public static class BuilderExtensions
 {
     public static void UseLowerCaseNamingConvention(this ModelBuilder modelBuilder)
     {
@@ -40,6 +40,11 @@ public static class ModelBuilderExtensions
                 index.SetDatabaseName(index.GetDatabaseName()?.ToLowerInvariant());
             }
         }
+    }
+
+    public static EntityTypeBuilder EnableTranslation(this EntityTypeBuilder builder)
+    {
+        return builder.HasAnnotation("EnableTranslation", true);
     }
 
     /// <summary>

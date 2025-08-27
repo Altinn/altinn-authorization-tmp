@@ -109,7 +109,7 @@ public class TranslationService : ITranslationService
 /// <summary>
 /// Translation service for EF model
 /// </summary>
-public interface ITranslationService
+public interface ITranslationService    
 {
     /// <summary>
     /// Translates the specified object to the target language asynchronously.
@@ -150,14 +150,14 @@ public class TranslationEntry
     public string Type { get; set; } = default!;
 
     /// <summary>
-    /// Field
-    /// </summary>
-    public string FieldName { get; set; } = default!;
-
-    /// <summary>
     /// Language
     /// </summary>
     public string LanguageCode { get; set; } = default!;
+
+    /// <summary>
+    /// Field
+    /// </summary>
+    public string FieldName { get; set; } = default!;
 
     /// <summary>
     /// Translated value
