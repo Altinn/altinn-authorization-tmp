@@ -63,8 +63,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.Core", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.PersistenceEF", "src\Altinn.AccessMgmt.PersistenceEF\Altinn.AccessMgmt.PersistenceEF.csproj", "{5BAB482F-720D-4218-82FF-4A4286215EF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.AccessMgmt.LiveTester", "Altinn.AccessMgmt.LiveTester\Altinn.AccessMgmt.LiveTester.csproj", "{48065D22-784C-4338-B885-7C20D4F211BB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -351,18 +349,6 @@ Global
 		{5BAB482F-720D-4218-82FF-4A4286215EF3}.Release|x64.Build.0 = Release|Any CPU
 		{5BAB482F-720D-4218-82FF-4A4286215EF3}.Release|x86.ActiveCfg = Release|Any CPU
 		{5BAB482F-720D-4218-82FF-4A4286215EF3}.Release|x86.Build.0 = Release|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Debug|x64.Build.0 = Debug|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Debug|x86.Build.0 = Debug|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Release|x64.ActiveCfg = Release|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Release|x64.Build.0 = Release|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Release|x86.ActiveCfg = Release|Any CPU
-		{48065D22-784C-4338-B885-7C20D4F211BB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
