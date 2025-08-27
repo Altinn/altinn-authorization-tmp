@@ -15,10 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Relation> Relations => Set<Relation>();
 
     public DbSet<TranslationEntry> TranslationEntries => Set<TranslationEntry>();
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
     #region DbSets
 
     public DbSet<Area> Areas => Set<Area>();
@@ -132,15 +129,6 @@ public class AppDbContext : DbContext
     private void ApplyViewConfiguration(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration<Relation>(new RelationConfiguration());
-<<<<<<< Updated upstream
-=======
-        //modelBuilder.ApplyConfiguration<CompactEntity>(new CompactEntityConfiguration());
-        //modelBuilder.ApplyConfiguration<CompactRole>(new CompactRoleConfiguration());
-        //modelBuilder.ApplyConfiguration<CompactPackage>(new CompactPackageConfiguration());
-        //modelBuilder.ApplyConfiguration<CompactResource>(new CompactResourceConfiguration());
-
-        // modelBuilder.ApplyConfiguration<Relation>(new RelationConfiguration2());
->>>>>>> Stashed changes
     }
 
     private void ApplyAuditConfiguration(ModelBuilder modelBuilder)

@@ -11,12 +11,7 @@ public abstract class AuditConfiguration<T> : IEntityTypeConfiguration<T>, IAudi
     public virtual void Configure(EntityTypeBuilder<T> builder)
     {
         builder.ToDefaultAuditTable();
-<<<<<<< Updated upstream
-        // builder.HasKey(k => k.Id);
         builder.HasKey(["id", "audit_validfrom", "audit_validto"]);
-=======
-        builder.HasKey(k => k.Id);
->>>>>>> Stashed changes
 
         builder.Property(e => e.Id).HasColumnName("id");
         builder.Property(e => e.Audit_ValidFrom).HasColumnName("audit_validfrom");
