@@ -7,6 +7,8 @@ namespace Altinn.AccessMgmt.Core.Data
 {
     public partial class StaticDataIngest
     {
+        private readonly string iconBaseUrl = configuration["AltinnCDN:AccessPackageIconsBaseURL"];
+
         public async Task IngestArea(CancellationToken cancellationToken = default)
         {
             var data = new List<Area>()
