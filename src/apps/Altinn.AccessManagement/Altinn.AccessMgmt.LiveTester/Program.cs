@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
+﻿using Altinn.AccessMgmt.Core.Data;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +22,7 @@ internal class Program
             // .AddInterceptors(sp.GetRequiredService<ReadOnlyInterceptor>(), sp.GetRequiredService<AuditConnectionInterceptor>()); // hvis du har disse
         });
 
-        //builder.Services.AddScoped<StaticDataIngest>();
+        builder.Services.AddScoped<StaticDataIngest>();
         builder.Services.AddScoped<ITranslationService, TranslationService>();
         //builder.Services.AddScoped<IIngestService, IngestService>();
         //builder.Services.AddScoped<AuditValues>();
@@ -31,7 +32,7 @@ internal class Program
         using (var scope = host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            //var ingest = scope.ServiceProvider.GetRequiredService<StaticDataIngest>();
+            var ingest = scope.ServiceProvider.GetRequiredService<StaticDataIngest>();
             var translate = scope.ServiceProvider.GetRequiredService<ITranslationService>();
 
             //// db.Database.Migrate();
