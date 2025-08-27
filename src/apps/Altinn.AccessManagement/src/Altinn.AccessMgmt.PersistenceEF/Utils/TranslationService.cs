@@ -50,7 +50,7 @@ public class TranslationService : ITranslationService
         return source;
     }
 
-    public async Task UpsertTranslation(TranslationEntry translationEntry)
+    public async Task UpsertTranslationAsync(TranslationEntry translationEntry)
     {
         var entry = await _db.Set<TranslationEntry>().SingleOrDefaultAsync(t => t.Id == translationEntry.Id && t.LanguageCode == translationEntry.LanguageCode && t.FieldName == translationEntry.FieldName);
 
@@ -70,7 +70,7 @@ public class TranslationService : ITranslationService
 /// <summary>
 /// Translation service for EF model
 /// </summary>
-public interface ITranslationService
+public interface ITranslationService    
 {
     /// <summary>
     /// Translates the specified object to the target language asynchronously.
