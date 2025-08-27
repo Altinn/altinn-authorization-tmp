@@ -153,7 +153,7 @@ namespace Altinn.AccessMgmt.Core.Data
             }
 
             // Upsert TranslationEntryLists
-            foreach (var translation in translations)
+            foreach (var translation in translations.SelectMany(t => t.SingleEntries()))
             {
                 await translationService.UpsertTranslationAsync(translation);
             }
