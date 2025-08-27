@@ -15,7 +15,6 @@ public class AppDbContext : DbContext
     public DbSet<Relation> Relations => Set<Relation>();
 
     public DbSet<TranslationEntry> TranslationEntries => Set<TranslationEntry>();
-
     #region DbSets
 
     public DbSet<Area> Areas => Set<Area>();
