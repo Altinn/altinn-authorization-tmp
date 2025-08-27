@@ -12,8 +12,4 @@
     <PackageReference Include="Altinn.Urn.Swashbuckle" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\apps\Altinn.AccessManagement\src\Altinn.AccessMgmt.PersistenceEF\Altinn.AccessMgmt.PersistenceEF.csproj" />
-  </ItemGroup>
-
 </Project>
