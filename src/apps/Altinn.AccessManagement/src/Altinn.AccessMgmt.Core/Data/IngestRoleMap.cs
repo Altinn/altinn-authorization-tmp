@@ -12,14 +12,10 @@ public partial class StaticDataIngest
     /// <returns></returns>
     public async Task IngestRoleMap(CancellationToken cancellationToken = default)
     {
-        // Fetch all roles at once
-        var roles = await db.Roles.AsNoTracking().ToListAsync(cancellationToken);
-
-        // Helper to get role ID or throw
-        var roleDict = roles.ToDictionary(r => r.Urn, r => r.Id);
+        var roles = (await db.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
 
         Guid GetRoleId(string urn, string name) =>
-            roleDict.TryGetValue(urn, out var id)
+            roles.TryGetValue(urn, out var id)
                 ? id
                 : throw new KeyNotFoundException(string.Format("Role not found '{0}'", name));
 
