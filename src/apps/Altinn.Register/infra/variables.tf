@@ -67,6 +67,11 @@ variable "use_pgbouncer" {
   default = false
 }
 
+variable "use_high_availability" {
+  type    = bool
+  default = false
+}
+
 variable "features" {
   type = object({
     a2_party_import = optional(object({
