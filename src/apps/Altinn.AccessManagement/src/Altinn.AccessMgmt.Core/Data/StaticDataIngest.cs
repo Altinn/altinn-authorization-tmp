@@ -9,10 +9,20 @@ namespace Altinn.AccessMgmt.Core.Data;
 /// </summary>
 /// <param name="db">AppDbContext</param>
 /// <param name="translationService">TranslationService</param>
-public partial class StaticDataIngest(AppDbContext db, ITranslationService translationService, AuditValues auditValues, IIngestService ingestService)
+public partial class StaticDataIngest(AppDbContext db, ITranslationService translationService)
 {
+    //, IIngestService ingestService
+    public AuditValues auditValues { get; set; } = new AuditValues(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid().ToString());
+
     public async Task IngestAll(CancellationToken cancellationToken = default)
     {
         await IngestProviderType(cancellationToken);
+        await IngestProvider(cancellationToken);
+        await IngestEntityType(cancellationToken);
+        await IngestEntityVariant(cancellationToken);
+        await IngestSystemEntity(cancellationToken);
+        await IngestAreaGroup(cancellationToken);
+        await IngestRole(cancellationToken);
+        await IngestRoleLookup(cancellationToken);
     }
 }

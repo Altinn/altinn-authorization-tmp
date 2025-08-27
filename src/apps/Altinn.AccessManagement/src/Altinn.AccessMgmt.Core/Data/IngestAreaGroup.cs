@@ -56,10 +56,9 @@ public partial class StaticDataIngest
 
         foreach (var translation in translations)
         {
-            await translationService.UpsertTranslation(translation);
+            await translationService.UpsertTranslationAsync(translation);
         }
 
         var result = await db.SaveChangesAsync();
     }
 }
-

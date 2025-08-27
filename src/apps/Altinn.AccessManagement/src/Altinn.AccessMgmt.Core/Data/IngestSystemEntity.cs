@@ -15,8 +15,8 @@ public partial class StaticDataIngest
     /// <returns></returns>
     public async Task IngestSystemEntity(CancellationToken cancellationToken = default)
     {
-        var internalTypeId = (await db.EntityTypes.AsNoTracking().SingleOrDefaultAsync(t=>t.Name == "Intern"))?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
-        var internalVariantId = (await db.EntityVariants.AsNoTracking().SingleOrDefaultAsync(t => t.TypeId == internalTypeId && t.Name.Equals("Standard", StringComparison.OrdinalIgnoreCase)))?.Id ?? throw new KeyNotFoundException(string.Format("EntityVariant '{0}' not found", "Intern"));
+        var internalTypeId = (await db.EntityTypes.AsNoTracking().SingleOrDefaultAsync(t => t.Name == "Intern"))?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
+        var internalVariantId = (await db.EntityVariants.AsNoTracking().SingleOrDefaultAsync(t => t.TypeId == internalTypeId && t.Name == "Standard"))?.Id ?? throw new KeyNotFoundException(string.Format("EntityVariant '{0}' not found", "Intern"));
 
         var data = new List<Entity>()
         {
@@ -32,10 +32,10 @@ public partial class StaticDataIngest
 
         foreach (var d in data)
         {
-            var obj = db.ProviderTypes.FirstOrDefault(t => t.Id == d.Id);
+            var obj = db.Entities.FirstOrDefault(t => t.Id == d.Id);
             if (obj == null)
             {
-                db.ProviderTypes.Add(d);
+                db.Entities.Add(d);
             }
             else
             {

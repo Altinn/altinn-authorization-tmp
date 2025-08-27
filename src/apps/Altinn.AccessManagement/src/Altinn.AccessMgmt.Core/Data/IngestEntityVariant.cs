@@ -180,10 +180,10 @@ public partial class StaticDataIngest
 
         foreach (var d in data)
         {
-            var obj = db.EntityTypes.FirstOrDefault(t => t.Id == d.Id);
+            var obj = db.EntityVariants.FirstOrDefault(t => t.Id == d.Id);
             if (obj == null)
             {
-                db.EntityTypes.Add(d);
+                db.EntityVariants.Add(d);
             }
             else
             {
@@ -193,7 +193,7 @@ public partial class StaticDataIngest
 
         foreach (var translation in translations.SelectMany(t => t.SingleEntries()))
         {
-            await translationService.UpsertTranslation(translation);
+            await translationService.UpsertTranslationAsync(translation);
         }
 
         var result = await db.SaveChangesAsync();
