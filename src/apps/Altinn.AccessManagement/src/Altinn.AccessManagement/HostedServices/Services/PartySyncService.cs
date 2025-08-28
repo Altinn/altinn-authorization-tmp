@@ -97,7 +97,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 }
 
                 bulk.Add(entity);
-                ////bulkLookup.AddRange(ConvertPartyModelToLookup(item)); // Disabled due to performance issues.
+                bulkLookup.AddRange(ConvertPartyModelToLookup(item));
             }
 
             await Flush(batchId);
