@@ -1,4 +1,4 @@
-﻿namespace Altinn.AccessMgmt.Core.Models;
+﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
 /// Represents an area with relevant metadata and associated packages.
