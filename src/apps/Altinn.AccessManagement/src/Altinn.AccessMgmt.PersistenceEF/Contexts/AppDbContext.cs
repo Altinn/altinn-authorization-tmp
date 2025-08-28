@@ -12,9 +12,10 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    public DbSet<Relation> Relations => Set<Relation>();
+    public DbSet<Connection> Connections => Set<Connection>();
 
     public DbSet<TranslationEntry> TranslationEntries => Set<TranslationEntry>();
+
     #region DbSets
 
     public DbSet<Area> Areas => Set<Area>();
@@ -127,7 +128,7 @@ public class AppDbContext : DbContext
 
     private void ApplyViewConfiguration(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration<Relation>(new RelationConfiguration());
+        modelBuilder.ApplyConfiguration<Connection>(new ConnectionConfiguration());
         //modelBuilder.ApplyConfiguration<CompactEntity>(new CompactEntityConfiguration());
         //modelBuilder.ApplyConfiguration<CompactRole>(new CompactRoleConfiguration());
         //modelBuilder.ApplyConfiguration<CompactPackage>(new CompactPackageConfiguration());

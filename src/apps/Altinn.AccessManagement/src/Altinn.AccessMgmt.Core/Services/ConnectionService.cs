@@ -3,18 +3,17 @@ using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
-using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : IRelationService
+public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) : IConnectionService
 {
     /// <inheritdoc />
-    public async Task<IEnumerable<RelationPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
-        var result = await dbContext.Relations.AsNoTracking()
+        var result = await dbContext.Connections.AsNoTracking()
             .Where(t => t.FromId == partyId)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
             .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
@@ -26,9 +25,9 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RelationDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ConnectionDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
     {
-        var result = await dbContext.Relations.AsNoTracking()
+        var result = await dbContext.Connections.AsNoTracking()
             .Where(t => t.FromId == partyId)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
             .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
@@ -38,9 +37,9 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RelationPackageDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
-        var result = await dbContext.Relations.AsNoTracking()
+        var result = await dbContext.Connections.AsNoTracking()
             .Where(t => t.ToId == partyId)
             .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
             .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
@@ -52,9 +51,9 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<RelationDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ConnectionDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
     {
-        var result = await dbContext.Relations.AsNoTracking()
+        var result = await dbContext.Connections.AsNoTracking()
             .Where(t => t.ToId == partyId)
             .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
             .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
@@ -66,7 +65,7 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {
-        var result = await dbContext.Relations
+        var result = await dbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
             .Where(t => t.ToId == partyId)
@@ -89,7 +88,7 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {
-        var result = await dbContext.Relations
+        var result = await dbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
             .Where(t => t.FromId == partyId)
@@ -112,7 +111,7 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
     /// <inheritdoc />
     public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
-        var result = await dbContext.Relations
+        var result = await dbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
             .Include(t => t.Resource)
@@ -137,7 +136,7 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
     /// <inheritdoc />
     public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
-        var result = await dbContext.Relations
+        var result = await dbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
             .Include(t => t.Resource)

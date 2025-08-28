@@ -5,7 +5,7 @@ namespace Altinn.AccessMgmt.Core.Models;
 /// <summary>
 /// Connection from one party to another
 /// </summary>
-public class RelationDto
+public class ConnectionDto
 {
     /// <summary>
     /// Party
@@ -20,13 +20,13 @@ public class RelationDto
     /// <summary>
     /// Connections the party has
     /// </summary>
-    public List<RelationDto> Connections { get; set; } = new();
+    public List<ConnectionDto> Connections { get; set; } = new();
 }
 
 /// <summary>
 /// Connection from one party to another
 /// </summary>
-public class RelationPackageDto
+public class ConnectionPackageDto
 {
     /// <summary>
     /// Party
@@ -41,7 +41,7 @@ public class RelationPackageDto
     /// <summary>
     /// Connections the party has
     /// </summary>
-    public List<RelationDto> Connections { get; set; } = new();
+    public List<ConnectionDto> Connections { get; set; } = new();
 
     /// <summary>
     /// Packages the party has

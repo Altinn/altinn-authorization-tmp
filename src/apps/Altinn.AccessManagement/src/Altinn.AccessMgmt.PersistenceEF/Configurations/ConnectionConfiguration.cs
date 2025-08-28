@@ -1,15 +1,13 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Configurations.Base;
-using Altinn.AccessMgmt.PersistenceEF.Extensions;
+﻿using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Configurations;
 
-public class RelationConfiguration : IEntityTypeConfiguration<Relation>
+public class ConnectionConfiguration : IEntityTypeConfiguration<Connection>
 {
-    public void Configure(EntityTypeBuilder<Relation> builder)
+    public void Configure(EntityTypeBuilder<Connection> builder)
     {
         builder.ToView("relation", "dbo");
         builder.HasKey(x => new { x.FromId, x.ToId, x.RoleId, x.Reason }); //// ? eller blank string ?

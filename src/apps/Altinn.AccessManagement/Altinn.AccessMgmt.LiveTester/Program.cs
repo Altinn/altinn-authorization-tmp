@@ -61,7 +61,7 @@ internal class Program
                 Console.WriteLine(entityType.value + " => " + translatedResult.FirstOrDefault(t => t.id == entityType.id && t.lang == "eng").value);
             }
 
-            var rel = db.Relations.Include(t => t.From).Include(t => t.To).Include(t => t.Role).FirstOrDefault();
+            var rel = db.Connections.Include(t => t.From).Include(t => t.To).Include(t => t.Role).FirstOrDefault();
             Console.WriteLine(rel is null ? "Ingen connection funnet" : $"Connection found: {rel.From.Name} - {rel.Role.Name} - {rel.To.Name} ");
         }
     }
