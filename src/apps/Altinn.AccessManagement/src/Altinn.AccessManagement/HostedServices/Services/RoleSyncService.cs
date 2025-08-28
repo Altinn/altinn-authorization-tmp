@@ -59,8 +59,9 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             ChangedBySystem = AuditDefaults.RegisterImportSystem
         };
 
-        //OrgType = (await _entityTypeRepository.Get(t => t.Name, "Organisasjon")).FirstOrDefault();
-        //Provider = (await _providerRepository.Get(t => t.Code, "ccr")).FirstOrDefault();
+        OrgType = (await _entityTypeRepository.Get(t => t.Name, "Organisasjon")).FirstOrDefault();
+        Provider = (await _providerRepository.Get(t => t.Code, "ccr")).FirstOrDefault();
+        Roles = (await _roleRepository.Get()).ToList();
 
         await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
         {
