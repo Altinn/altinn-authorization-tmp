@@ -15,7 +15,7 @@ db_max_pool_size      = 10
 db_compute_sku        = "D8"
 db_storage_tier       = "P15"
 sbl_endpoint          = "https://ai-pr-vip-sblbridge.ai.basefarm.net/sblbridge/"
-use_high_availability = true
+enable_high_availability = true
 
 features = {
   a2_party_import = {

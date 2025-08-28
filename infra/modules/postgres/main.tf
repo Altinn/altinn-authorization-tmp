@@ -73,7 +73,7 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
   public_network_access_enabled = false
 
   dynamic "high_availability" {
-    for_each = var.use_high_availability ? ["enabled"] : []
+    for_each = var.enable_high_availability ? ["enabled"] : []
     content {
       mode                      = "ZoneRedundant"
     }

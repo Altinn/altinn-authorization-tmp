@@ -226,7 +226,7 @@ module "postgres_server" {
   private_dns_zone_id   = data.azurerm_private_dns_zone.postgres.id
   postgres_version      = "16"
   use_pgbouncer         = var.use_pgbouncer
-  use_high_availability = var.use_high_availability
+  enable_high_availability = var.enable_high_availability
   configurations = {
     "azure.extensions" : "HSTORE"
     "max_locks_per_transaction" : "4096"

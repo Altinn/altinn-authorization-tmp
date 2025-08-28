@@ -14,7 +14,7 @@ platform_workflow_principal_ids = [
 db_max_pool_size      = 10
 db_compute_sku        = "D2"
 sbl_endpoint          = "https://ai-tt02-vip-sblbridge.ai.basefarm.net/sblbridge/"
-use_high_availability = true
+enable_high_availability = true
 
 features = {
   a2_party_import = {

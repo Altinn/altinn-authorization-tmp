@@ -48,7 +48,7 @@ variable "use_pgbouncer" {
   default = false
 }
 
-variable "use_high_availability" {
+variable "enable_high_availability" {
   type    = bool
   default = false
 }
