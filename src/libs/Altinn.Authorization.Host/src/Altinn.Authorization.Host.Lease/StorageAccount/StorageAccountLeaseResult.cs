@@ -66,7 +66,7 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
         {
             while (!cancellationToken.IsCancellationRequested && HasLease)
             {
-                await Task.Delay(TimeSpan.FromSeconds(40), cancellationToken);
+                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
 
                 if (!cancellationToken.IsCancellationRequested && HasLease)
                 {
