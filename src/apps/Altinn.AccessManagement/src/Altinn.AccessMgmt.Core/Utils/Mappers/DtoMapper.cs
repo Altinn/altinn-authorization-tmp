@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models.Compact;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Utils;
@@ -13,20 +14,20 @@ public partial class DtoMapper
     {
         return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.To.Id).Select(relation => new RelationPackageDto()
         {
-            Party = relation.To,
-            Roles = res.Where(t => t.To.Id == relation.To.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.To.Id == relation.To.Id && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Party = Convert(relation.To),
+            Roles = res.Where(t => t.To.Id == relation.To.Id).Select(t => Convert(t.Role)).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.To.Id == relation.To.Id && t.Package != null).Select(t => ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubRelationDtoToOthers(res, relation.To.Id).ToList() : new()
         });
     }
-    
+
     public IEnumerable<RelationPackageDto> ExtractSubRelationPackageDtoFromOthers(IEnumerable<Relation> res, Guid party)
     {
         return res.Where(t => t.Reason != "Direct" && t.Via.Id == party).DistinctBy(t => t.From.Id).Select(relation => new RelationPackageDto()
         {
-            Party = relation.From,
-            Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.From.Id == relation.From.Id && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Party = Convert(relation.From),
+            Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => Convert(t.Role)).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.From.Id == relation.From.Id && t.Package != null).Select(t => ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
             Connections = new()
         });
     }
@@ -35,8 +36,8 @@ public partial class DtoMapper
     {
         return res.Where(t => t.Reason != "Direct" && t.Via.Id == party).DistinctBy(t => t.From.Id).Select(relation => new RelationDto()
         {
-            Party = relation.From,
-            Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Party = Convert(relation.From),
+            Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => Convert(t.Role)).DistinctBy(t => t.Id).ToList(),
             Connections = new()
         });
     }
@@ -45,8 +46,8 @@ public partial class DtoMapper
     {
         return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.To.Id).Select(relation => new RelationDto()
         {
-            Party = relation.To,
-            Roles = res.Where(t => t.To.Id == relation.To.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Party = Convert(relation.To),
+            Roles = res.Where(t => t.To.Id == relation.To.Id).Select(t => Convert(t.Role)).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubRelationDtoToOthers(res, relation.To.Id).ToList() : new()
         });
     }
@@ -55,8 +56,8 @@ public partial class DtoMapper
     {
         return res.Where(t => t.Reason != "Direct" && t.Via.Id == party).DistinctBy(t => t.To.Id).Select(relation => new RelationDto()
         {
-            Party = relation.To,
-            Roles = res.Where(t => t.To.Id == relation.To.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Party = Convert(relation.To),
+            Roles = res.Where(t => t.To.Id == relation.To.Id).Select(t => Convert(t.Role)).DistinctBy(t => t.Id).ToList(),
             Connections = new()
         });
     }
@@ -65,23 +66,19 @@ public partial class DtoMapper
     {
         return res.Where(t => t.Reason != "Direct" && t.Via.Id == party).DistinctBy(t => t.To.Id).Select(relation => new RelationPackageDto()
         {
-            Party = relation.To,
-            Roles = res.Where(t => t.To.Id == relation.To.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.To.Id == relation.To.Id && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Party = Convert(relation.To),
+            Roles = res.Where(t => t.To.Id == relation.To.Id).Select(t => Convert(t.Role)).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.To.Id == relation.To.Id && t.Package != null).Select(t => ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
             Connections = new()
         });
     }
-
-
-
-
 
     public IEnumerable<RelationDto> ExtractRelationDtoFromOthers(IEnumerable<Relation> res, bool includeSubConnections = false)
     {
         return res.DistinctBy(t => t.From.Id).Select(relation => new RelationDto()
         {
-            Party = relation.From,
-            Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Party = Convert(relation.From),
+            Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => Convert(t.Role)).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.From.Id).ToList() : new()
         });
     }
@@ -90,9 +87,9 @@ public partial class DtoMapper
     {
         return res.DistinctBy(t => t.From.Id).Select(relation => new RelationPackageDto()
         {
-            Party = relation.From,
-            Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.From.Id == relation.From.Id && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Party = Convert(relation.From),
+            Roles = res.Where(t => t.From.Id == relation.From.Id).Select(t => Convert(t.Role)).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.From.Id == relation.From.Id && t.Package != null).Select(t => ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.From.Id).ToList() : new()
         });
     }
@@ -110,11 +107,74 @@ public partial class DtoMapper
     {
         return new PermissionDto()
         {
-            From = connection.From,
-            To = connection.To,
-            Via = connection.Via,
-            ViaRole = connection.ViaRole,
-            Role = connection.Role
+            From = Convert(connection.From),
+            To = Convert(connection.To),
+            Via = Convert(connection.Via),
+            ViaRole = Convert(connection.ViaRole),
+            Role = Convert(connection.Role)
+        };
+    }
+
+    public RelationPackageDto Convert(Relation relation)
+    {
+        return new RelationPackageDto()
+        {
+            Party = Convert(relation.To),
+            Roles = new List<CompactRoleDto> { Convert(relation.Role) },
+            Connections = new List<RelationDto> { ConvertRelationDto(relation) },
+            Packages = new List<CompactPackageDto> { ConvertCompactPackage(relation.Package) }
+        };
+    }
+
+    public CompactEntityDto Convert(CompactEntity compactEntity)
+    {
+        return new CompactEntityDto()
+        {
+            Id = compactEntity.Id,
+            Name = compactEntity.Name,
+            Type = compactEntity.Type,
+            Variant = compactEntity.Variant,
+            Parent = Convert(compactEntity.Parent),
+            Children = compactEntity.Children.Select(Convert).ToList(),
+        };
+    }
+
+    public CompactRoleDto Convert(CompactRole role) {
+        {
+            return new CompactRoleDto()
+            {
+                Id = role.Id,
+                Children = role.Children.Select(Convert).ToList(),
+                Code = role.Code
+            };
+        }
+    }
+
+    //public RelationDto ConvertRelationDto(CompactRelation role)
+    //{
+    //    return new RelationDto()
+    //    {
+    //        Party = 
+    //    };
+    //}
+
+    public CompactPackageDto ConvertCompactPackage(CompactPackage package)
+    {
+        return new CompactPackageDto()
+        {
+            Id = package.Id,
+            AreaId = package.AreaId,
+            Urn = package.Urn
+        };
+    }
+
+    public CompactPackageDto ConvertCompactPackage(AccessPackageDto.Compact compact)
+    {
+        return new CompactPackageDto()
+        {
+            Id = compact.Id,
+            AreaId = compact.AreaId,
+            Urn = compact.Urn
         };
     }
 }

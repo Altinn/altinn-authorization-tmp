@@ -132,7 +132,7 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
         {
             return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
-                Package = permission.Package,
+                Package = Convert(permission.Package),
                 Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(dtoConverter.ConvertToPermission)
             });
         }
@@ -161,7 +161,7 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
         {
             return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
-                Package = permission.Package,
+                Package = Convert(permission.Package),
                 Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(dtoConverter.ConvertToPermission)
             });
         }
@@ -235,5 +235,15 @@ public class RelationService(AppDbContext dbContext, DtoMapper dtoConverter) : I
         }
 
         return [];
+    }
+
+    private CompactPackageDto Convert(PersistenceEF.Models.CompactPackage compactPackage)
+    {
+        return new CompactPackageDto()
+        {
+            Id = compactPackage.Id,
+            AreaId = compactPackage.AreaId,
+            Urn = compactPackage.Urn,
+        };
     }
 }
