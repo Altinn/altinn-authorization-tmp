@@ -29,8 +29,8 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
         {
             var columns = GetDataColumnNames(operation, model);
             
-            //builder.AppendLine(GenerateAuditInsertFunctionAndTrigger(operation.Schema, operation.Name, columns));
-            //builder.EndCommand();
+            builder.AppendLine(GenerateAuditInsertFunctionAndTrigger(operation.Schema, operation.Name, columns));
+            builder.EndCommand();
 
             builder.AppendLine(GenerateAuditUpdateFunctionAndTrigger(operation.Schema, operation.Name, columns));
             builder.EndCommand();
