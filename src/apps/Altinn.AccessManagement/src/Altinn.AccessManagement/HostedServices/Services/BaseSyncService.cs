@@ -43,8 +43,6 @@ public class BaseSyncService(IAltinnLease lease, IFeatureManager featureManager,
             configureLeaseContent(content);
             await Lease.Put(ls, content, cancellationToken);
         }
-
-        await Lease.RefreshLease(ls, cancellationToken);
     }
 }
 

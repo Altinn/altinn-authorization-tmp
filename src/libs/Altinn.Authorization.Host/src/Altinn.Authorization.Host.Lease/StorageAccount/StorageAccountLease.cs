@@ -25,20 +25,22 @@ public partial class StorageAccountLease(IAzureClientFactory<BlobServiceClient> 
     private IAzureClientFactory<BlobServiceClient> Factory { get; } = factory;
 
     /// <inheritdoc/>
-    public async Task<LeaseResult<T>> TryAquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
+    public async Task<LeaseResult<T>> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
         where T : class, new()
     {
         var client = CreateClient(leaseName);
         await CreateEmptyFileIfNotExists<T>(client, cancellationToken);
         var leaseClient = client.GetBlobLeaseClient();
-        var content = await client.DownloadContentAsync(cancellationToken);
-        var data = content.Value.Content.ToObjectFromJson<T>();
 
         try
         {
             var lease = await leaseClient.AcquireAsync(TimeSpan.FromSeconds(60), default, cancellationToken);
             Log.AcquiredLease(Logger, lease.Value.LeaseId);
-            return new StorageAccountLeaseResult<T>()
+            
+            var content = await client.DownloadContentAsync(cancellationToken);
+            var data = content.Value.Content.ToObjectFromJson<T>();
+            
+            var leaseResult = new StorageAccountLeaseResult<T>()
             {
                 LeaseName = leaseName,
                 BlobClient = client,
@@ -47,10 +49,18 @@ public partial class StorageAccountLease(IAzureClientFactory<BlobServiceClient> 
                 Response = lease.Value,
                 Implementation = this,
             };
+            
+            leaseResult.DispachLeaseRefresher();
+            
+            return leaseResult;
         }
         catch (RequestFailedException ex) when (ex.ErrorCode == "LeaseAlreadyPresent")
         {
             Log.LeaseAlreadyTaken(Logger);
+            
+            var content = await client.DownloadContentAsync(cancellationToken);
+            var data = content.Value.Content.ToObjectFromJson<T>();
+            
             return new StorageAccountLeaseResult<T>()
             {
                 LeaseName = leaseName,
@@ -69,21 +79,30 @@ public partial class StorageAccountLease(IAzureClientFactory<BlobServiceClient> 
     {
         if (lease.HasLease && lease is StorageAccountLeaseResult<T> castedLease)
         {
-            var content = JsonSerializer.Serialize(data);
-            using var contentStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            await castedLease.BlobClient.UploadAsync(
-            contentStream,
-            new BlobUploadOptions()
+            try
             {
-                Conditions = new()
+                var content = JsonSerializer.Serialize(data);
+                using var contentStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+                await castedLease.BlobClient.UploadAsync(
+                contentStream,
+                new BlobUploadOptions()
                 {
-                    LeaseId = castedLease.Response.LeaseId,
+                    Conditions = new()
+                    {
+                        LeaseId = castedLease.Response.LeaseId,
+                    },
                 },
-            },
-            cancellationToken);
+                cancellationToken);
 
-            lease.Data = data;
-            return lease;
+                lease.Data = data;
+                return lease;
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == "LeaseLost" || ex.ErrorCode == "LeaseAlreadyPresent")
+            {
+                Log.FailedToUploadData(Logger, ex);
+                castedLease.Response = null;
+                return castedLease;
+            }
         }
 
         return lease;
@@ -113,21 +132,29 @@ public partial class StorageAccountLease(IAzureClientFactory<BlobServiceClient> 
     {
         if (lease.HasLease && lease is StorageAccountLeaseResult<T> castedLease)
         {
-            var leaseExpirationTime = castedLease.Acquired.AddSeconds(Convert.ToDouble(castedLease.Response.LeaseTime));
-            if (leaseExpirationTime < DateTime.UtcNow.AddSeconds(20))
+            try
             {
+                var result = await castedLease.LeaseClient.RenewAsync(default, cancellationToken);
+                castedLease.Response = result;
+                Log.LeaseRenewed(Logger, result.Value.LeaseId);
+                return castedLease;
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == "LeaseLost" || ex.ErrorCode == "LeaseAlreadyPresent")
+            {
+                Log.CantRefreshLease(Logger, ex);
+                castedLease.Response = null;
+                
                 try
                 {
-                    var result = await castedLease.LeaseClient.RenewAsync(default, cancellationToken);
-                    castedLease.Response = result;
-                    return castedLease;
+                    var content = await castedLease.BlobClient.DownloadContentAsync(cancellationToken);
+                    castedLease.Data = content.Value.Content.ToObjectFromJson<T>();
                 }
-                catch (RequestFailedException ex) when (ex.ErrorCode == "LeaseLost" || ex.ErrorCode == "LeaseAlreadyPresent")
+                catch (RequestFailedException downloadEx)
                 {
-                    Log.CantRefreshLease(Logger, ex);
-                    castedLease.Response = null;
-                    return castedLease;
+                    Log.FailedToReloadData(Logger, downloadEx);
                 }
+                
+                return castedLease;
             }
         }
 
@@ -148,6 +175,16 @@ public partial class StorageAccountLease(IAzureClientFactory<BlobServiceClient> 
         catch (RequestFailedException ex) when (ex.ErrorCode == "BlobAlreadyExists")
         {
             Log.BlobAlreadyExists(Logger, ex);
+        }
+        catch (RequestFailedException ex) when (ex.ErrorCode == "ContainerNotFound")
+        {
+            Log.ContainerNotFound(Logger, ex);
+            throw;
+        }
+        catch (RequestFailedException ex)
+        {
+            Log.FailedToCreateBlob(Logger, ex);
+            throw;
         }
     }
 
@@ -171,7 +208,22 @@ public partial class StorageAccountLease(IAzureClientFactory<BlobServiceClient> 
         [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Lease is already taken")]
         internal static partial void LeaseAlreadyTaken(ILogger logger);
 
-        [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Aquired lease with id {leaseId}")]
+        [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Acquired lease with id {leaseId}")]
         internal static partial void AcquiredLease(ILogger logger, string leaseId);
+
+        [LoggerMessage(EventId = 5, Level = LogLevel.Warning, Message = "Failed to upload data to blob")]
+        internal static partial void FailedToUploadData(ILogger logger, RequestFailedException ex);
+
+        [LoggerMessage(EventId = 6, Level = LogLevel.Error, Message = "Container not found when creating blob")]
+        internal static partial void ContainerNotFound(ILogger logger, RequestFailedException ex);
+
+        [LoggerMessage(EventId = 7, Level = LogLevel.Error, Message = "Failed to create blob")]
+        internal static partial void FailedToCreateBlob(ILogger logger, RequestFailedException ex);
+
+        [LoggerMessage(EventId = 8, Level = LogLevel.Warning, Message = "Failed to reload blob data after lease loss")]
+        internal static partial void FailedToReloadData(ILogger logger, RequestFailedException ex);
+
+        [LoggerMessage(EventId = 9, Level = LogLevel.Debug, Message = "Lease renewed with id {leaseId}")]
+        internal static partial void LeaseRenewed(ILogger logger, string leaseId);
     }
 }

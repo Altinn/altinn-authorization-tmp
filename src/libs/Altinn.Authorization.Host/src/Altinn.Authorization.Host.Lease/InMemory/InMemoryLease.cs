@@ -83,7 +83,7 @@ public class InMemoryLease : IAltinnLease
     }
 
     /// <inheritdoc/>
-    public async Task<LeaseResult<T>> TryAquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
+    public async Task<LeaseResult<T>> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
         where T : class, new()
     {
         var leaseLock = GetLock(leaseName);

@@ -1,6 +1,7 @@
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using Microsoft.Extensions.Logging;
 
 namespace Altinn.Authorization.Host.Lease.StorageAccount;
 
@@ -13,6 +14,8 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     where T : class
 {
     private bool _disposed = false;
+    private CancellationTokenSource _renewalCancellation;
+    private Task _renewalTask;
 
     /// <inheritdoc/>
     public override bool HasLease => !string.IsNullOrEmpty(Response?.LeaseId);
@@ -43,13 +46,67 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     internal IAltinnLease Implementation { get; init; }
 
     /// <summary>
+    /// Starts automatic lease renewal in the background.
+    /// </summary>
+    internal void DispachLeaseRefresher()
+    {
+        if (HasLease && _renewalTask == null)
+        {
+            _renewalCancellation = new CancellationTokenSource();
+            _renewalTask = LeaseRefresher(_renewalCancellation.Token);
+        }
+    }
+
+    /// <summary>
+    /// Background renewal loop that runs every 30 seconds (half the lease duration).
+    /// </summary>
+    private async Task LeaseRefresher(CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested && HasLease)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(40), cancellationToken);
+
+                if (!cancellationToken.IsCancellationRequested && HasLease)
+                {
+                    await Implementation.RefreshLease(this, cancellationToken);
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception)
+        {
+        }
+    }
+
+    /// <summary>
     /// Releases the lease synchronously when the object is disposed.
     /// </summary>
     public override void Dispose()
     {
         if (!_disposed)
         {
-            Implementation.Release(this, default).GetAwaiter().GetResult();
+            _renewalCancellation?.Cancel();
+            try
+            {
+                _renewalTask?.Wait(TimeSpan.FromSeconds(5));
+            }
+            catch (AggregateException)
+            {
+            }
+
+            try
+            {
+                Implementation.Release(this, default).ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            catch
+            {
+            }
+
+            _renewalCancellation?.Dispose();
         }
 
         _disposed = true;
@@ -63,7 +120,27 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     {
         if (!_disposed)
         {
-            await Implementation.Release(this, default);
+            _renewalCancellation?.Cancel();
+            if (_renewalTask is { })
+            {
+                try
+                {
+                    await _renewalTask.WaitAsync(TimeSpan.FromSeconds(5));
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            try
+            {
+                await Implementation.Release(this, default).ConfigureAwait(false);
+            }
+            catch
+            {
+            }
+
+            _renewalCancellation?.Dispose();
         }
 
         _disposed = true;
