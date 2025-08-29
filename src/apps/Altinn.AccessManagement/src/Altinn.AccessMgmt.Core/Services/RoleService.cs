@@ -101,9 +101,15 @@ public class RoleService(AppDbContext db, DtoMapper dtoConverter, AuditValues au
     public async Task<IEnumerable<RolePackageDto>> GetPackagesForRole(Guid id, CancellationToken cancellationToken = default)
     {
         var rolePackages = await db.RolePackages.AsNoTracking().Where(t => t.RoleId == id).ToListAsync(cancellationToken);
-        if (rolePackages == null)
+        if (rolePackages == null || rolePackages.Count == 0)
         {
-            return null;
+            var role = await db.Roles.AsNoTracking().SingleAsync(t => t.Id == id, cancellationToken);
+            if (role == null)
+            {
+                return null;
+            }
+
+            return [];
         }
 
         var roleDto = DtoMapper.Convert(rolePackages.First().Role);
