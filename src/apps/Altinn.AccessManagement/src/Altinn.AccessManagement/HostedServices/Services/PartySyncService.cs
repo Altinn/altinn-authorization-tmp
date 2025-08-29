@@ -84,22 +84,30 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
             foreach (var item in page?.Content.Data ?? [])
             {
-                if (item.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    continue;
+                    if (item.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    var entity = ConvertPartyModel(item, options: options, cancellationToken: cancellationToken);
+
+                    if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
+                    {
+                        await Flush(batchId);
+                    }
+
+                    // UpsertEntityLookup(model, options, cancellationToken: cancellationToken);
+
+                    bulk.Add(entity);
+                    bulkLookup.AddRange(ConvertPartyModelToLookup(item));
                 }
-
-                var entity = ConvertPartyModel(item, options: options, cancellationToken: cancellationToken);
-
-                if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
+                catch (Exception ex)
                 {
-                    await Flush(batchId);
+                    _logger.LogError(ex, "failed to synchorize party {partyUuid}", item.PartyUuid);
+                    throw;
                 }
-
-                // UpsertEntityLookup(model, options, cancellationToken: cancellationToken);
-
-                bulk.Add(entity);
-                bulkLookup.AddRange(ConvertPartyModelToLookup(item));
             }
 
             await Flush(batchId);
@@ -291,7 +299,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 Value = model.PersonIdentifier,
                 IsProtected = true
             });
-            if (model.User is { } && model.User.UserId > 0)
+            if (model.User is { UserId: > 0 })
             {
                 res.Add(new EntityLookup()
                 {
@@ -301,7 +309,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     IsProtected = false,
                 });
             }
-            
+
             if (model.IsDeleted)
             {
                 // DeletedAt missing in register. (18.juni. 2025)
