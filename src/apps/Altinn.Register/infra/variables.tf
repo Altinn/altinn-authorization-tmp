@@ -67,11 +67,26 @@ variable "use_pgbouncer" {
   default = false
 }
 
+variable "enable_high_availability" {
+  type    = bool
+  default = false
+}
+
 variable "features" {
   type = object({
     a2_party_import = optional(object({
       parties  = optional(bool, false),
       user_ids = optional(bool, false),
+      profiles = optional(bool, false),
+    }), {})
+  })
+  default = {}
+}
+
+variable "config" {
+  type = object({
+    a2_party_import = optional(object({
+      max_db_size_in_gib = optional(number, 20),
     }), {})
   })
   default = {}

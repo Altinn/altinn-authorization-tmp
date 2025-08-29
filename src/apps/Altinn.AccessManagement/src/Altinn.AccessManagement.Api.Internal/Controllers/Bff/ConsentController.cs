@@ -2,6 +2,7 @@
 using Altinn.AccessManagement.Api.Internal.Extensions;
 using Altinn.AccessManagement.Api.Internal.Utils;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models.Consent;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.Authorization.ABAC.Xacml.JsonProfile;
@@ -140,6 +141,16 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 if (!isAuthorized)
                 {
                     return Forbid();
+                }
+            }
+
+            if (consentRequest.Value.ValidTo < DateTimeOffset.Now)
+            {
+                ValidationErrorBuilder validationErrorsBuilder = default;
+                validationErrorsBuilder.Add(ValidationErrors.TimeNotInFuture, "ValidTo");
+                if (validationErrorsBuilder.TryBuild(out var beforeErrorREsult))
+                {
+                    return beforeErrorREsult.ToActionResult();
                 }
             }
 

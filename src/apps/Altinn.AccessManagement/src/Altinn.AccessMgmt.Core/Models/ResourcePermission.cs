@@ -10,10 +10,10 @@ public class ResourcePermission
     /// <summary>
     /// Resource the permissions are for
     /// </summary>
-    public CompactResource Resource { get; set; }
+    public Resource Resource { get; set; }
 
     /// <summary>
     /// Parties with permissions
     /// </summary>
-    public IEnumerable<Permission> Permissions { get; set; }
+    public IEnumerable<PermissionDto> Permissions { get; set; }
 }

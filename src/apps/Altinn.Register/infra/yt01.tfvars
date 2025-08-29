@@ -12,7 +12,7 @@ platform_workflow_principal_ids = [
   "14e02a1e-3292-430e-ae4f-855ed40847fd"  # altinn-register-app-yt01-aks02
 ]
 db_max_pool_size = 10
-db_compute_sku   = "D8"
+db_compute_sku   = "D4"
 db_storage_tier  = "P40"
 sbl_endpoint     = "https://ai-yt01-vip-sblbridge.ai.basefarm.net/sblbridge/"
 
@@ -20,5 +20,11 @@ features = {
   a2_party_import = {
     parties  = true
     user_ids = true
+  }
+}
+
+config = {
+  a2_party_import = {
+    max_db_size_in_gib = 100
   }
 }
