@@ -291,13 +291,17 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 Value = model.PersonIdentifier,
                 IsProtected = true
             });
-            res.Add(new EntityLookup()
+            if (model.User is { } && model.User.UserId > 0)
             {
-                EntityId = Guid.Parse(model.PartyUuid),
-                Key = "UserId",
-                Value = model.User.UserId.ToString(),
-                IsProtected = false,
-            });
+                res.Add(new EntityLookup()
+                {
+                    EntityId = Guid.Parse(model.PartyUuid),
+                    Key = "UserId",
+                    Value = model.User.UserId.ToString(),
+                    IsProtected = false,
+                });
+            }
+            
             if (model.IsDeleted)
             {
                 // DeletedAt missing in register. (18.juni. 2025)
