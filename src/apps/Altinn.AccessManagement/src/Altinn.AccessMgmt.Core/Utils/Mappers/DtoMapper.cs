@@ -115,17 +115,6 @@ public partial class DtoMapper
         };
     }
 
-    public RelationPackageDto Convert(Relation relation)
-    {
-        return new RelationPackageDto()
-        {
-            Party = Convert(relation.To),
-            Roles = new List<CompactRoleDto> { Convert(relation.Role) },
-            Connections = new List<RelationDto> { ConvertRelationDto(relation) },
-            Packages = new List<CompactPackageDto> { ConvertCompactPackage(relation.Package) }
-        };
-    }
-
     public CompactEntityDto Convert(CompactEntity compactEntity)
     {
         return new CompactEntityDto()
@@ -139,24 +128,15 @@ public partial class DtoMapper
         };
     }
 
-    public CompactRoleDto Convert(CompactRole role) {
+    public CompactRoleDto Convert(CompactRole role) 
+    {
+        return new CompactRoleDto()
         {
-            return new CompactRoleDto()
-            {
-                Id = role.Id,
-                Children = role.Children.Select(Convert).ToList(),
-                Code = role.Code
-            };
-        }
+            Id = role.Id,
+            Children = role.Children.Select(Convert).ToList(),
+            Code = role.Code
+        };
     }
-
-    //public RelationDto ConvertRelationDto(CompactRelation role)
-    //{
-    //    return new RelationDto()
-    //    {
-    //        Party = 
-    //    };
-    //}
 
     public CompactPackageDto ConvertCompactPackage(CompactPackage package)
     {
@@ -165,16 +145,6 @@ public partial class DtoMapper
             Id = package.Id,
             AreaId = package.AreaId,
             Urn = package.Urn
-        };
-    }
-
-    public CompactPackageDto ConvertCompactPackage(AccessPackageDto.Compact compact)
-    {
-        return new CompactPackageDto()
-        {
-            Id = compact.Id,
-            AreaId = compact.AreaId,
-            Urn = compact.Urn
         };
     }
 }
