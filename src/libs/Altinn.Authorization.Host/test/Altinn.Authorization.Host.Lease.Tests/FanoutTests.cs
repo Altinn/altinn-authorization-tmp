@@ -23,7 +23,7 @@ public abstract class FanoutTests
             var loop = i;
             threads.Add(new(async () =>
             {
-                var result = await Lease.TryAquireNonBlocking<LeaseContent>("test", CancellationToken.None);
+                using var result = await Lease.TryAcquireNonBlocking<LeaseContent>("test", CancellationToken.None);
 
                 if (result.HasLease)
                 {
@@ -52,7 +52,7 @@ public abstract class FanoutTests
             await thread;
         }
 
-        var result = await Lease.TryAquireNonBlocking<LeaseContent>("test", default);
+        using var result = await Lease.TryAcquireNonBlocking<LeaseContent>("test", default);
 
         Assert.True(result.Data.Data.Aggregate(0, (acc, entry) => acc + entry.Value) >= 1);
     }

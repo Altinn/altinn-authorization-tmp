@@ -14,7 +14,7 @@ public interface IAltinnLease
     /// <param name="leaseName">The name of the lease to acquire.</param>
     /// <param name="cancellationToken">A token that can be used to observe and handle cancellation requests.</param>
     /// <returns>A task that represents the operation, containing the acquired lease.</returns>
-    Task<LeaseResult<T>> TryAquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
+    Task<LeaseResult<T>> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
         where T : class, new();
 
     /// <summary>

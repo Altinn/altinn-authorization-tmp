@@ -149,8 +149,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
                 {
                     Log.FailedToWriteUpdateSubjectForResource(_logger, ex, updatedResource.SubjectUrn, updatedResource.ResourceUrn);
                 }
-
-                await Lease.RefreshLease(ls, cancellationToken);
             }
 
             await UpdateLease(

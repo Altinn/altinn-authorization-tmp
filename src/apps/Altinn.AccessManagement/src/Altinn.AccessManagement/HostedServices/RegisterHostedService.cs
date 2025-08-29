@@ -67,7 +67,7 @@ public partial class RegisterHostedService(
 
             if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesResourceRegistrySync, cancellationToken))
             {
-                await using var ls = await _lease.TryAquireNonBlocking<ResourceRegistryLease>("access_management_resource_registry_sync", cancellationToken);
+                await using var ls = await _lease.TryAcquireNonBlocking<ResourceRegistryLease>("access_management_resource_registry_sync", cancellationToken);
                 if (!ls.HasLease || cancellationToken.IsCancellationRequested)
                 {
                     return;
@@ -78,7 +78,7 @@ public partial class RegisterHostedService(
 
             if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
             {
-                await using var ls = await _lease.TryAquireNonBlocking<RegisterLease>("access_management_register_sync", cancellationToken);
+                await using var ls = await _lease.TryAcquireNonBlocking<RegisterLease>("access_management_register_sync", cancellationToken);
                 if (!ls.HasLease || cancellationToken.IsCancellationRequested)
                 {
                     return;
@@ -126,7 +126,6 @@ public partial class RegisterHostedService(
             if (canRunResourceSync)
             {
                 await resourceSyncService.SyncResourceOwners(cancellationToken);
-                await _lease.RefreshLease(ls, cancellationToken);
                 await resourceSyncService.SyncResources(ls, cancellationToken);
                 await statusService.RunSuccess(resourceStatus, options);
             }
