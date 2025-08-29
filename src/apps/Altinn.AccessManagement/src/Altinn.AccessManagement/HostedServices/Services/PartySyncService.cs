@@ -105,7 +105,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "failed to synchorize party {partyUuid}", item.PartyUuid);
+                    _logger.LogError(ex, "failed to sync party {partyUuid}", item.PartyUuid);
                     throw;
                 }
             }
