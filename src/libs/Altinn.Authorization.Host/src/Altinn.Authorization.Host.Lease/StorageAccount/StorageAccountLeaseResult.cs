@@ -1,7 +1,8 @@
+using System.Diagnostics;
+using Altinn.Authorization.Host.Lease.Telemetry;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
-using Microsoft.Extensions.Logging;
 
 namespace Altinn.Authorization.Host.Lease.StorageAccount;
 
@@ -19,6 +20,11 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
 
     /// <inheritdoc/>
     public override bool HasLease => !string.IsNullOrEmpty(Response?.LeaseId);
+
+    /// <summary>
+    /// Stopwatch
+    /// </summary>
+    private Stopwatch Stopwatch { get; set; } = new Stopwatch();
 
     /// <summary>
     /// Gets the <see cref="BlobClient"/> instance used to interact with the associated blob.
@@ -74,11 +80,13 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
                 }
             }
         }
-        catch (OperationCanceledException)
-        {
-        }
         catch (Exception)
         {
+        }
+        finally
+        {
+            Stopwatch.Stop();
+            LeaseTelemetry.RecordLeaseDuration(LeaseName, Stopwatch.Elapsed);
         }
     }
 
