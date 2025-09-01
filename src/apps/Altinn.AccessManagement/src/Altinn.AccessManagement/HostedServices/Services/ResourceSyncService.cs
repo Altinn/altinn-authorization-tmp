@@ -106,7 +106,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     }
 
     /// <inheritdoc />
-    public async Task SyncResources(LeaseResult<ResourceRegistryLease> ls, CancellationToken cancellationToken)
+    public async Task SyncResources(LeaseResult ls, CancellationToken cancellationToken)
     {
         var options = new ChangeRequestOptions()
         {
@@ -115,9 +115,9 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         };
 
         ResourceTypes = [.. await _resourceTypeRepository.Get()];
-        var since = ls.Data?.Since ?? default;
+        var leaseData = await Lease.Get<ResourceRegistryLease>(ls, cancellationToken);
 
-        await foreach (var page in await _resourceRegistry.StreamResources(since, ls.Data?.ResourceNextPageLink, cancellationToken))
+        await foreach (var page in await _resourceRegistry.StreamResources(leaseData.Since, leaseData.ResourceNextPageLink, cancellationToken))
         {
             if (page.IsProblem)
             {
@@ -127,7 +127,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 
             foreach (var updatedResource in page.Content.Data)
             {
-                since = updatedResource.UpdatedAt;
+                leaseData.Since = updatedResource.UpdatedAt;
                 try
                 {
                     var resource = await UpsertResource(updatedResource, options, cancellationToken);
@@ -151,14 +151,8 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
                 }
             }
 
-            await UpdateLease(
-            ls,
-            data =>
-            {
-                data.ResourceNextPageLink = page.Content.Links.Next;
-                data.Since = since;
-            },
-            cancellationToken);
+            leaseData.ResourceNextPageLink = page.Content.Links.Next;
+            await Lease.Update(ls, leaseData, cancellationToken);
         }
     }
 

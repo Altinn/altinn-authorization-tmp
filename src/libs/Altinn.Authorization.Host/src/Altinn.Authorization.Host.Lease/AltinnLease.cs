@@ -1,5 +1,5 @@
 using Altinn.Authorization.Host.Identity;
-using Altinn.Authorization.Host.Lease.InMemory;
+using Altinn.Authorization.Host.Lease.Noop;
 using Altinn.Authorization.Host.Lease.StorageAccount;
 using Altinn.Authorization.Host.Lease.Telemetry;
 using Altinn.Authorization.Host.Startup;
@@ -59,7 +59,7 @@ public static partial class AltinnLease
     public static void ConfigureAltinnInMemoryLease(IServiceCollection services)
     {
         Log.AddAltinnLeaseInMemory(Logger);
-        services.AddSingleton<IAltinnLease, InMemoryLease>();
+        services.AddSingleton<IAltinnLease, NoopLease>();
     }
 
     /// <summary>

@@ -10,21 +10,27 @@ namespace Altinn.Authorization.Host.Lease.StorageAccount;
 /// Represents the result of a lease acquisition operation for a blob in the storage account.
 /// Contains information about the lease, the associated blob, and the lease client.
 /// </summary>
-/// <typeparam name="T">The type of data associated with the lease.</typeparam>
-internal class StorageAccountLeaseResult<T> : LeaseResult<T>
-    where T : class
+internal class StorageAccountLeaseResult : LeaseResult
 {
-    private bool _disposed = false;
-    private CancellationTokenSource _renewalCancellation;
-    private Task _renewalTask;
+    internal StorageAccountLeaseResult(
+        BlobClient blobClient,
+        BlobLeaseClient blobLeaseClient,
+        BlobLease blobLease,
+        StorageAccountLease implementation)
+    {
+        BlobClient = blobClient;
+        BlobLeaseClient = blobLeaseClient;
+        BlobLease = blobLease;
+        Implementation = implementation;
 
-    /// <inheritdoc/>
-    public override bool HasLease => !string.IsNullOrEmpty(Response?.LeaseId);
+        if (blobLease is { })
+        {
+            Stopwatch = Stopwatch.StartNew();
+            RenewalTask = LeaseRefresher(LeaseRefresherCancellation.Token);
+        }
+    }
 
-    /// <summary>
-    /// Stopwatch
-    /// </summary>
-    private Stopwatch Stopwatch { get; set; } = new Stopwatch();
+    internal BlobLease BlobLease { get; set; }
 
     /// <summary>
     /// Gets the <see cref="BlobClient"/> instance used to interact with the associated blob.
@@ -32,35 +38,44 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     internal BlobClient BlobClient { get; init; }
 
     /// <summary>
-    /// Gets the <see cref="BlobLeaseClient"/> instance used to manage the lease for the associated blob.
+    /// Gets the <see cref="Azure.Storage.Blobs.Specialized.BlobLeaseClient"/> instance used to manage the lease for the associated blob.
     /// </summary>
-    internal BlobLeaseClient LeaseClient { get; init; }
-
-    /// <summary>
-    /// Gets or sets the <see cref="BlobLease"/> representing the lease on the associated blob.
-    /// </summary>
-    internal BlobLease Response { get; set; }
-
-    /// <summary>
-    /// Gets the date and time when the lease was acquired.
-    /// </summary>
-    internal DateTime Acquired { get; } = DateTime.UtcNow;
+    internal BlobLeaseClient BlobLeaseClient { get; init; }
 
     /// <summary>
     /// Gets the <see cref="IAltinnLease"/> implementation associated with this lease result.
     /// </summary>
-    internal IAltinnLease Implementation { get; init; }
+    internal StorageAccountLease Implementation { get; init; }
 
     /// <summary>
-    /// Starts automatic lease renewal in the background.
+    /// Rwlock
     /// </summary>
-    internal void DispachLeaseRefresher()
+    internal ReaderWriterLockSlim RwLock { get; init; } = new(LockRecursionPolicy.SupportsRecursion);
+
+    private bool _disposed = false;
+
+    /// <summary>
+    /// Stopwatch
+    /// </summary>
+    private Stopwatch Stopwatch { get; init; }
+
+    private CancellationTokenSource LeaseRefresherCancellation { get; init; } = new CancellationTokenSource();
+
+    private Task RenewalTask { get; init; }
+
+    /// <summary>
+    /// Gets Cancelled if lease is lost.
+    /// </summary>
+    /// <param name="cancellationTokens">Cancellation Token.</param>
+    /// <returns></returns>
+    public CancellationToken LinkTokens(params CancellationToken[] cancellationTokens)
     {
-        if (HasLease && _renewalTask == null)
-        {
-            _renewalCancellation = new CancellationTokenSource();
-            _renewalTask = LeaseRefresher(_renewalCancellation.Token);
-        }
+        return CancellationTokenSource.CreateLinkedTokenSource([LeaseRefresherCancellation.Token, .. cancellationTokens]).Token;
+    }
+
+    internal void Cancel()
+    {
+        LeaseRefresherCancellation.Cancel();
     }
 
     /// <summary>
@@ -70,14 +85,11 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     {
         try
         {
-            while (!cancellationToken.IsCancellationRequested && HasLease)
+            var refreshDelay = StorageAccountLease.MaxLeaseTime / 2;
+            while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
-
-                if (!cancellationToken.IsCancellationRequested && HasLease)
-                {
-                    await Implementation.RefreshLease(this, cancellationToken);
-                }
+                await Task.Delay(refreshDelay, cancellationToken);
+                await Implementation.RefreshLease(this, cancellationToken);
             }
         }
         catch (Exception)
@@ -86,7 +98,7 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
         finally
         {
             Stopwatch.Stop();
-            LeaseTelemetry.RecordLeaseDuration(LeaseName, Stopwatch.Elapsed);
+            LeaseTelemetry.RecordLeaseDuration(BlobClient.Name, Stopwatch.Elapsed);
         }
     }
 
@@ -97,12 +109,12 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     {
         if (!_disposed)
         {
-            _renewalCancellation?.Cancel();
+            LeaseRefresherCancellation?.Cancel();
             try
             {
-                _renewalTask?.Wait(TimeSpan.FromSeconds(5));
+                RenewalTask?.Wait(TimeSpan.FromSeconds(5));
             }
-            catch (AggregateException)
+            catch (Exception)
             {
             }
 
@@ -114,7 +126,7 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
             {
             }
 
-            _renewalCancellation?.Dispose();
+            LeaseRefresherCancellation?.Dispose();
         }
 
         _disposed = true;
@@ -128,12 +140,12 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
     {
         if (!_disposed)
         {
-            _renewalCancellation?.Cancel();
-            if (_renewalTask is { })
+            LeaseRefresherCancellation?.Cancel();
+            if (RenewalTask is { })
             {
                 try
                 {
-                    await _renewalTask.WaitAsync(TimeSpan.FromSeconds(5));
+                    await RenewalTask.WaitAsync(TimeSpan.FromSeconds(5));
                 }
                 catch (Exception)
                 {
@@ -148,7 +160,7 @@ internal class StorageAccountLeaseResult<T> : LeaseResult<T>
             {
             }
 
-            _renewalCancellation?.Dispose();
+            LeaseRefresherCancellation?.Dispose();
         }
 
         _disposed = true;

@@ -1,10 +1,8 @@
-﻿using System.Linq.Expressions;
-using Altinn.AccessManagement.HostedServices.Contracts;
+﻿using Altinn.AccessManagement.HostedServices.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Models;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.AccessManagement.HostedServices;
@@ -50,13 +48,14 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     /// </summary>
     /// <param name="ls">The lease result containing the lease data and status.</param>
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-    public async Task SyncParty(LeaseResult<RegisterLease> ls, CancellationToken cancellationToken)
+    public async Task SyncParty(LeaseResult ls, CancellationToken cancellationToken)
     {
         var options = new ChangeRequestOptions()
         {
             ChangedBy = AuditDefaults.RegisterImportSystem,
             ChangedBySystem = AuditDefaults.RegisterImportSystem
         };
+        var leaseData = await Lease.Get<RegisterLease>(ls, cancellationToken);
 
         var bulk = new List<Entity>();
         var bulkLookup = new List<EntityLookup>();
@@ -64,7 +63,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         EntityTypes = (await _entityTypeRepository.Get(cancellationToken: cancellationToken)).ToList();
         EntityVariants = (await _entityVariantRepository.Get(cancellationToken: cancellationToken)).ToList();
 
-        await foreach (var page in await Register.StreamParties(AltinnRegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await Register.StreamParties(AltinnRegisterClient.AvailableFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -117,7 +116,8 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 return;
             }
 
-            await UpdateLease(ls, data => data.PartyStreamNextPageLink = page.Content.Links.Next, cancellationToken);
+            leaseData.PartyStreamNextPageLink = page.Content.Links.Next;
+            await Lease.Update(ls, leaseData, cancellationToken);
 
             async Task Flush(Guid batchId)
             {

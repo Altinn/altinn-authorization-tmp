@@ -25,25 +25,6 @@ public class BaseSyncService(IAltinnLease lease, IFeatureManager featureManager,
     /// Register
     /// </summary>
     public IAltinnRegister Register { get; } = register;
-
-    /// <summary>
-    /// Update lease
-    /// </summary>
-    protected async Task UpdateLease<T>(LeaseResult<T> ls, Action<T> configureLeaseContent, CancellationToken cancellationToken)
-        where T : class, new()
-    {
-        if (ls.Data is { })
-        {
-            configureLeaseContent(ls.Data);
-            await Lease.Put(ls, ls.Data, cancellationToken);
-        }
-        else
-        {
-            var content = new T();
-            configureLeaseContent(content);
-            await Lease.Put(ls, content, cancellationToken);
-        }
-    }
 }
 
 /// <summary>

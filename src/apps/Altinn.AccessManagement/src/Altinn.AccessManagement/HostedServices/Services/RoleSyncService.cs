@@ -48,7 +48,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     private readonly IIngestService _ingestService;
 
     /// <inheritdoc />
-    public async Task SyncRoles(LeaseResult<RegisterLease> ls, CancellationToken cancellationToken)
+    public async Task SyncRoles(LeaseResult ls, CancellationToken cancellationToken)
     {
         var batchData = new List<Assignment>();
         Guid batchId = Guid.CreateVersion7();
@@ -63,7 +63,9 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         Provider = (await _providerRepository.Get(t => t.Code, "ccr")).FirstOrDefault();
         Roles = (await _roleRepository.Get()).ToList();
 
-        await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
+        var leaseData = await Lease.Get<RegisterLease>(ls, cancellationToken);
+
+        await foreach (var page in await _register.StreamRoles([], leaseData.RoleStreamNextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -123,7 +125,9 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 return;
             }
 
-            await UpdateLease(ls, data => data.RoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
+
+            leaseData.RoleStreamNextPageLink = page.Content.Links.Next;
+            await Lease.Update(ls, leaseData, cancellationToken);
 
             //// await Flush(batchId);
 
