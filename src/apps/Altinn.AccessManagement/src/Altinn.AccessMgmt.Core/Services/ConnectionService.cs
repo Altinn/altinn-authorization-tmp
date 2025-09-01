@@ -3,6 +3,7 @@ using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Services;
@@ -157,4 +158,102 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
 
         return [];
     }
+
+    #region Mappers
+    private IEnumerable<ConnectionPackageDto> ExtractRelationPackageDtoToOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
+    {
+        return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.ToId).Select(relation => new ConnectionPackageDto()
+        {
+            Party = relation.To,
+            Roles = res.Where(t => t.ToId == relation.ToId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.ToId == relation.ToId && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Connections = includeSubConnections ? ExtractSubRelationDtoToOthers(res, relation.ToId).ToList() : new()
+        });
+    }
+    private IEnumerable<ConnectionPackageDto> ExtractSubRelationPackageDtoFromOthers(IEnumerable<Connection> res, Guid party)
+    {
+        return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.FromId).Select(relation => new ConnectionPackageDto()
+        {
+            Party = relation.From,
+            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.FromId == relation.FromId && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Connections = new()
+        });
+    }
+    private IEnumerable<ConnectionDto> ExtractSubRelationDtoFromOthers(IEnumerable<Connection> res, Guid party)
+    {
+        return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.FromId).Select(relation => new ConnectionDto()
+        {
+            Party = relation.From,
+            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Connections = new()
+        });
+    }
+    private IEnumerable<ConnectionDto> ExtractRelationDtoToOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
+    {
+        return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.ToId).Select(relation => new ConnectionDto()
+        {
+            Party = relation.To,
+            Roles = res.Where(t => t.ToId == relation.ToId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Connections = includeSubConnections ? ExtractSubRelationDtoToOthers(res, relation.ToId).ToList() : new()
+        });
+    }
+    private IEnumerable<ConnectionDto> ExtractSubRelationDtoToOthers(IEnumerable<Connection> res, Guid party)
+    {
+        return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.To.Id).Select(relation => new ConnectionDto()
+        {
+            Party = relation.To,
+            Roles = res.Where(t => t.ToId == relation.To.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Connections = new()
+        });
+    }
+    private IEnumerable<ConnectionPackageDto> ExtractSubRelationPackageDtoToOthers(IEnumerable<Connection> res, Guid party)
+    {
+        return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.ToId).Select(relation => new ConnectionPackageDto()
+        {
+            Party = relation.To,
+            Roles = res.Where(t => t.ToId == relation.ToId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.ToId == relation.ToId && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Connections = new()
+        });
+    }
+    private IEnumerable<ConnectionDto> ExtractRelationDtoFromOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
+    {
+        return res.DistinctBy(t => t.FromId).Select(relation => new ConnectionDto()
+        {
+            Party = relation.From,
+            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.FromId).ToList() : new()
+        });
+    }
+    private IEnumerable<ConnectionPackageDto> ExtractRelationPackageDtoFromOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
+    {
+        return res.DistinctBy(t => t.FromId).Select(relation => new ConnectionPackageDto()
+        {
+            Party = relation.From,
+            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.FromId == relation.FromId && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.FromId).ToList() : new()
+        });
+    }
+    private CompactPermission ConvertToCompactPermission(Connection connection)
+    {
+        return new CompactPermission()
+        {
+            From = connection.From,
+            To = connection.To
+        };
+    }
+    private PermissionDto ConvertToPermission(Connection connection)
+    {
+        return new PermissionDto()
+        {
+            From = connection.From,
+            To = connection.To,
+            Via = connection.Via,
+            ViaRole = connection.ViaRole,
+            Role = connection.Role
+        };
+    }
+    #endregion
 }
