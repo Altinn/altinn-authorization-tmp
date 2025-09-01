@@ -92,8 +92,9 @@ internal class StorageAccountLeaseResult : LeaseResult
                 await Implementation.RefreshLease(this, cancellationToken);
             }
         }
-        catch (Exception)
+        catch
         {
+            // Terminate silently
         }
         finally
         {
@@ -114,8 +115,9 @@ internal class StorageAccountLeaseResult : LeaseResult
             {
                 RenewalTask?.Wait(TimeSpan.FromSeconds(5));
             }
-            catch (Exception)
+            catch
             {
+                // Terminate silently
             }
 
             try
@@ -124,6 +126,7 @@ internal class StorageAccountLeaseResult : LeaseResult
             }
             catch
             {
+                // Terminate silently
             }
 
             LeaseRefresherCancellation?.Dispose();
@@ -140,7 +143,7 @@ internal class StorageAccountLeaseResult : LeaseResult
     {
         if (!_disposed)
         {
-            LeaseRefresherCancellation?.Cancel();
+            await LeaseRefresherCancellation?.CancelAsync();
             if (RenewalTask is { })
             {
                 try
@@ -149,6 +152,7 @@ internal class StorageAccountLeaseResult : LeaseResult
                 }
                 catch (Exception)
                 {
+                    // Terminate silently
                 }
             }
 
@@ -158,6 +162,7 @@ internal class StorageAccountLeaseResult : LeaseResult
             }
             catch
             {
+                // Terminate silently
             }
 
             LeaseRefresherCancellation?.Dispose();

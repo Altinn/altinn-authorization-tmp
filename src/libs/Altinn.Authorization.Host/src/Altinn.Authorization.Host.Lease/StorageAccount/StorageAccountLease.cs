@@ -80,12 +80,13 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
     }
 
     /// <inheritdoc/>
-    public async Task Update<T>(LeaseResult activeLease, Action<T> data, CancellationToken cancellationToken = default)
+    public async Task Update<T>(LeaseResult activeLease, Action<T> configureData, CancellationToken cancellationToken = default)
         where T : class, new()
     {
-        if (data is { })
+        if (configureData is { })
         {
-            var content = new T();
+            var data = new T();
+            configureData(data);
             await Update(activeLease, data, cancellationToken);
         }
     }
@@ -148,7 +149,7 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
             }
 
             var blobClient = lease.BlobClient.GetBlobLeaseClient(lease.BlobLease.LeaseId);
-            var result = await LeaseTelemetry.RecordReleaseLease(Logger, lease.BlobClient.Name, async () => await blobClient.ReleaseAsync(default, cancellationToken));
+            await LeaseTelemetry.RecordReleaseLease(Logger, lease.BlobClient.Name, async () => await blobClient.ReleaseAsync(default, cancellationToken));
         }
         catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.LeaseLost || ex.ErrorCode == BlobErrorCode.LeaseAlreadyPresent)
         {
@@ -172,8 +173,7 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
                 Unreachable();
             }
 
-            var result = await LeaseTelemetry.RecordRefreshLease(Logger, lease.BlobClient.Name, async () => await lease.BlobLeaseClient.RenewAsync(default, cancellationToken));
-            lease.BlobLease = result;
+            lease.BlobLease = await LeaseTelemetry.RecordRefreshLease(Logger, lease.BlobClient.Name, async () => await lease.BlobLeaseClient.RenewAsync(default, cancellationToken));
         }
         catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.LeaseLost || ex.ErrorCode == BlobErrorCode.LeaseAlreadyPresent)
         {
@@ -196,20 +196,13 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
         return leaseResult;
     }
 
-    internal async Task CreateEmptyFileIfNotExists<T>(BlobClient client, CancellationToken cancellationToken)
+    internal static async Task CreateEmptyFileIfNotExists<T>(BlobClient client, CancellationToken cancellationToken)
     {
-        try
+        if (!await client.ExistsAsync(cancellationToken))
         {
-            if (!await client.ExistsAsync(cancellationToken))
-            {
-                var bytes = Encoding.UTF8.GetBytes("{}");
-                using var stream = new MemoryStream(bytes);
-                await client.UploadAsync(stream, cancellationToken);
-            }
-        }
-        catch (RequestFailedException)
-        {
-            throw;
+            var bytes = Encoding.UTF8.GetBytes("{}");
+            using var stream = new MemoryStream(bytes);
+            await client.UploadAsync(stream, cancellationToken);
         }
     }
 

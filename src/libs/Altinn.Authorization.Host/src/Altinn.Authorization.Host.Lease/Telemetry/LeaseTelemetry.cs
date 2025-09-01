@@ -21,6 +21,14 @@ internal static partial class LeaseTelemetry
 
     private const string StatusLeasePresent = "LeasePresent";
 
+    private const string TagStatus = "status";
+
+    private const string TagLease = "lease";
+
+    private const string TagErrorCode = "error_code";
+
+    private const string TagError = "error";
+
     /// <summary>
     /// Used as source for the current project.
     /// </summary>
@@ -33,7 +41,7 @@ internal static partial class LeaseTelemetry
 
     internal static void RecordLeaseDuration(string lease, TimeSpan duration)
     {
-        Meters.LeaseDuration.Record(duration.TotalSeconds, new KeyValuePair<string, object?>("lease", lease));
+        Meters.LeaseDuration.Record(duration.TotalSeconds, new KeyValuePair<string, object?>(TagLease, lease));
     }
 
     internal static async Task<T> RecordLeaseAcquire<T>(ILogger logger, string lease, Func<Task<T>> leaseFunc)
@@ -68,8 +76,8 @@ internal static partial class LeaseTelemetry
             stopwatch.Stop();
             Meters.Acquire.Latency.Record(
                 stopwatch.Elapsed.TotalSeconds,
-                new KeyValuePair<string, object?>("lease", lease),
-                new KeyValuePair<string, object?>("status", status)
+                new KeyValuePair<string, object?>(TagLease, lease),
+                new KeyValuePair<string, object?>(TagStatus, status)
             );
         }
 
@@ -77,7 +85,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Lease already present",
-                tags: new ActivityTagsCollection([new("lease", lease)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease)])));
 
             Meters.Acquire.Present.Increment(lease);
             Log.Acquire.Present(logger, lease);
@@ -87,7 +95,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Failed to acquire lease",
-                tags: new ActivityTagsCollection([new("lease", lease), new("error_code", errorCode)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease), new(TagErrorCode, errorCode)])));
 
             Meters.Acquire.Failed.Increment(lease);
             Log.Acquire.Failed(logger, lease, errorCode);
@@ -97,7 +105,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Successfully acquired lease",
-                tags: new ActivityTagsCollection([new("lease", lease)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease)])));
 
             Meters.Acquire.Success.Increment(lease);
             Log.Acquire.Success(logger, lease);
@@ -137,8 +145,8 @@ internal static partial class LeaseTelemetry
             stopwatch.Stop();
             Meters.Put.Latency.Record(
                 stopwatch.Elapsed.TotalSeconds,
-                new KeyValuePair<string, object?>("lease", leaseName),
-                new KeyValuePair<string, object?>("status", status)
+                new KeyValuePair<string, object?>(TagLease, leaseName),
+                new KeyValuePair<string, object?>(TagStatus, status)
             );
         }
 
@@ -146,7 +154,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Successfully updated lease content",
-                tags: new ActivityTagsCollection([new("lease", lease)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease)])));
 
             Meters.Put.Success.Increment(lease);
             Log.Put.Success(logger, lease);
@@ -156,7 +164,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Lease lost while updating content",
-                tags: new ActivityTagsCollection([new("lease", lease), new("error_code", errorCode)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease), new(TagErrorCode, errorCode)])));
 
             Meters.Put.LeaseLost.Increment(lease);
             Log.Put.LeaseLost(logger, lease, errorCode);
@@ -166,7 +174,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Failed to update lease content",
-                tags: new ActivityTagsCollection([new("lease", lease), new("error", error)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease), new(TagError, error)])));
 
             Meters.Put.Failed.Increment(lease);
             Log.Put.Failed(logger, lease, error);
@@ -206,8 +214,8 @@ internal static partial class LeaseTelemetry
             stopwatch.Stop();
             Meters.Release.Latency.Record(
                 stopwatch.Elapsed.TotalSeconds,
-                new KeyValuePair<string, object?>("lease", leaseName),
-                new KeyValuePair<string, object?>("status", status)
+                new KeyValuePair<string, object?>(TagLease, leaseName),
+                new KeyValuePair<string, object?>(TagStatus, status)
             );
         }
 
@@ -215,7 +223,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Successfully released lease",
-                tags: new ActivityTagsCollection([new("lease", lease)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease)])));
 
             Meters.Release.Success.Increment(lease);
             Log.Release.Success(logger, lease);
@@ -225,7 +233,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Lease lost while releasing",
-                tags: new ActivityTagsCollection([new("lease", lease), new("error_code", errorCode)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease), new(TagErrorCode, errorCode)])));
 
             Meters.Release.LeaseLost.Increment(lease);
             Log.Release.LeaseLost(logger, lease, errorCode);
@@ -235,7 +243,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Failed to release lease",
-                tags: new ActivityTagsCollection([new("lease", lease), new("error", error)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease), new(TagError, error)])));
 
             Meters.Release.Failed.Increment(lease);
             Log.Release.Failed(logger, lease, error);
@@ -275,8 +283,8 @@ internal static partial class LeaseTelemetry
             stopwatch.Stop();
             Meters.Refresh.Latency.Record(
                 stopwatch.Elapsed.TotalSeconds,
-                new KeyValuePair<string, object?>("lease", leaseName),
-                new KeyValuePair<string, object?>("status", status)
+                new KeyValuePair<string, object?>(TagLease, leaseName),
+                new KeyValuePair<string, object?>(TagStatus, status)
             );
         }
 
@@ -284,7 +292,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Successfully refreshed lease",
-                tags: new ActivityTagsCollection([new("lease", lease)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease)])));
 
             Meters.Refresh.Success.Increment(lease);
             Log.Refresh.Success(logger, lease);
@@ -294,7 +302,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Lease lost while refreshing",
-                tags: new ActivityTagsCollection([new("lease", lease), new("error_code", errorCode)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease), new(TagErrorCode, errorCode)])));
 
             Meters.Refresh.LeaseLost.Increment(lease);
             Log.Refresh.LeaseLost(logger, lease, errorCode);
@@ -304,7 +312,7 @@ internal static partial class LeaseTelemetry
         {
             activity?.AddEvent(new ActivityEvent(
                 "Failed to refresh lease",
-                tags: new ActivityTagsCollection([new("lease", lease), new("error", error)])));
+                tags: new ActivityTagsCollection([new(TagLease, lease), new(TagError, error)])));
 
             Meters.Refresh.Failed.Increment(lease);
             Log.Refresh.Failed(logger, lease, error);
@@ -315,7 +323,7 @@ internal static partial class LeaseTelemetry
     {
         if (counter is { })
         {
-            counter.Add(1, [new("lease", leaseName), .. tags]);
+            counter.Add(1, [new(TagLease, leaseName), .. tags]);
         }
     }
 
