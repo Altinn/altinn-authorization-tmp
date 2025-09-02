@@ -10,7 +10,7 @@ namespace Altinn.Authorization.Host.Lease.StorageAccount;
 /// Represents the result of a lease acquisition operation for a blob in the storage account.
 /// Contains information about the lease, the associated blob, and the lease client.
 /// </summary>
-internal class StorageAccountLeaseResult : LeaseResult
+internal class StorageAccountLeaseResult : IAltinnLeaseResult
 {
     internal StorageAccountLeaseResult(
         BlobClient blobClient,
@@ -106,7 +106,7 @@ internal class StorageAccountLeaseResult : LeaseResult
     /// <summary>
     /// Releases the lease synchronously when the object is disposed.
     /// </summary>
-    public override void Dispose()
+    public void Dispose()
     {
         if (!_disposed)
         {
@@ -139,7 +139,7 @@ internal class StorageAccountLeaseResult : LeaseResult
     /// Releases the lease asynchronously when the object is disposed.
     /// </summary>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
-    public override async ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (!_disposed)
         {

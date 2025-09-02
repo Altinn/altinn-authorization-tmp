@@ -12,33 +12,33 @@ namespace Altinn.Authorization.Host.Lease.Noop;
 public class NoopLease : IAltinnLease
 {
     /// <inheritdoc/>
-    public Task<T> Get<T>(LeaseResult activeLease, CancellationToken cancellationToken = default)
+    public Task<T> Get<T>(IAltinnLeaseResult activeLease, CancellationToken cancellationToken = default)
         where T : class, new()
     {
         return Task.FromResult(default(T));
     }
 
     /// <inheritdoc/>
-    public CancellationToken LinkTokens(LeaseResult activeLease, params CancellationToken[] cancellationTokens)
+    public CancellationToken LinkTokens(IAltinnLeaseResult activeLease, params CancellationToken[] cancellationTokens)
     {
         return CancellationTokenSource.CreateLinkedTokenSource(cancellationTokens).Token;
     }
 
     /// <inheritdoc/>
-    public Task<LeaseResult> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
+    public Task<IAltinnLeaseResult> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
     {
         return default;
     }
 
     /// <inheritdoc/>
-    public Task Update<T>(LeaseResult activeLease, T data, CancellationToken cancellationToken = default)
+    public Task Update<T>(IAltinnLeaseResult activeLease, T data, CancellationToken cancellationToken = default)
         where T : class, new()
     {
         return default;
     }
 
     /// <inheritdoc/>
-    public Task Update<T>(LeaseResult activeLease, Action<T> data, CancellationToken cancellationToken = default)
+    public Task Update<T>(IAltinnLeaseResult activeLease, Action<T> data, CancellationToken cancellationToken = default)
         where T : class, new()
     {
         return default;

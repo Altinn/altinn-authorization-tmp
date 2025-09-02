@@ -29,10 +29,10 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
     public void Unreachable() => throw new UnreachableException();
 
     /// <inheritdoc/>
-    public async Task<LeaseResult> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
+    public async Task<IAltinnLeaseResult> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
     {
         var client = CreateClient(leaseName);
-        await CreateEmptyFileIfNotExists<T>(client, cancellationToken);
+        await CreateEmptyFileIfNotExists(client, cancellationToken);
         var leaseClient = client.GetBlobLeaseClient();
 
         try
@@ -62,7 +62,7 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
     }
 
     /// <inheritdoc/>
-    public async Task<T> Get<T>(LeaseResult activeLease, CancellationToken cancellationToken = default)
+    public async Task<T> Get<T>(IAltinnLeaseResult activeLease, CancellationToken cancellationToken = default)
         where T : class, new()
     {
         var lease = AssertLeaseType(activeLease);
@@ -80,7 +80,7 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
     }
 
     /// <inheritdoc/>
-    public async Task Update<T>(LeaseResult activeLease, Action<T> configureData, CancellationToken cancellationToken = default)
+    public async Task Update<T>(IAltinnLeaseResult activeLease, Action<T> configureData, CancellationToken cancellationToken = default)
         where T : class, new()
     {
         if (configureData is { })
@@ -92,7 +92,7 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
     }
 
     /// <inheritdoc/>
-    public async Task Update<T>(LeaseResult activeLease, T data, CancellationToken cancellationToken = default)
+    public async Task Update<T>(IAltinnLeaseResult activeLease, T data, CancellationToken cancellationToken = default)
         where T : class, new()
     {
         var lease = AssertLeaseType(activeLease);
@@ -130,13 +130,13 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
         }
     }
 
-    public CancellationToken LinkTokens(LeaseResult activeLease, params CancellationToken[] cancellationTokens)
+    public CancellationToken LinkTokens(IAltinnLeaseResult activeLease, params CancellationToken[] cancellationTokens)
     {
         var lease = AssertLeaseType(activeLease);
         return lease.LinkTokens(cancellationTokens);
     }
 
-    internal async Task Release(LeaseResult activeLease, CancellationToken cancellationToken = default)
+    internal async Task Release(IAltinnLeaseResult activeLease, CancellationToken cancellationToken = default)
     {
         var lease = AssertLeaseType(activeLease);
         lease.RwLock.EnterWriteLock();
@@ -161,7 +161,7 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
         }
     }
 
-    internal async Task RefreshLease(LeaseResult activeLease, CancellationToken cancellationToken = default)
+    internal async Task RefreshLease(IAltinnLeaseResult activeLease, CancellationToken cancellationToken = default)
     {
         var lease = AssertLeaseType(activeLease);
         lease.RwLock.EnterWriteLock();
@@ -186,7 +186,7 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
         }
     }
 
-    internal static StorageAccountLeaseResult AssertLeaseType(LeaseResult lease)
+    internal static StorageAccountLeaseResult AssertLeaseType(IAltinnLeaseResult lease)
     {
         if (lease is not StorageAccountLeaseResult leaseResult)
         {
@@ -196,14 +196,16 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
         return leaseResult;
     }
 
-    internal static async Task CreateEmptyFileIfNotExists<T>(BlobClient client, CancellationToken cancellationToken)
+    internal static async Task CreateEmptyFileIfNotExists(BlobClient client, CancellationToken cancellationToken)
     {
-        if (!await client.ExistsAsync(cancellationToken))
+        if (await client.ExistsAsync(cancellationToken))
         {
-            var bytes = Encoding.UTF8.GetBytes("{}");
-            using var stream = new MemoryStream(bytes);
-            await client.UploadAsync(stream, cancellationToken);
+            return;
         }
+
+        var bytes = Encoding.UTF8.GetBytes("{}");
+        using var stream = new MemoryStream(bytes);
+        await client.UploadAsync(stream, cancellationToken);
     }
 
     internal BlobClient CreateClient(string blobName) =>

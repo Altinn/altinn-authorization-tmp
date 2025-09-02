@@ -106,7 +106,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     }
 
     /// <inheritdoc />
-    public async Task SyncResources(LeaseResult ls, CancellationToken cancellationToken)
+    public async Task SyncResources(IAltinnLeaseResult ls, CancellationToken cancellationToken)
     {
         var options = new ChangeRequestOptions()
         {

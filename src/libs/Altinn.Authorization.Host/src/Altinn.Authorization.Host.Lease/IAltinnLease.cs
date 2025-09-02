@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace Altinn.Authorization.Host.Lease;
 
 /// <summary>
@@ -16,16 +14,16 @@ public interface IAltinnLease
     /// <param name="leaseName">The name of the lease to acquire.</param>
     /// <param name="cancellationToken">A token that can be used to observe and handle cancellation requests.</param>
     /// <returns>A task that represents the operation, containing the acquired lease.</returns>
-    Task<LeaseResult> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default);
+    Task<IAltinnLeaseResult> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default);
 
-    Task<T> Get<T>(LeaseResult activeLease, CancellationToken cancellationToken = default)
+    Task<T> Get<T>(IAltinnLeaseResult activeLease, CancellationToken cancellationToken = default)
         where T : class, new();
 
-    Task Update<T>(LeaseResult activeLease, T data, CancellationToken cancellationToken = default)
+    Task Update<T>(IAltinnLeaseResult activeLease, T data, CancellationToken cancellationToken = default)
         where T : class, new();
 
-    Task Update<T>(LeaseResult activeLease, Action<T> data, CancellationToken cancellationToken = default)
+    Task Update<T>(IAltinnLeaseResult activeLease, Action<T> configureData, CancellationToken cancellationToken = default)
         where T : class, new();
 
-    CancellationToken LinkTokens(LeaseResult activeLease, params CancellationToken[] cancellationTokens);
+    CancellationToken LinkTokens(IAltinnLeaseResult activeLease, params CancellationToken[] cancellationTokens);
 }
