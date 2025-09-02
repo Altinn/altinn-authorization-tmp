@@ -22,7 +22,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
             .ToListAsync(cancellationToken);
 
-        return dtoConverter.ExtractRelationPackageDtoToOthers(result, includeSubConnections: false);
+        return ExtractRelationPackageDtoToOthers(result, includeSubConnections: false);
     }
 
     /// <inheritdoc />
@@ -34,7 +34,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
             .ToListAsync(cancellationToken);
 
-        return dtoConverter.ExtractRelationDtoToOthers(result, includeSubConnections: false);
+        return ExtractRelationDtoToOthers(result, includeSubConnections: false);
     }
 
     /// <inheritdoc />
@@ -48,7 +48,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
             .ToListAsync(cancellationToken);
 
-        return dtoConverter.ExtractRelationPackageDtoFromOthers(result, includeSubConnections: false);
+        return ExtractRelationPackageDtoFromOthers(result, includeSubConnections: false);
     }
 
     /// <inheritdoc />
@@ -60,7 +60,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
             .ToListAsync(cancellationToken);
 
-        return dtoConverter.ExtractRelationDtoFromOthers(result, includeSubConnections: false);
+        return ExtractRelationDtoFromOthers(result, includeSubConnections: false);
     }
 
     /// <inheritdoc />
@@ -79,7 +79,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
                 Package = permission.Package,
-                Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(dtoConverter.ConvertToPermission)
+                Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
             });
         }
 
@@ -102,7 +102,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
                 Package = permission.Package,
-                Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(dtoConverter.ConvertToPermission)
+                Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
             });
         }
 
@@ -127,7 +127,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             return packages.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
             {
                 Resource = permission.Resource,
-                Permissions = packages.Where(t => t.Resource.Id == permission.Resource.Id).Select(dtoConverter.ConvertToPermission)
+                Permissions = packages.Where(t => t.Resource.Id == permission.Resource.Id).Select(ConvertToPermission)
             });
         }
 
@@ -152,7 +152,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             return packages.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
             {
                 Resource = permission.Resource,
-                Permissions = packages.Where(t => t.Resource.Id == permission.Resource.Id).Select(dtoConverter.ConvertToPermission)
+                Permissions = packages.Where(t => t.Resource.Id == permission.Resource.Id).Select(ConvertToPermission)
             });
         }
 
