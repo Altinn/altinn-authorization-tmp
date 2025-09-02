@@ -75,7 +75,7 @@ internal static partial class LeaseTelemetry
         {
             stopwatch.Stop();
             Meters.Acquire.Latency.Record(
-                stopwatch.Elapsed.TotalSeconds,
+                stopwatch.Elapsed.TotalMilliseconds,
                 new KeyValuePair<string, object?>(TagLease, lease),
                 new KeyValuePair<string, object?>(TagStatus, status)
             );
@@ -112,7 +112,7 @@ internal static partial class LeaseTelemetry
         }
     }
 
-    internal static async Task<T> RecordLeasePut<T>(ILogger logger, string leaseName, Func<Task<T>> leaseFunc)
+    internal static async Task<T> RecordLeaseUpdate<T>(ILogger logger, string leaseName, Func<Task<T>> leaseFunc)
     {
         var stopwatch = Stopwatch.StartNew();
         var status = StatusSuccess;
@@ -144,7 +144,7 @@ internal static partial class LeaseTelemetry
         {
             stopwatch.Stop();
             Meters.Update.Latency.Record(
-                stopwatch.Elapsed.TotalSeconds,
+                stopwatch.Elapsed.TotalMilliseconds,
                 new KeyValuePair<string, object?>(TagLease, leaseName),
                 new KeyValuePair<string, object?>(TagStatus, status)
             );
@@ -213,7 +213,7 @@ internal static partial class LeaseTelemetry
         {
             stopwatch.Stop();
             Meters.Release.Latency.Record(
-                stopwatch.Elapsed.TotalSeconds,
+                stopwatch.Elapsed.TotalMilliseconds,
                 new KeyValuePair<string, object?>(TagLease, leaseName),
                 new KeyValuePair<string, object?>(TagStatus, status)
             );
@@ -282,7 +282,7 @@ internal static partial class LeaseTelemetry
         {
             stopwatch.Stop();
             Meters.Refresh.Latency.Record(
-                stopwatch.Elapsed.TotalSeconds,
+                stopwatch.Elapsed.TotalMilliseconds,
                 new KeyValuePair<string, object?>(TagLease, leaseName),
                 new KeyValuePair<string, object?>(TagStatus, status)
             );
@@ -343,7 +343,7 @@ internal static partial class LeaseTelemetry
                 Meter.CreateCounter<int>($"{Namespace}.present");
 
             internal static readonly Histogram<double> Latency =
-                Meter.CreateHistogram<double>($"{Namespace}.latency");
+                Meter.CreateHistogram<double>($"{Namespace}.latency", "ms", "Records the latency in milliseconds for acquiring lease.");
         }
 
         internal static class Update
@@ -360,7 +360,7 @@ internal static partial class LeaseTelemetry
                 Meter.CreateCounter<int>($"{Namespace}.lease_lost");
 
             internal static readonly Histogram<double> Latency =
-                Meter.CreateHistogram<double>($"{Namespace}.latency");
+                Meter.CreateHistogram<double>($"{Namespace}.latency", "ms", "Records the latency in milliseconds for updating lease data.");
         }
 
         internal static class Refresh
@@ -377,7 +377,7 @@ internal static partial class LeaseTelemetry
                 Meter.CreateCounter<int>($"{Namespace}.lease_lost");
 
             internal static readonly Histogram<double> Latency =
-                Meter.CreateHistogram<double>($"{Namespace}.latency");
+                Meter.CreateHistogram<double>($"{Namespace}.latency", "ms", "Records the latency in milliseconds for refreshing lease.");
         }
 
         internal static class Release
@@ -394,12 +394,11 @@ internal static partial class LeaseTelemetry
                 Meter.CreateCounter<int>($"{Namespace}.lease_lost");
 
             internal static readonly Histogram<double> Latency =
-                Meter.CreateHistogram<double>($"{Namespace}.latency");
+                Meter.CreateHistogram<double>($"{Namespace}.latency", "ms", "Records the latency in milliseconds for releasing lease.");
         }
 
-        // Lease duration
         internal static readonly Histogram<double> LeaseDuration =
-            Meter.CreateHistogram<double>("lease.duration");
+            Meter.CreateHistogram<double>("lease.duration", "seconds", "Records the duration for which a lease is held.");
     }
 
     static partial class Log

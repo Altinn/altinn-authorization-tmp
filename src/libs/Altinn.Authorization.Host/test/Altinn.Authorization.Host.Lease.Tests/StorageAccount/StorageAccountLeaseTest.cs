@@ -30,7 +30,7 @@ namespace Altinn.Authorization.Host.Lease.Tests
                 Type = AltinnLeaseType.AzureStorageAccount,
                 StorageAccount = new()
                 {
-                    BlobEndpoint = new Uri("https://staltinnauth001at22.blob.core.windows.net/"),
+                    BlobEndpoint = new Uri("https://{storage_account}.blob.core.windows.net/"),
                 }
             });
 
@@ -43,7 +43,7 @@ namespace Altinn.Authorization.Host.Lease.Tests
         /// </summary>
         /// <param name="numThreads">The number of threads to simulate for lease acquisition.</param>
         /// <returns>A task that represents the asynchronous test operation.</returns>
-        [Theory()]
+        [Theory(Skip = "Need a valid storage account")]
         [InlineData(10)]
         [InlineData(100)]
         [InlineData(1000)]

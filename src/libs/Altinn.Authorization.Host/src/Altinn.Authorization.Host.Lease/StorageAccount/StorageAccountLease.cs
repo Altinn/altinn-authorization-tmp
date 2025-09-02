@@ -64,6 +64,7 @@ internal sealed class StorageAccountLease : ILease
         LeaseRefresherCancellation.Token.ThrowIfCancellationRequested();
     }
 
+    /// <inheritdoc/>
     public async Task<T> Get<T>(CancellationToken cancellationToken = default)
         where T : class, new()
     {
@@ -80,6 +81,7 @@ internal sealed class StorageAccountLease : ILease
         }
     }
 
+    /// <inheritdoc/>
     public async Task Update<T>(T data, CancellationToken cancellationToken = default)
         where T : class, new()
     {
@@ -96,7 +98,7 @@ internal sealed class StorageAccountLease : ILease
                 },
             };
 
-            await LeaseTelemetry.RecordLeasePut(Logger, BlobClient.Name, async () =>
+            await LeaseTelemetry.RecordLeaseUpdate(Logger, BlobClient.Name, async () =>
             {
                 using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
                 return await BlobClient.UploadAsync(stream, options, cancellationToken);
@@ -112,6 +114,7 @@ internal sealed class StorageAccountLease : ILease
         }
     }
 
+    /// <inheritdoc/>
     public async Task Update<T>(Action<T> configureData, CancellationToken cancellationToken = default)
         where T : class, new()
     {
@@ -121,6 +124,43 @@ internal sealed class StorageAccountLease : ILease
             configureData(data);
             await Update(data, cancellationToken);
         }
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) == 1)
+        {
+            return;
+        }
+
+        try
+        {
+            await LeaseRefresherCancellation.CancelAsync();
+            if (RenewalTask is { })
+            {
+                try
+                {
+                    await RenewalTask.WaitAsync(TimeSpan.FromSeconds(5));
+                }
+                catch
+                {
+                }
+            }
+
+            var release = ReleaseLease(CancellationToken.None);
+            await release.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        catch
+        {
+        }
+        finally
+        {
+        }
+
+        Semaphore.Dispose();
+        LeaseRefresherCancellation.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private async Task ReleaseLease(CancellationToken cancellationToken = default)
@@ -161,48 +201,6 @@ internal sealed class StorageAccountLease : ILease
         }
     }
 
-    /// <summary>
-    /// Asynchronous dispose — waits for background tasks and releases lease properly.
-    /// </summary>
-    public async ValueTask DisposeAsync()
-    {
-        if (Interlocked.Exchange(ref _disposed, 1) == 1)
-        {
-            return;
-        }
-
-        try
-        {
-            await LeaseRefresherCancellation.CancelAsync();
-            if (RenewalTask is { })
-            {
-                try
-                {
-                    await RenewalTask.WaitAsync(TimeSpan.FromSeconds(5));
-                }
-                catch
-                {
-                }
-            }
-
-            var release = ReleaseLease(CancellationToken.None);
-            await release.WaitAsync(TimeSpan.FromSeconds(5));
-        }
-        catch
-        {
-        }
-        finally
-        {
-        }
-
-        Semaphore.Dispose();
-        LeaseRefresherCancellation.Dispose();
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Background renewal loop that runs every 30 seconds (half the lease duration).
-    /// </summary>
     private async Task LeaseRefresher()
     {
         try
