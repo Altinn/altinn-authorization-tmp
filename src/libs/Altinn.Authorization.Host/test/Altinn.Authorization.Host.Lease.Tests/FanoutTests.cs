@@ -1,4 +1,5 @@
 using System.Drawing;
+using Microsoft.Identity.Client;
 
 namespace Altinn.Authorization.Host.Lease.Tests;
 
@@ -10,7 +11,7 @@ public abstract class FanoutTests
     /// <summary>
     /// Gets or sets the lease mechanism used for acquiring and releasing leases.
     /// </summary>
-    public abstract IAltinnLease Lease { get; set; }
+    public abstract ILeaseService Lease { get; set; }
 
     /// <summary>
     /// Tests concurrent lease acquisition by multiple threads to check for race conditions and correct behavior.
@@ -25,7 +26,13 @@ public abstract class FanoutTests
             var loop = i;
             threads.Add(new(async () =>
             {
-                await using var result = await Lease.TryAcquireNonBlocking<LeaseContent>("test", CancellationToken.None);
+                await using var lease = await Lease.TryAcquireNonBlocking<LeaseContent>("test", CancellationToken.None);
+                var content = new LeaseContent()
+                {
+                    Data = loop,
+                };
+
+                await lease.Update(content);
             }));
         }
 
@@ -39,7 +46,7 @@ public abstract class FanoutTests
             await thread;
         }
 
-        using var result = await Lease.TryAcquireNonBlocking<LeaseContent>("test", default);
+        await using var result = await Lease.TryAcquireNonBlocking<LeaseContent>("test", default);
     }
 
     /// <summary>
@@ -50,6 +57,6 @@ public abstract class FanoutTests
         /// <summary>
         /// Dictionary storing key-value pairs where the key is a string identifier, and the value represents a count.
         /// </summary>
-        public Dictionary<string, int> Data { get; set; } = new();
+        public int Data { get; set; }
     }
 }

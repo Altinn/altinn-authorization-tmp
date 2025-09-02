@@ -33,7 +33,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     /// Constructor
     /// </summary>
     public ResourceSyncService(
-        IAltinnLease lease,
         IFeatureManager featureManager,
         IAltinnRegister register,
         IAltinnResourceRegistry resourceRegistry,
@@ -47,7 +46,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         IRoleLookupRepository roleLookupRepository,
         IProviderTypeRepository providerTypeRepository,
         ILogger<ResourceSyncService> logger
-        ) : base(lease, featureManager, register)
+        ) : base(featureManager, register)
     {
         _logger = logger;
         _resourceRegistry = resourceRegistry;
@@ -106,7 +105,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     }
 
     /// <inheritdoc />
-    public async Task SyncResources(IAltinnLeaseResult ls, CancellationToken cancellationToken)
+    public async Task SyncResources(ILease lease, CancellationToken cancellationToken)
     {
         var options = new ChangeRequestOptions()
         {
@@ -115,7 +114,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         };
 
         ResourceTypes = [.. await _resourceTypeRepository.Get()];
-        var leaseData = await Lease.Get<ResourceRegistryLease>(ls, cancellationToken);
+        var leaseData = await lease.Get<ResourceRegistryLease>(cancellationToken);
 
         await foreach (var page in await _resourceRegistry.StreamResources(leaseData.Since, leaseData.ResourceNextPageLink, cancellationToken))
         {
@@ -152,7 +151,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
             }
 
             leaseData.ResourceNextPageLink = page.Content.Links.Next;
-            await Lease.Update(ls, leaseData, cancellationToken);
+            await lease.Update(leaseData, cancellationToken);
         }
     }
 

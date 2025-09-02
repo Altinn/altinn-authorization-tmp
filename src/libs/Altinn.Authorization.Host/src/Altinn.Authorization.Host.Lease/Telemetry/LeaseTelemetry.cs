@@ -143,7 +143,7 @@ internal static partial class LeaseTelemetry
         finally
         {
             stopwatch.Stop();
-            Meters.Put.Latency.Record(
+            Meters.Update.Latency.Record(
                 stopwatch.Elapsed.TotalSeconds,
                 new KeyValuePair<string, object?>(TagLease, leaseName),
                 new KeyValuePair<string, object?>(TagStatus, status)
@@ -156,7 +156,7 @@ internal static partial class LeaseTelemetry
                 "Successfully updated lease content",
                 tags: new ActivityTagsCollection([new(TagLease, lease)])));
 
-            Meters.Put.Success.Increment(lease);
+            Meters.Update.Success.Increment(lease);
             Log.Put.Success(logger, lease);
         }
 
@@ -166,7 +166,7 @@ internal static partial class LeaseTelemetry
                 "Lease lost while updating content",
                 tags: new ActivityTagsCollection([new(TagLease, lease), new(TagErrorCode, errorCode)])));
 
-            Meters.Put.LeaseLost.Increment(lease);
+            Meters.Update.LeaseLost.Increment(lease);
             Log.Put.LeaseLost(logger, lease, errorCode);
         }
 
@@ -176,7 +176,7 @@ internal static partial class LeaseTelemetry
                 "Failed to update lease content",
                 tags: new ActivityTagsCollection([new(TagLease, lease), new(TagError, error)])));
 
-            Meters.Put.Failed.Increment(lease);
+            Meters.Update.Failed.Increment(lease);
             Log.Put.Failed(logger, lease, error);
         }
     }
@@ -346,9 +346,9 @@ internal static partial class LeaseTelemetry
                 Meter.CreateHistogram<double>($"{Namespace}.latency");
         }
 
-        internal static class Put
+        internal static class Update
         {
-            private const string Namespace = "lease.put";
+            private const string Namespace = "lease.update";
 
             internal static readonly Counter<int> Success =
                 Meter.CreateCounter<int>($"{Namespace}.success");

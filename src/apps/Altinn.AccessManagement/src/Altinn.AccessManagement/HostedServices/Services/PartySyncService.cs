@@ -25,7 +25,6 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     /// PartySyncService Constructor
     /// </summary>
     public PartySyncService(
-        IAltinnLease lease,
         IFeatureManager featureManager,
         IAltinnRegister register,
         ILogger<RegisterHostedService> logger,
@@ -33,7 +32,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         IEntityLookupRepository lookupRepository,
         IEntityTypeRepository entityTypeRepository,
         IEntityVariantRepository entityVariantRepository
-    ) : base(lease, featureManager, register)
+    ) : base(featureManager, register)
     {
         _logger = logger;
         _lookupRepository = lookupRepository;
@@ -46,16 +45,16 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     /// Synchronizes register data by first acquiring a remote lease and streaming register entries.
     /// Returns if lease is already taken.
     /// </summary>
-    /// <param name="ls">The lease result containing the lease data and status.</param>
+    /// <param name="lease">The lease result containing the lease data and status.</param>
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-    public async Task SyncParty(IAltinnLeaseResult ls, CancellationToken cancellationToken)
+    public async Task SyncParty(ILease lease, CancellationToken cancellationToken)
     {
         var options = new ChangeRequestOptions()
         {
             ChangedBy = AuditDefaults.RegisterImportSystem,
             ChangedBySystem = AuditDefaults.RegisterImportSystem
         };
-        var leaseData = await Lease.Get<RegisterLease>(ls, cancellationToken);
+        var leaseData = await lease.Get<RegisterLease>(cancellationToken);
 
         var bulk = new List<Entity>();
         var bulkLookup = new List<EntityLookup>();
@@ -117,7 +116,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             }
 
             leaseData.PartyStreamNextPageLink = page.Content.Links.Next;
-            await Lease.Update(ls, leaseData, cancellationToken);
+            await lease.Update(leaseData, cancellationToken);
 
             async Task Flush(Guid batchId)
             {

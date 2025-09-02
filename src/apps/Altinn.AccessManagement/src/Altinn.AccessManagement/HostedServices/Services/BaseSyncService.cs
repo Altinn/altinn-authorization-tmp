@@ -9,13 +9,10 @@ namespace Altinn.AccessManagement.HostedServices.Services;
 /// <summary>
 /// Base
 /// </summary>
-public class BaseSyncService(IAltinnLease lease, IFeatureManager featureManager, IAltinnRegister register)
+public class BaseSyncService(
+    IFeatureManager featureManager,
+    IAltinnRegister register)
 {
-    /// <summary>
-    /// Lease
-    /// </summary>
-    public IAltinnLease Lease { get; } = lease;
-
     /// <summary>
     /// Features
     /// </summary>

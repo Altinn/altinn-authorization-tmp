@@ -17,5 +17,5 @@ public interface IResourceSyncService
     /// <summary>
     /// Sync resource mapping
     /// </summary>
-    Task SyncResources(IAltinnLeaseResult ls, CancellationToken cancellationToken);
+    Task SyncResources(ILease ls, CancellationToken cancellationToken);
 }

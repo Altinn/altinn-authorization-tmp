@@ -16,7 +16,6 @@ namespace Altinn.AccessManagement.HostedServices.Services;
 public class RoleSyncService : BaseSyncService, IRoleSyncService
 {
     public RoleSyncService(
-        IAltinnLease lease,
         IAltinnRegister register,
         ILogger<RoleSyncService> logger,
         IFeatureManager featureManager,
@@ -26,7 +25,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         IAssignmentRepository assignmentRepository,
         IEntityRepository entityRepository,
         IEntityTypeRepository entityTypeRepository
-    ) : base(lease, featureManager, register)
+    ) : base(featureManager, register)
     {
         _register = register;
         _logger = logger;
@@ -48,7 +47,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     private readonly IIngestService _ingestService;
 
     /// <inheritdoc />
-    public async Task SyncRoles(IAltinnLeaseResult ls, CancellationToken cancellationToken)
+    public async Task SyncRoles(ILease lease, CancellationToken cancellationToken)
     {
         var batchData = new List<Assignment>();
         Guid batchId = Guid.CreateVersion7();
@@ -63,7 +62,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         Provider = (await _providerRepository.Get(t => t.Code, "ccr")).FirstOrDefault();
         Roles = (await _roleRepository.Get()).ToList();
 
-        var leaseData = await Lease.Get<RegisterLease>(ls, cancellationToken);
+        var leaseData = await lease.Get<RegisterLease>(cancellationToken);
 
         await foreach (var page in await _register.StreamRoles([], leaseData.RoleStreamNextPageLink, cancellationToken))
         {
@@ -127,7 +126,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
 
             leaseData.RoleStreamNextPageLink = page.Content.Links.Next;
-            await Lease.Update(ls, leaseData, cancellationToken);
+            await lease.Update(leaseData, cancellationToken);
 
             //// await Flush(batchId);
 

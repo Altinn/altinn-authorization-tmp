@@ -59,7 +59,7 @@ public static partial class AltinnLease
     public static void ConfigureAltinnInMemoryLease(IServiceCollection services)
     {
         Log.AddAltinnLeaseInMemory(Logger);
-        services.AddSingleton<IAltinnLease, NoopLease>();
+        services.AddSingleton<ILeaseService, NoopLeaseService>();
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ public static partial class AltinnLease
                 });
         });
 
-        services.AddSingleton<IAltinnLease, StorageAccountLease>();
+        services.AddSingleton<ILeaseService, StorageAccountLeaseService>();
     }
 
     static partial class Log
