@@ -1,12 +1,13 @@
 ﻿using System.Linq.Expressions;
 using Altinn.AccessManagement.HostedServices.Contracts;
+using Altinn.AccessManagement.HostedServices.Leases;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Altinn.Authorization.Integration.Platform.ResourceRegistry;
@@ -15,9 +16,10 @@ using Microsoft.FeatureManagement;
 namespace Altinn.AccessManagement.HostedServices.Services;
 
 /// <inheritdoc />
-public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
+public partial class ResourceSyncService : IResourceSyncService
 {
     private readonly ILogger<ResourceSyncService> _logger;
+    private readonly IFeatureManager _featureManager;
     private readonly IAltinnResourceRegistry _resourceRegistry;
     private readonly IIngestService _ingestService;
     private readonly IResourceTypeRepository _resourceTypeRepository;
@@ -33,8 +35,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     /// Constructor
     /// </summary>
     public ResourceSyncService(
-        IFeatureManager featureManager,
-        IAltinnRegister register,
         IAltinnResourceRegistry resourceRegistry,
         IIngestService ingestService,
         IResourceTypeRepository resourceTypeRepository,
@@ -46,7 +46,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         IRoleLookupRepository roleLookupRepository,
         IProviderTypeRepository providerTypeRepository,
         ILogger<ResourceSyncService> logger
-        ) : base(featureManager, register)
+        )
     {
         _logger = logger;
         _resourceRegistry = resourceRegistry;

@@ -23,7 +23,7 @@ public partial class StorageAccountLeaseService(ILogger<StorageAccountLeaseServi
     private static TimeSpan MaxLeaseTime { get; } = TimeSpan.FromSeconds(60);
 
     /// <inheritdoc/>
-    public async Task<ILease> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
+    public async Task<ILease> TryAcquireNonBlocking(string leaseName, CancellationToken cancellationToken = default)
     {
         var client = CreateClient(leaseName);
         await CreateEmptyFileIfNotExists(client, cancellationToken);

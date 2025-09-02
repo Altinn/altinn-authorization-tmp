@@ -12,8 +12,8 @@ namespace Altinn.Authorization.Host.Lease.Noop;
 public class NoopLeaseService : ILeaseService
 {
     /// <inheritdoc/>
-    public Task<ILease> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default)
+    public Task<ILease> TryAcquireNonBlocking(string leaseName, CancellationToken cancellationToken = default)
     {
-        return default;
+        return Task.FromResult(new NoopLease() as ILease);
     }
 }

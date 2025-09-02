@@ -1,11 +1,11 @@
 ﻿using Altinn.AccessManagement.HostedServices.Contracts;
+using Altinn.AccessManagement.HostedServices.Leases;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.AccessManagement;
-using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Microsoft.FeatureManagement;
@@ -17,6 +17,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 {
     private readonly ILogger<RegisterHostedService> _logger;
     private readonly IIngestService _ingestService;
+    private readonly IAltinnRegister _register;
     private readonly IEntityTypeRepository _entityTypeRepository;
     private readonly IEntityVariantRepository _entityVariantRepository;
     private readonly IEntityLookupRepository _lookupRepository;
@@ -32,8 +33,9 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         IEntityLookupRepository lookupRepository,
         IEntityTypeRepository entityTypeRepository,
         IEntityVariantRepository entityVariantRepository
-    ) : base(featureManager, register)
+    )
     {
+        _register = register;
         _logger = logger;
         _lookupRepository = lookupRepository;
         _ingestService = ingestService;
@@ -62,7 +64,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         EntityTypes = (await _entityTypeRepository.Get(cancellationToken: cancellationToken)).ToList();
         EntityVariants = (await _entityVariantRepository.Get(cancellationToken: cancellationToken)).ToList();
 
-        await foreach (var page in await Register.StreamParties(AltinnRegisterClient.AvailableFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await _register.StreamParties(AltinnRegisterClient.AvailableFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -96,7 +98,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                         await Flush(batchId);
                     }
 
-                    // UpsertEntityLookup(model, options, cancellationToken: cancellationToken);
+                    //// UpsertEntityLookup(model, options, cancellationToken: cancellationToken);
 
                     bulk.Add(entity);
                     bulkLookup.AddRange(ConvertPartyModelToLookup(item));

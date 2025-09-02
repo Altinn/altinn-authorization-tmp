@@ -26,5 +26,5 @@ public interface ILeaseService
     /// The returned <see cref="ILease"/> instance contains the leased data and indicates
     /// whether the lease was successfully acquired.
     /// </returns>
-    Task<ILease> TryAcquireNonBlocking<T>(string leaseName, CancellationToken cancellationToken = default);
+    Task<ILease> TryAcquireNonBlocking(string leaseName, CancellationToken cancellationToken = default);
 }

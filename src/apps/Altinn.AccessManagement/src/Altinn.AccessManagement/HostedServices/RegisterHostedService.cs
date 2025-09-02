@@ -1,10 +1,10 @@
 using Altinn.AccessManagement;
 using Altinn.AccessManagement.HostedServices.Contracts;
+using Altinn.AccessManagement.HostedServices.Leases;
 using Altinn.AccessManagement.HostedServices.Services;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Services;
-using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
 using Microsoft.FeatureManagement;
 
@@ -67,7 +67,7 @@ public partial class RegisterHostedService(
 
             if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesResourceRegistrySync, cancellationToken))
             {
-                await using var lease = await _leaseService.TryAcquireNonBlocking<ResourceRegistryLease>("access_management_resource_registry_sync", cancellationToken);
+                await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_resource_registry_sync", cancellationToken);
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return;
@@ -78,7 +78,7 @@ public partial class RegisterHostedService(
 
             if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
             {
-                await using var lease = await _leaseService.TryAcquireNonBlocking<RegisterLease>("access_management_register_sync", cancellationToken);
+                await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_register_sync", cancellationToken);
 
                 await SyncRegisterParty(lease, options, cancellationToken);
                 await SyncRegisterRoles(lease, options, cancellationToken);

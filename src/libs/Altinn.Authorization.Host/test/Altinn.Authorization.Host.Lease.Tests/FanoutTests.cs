@@ -26,7 +26,7 @@ public abstract class FanoutTests
             var loop = i;
             threads.Add(new(async () =>
             {
-                await using var lease = await Lease.TryAcquireNonBlocking<LeaseContent>("test", CancellationToken.None);
+                await using var lease = await Lease.TryAcquireNonBlocking("test", CancellationToken.None);
                 var content = new LeaseContent()
                 {
                     Data = loop,
@@ -46,7 +46,7 @@ public abstract class FanoutTests
             await thread;
         }
 
-        await using var result = await Lease.TryAcquireNonBlocking<LeaseContent>("test", default);
+        await using var result = await Lease.TryAcquireNonBlocking("test", default);
     }
 
     /// <summary>
