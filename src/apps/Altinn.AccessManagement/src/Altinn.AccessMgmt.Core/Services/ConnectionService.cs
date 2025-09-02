@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) : IConnectionService
+public class ConnectionService(AppDbContext dbContext) : IConnectionService
 {
     /// <inheritdoc />
     public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)

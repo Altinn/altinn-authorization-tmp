@@ -3,7 +3,8 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 
 namespace Altinn.AccessMgmt.Core.Utils;
 
-public partial class DtoMapper
+/// <inheritdoc/>
+public partial class DtoMapper : IDtoMapper
 {
     public static CompactPermission ConvertToCompactPermission(Connection connection)
     {
