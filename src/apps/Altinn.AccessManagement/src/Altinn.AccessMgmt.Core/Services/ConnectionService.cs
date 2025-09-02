@@ -79,7 +79,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
                 Package = permission.Package,
-                Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
+                Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(DtoMapper.ConvertToPermission)
             });
         }
 
@@ -102,7 +102,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
                 Package = permission.Package,
-                Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(ConvertToPermission)
+                Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(DtoMapper.ConvertToPermission)
             });
         }
 
@@ -127,7 +127,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             return packages.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
             {
                 Resource = permission.Resource,
-                Permissions = packages.Where(t => t.Resource.Id == permission.Resource.Id).Select(ConvertToPermission)
+                Permissions = packages.Where(t => t.Resource.Id == permission.Resource.Id).Select(DtoMapper.ConvertToPermission)
             });
         }
 
@@ -152,7 +152,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             return packages.DistinctBy(t => t.Resource.Id).Select(permission => new ResourcePermission()
             {
                 Resource = permission.Resource,
-                Permissions = packages.Where(t => t.Resource.Id == permission.Resource.Id).Select(ConvertToPermission)
+                Permissions = packages.Where(t => t.Resource.Id == permission.Resource.Id).Select(DtoMapper.ConvertToPermission)
             });
         }
 
@@ -170,6 +170,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             Connections = includeSubConnections ? ExtractSubRelationDtoToOthers(res, relation.ToId).ToList() : new()
         });
     }
+    
     private IEnumerable<ConnectionPackageDto> ExtractSubRelationPackageDtoFromOthers(IEnumerable<Connection> res, Guid party)
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.FromId).Select(relation => new ConnectionPackageDto()
@@ -180,6 +181,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             Connections = new()
         });
     }
+    
     private IEnumerable<ConnectionDto> ExtractSubRelationDtoFromOthers(IEnumerable<Connection> res, Guid party)
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.FromId).Select(relation => new ConnectionDto()
@@ -189,6 +191,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             Connections = new()
         });
     }
+    
     private IEnumerable<ConnectionDto> ExtractRelationDtoToOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
     {
         return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.ToId).Select(relation => new ConnectionDto()
@@ -198,6 +201,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             Connections = includeSubConnections ? ExtractSubRelationDtoToOthers(res, relation.ToId).ToList() : new()
         });
     }
+    
     private IEnumerable<ConnectionDto> ExtractSubRelationDtoToOthers(IEnumerable<Connection> res, Guid party)
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.To.Id).Select(relation => new ConnectionDto()
@@ -207,6 +211,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             Connections = new()
         });
     }
+    
     private IEnumerable<ConnectionPackageDto> ExtractSubRelationPackageDtoToOthers(IEnumerable<Connection> res, Guid party)
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.ToId).Select(relation => new ConnectionPackageDto()
@@ -217,6 +222,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             Connections = new()
         });
     }
+
     private IEnumerable<ConnectionDto> ExtractRelationDtoFromOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
     {
         return res.DistinctBy(t => t.FromId).Select(relation => new ConnectionDto()
@@ -226,6 +232,7 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.FromId).ToList() : new()
         });
     }
+
     private IEnumerable<ConnectionPackageDto> ExtractRelationPackageDtoFromOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
     {
         return res.DistinctBy(t => t.FromId).Select(relation => new ConnectionPackageDto()
@@ -235,25 +242,6 @@ public class ConnectionService(AppDbContext dbContext, DtoMapper dtoConverter) :
             Packages = res.Where(t => t.FromId == relation.FromId && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.FromId).ToList() : new()
         });
-    }
-    private CompactPermission ConvertToCompactPermission(Connection connection)
-    {
-        return new CompactPermission()
-        {
-            From = connection.From,
-            To = connection.To
-        };
-    }
-    private PermissionDto ConvertToPermission(Connection connection)
-    {
-        return new PermissionDto()
-        {
-            From = connection.From,
-            To = connection.To,
-            Via = connection.Via,
-            ViaRole = connection.ViaRole,
-            Role = connection.Role
-        };
     }
     #endregion
 }
