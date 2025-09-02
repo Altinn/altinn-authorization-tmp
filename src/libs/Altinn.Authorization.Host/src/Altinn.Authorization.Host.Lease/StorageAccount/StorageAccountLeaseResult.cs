@@ -3,6 +3,7 @@ using Altinn.Authorization.Host.Lease.Telemetry;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using System.Threading;
 
 namespace Altinn.Authorization.Host.Lease.StorageAccount;
 
@@ -10,7 +11,7 @@ namespace Altinn.Authorization.Host.Lease.StorageAccount;
 /// Represents the result of a lease acquisition operation for a blob in the storage account.
 /// Contains information about the lease, the associated blob, and the lease client.
 /// </summary>
-internal class StorageAccountLeaseResult : IAltinnLeaseResult
+internal sealed class StorageAccountLeaseResult : IAltinnLeaseResult, IDisposable, IAsyncDisposable
 {
     internal StorageAccountLeaseResult(
         BlobClient blobClient,
@@ -52,25 +53,26 @@ internal class StorageAccountLeaseResult : IAltinnLeaseResult
     /// </summary>
     internal ReaderWriterLockSlim RwLock { get; init; } = new(LockRecursionPolicy.SupportsRecursion);
 
-    private bool _disposed = false;
+    private int _disposed = 0;
 
     /// <summary>
     /// Stopwatch
     /// </summary>
     private Stopwatch Stopwatch { get; init; }
 
-    private CancellationTokenSource LeaseRefresherCancellation { get; init; } = new CancellationTokenSource();
+    private CancellationTokenSource LeaseRefresherCancellation { get; init; } = new();
 
-    private Task RenewalTask { get; init; }
+    private Task? RenewalTask { get; init; }
 
     /// <summary>
     /// Gets Cancelled if lease is lost.
     /// </summary>
     /// <param name="cancellationTokens">Cancellation Token.</param>
-    /// <returns></returns>
     public CancellationToken LinkTokens(params CancellationToken[] cancellationTokens)
     {
-        return CancellationTokenSource.CreateLinkedTokenSource([LeaseRefresherCancellation.Token, .. cancellationTokens]).Token;
+        return CancellationTokenSource.CreateLinkedTokenSource(
+            new[] { LeaseRefresherCancellation.Token }.Concat(cancellationTokens).ToArray()
+        ).Token;
     }
 
     internal void Cancel()
@@ -88,13 +90,12 @@ internal class StorageAccountLeaseResult : IAltinnLeaseResult
             var refreshDelay = StorageAccountLease.MaxLeaseTime / 2;
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(refreshDelay, cancellationToken);
-                await Implementation.RefreshLease(this, cancellationToken);
+                await Task.Delay(refreshDelay, cancellationToken).ConfigureAwait(false);
+                await Implementation.RefreshLease(this, cancellationToken).ConfigureAwait(false);
             }
         }
         catch
         {
-            // Terminate silently
         }
         finally
         {
@@ -104,70 +105,61 @@ internal class StorageAccountLeaseResult : IAltinnLeaseResult
     }
 
     /// <summary>
-    /// Releases the lease synchronously when the object is disposed.
+    /// Synchronous dispose — lightweight (just cancels and disposes resources).
     /// </summary>
     public void Dispose()
     {
-        if (!_disposed)
+        if (Interlocked.Exchange(ref _disposed, 1) == 1)
         {
-            LeaseRefresherCancellation?.Cancel();
-            try
-            {
-                RenewalTask?.Wait(TimeSpan.FromSeconds(5));
-            }
-            catch
-            {
-                // Terminate silently
-            }
-
-            try
-            {
-                Implementation.Release(this, default).ConfigureAwait(false).GetAwaiter().GetResult();
-            }
-            catch
-            {
-                // Terminate silently
-            }
-
-            LeaseRefresherCancellation?.Dispose();
+            return;
         }
 
-        _disposed = true;
+        try
+        {
+            LeaseRefresherCancellation.Cancel();
+            Implementation.Release(this);
+        }
+        catch
+        {
+        }
+
+        RwLock.Dispose();
+        LeaseRefresherCancellation.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
-    /// Releases the lease asynchronously when the object is disposed.
+    /// Asynchronous dispose — waits for background tasks and releases lease properly.
     /// </summary>
-    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
     public async ValueTask DisposeAsync()
     {
-        if (!_disposed)
+        if (Interlocked.Exchange(ref _disposed, 1) == 1)
         {
-            await LeaseRefresherCancellation?.CancelAsync();
+            return;
+        }
+
+        try
+        {
+            await LeaseRefresherCancellation.CancelAsync();
             if (RenewalTask is { })
             {
                 try
                 {
-                    await RenewalTask.WaitAsync(TimeSpan.FromSeconds(5));
+                    await RenewalTask.WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                 }
-                catch (Exception)
+                catch
                 {
-                    // Terminate silently
                 }
             }
 
-            try
-            {
-                await Implementation.Release(this, default).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Terminate silently
-            }
-
-            LeaseRefresherCancellation?.Dispose();
+            await Implementation.Release(this, default).ConfigureAwait(false);
+        }
+        catch
+        {
         }
 
-        _disposed = true;
+        RwLock.Dispose();
+        LeaseRefresherCancellation.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

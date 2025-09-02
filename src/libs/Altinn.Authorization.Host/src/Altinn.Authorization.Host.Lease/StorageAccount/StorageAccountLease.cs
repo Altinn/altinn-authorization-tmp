@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 using Altinn.Authorization.Host.Lease.Telemetry;
@@ -134,6 +135,30 @@ public partial class StorageAccountLease(ILogger<StorageAccountLease> Logger, IA
     {
         var lease = AssertLeaseType(activeLease);
         return lease.LinkTokens(cancellationTokens);
+    }
+
+    internal void Release(IAltinnLeaseResult activeLease)
+    {
+        var lease = AssertLeaseType(activeLease);
+        lease.RwLock.EnterWriteLock();
+        try
+        {
+            if (lease.BlobLease is null)
+            {
+                Unreachable();
+            }
+
+            var blobClient = lease.BlobClient.GetBlobLeaseClient(lease.BlobLease.LeaseId);
+            blobClient.Release();
+        }
+        catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.LeaseLost || ex.ErrorCode == BlobErrorCode.LeaseAlreadyPresent)
+        {
+            lease.Cancel();
+        }
+        finally
+        {
+            lease.RwLock.ExitWriteLock();
+        }
     }
 
     internal async Task Release(IAltinnLeaseResult activeLease, CancellationToken cancellationToken = default)
