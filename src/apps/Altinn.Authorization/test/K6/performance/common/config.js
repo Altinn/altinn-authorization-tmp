@@ -7,6 +7,9 @@ const yt01AuthenticationBaseUrl = "https://platform.yt01.altinn.cloud/authentica
 const testAmBaseUrl = "https://platform.at22.altinn.cloud/accessmanagement/";
 const stagingAmBaseUrl = "https://platform.tt02.altinn.no/accessmanagement/";
 const yt01AmBaseUrl = "https://platform.yt01.altinn.cloud/accessmanagement/";
+const stagingAmUiBaseUrl = "https://am.ui.tt02.altinn.no/accessmanagement/"
+const yt01AmUiBaseUrl = "https://am.ui.yt01.altinn.cloud/accessmanagement/"
+//api/v1/user/rightholders?party=430267ea-b54d-4791-b5c6-aaa8a9c7e8f7&to=430267ea-b54d-4791-b5c6-aaa8a9c7e8f7
 
 const authorizeUrl = "api/v1/authorize";
 const readSystemsUrl = "api/v1/systemregister"
@@ -14,8 +17,10 @@ const systemUsersUrl = "api/v1/systemuser/vendor/bysystem/"
 const amDelegationUrl = "api/v1/internal/systemuserclientdelegation"
 const amAuthorizedPartiesUrl = "api/v1/resourceowner/authorizedparties";
 const amConsentUrl = "api/v1/enterprise/consentrequests/"
-const amConsentRequest = "api/v1/consent/request/"; // Example:
+const amConsentRequest = "api/v1/consent/request/"; 
+const amRightholders = "api/v1/user/rightholders";
 
+// Example 
 //https://am.ui.at22.altinn.cloud/accessmanagement/api/v1/consent/request/a005d4e7-78b3-42b2-ce79-dc68cc5348ec/approve
 
 export const urls = {
@@ -53,6 +58,11 @@ export const urls = {
         consentRequestUrl: {
             test: testAmBaseUrl + amConsentRequest,
             yt01: yt01AmBaseUrl + amConsentRequest
+        },
+        rightHoldersUrl: {
+            test: testAmBaseUrl + amRightholders,
+            staging: stagingAmUiBaseUrl + amRightholders,
+            yt01: yt01AmUiBaseUrl + amRightholders
         }
     }
 };
@@ -72,6 +82,7 @@ export const getAmDelegationUrl = urls[__ENV.API_VERSION]["amDelegationUrl"][__E
 export const getAuthorizedPartiesUrl = urls[__ENV.API_VERSION]["authorizedPartiesUrl"][__ENV.API_ENVIRONMENT];
 export const postConsent = urls[__ENV.API_VERSION]["consentUrl"][__ENV.API_ENVIRONMENT];
 export const postConsentRequest = urls[__ENV.API_VERSION]["consentRequestUrl"][__ENV.API_ENVIRONMENT];
+export const getRightHoldersUrl = urls[__ENV.API_VERSION]["rightHoldersUrl"][__ENV.API_ENVIRONMENT];
 export const tokenGeneratorEnv = (() => {
   switch (__ENV.API_ENVIRONMENT) {
     case 'yt01':
