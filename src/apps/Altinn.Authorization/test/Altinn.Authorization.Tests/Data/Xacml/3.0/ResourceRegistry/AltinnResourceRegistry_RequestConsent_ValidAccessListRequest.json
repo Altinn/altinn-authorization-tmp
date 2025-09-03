@@ -28,10 +28,6 @@
           {
             "AttributeId": "urn:altinn:resource",
             "Value": "ttd-samtykkeressurs-medtilgangsliste"
-          },
-          {
-            "AttributeId": "urn:altinn:partyid",
-            "Value": "50740574"
           }
         ]
       }

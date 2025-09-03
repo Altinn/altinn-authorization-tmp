@@ -492,7 +492,9 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 await AddAccessPackageAttributes(subjectContextAttributes, subjectSystemUser, resourceAttr.PartyUuid);
             }
 
-            if (policySubjectAttributes.ContainsKey(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessListAttribute) && subjectPartyUuid != Guid.Empty)
+            if (policySubjectAttributes.ContainsKey(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessListAttribute) && subjectPartyUuid != Guid.Empty
+                && resourceAttr.InstanceValue == null && resourceAttr.ResourceInstanceValue == null && resourceAttr.AppValue == null && !string.IsNullOrEmpty(resourceAttr.ResourceRegistryId)
+                && string.IsNullOrEmpty(resourceAttr.ResourcePartyValue))
             {
                 PartyUrn.PartyUuid partyUrn = PartyUrn.PartyUuid.Create(subjectPartyUuid);
                 IEnumerable<AccessListInfoDto> memberShip = await _resourceRegistry.GetMembershipsForParty(partyUrn, cancellationToken);
@@ -500,12 +502,6 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 {
                     subjectContextAttributes.Attributes.Add(GetAccessListAttributes(memberShip));
                 }
-            }
-
-            if (policySubjectAttributes.ContainsKey(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyTypeAttribute) && subjectPartyUuid != Guid.Empty)
-            {
-                List<Party> partyList = await _registerService.GetPartiesAsync([subjectPartyUuid],false,  cancellationToken);
-                subjectContextAttributes.Attributes.Add(GetPartyTypeAttribute(partyList[0].PartyTypeName));
             }
 
             // Further enrichment of roles can/must be skipped if no subject userId or resource partyId exists

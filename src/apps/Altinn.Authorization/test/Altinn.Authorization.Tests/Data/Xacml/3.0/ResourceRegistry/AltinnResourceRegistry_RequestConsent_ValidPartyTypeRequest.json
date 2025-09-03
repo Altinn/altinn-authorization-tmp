@@ -28,10 +28,6 @@
           {
             "AttributeId": "urn:altinn:resource",
             "Value": "ttd-samtykkeressurs-forallevirksomheter"
-          },
-          {
-            "AttributeId": "urn:altinn:partyid",
-            "Value": "50740574"
           }
         ]
       }
