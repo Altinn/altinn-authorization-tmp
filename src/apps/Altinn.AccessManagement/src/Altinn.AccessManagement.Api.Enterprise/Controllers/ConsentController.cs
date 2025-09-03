@@ -1,13 +1,18 @@
-﻿using System.Net.Mime;
-using Altinn.AccessManagement.Api.Enterprise.Extensions;
+﻿using Altinn.AccessManagement.Api.Enterprise.Extensions;
 using Altinn.AccessManagement.Api.Enterprise.Utils;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models.Consent;
+using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.Authorization.ABAC.Xacml.JsonProfile;
 using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.Authorization.ProblemDetails;
+using Altinn.Common.PEP.Helpers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
+using System.Security.Claims;
 
 namespace Altinn.AccessManagement.Api.Enterprise.Controllers
 {
@@ -64,7 +69,7 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
 
                 consentRequestInternal.HandledBy = consentPartyUrn;
             }
-
+            
             Result<ConsentRequestDetailsWrapper> consentRequestStatus = await _consentService.CreateRequest(consentRequestInternal, consentPartyUrn, cancellationToken);
 
             if (consentRequestStatus.IsProblem)
@@ -111,6 +116,12 @@ namespace Altinn.AccessManagement.Api.Enterprise.Controllers
             }
 
             return Ok(consentRequestStatus.Value.ToConsentRequestDetailsExternal());
+        }
+
+        private bool AuthorizeCreateConsentRequest(string consentResource, ClaimsPrincipal claimsPrincipal)
+        {
+            XacmlJsonRequestRoot request = DecisionHelper.CreateDecisionRequestForResourceRegistryResource(consentResource, null, claimsPrincipal, "requestconsent");
+            return false;
         }
     }
 }
