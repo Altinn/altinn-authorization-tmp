@@ -154,9 +154,6 @@ internal sealed class StorageAccountLease : ILease
         catch
         {
         }
-        finally
-        {
-        }
 
         Semaphore.Dispose();
         LeaseRefresherCancellation.Dispose();

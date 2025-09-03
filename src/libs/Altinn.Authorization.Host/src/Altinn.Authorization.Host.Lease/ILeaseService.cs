@@ -12,7 +12,6 @@ public interface ILeaseService
     /// If the lease is already held by another caller, the method does not throw an exception
     /// but instead returns a lease object that indicates its acquisition status.
     /// </summary>
-    /// <typeparam name="T">The type of data associated with the lease. Typically a reference type.</typeparam>
     /// <param name="leaseName">
     /// The unique name of the lease to acquire.
     /// Typically corresponds to the resource or key you want to lock.

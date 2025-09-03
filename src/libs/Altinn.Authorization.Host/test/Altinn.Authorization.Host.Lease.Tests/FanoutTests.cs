@@ -1,6 +1,3 @@
-using System.Drawing;
-using Microsoft.Identity.Client;
-
 namespace Altinn.Authorization.Host.Lease.Tests;
 
 /// <summary>
@@ -20,6 +17,7 @@ public abstract class FanoutTests
     public async Task TestThreadAquireExplosion(int numThreads)
     {
         var threads = new List<Task>();
+        var lastAssigned = 0;
 
         for (int i = 0; i < numThreads; i++)
         {
@@ -29,9 +27,10 @@ public abstract class FanoutTests
                 await using var lease = await Lease.TryAcquireNonBlocking("test", CancellationToken.None);
                 var content = new LeaseContent()
                 {
-                    Data = loop,
+                    Number = loop,
                 };
 
+                lastAssigned = loop;
                 await lease.Update(content);
             }));
         }
@@ -47,16 +46,12 @@ public abstract class FanoutTests
         }
 
         await using var result = await Lease.TryAcquireNonBlocking("test", default);
+        var data = await result.Get<LeaseContent>();
+        Assert.Equal(data.Number, lastAssigned);
     }
 
-    /// <summary>
-    /// Represents the content stored within a lease, maintaining a dictionary of counters.
-    /// </summary>
-    public class LeaseContent
+    internal class LeaseContent
     {
-        /// <summary>
-        /// Dictionary storing key-value pairs where the key is a string identifier, and the value represents a count.
-        /// </summary>
-        public int Data { get; set; }
+        internal int Number { get; set; }
     }
 }
