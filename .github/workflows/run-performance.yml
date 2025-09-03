@@ -50,12 +50,12 @@ on:
                 description: 'Include Altinn2 in the authorizedParties tests'
                 required: true
                 default: true
-                type: boolean 
+                type: boolean
             randomize:
-                description: 'Randomize the order of parties in the authorizedParties tests'
+                description: 'Randomize users in the authorizedParties tests'
                 required: true
                 default: true
-                type: boolean
+                type: boolean 
             testSuitePath:
                 description: 'Path to test suite to run'
                 required: true
@@ -125,7 +125,7 @@ jobs:
           -a "${{ inputs.abortOnFail }}" \
           -b "${{ inputs.breakpoint }}" \
           -i "${{ inputs.includeAltinn2 }}" \
-          -r "${{ inputs.randomize }}" \
+          -r "${{ inputs.randomize }}"
       env:
         API_ENVIRONMENT: ${{ inputs.environment }}
         API_VERSION: ${{ inputs.apiVersion }}
