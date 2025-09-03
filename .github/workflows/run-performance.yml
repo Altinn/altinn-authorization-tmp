@@ -47,10 +47,15 @@ on:
                 default: false
                 type: boolean 
             includeAltinn2:
-                description: 'Include Altinn 2 in the test'
+                description: 'Include Altinn2 in the authorizedParties tests'
                 required: true
                 default: true
                 type: boolean 
+            randomize:
+                description: 'Randomize the order of parties in the authorizedParties tests'
+                required: true
+                default: true
+                type: boolean
             testSuitePath:
                 description: 'Path to test suite to run'
                 required: true
@@ -119,7 +124,8 @@ jobs:
           -p "${{ inputs.parallelism }}" \
           -a "${{ inputs.abortOnFail }}" \
           -b "${{ inputs.breakpoint }}" \
-          -i "${{ inputs.includeAltinn2 }}"
+          -i "${{ inputs.includeAltinn2 }}" \
+          -r "${{ inputs.randomize }}" \
       env:
         API_ENVIRONMENT: ${{ inputs.environment }}
         API_VERSION: ${{ inputs.apiVersion }}

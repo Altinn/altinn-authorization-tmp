@@ -19,6 +19,7 @@ help() {
     echo "  -b, --breakpoint     Flag to set breakpoint test or not"
     echo "  -a, --abort          Flag to specify whether to abort on fail or not, only used in breakpoint tests"
     echo "  -i, --include-altinn2  Flag to include Altinn 2 in the test (default: false)"
+    echo "  -r, --randomize      Flag to randomize user input data (default: true)"
     echo "  -h, --help           Show this help message"
     exit 0
 }
@@ -51,7 +52,8 @@ print_logs() {
 
 breakpoint=false
 abort_on_fail=false
-include_altinn2=false
+include_altinn2=true
+randomize=true
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -94,6 +96,10 @@ while [[ $# -gt 0 ]]; do
             include_altinn2="$2"
             shift 2
             ;;
+        -r|--randomize)
+            randomize="$2"
+            shift 2
+            ;;
         *)
             echo "Invalid option: $1"
             help
@@ -133,6 +139,7 @@ if ! k6 archive $filename \
      -e NUMBER_OF_ENDUSERS="$NUMBER_OF_ENDUSERS" \
      -e TESTID=$testid $archive_args \
      -e INCLUDE_ALTINN2=$include_altinn2 \
+     -e RANDOMIZE=$randomize \
      --tag namespace=$namespace; then
     echo "Error: Failed to create k6 archive"
     exit 1
@@ -146,9 +153,9 @@ if ! kubectl create configmap $configmapname --from-file=archive.tar; then
 fi
 
 # Create the config.yml file from a string
-arguments="--out experimental-prometheus-rw --vus=$vus --duration=$duration --tag testid=$testid"
+arguments="--out experimental-prometheus-rw --vus=$vus --duration=$duration --tag testid=$testid --log-output=none"
 if $breakpoint; then
-    arguments="--out experimental-prometheus-rw --tag testid=$testid"
+    arguments="--out experimental-prometheus-rw --tag testid=$testid --log-output=none"
 fi
 cat <<EOF > config.yml
 apiVersion: k6.io/v1alpha1
