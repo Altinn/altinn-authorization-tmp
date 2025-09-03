@@ -139,25 +139,18 @@ internal sealed class StorageAccountLease : ILease
             await LeaseRefresherCancellation.CancelAsync();
             if (RenewalTask is { })
             {
-                try
-                {
-                    await RenewalTask.WaitAsync(TimeSpan.FromSeconds(5));
-                }
-                catch
-                {
-                }
+                await RenewalTask.WaitAsync(TimeSpan.FromSeconds(5));
             }
 
             var release = ReleaseLease(CancellationToken.None);
             await release.WaitAsync(TimeSpan.FromSeconds(5));
         }
-        catch
+        finally
         {
+            Semaphore?.Dispose();
+            LeaseRefresherCancellation?.Dispose();
+            GC.SuppressFinalize(this);
         }
-
-        Semaphore.Dispose();
-        LeaseRefresherCancellation.Dispose();
-        GC.SuppressFinalize(this);
     }
 
     private async Task ReleaseLease(CancellationToken cancellationToken = default)
@@ -208,9 +201,6 @@ internal sealed class StorageAccountLease : ILease
                 await Task.Delay(refreshDelay, LeaseRefresherCancellation.Token);
                 await RefreshLease(LeaseRefresherCancellation.Token);
             }
-        }
-        catch
-        {
         }
         finally
         {
