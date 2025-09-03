@@ -72,8 +72,9 @@ export function getAuthorizedParties(body, params, party) {
           console.log(__ITER, party, r.timings.duration, r.json().length);
       }
       if (r.status != 200) {
-          console.log(r.status, r.status_text);
-          console.log(r.body);
+        console.log(__ITER, party);
+        console.log(r.status, r.status_text);
+        console.log(r.body);
       }
       expect(r.status, "response status").to.equal(200);
       expect(r, 'response').to.have.validJsonBody();
