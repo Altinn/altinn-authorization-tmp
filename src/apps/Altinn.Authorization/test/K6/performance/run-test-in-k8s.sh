@@ -18,6 +18,7 @@ help() {
     echo "  -p, --parallelism    Specify the level of parallelism"
     echo "  -b, --breakpoint     Flag to set breakpoint test or not"
     echo "  -a, --abort          Flag to specify whether to abort on fail or not, only used in breakpoint tests"
+    echo "  -i, --include-altinn2  Flag to include Altinn 2 in the test (default: false)"
     echo "  -h, --help           Show this help message"
     exit 0
 }
@@ -50,6 +51,7 @@ print_logs() {
 
 breakpoint=false
 abort_on_fail=false
+include_altinn2=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -86,6 +88,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -a|--abort)
             abort_on_fail="$2"
+            shift 2
+            ;;
+        -i|--include-altinn2)
+            include_altinn2="$2"
             shift 2
             ;;
         *)
@@ -126,6 +132,7 @@ if ! k6 archive $filename \
      -e API_ENVIRONMENT="$API_ENVIRONMENT" \
      -e NUMBER_OF_ENDUSERS="$NUMBER_OF_ENDUSERS" \
      -e TESTID=$testid $archive_args \
+     -e INCLUDE_ALTINN2=$include_altinn2 \
      --tag namespace=$namespace; then
     echo "Error: Failed to create k6 archive"
     exit 1

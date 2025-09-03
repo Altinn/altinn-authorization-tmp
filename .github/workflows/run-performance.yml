@@ -45,7 +45,12 @@ on:
                 description: 'Abort on fail. Only used for breakpoint tests'
                 required: true
                 default: false
-                type: boolean  
+                type: boolean 
+            includeAltinn2:
+                description: 'Include Altinn 2 in the test'
+                required: true
+                default: true
+                type: boolean 
             testSuitePath:
                 description: 'Path to test suite to run'
                 required: true
@@ -58,7 +63,8 @@ on:
                 - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRolePriv.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getClientDelegations.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForSystemUsers.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForPartiesIncludeAltinn2.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForParty.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForOrganization.js'
 
 
 permissions:
@@ -116,7 +122,8 @@ jobs:
           -d "${{ inputs.duration }}" \
           -p "${{ inputs.parallelism }}" \
           -a "${{ inputs.abortOnFail }}" \
-          -b "${{ inputs.breakpoint }}"
+          -b "${{ inputs.breakpoint }}" \
+          -i "${{ inputs.includeAltinn2 }}"
       env:
         API_ENVIRONMENT: ${{ inputs.environment }}
         API_VERSION: ${{ inputs.apiVersion }}

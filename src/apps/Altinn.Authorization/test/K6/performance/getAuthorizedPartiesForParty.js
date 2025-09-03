@@ -31,16 +31,13 @@ export function setup() {
     return token;
 }
 
-export default function (token) {
-    const userParty = (() => { 
-      if (randomize) { return randomItem(parties) } 
-      else { return parties[__ITER % parties.length] };
-    }
-    )();
-    getAuthorizedParties(userParty, token);
+export function getParty() {
+  if (randomize) { return randomItem(parties) } 
+  else { return parties[__ITER % parties.length] };
 }
 
-function getAuthorizedParties(userParty, token) {
+export default function (token) {
+    const userParty = getParty();
     const paramsForOrg = getParams(getAuthorizedPartiesByOrgLabel);
     paramsForOrg.headers.Authorization = "Bearer " + token;
     const paramsForUser = getParams(getAuthorizedPartiesByUserLabel);
@@ -56,26 +53,22 @@ function getAuthorizedParties(userParty, token) {
         "value": userParty.ssn
     }
 
-    const url = new URL(getAuthorizedPartiesUrl);
-    if (includeAltinn2) {
-        url.searchParams.append('includeAltinn2', 'true');
-    }
     if (byOrganization) { 
-      doPartiesRequest(bodyForOrg, paramsForOrg, userParty.orgNo);
+      getAuthorizedParties(bodyForOrg, paramsForOrg, userParty.orgNo);
     }
     if (byUser) {
-      doPartiesRequest(bodyForUser, paramsForUser, userParty.ssn);
+      getAuthorizedParties(bodyForUser, paramsForUser, userParty.ssn);
     } 
 }
 
-function doPartiesRequest(body, params, party) {
+export function getAuthorizedParties(body, params, party) {
   const url = new URL(getAuthorizedPartiesUrl);
   if (includeAltinn2) {
       url.searchParams.append('includeAltinn2', 'true');
   }
   describe('Get authorized parties', () => {
       let r = http.post(url.toString(), JSON.stringify(body), params);
-      if (r.timings.duration > 20.0) {
+      if (r.timings.duration > 2000.0) {
           console.log(__ITER, party, r.timings.duration, r.json().length);
       }
       expect(r.status, "response status").to.equal(200);
