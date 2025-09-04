@@ -59,6 +59,7 @@ on:
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getClientDelegations.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForSystemUsers.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForUser.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForUserPartyId.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForOrganization.js'
 
 
