@@ -30,7 +30,7 @@ const projectNumber = Number.parseInt(projectNumberString, 10);
 const issueInfo = {
     issue_number: Number.parseInt(issueNumber, 10),
     owner: "Altinn",
-    repo: "altinn-authorization",
+    repo: "altinn-authorization-tmp",
 } as const;
 
 const github = new Octokit({
