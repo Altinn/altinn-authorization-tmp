@@ -1,3 +1,4 @@
+using System.ComponentModel.Design;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.Authorization.Host.Database;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,9 @@ public static class ServiceCollectionExtensions
             {
                 var db = sp.GetRequiredService<IAltinnDatabase>();
                 var connectionString = db.CreatePgsqlConnection(SourceType.App);
+
+                options.AddInterceptors(sp.GetRequiredService<ReadOnlyInterceptor>());
+
                 options.UseNpgsql(connectionString, ConfigureNpgsql);
             }),
             SourceType.Migration => services.AddDbContext<AppDbContext>((sp, options) =>
