@@ -146,10 +146,12 @@ if ! k6 archive $filename \
 fi
    
 # Create the configmap from the archive
-if ! kubectl create configmap $configmapname --from-file=archive.tar; then
-    echo "Error: Failed to create configmap"
-    rm archive.tar
-    exit 1
+if ! kubectl get configmap $configmapname &>/dev/null; then
+  if ! kubectl create configmap $configmapname --from-file=archive.tar; then
+      echo "Error: Failed to create configmap"
+      rm archive.tar
+      exit 1
+  fi
 fi
 
 # Create the config.yml file from a string

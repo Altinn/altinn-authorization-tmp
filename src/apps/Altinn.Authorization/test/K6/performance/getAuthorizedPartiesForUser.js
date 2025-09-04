@@ -12,7 +12,7 @@ export default function (token) {
   const paramsForUser = getParams(getAuthorizedPartiesByUserLabel);
   paramsForUser.headers.Authorization = "Bearer " + token;
   const bodyForUser = {
-      "type": "urn:altinn:partyid",
+      "type": "urn:altinn:person:identifier-no",
       "value": party.ssn
   }
   getAuthorizedParties(bodyForUser, paramsForUser, party.ssn);
