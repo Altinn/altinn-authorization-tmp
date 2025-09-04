@@ -133,6 +133,7 @@ namespace Altinn.AccessMgmt.Core.Data
             };
 
             db.Database.SetAuditSession(AuditValues);
+            data.ForEach(t => t.SetAuditValues(AuditValues.ChangedBy, AuditValues.ChangedBySystem, AuditValues.OperationId));
 
             // Upsert Areas
             foreach (var area in data)
@@ -158,7 +159,7 @@ namespace Altinn.AccessMgmt.Core.Data
                 await translationService.UpsertTranslationAsync(translation);
             }
 
-            var result = await db.SaveChangesAsync();
+            var result = await db.SaveChangesAsync(AuditValues, cancellationToken);
         }
     }
 }

@@ -1,8 +1,9 @@
-﻿using System.Data.Common;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Npgsql;
+using System.Data.Common;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 
@@ -27,7 +28,7 @@ public static class DatabaseFacadeExtensions
             INSERT INTO session_audit_context (changed_by, changed_by_system, change_operation_id)
             VALUES ({0}, {1}, {2});
         """;
-
+        
         db.ExecuteSqlRaw(sql, audit.ChangedBy, audit.ChangedBySystem, audit.OperationId);
     }
 }

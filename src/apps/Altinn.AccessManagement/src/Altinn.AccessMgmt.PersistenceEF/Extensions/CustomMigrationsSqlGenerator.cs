@@ -109,8 +109,7 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
     }
 
     private string GenerateAuditUpdateFunctionAndTrigger(string schema, string name, List<string> columns)
-    {
-        
+    {        
         var sb = new StringBuilder();
 
         sb.AppendLine($"CREATE OR REPLACE FUNCTION {schema}.audit_{name}_update_fn()");
