@@ -53,11 +53,13 @@ public class AppDbContext : DbContext
     public DbSet<ProviderType> ProviderTypes => Set<ProviderType>();
 
     public DbSet<Resource> Resources => Set<Resource>();
-    
+
+    public DbSet<ResourceType> ResourceTypes => Set<ResourceType>(); 
+
     public DbSet<Role> Roles => Set<Role>();
     
     public DbSet<RoleLookup> RoleLookups => Set<RoleLookup>();
-    
+
     public DbSet<RoleMap> RoleMaps => Set<RoleMap>();
     
     public DbSet<RolePackage> RolePackages => Set<RolePackage>();
@@ -187,6 +189,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration<Provider>(new ProviderConfiguration());
         modelBuilder.ApplyConfiguration<ProviderType>(new ProviderTypeConfiguration());
         modelBuilder.ApplyConfiguration<Resource>(new ResourceConfiguration());
+        modelBuilder.ApplyConfiguration<ResourceType>(new ResourceTypeConfiguration());
         modelBuilder.ApplyConfiguration<Role>(new RoleConfiguration());
         modelBuilder.ApplyConfiguration<RoleLookup>(new RoleLookupConfiguration());
         modelBuilder.ApplyConfiguration<RoleMap>(new RoleMapConfiguration());

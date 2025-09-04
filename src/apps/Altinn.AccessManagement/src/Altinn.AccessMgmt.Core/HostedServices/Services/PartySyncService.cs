@@ -1,0 +1,324 @@
+﻿using System.Diagnostics;
+using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+using Altinn.AccessMgmt.Core.HostedServices.Leases;
+using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Altinn.Authorization.Host.Lease;
+using Altinn.Authorization.Integration.Platform.Register;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+namespace Altinn.AccessMgmt.Core.HostedServices.Services;
+
+/// <inheritdoc />
+public class PartySyncService : BaseSyncService, IPartySyncService
+{
+    private readonly ILogger<RegisterHostedService> _logger;
+    private readonly IIngestService _ingestService;
+    private readonly IAltinnRegister _register;
+    private readonly IServiceProvider _serviceProvider;
+
+    /// <summary>
+    /// PartySyncService Constructor
+    /// </summary>
+    public PartySyncService(
+        IAltinnRegister register,
+        ILogger<RegisterHostedService> logger,
+        IIngestService ingestService,
+        IServiceProvider serviceProvider
+    )
+    {
+        _register = register;
+        _logger = logger;
+        _ingestService = ingestService;
+        _serviceProvider = serviceProvider;
+    }
+
+    /// <summary>
+    /// Synchronizes register data by first acquiring a remote lease and streaming register entries.
+    /// Returns if lease is already taken.
+    /// </summary>
+    /// <param name="lease">The lease result containing the lease data and status.</param>
+    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
+    public async Task SyncParty(ILease lease, CancellationToken cancellationToken)
+    {
+        var options = new AuditValues(
+            AuditDefaults.RegisterImportSystem,
+            AuditDefaults.RegisterImportSystem,
+            Activity.Current?.TraceId.ToString() ?? Guid.CreateVersion7().ToString()
+        );
+        var leaseData = await lease.Get<RegisterLease>(cancellationToken);
+
+        var bulk = new List<Entity>();
+        var bulkLookup = new List<EntityLookup>();
+
+        using var scope = _serviceProvider.CreateScope();
+        var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        EntityTypes = await appDbContext.EntityTypes.ToListAsync(cancellationToken);
+        EntityVariants = await appDbContext.EntityVariants.ToListAsync(cancellationToken);
+
+        await foreach (var page in await _register.StreamParties(AltinnRegisterClient.AvailableFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (!page.IsSuccessful)
+            {
+                Log.ResponseError(_logger, page.StatusCode);
+                throw new Exception("Stream page is not successful");
+            }
+
+            Guid batchId = Guid.CreateVersion7();
+            var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
+            _logger.LogInformation("Starting proccessing party page '{0}'", batchName);
+
+            foreach (var item in page?.Content.Data ?? [])
+            {
+                try
+                {
+                    if (item.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    var entity = ConvertPartyModel(item, options: options, cancellationToken: cancellationToken);
+                    if (entity is { })
+                    {
+                        if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
+                        {
+                            await Flush(batchId);
+                        }
+
+                        bulk.Add(entity);
+                        bulkLookup.AddRange(ConvertPartyModelToLookup(item));
+                    }
+                    else
+                    {
+                        _logger.LogWarning("skipped adding entity of type '{type}' with id '{id}'", entity.Type, entity.Id);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "failed to sync party {partyUuid}", item.PartyUuid);
+                    throw;
+                }
+            }
+
+            await Flush(batchId);
+
+            if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
+            {
+                return;
+            }
+
+            leaseData.PartyStreamNextPageLink = page.Content.Links.Next;
+            await lease.Update(leaseData, cancellationToken);
+
+            async Task Flush(Guid batchId)
+            {
+                try
+                {
+                    _logger.LogInformation("Ingest and Merge Entity and EntityLookup batch '{0}' to db", batchName);
+
+                    var ingestedEntities = await _ingestService.IngestTempData(bulk, batchId, cancellationToken);
+                    var ingestedLookups = await _ingestService.IngestTempData(bulkLookup, batchId, cancellationToken);
+
+                    if (ingestedEntities != bulk.Count || ingestedLookups != bulkLookup.Count)
+                    {
+                        _logger.LogWarning("Ingest partial complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", ingestedEntities, bulk.Count, ingestedLookups, bulkLookup.Count);
+                    }
+
+                    var mergedEntities = await _ingestService.MergeTempData<Entity>(batchId, options, ["id"], cancellationToken);
+                    var mergedLookups = await _ingestService.MergeTempData<EntityLookup>(batchId, options, ["entityid", "key"], cancellationToken);
+
+                    _logger.LogInformation("Merge complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", mergedEntities, ingestedEntities, mergedLookups, ingestedLookups);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to ingest and/or merge Entity and EntityLookup batch {0} to db", batchName);
+                    await Task.Delay(2000, cancellationToken);
+                }
+                finally
+                {
+                    bulk.Clear();
+                    bulkLookup.Clear();
+                }
+            }
+        }
+    }
+
+    private static readonly IReadOnlyList<string> GetEntityMergeMatchFilter = new List<string>() { "id" }.AsReadOnly();
+
+    private static readonly IReadOnlyList<string> GetEntityLookupMergeMatchFilter = new List<string>() { "entityid", "key" }.AsReadOnly();
+
+    private Entity ConvertPartyModel(PartyModel model, AuditValues options, bool createTypeIfMissing = false, CancellationToken cancellationToken = default)
+    {
+        if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
+        {
+            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person");
+            if (variant == null)
+            {
+                // variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
+                // var res = _entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
+                // if (res == 0)
+                // {
+                throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
+                // }
+
+                // EntityVariants.Add(variant);
+            }
+
+            return new Entity()
+            {
+                Id = Guid.Parse(model.PartyUuid),
+                Name = model.DisplayName,
+                RefId = model.PersonIdentifier,
+                TypeId = type.Id,
+                VariantId = variant.Id
+            };
+        }
+        else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
+        {
+            var type = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase));
+            if (variant is null)
+            {
+                // variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
+                // var res = _entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
+                // if (res == 0)
+                // {
+                throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
+                // }
+
+                // EntityVariants.Add(variant);
+            }
+
+            return new Entity()
+            {
+                Id = Guid.Parse(model.PartyUuid),
+                Name = model.DisplayName,
+                RefId = model.OrganizationIdentifier,
+                TypeId = type.Id,
+                VariantId = variant.Id
+            };
+        }
+        else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+        {
+            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
+            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "SI") ?? throw new Exception(string.Format("Unable to find variant '{0}' for type '{1}'", "SI", type.Name));
+            if (variant is null)
+            {
+                // variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
+                // var res = _entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
+                // if (res == 0)
+                // {
+                throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
+                // }
+
+                // EntityVariants.Add(variant);
+            }
+
+            return new Entity()
+            {
+                Id = Guid.Parse(model.PartyUuid),
+                Name = model.DisplayName,
+                RefId = model.VersionId.ToString(),
+                TypeId = type.Id,
+                VariantId = variant.Id
+            };
+        }
+
+        return null;
+    }
+
+    private List<EntityLookup> ConvertPartyModelToLookup(PartyModel model)
+    {
+        var res = new List<EntityLookup>();
+
+        if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
+        {
+            res.Add(new EntityLookup()
+            {
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "DateOfBirth",
+                Value = model.DateOfBirth
+            });
+
+            res.Add(new EntityLookup()
+            {
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "PartyId",
+                Value = model.PartyId.ToString()
+            });
+
+            res.Add(new EntityLookup()
+            {
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "PersonIdentifier",
+                Value = model.PersonIdentifier,
+                IsProtected = true
+            });
+            if (model.User is { UserId: > 0 })
+            {
+                res.Add(new EntityLookup()
+                {
+                    EntityId = Guid.Parse(model.PartyUuid),
+                    Key = "UserId",
+                    Value = model.User.UserId.ToString(),
+                    IsProtected = false,
+                });
+            }
+
+            if (model.IsDeleted)
+            {
+                // DeletedAt missing in register. (18.juni. 2025)
+                // res.Add(new EntityLookup()
+                // {
+                //     EntityId = Guid.Parse(model.PartyUuid),
+                //     Key = "DeletedAt",
+                //     Value = model.DeletedAt.ToUniversalTime().ToString(),
+                //     IsProtected = false,
+                // });
+            }
+        }
+        else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
+        {
+            res.Add(new EntityLookup()
+            {
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "PartyId",
+                Value = model.PartyId.ToString()
+            });
+
+            res.Add(new EntityLookup()
+            {
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "OrganizationIdentifier",
+                Value = model.OrganizationIdentifier
+            });
+        }
+        else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+        {
+            res.Add(new EntityLookup()
+            {
+                EntityId = Guid.Parse(model.PartyUuid),
+                Key = "PartyId",
+                Value = model.PartyId.ToString()
+            });
+        }
+
+        return res;
+    }
+
+    private List<EntityType> EntityTypes { get; set; } = [];
+
+    private List<EntityVariant> EntityVariants { get; set; } = [];
+}
