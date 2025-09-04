@@ -68,7 +68,7 @@ export function getAuthorizedParties(body, params, party) {
   }
   describe('Get authorized parties', () => {
       let r = http.post(url.toString(), JSON.stringify(body), params);
-      if (r.timings.duration > 2000.0) {
+      if (r.timings.duration > 10000.0) {
           console.log(__ITER, party, r.timings.duration, r.json().length);
       }
       if (r.status != 200) {
