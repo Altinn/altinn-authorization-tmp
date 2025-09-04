@@ -53,14 +53,15 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         );
         var leaseData = await lease.Get<RegisterLease>(cancellationToken);
 
+        var seen = new HashSet<Guid>();
         var bulk = new List<Entity>();
         var bulkLookup = new List<EntityLookup>();
 
         using var scope = _serviceProvider.CreateScope();
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        EntityTypes = await appDbContext.EntityTypes.ToListAsync(cancellationToken);
-        EntityVariants = await appDbContext.EntityVariants.ToListAsync(cancellationToken);
+        EntityTypes = await appDbContext.EntityTypes.AsNoTracking().ToListAsync(cancellationToken);
+        EntityVariants = await appDbContext.EntityVariants.AsNoTracking().ToListAsync(cancellationToken);
 
         await foreach (var page in await _register.StreamParties(AltinnRegisterClient.AvailableFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
@@ -75,9 +76,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 throw new Exception("Stream page is not successful");
             }
 
-            Guid batchId = Guid.CreateVersion7();
-            var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
-            _logger.LogInformation("Starting proccessing party page '{0}'", batchName);
+            _logger.LogInformation("Starting proccessing party page ({0}-{1})", page.Content.Stats.PageStart, page.Content.Stats.PageEnd);
 
             foreach (var item in page?.Content.Data ?? [])
             {
@@ -88,12 +87,12 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                         continue;
                     }
 
-                    var entity = ConvertPartyModel(item, options: options, cancellationToken: cancellationToken);
+                    var entity = ConvertPartyModel(item, cancellationToken: cancellationToken);
                     if (entity is { })
                     {
-                        if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
+                        if (!seen.Add(entity.Id))
                         {
-                            await Flush(batchId);
+                            await Flush();
                         }
 
                         bulk.Add(entity);
@@ -101,7 +100,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     }
                     else
                     {
-                        _logger.LogWarning("skipped adding entity of type '{type}' with id '{id}'", entity.Type, entity.Id);
+                        _logger.LogWarning("skipped adding entity of type '{type}' with id '{id}'", item.PartyType, item.PartyUuid);
                     }
                 }
                 catch (Exception ex)
@@ -111,7 +110,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 }
             }
 
-            await Flush(batchId);
+            await Flush();
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
             {
@@ -121,8 +120,11 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             leaseData.PartyStreamNextPageLink = page.Content.Links.Next;
             await lease.Update(leaseData, cancellationToken);
 
-            async Task Flush(Guid batchId)
+            async Task Flush()
             {
+                var batchId = Guid.CreateVersion7();
+                var batchName = batchId.ToString("N");
+
                 try
                 {
                     _logger.LogInformation("Ingest and Merge Entity and EntityLookup batch '{0}' to db", batchName);
@@ -149,90 +151,117 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 {
                     bulk.Clear();
                     bulkLookup.Clear();
+                    seen.Clear();
                 }
             }
         }
     }
 
-    private static readonly IReadOnlyList<string> GetEntityMergeMatchFilter = new List<string>() { "id" }.AsReadOnly();
-
-    private static readonly IReadOnlyList<string> GetEntityLookupMergeMatchFilter = new List<string>() { "entityid", "key" }.AsReadOnly();
-
-    private Entity ConvertPartyModel(PartyModel model, AuditValues options, bool createTypeIfMissing = false, CancellationToken cancellationToken = default)
+    private async Task<(EntityType Type, EntityVariant Variant)> GetOrCreateTypeAndVariant(AuditValues options, AppDbContext dbContext, string typeName, string variantName, bool autoCreateType, bool autoCreateVariant)
     {
-        if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
+        var tv = GetTypeAndVariant(typeName, variantName);
+        if (tv.Type != null && tv.Variant != null)
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "Person");
-            if (variant == null)
-            {
-                // variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                // var res = _entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
-                // if (res == 0)
-                // {
-                throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
-                // }
+            return tv;
+        }
 
-                // EntityVariants.Add(variant);
+        var type = tv.Type;
+        if (type == null)
+        {
+            if (autoCreateType)
+            {
+                try
+                {
+                    type = new EntityType() { Id = Guid.NewGuid(), Name = typeName, ProviderId = AuditDefaults.RegisterImportSystem };
+                    dbContext.EntityTypes.Add(type);
+                    await dbContext.SaveChangesAsync(); // Add AuditValues on next merge
+                    EntityTypes.Add(type);
+                }
+                catch
+                {
+                    throw new Exception(string.Format("Unable to create type '{0}'", typeName));
+                }
             }
 
+            throw new Exception(string.Format("Unable to find type '{0}'", typeName));
+        }
+
+        var variant = tv.Variant;
+        if (variant == null)
+        {
+            if (autoCreateVariant)
+            {
+                try
+                {
+                    variant = new EntityVariant() { Id = Guid.NewGuid(), Name = variantName, Description = "Unknown", TypeId = type.Id };
+                    dbContext.EntityVariants.Add(variant);
+                    await dbContext.SaveChangesAsync(); // Add AuditValues on next merge
+                    EntityVariants.Add(variant);
+                }
+                catch
+                {
+                    throw new Exception(string.Format("Unable to create variant '{0}' for type '{1}'", variantName, type.Name));
+                }
+            }
+
+            throw new Exception(string.Format("Unable to find variant '{0}' for type '{1}'", variantName, type.Name));
+        }
+
+        return (type, variant);
+    }
+
+    private (EntityType Type, EntityVariant Variant) GetTypeAndVariant(string typeName, string variantName)
+    {
+        var type = EntityTypes.FirstOrDefault(t => t.Name == typeName) ?? throw new Exception(string.Format("Unable to find type '{0}'", typeName));
+        var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(variantName, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to find variant '{0}' for type '{1}'", variantName, type.Name));
+        return (type, variant);
+    }
+
+    private Entity ConvertPartyModel(PartyModel model, CancellationToken cancellationToken = default)
+    {
+        /*
+        // To add autoCreate for types and variants
+        - Add AuditValues options, AppDbContext dbContext
+        - Use GetOrCreateTypeAndVariant
+
+        bool autoCreateTypes = false;
+        bool autoCreateVariants = false;
+        */
+
+        if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
+        {
+            var tv = GetTypeAndVariant("Person", "Person");
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
                 Name = model.DisplayName,
                 RefId = model.PersonIdentifier,
-                TypeId = type.Id,
-                VariantId = variant.Id
+                TypeId = tv.Type.Id,
+                VariantId = tv.Variant.Id
             };
         }
         else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Organisasjon") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Organisasjon"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(model.UnitType, StringComparison.OrdinalIgnoreCase));
-            if (variant is null)
-            {
-                // variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                // var res = _entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
-                // if (res == 0)
-                // {
-                throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
-                // }
-
-                // EntityVariants.Add(variant);
-            }
-
+            var tv = GetTypeAndVariant("Organisasjon", model.UnitType);
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
                 Name = model.DisplayName,
                 RefId = model.OrganizationIdentifier,
-                TypeId = type.Id,
-                VariantId = variant.Id
+                TypeId = tv.Type.Id,
+                VariantId = tv.Variant.Id
             };
         }
         else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
         {
-            var type = EntityTypes.FirstOrDefault(t => t.Name == "Person") ?? throw new Exception(string.Format("Unable to find type '{0}'", "Person"));
-            var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name == "SI") ?? throw new Exception(string.Format("Unable to find variant '{0}' for type '{1}'", "SI", type.Name));
-            if (variant is null)
-            {
-                // variant = new EntityVariant() { Id = Guid.NewGuid(), Name = model.UnitType, Description = "Unknown", TypeId = type.Id };
-                // var res = _entityVariantRepository.Create(variant, options: options, cancellationToken: cancellationToken).Result;
-                // if (res == 0)
-                // {
-                throw new Exception(string.Format("Unable to find or create variant '{0}' for type '{1}'", model.UnitType, type.Name));
-                // }
-
-                // EntityVariants.Add(variant);
-            }
-
+            var tv = GetTypeAndVariant("Person", "SI");
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
                 Name = model.DisplayName,
                 RefId = model.VersionId.ToString(),
-                TypeId = type.Id,
-                VariantId = variant.Id
+                TypeId = tv.Type.Id,
+                VariantId = tv.Variant.Id
             };
         }
 

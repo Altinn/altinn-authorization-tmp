@@ -84,7 +84,7 @@ public partial class RegisterHostedService(
     {
         try
         {
-                await roleSyncService.SyncRoles(lease, cancellationToken);
+            await roleSyncService.SyncRoles(lease, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -96,8 +96,8 @@ public partial class RegisterHostedService(
     {
         try
         {
-                await resourceSyncService.SyncResourceOwners(cancellationToken);
-                await resourceSyncService.SyncResources(lease, cancellationToken);
+            await resourceSyncService.SyncResourceOwners(cancellationToken);
+            await resourceSyncService.SyncResources(lease, cancellationToken);
         }
         catch (Exception ex)
         {

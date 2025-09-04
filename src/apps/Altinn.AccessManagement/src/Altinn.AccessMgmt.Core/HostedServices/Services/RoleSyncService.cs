@@ -39,7 +39,8 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     public async Task SyncRoles(ILease lease, CancellationToken cancellationToken)
     {
         var batchData = new List<Assignment>();
-        Guid batchId = Guid.CreateVersion7();
+        var seen = new HashSet<(Guid, Guid, Guid)>();
+
         var options = new AuditValues(
             AuditDefaults.RegisterImportSystem,
             AuditDefaults.RegisterImportSystem,
@@ -57,9 +58,9 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Code == "ccr", cancellationToken);
 
-        Roles = await appDbContext.Roles
+        Roles = (await appDbContext.Roles
             .AsNoTracking()
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken)).ToDictionary(t => t.Code, t => t);
 
         var leaseData = await lease.Get<RegisterLease>(cancellationToken);
 
@@ -76,8 +77,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 throw new Exception("Stream page is not successful");
             }
 
-            var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
-            _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
+            _logger.LogInformation("Starting proccessing party page ({0}-{1})", page.Content.Stats.PageStart, page.Content.Stats.PageEnd);
 
             if (page.Content != null)
             {
@@ -85,10 +85,11 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 {
                     var assignment = await ConvertRoleModel(appDbContext, item, options: options, cancellationToken) ?? throw new Exception("Failed to convert RoleModel to Assignment");
 
-                    if (batchData.Any(t => t.FromId == assignment.FromId && t.ToId == assignment.ToId && t.RoleId == assignment.RoleId))
+                    var key = (assignment.FromId, assignment.ToId, assignment.RoleId);
+                    if (!seen.Add(key))
                     {
                         // If changes on same assignment then execute as-is before continuing.
-                        await Flush(batchId);
+                        await Flush();
                     }
 
                     if (item.Type == "Added")
@@ -120,7 +121,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 }
             }
 
-            await Flush(batchId);
+            await Flush();
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
             {
@@ -130,10 +131,11 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             leaseData.RoleStreamNextPageLink = page.Content.Links.Next;
             await lease.Update(leaseData, cancellationToken);
 
-            //// await Flush(batchId);
-
-            async Task Flush(Guid batchId)
+            async Task Flush()
             {
+                var batchId = Guid.CreateVersion7();
+                var batchName = batchId.ToString("N");
+
                 try
                 {
                     _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchId.ToString());
@@ -155,8 +157,8 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 }
                 finally
                 {
-                    batchId = Guid.CreateVersion7();
                     batchData.Clear();
+                    seen.Clear();
                 }
             }
         }
@@ -196,9 +198,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         }
     }
 
-    private static readonly IReadOnlyList<string> GetAssignmentMergeMatchFilter = new List<string>() { "fromid", "roleid", "toid" }.AsReadOnly();
-
-    private List<Role> Roles { get; set; } = [];
+    private Dictionary<string, Role> Roles { get; set; } = new Dictionary<string, Role>(StringComparer.OrdinalIgnoreCase);
 
     private async Task<Assignment> ConvertRoleModel(AppDbContext dbContext, RoleModel model, AuditValues options, CancellationToken cancellationToken)
     {
@@ -220,15 +220,15 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
     private async Task<Role> GetOrCreateRole(AppDbContext dbContext, string roleIdentifier, string roleSource, AuditValues options, CancellationToken cancellationToken)
     {
-        if (Roles.Count(t => t.Code == roleIdentifier) == 1)
+        if (Roles.TryGetValue(roleIdentifier, out var cached))
         {
-            return Roles.First(t => t.Code == roleIdentifier);
+            return cached;
         }
 
-        var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Code == roleIdentifier, cancellationToken);
+        var role = await dbContext.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == roleIdentifier, cancellationToken);
         if (role is null)
         {
-            dbContext.Add(new Role()
+            role = new Role()
             {
                 Id = Guid.CreateVersion7(),
                 Name = roleIdentifier,
@@ -237,17 +237,13 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 Urn = roleIdentifier,
                 EntityTypeId = OrgType.Id,
                 ProviderId = Provider.Id,
-            });
-            await dbContext.SaveChangesAsync(cancellationToken);
-            role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Code == roleIdentifier, cancellationToken);
+            };
 
-            if (role is null)
-            {
-                throw new Exception(string.Format("Unable to get or create role '{0}'", roleIdentifier));
-            }
+            dbContext.Roles.Add(role);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        Roles.Add(role);
+        Roles.Add(role.Code, role);
         return role;
     }
 

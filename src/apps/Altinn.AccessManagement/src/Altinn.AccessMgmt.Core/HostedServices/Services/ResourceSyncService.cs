@@ -57,12 +57,12 @@ public partial class ResourceSyncService : IResourceSyncService
         );
 
         using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetService<AppDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var providerType = await dbContext.ProviderTypes
             .AsNoTracking()
             .Where(t => t.Name == "Tjenesteeier")
-            .FirstAsync(cancellationToken);
+            .FirstAsync(cancellationToken) ?? throw new Exception(string.Format("Provider type '{0}' not found", "Tjenesteeier"));
 
         var resourceOwners = new List<Provider>();
         foreach (var serviceOwner in serviceOwners.Content.Orgs)
@@ -157,34 +157,35 @@ public partial class ResourceSyncService : IResourceSyncService
         var subjectUrnPart = updatedResource.SubjectUrn.Split(":").Last();
 
         var roleLookup = await dbContext.RoleLookups
-            .Where(r => EF.Functions.Like(r.Key, "LegacyCode") && EF.Functions.Like(r.Value, subjectUrnPart))
             .AsNoTracking()
+            .Where(r => r.Key == "LegacyCode" && EF.Functions.ILike(r.Value, subjectUrnPart))
             .SingleOrDefaultAsync(cancellationToken);
 
-        var roleResource = await dbContext.RoleResources
-            .AsTracking()
-            .Where(r => r.RoleId == roleLookup.RoleId && r.ResourceId == resource.Id)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (roleResource is { })
+        if (roleLookup is { })
         {
-            // AUDIT HERE
-            dbContext.RoleLookups.Remove(roleLookup);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            var roleResource = await dbContext.RoleResources
+                .Where(r => r.RoleId == roleLookup.RoleId && r.ResourceId == resource.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (roleResource is { })
+            {
+                dbContext.RoleResources.Remove(roleResource);
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
         }
     }
 
     private async Task DeleteAccessPackageResource(AppDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, AuditValues options, CancellationToken cancellationToken)
     {
-        var package = await dbContext.PackageResources
+        var packageResource = await dbContext.PackageResources
             .AsTracking()
-            .Include(r => resource)
+            .Include(r => r.Package)
             .Where(r => r.Package.Urn == updatedResource.SubjectUrn)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (package is { })
+        if (packageResource is { })
         {
-            dbContext.Remove(package);
+            dbContext.PackageResources.Remove(packageResource);
             await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
@@ -198,13 +199,18 @@ public partial class ResourceSyncService : IResourceSyncService
 
         if (package is { })
         {
-            var packageResource = new PackageResource
+            var packageResource = await dbContext.PackageResources.FirstOrDefaultAsync(t => t.PackageId == package.Id && t.ResourceId == resource.Id, cancellationToken);
+            if (packageResource == null)
             {
-                PackageId = package.Id,
-                ResourceId = resource.Id,
-            };
+                packageResource = new PackageResource
+                {
+                    PackageId = package.Id,
+                    ResourceId = resource.Id,
+                };
 
-            await _ingestService.IngestAndMergeData([packageResource], options, ["resourceid", "packageid"], cancellationToken);
+                dbContext.PackageResources.Add(packageResource);
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
         }
     }
 
@@ -212,21 +218,26 @@ public partial class ResourceSyncService : IResourceSyncService
     {
         var subjectUrnPart = updatedResource.SubjectUrn.Split(":").Last();
 
-        var roleLookup = await dbContext.RoleLookups
-            .Where(r => EF.Functions.Like(r.Key, "LegacyCode") && EF.Functions.Like(r.Value, subjectUrnPart))
+        var role = await dbContext.RoleLookups
             .AsNoTracking()
-            .SingleOrDefaultAsync(cancellationToken);
+            .Where(r => r.Key == "LegacyCode" && EF.Functions.ILike(r.Value, subjectUrnPart))
+            .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception(string.Format("Role not found '{0}'", subjectUrnPart));
 
-        var roleResource = new RoleResource
+        var roleResource = await dbContext.RoleResources.FirstOrDefaultAsync(t => t.RoleId == role.Id && t.ResourceId == resource.Id, cancellationToken);
+        if (roleResource == null)
         {
-            ResourceId = resource.Id,
-            RoleId = roleLookup.RoleId,
-        };
+            roleResource = new RoleResource
+            {
+                RoleId = role.Id,
+                ResourceId = resource.Id,
+            };
 
-        await _ingestService.IngestAndMergeData([roleResource], options, ["resourceid", "roleid"], cancellationToken);
+            dbContext.RoleResources.Add(roleResource);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
     }
 
-    private async Task<Resource> UpsertResource(AppDbContext dbContext, ResourceUpdatedModel resourceUpdated, AuditValues options, CancellationToken cancellationToken)
+    private async Task<Resource?> UpsertResource(AppDbContext dbContext, ResourceUpdatedModel resourceUpdated, AuditValues options, CancellationToken cancellationToken)
     {
         var response = await _resourceRegistry.GetResource(resourceUpdated.ResourceUrn.Split(":").Last(), cancellationToken: cancellationToken);
         if (response.IsProblem)
@@ -235,33 +246,43 @@ public partial class ResourceSyncService : IResourceSyncService
             return null;
         }
 
-        var repositoryResource = await ConvertToResource(dbContext, response.Content, options, cancellationToken);
-        if (repositoryResource is null)
+        var convertedResource = await ConvertToResource(dbContext, response.Content, options, cancellationToken);
+        if (convertedResource is null)
         {
             return null;
         }
 
-        await _ingestService.IngestAndMergeData([repositoryResource], options, ["refid", "providerid"], cancellationToken);
-        return repositoryResource;
+        var resource = await dbContext.Resources.FirstOrDefaultAsync(t => t.RefId == convertedResource.RefId && t.ProviderId == convertedResource.ProviderId, cancellationToken);
+        if (resource is null)
+        {
+            dbContext.Resources.Add(convertedResource);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return convertedResource;
+        }
+
+        resource.Name = convertedResource.Name;
+        resource.Description = convertedResource.Description;
+        resource.TypeId = convertedResource.TypeId;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return resource;
     }
 
     public IEnumerable<ResourceType> ResourceTypes { get; set; }
 
     private async Task<Resource> ConvertToResource(AppDbContext dbContext, ResourceModel model, AuditValues options, CancellationToken cancellationToken)
     {
-        var providers = await dbContext.Providers
-            .AsNoTracking()
-            .Where(p => p.Code == model.HasCompetentAuthority.Orgcode.ToLowerInvariant())
-            .ToListAsync(cancellationToken);
+        var provider = await dbContext.Providers
+        .AsNoTracking()
+        .SingleOrDefaultAsync(p => p.Code == model.HasCompetentAuthority.Orgcode.ToLowerInvariant(), cancellationToken);
 
-        if (providers is null || !providers.Any())
+        if (provider is null)
         {
             return null;
         }
 
         var resourceType = await GetOrCreateResourceType(dbContext, model, options, cancellationToken) ?? throw new Exception("Unable to get or create resourcetype");
-
-        var provider = providers.Single();
         return new Resource()
         {
             Name = model.Title?.Nb ?? model.Identifier,
@@ -293,6 +314,9 @@ public partial class ResourceSyncService : IResourceSyncService
                 Id = Guid.CreateVersion7(),
                 Name = model.ResourceType
             };
+
+            dbContext.ResourceTypes.Add(type);
+            await dbContext.SaveChangesAsync(cancellationToken);
 
             await LoadResourceTypes(dbContext, cancellationToken);
         }
