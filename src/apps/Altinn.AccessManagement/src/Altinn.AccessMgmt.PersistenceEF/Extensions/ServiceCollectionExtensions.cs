@@ -20,9 +20,6 @@ public static class ServiceCollectionExtensions
             {
                 var db = sp.GetRequiredService<IAltinnDatabase>();
                 var connectionString = db.CreatePgsqlConnection(SourceType.App);
-
-                options.AddInterceptors(sp.GetRequiredService<ReadOnlyInterceptor>());
-
                 options.UseNpgsql(connectionString, ConfigureNpgsql);
             }),
             SourceType.Migration => services.AddDbContext<AppDbContext>((sp, options) =>
