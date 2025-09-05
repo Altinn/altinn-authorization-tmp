@@ -10,14 +10,14 @@ public class BaseAudit
 
     public string Audit_ChangeOperation { get; set; } = Guid.NewGuid().ToString();
 
-    public DateTimeOffset Audit_ValidFrom { get; set; } = DateTimeOffset.Now;
+    public DateTimeOffset Audit_ValidFrom { get; set; } = DateTimeOffset.UtcNow;
 
     public void SetAuditValues(AuditValues values)
     {
         Audit_ChangedBy = values.ChangedBy;
         Audit_ChangedBySystem = values.ChangedBySystem;
         Audit_ChangeOperation = values.OperationId;
-        Audit_ValidFrom = DateTimeOffset.Now;
+        Audit_ValidFrom = DateTimeOffset.UtcNow;
     }
 
     public void SetAuditValues(Guid changedBy, Guid changedBySystem)

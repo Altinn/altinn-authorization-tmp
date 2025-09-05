@@ -190,6 +190,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration<PackageResource>(new PackageResourceConfiguration());
         modelBuilder.ApplyConfiguration<Provider>(new ProviderConfiguration());
         modelBuilder.ApplyConfiguration<ProviderType>(new ProviderTypeConfiguration());
+        modelBuilder.ApplyConfiguration<ResourceType>(new ResourceTypeConfiguration());
         modelBuilder.ApplyConfiguration<Resource>(new ResourceConfiguration());
         modelBuilder.ApplyConfiguration<Role>(new RoleConfiguration());
         modelBuilder.ApplyConfiguration<RoleLookup>(new RoleLookupConfiguration());
@@ -216,9 +217,12 @@ public class AppDbContext : DbContext
     {
         ValidateAuditValues(audit);
 
-        foreach (var entry in ChangeTracker.Entries().Where(e => e.Entity is BaseAudit))
+        foreach (var entry in ChangeTracker.Entries().Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
         {
-            ((BaseAudit)entry.Entity).SetAuditValues(audit);
+            if (entry.Entity is BaseAudit auditable)
+            {
+                auditable.SetAuditValues(audit);
+            }
         }
 
         var currentTransaction = Database.CurrentTransaction is not null;
@@ -227,7 +231,7 @@ public class AppDbContext : DbContext
         try
         {
             await Database.ExecuteSqlInterpolatedAsync(AuditContextSql(audit), cancellationToken);
-            var affected = await base.SaveChangesAsync(cancellationToken);
+            var affected = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 
             if (transaction is not null)
             {
@@ -255,24 +259,24 @@ public class AppDbContext : DbContext
         }
     }
 
-    private static FormattableString AuditContextSql(AuditValues a) => $@"
+    private static FormattableString AuditContextSql(AuditValues a) => $"""
     -- SET LOCAL expects text
-    SET LOCAL app.current_user    = {a.ChangedBy.ToString()};
-    SET LOCAL app.current_system  = {a.ChangedBySystem.ToString()};
-    SET LOCAL app.current_operation = {a.OperationId};
+    SET LOCAL app.changed_by = '{a.ChangedBy.ToString()}';
+    SET LOCAL app.changed_by_system = '{a.ChangedBySystem.ToString()}';
+    SET LOCAL app.change_operation_id = '{a.OperationId}';
 
     -- Temp table to carry values through ON DELETE CASCADE
-    CREATE TEMP TABLE IF NOT EXISTS app_audit_ctx(
-        current_user uuid,
-        current_system uuid,
-        current_operation text
+    CREATE TEMP TABLE IF NOT EXISTS session_audit_context(
+        changed_by uuid,
+        changed_by_system uuid,
+        change_operation_id text
     ) ON COMMIT DROP;
 
-    TRUNCATE app_audit_ctx;
+    TRUNCATE session_audit_context;
 
-    INSERT INTO app_audit_ctx (current_user, current_system, current_operation)
+    INSERT INTO session_audit_context (changed_by, changed_by_system, change_operation_id)
     VALUES ({a.ChangedBy}, {a.ChangedBySystem}, {a.OperationId});
-    ";
+    """;
     #endregion
 }
 
