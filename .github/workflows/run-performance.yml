@@ -62,6 +62,53 @@ on:
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForUserPartyId.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForOrganization.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getRightHolders.js'
+    workflow_call:
+      inputs:
+            apiVersion:
+                description: 'API Version'
+                required: true
+                type: string
+                default: 'v1'
+            environment:
+                description: 'Environment'
+                required: true
+                default: 'yt01'
+                type: string
+            tag:
+                description: 'tag the performance test'
+                required: true
+                default: 'Performance test'
+                type: string
+            vus:
+                description: 'Number of VUS'
+                required: true
+                default: 1
+                type: number
+            duration:
+                description: 'Duration of test, ie 30s, 1m, 10m'
+                required: true
+                default: 1m
+                type: string
+            parallelism:
+                description: 'Number of parallel test runs'
+                required: true
+                default: 1
+                type: number
+            breakpoint:
+                description: 'Gradually raise the load to number of VUs over the duration of the test. If VUs is high, it will run until the system breaks'
+                required: true
+                default: false
+                type: boolean 
+            abortOnFail:
+                description: 'Abort on fail. Only used for breakpoint tests'
+                required: true
+                default: false
+                type: boolean 
+            testSuitePath:
+                description: 'Path to test suite to run'
+                required: true
+                default: 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeClientDelegations.js'
+                type: string
 
 permissions:
   id-token: write
