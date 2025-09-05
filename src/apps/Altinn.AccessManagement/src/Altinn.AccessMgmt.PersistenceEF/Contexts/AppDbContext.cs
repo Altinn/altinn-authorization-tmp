@@ -5,14 +5,16 @@ using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
-using System.Threading;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
 /// <inheritdoc />
 public class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public AppDbContext(DbContextOptions<AppDbContext> options, IAuditContextAccessor auditContext) : base(options) 
+    { 
+        _auditAccessor = auditContext;
+    }
 
     private readonly IAuditContextAccessor _auditAccessor;
 
