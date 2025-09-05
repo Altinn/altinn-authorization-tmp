@@ -29,6 +29,8 @@ jobs:
       testSuitePath: 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForUser.js'
 
   authorizedPartiesForOrganizations:
+    needs: authorizedPartiesForUsers
+    if: always()
     uses: ./.github/workflows/run-performance.yml
     secrets: inherit
     with:
