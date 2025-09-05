@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
+using System.Threading;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
@@ -12,6 +13,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
+    private readonly IAuditContextAccessor _auditAccessor;
 
     public DbSet<Connection> Connections => Set<Connection>();
 
@@ -196,19 +199,20 @@ public class AppDbContext : DbContext
     }
 
     #region Extensions
-    public override int SaveChanges() => ThrowNoAudit();
 
-    public override int SaveChanges(bool acceptAllChangesOnSuccess) => ThrowNoAudit();
+    public override Task<int> SaveChangesAsync(CancellationToken ct = default) =>
+        SaveChangesAsync(_auditAccessor.Current ?? throw MissingAudit(), ct);
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => Task.FromException<int>(NoAuditException());
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken ct = default) =>
+        SaveChangesAsync(_auditAccessor.Current ?? throw MissingAudit(), acceptAllChangesOnSuccess, ct);
 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) => Task.FromException<int>(NoAuditException());
+    private static InvalidOperationException MissingAudit() =>
+        new("AuditContextAccessor.Current is null. Set it in your controller/service OR call SaveChangesAsync(BaseAudit audit, ...) explicitly.");
 
-    private static int ThrowNoAudit() => throw NoAuditException();
+    public async Task<int> SaveChangesAsync(AuditValues audit, CancellationToken ct = default) => 
+        await SaveChangesAsync(audit, acceptAllChangesOnSuccess: true, ct);
 
-    private static InvalidOperationException NoAuditException() => new InvalidOperationException("Audit is required. Use SaveChangesAsync(BaseAudit audit, CancellationToken cancellationToken) instead.");
-
-    public async Task<int> SaveChangesAsync(AuditValues audit, CancellationToken cancellationToken = default)
+    public async Task<int> SaveChangesAsync(AuditValues audit, bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         ValidateAuditValues(audit);
 
@@ -270,4 +274,14 @@ public class AppDbContext : DbContext
     VALUES ({a.ChangedBy}, {a.ChangedBySystem}, {a.OperationId});
     ";
     #endregion
+}
+
+public interface IAuditContextAccessor
+{
+    AuditValues? Current { get; set; }
+}
+
+public sealed class AuditContextAccessor : IAuditContextAccessor
+{
+    public AuditValues? Current { get; set; }
 }

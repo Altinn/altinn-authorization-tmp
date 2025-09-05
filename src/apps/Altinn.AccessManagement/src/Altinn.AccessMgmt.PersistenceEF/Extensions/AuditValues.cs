@@ -1,9 +1,8 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
+﻿using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Npgsql;
-using System.Data.Common;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 
@@ -14,24 +13,24 @@ public interface IAuditContextProvider
     AuditValues Current { get; }
 }
 
-public static class DatabaseFacadeExtensions
-{
-    public static void SetAuditSession(this DatabaseFacade db, AuditValues audit)
-    {
-        var sql = """
-            CREATE TEMP TABLE IF NOT EXISTS session_audit_context (
-                changed_by UUID,
-                changed_by_system UUID,
-                change_operation_id TEXT
-            ) ON COMMIT DROP;
-            TRUNCATE session_audit_context;
-            INSERT INTO session_audit_context (changed_by, changed_by_system, change_operation_id)
-            VALUES ({0}, {1}, {2});
-        """;
+//public static class DatabaseFacadeExtensions
+//{
+//    public static void SetAuditSession(this DatabaseFacade db, AuditValues audit)
+//    {
+//        var sql = """
+//            CREATE TEMP TABLE IF NOT EXISTS session_audit_context (
+//                changed_by UUID,
+//                changed_by_system UUID,
+//                change_operation_id TEXT
+//            ) ON COMMIT DROP;
+//            TRUNCATE session_audit_context;
+//            INSERT INTO session_audit_context (changed_by, changed_by_system, change_operation_id)
+//            VALUES ({0}, {1}, {2});
+//        """;
         
-        db.ExecuteSqlRaw(sql, audit.ChangedBy, audit.ChangedBySystem, audit.OperationId);
-    }
-}
+//        db.ExecuteSqlRaw(sql, audit.ChangedBy, audit.ChangedBySystem, audit.OperationId);
+//    }
+//}
 
 public static class ReadOnlyWriteOverride
 {
