@@ -15,7 +15,7 @@ namespace Altinn.Authorization.Host.Lease.StorageAccount;
 /// Represents the result of a lease acquisition operation for a blob in the storage account.
 /// Contains information about the lease, the associated blob, and the lease client.
 /// </summary>
-internal sealed class StorageAccountLease : ILease, IAsyncDisposable
+internal sealed class StorageAccountLease : ILease
 {
     internal StorageAccountLease(
         ILogger logger,
