@@ -7,6 +7,7 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace Altinn.Authorization.Host.Lease.StorageAccount;
@@ -15,7 +16,7 @@ namespace Altinn.Authorization.Host.Lease.StorageAccount;
 /// Represents the result of a lease acquisition operation for a blob in the storage account.
 /// Contains information about the lease, the associated blob, and the lease client.
 /// </summary>
-internal sealed class StorageAccountLease : ILease
+internal sealed class StorageAccountLease : ILease, IAsyncDisposable
 {
     internal StorageAccountLease(
         ILogger logger,
@@ -31,7 +32,7 @@ internal sealed class StorageAccountLease : ILease
         if (blobLease is { })
         {
             Stopwatch = Stopwatch.StartNew();
-            RenewalTask = LeaseRefresher();
+            RenewalTask = LeaseRefresher(LeaseRefresherCancellation.Token);
         }
         else
         {
@@ -129,7 +130,7 @@ internal sealed class StorageAccountLease : ILease
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
-        if (Interlocked.Exchange(ref _disposed, 1) == 1)
+        if (Interlocked.Exchange(ref _disposed, 1) > 0)
         {
             return;
         }
@@ -141,9 +142,20 @@ internal sealed class StorageAccountLease : ILease
             {
                 await RenewalTask.WaitAsync(TimeSpan.FromSeconds(5));
             }
+        }
+        catch
+        {
+            // RenewalTask failed unexpected. Must still try to release the lease.
+        }
 
-            var release = ReleaseLease(CancellationToken.None);
-            await release.WaitAsync(TimeSpan.FromSeconds(5));
+        try
+        {
+            await ReleaseLease(CancellationToken.None)
+                .WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        catch (TimeoutException)
+        {
+            
         }
         finally
         {
@@ -153,7 +165,7 @@ internal sealed class StorageAccountLease : ILease
         }
     }
 
-    private async Task ReleaseLease(CancellationToken cancellationToken = default)
+    private async Task ReleaseLease(CancellationToken cancellationToken)
     {
         await Semaphore.WaitAsync(cancellationToken);
         try
@@ -173,7 +185,7 @@ internal sealed class StorageAccountLease : ILease
         }
     }
 
-    private async Task RefreshLease(CancellationToken cancellationToken = default)
+    private async Task RefreshLease(CancellationToken cancellationToken)
     {
         await Semaphore.WaitAsync(cancellationToken);
         try
@@ -191,16 +203,27 @@ internal sealed class StorageAccountLease : ILease
         }
     }
 
-    private async Task LeaseRefresher()
+    private async Task LeaseRefresher(CancellationToken cancellationToken)
     {
         try
         {
             var refreshDelay = TimeSpan.FromSeconds(30);
-            while (!LeaseRefresherCancellation.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(refreshDelay, LeaseRefresherCancellation.Token);
-                await RefreshLease(LeaseRefresherCancellation.Token);
+                await Task.Delay(refreshDelay, cancellationToken);
+                await RefreshLease(cancellationToken);
             }
+        }
+        catch (Exception ex)
+        {
+            if (ex is TaskCanceledException || ex is OperationCanceledException)
+            {
+                // TaskCanceledException is thrown by Task.Delay if the cancellation token is canceled.
+                // OperationCanceledException is thrown by RefreshLease if the cancellation token is canceled.
+                return;
+            }
+
+            throw;
         }
         finally
         {
