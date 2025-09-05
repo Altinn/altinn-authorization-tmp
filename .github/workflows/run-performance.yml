@@ -61,7 +61,7 @@ on:
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForUser.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForUserPartyId.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForOrganization.js'
-
+                - 'src/apps/Altinn.Authorization/test/K6/performance/getRightHolders.js'
 
 permissions:
   id-token: write
