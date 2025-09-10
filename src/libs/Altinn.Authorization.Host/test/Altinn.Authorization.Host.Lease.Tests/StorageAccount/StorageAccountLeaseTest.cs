@@ -58,7 +58,7 @@ namespace Altinn.Authorization.Host.Lease.Tests
         [Fact(Skip = "Need a valid storage account")]
         public async Task TestLeaseAutoRefresh()
         {
-            await using var lease = await Lease.TryAcquireNonBlocking("andreas_test");
+            await using var lease = await Lease.TryAcquireNonBlocking("lease_test");
 
             for (var i = 0; i < 100; i++)
             {

@@ -15,7 +15,7 @@ namespace Altinn.Authorization.Host.Lease.StorageAccount;
 /// Represents the result of a lease acquisition operation for a blob in the storage account.
 /// Contains information about the lease, the associated blob, and the lease client.
 /// </summary>
-internal sealed class StorageAccountLease : ILease
+internal sealed partial class StorageAccountLease : ILease
 {
     internal StorageAccountLease(
         ILogger logger,
@@ -142,9 +142,9 @@ internal sealed class StorageAccountLease : ILease
                 await RenewalTask.WaitAsync(TimeSpan.FromSeconds(5));
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // RenewalTask failed unexpected. Must still try to release the lease.
+            Log.RenewalTaskFailedToCompleteGracefully(Logger, ex);
         }
 
         try
@@ -152,9 +152,11 @@ internal sealed class StorageAccountLease : ILease
             await ReleaseLease(CancellationToken.None)
                 .WaitAsync(TimeSpan.FromSeconds(5));
         }
-        catch (TimeoutException)
+        catch (TimeoutException ex)
         {
-            
+            // Failed to release lease within 5 seconds.
+            // Enforce termination and lets lease expire by itself.   
+            Log.ReleaseLeaseTimedOut(Logger, ex);
         }
         finally
         {
@@ -229,5 +231,14 @@ internal sealed class StorageAccountLease : ILease
             Stopwatch.Stop();
             LeaseTelemetry.RecordLeaseDuration(BlobClient.Name, Stopwatch.Elapsed);
         }
+    }
+
+    partial class Log
+    {
+        [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Lease release timed out.")]
+        internal static partial void ReleaseLeaseTimedOut(ILogger logger, TimeoutException ex);
+
+        [LoggerMessage(EventId = 2, Level = LogLevel.Warning, Message = "Lease renewal task did not complete successfully.")]
+        internal static partial void RenewalTaskFailedToCompleteGracefully(ILogger logger, Exception ex);
     }
 }
