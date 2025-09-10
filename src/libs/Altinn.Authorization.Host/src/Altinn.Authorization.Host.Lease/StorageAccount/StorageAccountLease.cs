@@ -155,7 +155,7 @@ internal sealed partial class StorageAccountLease : ILease
         catch (TimeoutException ex)
         {
             // Failed to release lease within 5 seconds.
-            // Enforce termination and lets lease expire by itself.   
+            // Enforce termination and lets lease expire by itself.
             Log.ReleaseLeaseTimedOut(Logger, ex);
         }
         finally
@@ -219,8 +219,8 @@ internal sealed partial class StorageAccountLease : ILease
         {
             if (ex is TaskCanceledException || ex is OperationCanceledException)
             {
-                // TaskCanceledException is thrown by Task.Delay if the cancellation token is canceled.
-                // OperationCanceledException is thrown by RefreshLease if the cancellation token is canceled.
+                // Lease release failed within 5 seconds.
+                // Forcing termination; the lease will expire on its own.
                 return;
             }
 
