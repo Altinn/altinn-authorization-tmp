@@ -12,6 +12,7 @@ public class EntityConfiguration : IEntityTypeConfiguration<Entity>
     public void Configure(EntityTypeBuilder<Entity> builder)
     {
         builder.ToTable("entity", "dbo");
+        builder.EnableAudit();
 
         builder.HasKey(p => p.Id);
 
@@ -22,7 +23,7 @@ public class EntityConfiguration : IEntityTypeConfiguration<Entity>
         builder.PropertyWithReference(navKey: t => t.Variant, foreignKey: t => t.VariantId, principalKey: t => t.Id);
         builder.PropertyWithReference(navKey: t => t.Parent, foreignKey: t => t.ParentId, principalKey: t => t.Id, required: false);
 
-        builder.HasIndex(t => t.Name).IsUnique();
+        builder.HasIndex(["Name", "TypeId", "VariantId"]).IsUnique();
     }
 }
 
