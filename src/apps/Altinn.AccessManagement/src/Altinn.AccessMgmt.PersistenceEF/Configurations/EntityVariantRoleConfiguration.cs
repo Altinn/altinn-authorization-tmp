@@ -16,7 +16,7 @@ public class EntityVariantRoleConfiguration : IEntityTypeConfiguration<EntityVar
 
         builder.HasKey(p => p.Id);
 
-        builder.PropertyWithReference(navKey: t => t.Variant, foreignKey: t => t.VariantId, principalKey: t => t.Id);
+        builder.PropertyWithReference(navKey: t => t.Variant, foreignKey: t => t.VariantId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
         builder.PropertyWithReference(navKey: t => t.Role, foreignKey: t => t.RoleId, principalKey: t => t.Id);
 
         builder.HasIndex(t => new { t.VariantId, t.RoleId }).IsUnique();
