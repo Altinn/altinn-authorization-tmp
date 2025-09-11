@@ -14,6 +14,7 @@ public static class ServiceCollectionExtensions
     {
         var options = new AccessManagementDatabaseOptions(configureOptions);
         services.AddScoped<ReadOnlyInterceptor>();
+        services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
         return options.Source switch
         {
             SourceType.App => services.AddDbContextPool<AppDbContext>((sp, options) =>
