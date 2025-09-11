@@ -3,6 +3,7 @@ using System;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250909082946_Requests_01")]
+    partial class Requests_01
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2746,11 +2749,11 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("toid");
 
-                    b.Property<Guid?>("ViaId")
+                    b.Property<Guid>("ViaId")
                         .HasColumnType("uuid")
                         .HasColumnName("viaid");
 
-                    b.Property<Guid?>("ViaRoleId")
+                    b.Property<Guid>("ViaRoleId")
                         .HasColumnType("uuid")
                         .HasColumnName("viaroleid");
 
@@ -3851,12 +3854,14 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .WithMany()
                         .HasForeignKey("ViaId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("fk_request_entity_viaid");
 
                     b.HasOne("Altinn.AccessMgmt.PersistenceEF.Models.Role", "ViaRole")
                         .WithMany()
                         .HasForeignKey("ViaRoleId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("fk_request_role_viaroleid");
 
                     b.Navigation("From");

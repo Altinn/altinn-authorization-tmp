@@ -122,15 +122,22 @@ public static class BuilderExtensions
         Expression<Func<TReference, object>> principalKey,
         DeleteBehavior deleteBehavior = DeleteBehavior.Cascade,
         bool hasIndex = true,
-        bool required = true)
+        bool required = true,
+        bool autoInclude = false)
         where TEntity : class
         where TReference : class
     {
+        if (autoInclude)
+        {
+            builder.Navigation(navKey).AutoInclude();
+        }
+
         var rel = builder.HasOne<TReference>(navKey)
                             .WithMany()
                             .HasForeignKey(foreignKey)
                             .HasPrincipalKey(principalKey)
                             .OnDelete(deleteBehavior);
+
 
         if (required)
         {

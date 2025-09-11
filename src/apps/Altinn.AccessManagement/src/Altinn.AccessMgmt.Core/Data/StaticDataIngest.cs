@@ -31,5 +31,6 @@ public partial class StaticDataIngest(AppDbContext db, ITranslationService trans
         await IngestPackage(cancellationToken);
         await IngestRolePackage(cancellationToken);
         await IngestEntityVariantRole(cancellationToken);
+        await IngestRequestStatus(cancellationToken);
     }
 }

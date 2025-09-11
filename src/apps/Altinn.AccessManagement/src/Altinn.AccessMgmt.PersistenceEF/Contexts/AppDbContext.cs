@@ -18,6 +18,15 @@ public class AppDbContext : DbContext
 
     private readonly IAuditContextAccessor _auditAccessor;
 
+    public DbSet<Request> Requests { get; set; }
+
+    public DbSet<RequestStatus> RequestStatus { get; set; }
+
+    public DbSet<RequestPackage> RequestPackages { get; set; }
+
+    public DbSet<RequestResource> RequestResources { get; set; }
+    public DbSet<RequestMessage> RequestMessages { get; set; }
+
     public DbSet<Connection> Connections => Set<Connection>();
 
     public DbSet<TranslationEntry> TranslationEntries => Set<TranslationEntry>();
@@ -169,6 +178,12 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration<AuditRoleMap>(new AuditRoleMapConfiguration());
         modelBuilder.ApplyConfiguration<AuditRolePackage>(new AuditRolePackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRoleResource>(new AuditRoleResourceConfiguration());
+
+        modelBuilder.ApplyConfiguration<AuditRequestStatus>(new AuditRequestStatusConfiguration());
+        modelBuilder.ApplyConfiguration<AuditRequest>(new AuditRequestConfiguration());
+        modelBuilder.ApplyConfiguration<AuditRequestMessage>(new AuditRequestMessageConfiguration());
+        modelBuilder.ApplyConfiguration<AuditRequestPackage>(new AuditRequestPackageConfiguration());
+        modelBuilder.ApplyConfiguration<AuditRequestResource>(new AuditRequestResourceConfiguration());
     }
     
     private void ApplyConfiguration(ModelBuilder modelBuilder)
@@ -199,6 +214,12 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration<RoleMap>(new RoleMapConfiguration());
         modelBuilder.ApplyConfiguration<RolePackage>(new RolePackageConfiguration());
         modelBuilder.ApplyConfiguration<RoleResource>(new RoleResourceConfiguration());
+
+        modelBuilder.ApplyConfiguration<RequestStatus>(new RequestStatusConfiguration());
+        modelBuilder.ApplyConfiguration<Request>(new RequestConfiguration());
+        modelBuilder.ApplyConfiguration<RequestMessage>(new RequestMessageConfiguration());
+        modelBuilder.ApplyConfiguration<RequestPackage>(new RequestPackageConfiguration());
+        modelBuilder.ApplyConfiguration<RequestResource>(new RequestResourceConfiguration());
     }
 
     #region Extensions
