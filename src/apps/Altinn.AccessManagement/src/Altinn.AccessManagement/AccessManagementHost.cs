@@ -15,9 +15,11 @@ using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Core.Extensions;
+using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.Host;
@@ -120,23 +122,24 @@ internal static partial class AccessManagementHost
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
         builder.ConfigureAccessManagementPersistence();
-        builder.ConfigureHostedServices();
+        // builder.ConfigureHostedServices();
         builder.AddAccessManagementEnduser();
         builder.AddAccessManagementInternal();
+
+        builder.Services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
 
         return builder.Build();
     }
 
     private static WebApplicationBuilder ConfigureEF(this WebApplicationBuilder builder)
     {
-        //// builder.Services.Replace(ServiceDescriptor.Singleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>());
-        //// builder.Services.AddSingleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
+        // builder.Services.Replace(ServiceDescriptor.Singleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>());
+        // builder.Services.AddSingleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
 
-        //// builder.Services.AddScoped<IAuditContextProvider, HttpContextAuditContextProvider>();
-        //// builder.Services.AddScoped<AuditConnectionInterceptor>();
+        // builder.Services.AddScoped<IAuditContextProvider, HttpContextAuditContextProvider>();
+        // builder.Services.AddScoped<AuditConnectionInterceptor>();
 
         builder.Services.AddScoped<ReadOnlyInterceptor>();
-        builder.Services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
 
         return builder;
     }
@@ -151,21 +154,21 @@ internal static partial class AccessManagementHost
         return builder;
     }
 
-    private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
-    {
-        builder.Services.AddHostedService<RegisterHostedService>();
-        builder.Services.AddSingleton<IPartySyncService, PartySyncService>();
-        builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
-        builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
+    // private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
+    // {
+    //     builder.Services.AddHostedService<RegisterHostedService>();
+    //     builder.Services.AddSingleton<IPartySyncService, PartySyncService>();
+    //     builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
+    //     builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
 
-        builder.Services.AddHostedService<AltinnRoleHostedService>();
-        builder.Services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
-        builder.Services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
-        builder.Services.AddSingleton<IAltinnBankruptcyEstateRoleSyncService, AltinnBankruptcyEstateRoleSyncService>();
-        builder.Services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
+    //     builder.Services.AddHostedService<AltinnRoleHostedService>();
+    //     builder.Services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
+    //     builder.Services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
+    //     builder.Services.AddSingleton<IAltinnBankruptcyEstateRoleSyncService, AltinnBankruptcyEstateRoleSyncService>();
+    //     builder.Services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
 
-        return builder;
-    }
+    //     return builder;
+    // }
 
     private static WebApplicationBuilder ConfigureLibsIntegrations(this WebApplicationBuilder builder)
     {

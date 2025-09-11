@@ -11,7 +11,6 @@ using Altinn.Authorization.Integration.Platform.ResourceRegistry;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services;
 
@@ -19,9 +18,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services;
 public partial class ResourceSyncService : IResourceSyncService
 {
     private readonly ILogger<ResourceSyncService> _logger;
-    private readonly IFeatureManager _featureManager;
     private readonly IAltinnResourceRegistry _resourceRegistry;
-    private readonly IIngestService _ingestService;
     private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
@@ -29,14 +26,12 @@ public partial class ResourceSyncService : IResourceSyncService
     /// </summary>
     public ResourceSyncService(
         IAltinnResourceRegistry resourceRegistry,
-        IIngestService ingestService,
         IServiceProvider serviceProvider,
         ILogger<ResourceSyncService> logger
         )
     {
         _logger = logger;
         _resourceRegistry = resourceRegistry;
-        _ingestService = ingestService;
         _serviceProvider = serviceProvider;
     }
 
@@ -58,6 +53,7 @@ public partial class ResourceSyncService : IResourceSyncService
 
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
         var providerType = await dbContext.ProviderTypes
             .AsNoTracking()
@@ -80,7 +76,7 @@ public partial class ResourceSyncService : IResourceSyncService
         }
 
         // IngestService will map in Id property and update properties not matchaed
-        await _ingestService.IngestAndMergeData(resourceOwners, options, ["Id"], cancellationToken: cancellationToken);
+        await ingestService.IngestAndMergeData(resourceOwners, options, ["Id"], cancellationToken: cancellationToken);
 
         return true;
     }
@@ -170,7 +166,7 @@ public partial class ResourceSyncService : IResourceSyncService
             if (roleResource is { })
             {
                 dbContext.RoleResources.Remove(roleResource);
-                await dbContext.SaveChangesAsync(cancellationToken);
+                await dbContext.SaveChangesAsync(options, cancellationToken);
             }
         }
     }
@@ -186,7 +182,7 @@ public partial class ResourceSyncService : IResourceSyncService
         if (packageResource is { })
         {
             dbContext.PackageResources.Remove(packageResource);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(options, cancellationToken);
         }
     }
 
@@ -209,7 +205,7 @@ public partial class ResourceSyncService : IResourceSyncService
                 };
 
                 dbContext.PackageResources.Add(packageResource);
-                await dbContext.SaveChangesAsync(cancellationToken);
+                await dbContext.SaveChangesAsync(options, cancellationToken);
             }
         }
     }
@@ -233,7 +229,7 @@ public partial class ResourceSyncService : IResourceSyncService
             };
 
             dbContext.RoleResources.Add(roleResource);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(options, cancellationToken);
         }
     }
 
@@ -256,7 +252,7 @@ public partial class ResourceSyncService : IResourceSyncService
         if (resource is null)
         {
             dbContext.Resources.Add(convertedResource);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(options, cancellationToken);
             return convertedResource;
         }
 
@@ -264,7 +260,7 @@ public partial class ResourceSyncService : IResourceSyncService
         resource.Description = convertedResource.Description;
         resource.TypeId = convertedResource.TypeId;
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(options, cancellationToken);
 
         return resource;
     }
@@ -316,7 +312,7 @@ public partial class ResourceSyncService : IResourceSyncService
             };
 
             dbContext.ResourceTypes.Add(type);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(options, cancellationToken);
 
             await LoadResourceTypes(dbContext, cancellationToken);
         }

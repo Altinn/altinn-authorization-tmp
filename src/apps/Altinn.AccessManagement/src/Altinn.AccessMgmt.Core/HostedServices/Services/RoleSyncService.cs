@@ -20,13 +20,11 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     public RoleSyncService(
         IAltinnRegister register,
         ILogger<RoleSyncService> logger,
-        IIngestService ingestService,
         IServiceProvider serviceProvider
     )
     {
         _register = register;
         _logger = logger;
-        _ingestService = ingestService;
         _serviceProvider = serviceProvider;
     }
 
@@ -49,6 +47,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
         using var scope = _serviceProvider.CreateScope();
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
         OrgType = await appDbContext.EntityTypes
             .AsNoTracking()

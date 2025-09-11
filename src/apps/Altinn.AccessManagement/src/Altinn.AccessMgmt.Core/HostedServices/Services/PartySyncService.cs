@@ -18,9 +18,9 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services;
 public class PartySyncService : BaseSyncService, IPartySyncService
 {
     private readonly ILogger<RegisterHostedService> _logger;
-    private readonly IIngestService _ingestService;
     private readonly IAltinnRegister _register;
     private readonly IServiceProvider _serviceProvider;
+    private readonly int _bulkSize = 10_000;
 
     /// <summary>
     /// PartySyncService Constructor
@@ -28,13 +28,11 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     public PartySyncService(
         IAltinnRegister register,
         ILogger<RegisterHostedService> logger,
-        IIngestService ingestService,
         IServiceProvider serviceProvider
     )
     {
         _register = register;
         _logger = logger;
-        _ingestService = ingestService;
         _serviceProvider = serviceProvider;
     }
 
@@ -59,6 +57,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
         using var scope = _serviceProvider.CreateScope();
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
         EntityTypes = await appDbContext.EntityTypes.AsNoTracking().ToListAsync(cancellationToken);
         EntityVariants = await appDbContext.EntityVariants.AsNoTracking().ToListAsync(cancellationToken);
@@ -90,7 +89,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     var entity = ConvertPartyModel(item, cancellationToken: cancellationToken);
                     if (entity is { })
                     {
-                        if (!seen.Add(entity.Id))
+                        if (!seen.Add(entity.Id) || seen.Count > _bulkSize)
                         {
                             await Flush();
                         }
@@ -129,16 +128,16 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 {
                     _logger.LogInformation("Ingest and Merge Entity and EntityLookup batch '{0}' to db", batchName);
 
-                    var ingestedEntities = await _ingestService.IngestTempData(bulk, batchId, cancellationToken);
-                    var ingestedLookups = await _ingestService.IngestTempData(bulkLookup, batchId, cancellationToken);
+                    var ingestedEntities = await ingestService.IngestTempData(bulk, batchId, cancellationToken);
+                    var ingestedLookups = await ingestService.IngestTempData(bulkLookup, batchId, cancellationToken);
 
                     if (ingestedEntities != bulk.Count || ingestedLookups != bulkLookup.Count)
                     {
                         _logger.LogWarning("Ingest partial complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", ingestedEntities, bulk.Count, ingestedLookups, bulkLookup.Count);
                     }
 
-                    var mergedEntities = await _ingestService.MergeTempData<Entity>(batchId, options, ["id"], cancellationToken);
-                    var mergedLookups = await _ingestService.MergeTempData<EntityLookup>(batchId, options, ["entityid", "key"], cancellationToken);
+                    var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, options, ["id"], cancellationToken);
+                    var mergedLookups = await ingestService.MergeTempData<EntityLookup>(batchId, options, ["entityid", "key"], cancellationToken);
 
                     _logger.LogInformation("Merge complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", mergedEntities, ingestedEntities, mergedLookups, ingestedLookups);
                 }
@@ -157,59 +156,6 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         }
     }
 
-    private async Task<(EntityType Type, EntityVariant Variant)> GetOrCreateTypeAndVariant(AuditValues options, AppDbContext dbContext, string typeName, string variantName, bool autoCreateType, bool autoCreateVariant)
-    {
-        var tv = GetTypeAndVariant(typeName, variantName);
-        if (tv.Type != null && tv.Variant != null)
-        {
-            return tv;
-        }
-
-        var type = tv.Type;
-        if (type == null)
-        {
-            if (autoCreateType)
-            {
-                try
-                {
-                    type = new EntityType() { Id = Guid.NewGuid(), Name = typeName, ProviderId = AuditDefaults.RegisterImportSystem };
-                    dbContext.EntityTypes.Add(type);
-                    await dbContext.SaveChangesAsync(); // Add AuditValues on next merge
-                    EntityTypes.Add(type);
-                }
-                catch
-                {
-                    throw new Exception(string.Format("Unable to create type '{0}'", typeName));
-                }
-            }
-
-            throw new Exception(string.Format("Unable to find type '{0}'", typeName));
-        }
-
-        var variant = tv.Variant;
-        if (variant == null)
-        {
-            if (autoCreateVariant)
-            {
-                try
-                {
-                    variant = new EntityVariant() { Id = Guid.NewGuid(), Name = variantName, Description = "Unknown", TypeId = type.Id };
-                    dbContext.EntityVariants.Add(variant);
-                    await dbContext.SaveChangesAsync(); // Add AuditValues on next merge
-                    EntityVariants.Add(variant);
-                }
-                catch
-                {
-                    throw new Exception(string.Format("Unable to create variant '{0}' for type '{1}'", variantName, type.Name));
-                }
-            }
-
-            throw new Exception(string.Format("Unable to find variant '{0}' for type '{1}'", variantName, type.Name));
-        }
-
-        return (type, variant);
-    }
-
     private (EntityType Type, EntityVariant Variant) GetTypeAndVariant(string typeName, string variantName)
     {
         var type = EntityTypes.FirstOrDefault(t => t.Name == typeName) ?? throw new Exception(string.Format("Unable to find type '{0}'", typeName));
@@ -221,7 +167,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     {
         /*
         // To add autoCreate for types and variants
-        - Add AuditValues options, AppDbContext dbContext
+        - Add AuditValus options, AppDbContext dbContext
         - Use GetOrCreateTypeAndVariant
 
         bool autoCreateTypes = false;
@@ -254,7 +200,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         }
         else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
         {
-            var tv = GetTypeAndVariant("Person", "SI");
+            var tv = GetTypeAndVariant("Person", "SelvIdentfisert");
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
