@@ -843,5 +843,10 @@ namespace Altinn.AccessManagement.Core.Services
             return Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult)
                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
         }
+
+        public Task<Result<List<ConsentRequestDetails>>> GetRequestsForParty(Guid coveredByParty, bool useInternalIdenties, CancellationToken cancellationToken)
+        {
+            return _consentRepository.GetRequestsForParty(coveredByParty, cancellationToken);
+        }
     }
 }

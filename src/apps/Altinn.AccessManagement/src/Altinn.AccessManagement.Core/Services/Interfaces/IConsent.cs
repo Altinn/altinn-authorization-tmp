@@ -26,9 +26,9 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         Task<Result<ConsentRequestDetails>> GetRequest(Guid consentRequestId, ConsentPartyUrn performedByParty, bool useInternalIdenties, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Get a specific consent request. Requires the userId for the user that is requesting the concent.
+        /// Returns a list over consent request for a specific party.
         /// </summary>
-        Task<Result<ConsentRequestDetails>> GetRequestsForParty(ConsentPartyUrn performedByParty, bool useInternalIdenties, CancellationToken cancellationToken);
+        Task<Result<List<ConsentRequestDetails>>> GetRequestsForParty(Guid offeredByParty, bool useInternalIdenties, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates a consent requests and return info about the created one. Available for enteprises. 
