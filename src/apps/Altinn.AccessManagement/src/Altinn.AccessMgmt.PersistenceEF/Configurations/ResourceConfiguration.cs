@@ -20,7 +20,7 @@ public class ResourceConfiguration : IEntityTypeConfiguration<Resource>
         builder.Property(t => t.Description).IsRequired();
         builder.Property(t => t.RefId);
 
-        builder.PropertyWithReference(navKey: t => t.Type, foreignKey: t => t.TypeId, principalKey: t => t.Id);
+        builder.PropertyWithReference(navKey: t => t.Type, foreignKey: t => t.TypeId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.SetNull);
         builder.PropertyWithReference(navKey: t => t.Provider, foreignKey: t => t.ProviderId, principalKey: t => t.Id);
     }
 }

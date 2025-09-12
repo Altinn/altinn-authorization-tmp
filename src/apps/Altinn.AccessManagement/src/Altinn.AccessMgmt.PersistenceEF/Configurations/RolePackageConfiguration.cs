@@ -21,7 +21,7 @@ public class RolePackageConfiguration : IEntityTypeConfiguration<RolePackage>
 
         builder.PropertyWithReference(navKey: t => t.Role, foreignKey: t => t.RoleId, principalKey: t => t.Id);
         builder.PropertyWithReference(navKey: t => t.Package, foreignKey: t => t.PackageId, principalKey: t => t.Id);
-        builder.PropertyWithReference(navKey: t => t.EntityVariant, foreignKey: t => t.EntityVariantId, principalKey: t => t.Id, required: false);
+        builder.PropertyWithReference(navKey: t => t.EntityVariant, foreignKey: t => t.EntityVariantId, principalKey: t => t.Id, required: false, deleteBehavior: DeleteBehavior.SetNull);
 
         builder.HasIndex(t => new { t.RoleId, t.PackageId, t.EntityVariantId }).IsUnique();
     }
