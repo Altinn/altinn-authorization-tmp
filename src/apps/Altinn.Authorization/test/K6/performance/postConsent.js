@@ -1,19 +1,19 @@
 import http from 'k6/http';
 import { SharedArray } from "k6/data";
-import { postConsent, postConsentRequest } from './common/config.js';
+import { postConsent, postConsentApprove, env } from './common/config.js';
 import { expect, describe, randomItem, randomIntBetween, URL, uuidv4 } from "./common/testimports.js";
 import { buildOptions, readCsv, getConsentToken, getApproveToken, getAuthorizeParams } from './commonFunctions.js';
 
-const orgsDaglFilename = `./testData/OrgsDaglUserId.csv`;
+const orgsDaglFilename = `./testData/orgsin-${env}-WithPartyUuid.csv`;
 const orgsDagl = new SharedArray('orgsDagl', function () {
   return readCsv(orgsDaglFilename);
 });
 
-const handledByOrg = "713431400"; // Altinn
-
-const requestlabel = "consentrequests";
-const approvelabel = "consentapprove";
-const labels = [requestlabel, approvelabel];
+const requestlabelorg = "consentrequests org";
+const requestlabelpriv = "consentrequests priv";
+const approvelabelorg = "consentapprove org";
+const approvelabelpriv = "consentapprove priv";
+const labels = [requestlabelorg, requestlabelpriv, approvelabelorg, approvelabelpriv];
 
 export let options = buildOptions(labels);
 
@@ -23,26 +23,26 @@ export default function() {
     do {
         to = randomItem(orgsDagl);
     } while (to === from);
-    const id = requestConsent(from, to);
-    console.log(id);
-    //approveConsent(from, id);
+    const [id, approvelabel] = requestConsent(from, to);
+    approveConsent(from, id, approvelabel);
     
 }
 
 function requestConsent(from, to) {
     const resource = "samtykke-performance-test";
-    const token = getConsentToken(to.OrgNr);
-    //const token = getConsentToken(handledByOrg);
-    const params = getAuthorizeParams(requestlabel, token);
-    const fromOrg = `urn:altinn:organization:identifier-no:${from.OrgNr}`;
-    const toOrg = `urn:altinn:organization:identifier-no:${to.OrgNr}`;
-    //const toPerson = `urn:altinn:person:identifier-no:${to.SSN}`;
-    const fromPerson = `urn:altinn:person:identifier-no:${from.SSN}`;
-    const handledBy = `urn:altinn:organization:identifier-no:${handledByOrg}`;
-    let fromSome = fromOrg;
-    if (randomIntBetween(0, 1) === 0) {
-        fromSome = fromPerson;
+    const token = getConsentToken(to.orgNo);
+    const fromOrg = `urn:altinn:organization:identifier-no:${from.orgNo}`;
+    const toOrg = `urn:altinn:organization:identifier-no:${to.orgNo}`;
+    const fromPerson = `urn:altinn:person:identifier-no:${from.ssn}`;
+    let fromSome = fromPerson;
+    let requestlabel = requestlabelpriv;
+    let approvelabel = approvelabelpriv;
+    if (randomIntBetween(0, 100) <= 10) {
+      fromSome = fromOrg;
+      requestlabel = requestlabelorg;
+      approvelabel = approvelabelorg;
     }
+    const params = getAuthorizeParams(requestlabel, token);
     const body = getBody(fromSome, toOrg, null, null, resource, "consent");
     const url = new URL(postConsent);
     describe('POST Consent', () => {
@@ -50,19 +50,16 @@ function requestConsent(from, to) {
         expect(r.status, "response status").to.equal(201);
         expect(r, 'response').to.have.validJsonBody(); 
     });
-    return body.id;   
+    return [body.id, approvelabel];   
 }
 
-function approveConsent(from, id) {
-    const token = getApproveToken(from.UserId);
+function approveConsent(from, id, approvelabel) {
+    const token = getApproveToken(from);
     const params = getAuthorizeParams(approvelabel, token);
     const body = { "language": "nb" };
-    console.log(`Approving consent request with id: ${id} for org: ${from.OrgNr}`);
-    const url = new URL(`${postConsentRequest}${id}/approve`);
-    console.log(url.toString());
+    const url = new URL(`${postConsentApprove}${id}/accept`);
     describe('POST Consent Approve', () => {
         let r = http.post(url.toString(), JSON.stringify(body), params);
-        console.log(`Response: ${JSON.stringify(r.json(), null, 2)}`);
         expect(r.status, "response status").to.equal(200);
         expect(r, 'response').to.have.validJsonBody(); 
     });

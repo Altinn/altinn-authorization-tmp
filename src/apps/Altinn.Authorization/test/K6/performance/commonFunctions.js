@@ -75,10 +75,12 @@ export function getConsentToken(org) {
     return token;
 }
 
-export function getApproveToken(userId) {
+export function getApproveToken(from) {
     const tokenOptions = {
         scopes: "altinn:portal/enduser",
-        userId: userId
+        userId: from.userId,
+        partyuuid: from.partyUuid,
+
     }
     return getPersonalToken(tokenOptions);
 }

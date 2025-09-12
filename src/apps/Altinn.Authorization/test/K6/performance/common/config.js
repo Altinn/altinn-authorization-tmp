@@ -19,6 +19,9 @@ const amAuthorizedPartiesUrl = "api/v1/resourceowner/authorizedparties";
 const amConsentUrl = "api/v1/enterprise/consentrequests/"
 const amConsentRequest = "api/v1/consent/request/"; 
 const amRightholders = "api/v1/user/rightholders";
+const amConsentApprove = "api/v1/bff/consentrequests/";
+
+export const env = __ENV.API_ENVIRONMENT ?? 'yt01';
 
 // Example 
 //https://am.ui.at22.altinn.cloud/accessmanagement/api/v1/consent/request/a005d4e7-78b3-42b2-ce79-dc68cc5348ec/approve
@@ -59,6 +62,11 @@ export const urls = {
             test: testAmBaseUrl + amConsentRequest,
             yt01: yt01AmBaseUrl + amConsentRequest
         },
+        consentApproveUrl: {
+            test: testAmBaseUrl + amConsentApprove,
+            staging: stagingAmBaseUrl + amConsentApprove,
+            yt01: yt01AmBaseUrl + amConsentApprove
+        },
         rightHoldersUrl: {
             test: testAmBaseUrl + amRightholders,
             staging: stagingAmUiBaseUrl + amRightholders,
@@ -82,9 +90,10 @@ export const getAmDelegationUrl = urls[__ENV.API_VERSION]["amDelegationUrl"][__E
 export const getAuthorizedPartiesUrl = urls[__ENV.API_VERSION]["authorizedPartiesUrl"][__ENV.API_ENVIRONMENT];
 export const postConsent = urls[__ENV.API_VERSION]["consentUrl"][__ENV.API_ENVIRONMENT];
 export const postConsentRequest = urls[__ENV.API_VERSION]["consentRequestUrl"][__ENV.API_ENVIRONMENT];
+export const postConsentApprove = urls[__ENV.API_VERSION]["consentApproveUrl"][__ENV.API_ENVIRONMENT];
 export const getRightHoldersUrl = urls[__ENV.API_VERSION]["rightHoldersUrl"][__ENV.API_ENVIRONMENT];
 export const tokenGeneratorEnv = (() => {
-  switch (__ENV.API_ENVIRONMENT) {
+  switch (env) {
     case 'yt01':
       return 'yt01';
     case 'staging':
