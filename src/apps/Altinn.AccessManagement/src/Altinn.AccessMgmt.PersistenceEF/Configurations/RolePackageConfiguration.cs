@@ -23,7 +23,8 @@ public class RolePackageConfiguration : IEntityTypeConfiguration<RolePackage>
         builder.PropertyWithReference(navKey: t => t.Package, foreignKey: t => t.PackageId, principalKey: t => t.Id);
         builder.PropertyWithReference(navKey: t => t.EntityVariant, foreignKey: t => t.EntityVariantId, principalKey: t => t.Id, required: false, deleteBehavior: DeleteBehavior.SetNull);
 
-        builder.HasIndex(t => new { t.RoleId, t.PackageId, t.EntityVariantId }).IsUnique();
+        builder.HasIndex(t => new { t.RoleId, t.PackageId }).HasFilter("entityvariantid IS NULL").IsUnique();
+        builder.HasIndex(t => new { t.RoleId, t.PackageId, t.EntityVariantId }).HasFilter("entityvariantid IS NOT NULL").IsUnique();
     }
 }
 

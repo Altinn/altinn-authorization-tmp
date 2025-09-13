@@ -12,7 +12,8 @@ public class DelegationResourceConfiguration : IEntityTypeConfiguration<Delegati
 {
     public void Configure(EntityTypeBuilder<DelegationResource> builder)
     {
-        builder.ToTable(nameof(DelegationResource).ToLower(), BaseConfiguration.BaseSchema);
+        builder.ToDefaultTable();
+        builder.EnableAudit();
 
         builder.HasKey(p => p.Id);
 

@@ -17,12 +17,18 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
 
     protected override void Generate(CreateTableOperation operation, IModel model, MigrationCommandListBuilder builder, bool terminate = true)
     {
+        Console.WriteLine("CustomMigrationsSqlGenerator");
         base.Generate(operation, model, builder, terminate);
         builder.EndCommand();
 
         var entityType = model?.GetEntityTypes().FirstOrDefault(et =>
             et.GetTableName() == operation.Name &&
             et.GetSchema() == operation.Schema);
+
+        if (operation.Name.ToLower() == "entity") 
+        {
+            Console.WriteLine("Hello");
+        }
 
 
         if (entityType?.FindAnnotation("EnableAudit")?.Value as bool? == true)
