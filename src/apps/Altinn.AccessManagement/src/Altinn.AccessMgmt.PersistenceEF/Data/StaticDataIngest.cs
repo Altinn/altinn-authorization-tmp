@@ -1,5 +1,4 @@
-﻿using Altinn.AccessMgmt.Core.Utils;
-using Altinn.AccessMgmt.PersistenceEF.Contexts;
+﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.Extensions.Configuration;
