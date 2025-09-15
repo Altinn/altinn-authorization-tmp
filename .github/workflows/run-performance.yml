@@ -62,6 +62,7 @@ on:
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForUserPartyId.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForOrganization.js'
                 - 'src/apps/Altinn.Authorization/test/K6/performance/getRightHolders.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/postConsent.js'
     workflow_call:
       inputs:
             apiVersion:
