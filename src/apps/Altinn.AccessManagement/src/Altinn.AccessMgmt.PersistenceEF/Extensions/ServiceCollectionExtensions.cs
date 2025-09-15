@@ -1,4 +1,5 @@
 using System.ComponentModel.Design;
+using Altinn.AccessMgmt.Core.Data;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.Authorization.Host.Database;
 using Microsoft.EntityFrameworkCore;
@@ -22,10 +23,11 @@ public static class ServiceCollectionExtensions
                 var connectionString = db.CreatePgsqlConnection(SourceType.App);
                 options.UseNpgsql(connectionString, ConfigureNpgsql);
             }),
-            SourceType.Migration => services.AddDbContext<AppDbContext>((sp, options) =>
+            SourceType.Migration => services.AddDbContext<AppDbContext>(async (sp, options) =>
             {
                 var db = sp.GetRequiredService<IAltinnDatabase>();
                 var connectionString = db.CreatePgsqlConnection(SourceType.Migration);
+                options.UseAsyncSeeding(AutoIngestConstants.IngestAll);
                 options.UseNpgsql(connectionString, ConfigureNpgsql)
                     .ReplaceService<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
             }),

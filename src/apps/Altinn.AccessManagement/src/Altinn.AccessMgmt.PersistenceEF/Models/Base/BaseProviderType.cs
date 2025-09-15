@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
+﻿using Altinn.AccessMgmt.Core.Models.Contracts;
+using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
@@ -7,7 +8,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 /// Define the types of Providers
 /// </summary>
 [NotMapped]
-public class BaseProviderType : BaseAudit
+public class BaseProviderType : BaseAudit, IEntityId, IEntityName
 {
     /// <summary>
     /// Provider type identifier

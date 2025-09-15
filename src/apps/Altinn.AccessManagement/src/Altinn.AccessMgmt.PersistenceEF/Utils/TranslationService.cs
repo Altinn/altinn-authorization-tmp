@@ -109,7 +109,7 @@ public class TranslationService : ITranslationService
 /// <summary>
 /// Translation service for EF model
 /// </summary>
-public interface ITranslationService    
+public interface ITranslationService
 {
     /// <summary>
     /// Translates the specified object to the target language asynchronously.
@@ -200,6 +200,14 @@ public class AuditTranslationEntry : TranslationEntry, IAudit
 /// </summary>
 public class TranslationEntryList
 {
+    public static TranslationEntryList Create(params KeyValuePair<string, string>[] keyValuePairs)
+    {
+        return new TranslationEntryList()
+        {
+            Translations = keyValuePairs.ToDictionary(),
+        };
+    }
+
     /// <summary>
     /// Identity
     /// </summary>
@@ -218,7 +226,7 @@ public class TranslationEntryList
     /// <summary>
     /// Fileds and Values
     /// </summary>
-    public Dictionary<string, string> Translations { get; set; } = new Dictionary<string, string>();
+    public Dictionary<string, string> Translations { get; set; } = [];
 
     public List<TranslationEntry> SingleEntries()
     {
