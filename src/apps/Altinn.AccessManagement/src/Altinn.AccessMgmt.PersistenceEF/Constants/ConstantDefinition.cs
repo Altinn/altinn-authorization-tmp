@@ -27,9 +27,10 @@ public sealed class ConstantDefinition<T>
         init
         {
             _entity = value;
-            _entity.Id = _id;
-            EN.Id = _id;
-            NN.Id = _id;
+            if (_entity is { })
+            {
+                _entity.Id = _id;
+            }
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.Core.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,10 +18,10 @@ public partial class StaticDataIngest
 
         var data = new List<EntityType>()
         {
-            new EntityType() { Id = Guid.Parse("8C216E2F-AFDD-4234-9BA2-691C727BB33D"), Name = "Organisasjon", ProviderId = provider.Id },
-            new EntityType() { Id = Guid.Parse("BFE09E70-E868-44B3-8D81-DFE0E13E058A"), Name = "Person", ProviderId = provider.Id },
-            new EntityType() { Id = Guid.Parse("FE643898-2F47-4080-85E3-86BF6FE39630"), Name = "Systembruker", ProviderId = provider.Id },
-            new EntityType() { Id = Guid.Parse("4557CC81-C10D-40B4-8134-F8825060016E"), Name = "Intern", ProviderId = provider.Id },
+            EntityTypeConstants.Organisation.Entity,
+            EntityTypeConstants.Person.Entity,
+            EntityTypeConstants.SystemUser.Entity,
+            EntityTypeConstants.Internal.Entity,
         };
 
         var translations = new List<TranslationEntry>()
