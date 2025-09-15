@@ -4,8 +4,8 @@ using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Data;
-{
-    public partial class StaticDataIngest
+
+public partial class StaticDataIngest
     {
         private readonly string iconBaseUrl = configuration["AltinnCDN:AccessPackageIconsBaseURL"];
 
