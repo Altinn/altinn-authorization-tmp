@@ -4,7 +4,7 @@ using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.Extensions.Configuration;
 
-namespace Altinn.AccessMgmt.Core.Data;
+namespace Altinn.AccessMgmt.PersistenceEF.Data;
 
 /// <summary>
 /// Ingest static data into the database
