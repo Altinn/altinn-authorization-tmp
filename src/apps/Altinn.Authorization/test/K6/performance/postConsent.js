@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { SharedArray } from "k6/data";
 import { postConsent, postConsentApprove, env } from './common/config.js';
 import { expect, describe, randomItem, randomIntBetween, URL, uuidv4 } from "./common/testimports.js";
-import { buildOptions, readCsv, getConsentToken, getApproveToken, getAuthorizeParams } from './commonFunctions.js';
+import { buildOptions, readCsv, getConsentRequestToken, getConsentApproveToken, getAuthorizeParams } from './commonFunctions.js';
 
 const orgsDaglFilename = `./testData/orgsIn-${env}-WithPartyUuid.csv`;
 const orgsDagl = new SharedArray('orgsDagl', function () {
@@ -30,7 +30,7 @@ export default function() {
 
 function requestConsent(from, to) {
     const resource = "samtykke-performance-test";
-    const token = getConsentToken(to.orgNo);
+    const token = getConsentRequestToken(to.orgNo);
     const fromOrg = `urn:altinn:organization:identifier-no:${from.orgNo}`;
     const toOrg = `urn:altinn:organization:identifier-no:${to.orgNo}`;
     const fromPerson = `urn:altinn:person:identifier-no:${from.ssn}`;
@@ -54,7 +54,7 @@ function requestConsent(from, to) {
 }
 
 function approveConsent(from, id, approvelabel) {
-    const token = getApproveToken(from);
+    const token = getConsentApproveToken(from);
     const params = getAuthorizeParams(approvelabel, token);
     const body = { "language": "nb" };
     const url = new URL(`${postConsentApprove}${id}/accept`);

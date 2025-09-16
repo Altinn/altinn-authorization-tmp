@@ -66,7 +66,7 @@ export function getAuthorizeClientToken(client) {
     return token;
 }
 
-export function getConsentToken(org) {
+export function getConsentRequestToken(org) {
     const tokenOpts = {
         scopes: "altinn:consentrequests.write",
         orgNo: org,
@@ -75,7 +75,7 @@ export function getConsentToken(org) {
     return token;
 }
 
-export function getApproveToken(from) {
+export function getConsentApproveToken(from) {
     const tokenOptions = {
         scopes: "altinn:portal/enduser",
         userId: from.userId,
