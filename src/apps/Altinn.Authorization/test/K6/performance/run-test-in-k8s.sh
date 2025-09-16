@@ -18,7 +18,7 @@ help() {
     echo "  -p, --parallelism    Specify the level of parallelism"
     echo "  -b, --breakpoint     Flag to set breakpoint test or not"
     echo "  -a, --abort          Flag to specify whether to abort on fail or not, only used in breakpoint tests"
-    echo "  -i, --include-altinn2  Flag to include Altinn 2 in the test (default: false)"
+    echo "  -i, --include-altinn2  Flag to include Altinn 2 in the test (default: true)"
     echo "  -r, --randomize      Flag to randomize user input data (default: true)"
     echo "  -h, --help           Show this help message"
     exit 0

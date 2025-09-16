@@ -17,7 +17,6 @@ const systemUsersUrl = "api/v1/systemuser/vendor/bysystem/"
 const amDelegationUrl = "api/v1/internal/systemuserclientdelegation"
 const amAuthorizedPartiesUrl = "api/v1/resourceowner/authorizedparties";
 const amConsentUrl = "api/v1/enterprise/consentrequests/"
-const amConsentRequest = "api/v1/consent/request/"; 
 const amRightholders = "api/v1/user/rightholders";
 const amConsentApprove = "api/v1/bff/consentrequests/";
 
@@ -55,10 +54,6 @@ export const urls = {
             staging: stagingAmBaseUrl + amConsentUrl,
             yt01: yt01AmBaseUrl + amConsentUrl
         },
-        consentRequestUrl: {
-            test: testAmBaseUrl + amConsentRequest,
-            yt01: yt01AmBaseUrl + amConsentRequest
-        },
         consentApproveUrl: {
             test: testAmBaseUrl + amConsentApprove,
             staging: stagingAmBaseUrl + amConsentApprove,
@@ -86,7 +81,6 @@ export const getSystemUsersUrl = urls[__ENV.API_VERSION]["systemUsersUrl"][__ENV
 export const getAmDelegationUrl = urls[__ENV.API_VERSION]["amDelegationUrl"][__ENV.API_ENVIRONMENT];
 export const getAuthorizedPartiesUrl = urls[__ENV.API_VERSION]["authorizedPartiesUrl"][__ENV.API_ENVIRONMENT];
 export const postConsent = urls[__ENV.API_VERSION]["consentUrl"][__ENV.API_ENVIRONMENT];
-export const postConsentRequest = urls[__ENV.API_VERSION]["consentRequestUrl"][__ENV.API_ENVIRONMENT];
 export const postConsentApprove = urls[__ENV.API_VERSION]["consentApproveUrl"][__ENV.API_ENVIRONMENT];
 export const getRightHoldersUrl = urls[__ENV.API_VERSION]["rightHoldersUrl"][__ENV.API_ENVIRONMENT];
 export const tokenGeneratorEnv = (() => {
