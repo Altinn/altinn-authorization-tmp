@@ -99,7 +99,6 @@ export function buildOptions(mylabels = labels) {
             options.thresholds[[`http_req_duration{name:${label}}`]] = [{ threshold: "max<5000", abortOnFail: abort_on_fail }];
             options.thresholds[[`http_req_failed{name:${label}}`]] = [{ threshold: 'rate<=0.0', abortOnFail: abort_on_fail }];
         }
-        options.executor = 'ramping-arrival-rate';
         options.stages = [
             { duration: stages_duration, target: stages_target },
         ];
