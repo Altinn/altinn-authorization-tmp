@@ -1,11 +1,8 @@
 name: Test Performance (Weekly)
 
 on:
-  push:
-    branches:
-      - performance/*
   schedule:
-    - cron: '35 14 * * 1'
+    - cron: '35 1 * * 1'
   workflow_dispatch:
   
 
