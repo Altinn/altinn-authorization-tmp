@@ -1,7 +1,7 @@
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 
-namespace Altinn.AccessMgmt.Core.Constants;
+namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 
 /// <summary>
 /// Defines a set of constant <see cref="Provider"/> instances used across the system.

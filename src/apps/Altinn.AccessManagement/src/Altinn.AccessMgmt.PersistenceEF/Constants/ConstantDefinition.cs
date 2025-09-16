@@ -1,7 +1,7 @@
 using Altinn.AccessMgmt.Core.Models.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 
-namespace Altinn.AccessMgmt.Core.Constants;
+namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 
 public sealed class ConstantDefinition<T>
     where T : IEntityId
