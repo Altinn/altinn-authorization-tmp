@@ -23,9 +23,6 @@ const amConsentApprove = "api/v1/bff/consentrequests/";
 
 export const env = __ENV.API_ENVIRONMENT ?? 'yt01';
 
-// Example 
-//https://am.ui.at22.altinn.cloud/accessmanagement/api/v1/consent/request/a005d4e7-78b3-42b2-ce79-dc68cc5348ec/approve
-
 export const urls = {
     v1: {
         authorizeUrl: {

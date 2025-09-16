@@ -45,7 +45,6 @@ function getRightHolders(userParty) {
   url.searchParams.append('to', userParty.orgUuid);
   describe('Get right holders', () => {
       let r = http.get(url.toString(), params);
-      //console.log(__ITER, userParty.orgNo, userParty.ssn, r.timings.duration, r.json().length)
       expect(r.status, "response status").to.equal(200);
       expect(r, 'response').to.have.validJsonBody();
   });
