@@ -8,6 +8,7 @@ using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Enums;
 using Altinn.Authorization.ABAC.Constants;
 using Altinn.Authorization.ABAC.Xacml;
+using Altinn.Platform.Profile.Models;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Altinn.Urn.Json;
@@ -1017,6 +1018,37 @@ namespace Altinn.AccessManagement.Core.Helpers
             }
 
             return false;
+        }
+
+        public static (UuidType Type, Guid Uuid) GetUserUuidFromUserProfile(UserProfile user)
+        {
+            UuidType type = UuidType.NotSpecified;
+            switch (user.UserType)
+            {
+                case Platform.Profile.Enums.UserType.SSNIdentified:
+                    type = UuidType.Person;
+                    break;
+                case Platform.Profile.Enums.UserType.EnterpriseIdentified:
+                    type = UuidType.EnterpriseUser;
+                    break;
+            }
+
+            return (type, user.UserUuid.Value);
+        }
+
+        public static UuidType GetUuidTypeFromPartyType(PartyType partyType)
+        {
+            switch (partyType)
+            {
+                case PartyType.Person:
+                    return UuidType.Person;
+                case PartyType.Organisation:
+                case PartyType.SubUnit:
+                case PartyType.BankruptcyEstate:
+                    return UuidType.Organization;
+                default:
+                    return UuidType.NotSpecified;
+            }
         }
 
         private static void SetTypeForSingleRule(List<int> keyRolePartyIds, int offeredByPartyId, List<AttributeMatch> coveredBy, int parentPartyId, Rule rule, int? coveredByPartyId, int? coveredByUserId)

@@ -185,13 +185,14 @@ namespace Altinn.AccessManagement.Controllers
         {
             int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
             int authenticationLevel = AuthenticationHelper.GetUserAuthenticationLevel(HttpContext);
+            Guid authenticatedUserPartyUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
 
             try
             {
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(party, HttpContext);
                 DelegationLookup internalDelegation = _mapper.Map<DelegationLookup>(delegation);
                 internalDelegation.From = reportee.SingleToList();
-                DelegationActionResult response = await _delegation.DelegateMaskinportenSchema(authenticatedUserId, authenticationLevel, internalDelegation, cancellationToken);
+                DelegationActionResult response = await _delegation.DelegateMaskinportenSchema(authenticatedUserId, authenticatedUserPartyUuid, authenticationLevel, internalDelegation, cancellationToken);
 
                 if (!response.IsValid)
                 {

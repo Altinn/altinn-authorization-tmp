@@ -6,6 +6,7 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessManagement.Enums;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Microsoft.Extensions.Logging;
@@ -103,7 +104,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<DelegationActionResult> DelegateMaskinportenSchema(int authenticatedUserId, int authenticatedUserAuthlevel, DelegationLookup delegation, CancellationToken cancellationToken = default)
+        public async Task<DelegationActionResult> DelegateMaskinportenSchema(int authenticatedUserId, Guid authenticatedUserPartyUuid, int authenticatedUserAuthlevel, DelegationLookup delegation, CancellationToken cancellationToken = default)
         {
             (DelegationActionResult result, ServiceResource resource, Party fromParty, Party toParty) = await ValidateMaskinportenDelegationModel(DelegationActionType.Delegation, delegation);
             if (!result.IsValid)
@@ -130,11 +131,23 @@ namespace Altinn.AccessManagement.Core.Services
             List<Rule> rulesToDelegate = new List<Rule>();
             foreach (Right rightToDelegate in usersDelegableRights)
             {
+                List<AttributeMatch> to =
+                [
+                    new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = toParty.PartyId.ToString() },
+                ];
+                if (toParty.PartyTypeName == PartyType.Organisation && toParty.PartyUuid != null)
+                {
+                    to.Add(item: new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid, Value = toParty.PartyUuid.ToString() });
+                }
+                
                 rulesToDelegate.Add(new Rule
                 {
                     DelegatedByUserId = authenticatedUserId,
+                    PerformedBy = new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute, authenticatedUserPartyUuid.ToString()).SingleToList(),
                     OfferedByPartyId = fromParty.PartyId,
-                    CoveredBy = new List<AttributeMatch> { new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = toParty.PartyId.ToString() } },
+                    OfferedByPartyUuid = fromParty.PartyUuid,
+                    OfferedByPartyType = fromParty.Person != null ? UuidType.Person : UuidType.Organization,
+                    CoveredBy = to,
                     Resource = rightToDelegate.Resource,
                     Action = rightToDelegate.Action
                 });

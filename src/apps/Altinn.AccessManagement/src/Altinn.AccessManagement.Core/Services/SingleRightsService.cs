@@ -127,6 +127,178 @@ namespace Altinn.AccessManagement.Core.Services
             return result;
         }
 
+        public async Task<List<Rule>> EnrichAndTryWriteDelegationPolicyRules(List<Rule> rules, CancellationToken cancellationToken)
+        {
+            rules = await EnrichRulesWithUuidInformation(rules, cancellationToken);
+            return await _pap.TryWriteDelegationPolicyRules(rules, cancellationToken);
+        }
+
+        private async Task<List<Rule>> EnrichRulesWithUuidInformation(List<Rule> rules, CancellationToken cancellationToken)
+        {
+            Dictionary<int, (UuidType, Guid)> partyIds = [];
+            Dictionary<int, (UuidType, Guid)> userIds = [];
+            (UuidType Type, Guid Uuid) partyIdentifier;
+
+            foreach (Rule rule in rules)
+            {
+                AttributeMatch coveredByUuid = null;
+                int partyId = 0;
+                int userId = 0;
+
+                // Handle CoveredBy/To
+                foreach (AttributeMatch item in rule.CoveredBy)
+                {
+                    switch (item.Id)
+                    {
+                        case AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute:
+                            int.TryParse(item.Value, out partyId);
+                            break;
+                        case AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute:
+                            int.TryParse(item.Value, out userId);
+                            break;
+                        case AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute:
+                        case AltinnXacmlConstants.MatchAttributeIdentifiers.EnterpriseUserUuid:
+                        case AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid:
+                        case AltinnXacmlConstants.MatchAttributeIdentifiers.PersonUuid:
+                            coveredByUuid = item;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                if (userId != 0)
+                {
+                    if (userIds.ContainsKey(userId))
+                    {
+                        partyIdentifier = userIds[userId];
+                    }
+                    else
+                    {
+                        UserProfile userProfile = await _profile.GetUser(new UserProfileLookup { UserId = userId }, cancellationToken);
+                        partyIdentifier = DelegationHelper.GetUserUuidFromUserProfile(userProfile);
+                        userIds[userId] = partyIdentifier;
+                    }
+                }
+                else if (partyId != 0)
+                {
+                    if (partyIds.ContainsKey(partyId))
+                    {
+                        partyIdentifier = partyIds[partyId];
+                    }
+                    else
+                    {
+                        List<Party> fromPartyLookup = await _contextRetrievalService.GetPartiesAsync(rule.OfferedByPartyId.SingleToList());
+                        Party fromParty = fromPartyLookup.FirstOrDefault();
+                        partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(fromParty.PartyTypeName), fromParty.PartyUuid.Value);
+                        partyIds[partyId] = partyIdentifier;
+                    }
+                }
+                else
+                {
+                    // Should not be posble as partyid or userid must be set
+                    partyIdentifier = (UuidType.NotSpecified, Guid.Empty);
+                }
+
+                if (coveredByUuid != null)
+                {
+                    coveredByUuid.Id = partyIdentifier.Type.EnumMemberAttributeValueOrName();
+                    coveredByUuid.Value = partyIdentifier.Uuid.ToString(); // The offered by uuid
+                }
+                else
+                {
+                    rule.CoveredBy.Add(new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() });
+                }
+
+                // Handle PerformedBy
+                if (rule.DelegatedByUserId.HasValue)
+                {
+                    if (userIds.ContainsKey(rule.DelegatedByUserId.Value))
+                    {
+                        partyIdentifier = userIds[rule.DelegatedByUserId.Value];
+                    }
+                    else
+                    {
+                        var userProfile = await _profile.GetUser(new UserProfileLookup { UserId = rule.DelegatedByUserId.Value });
+                        partyIdentifier = DelegationHelper.GetUserUuidFromUserProfile(userProfile);
+                        userIds[rule.DelegatedByUserId.Value] = partyIdentifier;
+                    }
+
+                    rule.PerformedBy = [new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = rule.DelegatedByUserId.Value.ToString() }];
+                }
+                else if (rule.DelegatedByPartyId.HasValue)
+                {
+                    if (partyIds.ContainsKey(rule.DelegatedByPartyId.Value))
+                    {
+                        partyIdentifier = partyIds[rule.DelegatedByPartyId.Value];
+                    }
+                    else
+                    {
+                        List<Party> fromPartyLookup = await _contextRetrievalService.GetPartiesAsync(rule.DelegatedByPartyId.Value.SingleToList());
+                        Party fromParty = fromPartyLookup.FirstOrDefault();
+                        partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(fromParty.PartyTypeName), fromParty.PartyUuid.Value);
+                        partyIds[rule.DelegatedByPartyId.Value] = partyIdentifier;
+                    }
+
+                    rule.PerformedBy = [new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = rule.DelegatedByPartyId.Value.ToString() }];
+                }
+
+                // Handle OfferedBy/From
+                if (partyIds.ContainsKey(rule.OfferedByPartyId))
+                {
+                    partyIdentifier = partyIds[rule.OfferedByPartyId];
+                }
+                else
+                {
+                    List<Party> fromPartyLookup = await _contextRetrievalService.GetPartiesAsync(rule.OfferedByPartyId.SingleToList());
+                    Party fromParty = fromPartyLookup.FirstOrDefault();
+                    partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(fromParty.PartyTypeName), fromParty.PartyUuid.Value);
+                    partyIds[rule.OfferedByPartyId] = partyIdentifier;
+                }
+
+                rule.OfferedByPartyType = partyIdentifier.Type;
+                rule.OfferedByPartyUuid = partyIdentifier.Uuid;
+            }
+
+            return rules;
+        }
+        
+        /// <inheritdoc/>
+        public async Task<List<Rule>> EnrichAndTryDeleteDelegationPolicyRules(List<RequestToDelete> rulesToDelete, CancellationToken cancellationToken = default)
+        {
+            rulesToDelete = await EnrichDeleteRequest(rulesToDelete, cancellationToken);
+            return await _pap.TryDeleteDelegationPolicyRules(rulesToDelete, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<Rule>> EnrichAndTryDeleteDelegationPolicies(List<RequestToDelete> policiesToDelete, CancellationToken cancellationToken = default)
+        {
+            policiesToDelete = await EnrichDeleteRequest(policiesToDelete, cancellationToken);
+            return await _pap.TryDeleteDelegationPolicies(policiesToDelete, cancellationToken);
+        }
+
+        private async Task<List<RequestToDelete>> EnrichDeleteRequest(List<RequestToDelete> requestToDelete, CancellationToken cancellationToken = default)
+        {
+            Dictionary<int, (UuidType, Guid)> userIds = [];
+
+            foreach (RequestToDelete request in requestToDelete)
+            {
+                if (userIds.ContainsKey(request.DeletedByUserId))
+                {
+                    request.PerformedBy = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute, Value = userIds[request.DeletedByUserId].ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = request.DeletedByUserId.ToString() }];
+                }
+                else
+                {
+                    UserProfile userProfile = await _profile.GetUser(new UserProfileLookup { UserId = request.DeletedByUserId }, cancellationToken);
+                    (UuidType Type, Guid Uuid) partyIdentifier = DelegationHelper.GetUserUuidFromUserProfile(userProfile);
+                    userIds[request.DeletedByUserId] = partyIdentifier;
+                    request.PerformedBy = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute, Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = request.DeletedByUserId.ToString() }];
+                }
+            }
+
+            return requestToDelete;
+        }
+
         /// <inheritdoc/>
         public async Task<DelegationActionResult> DelegateRights(int authenticatedUserId, Guid authenticatedUserPartyUuid, int authenticatedUserAuthlevel, DelegationLookup delegation, CancellationToken cancellationToken = default)
         {
@@ -568,6 +740,6 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             return true;
-        }
+        }        
     }
 }
