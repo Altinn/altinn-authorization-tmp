@@ -9,7 +9,7 @@ export const pdpAuthorizeLabelDenyPermit = "PDP Authorize Deny";
 const tokenGenLabel = "Token generator";
 const labels = [pdpAuthorizeLabel, pdpAuthorizeLabelDenyPermit];
 
-export const breakpoint = __ENV.breakpoint;
+export const breakpoint = (__ENV.breakpoint ?? 'false') === 'true';
 export const stages_duration = (__ENV.stages_duration ?? '1m');
 export const stages_target = (__ENV.stages_target ?? '5');
 export const abort_on_fail = (__ENV.abort_on_fail ?? 'false') === 'true';
@@ -99,7 +99,7 @@ export function buildOptions(mylabels = labels) {
             options.thresholds[[`http_req_duration{name:${label}}`]] = [{ threshold: "max<5000", abortOnFail: abort_on_fail }];
             options.thresholds[[`http_req_failed{name:${label}}`]] = [{ threshold: 'rate<=0.0', abortOnFail: abort_on_fail }];
         }
-        //options.executor = 'ramping-arrival-rate';
+        options.executor = 'ramping-arrival-rate';
         options.stages = [
             { duration: stages_duration, target: stages_target },
         ];

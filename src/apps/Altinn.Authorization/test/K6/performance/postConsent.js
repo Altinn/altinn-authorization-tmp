@@ -4,7 +4,7 @@ import { postConsent, postConsentApprove, env } from './common/config.js';
 import { expect, describe, randomItem, randomIntBetween, URL, uuidv4 } from "./common/testimports.js";
 import { buildOptions, readCsv, getConsentToken, getApproveToken, getAuthorizeParams } from './commonFunctions.js';
 
-const orgsDaglFilename = `./testData/orgsin-${env}-WithPartyUuid.csv`;
+const orgsDaglFilename = `./testData/orgsIn-${env}-WithPartyUuid.csv`;
 const orgsDagl = new SharedArray('orgsDagl', function () {
   return readCsv(orgsDaglFilename);
 });
