@@ -1036,18 +1036,23 @@ namespace Altinn.AccessManagement.Core.Helpers
             return (type, user.UserUuid.Value);
         }
 
-        public static UuidType GetUuidTypeFromPartyType(PartyType partyType)
+        /// <summary>
+        /// Map uuids for PArty types to urn enum for storing as single rights in db.
+        /// </summary>
+        /// <param name="partyType">the uuid for the partytype</param>
+        /// <returns>enum containing urn as member variable</returns>
+        public static UuidType GetUuidTypeFromPartyType(Guid partyType)
         {
-            switch (partyType)
+            switch (partyType.ToString())
             {
-                case PartyType.Person:
+                case "bfe09e70-e868-44b3-8d81-dfe0e13e058a":
                     return UuidType.Person;
-                case PartyType.Organisation:
-                case PartyType.SubUnit:
-                case PartyType.BankruptcyEstate:
+                case "8c216e2f-afdd-4234-9ba2-691c727bb33d":
                     return UuidType.Organization;
+                case "fe643898-2f47-4080-85e3-86bf6fe39630":
+                    return UuidType.SystemUser;
                 default:
-                    return UuidType.NotSpecified;
+                    return UuidType.Party;
             }
         }
 
