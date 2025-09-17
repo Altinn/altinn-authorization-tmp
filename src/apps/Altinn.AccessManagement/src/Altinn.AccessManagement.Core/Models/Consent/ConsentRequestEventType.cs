@@ -1,5 +1,6 @@
 ﻿using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json.Linq;
 
 namespace Altinn.AccessManagement.Core.Models.Consent
 {
@@ -22,6 +23,12 @@ namespace Altinn.AccessManagement.Core.Models.Consent
         Revoked = 3,
 
         [EnumMember(Value = "deleted")]
-        Deleted = 4
+        Deleted = 4,
+
+        [EnumMember(Value = "expired")]
+        Expired = 5,
+
+        [EnumMember(Value = "used")]
+        Used = 6
     }
 }
