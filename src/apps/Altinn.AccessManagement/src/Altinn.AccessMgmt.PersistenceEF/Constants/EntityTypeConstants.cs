@@ -26,7 +26,7 @@ public static class EntityTypeConstants
         Entity = new()
         {
             Name = "Organisasjon",
-            ProviderId = ProviderConstants.Altinn3.Id,
+            ProviderId = ProviderConstants.Altinn3,
         },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Organization")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Organisasjon")),
@@ -48,7 +48,7 @@ public static class EntityTypeConstants
         Entity = new()
         {
             Name = "Person",
-            ProviderId = ProviderConstants.Altinn3.Id,
+            ProviderId = ProviderConstants.Altinn3,
         },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Person")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Person")),
@@ -70,7 +70,7 @@ public static class EntityTypeConstants
         Entity = new()
         {
             Name = "Systembruker",
-            ProviderId = ProviderConstants.Altinn3.Id,
+            ProviderId = ProviderConstants.Altinn3,
         },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SystemUser")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Systembrukar")),
@@ -92,7 +92,7 @@ public static class EntityTypeConstants
         Entity = new()
         {
             Name = "Intern",
-            ProviderId = ProviderConstants.Altinn3.Id,
+            ProviderId = ProviderConstants.Altinn3,
         },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Internal")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Intern")),

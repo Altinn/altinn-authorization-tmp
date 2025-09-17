@@ -3,12 +3,15 @@ using Altinn.AccessMgmt.PersistenceEF.Utils;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 
-public sealed class ConstantDefinition<T>
+public sealed class ConstantDefinition<T>(Guid id)
     where T : IEntityId
 {
-    private readonly Guid _id;
+    public ConstantDefinition(string id)
+        : this(Guid.Parse(id)) { }
 
-    private T? _entity;
+    private readonly Guid _id = id;
+
+    private T _entity = default!;
 
     private TranslationEntryList? _en;
 
@@ -16,21 +19,13 @@ public sealed class ConstantDefinition<T>
 
     public Guid Id => _id;
 
-    public ConstantDefinition(string id)
-    {
-        _id = Guid.Parse(id);
-    }
-
-    public T? Entity
+    public required T Entity
     {
         get => _entity;
         init
         {
             _entity = value;
-            if (_entity is { })
-            {
-                _entity.Id = _id;
-            }
+            _entity.Id = _id;
         }
     }
 
@@ -57,10 +52,32 @@ public sealed class ConstantDefinition<T>
             _nn = value;
             if (_nn is not null)
             {
-                _en.Id = _id;
-                _en.LanguageCode = "nno";
-                _en.Type = typeof(T).Name;
+                _nn.Id = _id;
+                _nn.LanguageCode = "nno";
+                _nn.Type = typeof(T).Name;
             }
         }
+    }
+
+    public static implicit operator Guid(ConstantDefinition<T> def)
+        => def._id;
+
+    public static implicit operator T(ConstantDefinition<T> def)
+        => def._entity;
+
+    public static implicit operator List<TranslationEntry>(ConstantDefinition<T> def)
+    {
+        var result = new List<TranslationEntry>();
+        if (def._en is { })
+        {
+            result.AddRange(def._en.SingleEntries());
+        }
+
+        if (def._nn is { })
+        {
+            result.AddRange(def._nn.SingleEntries());
+        }
+
+        return result;
     }
 }

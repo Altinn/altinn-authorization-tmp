@@ -163,6 +163,18 @@ public class TranslationEntry
     /// Translated value
     /// </summary>
     public string? Value { get; set; }
+
+    public static List<TranslationEntry> Create(params List<TranslationEntry>[] translations)
+    {
+        var result = new List<TranslationEntry>();
+
+        foreach (var translation in translations)
+        {
+            result.AddRange(translation);
+        }
+
+        return result;
+    }
 }
 
 /// <summary>
@@ -239,4 +251,7 @@ public class TranslationEntryList
 
         return result;
     }
+
+    public static implicit operator List<TranslationEntry>(TranslationEntryList def)
+        => def.SingleEntries();
 }

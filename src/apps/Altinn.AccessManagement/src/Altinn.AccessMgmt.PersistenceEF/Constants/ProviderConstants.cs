@@ -26,7 +26,7 @@ public static class ProviderConstants
         {
             Name = "Altinn 2",
             Code = "sys-altinn2",
-            TypeId = ProviderTypeConstants.System.Id,
+            TypeId = ProviderTypeConstants.System,
             RefId = string.Empty
         },
     };
@@ -47,7 +47,7 @@ public static class ProviderConstants
         {
             Name = "Altinn 3",
             Code = "sys-altinn3",
-            TypeId = ProviderTypeConstants.System.Id,
+            TypeId = ProviderTypeConstants.System,
             RefId = string.Empty
         },
     };
@@ -68,7 +68,7 @@ public static class ProviderConstants
         {
             Name = "Ressursregisteret",
             Code = "sys-resreg",
-            TypeId = ProviderTypeConstants.System.Id,
+            TypeId = ProviderTypeConstants.System,
             RefId = string.Empty
         },
     };
@@ -89,7 +89,7 @@ public static class ProviderConstants
         {
             Name = "Enhetsregisteret",
             Code = "sys-ccr",
-            TypeId = ProviderTypeConstants.System.Id,
+            TypeId = ProviderTypeConstants.System,
             RefId = string.Empty
         },
     };
