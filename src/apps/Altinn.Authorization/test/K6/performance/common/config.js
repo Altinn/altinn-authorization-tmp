@@ -9,7 +9,6 @@ const stagingAmBaseUrl = "https://platform.tt02.altinn.no/accessmanagement/";
 const yt01AmBaseUrl = "https://platform.yt01.altinn.cloud/accessmanagement/";
 const stagingAmUiBaseUrl = "https://am.ui.tt02.altinn.no/accessmanagement/"
 const yt01AmUiBaseUrl = "https://am.ui.yt01.altinn.cloud/accessmanagement/"
-//api/v1/user/rightholders?party=430267ea-b54d-4791-b5c6-aaa8a9c7e8f7&to=430267ea-b54d-4791-b5c6-aaa8a9c7e8f7
 
 const authorizeUrl = "api/v1/authorize";
 const readSystemsUrl = "api/v1/systemregister"
