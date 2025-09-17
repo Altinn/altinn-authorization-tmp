@@ -47,6 +47,16 @@ namespace Altinn.Platform.Authorization.Constants
 
 
         /// <summary>
+        /// xacml string that represents party type organization value
+        /// </summary>
+        public const string PartyTypeOrganizationValue = "organization";
+
+        /// <summary>
+        /// xacml string that represents party type person value
+        /// </summary>
+        public const string PartyTypePersonValue = "person";
+
+        /// <summary>
         /// xacml string that represents party uuid
         /// </summary>
         public const string PartyUuidAttribute = "urn:altinn:party:uuid";
