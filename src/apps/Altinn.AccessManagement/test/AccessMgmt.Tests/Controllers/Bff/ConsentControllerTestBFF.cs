@@ -258,8 +258,29 @@ namespace AccessMgmt.Tests.Controllers.Bff
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/list/d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             string responseText = await response.Content.ReadAsStringAsync();
-            List<ConsentRequestDetailsBffDto> consentRequestList = JsonSerializer.Deserialize<List<ConsentRequestDetailsBffDto>>(responseText, _jsonOptions);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            List<ConsentRequestDetailsBffDto> consentRequestList = JsonSerializer.Deserialize<List<ConsentRequestDetailsBffDto>>(responseText, _jsonOptions);
+        }
+
+        [Fact]
+        public async Task ListRequests_One_RejectedOneValid()
+        {
+            Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
+            Guid requestId2 = Guid.Parse("e579b7a2-7994-4636-9aca-59e114915b70");
+            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            await repositgo.CreateRequest(await GetRequest(requestId2, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
+            await repositgo.RejectConsentRequest(requestId2, performedBy, default);
+            Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
+            await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
+            await repositgo.RejectConsentRequest(requestId, performedBy, default);
+            HttpClient client = GetTestClient();
+            string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            HttpResponseMessage response = await client.GetAsync($"accessmanagement/api/v1/bff/consentrequests/list/d5b861c8-8e3b-44cd-9952-5315e5990cf5");
+            string responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            List<ConsentRequestDetailsBffDto> consentRequestList = JsonSerializer.Deserialize<List<ConsentRequestDetailsBffDto>>(responseText, _jsonOptions);
+            Assert.Equal(2, consentRequestList.Count);
         }
 
         /// <summary>
