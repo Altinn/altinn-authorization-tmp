@@ -463,7 +463,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 }
             }
 
-            if (isExternalRequest && !string.IsNullOrEmpty(subjectOrgnNo))
+            if (subjectPartyUuid == Guid.Empty && !string.IsNullOrEmpty(subjectOrgnNo))
             {
                 Party party = await _registerService.PartyLookup(subjectOrgnNo, null);
                 subjectContextAttributes.Attributes.Add(GetPartyIdsAttribute(new List<int> { party.PartyId }));
