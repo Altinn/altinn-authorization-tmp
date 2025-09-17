@@ -11,7 +11,6 @@
         <PackageReference Include="Altinn.Authorization.ProblemDetails.Abstractions" />
         <PackageReference Include="Altinn.Common.AccessToken" />
         <PackageReference Include="Altinn.Common.AccessTokenClient" />
-        <PackageReference Include="Altinn.Common.PEP" />
         <PackageReference Include="Altinn.Platform.Models" />
         <PackageReference Include="Altinn.Swashbuckle" />
         <PackageReference Include="Altinn.Urn" />
