@@ -45,7 +45,6 @@ namespace Altinn.Platform.Authorization.Constants
         /// </summary>
         public const string PartyTypeAttribute = "urn:altinn:partytype";
 
-
         /// <summary>
         /// xacml string that represents party type organization value
         /// </summary>
