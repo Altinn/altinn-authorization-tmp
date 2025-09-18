@@ -1,51 +1,12 @@
 ﻿using System.Net;
-using Altinn.Authorization.AccessManagement.HostedServices;
-using Altinn.Authorization.Host.Lease;
-using Altinn.Authorization.Integration.Platform.Register;
-using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.HostedServices.Services;
 
 /// <summary>
 /// Base
 /// </summary>
-public class BaseSyncService(IAltinnLease lease, IFeatureManager featureManager, IAltinnRegister register)
+public class BaseSyncService
 {
-    /// <summary>
-    /// Lease
-    /// </summary>
-    public IAltinnLease Lease { get; } = lease;
-
-    /// <summary>
-    /// Features
-    /// </summary>
-    protected IFeatureManager FeatureManager { get; } = featureManager;
-
-    /// <summary>
-    /// Register
-    /// </summary>
-    public IAltinnRegister Register { get; } = register;
-
-    /// <summary>
-    /// Update lease
-    /// </summary>
-    protected async Task UpdateLease<T>(LeaseResult<T> ls, Action<T> configureLeaseContent, CancellationToken cancellationToken)
-        where T : class, new()
-    {
-        if (ls.Data is { })
-        {
-            configureLeaseContent(ls.Data);
-            await Lease.Put(ls, ls.Data, cancellationToken);
-        }
-        else
-        {
-            var content = new T();
-            configureLeaseContent(content);
-            await Lease.Put(ls, content, cancellationToken);
-        }
-
-        await Lease.RefreshLease(ls, cancellationToken);
-    }
 }
 
 /// <summary>
@@ -71,8 +32,14 @@ public static partial class Log
     [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Starting register hosted service")]
     internal static partial void StartRegisterSync(ILogger logger);
 
+    [LoggerMessage(EventId = 22, Level = LogLevel.Information, Message = "Starting altinnrole hosted service")]
+    internal static partial void StartAltinnRoleSync(ILogger logger);
+
     [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Quit register hosted service")]
     internal static partial void QuitRegisterSync(ILogger logger);
+
+    [LoggerMessage(EventId = 23, Level = LogLevel.Information, Message = "Quit altinnrole hosted service")]
+    internal static partial void QuitAltinnRoleSync(ILogger logger);
 
     [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Assignment {action} from '{from}' to '{to}' with role '{role}'")]
     internal static partial void AssignmentSuccess(ILogger logger, string action, string from, string to, string role);

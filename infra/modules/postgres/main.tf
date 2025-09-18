@@ -72,6 +72,13 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
   private_dns_zone_id           = azurerm_private_dns_zone.postgres.id
   public_network_access_enabled = false
 
+  dynamic "high_availability" {
+    for_each = var.enable_high_availability ? ["enabled"] : []
+
+    content {
+      mode = "ZoneRedundant"
+    }
+  }
 
   storage_mb        = var.storage_mb
   auto_grow_enabled = true
@@ -92,7 +99,7 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
   sku_name    = local.compute_sku.sku_name
 
   lifecycle {
-    ignore_changes  = [zone, storage_mb]
+    ignore_changes  = [zone, storage_mb, high_availability[0].standby_availability_zone]
     prevent_destroy = true
   }
 

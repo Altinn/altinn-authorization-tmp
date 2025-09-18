@@ -3,7 +3,8 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Utils;
 
-public partial class DtoMapper
+/// <inheritdoc/>
+public partial class DtoMapper : IDtoMapper
 {
     public static PackageDto Convert(Package obj)
     {

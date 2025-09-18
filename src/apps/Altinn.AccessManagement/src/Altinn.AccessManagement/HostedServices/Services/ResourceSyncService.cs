@@ -1,12 +1,13 @@
 ﻿using System.Linq.Expressions;
 using Altinn.AccessManagement.HostedServices.Contracts;
+using Altinn.AccessManagement.HostedServices.Leases;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Altinn.Authorization.Integration.Platform.ResourceRegistry;
@@ -15,9 +16,10 @@ using Microsoft.FeatureManagement;
 namespace Altinn.AccessManagement.HostedServices.Services;
 
 /// <inheritdoc />
-public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
+public partial class ResourceSyncService : IResourceSyncService
 {
     private readonly ILogger<ResourceSyncService> _logger;
+    private readonly IFeatureManager _featureManager;
     private readonly IAltinnResourceRegistry _resourceRegistry;
     private readonly IIngestService _ingestService;
     private readonly IResourceTypeRepository _resourceTypeRepository;
@@ -33,9 +35,6 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     /// Constructor
     /// </summary>
     public ResourceSyncService(
-        IAltinnLease lease,
-        IFeatureManager featureManager,
-        IAltinnRegister register,
         IAltinnResourceRegistry resourceRegistry,
         IIngestService ingestService,
         IResourceTypeRepository resourceTypeRepository,
@@ -47,7 +46,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         IRoleLookupRepository roleLookupRepository,
         IProviderTypeRepository providerTypeRepository,
         ILogger<ResourceSyncService> logger
-        ) : base(lease, featureManager, register)
+        )
     {
         _logger = logger;
         _resourceRegistry = resourceRegistry;
@@ -106,7 +105,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
     }
 
     /// <inheritdoc />
-    public async Task SyncResources(LeaseResult<ResourceRegistryLease> ls, CancellationToken cancellationToken)
+    public async Task SyncResources(ILease lease, CancellationToken cancellationToken)
     {
         var options = new ChangeRequestOptions()
         {
@@ -115,9 +114,9 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
         };
 
         ResourceTypes = [.. await _resourceTypeRepository.Get()];
-        var since = ls.Data?.Since ?? default;
+        var leaseData = await lease.Get<ResourceRegistryLease>(cancellationToken);
 
-        await foreach (var page in await _resourceRegistry.StreamResources(since, ls.Data?.ResourceNextPageLink, cancellationToken))
+        await foreach (var page in await _resourceRegistry.StreamResources(leaseData.Since, leaseData.ResourceNextPageLink, cancellationToken))
         {
             if (page.IsProblem)
             {
@@ -127,7 +126,7 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
 
             foreach (var updatedResource in page.Content.Data)
             {
-                since = updatedResource.UpdatedAt;
+                leaseData.Since = updatedResource.UpdatedAt;
                 try
                 {
                     var resource = await UpsertResource(updatedResource, options, cancellationToken);
@@ -149,18 +148,10 @@ public partial class ResourceSyncService : BaseSyncService, IResourceSyncService
                 {
                     Log.FailedToWriteUpdateSubjectForResource(_logger, ex, updatedResource.SubjectUrn, updatedResource.ResourceUrn);
                 }
-
-                await Lease.RefreshLease(ls, cancellationToken);
             }
 
-            await UpdateLease(
-            ls,
-            data =>
-            {
-                data.ResourceNextPageLink = page.Content.Links.Next;
-                data.Since = since;
-            },
-            cancellationToken);
+            leaseData.ResourceNextPageLink = page.Content.Links.Next;
+            await lease.Update(leaseData, cancellationToken);
         }
     }
 

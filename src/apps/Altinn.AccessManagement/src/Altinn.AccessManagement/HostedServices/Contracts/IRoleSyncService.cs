@@ -1,4 +1,4 @@
-﻿using Altinn.Authorization.AccessManagement.HostedServices;
+﻿using Altinn.AccessManagement.HostedServices.Leases;
 using Altinn.Authorization.Host.Lease;
 
 namespace Altinn.AccessManagement.HostedServices.Contracts;
@@ -11,5 +11,5 @@ public interface IRoleSyncService
     /// <summary>
     /// Sync roles
     /// </summary>
-    Task SyncRoles(LeaseResult<RegisterLease> ls, CancellationToken cancellationToken);
+    Task SyncRoles(ILease ls, CancellationToken cancellationToken);
 }

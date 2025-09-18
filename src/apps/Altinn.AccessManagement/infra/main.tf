@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.37.0"
+      version = "4.42.0"
     }
     static = {
       source  = "tiwood/static"
@@ -219,6 +219,30 @@ module "appsettings" {
     {
       name        = "AccessManagement.HostedServices.RegisterSync"
       description = "Specifies if the register data should streamed from register service to access management database."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.HostedServices.AllAltinnRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.HostedServices.AltinnClientRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.HostedServices.AltinnAdminRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.HostedServices.AltinnBancruptcyEstateRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },

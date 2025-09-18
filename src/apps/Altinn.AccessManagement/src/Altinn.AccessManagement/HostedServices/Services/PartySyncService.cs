@@ -1,13 +1,11 @@
-﻿using System.Linq.Expressions;
-using Altinn.AccessManagement.HostedServices.Contracts;
+﻿using Altinn.AccessManagement.HostedServices.Contracts;
+using Altinn.AccessManagement.HostedServices.Leases;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Models;
-using Altinn.AccessMgmt.Persistence.Repositories;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.Authorization.AccessManagement;
-using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Microsoft.FeatureManagement;
@@ -19,6 +17,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 {
     private readonly ILogger<RegisterHostedService> _logger;
     private readonly IIngestService _ingestService;
+    private readonly IAltinnRegister _register;
     private readonly IEntityTypeRepository _entityTypeRepository;
     private readonly IEntityVariantRepository _entityVariantRepository;
     private readonly IEntityLookupRepository _lookupRepository;
@@ -27,7 +26,6 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     /// PartySyncService Constructor
     /// </summary>
     public PartySyncService(
-        IAltinnLease lease,
         IFeatureManager featureManager,
         IAltinnRegister register,
         ILogger<RegisterHostedService> logger,
@@ -35,8 +33,9 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         IEntityLookupRepository lookupRepository,
         IEntityTypeRepository entityTypeRepository,
         IEntityVariantRepository entityVariantRepository
-    ) : base(lease, featureManager, register)
+    )
     {
+        _register = register;
         _logger = logger;
         _lookupRepository = lookupRepository;
         _ingestService = ingestService;
@@ -48,15 +47,16 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     /// Synchronizes register data by first acquiring a remote lease and streaming register entries.
     /// Returns if lease is already taken.
     /// </summary>
-    /// <param name="ls">The lease result containing the lease data and status.</param>
+    /// <param name="lease">The lease result containing the lease data and status.</param>
     /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-    public async Task SyncParty(LeaseResult<RegisterLease> ls, CancellationToken cancellationToken)
+    public async Task SyncParty(ILease lease, CancellationToken cancellationToken)
     {
         var options = new ChangeRequestOptions()
         {
             ChangedBy = AuditDefaults.RegisterImportSystem,
             ChangedBySystem = AuditDefaults.RegisterImportSystem
         };
+        var leaseData = await lease.Get<RegisterLease>(cancellationToken);
 
         var bulk = new List<Entity>();
         var bulkLookup = new List<EntityLookup>();
@@ -64,7 +64,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         EntityTypes = (await _entityTypeRepository.Get(cancellationToken: cancellationToken)).ToList();
         EntityVariants = (await _entityVariantRepository.Get(cancellationToken: cancellationToken)).ToList();
 
-        await foreach (var page in await Register.StreamParties(AltinnRegisterClient.AvailableFields, ls.Data?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await _register.StreamParties(AltinnRegisterClient.AvailableFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -84,22 +84,30 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
             foreach (var item in page?.Content.Data ?? [])
             {
-                if (item.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    continue;
+                    if (item.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    var entity = ConvertPartyModel(item, options: options, cancellationToken: cancellationToken);
+
+                    if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
+                    {
+                        await Flush(batchId);
+                    }
+
+                    //// UpsertEntityLookup(model, options, cancellationToken: cancellationToken);
+
+                    bulk.Add(entity);
+                    bulkLookup.AddRange(ConvertPartyModelToLookup(item));
                 }
-
-                var entity = ConvertPartyModel(item, options: options, cancellationToken: cancellationToken);
-
-                if (bulk.Count(t => t.Id.Equals(entity.Id)) > 0)
+                catch (Exception ex)
                 {
-                    await Flush(batchId);
+                    _logger.LogError(ex, "failed to sync party {partyUuid}", item.PartyUuid);
+                    throw;
                 }
-
-                // UpsertEntityLookup(model, options, cancellationToken: cancellationToken);
-
-                bulk.Add(entity);
-                bulkLookup.AddRange(ConvertPartyModelToLookup(item));
             }
 
             await Flush(batchId);
@@ -109,7 +117,8 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 return;
             }
 
-            await UpdateLease(ls, data => data.PartyStreamNextPageLink = page.Content.Links.Next, cancellationToken);
+            leaseData.PartyStreamNextPageLink = page.Content.Links.Next;
+            await lease.Update(leaseData, cancellationToken);
 
             async Task Flush(Guid batchId)
             {
@@ -291,13 +300,17 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 Value = model.PersonIdentifier,
                 IsProtected = true
             });
-            res.Add(new EntityLookup()
+            if (model.User is { UserId: > 0 })
             {
-                EntityId = Guid.Parse(model.PartyUuid),
-                Key = "UserId",
-                Value = model.User.UserId.ToString(),
-                IsProtected = false,
-            });
+                res.Add(new EntityLookup()
+                {
+                    EntityId = Guid.Parse(model.PartyUuid),
+                    Key = "UserId",
+                    Value = model.User.UserId.ToString(),
+                    IsProtected = false,
+                });
+            }
+
             if (model.IsDeleted)
             {
                 // DeletedAt missing in register. (18.juni. 2025)

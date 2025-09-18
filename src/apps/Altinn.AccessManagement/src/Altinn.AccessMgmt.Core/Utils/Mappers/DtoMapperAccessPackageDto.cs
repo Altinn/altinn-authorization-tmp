@@ -4,10 +4,8 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Utils;
 
-/// <summary>
-/// Dto Mapping
-/// </summary>
-public partial class DtoMapper
+/// <inheritdoc/>
+public partial class DtoMapper : IDtoMapper
 {
     public static AccessPackageDto.Check Convert(PackageDelegationCheck obj)
     {
@@ -37,12 +35,12 @@ public partial class DtoMapper
         };
     }
 
-    public static AccessPackageDto.Compact Convert(CompactPackage obj)
+    public static AccessPackageDto Convert(PackageDto obj)
     {
-        return new AccessPackageDto.Compact()
+        return new AccessPackageDto()
         {
             Id = obj.Id,
-            AreaId = obj.AreaId,
+            AreaId = obj.Area.Id,
             Urn = obj.Urn,
         };
     }
