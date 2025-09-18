@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0](https://github.com/Altinn/altinn-authorization-tmp/compare/Altinn.Authorization.ABAC-v0.0.8...Altinn.Authorization.ABAC-v0.1.0) (2025-09-18)
+## [4.2.0](https://github.com/Altinn/altinn-authorization-tmp/compare/Altinn.Authorization.PEP-v4.1.2...Altinn.Authorization.PEP-v4.2.0) (2025-09-18)
 
 
 ### Features
