@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 
@@ -8,7 +10,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 /// Each constant represents a type of provider (e.g., system provider or service owner)
 /// with a fixed unique identifier (GUID), name, and multilingual translations.
 /// </summary>
-public static class ProviderTypeConstants
+public class ProviderTypeConstants 
 {
     /// <summary>
     /// Represents a system provider type.

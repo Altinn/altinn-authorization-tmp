@@ -49,7 +49,14 @@ public static class EntityVariantConstants
     /// <summary>
     /// Get all constants as a read-only collection.
     /// </summary>
-    public static IReadOnlyCollection<ConstantDefinition<EntityVariant>> All => _byName.Values;
+    public static IReadOnlyCollection<ConstantDefinition<EntityVariant>> AllEntities() => _byId.Values;
+
+    /// <summary>
+    /// Get all transaltions as read-only collection.
+    /// </summary>
+    public static List<TranslationEntry> AllTranslations() => AllEntities()
+        .SelectMany(t => (List<TranslationEntry>)t)
+        .ToList();
 
     /// <summary>
     /// Represents the entity variant for legal co-ownership ("SAM").
