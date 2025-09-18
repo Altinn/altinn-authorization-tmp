@@ -22,18 +22,32 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
     [Route("accessmanagement/api/v1/enduser/clientadmin")]
     [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
     [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-    public class ClintAdminController
+    public class ClientAdminController
     {
         /// <summary>
-        /// Get connections between the authenticated user's selected party and the specified target party.
+        /// Get clients the given party has access for
         /// </summary>
-        [HttpGet]
+        [HttpGet("clients")]
         [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-        [ProducesResponseType<PaginatedResult<CompactRelationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+        [ProducesResponseType<PaginatedResult<ClientDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetClientConnections([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetClients([FromQuery] ClientAdminInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Get clients the given party has access for
+        /// </summary>
+        [HttpGet("agents")]
+        [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+        [ProducesResponseType<PaginatedResult<AgentDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+        [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> GetAgents([FromQuery] ClientAdminInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -41,14 +55,14 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// <summary>
         /// Add agent role connection to hold client pagages
         /// </summary>
-        [HttpPost]
+        [HttpPost("agent")]
         [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
         [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
         [ProducesResponseType<Assignment>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> AddAssignment([FromQuery] ConnectionInput connection, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> AddAgentAssignment([FromQuery] ClientAdminInput connection, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -56,14 +70,14 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// <summary>
         /// Remove agent role connection and all connected packages
         /// </summary>
-        [HttpDelete]
+        [HttpDelete("agent")]
         [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
         [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> RemoveAssignment([FromQuery] ConnectionInput connection, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> RemoveAgentAssignment([FromQuery] ClientAdminInput connection, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -78,7 +92,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> GetPackages([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetPackages([FromQuery] ClientAdminInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -93,7 +107,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> AddPackages([FromQuery] ConnectionInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> AddPackage([FromQuery] ClientAdminInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, string RoleIdentifier, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -108,22 +122,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> RemovePackages([FromQuery] ConnectionInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// API for delegation check of access packages, for which packages the authenticated user has permission to assign to others on behalf of the specified party.
-        /// </summary>
-        [HttpGet("accesspackages/delegationcheck")]
-        [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
-        [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-        [ProducesResponseType<PaginatedResult<AccessPackageDto.Check>>(StatusCodes.Status200OK)]
-        [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> CheckPackage([FromQuery] Guid party, [FromQuery] IEnumerable<Guid>? packageIds, [FromQuery] IEnumerable<string>? packages, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> RemovePackage([FromQuery] ClientAdminInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -132,14 +131,14 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers
         /// Lookup point where it is posible to fetch an Entity With the identifiers based on a lookp identity
         /// Organisasjonsnummer, Fødselsnummer (med mer informasjon som etternavn)
         /// </summary>
-        /// <param name="lookup"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="lookup">the lookup request</param>
+        /// <param name="cancellationToken">canselation token</param>
         /// <returns>A complete entity with uuid and other available information</returns>
-        /// <exception cref="NotImplementedException"></exception>
         [HttpPost("entitylookup")]
         [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
         [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-        public async Task<IActionResult> EntityLookup([FromBody] EntityLookup lookup, CancellationToken cancellationToken = default)
+        [ProducesResponseType<CompactEntityDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)] 
+        public async Task<IActionResult> EntityLookup([FromBody] EntityLookupRequestDto lookup, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
