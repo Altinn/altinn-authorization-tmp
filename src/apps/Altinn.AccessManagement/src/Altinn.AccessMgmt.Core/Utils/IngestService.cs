@@ -179,7 +179,7 @@ public class IngestService(AppDbContext dbContext) : IIngestService
 
     private List<IngestColumnDefinition> GetColumns<T>(IModel entityModel)
     {
-        var typeName = typeof(T).Name;
+        var typeName = typeof(T).Name.ToLower();
 
         var entityTypes = entityModel.GetEntityTypes();
         if (entityTypes is null || !entityTypes.Any()) 
