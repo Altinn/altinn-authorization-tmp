@@ -19,7 +19,7 @@ public class EntityTypeConfiguration : IEntityTypeConfiguration<EntityType>
         builder.Property(t => t.Name).IsRequired();
         builder.PropertyWithReference(navKey: t => t.Provider, foreignKey: t => t.ProviderId, principalKey: t => t.Id);
 
-        builder.HasIndex(t => t.Name).IsUnique();
+        builder.HasIndex(["Name", "ProviderId"]).IsUnique();
     }
 }
 
