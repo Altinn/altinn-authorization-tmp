@@ -39,7 +39,7 @@ public static class AreaGroupConstants
     /// Represents the General area group.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 7E2A3AF8-08CB-43A9-BDD7-7D5C7E377145
+    /// - <c>Id:</c> 7e2a3af8-08cb-43a9-bdd7-7d5c7e377145
     /// - <c>Name:</c> "Allment"
     /// - <c>Description:</c> "Standard gruppe"
     /// - <c>EntityTypeId:</c> Organisation entity type
@@ -51,7 +51,7 @@ public static class AreaGroupConstants
             Name = "Allment",
             Description = "Standard gruppe",
             EntityTypeId = EntityTypeConstants.Organisation,
-            Urn = string.Empty
+            Urn = null,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "General")),
@@ -63,19 +63,19 @@ public static class AreaGroupConstants
     /// Represents the Industry area group.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 3757643A-316D-4D0E-A52B-4DC7CDEBC0B4
+    /// - <c>Id:</c> 3757643a-316d-4d0e-a52b-4dc7cdebc0b4
     /// - <c>Name:</c> "Bransje"
     /// - <c>Description:</c> "For bransje grupper"
     /// - <c>EntityTypeId:</c> Organisation entity type
     /// </remarks>
-    public static ConstantDefinition<AreaGroup> Industry { get; } = new ConstantDefinition<AreaGroup>("3757643A-316D-4D0E-A52B-4DC7CDEBC0B4")
+    public static ConstantDefinition<AreaGroup> Industry { get; } = new ConstantDefinition<AreaGroup>("3757643a-316d-4d0e-a52b-4dc7cdebc0b4")
     {
         Entity = new()
         {
             Name = "Bransje",
             Description = "For bransje grupper",
             EntityTypeId = EntityTypeConstants.Organisation,
-            Urn = string.Empty
+            Urn = null,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Industry")),
@@ -87,19 +87,19 @@ public static class AreaGroupConstants
     /// Represents the Special area group.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 554F0321-53B8-4D97-BE12-6A585C507159
+    /// - <c>Id:</c> 554f0321-53b8-4d97-be12-6a585c507159
     /// - <c>Name:</c> "Særskilt"
     /// - <c>Description:</c> "For de sære tingene"
     /// - <c>EntityTypeId:</c> Organisation entity type
     /// </remarks>
-    public static ConstantDefinition<AreaGroup> Special { get; } = new ConstantDefinition<AreaGroup>("554F0321-53B8-4D97-BE12-6A585C507159")
+    public static ConstantDefinition<AreaGroup> Special { get; } = new ConstantDefinition<AreaGroup>("554f0321-53b8-4d97-be12-6a585c507159")
     {
         Entity = new()
         {
             Name = "Særskilt",
             Description = "For de sære tingene",
             EntityTypeId = EntityTypeConstants.Organisation,
-            Urn = string.Empty
+            Urn = null,
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Special")),

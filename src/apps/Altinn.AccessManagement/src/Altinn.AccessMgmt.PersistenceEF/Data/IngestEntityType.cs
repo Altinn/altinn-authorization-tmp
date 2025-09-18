@@ -1,4 +1,7 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Data;
 
@@ -11,20 +14,35 @@ public partial class StaticDataIngest
     /// <returns></returns>
     public async Task IngestEntityType(CancellationToken cancellationToken = default)
     {
-        foreach (var entity in EntityTypeConstants.AllEntities())
+        var data = new List<EntityType>()
         {
-            var obj = db.EntityTypes.FirstOrDefault(t => t.Id == entity.Id);
+            EntityTypeConstants.Organisation,
+            EntityTypeConstants.Person,
+            EntityTypeConstants.SystemUser,
+            EntityTypeConstants.Internal,
+        };
+
+        var translations = TranslationEntry.Create(
+            EntityTypeConstants.Organisation,
+            EntityTypeConstants.Person,
+            EntityTypeConstants.SystemUser,
+            EntityTypeConstants.Internal
+        );
+
+        foreach (var d in data)
+        {
+            var obj = db.EntityTypes.FirstOrDefault(t => t.Id == d.Id);
             if (obj == null)
             {
-                db.EntityTypes.Add(entity);
+                db.EntityTypes.Add(d);
             }
             else
             {
-                obj.Name = entity.Entity.Name;
+                obj.Name = d.Name;
             }
         }
 
-        foreach (var translation in EntityTypeConstants.AllTranslations())
+        foreach (var translation in translations)
         {
             await translationService.UpsertTranslationAsync(translation);
         }
