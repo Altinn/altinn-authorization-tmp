@@ -848,16 +848,19 @@ namespace Altinn.AccessManagement.Core.Services
         {
             Result<List<ConsentRequestDetails>> requests = await _consentRepository.GetRequestsForParty(coveredByParty, cancellationToken);
 
-            foreach (var req in requests.Value)
-            {
-                if (req.ValidTo < _timeProvider.GetUtcNow() && !req.ConsentRequestEvents.Exists(r => r.EventType.Equals(ConsentRequestEventType.Expired)))
+            if (requests.Value != null)
+            { 
+                foreach (var req in requests.Value)
                 {
-                    req.ConsentRequestEvents.Add(new ConsentRequestEvent
+                    if (req.ValidTo < _timeProvider.GetUtcNow() && !req.ConsentRequestEvents.Exists(r => r.EventType.Equals(ConsentRequestEventType.Expired)))
                     {
-                        EventType = ConsentRequestEventType.Expired,
-                        Created = req.ValidTo,
-                        PerformedBy = req.To
-                    });
+                        req.ConsentRequestEvents.Add(new ConsentRequestEvent
+                        {
+                            EventType = ConsentRequestEventType.Expired,
+                            Created = req.ValidTo,
+                            PerformedBy = req.To
+                        });
+                    }
                 }
             }
 
