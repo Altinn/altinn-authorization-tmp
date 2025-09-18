@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
                 var connectionString = db.CreatePgsqlConnection(SourceType.App);
                 options.UseNpgsql(connectionString, ConfigureNpgsql);
             }),
-            SourceType.Migration => services.AddDbContext<AppDbContext>(async (sp, options) =>
+            SourceType.Migration => services.AddDbContext<AppDbContext>((sp, options) =>
             {
                 var db = sp.GetRequiredService<IAltinnDatabase>();
                 var connectionString = db.CreatePgsqlConnection(SourceType.Migration);

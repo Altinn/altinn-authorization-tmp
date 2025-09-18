@@ -1,6 +1,6 @@
-﻿using Altinn.AccessMgmt.Core.Models.Contracts;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
-using System.ComponentModel.DataAnnotations.Schema;
+using Altinn.AccessMgmt.PersistenceEF.Models.Contracts;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 

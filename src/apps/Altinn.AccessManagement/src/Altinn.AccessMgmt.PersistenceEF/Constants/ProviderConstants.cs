@@ -1,4 +1,3 @@
-using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Constants;

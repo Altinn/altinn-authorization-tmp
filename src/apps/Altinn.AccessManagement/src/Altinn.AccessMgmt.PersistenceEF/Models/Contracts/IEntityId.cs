@@ -1,4 +1,4 @@
-namespace Altinn.AccessMgmt.Core.Models.Contracts;
+namespace Altinn.AccessMgmt.PersistenceEF.Models.Contracts;
 
 public interface IEntityId
 {
