@@ -94,13 +94,10 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             {
                 foreach (var req in consentRequest.Value)
                 {
-                    if (req.From.IsPartyUuid(out Guid resourcePartyUuid))
+                    bool isAuthorized = await AuthorizeResourceAccess(accessManagementResource, partyUuid, User, "read");
+                    if (isAuthorized)
                     {
-                        bool isAuthorized = await AuthorizeResourceAccess(accessManagementResource, resourcePartyUuid, User, "read");
-                        if (isAuthorized)
-                        {
-                            authorizedRequests.Add(req);
-                        }
+                        authorizedRequests.Add(req);
                     }
                 }
             }
