@@ -1,5 +1,4 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Data;
 
@@ -12,35 +11,20 @@ public partial class StaticDataIngest
     /// <returns></returns>
     public async Task IngestProviderType(CancellationToken cancellationToken = default)
     {
-        var data = new List<ProviderType>()
+        foreach (var entity in ProviderTypeConstants.AllEntities())
         {
-            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), Name = "System" },
-            new ProviderType() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), Name = "Tjenesteeier" }
-        };
-
-        var translations = new List<TranslationEntry>()
-        {
-            new TranslationEntry() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), LanguageCode = "eng", Type = nameof(ProviderType), FieldName = "Name", Value = "System" },
-            new TranslationEntry() { Id = Guid.Parse("0195efb8-7c80-7bb5-a35c-11d58ea36695"), LanguageCode = "nno", Type = nameof(ProviderType), FieldName = "Name", Value = "ServiceOwner" },
-
-            new TranslationEntry() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), LanguageCode = "eng", Type = nameof(ProviderType), FieldName = "Name", Value = "System" },
-            new TranslationEntry() { Id = Guid.Parse("0195efb8-7c80-713e-ad96-a9896d12f444"), LanguageCode = "nno", Type = nameof(ProviderType), FieldName = "Name", Value = "Tenesteeigar" },
-        };
-
-        foreach (var d in data)
-        {
-            var obj = db.ProviderTypes.FirstOrDefault(t => t.Id == d.Id);
+            var obj = db.ProviderTypes.FirstOrDefault(t => t.Id == entity.Id);
             if (obj == null)
             {
-                db.ProviderTypes.Add(d);
+                db.ProviderTypes.Add(entity);
             }
             else
             {
-                obj.Name = d.Name;
+                obj.Name = entity.Entity.Name;
             }
         }
 
-        foreach (var translation in translations)
+        foreach (var translation in ProviderTypeConstants.AllTranslations())
         {
             await translationService.UpsertTranslationAsync(translation);
         }

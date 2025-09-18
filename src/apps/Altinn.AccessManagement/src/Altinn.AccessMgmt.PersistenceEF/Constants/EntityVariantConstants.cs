@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 
@@ -12,51 +11,29 @@ namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 /// </summary>
 public static class EntityVariantConstants
 {
-    private static readonly Dictionary<string, ConstantDefinition<EntityVariant>> _byName;
-
-    private static readonly Dictionary<Guid, ConstantDefinition<EntityVariant>> _byId;
-
-    static EntityVariantConstants()
-    {
-        var constants = typeof(EntityVariantConstants)
-            .GetProperties(BindingFlags.Public | BindingFlags.Static)
-            .Where(p => p.PropertyType == typeof(ConstantDefinition<EntityVariant>))
-            .Select(p => (ConstantDefinition<EntityVariant>)p.GetValue(null)!)
-            .ToList();
-
-        _byName = constants.ToDictionary(
-            cd => cd.Entity.Name,
-            cd => cd,
-            StringComparer.OrdinalIgnoreCase);
-
-        _byId = constants.ToDictionary(
-            cd => cd.Entity.Id,
-            cd => cd);
-    }
-
     /// <summary>
     /// Try to get <see cref="EntityVariant"/> name (e.g. "SAM").
     /// </summary>
     public static bool TryGetByName(string name, [NotNullWhen(true)] out ConstantDefinition<EntityVariant>? result)
-        => _byName.TryGetValue(name, out result);
+        => ConstantLookup.TryGetByName(typeof(EntityVariantConstants), name, out result);
 
     /// <summary>
     /// Try to get <see cref="EntityVariant"/> using Guid.
     /// </summary>
     public static bool TryGetById(Guid id, [NotNullWhen(true)] out ConstantDefinition<EntityVariant>? result)
-        => _byId.TryGetValue(id, out result);
+        => ConstantLookup.TryGetById(typeof(EntityVariantConstants), id, out result);
 
     /// <summary>
     /// Get all constants as a read-only collection.
     /// </summary>
-    public static IReadOnlyCollection<ConstantDefinition<EntityVariant>> AllEntities() => _byId.Values;
+    public static IReadOnlyCollection<ConstantDefinition<EntityVariant>> AllEntities() 
+        => ConstantLookup.AllEntities<EntityVariant>(typeof(EntityVariantConstants));
 
     /// <summary>
-    /// Get all transaltions as read-only collection.
+    /// Get all translations as read-only collection.
     /// </summary>
-    public static List<TranslationEntry> AllTranslations() => AllEntities()
-        .SelectMany(t => (List<TranslationEntry>)t)
-        .ToList();
+    public static IReadOnlyCollection<TranslationEntry> AllTranslations() 
+        => ConstantLookup.AllTranslations<EntityVariant>(typeof(EntityVariantConstants));
 
     /// <summary>
     /// Represents the entity variant for legal co-ownership ("SAM").

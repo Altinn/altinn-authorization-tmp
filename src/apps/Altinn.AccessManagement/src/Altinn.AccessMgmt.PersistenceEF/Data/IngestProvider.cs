@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Data;
@@ -12,17 +13,7 @@ public partial class StaticDataIngest
     /// <returns></returns>
     public async Task IngestProvider(CancellationToken cancellationToken = default)
     {
-        var type = await db.ProviderTypes.AsNoTracking().SingleOrDefaultAsync(t => t.Name == "System", cancellationToken) ?? throw new Exception("Providertype 'System' not found.");
-
-        var data = new List<Provider>()
-        {
-            new Provider() { Id = Guid.Parse("0195ea92-2080-777d-8626-69c91ea2a05d"), Name = "Altinn 2", Code = "sys-altinn2", TypeId = type.Id, RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("0195ea92-2080-7e7c-bbe3-bb0521c1e51a"), Name = "Altinn 3", Code = "sys-altinn3", TypeId = type.Id, RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("0195ea92-2080-79d8-9859-0b26375f145e"), Name = "Ressursregisteret", Code = "sys-resreg", TypeId = type.Id, RefId = string.Empty },
-            new Provider() { Id = Guid.Parse("0195ea92-2080-758b-89db-7735c4f68320"), Name = "Enhetsregisteret", Code = "sys-ccr", TypeId = type.Id, RefId = string.Empty }
-        };
-
-        foreach (var d in data)
+        foreach (var d in ProviderConstants.AllEntities())
         {
             // Verify: Compare on Id or Code?
             var obj = db.Providers.FirstOrDefault(t => t.Id == d.Id);
@@ -32,7 +23,7 @@ public partial class StaticDataIngest
             }
             else
             {
-                obj.Name = d.Name;
+                obj.Name = d.Entity.Name;
             }
         }
         
