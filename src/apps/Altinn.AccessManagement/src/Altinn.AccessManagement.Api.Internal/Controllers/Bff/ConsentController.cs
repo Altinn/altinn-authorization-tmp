@@ -94,9 +94,9 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
             {
                 foreach (var req in consentRequest.Value)
                 {
-                    if (req.From.IsPartyUuid(out Guid resourePartUuuid))
+                    if (req.From.IsPartyUuid(out Guid resourcePartyUuid))
                     {
-                        bool isAuthorized = await AuthorizeResourceAccess(accessManagementResource, resourePartUuuid, User, "read");
+                        bool isAuthorized = await AuthorizeResourceAccess(accessManagementResource, resourcePartyUuid, User, "read");
                         if (isAuthorized)
                         {
                             authorizedRequests.Add(req);
