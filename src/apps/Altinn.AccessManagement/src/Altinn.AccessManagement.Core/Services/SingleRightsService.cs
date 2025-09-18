@@ -892,6 +892,6 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             return true;
-        }        
+        }
     }
 }
