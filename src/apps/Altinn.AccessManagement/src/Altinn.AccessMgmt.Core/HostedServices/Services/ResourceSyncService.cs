@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
-using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -55,11 +55,6 @@ public partial class ResourceSyncService : IResourceSyncService
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
-        var providerType = await dbContext.ProviderTypes
-            .AsNoTracking()
-            .Where(t => t.Name == "Tjenesteeier")
-            .FirstAsync(cancellationToken) ?? throw new Exception(string.Format("Provider type '{0}' not found", "Tjenesteeier"));
-
         var resourceOwners = new List<Provider>();
         foreach (var serviceOwner in serviceOwners.Content.Orgs)
         {
@@ -71,7 +66,7 @@ public partial class ResourceSyncService : IResourceSyncService
                 Name = serviceOwner.Value.Name.Nb,
                 RefId = serviceOwner.Value.Orgnr,
                 Code = serviceOwner.Key,
-                TypeId = providerType.Id,
+                TypeId = ProviderTypeConstants.ServiceOwner,
             });
         }
 

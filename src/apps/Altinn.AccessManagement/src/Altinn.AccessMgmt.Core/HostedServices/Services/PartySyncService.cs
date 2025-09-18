@@ -1,14 +1,13 @@
 ﻿using System.Diagnostics;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
-using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -58,9 +57,6 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         using var scope = _serviceProvider.CreateScope();
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
-
-        EntityTypes = await appDbContext.EntityTypes.AsNoTracking().ToListAsync(cancellationToken);
-        EntityVariants = await appDbContext.EntityVariants.AsNoTracking().ToListAsync(cancellationToken);
 
         await foreach (var page in await _register.StreamParties(AltinnRegisterClient.AvailableFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
@@ -156,13 +152,6 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         }
     }
 
-    private (EntityType Type, EntityVariant Variant) GetTypeAndVariant(string typeName, string variantName)
-    {
-        var type = EntityTypes.FirstOrDefault(t => t.Name == typeName) ?? throw new Exception(string.Format("Unable to find type '{0}'", typeName));
-        var variant = EntityVariants.FirstOrDefault(t => t.TypeId == type.Id && t.Name.Equals(variantName, StringComparison.OrdinalIgnoreCase)) ?? throw new Exception(string.Format("Unable to find variant '{0}' for type '{1}'", variantName, type.Name));
-        return (type, variant);
-    }
-
     private Entity ConvertPartyModel(PartyModel model, CancellationToken cancellationToken = default)
     {
         /*
@@ -176,38 +165,40 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
         if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
         {
-            var tv = GetTypeAndVariant("Person", "Person");
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
                 Name = model.DisplayName,
                 RefId = model.PersonIdentifier,
-                TypeId = tv.Type.Id,
-                VariantId = tv.Variant.Id
+                TypeId = EntityTypeConstants.Person,
+                VariantId = EntityVariantConstants.Person,
             };
         }
         else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
         {
-            var tv = GetTypeAndVariant("Organisasjon", model.UnitType);
+            if (!EntityVariantConstants.TryGetByName(model.UnitType, out var variant))
+            {
+                throw new InvalidDataException($"Invalid Unit Type {model.UnitType}");
+            }
+
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
                 Name = model.DisplayName,
                 RefId = model.OrganizationIdentifier,
-                TypeId = tv.Type.Id,
-                VariantId = tv.Variant.Id
+                TypeId = EntityTypeConstants.Organisation,
+                VariantId = variant,
             };
         }
         else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
         {
-            var tv = GetTypeAndVariant("Person", "SelvIdentfisert");
             return new Entity()
             {
                 Id = Guid.Parse(model.PartyUuid),
                 Name = model.DisplayName,
                 RefId = model.VersionId.ToString(),
-                TypeId = tv.Type.Id,
-                VariantId = tv.Variant.Id
+                TypeId = EntityTypeConstants.Person,
+                VariantId = EntityVariantConstants.SelfIdentifiedUser
             };
         }
 
@@ -292,8 +283,4 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
         return res;
     }
-
-    private List<EntityType> EntityTypes { get; set; } = [];
-
-    private List<EntityVariant> EntityVariants { get; set; } = [];
 }
