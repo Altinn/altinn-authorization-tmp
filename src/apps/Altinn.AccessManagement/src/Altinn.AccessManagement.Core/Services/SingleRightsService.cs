@@ -140,7 +140,7 @@ namespace Altinn.AccessManagement.Core.Services
         {
             Dictionary<int, (UuidType, Guid)> partyIds = [];
             Dictionary<int, (UuidType, Guid)> userIds = [];
-            (UuidType Type, Guid Uuid) partyIdentifier;
+            (UuidType Type, Guid Uuid) partyIdentifier = (UuidType.NotSpecified, Guid.Empty);
 
             foreach (Rule rule in rules)
             {
@@ -179,9 +179,17 @@ namespace Altinn.AccessManagement.Core.Services
                     }
                     else
                     {
-                        UserProfile userProfile = await _profile.GetUser(new UserProfileLookup { UserId = userId }, cancellationToken);
-                        partyIdentifier = DelegationHelper.GetUserUuidFromUserProfile(userProfile);
-                        userIds[userId] = partyIdentifier;
+                        MinimalParty userProfile = await _aMParty.GetByUserId(userId, cancellationToken);
+
+                        if (userProfile != null)
+                        {
+                            partyIdentifier = DelegationHelper.GetUserUuidFromUserProfile(userProfile);
+                            userIds[userId] = partyIdentifier;
+                        }
+                        else
+                        {
+                            partyIdentifier = (UuidType.NotSpecified, Guid.Empty);
+                        }
                     }
                 }
                 else if (partyId != 0)
@@ -193,8 +201,15 @@ namespace Altinn.AccessManagement.Core.Services
                     else
                     {
                         MinimalParty toParty = await _aMParty.GetByPartyId(partyId, cancellationToken);
-                        partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(toParty.PartyType), toParty.PartyUuid);
-                        partyIds[partyId] = partyIdentifier;
+                        if (toParty != null)
+                        {
+                            partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(toParty.PartyType), toParty.PartyUuid);
+                            partyIds[partyId] = partyIdentifier;
+                        }
+                        else
+                        {
+                            partyIdentifier = (UuidType.NotSpecified, Guid.Empty);
+                        }
                     }
                 }
                 else
@@ -203,14 +218,17 @@ namespace Altinn.AccessManagement.Core.Services
                     partyIdentifier = (UuidType.NotSpecified, Guid.Empty);
                 }
 
-                if (coveredByUuid != null)
-                {
-                    coveredByUuid.Id = partyIdentifier.Type.EnumMemberAttributeValueOrName();
-                    coveredByUuid.Value = partyIdentifier.Uuid.ToString(); // The offered by uuid
-                }
-                else
-                {
-                    rule.CoveredBy.Add(new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() });
+                if (partyIdentifier.Type != UuidType.NotSpecified)
+                { 
+                    if (coveredByUuid != null)
+                    {
+                        coveredByUuid.Id = partyIdentifier.Type.EnumMemberAttributeValueOrName();
+                        coveredByUuid.Value = partyIdentifier.Uuid.ToString(); // The offered by uuid
+                    }
+                    else
+                    {
+                        rule.CoveredBy.Add(new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() });
+                    }
                 }
 
                 // Handle PerformedBy
@@ -219,46 +237,65 @@ namespace Altinn.AccessManagement.Core.Services
                     if (userIds.ContainsKey(rule.DelegatedByUserId.Value))
                     {
                         partyIdentifier = userIds[rule.DelegatedByUserId.Value];
+                        rule.PerformedBy = [new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = rule.DelegatedByUserId.Value.ToString() }];
                     }
                     else
                     {
-                        var userProfile = await _profile.GetUser(new UserProfileLookup { UserId = rule.DelegatedByUserId.Value });
-                        partyIdentifier = DelegationHelper.GetUserUuidFromUserProfile(userProfile);
-                        userIds[rule.DelegatedByUserId.Value] = partyIdentifier;
+                        MinimalParty userProfile = await _aMParty.GetByUserId(rule.DelegatedByUserId.Value);
+                        if (userProfile != null)
+                        {
+                            partyIdentifier = DelegationHelper.GetUserUuidFromUserProfile(userProfile);
+                            userIds[rule.DelegatedByUserId.Value] = partyIdentifier;
+                            rule.PerformedBy = [new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = rule.DelegatedByUserId.Value.ToString() }];
+                        }
+                        else
+                        {
+                            rule.PerformedBy = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = rule.DelegatedByUserId.Value.ToString() }];
+                        }
                     }
-
-                    rule.PerformedBy = [new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = rule.DelegatedByUserId.Value.ToString() }];
                 }
                 else if (rule.DelegatedByPartyId.HasValue)
                 {
                     if (partyIds.ContainsKey(rule.DelegatedByPartyId.Value))
                     {
                         partyIdentifier = partyIds[rule.DelegatedByPartyId.Value];
+                        rule.PerformedBy = [new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = rule.DelegatedByPartyId.Value.ToString() }];
                     }
                     else
                     {
                         MinimalParty performedByParty = await _aMParty.GetByPartyId(rule.DelegatedByPartyId.Value, cancellationToken);
-                        partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(performedByParty.PartyType), performedByParty.PartyUuid);
-                        partyIds[rule.DelegatedByPartyId.Value] = partyIdentifier;
-                    }
-
-                    rule.PerformedBy = [new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = rule.DelegatedByPartyId.Value.ToString() }];
+                        if ( performedByParty != null)
+                        {
+                            partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(performedByParty.PartyType), performedByParty.PartyUuid);
+                            partyIds[rule.DelegatedByPartyId.Value] = partyIdentifier;
+                            rule.PerformedBy = [new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = rule.DelegatedByPartyId.Value.ToString() }];
+                        }
+                        else
+                        {
+                            rule.PerformedBy = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = rule.DelegatedByPartyId.Value.ToString() }];
+                        }
+                    }                    
                 }
 
                 // Handle OfferedBy/From
                 if (partyIds.ContainsKey(rule.OfferedByPartyId))
                 {
                     partyIdentifier = partyIds[rule.OfferedByPartyId];
+                    rule.OfferedByPartyType = partyIdentifier.Type;
+                    rule.OfferedByPartyUuid = partyIdentifier.Uuid;
                 }
                 else
                 {
                     MinimalParty fromParty = await _aMParty.GetByPartyId(rule.OfferedByPartyId, cancellationToken);
-                    partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(fromParty.PartyType), fromParty.PartyUuid);
-                    partyIds[rule.OfferedByPartyId] = partyIdentifier;
-                }
-
-                rule.OfferedByPartyType = partyIdentifier.Type;
-                rule.OfferedByPartyUuid = partyIdentifier.Uuid;
+                    if( fromParty != null)
+                    {
+                        partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(fromParty.PartyType), fromParty.PartyUuid);
+                        partyIds[rule.OfferedByPartyId] = partyIdentifier;
+                        rule.OfferedByPartyType = partyIdentifier.Type;
+                        rule.OfferedByPartyUuid = partyIdentifier.Uuid;
+                    }
+                    
+                }                                
             }
 
             return rules;
@@ -282,7 +319,7 @@ namespace Altinn.AccessManagement.Core.Services
         {
             Dictionary<int, (UuidType, Guid)> userIds = [];
             Dictionary<int, (UuidType, Guid)> partyIds = [];
-            (UuidType Type, Guid Uuid) partyIdentifier;
+            (UuidType Type, Guid Uuid) partyIdentifier = (UuidType.NotSpecified, Guid.Empty);
 
             AttributeMatch coveredByUuid = null;
             int partyId = 0;
@@ -320,9 +357,16 @@ namespace Altinn.AccessManagement.Core.Services
                     }
                     else
                     {
-                        UserProfile userProfile = await _profile.GetUser(new UserProfileLookup { UserId = userId }, cancellationToken);
-                        partyIdentifier = DelegationHelper.GetUserUuidFromUserProfile(userProfile);
-                        userIds[userId] = partyIdentifier;
+                        MinimalParty userProfile = await _aMParty.GetByUserId( userId, cancellationToken);
+                        if (userProfile != null)
+                        {
+                            partyIdentifier = DelegationHelper.GetUserUuidFromUserProfile(userProfile);
+                            userIds[userId] = partyIdentifier;                            
+                        }
+                        else
+                        {
+                            partyIdentifier = (UuidType.NotSpecified, Guid.Empty);
+                        }
                     }
                 }
                 else if (partyId != 0)
@@ -334,8 +378,15 @@ namespace Altinn.AccessManagement.Core.Services
                     else
                     {
                         MinimalParty toParty = await _aMParty.GetByPartyId(partyId);
-                        partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(toParty.PartyType), toParty.PartyUuid);
-                        partyIds[partyId] = partyIdentifier;
+                        if (toParty != null)
+                        {
+                            partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(toParty.PartyType), toParty.PartyUuid);
+                            partyIds[partyId] = partyIdentifier;
+                        }
+                        else
+                        {
+                            partyIdentifier = (UuidType.NotSpecified, Guid.Empty);
+                        }
                     }
                 }
                 else
@@ -344,42 +395,57 @@ namespace Altinn.AccessManagement.Core.Services
                     partyIdentifier = (UuidType.NotSpecified, Guid.Empty);
                 }
 
-                if (coveredByUuid != null)
-                {
-                    coveredByUuid.Id = partyIdentifier.Type.EnumMemberAttributeValueOrName();
-                    coveredByUuid.Value = partyIdentifier.Uuid.ToString(); // The offered by uuid
-                }
-                else
-                {
-                    request.PolicyMatch.CoveredBy.Add(new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() });
+                if (partyIdentifier.Type != UuidType.NotSpecified)
+                {                
+                    if (coveredByUuid != null)
+                    {
+                        coveredByUuid.Id = partyIdentifier.Type.EnumMemberAttributeValueOrName();
+                        coveredByUuid.Value = partyIdentifier.Uuid.ToString(); // The offered by uuid
+                    }
+                    else
+                    {
+                        request.PolicyMatch.CoveredBy.Add(new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() });
+                    }
                 }
 
                 if (userIds.ContainsKey(request.DeletedByUserId))
                 {
-                    request.PerformedBy = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute, Value = userIds[request.DeletedByUserId].ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = request.DeletedByUserId.ToString() }];
+                    partyIdentifier = userIds[request.DeletedByUserId];
+                    request.PerformedBy = [new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = request.DeletedByUserId.ToString() }];
                 }
                 else
                 {
-                    UserProfile userProfile = await _profile.GetUser(new UserProfileLookup { UserId = request.DeletedByUserId }, cancellationToken);
-                    partyIdentifier = DelegationHelper.GetUserUuidFromUserProfile(userProfile);
-                    userIds[request.DeletedByUserId] = partyIdentifier;
-                    request.PerformedBy = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute, Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = request.DeletedByUserId.ToString() }];
-                }
+                    MinimalParty userProfile = await _aMParty.GetByUserId(request.DeletedByUserId, cancellationToken);
+                    if (userProfile != null)
+                    {
+                        partyIdentifier = DelegationHelper.GetUserUuidFromUserProfile(userProfile);
+                        userIds[request.DeletedByUserId] = partyIdentifier;
+                        request.PerformedBy = [new AttributeMatch { Id = partyIdentifier.Type.EnumMemberAttributeValueOrName(), Value = partyIdentifier.Uuid.ToString() }, new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = request.DeletedByUserId.ToString() }];
+                    }
+                    else
+                    {
+                        request.PerformedBy = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, Value = request.DeletedByUserId.ToString() }];
+                    }                    
+                }                
 
                 // Handle OfferedBy/From
                 if (partyIds.ContainsKey(request.PolicyMatch.OfferedByPartyId))
                 {
                     partyIdentifier = partyIds[request.PolicyMatch.OfferedByPartyId];
+                    request.PolicyMatch.FromUuidType = partyIdentifier.Type;
+                    request.PolicyMatch.FromUuid = partyIdentifier.Uuid;
                 }
                 else
                 {
                     MinimalParty fromParty = await _aMParty.GetByPartyId(request.PolicyMatch.OfferedByPartyId, cancellationToken);
-                    partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(fromParty.PartyType), fromParty.PartyUuid);
-                    partyIds[request.PolicyMatch.OfferedByPartyId] = partyIdentifier;
-                }
-
-                request.PolicyMatch.FromUuidType = partyIdentifier.Type;
-                request.PolicyMatch.FromUuid = partyIdentifier.Uuid;
+                    if (fromParty != null)
+                    {
+                        partyIdentifier = (DelegationHelper.GetUuidTypeFromPartyType(fromParty.PartyType), fromParty.PartyUuid);
+                        partyIds[request.PolicyMatch.OfferedByPartyId] = partyIdentifier;
+                        request.PolicyMatch.FromUuidType = partyIdentifier.Type;
+                        request.PolicyMatch.FromUuid = partyIdentifier.Uuid;
+                    }
+                }                
             }
 
             return requestToDelete;

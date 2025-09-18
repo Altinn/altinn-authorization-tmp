@@ -4,6 +4,7 @@ using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Models.Authentication;
+using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Models.ResourceRegistry;
 using Altinn.AccessManagement.Enums;
 using Altinn.Authorization.ABAC.Constants;
@@ -1020,20 +1021,12 @@ namespace Altinn.AccessManagement.Core.Helpers
             return false;
         }
 
-        public static (UuidType Type, Guid Uuid) GetUserUuidFromUserProfile(UserProfile user)
+        public static (UuidType Type, Guid Uuid) GetUserUuidFromUserProfile(MinimalParty party)
         {
             UuidType type = UuidType.NotSpecified;
-            switch (user.UserType)
-            {
-                case Platform.Profile.Enums.UserType.SSNIdentified:
-                    type = UuidType.Person;
-                    break;
-                case Platform.Profile.Enums.UserType.EnterpriseIdentified:
-                    type = UuidType.EnterpriseUser;
-                    break;
-            }
+            type = GetUuidTypeFromPartyType(party.PartyType);
 
-            return (type, user.UserUuid.Value);
+            return (type, party.PartyUuid);
         }
 
         /// <summary>

@@ -45,7 +45,7 @@ namespace Altinn.AccessManagement.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="500">Internal Server Error</response>
         [HttpPost]
-        //[Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
+        [Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
         [Route("accessmanagement/api/v1/delegations/addrules")]
         public async Task<ActionResult> Post([FromBody] List<Rule> rules, CancellationToken cancellationToken)
         {
@@ -82,7 +82,7 @@ namespace Altinn.AccessManagement.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="500">Internal Server Error</response>
         [HttpPost]
-        //[Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
+        [Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
         [Route("accessmanagement/api/v1/delegations/getrules")]
         public async Task<ActionResult<List<Rule>>> GetRules([FromBody] RuleQuery ruleQuery, CancellationToken cancellationToken, [FromQuery] bool onlyDirectDelegations = false)
         {
@@ -146,7 +146,7 @@ namespace Altinn.AccessManagement.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="500">Internal Server Error</response>
         [HttpPost]
-        //[Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
+        [Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
         [Route("accessmanagement/api/v1/delegations/deleterules")]
         public async Task<ActionResult> DeleteRule([FromBody] RequestToDeleteRuleList rulesToDelete, CancellationToken cancellationToken)
         {
@@ -184,7 +184,7 @@ namespace Altinn.AccessManagement.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="500">Internal Server Error</response>
         [HttpPost]
-        //[Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
+        [Authorize(Policy = AuthzConstants.ALTINNII_AUTHORIZATION)]
         [Route("accessmanagement/api/v1/delegations/deletepolicy")]
         public async Task<ActionResult> DeletePolicy([FromBody] RequestToDeletePolicyList policiesToDelete, CancellationToken cancellationToken)
         {

@@ -139,11 +139,13 @@ namespace Altinn.AccessManagement.Core.Services
                 {
                     to.Add(item: new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid, Value = toParty.PartyUuid.ToString() });
                 }
-                
+
+                List<AttributeMatch> performedBy = [new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute, authenticatedUserPartyUuid.ToString()), new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute, authenticatedUserId.ToString())];
+
                 rulesToDelegate.Add(new Rule
                 {
                     DelegatedByUserId = authenticatedUserId,
-                    PerformedBy = new AttributeMatch(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute, authenticatedUserPartyUuid.ToString()).SingleToList(),
+                    PerformedBy = performedBy,
                     OfferedByPartyId = fromParty.PartyId,
                     OfferedByPartyUuid = fromParty.PartyUuid,
                     OfferedByPartyType = fromParty.Person != null ? UuidType.Person : UuidType.Organization,
