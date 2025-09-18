@@ -264,7 +264,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         }
 
         [Fact]
-        public async Task ListRequests_One_Accepted()
+        public async Task ListRequests_One_AcceptedAndExpired()
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
@@ -283,6 +283,8 @@ namespace AccessMgmt.Tests.Controllers.Bff
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             List<ConsentRequestDetailsBffDto> consentRequestList = JsonSerializer.Deserialize<List<ConsentRequestDetailsBffDto>>(responseText, _jsonOptions);
             Assert.Single(consentRequestList);
+            Assert.True(consentRequestList[0].ConsentRequestEvents.Any(e => e.EventType == Altinn.Authorization.Api.Contracts.Consent.ConsentRequestEventType.Expired));
+            Assert.True(consentRequestList[0].ConsentRequestEvents.Any(e => e.EventType == Altinn.Authorization.Api.Contracts.Consent.ConsentRequestEventType.Accepted));
         }
 
         [Fact]
