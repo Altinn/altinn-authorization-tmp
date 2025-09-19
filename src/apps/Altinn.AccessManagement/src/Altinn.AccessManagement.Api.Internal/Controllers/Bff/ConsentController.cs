@@ -87,22 +87,16 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers.Bff
                 return consentRequest.Problem.ToActionResult();
             }
 
-            List<ConsentRequestDetails> authorizedRequests = new List<ConsentRequestDetails>();
 
-            // Check if the user is authorized to view the consent request. Anyone with read access to access management can view the consent request details.
-            if (consentRequest.Value.Count > 0)
+
+            // Check if the user is authorized to view the consent request. Anyone with read access to access management can view the list of consent request details.
+            bool isAuthorized = await AuthorizeResourceAccess(accessManagementResource, partyUuid, User, "read");
+            if (!isAuthorized)
             {
-                foreach (var req in consentRequest.Value)
-                {
-                    bool isAuthorized = await AuthorizeResourceAccess(accessManagementResource, partyUuid, User, "read");
-                    if (isAuthorized)
-                    {
-                        authorizedRequests.Add(req);
-                    }
-                }
+                return Unauthorized();
             }
 
-            return Ok(authorizedRequests);
+            return Ok(consentRequest.Value);
         }
 
         /// <summary>
