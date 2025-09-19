@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
     {
         var options = new AccessManagementDatabaseOptions(configureOptions);
         services.AddScoped<ReadOnlyInterceptor>();
+        services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
         services.AddScoped<ITranslationService, TranslationService>();
         return options.Source switch
         {
