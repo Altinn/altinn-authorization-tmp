@@ -143,7 +143,7 @@ public class IngestService(AppDbContext dbContext) : IIngestService
             {
                 try
                 {
-                    writer.Write(c.Property.GetValue(d), c.Type);
+                    writer.Write(c.Property.GetValue(d), c.DbTypeName);
                 }
                 catch (Exception ex)
                 {
@@ -156,7 +156,7 @@ public class IngestService(AppDbContext dbContext) : IIngestService
                     catch
                     {
                         Console.WriteLine($"Failed to write null in column '{c.Name}' for '{tableName}'.");
-                        throw;
+                        //throw;
                     }
                 }
             }
@@ -179,7 +179,7 @@ public class IngestService(AppDbContext dbContext) : IIngestService
 
     private List<IngestColumnDefinition> GetColumns<T>(IModel entityModel)
     {
-        var typeName = typeof(T).Name.ToLower();
+        var table = GetTableName<T>(entityModel);
 
         var entityTypes = entityModel.GetEntityTypes();
         if (entityTypes is null || !entityTypes.Any()) 
@@ -187,8 +187,8 @@ public class IngestService(AppDbContext dbContext) : IIngestService
             return null; 
         }
 
-        var et = entityTypes.FirstOrDefault(x => x.GetTableName() == typeName && x.GetSchema() == BaseConfiguration.BaseSchema);
-        var storeObject = StoreObjectIdentifier.Table(typeName, BaseConfiguration.BaseSchema);
+        var et = entityTypes.FirstOrDefault(x => x.GetTableName() == table.TableName && x.GetSchema() == BaseConfiguration.BaseSchema);
+        var storeObject = StoreObjectIdentifier.Table(table.TableName, BaseConfiguration.BaseSchema);
 
         if (et is null) 
         { 
@@ -255,11 +255,6 @@ internal class IngestColumnDefinition
     /// Column name
     /// </summary>
     internal string Name { get; set; }
-
-    /// <summary>
-    /// Db data type
-    /// </summary>
-    internal NpgsqlDbType Type { get; set; }
 
     /// <summary>
     /// Db data type

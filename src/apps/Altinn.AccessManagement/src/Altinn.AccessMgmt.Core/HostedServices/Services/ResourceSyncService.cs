@@ -214,12 +214,12 @@ public partial class ResourceSyncService : IResourceSyncService
             .Where(r => r.Key == "LegacyCode" && EF.Functions.ILike(r.Value, subjectUrnPart))
             .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception(string.Format("Role not found '{0}'", subjectUrnPart));
 
-        var roleResource = await dbContext.RoleResources.FirstOrDefaultAsync(t => t.RoleId == role.Id && t.ResourceId == resource.Id, cancellationToken);
+        var roleResource = await dbContext.RoleResources.FirstOrDefaultAsync(t => t.RoleId == role.RoleId && t.ResourceId == resource.Id, cancellationToken);
         if (roleResource == null)
         {
             roleResource = new RoleResource
             {
-                RoleId = role.Id,
+                RoleId = role.RoleId,
                 ResourceId = resource.Id,
             };
 
