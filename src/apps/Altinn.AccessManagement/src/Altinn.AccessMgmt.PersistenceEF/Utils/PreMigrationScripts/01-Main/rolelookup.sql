@@ -13,7 +13,7 @@ ALTER TRIGGER rolelookup_audit_update ON dbo.rolelookup RENAME TO audit_rolelook
 ALTER TRIGGER rolelookup_audit_delete ON dbo.rolelookup RENAME TO audit_rolelookup_delete_trg;
 drop trigger rolelookup_meta on dbo.rolelookup;
 
-create function dbo.audit_rolelookup_insert_fn() returns trigger
+create or replace function dbo.audit_rolelookup_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -23,7 +23,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_rolelookup_insert_trg
+create or replace trigger audit_rolelookup_insert_trg
     before insert or update
     on dbo.rolelookup
     for each row

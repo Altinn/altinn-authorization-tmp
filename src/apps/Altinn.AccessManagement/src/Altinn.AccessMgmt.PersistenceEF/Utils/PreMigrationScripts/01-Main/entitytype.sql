@@ -25,7 +25,7 @@ END;
 $$;
 
 
-create trigger audit_entitytype_insert_trg
+create or replace trigger audit_entitytype_insert_trg
     before insert or update
     on dbo.entitytype
     for each row

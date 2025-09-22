@@ -26,7 +26,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_area_insert_trg
+create or replace trigger audit_area_insert_trg
     before insert or update
     on dbo.area
     for each row

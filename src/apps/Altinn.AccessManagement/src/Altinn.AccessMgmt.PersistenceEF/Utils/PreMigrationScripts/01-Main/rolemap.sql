@@ -15,7 +15,7 @@ ALTER TRIGGER rolemap_audit_update ON dbo.rolemap RENAME TO audit_rolemap_update
 ALTER TRIGGER rolemap_audit_delete ON dbo.rolemap RENAME TO audit_rolemap_delete_trg;
 drop trigger rolemap_meta on dbo.rolemap;
 
-create function dbo.audit_rolemap_insert_fn() returns trigger
+create or replace function dbo.audit_rolemap_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -25,7 +25,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_rolemap_insert_trg
+create or replace trigger audit_rolemap_insert_trg
     before insert or update
     on dbo.rolemap
     for each row

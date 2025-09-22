@@ -16,7 +16,7 @@ ALTER TRIGGER resource_audit_update ON dbo.resource RENAME TO audit_resource_upd
 ALTER TRIGGER resource_audit_delete ON dbo.resource RENAME TO audit_resource_delete_trg;
 drop trigger resource_meta on dbo.resource;
 
-create function dbo.audit_resource_insert_fn() returns trigger
+create or replace function dbo.audit_resource_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -26,7 +26,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_resource_insert_trg
+create or replace trigger audit_resource_insert_trg
     before insert or update
     on dbo.resource
     for each row

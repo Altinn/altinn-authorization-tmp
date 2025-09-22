@@ -15,7 +15,7 @@ ALTER TRIGGER packageresource_audit_update ON dbo.packageresource RENAME TO audi
 ALTER TRIGGER packageresource_audit_delete ON dbo.packageresource RENAME TO audit_packageresource_delete_trg;
 drop trigger packageresource_meta on dbo.packageresource;
 
-create function dbo.audit_packageresource_insert_fn() returns trigger
+create or replace function dbo.audit_packageresource_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -25,7 +25,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_packageresource_insert_trg
+create or replace trigger audit_packageresource_insert_trg
     before insert or update
     on dbo.packageresource
     for each row

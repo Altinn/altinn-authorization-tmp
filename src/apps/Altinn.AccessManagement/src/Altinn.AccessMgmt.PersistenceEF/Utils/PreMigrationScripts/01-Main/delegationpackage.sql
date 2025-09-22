@@ -20,7 +20,7 @@ ALTER TRIGGER delegationpackage_audit_update ON dbo.delegationpackage RENAME TO 
 ALTER TRIGGER delegationpackage_audit_delete ON dbo.delegationpackage RENAME TO audit_delegationpackage_delete_trg;
 drop trigger delegationpackage_meta on dbo.delegationpackage;
 
-create function dbo.audit_delegationpackage_insert_fn() returns trigger
+create or replace function dbo.audit_delegationpackage_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -30,7 +30,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_delegationpackage_insert_trg
+create or replace trigger audit_delegationpackage_insert_trg
     before insert or update
     on dbo.delegationpackage
     for each row

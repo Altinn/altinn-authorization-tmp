@@ -25,7 +25,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_assignmentresource_insert_trg
+create or replace trigger audit_assignmentresource_insert_trg
     before insert or update
     on dbo.assignmentresource
     for each row

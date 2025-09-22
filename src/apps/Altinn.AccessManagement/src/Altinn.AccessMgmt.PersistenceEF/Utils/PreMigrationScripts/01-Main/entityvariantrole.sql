@@ -16,7 +16,7 @@ ALTER TRIGGER entityvariantrole_audit_update ON dbo.entityvariantrole RENAME TO 
 ALTER TRIGGER entityvariantrole_audit_delete ON dbo.entityvariantrole RENAME TO audit_entityvariantrole_delete_trg;
 drop trigger entityvariantrole_meta on dbo.entityvariantrole;
 
-create function dbo.audit_entityvariantrole_insert_fn() returns trigger
+create or replace function dbo.audit_entityvariantrole_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -26,7 +26,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_entityvariantrole_insert_trg
+create or replace trigger audit_entityvariantrole_insert_trg
     before insert or update
     on dbo.entityvariantrole
     for each row

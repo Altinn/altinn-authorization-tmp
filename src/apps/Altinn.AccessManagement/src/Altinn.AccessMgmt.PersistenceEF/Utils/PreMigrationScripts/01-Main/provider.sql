@@ -15,7 +15,7 @@ ALTER TRIGGER provider_audit_update ON dbo.provider RENAME TO audit_provider_upd
 ALTER TRIGGER provider_audit_delete ON dbo.provider RENAME TO audit_provider_delete_trg;
 drop trigger provider_meta on dbo.provider;
 
-create function dbo.audit_provider_insert_fn() returns trigger
+create or replace function dbo.audit_provider_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -25,7 +25,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_provider_insert_trg
+create or replace trigger audit_provider_insert_trg
     before insert or update
     on dbo.provider
     for each row

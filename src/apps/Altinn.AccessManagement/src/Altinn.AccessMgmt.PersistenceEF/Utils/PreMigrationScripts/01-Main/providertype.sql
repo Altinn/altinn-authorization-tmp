@@ -51,7 +51,7 @@ RETURN OLD;
 END;
 $$;
 
-create function dbo.audit_providertype_insert_fn() returns trigger
+create or replace function dbo.audit_providertype_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -61,7 +61,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_providertype_insert_trg
+create or replace trigger audit_providertype_insert_trg
     before insert or update
     on dbo.providertype
     for each row

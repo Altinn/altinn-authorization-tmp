@@ -15,7 +15,7 @@ ALTER TRIGGER roleresource_audit_update ON dbo.roleresource RENAME TO audit_role
 ALTER TRIGGER roleresource_audit_delete ON dbo.roleresource RENAME TO audit_roleresource_delete_trg;
 drop trigger roleresource_meta on dbo.roleresource;
 
-create function dbo.audit_roleresource_insert_fn() returns trigger
+create or replace function dbo.audit_roleresource_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -25,7 +25,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_roleresource_insert_trg
+create or replace trigger audit_roleresource_insert_trg
     before insert or update
     on dbo.roleresource
     for each row

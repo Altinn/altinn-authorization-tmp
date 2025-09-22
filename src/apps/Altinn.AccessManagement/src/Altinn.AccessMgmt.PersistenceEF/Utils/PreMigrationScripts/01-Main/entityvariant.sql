@@ -14,7 +14,7 @@ ALTER TRIGGER entityvariant_audit_update ON dbo.entityvariant RENAME TO audit_en
 ALTER TRIGGER entityvariant_audit_delete ON dbo.entityvariant RENAME TO audit_entityvariant_delete_trg;
 drop trigger entityvariant_meta on dbo.entityvariant;
 
-create function dbo.audit_entityvariant_insert_fn() returns trigger
+create or replace function dbo.audit_entityvariant_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -24,7 +24,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_entityvariant_insert_trg
+create or replace trigger audit_entityvariant_insert_trg
     before insert or update
     on dbo.entityvariant
     for each row

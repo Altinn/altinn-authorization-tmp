@@ -14,7 +14,7 @@ ALTER TRIGGER entitylookup_audit_update ON dbo.entitylookup RENAME TO audit_enti
 ALTER TRIGGER entitylookup_audit_delete ON dbo.entitylookup RENAME TO audit_entitylookup_delete_trg;
 drop trigger entitylookup_meta on dbo.entitylookup;
 
-create function dbo.audit_entitytype_insert_fn() returns trigger
+create or replace function dbo.audit_entitytype_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -24,7 +24,7 @@ RETURN NEW;
 END;
 $$;
 
-create function dbo.audit_entitylookup_insert_fn() returns trigger
+create or replace function dbo.audit_entitylookup_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -34,7 +34,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_entitylookup_insert_trg
+create or replace trigger audit_entitylookup_insert_trg
     before insert or update
     on dbo.entitylookup
     for each row

@@ -23,7 +23,7 @@ ALTER TRIGGER rolepackage_audit_update ON dbo.rolepackage RENAME TO audit_rolepa
 ALTER TRIGGER rolepackage_audit_delete ON dbo.rolepackage RENAME TO audit_rolepackage_delete_trg;
 drop trigger rolepackage_meta on dbo.rolepackage;
 
-create function dbo.audit_rolepackage_insert_fn() returns trigger
+create or replace function dbo.audit_rolepackage_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -33,7 +33,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_rolepackage_insert_trg
+create or replace trigger audit_rolepackage_insert_trg
     before insert or update
     on dbo.rolepackage
     for each row

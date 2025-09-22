@@ -23,7 +23,7 @@ ALTER TRIGGER package_audit_update ON dbo.package RENAME TO audit_package_update
 ALTER TRIGGER package_audit_delete ON dbo.package RENAME TO audit_package_delete_trg;
 drop trigger package_meta on dbo.package;
 
-create function dbo.audit_package_insert_fn() returns trigger
+create or replace function dbo.audit_package_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -33,7 +33,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_package_insert_trg
+create or replace trigger audit_package_insert_trg
     before insert or update
     on dbo.package
     for each row

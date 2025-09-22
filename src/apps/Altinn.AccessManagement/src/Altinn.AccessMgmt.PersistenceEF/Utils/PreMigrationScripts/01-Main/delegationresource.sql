@@ -55,7 +55,7 @@ RETURN OLD;
 END;
 $$;
 
-create function dbo.audit_delegationresource_insert_fn() returns trigger
+create or replace function dbo.audit_delegationresource_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -65,7 +65,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_delegationresource_insert_trg
+create or replace trigger audit_delegationresource_insert_trg
     before insert or update
     on dbo.delegationresource
     for each row

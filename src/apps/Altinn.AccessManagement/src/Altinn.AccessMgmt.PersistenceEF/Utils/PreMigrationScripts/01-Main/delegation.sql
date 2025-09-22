@@ -19,7 +19,7 @@ ALTER TRIGGER delegation_audit_delete ON dbo.delegation RENAME TO audit_delegati
 
 drop trigger delegation_meta on dbo.delegation;
 
-create function dbo.audit_delegation_insert_fn() returns trigger
+create or replace function dbo.audit_delegation_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -29,7 +29,7 @@ RETURN NEW;
 END;
 $$;
 
-create trigger audit_delegation_insert_trg
+create or REPLACE trigger audit_delegation_insert_trg
     before insert or update
     on dbo.delegation
     for each row

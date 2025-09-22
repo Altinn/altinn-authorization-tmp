@@ -17,7 +17,7 @@ ALTER TRIGGER assignment_audit_update ON dbo.assignment RENAME TO audit_assignme
 ALTER TRIGGER assignment_audit_delete ON dbo.assignment RENAME TO audit_assignment_delete_trg;
 drop trigger assignment_meta on dbo.assignment;
 
-create function dbo.audit_assignment_insert_fn() returns trigger
+create or replace  function dbo.audit_assignment_insert_fn() returns trigger
     language plpgsql
 as
 $$
@@ -67,7 +67,7 @@ RETURN OLD;
 END;
 $$;
 
-create trigger audit_assignment_insert_trg
+create or replace trigger audit_assignment_insert_trg
     before insert or update
     on dbo.assignment
     for each row
