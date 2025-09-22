@@ -1,4 +1,3 @@
--- AREA
 alter table dbo.area drop constraint uc_area_name;
 
 alter table dbo.area alter column audit_changedby drop not null;

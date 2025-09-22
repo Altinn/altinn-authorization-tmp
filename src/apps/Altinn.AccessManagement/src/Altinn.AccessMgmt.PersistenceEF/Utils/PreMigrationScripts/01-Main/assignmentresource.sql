@@ -5,7 +5,9 @@ alter table dbo.assignmentresource alter column audit_validfrom drop default;
 alter table dbo.assignmentresource drop constraint uc_assignmentresource_assignmentid_resourceid;
 
 ALTER TABLE dbo.assignmentresource RENAME CONSTRAINT fk_assignmentresource_assignment_assignment TO fk_assignmentresource_assignment_assignmentid;
-ALTER TABLE dbo.assignmentresource RENAME CONSTRAINT fk_assignmentresource_resource_resource TO fk_assignmentresource_resource_resourceid;
+ALTER TABLE dbo.assignmentresource DROP CONSTRAINT fk_assignmentresource_resource_resource;
+
+alter table dbo.assignmentresource add constraint fk_assignmentresource_resource_resourceid foreign key (resourceid) references dbo.resource on delete restrict;
 
 ALTER INDEX dbo.uc_assignmentresource_assignmentid_resourceid_idx RENAME TO ix_assignmentresource_assignmentid_resourceid;
 ALTER INDEX dbo.fk_assignmentresource_assignmentid_assignment_idx RENAME TO ix_assignmentresource_assignmentid;

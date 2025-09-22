@@ -9,9 +9,13 @@ alter table dbo.package alter column urn drop not null;
 
 alter table dbo.package drop constraint uc_package_providerid_name;
 
-ALTER TABLE dbo.package RENAME CONSTRAINT fk_package_provider_provider TO fk_package_provider_providerid;
-ALTER TABLE dbo.package RENAME CONSTRAINT fk_package_entitytype_entitytype TO fk_package_entitytype_entitytypeid;
-ALTER TABLE dbo.package RENAME CONSTRAINT fk_package_area_area TO fk_package_area_areaid;
+ALTER TABLE dbo.package DROP CONSTRAINT fk_package_provider_provider;
+ALTER TABLE dbo.package DROP CONSTRAINT fk_package_entitytype_entitytype;
+ALTER TABLE dbo.package DROP CONSTRAINT fk_package_area_area;
+
+alter table dbo.package add constraint fk_package_area_areaid foreign key (areaid) references dbo.area on delete restrict;
+alter table dbo.package add constraint fk_package_entitytype_entitytypeid foreign key (entitytypeid) references dbo.entitytype on delete restrict;
+alter table dbo.package add constraint fk_package_provider_providerid foreign key (providerid) references dbo.provider on delete restrict;
 
 ALTER INDEX dbo.uc_package_providerid_name_idx RENAME TO ix_package_providerid_name;
 

@@ -6,7 +6,8 @@ alter table dbo.provider alter column audit_validfrom drop default;
 alter table dbo.provider alter column typeid set not null;
 alter table dbo.provider drop constraint uc_provider_name;
 
-ALTER TABLE dbo.provider RENAME CONSTRAINT fk_provider_type_providertype TO fk_provider_providertype_typeid;
+ALTER TABLE dbo.provider DROP CONSTRAINT fk_provider_type_providertype;
+alter table dbo.provider add constraint fk_provider_providertype_typeid foreign key (typeid) references dbo.providertype on delete restrict;
 
 ALTER INDEX dbo.uc_provider_name_idx RENAME TO ix_provider_name;
 ALTER INDEX dbo.fk_provider_typeid_providertype_idx RENAME TO ix_provider_typeid;

@@ -4,8 +4,10 @@ alter table dbo.assignmentpackage alter column audit_changeoperation drop not nu
 alter table dbo.assignmentpackage alter column audit_validfrom drop default;
 
 alter table dbo.assignmentpackage drop constraint uc_assignmentpackage_assignmentid_packageid;
+ALTER TABLE dbo.assignmentpackage drop CONSTRAINT fk_assignmentpackage_package_package;
 ALTER TABLE dbo.assignmentpackage RENAME CONSTRAINT fk_assignmentpackage_assignment_assignment TO fk_assignmentpackage_assignment_assignmentid;
-ALTER TABLE dbo.assignmentpackage RENAME CONSTRAINT fk_assignmentpackage_package_package TO fk_assignmentpackage_package_packageid;
+
+alter table dbo.assignmentpackage add constraint fk_assignmentpackage_package_packageid foreign key (packageid) references dbo.package on delete restrict;
 
 ALTER INDEX dbo.uc_assignmentpackage_assignmentid_packageid_idx RENAME TO ix_assignmentpackage_assignmentid_packageid;
 ALTER INDEX dbo.fk_assignmentpackage_assignmentid_assignment_idx RENAME TO ix_assignmentpackage_assignmentid;

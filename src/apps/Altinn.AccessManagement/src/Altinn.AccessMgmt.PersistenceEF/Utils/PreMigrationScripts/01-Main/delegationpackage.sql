@@ -5,9 +5,11 @@ alter table dbo.delegationpackage alter column audit_validfrom drop default;
 alter table dbo.delegationpackage drop constraint uc_delegationpackage_delegationid_packageid;
 
 ALTER TABLE dbo.delegationpackage RENAME CONSTRAINT fk_delegationpackage_delegation_delegation TO fk_delegationpackage_delegation_delegationid;
-ALTER TABLE dbo.delegationpackage RENAME CONSTRAINT fk_delegationpackage_package_package TO fk_delegationpackage_package_packageid;
+ALTER TABLE dbo.delegationpackage drop CONSTRAINT fk_delegationpackage_package_package;
 alter table dbo.delegationpackage drop constraint fk_delegationpackage_assignmentpackage_assignmentpackage;
 alter table dbo.delegationpackage drop constraint fk_delegationpackage_rolepackage_rolepackage;
+
+alter table dbo.delegationpackage add constraint fk_delegationpackage_package_packageid foreign key (packageid) references dbo.package on delete restrict;
 
 ALTER INDEX dbo.fk_delegationpackage_delegationid_delegation_idx RENAME TO ix_delegationpackage_delegationid;
 ALTER INDEX dbo.uc_delegationpackage_delegationid_packageid_idx RENAME TO ix_delegationpackage_delegationid_packageid;

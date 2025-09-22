@@ -4,8 +4,14 @@ alter table dbo.roleresource alter column audit_changeoperation drop not null;
 alter table dbo.roleresource alter column audit_validfrom drop default;
 
 alter table dbo.roleresource drop constraint uc_roleresource_roleid_resourceid;
-ALTER TABLE dbo.roleresource RENAME CONSTRAINT fk_roleresource_resource_resource TO fk_roleresource_resource_resourceid;
+ALTER TABLE dbo.roleresource drop CONSTRAINT fk_roleresource_resource_resource;
 ALTER TABLE dbo.roleresource RENAME CONSTRAINT fk_roleresource_role_role TO fk_roleresource_role_roleid;
+
+alter table dbo.roleresource
+    add constraint fk_roleresource_resource_resourceid
+        foreign key (resourceid) references dbo.resource
+            on delete restrict;
+
 
 ALTER INDEX dbo.fk_roleresource_resourceid_resource_idx RENAME TO ix_roleresource_resourceid;
 ALTER INDEX dbo.fk_roleresource_roleid_role_idx RENAME TO ix_roleresource_roleid;

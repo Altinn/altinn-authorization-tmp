@@ -5,8 +5,11 @@ alter table dbo.resource alter column audit_validfrom drop default;
 alter table dbo.resource alter column refid drop not null;
 
 alter table dbo.resource drop constraint uc_resource_providerid_refid;
-ALTER TABLE dbo.resource RENAME CONSTRAINT fk_resource_provider_provider TO fk_resource_provider_providerid;
-ALTER TABLE dbo.resource RENAME CONSTRAINT fk_resource_type_resourcetype TO fk_resource_resourcetype_typeid;
+ALTER TABLE dbo.resource drop CONSTRAINT fk_resource_provider_provider;
+ALTER TABLE dbo.resource drop CONSTRAINT fk_resource_type_resourcetype;
+
+alter table dbo.resource add constraint fk_resource_provider_providerid foreign key (providerid) references dbo.provider on delete restrict;
+alter table dbo.resource add constraint fk_resource_resourcetype_typeid foreign key (typeid) references dbo.resourcetype on delete restrict;
 
 ALTER INDEX dbo.fk_resource_providerid_provider_idx RENAME TO ix_resource_providerid;
 ALTER INDEX dbo.fk_resource_typeid_resourcetype_idx RENAME TO ix_resource_typeid;

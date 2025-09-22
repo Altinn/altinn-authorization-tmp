@@ -4,7 +4,9 @@ alter table dbo.entitytype alter column audit_changeoperation drop not null;
 alter table dbo.entitytype alter column audit_validfrom drop default;
 
 alter table dbo.entitytype drop constraint uc_entitytype_providerid_name;
-ALTER TABLE dbo.entitytype RENAME CONSTRAINT fk_entitytype_provider_provider TO fk_entitytype_provider_providerid;
+ALTER TABLE dbo.entitytype drop CONSTRAINT fk_entitytype_provider_provider;
+
+alter table dbo.entitytype add constraint fk_entitytype_provider_providerid foreign key (providerid) references dbo.provider on delete restrict;
 
 drop index dbo.uc_entitytype_providerid_name_idx;
 ALTER INDEX dbo.fk_entitytype_providerid_provider_idx RENAME TO ix_entitytype_providerid;

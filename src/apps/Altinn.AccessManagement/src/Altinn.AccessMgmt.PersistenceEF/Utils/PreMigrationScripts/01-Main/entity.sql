@@ -15,7 +15,7 @@ alter table dbo.entity drop constraint fk_entity_parent_entity;
 alter table dbo.entity
     add constraint fk_entity_entity_parentid
         foreign key (parentid) references dbo.entity
-            on delete cascade;
+            on delete restrict;
 
 alter table dbo.entity
     add constraint fk_entity_entitytype_typeid

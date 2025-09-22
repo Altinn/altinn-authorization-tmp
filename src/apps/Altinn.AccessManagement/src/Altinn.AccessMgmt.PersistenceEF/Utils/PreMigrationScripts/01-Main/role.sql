@@ -12,12 +12,12 @@ ALTER TABLE dbo.role drop CONSTRAINT fk_role_entitytype_entitytype;
 alter table dbo.role
     add constraint fk_role_entitytype_entitytypeid
         foreign key (entitytypeid) references dbo.entitytype
-            on delete cascade;
+            on delete restrict;
 
 alter table dbo.role
     add constraint fk_role_provider_providerid
         foreign key (providerid) references dbo.provider
-            on delete cascade;
+            on delete restrict;
 
 ALTER INDEX dbo.uc_role_urn_idx RENAME TO ix_role_urn;
 ALTER INDEX dbo.uc_role_providerid_name_idx RENAME TO ix_role_providerid_name;

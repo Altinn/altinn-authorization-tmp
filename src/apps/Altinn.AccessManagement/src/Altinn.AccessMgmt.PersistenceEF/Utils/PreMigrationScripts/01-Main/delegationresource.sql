@@ -5,7 +5,9 @@ alter table dbo.delegationresource alter column audit_validfrom drop default;
 alter table dbo.delegationresource drop constraint uc_delegationresource_delegationid_resourceid;
 
 ALTER TABLE dbo.delegationresource RENAME CONSTRAINT fk_delegationresource_delegation_delegation TO fk_delegationresource_delegation_delegationid;
-ALTER TABLE dbo.delegationresource RENAME CONSTRAINT fk_delegationresource_resource_resource TO fk_delegationresource_resource_resourceid;
+ALTER TABLE dbo.delegationresource DROP CONSTRAINT fk_delegationresource_resource_resource;
+
+alter table dbo.delegationresource add constraint fk_delegationresource_resource_resourceid foreign key (resourceid) references dbo.resource on delete restrict;
 
 ALTER INDEX dbo.uc_delegationresource_delegationid_resourceid_idx RENAME TO ix_delegationresource_delegationid_resourceid;
 ALTER INDEX dbo.fk_delegationresource_delegationid_delegation_idx RENAME TO ix_delegationresource_delegationid;

@@ -6,11 +6,20 @@ alter table dbo.rolepackage alter column hasaccess set default false;
 alter table dbo.rolepackage alter column candelegate set default false;
 alter table dbo.rolepackage add canassign boolean not null default(false);
 
-alter table dbo_history.auditrolepackage add canassign boolean not null default false;
-
-ALTER TABLE dbo.rolepackage RENAME CONSTRAINT fk_rolepackage_entityvariant_entityvariant TO fk_rolepackage_entityvariant_entityvariantid;
-ALTER TABLE dbo.rolepackage RENAME CONSTRAINT fk_rolepackage_package_package TO fk_rolepackage_package_packageid;
+ALTER TABLE dbo.rolepackage drop CONSTRAINT fk_rolepackage_entityvariant_entityvariant;
+ALTER TABLE dbo.rolepackage drop CONSTRAINT fk_rolepackage_package_package;
 ALTER TABLE dbo.rolepackage RENAME CONSTRAINT fk_rolepackage_role_role TO fk_rolepackage_role_roleid;
+
+alter table dbo.rolepackage
+    add constraint fk_rolepackage_entityvariant_entityvariantid
+        foreign key (entityvariantid) references dbo.entityvariant
+            on delete restrict;
+
+alter table dbo.rolepackage
+    add constraint fk_rolepackage_package_packageid
+        foreign key (packageid) references dbo.package
+            on delete restrict;
+
 
 ALTER INDEX dbo.fk_rolepackage_entityvariantid_entityvariant_idx RENAME TO ix_rolepackage_entityvariantid;
 ALTER INDEX dbo.fk_rolepackage_packageid_package_idx RENAME TO ix_rolepackage_packageid;

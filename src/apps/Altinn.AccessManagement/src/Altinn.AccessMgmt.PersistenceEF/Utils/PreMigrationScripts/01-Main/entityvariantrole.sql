@@ -4,9 +4,11 @@ alter table dbo.entityvariantrole alter column audit_changeoperation drop not nu
 alter table dbo.entityvariantrole alter column audit_validfrom drop default;
 
 alter table dbo.entityvariantrole drop constraint uc_entityvariantrole_variantid_roleid;
-ALTER TABLE dbo.entityvariantrole RENAME CONSTRAINT fk_entityvariantrole_role_role TO fk_entityvariantrole_role_roleid;
+ALTER TABLE dbo.entityvariantrole drop CONSTRAINT fk_entityvariantrole_role_role;
 ALTER TABLE dbo.entityvariantrole drop CONSTRAINT fk_entityvariantrole_variant_entityvariant;
+
 alter table dbo.entityvariantrole add constraint fk_entityvariantrole_entityvariant_variantid foreign key (variantid) references dbo.entityvariant on delete cascade;
+alter table dbo.entityvariantrole add constraint fk_entityvariantrole_role_roleid foreign key (roleid) references dbo.role on delete restrict;
 
 ALTER INDEX dbo.fk_entityvariantrole_variantid_entityvariant_idx RENAME TO ix_entityvariantrole_variantid;
 ALTER INDEX dbo.fk_entityvariantrole_roleid_role_idx RENAME TO ix_entityvariantrole_roleid;

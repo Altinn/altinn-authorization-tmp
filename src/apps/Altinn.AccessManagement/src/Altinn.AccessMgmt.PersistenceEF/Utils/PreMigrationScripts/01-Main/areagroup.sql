@@ -5,8 +5,12 @@ alter table dbo.areagroup alter column audit_validfrom drop default;
 alter table dbo.areagroup alter column entitytypeid set not null;
 
 alter table dbo.areagroup drop constraint uc_areagroup_name;
+ALTER TABLE dbo.areagroup drop CONSTRAINT fk_areagroup_entitytype_entitytype;
 
-ALTER TABLE dbo.areagroup RENAME CONSTRAINT fk_areagroup_entitytype_entitytype TO fk_areagroup_entitytype_entitytypeid;
+alter table dbo.areagroup
+    add constraint fk_areagroup_entitytype_entitytypeid
+        foreign key (entitytypeid) references dbo.entitytype
+            on delete restrict;
 
 ALTER INDEX dbo.uc_areagroup_name_idx RENAME TO ix_areagroup_name;
 ALTER INDEX dbo.fk_areagroup_entitytypeid_entitytype_idx RENAME TO ix_areagroup_entitytypeid;

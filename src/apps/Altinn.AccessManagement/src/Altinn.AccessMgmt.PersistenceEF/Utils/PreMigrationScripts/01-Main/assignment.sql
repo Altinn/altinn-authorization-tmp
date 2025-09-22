@@ -5,8 +5,10 @@ alter table dbo.assignment alter column audit_validfrom drop default;
 
 ALTER TABLE dbo.assignment RENAME CONSTRAINT fk_assignment_from_entity TO fk_assignment_entity_fromid;
 ALTER TABLE dbo.assignment RENAME CONSTRAINT fk_assignment_to_entity TO fk_assignment_entity_toid;
-ALTER TABLE dbo.assignment RENAME CONSTRAINT fk_assignment_role_role TO fk_assignment_role_roleid;
+ALTER TABLE dbo.assignment DROP CONSTRAINT fk_assignment_role_role;
 alter table dbo.assignment drop constraint uc_assignment_fromid_toid_roleid;
+
+alter table dbo.assignment add constraint fk_assignment_role_roleid foreign key (roleid) references dbo.role on delete restrict;
 
 ALTER INDEX dbo.fk_assignment_fromid_entity_idx RENAME TO ix_assignment_fromid;
 ALTER INDEX dbo.fk_assignment_toid_entity_idx RENAME TO ix_assignment_toid;

@@ -5,7 +5,9 @@ alter table dbo.packageresource alter column audit_validfrom drop default;
 
 alter table dbo.packageresource drop constraint uc_packageresource_packageid_resourceid;
 ALTER TABLE dbo.packageresource RENAME CONSTRAINT fk_packageresource_package_package TO fk_packageresource_package_packageid;
-ALTER TABLE dbo.packageresource RENAME CONSTRAINT fk_packageresource_resource_resource TO fk_packageresource_resource_resourceid;
+ALTER TABLE dbo.packageresource drop CONSTRAINT fk_packageresource_resource_resource;
+
+alter table dbo.packageresource add constraint fk_packageresource_resource_resourceid foreign key (resourceid) references dbo.resource on delete restrict;
 
 ALTER INDEX dbo.fk_packageresource_packageid_package_idx RENAME TO ix_packageresource_packageid;
 ALTER INDEX dbo.fk_packageresource_resourceid_resource_idx RENAME TO ix_packageresource_resourceid;
