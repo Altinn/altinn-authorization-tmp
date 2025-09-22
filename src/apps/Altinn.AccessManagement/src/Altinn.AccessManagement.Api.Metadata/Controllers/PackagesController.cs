@@ -295,20 +295,34 @@ public class PackagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<Resource>> GetPackageResources(Guid id)
     {
-        var res = await packageService.GetPackageResources(id);
-        if (res == null || !res.Any())
+        IEnumerable<Resource> res;
+        PackageDto pkg;
+        if (await featureManager.IsEnabledAsync("AccessMgmt.PackageService.EFCore"))
         {
-            var pkg = await packageService.GetPackage(id);
-            if (pkg == null)
+            res = await corePackageService.GetPackageResources(id);
+            if (res == null || !res.Any())
             {
-                // Package is not found
-                return NotFound();
+                pkg = await corePackageService.GetPackage(id);
+                if (pkg == null)
+                {
+                    return NotFound();
+                }
+                return NoContent();
             }
-
-            // Package found, but no resources
-            return NoContent();
         }
-
+        else
+        {
+            res = await persistencePackageService.GetPackageResources(id);
+            if (res == null || !res.Any())
+            {
+                pkg = await persistencePackageService.GetPackage(id);
+                if (pkg == null)
+                {
+                    return NotFound();
+                }
+                return NoContent();
+            }
+        }
         return Ok(res);
     }
 }
