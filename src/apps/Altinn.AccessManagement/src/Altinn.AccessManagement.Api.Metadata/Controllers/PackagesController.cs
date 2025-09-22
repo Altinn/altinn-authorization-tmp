@@ -205,20 +205,34 @@ public class PackagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PackageDto>> GetAreaPackages(Guid id)
     {
-        var res = await packageService.GetPackagesByArea(id);
-        if (res == null || !res.Any())
+        IEnumerable<PackageDto> res;
+        Area area;
+        if (await featureManager.IsEnabledAsync("AccessMgmt.PackageService.EFCore"))
         {
-            var area = await packageService.GetArea(id);
-            if (area == null)
+            res = await corePackageService.GetPackagesByArea(id);
+            if (res == null || !res.Any())
             {
-                // Area is not found
-                return NotFound();
+                area = await corePackageService.GetArea(id);
+                if (area == null)
+                {
+                    return NotFound();
+                }
+                return NoContent();
             }
-
-            // Area found, but no packages
-            return NoContent();
         }
-
+        else
+        {
+            res = await persistencePackageService.GetPackagesByArea(id);
+            if (res == null || !res.Any())
+            {
+                area = await persistencePackageService.GetArea(id);
+                if (area == null)
+                {
+                    return NotFound();
+                }
+                return NoContent();
+            }
+        }
         return Ok(res);
     }
 
