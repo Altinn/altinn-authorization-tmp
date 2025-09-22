@@ -112,12 +112,19 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<string>>> GetKeys()
         {
-            var res = await roleService.GetLookupKeys();
+            IEnumerable<string> res;
+            if (await featureManager.IsEnabledAsync("AccessMgmt.RoleService.EFCore"))
+            {
+                res = await coreRoleService.GetLookupKeys();
+            }
+            else
+            {
+                res = await persistenceRoleService.GetLookupKeys();
+            }
             if (res == null)
             {
                 return NotFound();
             }
-
             return Ok(res);
         }
 
