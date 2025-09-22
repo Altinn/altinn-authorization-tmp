@@ -8,6 +8,16 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts;
 public interface IConnectionService
 {
     /// <summary>
+    /// Get Connections
+    /// </summary>
+    /// <param name="fromId">Filter for party</param>
+    /// <param name="viaId">via party</param>
+    /// <param name="toId">to party</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
+    Task<IEnumerable<BasicConnectionDto>> GetConnectionsToOthers(Guid? fromId = null, Guid? viaId = null, Guid? toId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Get Connections given from party
     /// </summary>
     /// <param name="partyId">Filter for party</param>

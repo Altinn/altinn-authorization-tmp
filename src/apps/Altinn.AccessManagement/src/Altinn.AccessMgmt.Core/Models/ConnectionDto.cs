@@ -26,6 +26,37 @@ public class ConnectionDto
 /// <summary>
 /// Connection from one party to another
 /// </summary>
+public class BasicConnectionDto
+{
+    /// <summary>
+    /// Party
+    /// </summary>
+    public Entity From { get; set; } = new();
+
+    /// <summary>
+    /// Party
+    /// </summary>
+    public Entity To { get; set; } = new();
+
+    /// <summary>
+    /// Party
+    /// </summary>
+    public Entity Via { get; set; } = new();
+
+    /// <summary>
+    /// Party
+    /// </summary>
+    public Role Role { get; set; } = new();
+
+    /// <summary>
+    /// Party
+    /// </summary>
+    public Role ViaRole { get; set; } = new();
+}
+
+/// <summary>
+/// Connection from one party to another
+/// </summary>
 public class ConnectionPackageDto
 {
     /// <summary>
