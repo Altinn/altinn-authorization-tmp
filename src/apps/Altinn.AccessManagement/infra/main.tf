@@ -274,43 +274,43 @@ module "appsettings" {
       name        = "AccessMgmt.PackageService.EFCore"
       description = "Calls the new EF Core PackageService in Core project when true."
       label       = "${lower(var.environment)}-access-management"
-      value       = true
+      value       = false
     },
     {
       name        = "AccessMgmt.AssignmentService.EFCore"
       description = "Calls the new EF Core AssignmentService in Core project when true."
       label       = "${lower(var.environment)}-access-management"
-      value       = true
+      value       = false
     },
     {
       name        = "AccessMgmt.EntityService.EFCore"
       description = "Calls the new EF Core EntityService in Core project when true."
       label       = "${lower(var.environment)}-access-management"
-      value       = true
+      value       = false
     },
     {
       name        = "AccessMgmt.RoleService.EFCore"
       description = "Calls the new EF Core RoleService in Core project when true."
       label       = "${lower(var.environment)}-access-management"
-      value       = true
+      value       = false
     },
     {
       name        = "AccessMgmt.ConnectionService.EFCore"
       description = "Calls the new EF Core ConnectionService in Core project when true."
       label       = "${lower(var.environment)}-access-management"
-      value       = true
+      value       = false
     },
     {
       name        = "AccessMgmt.PartyService.EFCore"
       description = "Calls the new EF Core PartyService in Core project when true."
       label       = "${lower(var.environment)}-access-management"
-      value       = true
+      value       = false
     },
     {
       name        = "AccessMgmt.DelegationService.EFCore"
       description = "Calls the new EF Core DelegationService in Core project when true."
       label       = "${lower(var.environment)}-access-management"
-      value       = true
+      value       = false
     },
   ]
   providers = {
