@@ -14,8 +14,8 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
     [ApiController]
     public class RolesController : ControllerBase
     {
-        private readonly IRoleService coreRoleService;
-        private readonly IRoleService persistenceRoleService;
+        private readonly Altinn.AccessMgmt.Core.Services.Contracts.IRoleService coreRoleService;
+        private readonly Altinn.AccessMgmt.Persistence.Services.Contracts.IRoleService persistenceRoleService;
         private readonly IFeatureManager featureManager;
 
         /// <summary>
@@ -23,9 +23,9 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         /// </summary>
         /// <param name="roleService">Service for håndtering av roller.</param>
         public RolesController(
-            IRoleService coreRoleService,
-            IRoleService persistenceRoleService,
-            IFeatureManager featureManager)
+                Altinn.AccessMgmt.Core.Services.Contracts.IRoleService coreRoleService,
+                Altinn.AccessMgmt.Persistence.Services.Contracts.IRoleService persistenceRoleService,
+                IFeatureManager featureManager)
         {
             this.coreRoleService = coreRoleService;
             this.persistenceRoleService = persistenceRoleService;
