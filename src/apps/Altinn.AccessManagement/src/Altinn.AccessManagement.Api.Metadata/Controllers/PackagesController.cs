@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
+﻿using Altinn.AccessMgmt.Core;
+using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
 using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
@@ -21,7 +22,7 @@ public class PackagesController : ControllerBase
     /// Initialiserer en ny instans av <see cref="PackagesController"/>.
     /// </summary>
     /// <param name="packageService">Service for håndtering av access packages.</param>
-    public PackagesController(IPackageService packageService)
+    public PackagesController(IPackageService packageService, IFeatureManager featureManager)
     {
         this.packageService = packageService;
         this.featureManager = featureManager;
