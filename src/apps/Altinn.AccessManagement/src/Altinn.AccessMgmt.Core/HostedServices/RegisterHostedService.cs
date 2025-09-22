@@ -33,6 +33,7 @@ public partial class RegisterHostedService(
     private readonly IRoleSyncService roleSyncService = roleSyncService;
     private Timer _timer = null;
     private readonly CancellationTokenSource _stop = new();
+    private int _isRunning = 0;
 
     /// <inheritdoc/>
     public Task StartAsync(CancellationToken cancellationToken)
@@ -50,9 +51,14 @@ public partial class RegisterHostedService(
     /// <param name="state">Cancellation token for stopping execution.</param>
     private async Task SyncRegisterDispatcher(object state)
     {
-        var cancellationToken = (CancellationToken)state;
+        if (Interlocked.Exchange(ref _isRunning, 1) == 1)
+        {
+            return;
+        }
+
         try
         {
+            var cancellationToken = (CancellationToken)state;
             if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesResourceRegistrySync, cancellationToken))
             {
                 await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_resource_registry_sync", cancellationToken);
@@ -77,6 +83,10 @@ public partial class RegisterHostedService(
         catch (Exception ex)
         {
             Log.SyncError(_logger, ex);
+        }
+        finally
+        {
+            _isRunning = 0;
         }
     }
 

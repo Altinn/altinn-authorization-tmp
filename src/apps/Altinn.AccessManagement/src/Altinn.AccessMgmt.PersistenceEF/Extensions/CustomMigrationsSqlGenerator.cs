@@ -24,7 +24,6 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
             et.GetTableName() == operation.Name &&
             et.GetSchema() == operation.Schema);
 
-
         if (entityType?.FindAnnotation("EnableAudit")?.Value as bool? == true)
         {
             var columns = GetDataColumnNames(operation, model);

@@ -11,7 +11,8 @@ public class EntityConfiguration : IEntityTypeConfiguration<Entity>
 {
     public void Configure(EntityTypeBuilder<Entity> builder)
     {
-        builder.ToTable("entity", "dbo");
+        builder.ToDefaultTable();
+        builder.EnableAudit();
 
         builder.HasKey(p => p.Id);
 
