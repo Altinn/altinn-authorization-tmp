@@ -180,12 +180,19 @@ public class PackagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<Area>> GetArea(Guid id)
     {
-        var res = await packageService.GetArea(id);
+        Area res;
+        if (await featureManager.IsEnabledAsync("AccessMgmt.PackageService.EFCore"))
+        {
+            res = await corePackageService.GetArea(id);
+        }
+        else
+        {
+            res = await persistencePackageService.GetArea(id);
+        }
         if (res == null)
         {
             return NotFound();
         }
-        
         return Ok(res);
     }
 
