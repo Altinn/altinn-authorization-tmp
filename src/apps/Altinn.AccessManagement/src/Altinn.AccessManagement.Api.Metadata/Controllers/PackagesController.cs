@@ -116,12 +116,19 @@ public class PackagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<AreaGroup>> GetGroup(Guid id)
     {
-        var res = await packageService.GetAreaGroup(id);
+        ExtAreaGroup res;
+        if (await featureManager.IsEnabledAsync("AccessMgmt.PackageService.EFCore"))
+        {
+            res = await corePackageService.GetAreaGroup(id);
+        }
+        else
+        {
+            res = await persistencePackageService.GetAreaGroup(id);
+        }
         if (res == null)
         {
             return NotFound();
         }
-
         return Ok(res);
     }
 
