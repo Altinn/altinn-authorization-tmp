@@ -136,12 +136,19 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         [HttpGet]
         public async Task<ActionResult<List<RolePackageDto>>> GetPackagesForRole(Guid id)
         {
-            var res = await roleService.GetPackagesForRole(id);
+            IEnumerable<RolePackageDto> res;
+            if (await featureManager.IsEnabledAsync("AccessMgmt.RoleService.EFCore"))
+            {
+                res = await coreRoleService.GetPackagesForRole(id);
+            }
+            else
+            {
+                res = await persistenceRoleService.GetPackagesForRole(id);
+            }
             if (res == null)
             {
                 return NotFound();
             }
-
             return Ok(res);
         }
     }
