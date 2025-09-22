@@ -40,12 +40,19 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         [HttpGet]
         public async Task<ActionResult<List<RoleDto>>> GetAll()
         {
-            var res = await roleService.GetAll();
+            IEnumerable<RoleDto> res;
+            if (await featureManager.IsEnabledAsync("AccessMgmt.RoleService.EFCore"))
+            {
+                res = await coreRoleService.GetAll();
+            }
+            else
+            {
+                res = await persistenceRoleService.GetAll();
+            }
             if (res == null)
             {
                 return NotFound();
             }
-
             return Ok(res);
         }
 
