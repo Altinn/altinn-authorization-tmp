@@ -3,6 +3,7 @@ using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.Api.Metadata.Controllers;
 
@@ -14,6 +15,7 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers;
 public class PackagesController : ControllerBase
 {
     private readonly IPackageService packageService;
+    private readonly IFeatureManager featureManager;
 
     /// <summary>
     /// Initialiserer en ny instans av <see cref="PackagesController"/>.
@@ -22,6 +24,7 @@ public class PackagesController : ControllerBase
     public PackagesController(IPackageService packageService)
     {
         this.packageService = packageService;
+        this.featureManager = featureManager;
     }
 
     /// <summary>
