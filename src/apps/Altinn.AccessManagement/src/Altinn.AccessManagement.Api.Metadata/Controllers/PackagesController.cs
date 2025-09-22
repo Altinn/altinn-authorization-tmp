@@ -91,12 +91,19 @@ public class PackagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<AreaGroup>> GetGroups()
     {
-        var res = await packageService.GetAreaGroups();
+        IEnumerable<ExtAreaGroup> res;
+        if (await featureManager.IsEnabledAsync("AccessMgmt.PackageService.EFCore"))
+        {
+            res = await corePackageService.GetAreaGroups();
+        }
+        else
+        {
+            res = await persistencePackageService.GetAreaGroups();
+        }
         if (res == null || !res.Any())
         {
             return NoContent();
         }
-
         return Ok(res);
     }
 
