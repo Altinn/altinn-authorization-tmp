@@ -66,6 +66,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Altinn.Authorization.ABAC", "Altinn.Authorization.ABAC", "{E500EC60-7D61-68B6-6AA3-17C768ADB617}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.ABAC", "..\..\pkgs\Altinn.Authorization.ABAC\src\Altinn.Authorization.ABAC\Altinn.Authorization.ABAC.csproj", "{7D85E08F-02C0-4479-A093-2DB52CD39C5A}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccessMgmt.ManualTests", "AccessMgmt.ManualTests\AccessMgmt.ManualTests.csproj", "{03FE0D0C-070C-41E4-8F06-F9A94BAC2C9C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccessMgmt.WebDemo", "AccessMgmt.WebDemo\AccessMgmt.WebDemo.csproj", "{BD575E16-D3FC-45B3-B591-2D45583A203C}"

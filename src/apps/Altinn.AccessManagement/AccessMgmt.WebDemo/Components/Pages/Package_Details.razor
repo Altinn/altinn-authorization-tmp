@@ -1,0 +1,47 @@
+﻿@page "/package/{id}"
+@using Altinn.AccessMgmt.Core.Models
+@using Altinn.AccessMgmt.Core.Services
+@using Altinn.AccessMgmt.Core.Services.Contracts
+@using Altinn.AccessMgmt.PersistenceEF.Contexts
+@using Altinn.AccessMgmt.PersistenceEF.Models
+@using Microsoft.EntityFrameworkCore
+@inject IRequestService requestService
+@inject IEntityService entityService
+@inject IAssignmentService assignmentService
+@inject AppDbContext dbContext;
+
+@if(Package != null)
+{
+    <h2>@Package.Name</h2>
+    <p>@Package.Description</p>
+
+    <h3>Resources</h3>
+    @if(Resources != null && Resources.Any())
+    {
+        <ul>
+            @foreach(var resource in Resources)
+            {
+                <li>
+                    <a href="/resource/@resource.Id">@resource.Name</a>
+                </li>
+            }
+        </ul>
+    }
+}
+
+@code {
+
+    [Parameter] public string id { get; set; }
+
+    public Package Package { get; set; }
+    public List<Resource> Resources { get; set; }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        Package = await dbContext.Packages.AsNoTracking().FirstAsync(t => t.Id == Guid.Parse(id));
+        Resources = await dbContext.PackageResources.AsNoTracking().Include(t => t.Resource).Where(t => t.PackageId == Package.Id).Select(t => t.Resource).ToListAsync();
+
+        await base.OnParametersSetAsync();
+    }
+
+}

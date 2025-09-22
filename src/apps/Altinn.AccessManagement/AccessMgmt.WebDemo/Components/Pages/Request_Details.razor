@@ -65,7 +65,9 @@
         <dl>
             @foreach(var package in Packages)
             {
-                <dt>@package.Package.Name</dt>
+                <dt>
+                    <a href="/package/@package.Package.Id">@package.Package.Name</a>
+                </dt>
                 <dd>@package.Status.Name</dd>
             }
         </dl>
@@ -78,7 +80,9 @@
         <dl>
             @foreach (var resource in Resources)
             {
-                <dt>@resource.Resource.Name</dt>
+                <dt>
+                    <a href="/resource/@resource.Resource.Id">@resource.Resource.Name</a>
+                </dt>
                 <dd>@resource.Status.Name</dd>
             }
         </dl>

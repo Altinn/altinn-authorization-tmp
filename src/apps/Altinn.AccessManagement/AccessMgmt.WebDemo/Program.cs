@@ -1,8 +1,10 @@
 using AccessMgmt.WebDemo.Components;
-using Altinn.AccessMgmt.Core.Data;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Data;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +22,7 @@ builder.Services.AddScoped<StaticDataIngest>();
 builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<IEntityService, EntityService>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
+builder.Services.AddScoped<IResourceService, ResourceService>();
 
 var connString = "Database=accessmgmt_ef_05;Host=localhost;Username=platform_authorization_admin;Password=Password;Include Error Detail=true";
 

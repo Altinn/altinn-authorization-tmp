@@ -1,7 +1,7 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 
-namespace Altinn.AccessMgmt.Core.Data;
+namespace Altinn.AccessMgmt.PersistenceEF.Data;
 
 public partial class StaticDataIngest
 {

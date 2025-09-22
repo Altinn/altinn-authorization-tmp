@@ -1,0 +1,44 @@
+﻿@page "/resource/{id}"
+@using Altinn.AccessMgmt.Core.Models
+@using Altinn.AccessMgmt.Core.Services
+@using Altinn.AccessMgmt.Core.Services.Contracts
+@using Altinn.AccessMgmt.PersistenceEF.Contexts
+@using Altinn.AccessMgmt.PersistenceEF.Models
+@using Microsoft.EntityFrameworkCore
+@inject IRequestService requestService
+@inject IEntityService entityService
+@inject IAssignmentService assignmentService
+@inject IResourceService resourceService
+@inject AppDbContext dbContext;
+
+@if (Resource != null)
+{
+    <h2>@Resource.Name</h2>
+    <h4>@Resource.Description</h4>
+
+@*     @if (Resource.Elements != null && Resource.Elements.Any())
+    {
+        <h3>Elements</h3>
+        <ul>
+            @foreach (var element in Resource.Elements)
+            {
+                <li>@element.Name</li>
+            }
+        </ul>
+    } *@
+}
+
+@code {
+
+    [Parameter] public string id { get; set; }
+
+    public Resource Resource { get; set; }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        Resource = await resourceService.GetResource(Guid.Parse(id));
+
+        await base.OnParametersSetAsync();
+    }
+
+}

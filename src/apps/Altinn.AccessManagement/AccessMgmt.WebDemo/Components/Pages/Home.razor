@@ -36,18 +36,14 @@ Welcome to your new app.
 
     public List<Entity> Entities { get; set; }
 
-    protected override async Task OnParametersSetAsync()
+    protected async override Task OnInitializedAsync()
     {
-
-        // if (Entities == null)
-        // {
-        //     await CreateDemoData();
-        // }
-        // if(Entities.Where(t=>t.Name == "Baker Fransen").Count() == 0)
-        // {
-        //     await CreateDemoData();
-        //     Entities = await dbContext.Entities.Include(t => t.Type).ToListAsync();
-        // }
+        await LoadData();
+        if(Entities.Where(t=>t.Name == "Baker Fransen").Count() == 0)
+        {
+            await CreateDemoData();
+            Entities = await dbContext.Entities.Include(t => t.Type).ToListAsync();
+        }
     }
 
     private async Task LoadData()
