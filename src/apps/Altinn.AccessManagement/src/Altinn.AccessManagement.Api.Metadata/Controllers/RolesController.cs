@@ -88,12 +88,19 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         [HttpGet]
         public async Task<ActionResult<RoleDto>> GetKeyPairValue([FromQuery] string key, [FromQuery] string value)
         {
-            var res = await roleService.GetByKeyValue(key, value);
+            RoleDto res;
+            if (await featureManager.IsEnabledAsync("AccessMgmt.RoleService.EFCore"))
+            {
+                res = await coreRoleService.GetByKeyValue(key, value);
+            }
+            else
+            {
+                res = await persistenceRoleService.GetByKeyValue(key, value);
+            }
             if (res == null)
             {
                 return NotFound();
             }
-
             return Ok(res);
         }
 
