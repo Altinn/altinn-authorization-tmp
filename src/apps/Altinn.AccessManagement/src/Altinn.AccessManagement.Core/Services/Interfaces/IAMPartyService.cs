@@ -32,6 +32,6 @@ namespace Altinn.AccessManagement.Core.Services.Interfaces
         /// <summary>
         /// Get by user id
         /// </summary>
-        public Task<MinimalParty> GetByUserId(int partyId, CancellationToken cancellationToken = default);
+        public Task<MinimalParty> GetByUserId(int userId, CancellationToken cancellationToken = default);
     }
 }

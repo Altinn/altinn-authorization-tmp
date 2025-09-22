@@ -250,7 +250,7 @@ namespace Altinn.AccessManagement.Core.Services
         }
 
         /// <inheritdoc/>
-        public async Task<DelegationActionResult> RevokeMaskinportenSchemaDelegation(int authenticatedUserId, DelegationLookup delegation, CancellationToken cancellationToken = default)
+        public async Task<DelegationActionResult> RevokeMaskinportenSchemaDelegation(int authenticatedUserId, Guid authenticatedUserPartyUuid, DelegationLookup delegation, CancellationToken cancellationToken = default)
         {
             (DelegationActionResult result, ServiceResource resource, Party fromParty, Party toParty) = await ValidateMaskinportenDelegationModel(DelegationActionType.Revoke, delegation);
             if (!result.IsValid)
@@ -258,7 +258,7 @@ namespace Altinn.AccessManagement.Core.Services
                 return result;
             }
 
-            List<RequestToDelete> policiesToDelete = DelegationHelper.GetRequestToDeleteResourceRegistryService(authenticatedUserId, resource.Identifier, fromParty.PartyId, toParty.PartyId);
+            List<RequestToDelete> policiesToDelete = DelegationHelper.GetRequestToDeleteResourceRegistryService(authenticatedUserId, authenticatedUserPartyUuid, resource.Identifier, fromParty, toParty);
 
             await _pap.TryDeleteDelegationPolicies(policiesToDelete, cancellationToken);
             return result;

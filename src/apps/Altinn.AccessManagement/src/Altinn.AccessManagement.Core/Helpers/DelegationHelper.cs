@@ -801,6 +801,13 @@ namespace Altinn.AccessManagement.Core.Helpers
                 return true;
             }
 
+            if (org == null && app == null && person == null && organization == null && enterpriseUser == null && systemUser == null && partyuuid != null && user != null && counter == 2)
+            {
+                id = partyuuid;
+                type = UuidType.Party;
+                return true;
+            }
+
             return false;
         }
 
@@ -853,17 +860,22 @@ namespace Altinn.AccessManagement.Core.Helpers
         /// <summary>
         /// Builds a RequestToDelete request model for revoking all delegated rules for a resource registry service
         /// </summary>
-        public static List<RequestToDelete> GetRequestToDeleteResourceRegistryService(int authenticatedUserId, string resourceRegistryId, int fromPartyId, int toPartyId)
+        public static List<RequestToDelete> GetRequestToDeleteResourceRegistryService(int authenticatedUserId, Guid authenticatedUserPartyUuid, string resourceRegistryId, Party fromParty, Party toParty)
         {
+            List<AttributeMatch> coveredBy = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = toParty.PartyId.ToString() }, new AttributeMatch { Id = toParty.Person != null ? AltinnXacmlConstants.MatchAttributeIdentifiers.PersonUuid : AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid, Value = toParty.PartyUuid.ToString() }];
+
             return new List<RequestToDelete>
             {
                 new RequestToDelete
                 {
                     DeletedByUserId = authenticatedUserId,
+                    PerformedBy = [new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute, Value = authenticatedUserPartyUuid.ToString() }],
                     PolicyMatch = new PolicyMatch
                     {
-                        OfferedByPartyId = fromPartyId,
-                        CoveredBy = new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, Value = toPartyId.ToString() }.SingleToList(),
+                        OfferedByPartyId = fromParty.PartyId,
+                        FromUuid = fromParty.PartyUuid.Value,
+                        FromUuidType = fromParty.Person != null ? UuidType.Person : UuidType.Organization,
+                        CoveredBy = coveredBy,
                         Resource = new AttributeMatch { Id = AltinnXacmlConstants.MatchAttributeIdentifiers.ResourceRegistryAttribute, Value = resourceRegistryId }.SingleToList()
                     }
                 }

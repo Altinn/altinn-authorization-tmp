@@ -272,13 +272,14 @@ namespace Altinn.AccessManagement.Controllers
         public async Task<ActionResult> RevokeOfferedMaskinportenScopeDelegation([FromRoute] string party, [FromBody] RevokeOfferedDelegationExternal delegation, CancellationToken cancellationToken)
         {
             int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
+            Guid authenticatedUserPartyUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
 
             try
             {
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(party, HttpContext);
                 DelegationLookup internalDelegation = _mapper.Map<DelegationLookup>(delegation);
                 internalDelegation.From = reportee.SingleToList();
-                DelegationActionResult response = await _delegation.RevokeMaskinportenSchemaDelegation(authenticatedUserId, internalDelegation, cancellationToken);
+                DelegationActionResult response = await _delegation.RevokeMaskinportenSchemaDelegation(authenticatedUserId, authenticatedUserPartyUuid, internalDelegation, cancellationToken);
 
                 if (!response.IsValid)
                 {
@@ -356,13 +357,14 @@ namespace Altinn.AccessManagement.Controllers
         public async Task<ActionResult> RevokeReceivedMaskinportenScopeDelegation([FromRoute] string party, [FromBody] RevokeReceivedDelegationExternal delegation, CancellationToken cancellationToken)
         {
             int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
+            Guid authenticatedUserPartyUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
 
             try
             {
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(party, HttpContext);
                 DelegationLookup internalDelegation = _mapper.Map<DelegationLookup>(delegation);
                 internalDelegation.To = reportee.SingleToList();
-                DelegationActionResult response = await _delegation.RevokeMaskinportenSchemaDelegation(authenticatedUserId, internalDelegation, cancellationToken);
+                DelegationActionResult response = await _delegation.RevokeMaskinportenSchemaDelegation(authenticatedUserId, authenticatedUserPartyUuid, internalDelegation, cancellationToken);
 
                 if (!response.IsValid)
                 {
