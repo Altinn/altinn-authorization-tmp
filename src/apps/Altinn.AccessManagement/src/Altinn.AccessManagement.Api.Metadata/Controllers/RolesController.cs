@@ -23,9 +23,9 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         /// </summary>
         /// <param name="roleService">Service for håndtering av roller.</param>
         public RolesController(
-                Altinn.AccessMgmt.Core.Services.Contracts.IRoleService coreRoleService,
-                Altinn.AccessMgmt.Persistence.Services.Contracts.IRoleService persistenceRoleService,
-                IFeatureManager featureManager)
+            Altinn.AccessMgmt.Core.Services.Contracts.IRoleService coreRoleService,
+            Altinn.AccessMgmt.Persistence.Services.Contracts.IRoleService persistenceRoleService,
+            IFeatureManager featureManager)
         {
             this.coreRoleService = coreRoleService;
             this.persistenceRoleService = persistenceRoleService;
