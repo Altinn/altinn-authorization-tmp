@@ -270,12 +270,19 @@ public class PackagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PackageDto>> GetPackageByUrn(string urnValue)
     {
-        var res = await packageService.GetPackageByUrnValue(urnValue);
+        PackageDto res;
+        if (await featureManager.IsEnabledAsync("AccessMgmt.PackageService.EFCore"))
+        {
+            res = await corePackageService.GetPackageByUrnValue(urnValue);
+        }
+        else
+        {
+            res = await persistencePackageService.GetPackageByUrnValue(urnValue);
+        }
         if (res == null)
         {
             return NotFound();
         }
-
         return Ok(res);
     }
 
