@@ -1,7 +1,9 @@
-﻿using Altinn.AccessMgmt.Persistence.Services.Contracts;
+﻿using Altinn.AccessMgmt.Core;
+using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.Api.Metadata.Controllers
 {
@@ -12,15 +14,22 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
     [ApiController]
     public class RolesController : ControllerBase
     {
-        private readonly IRoleService roleService;
+        private readonly IRoleService coreRoleService;
+        private readonly IRoleService persistenceRoleService;
+        private readonly IFeatureManager featureManager;
 
         /// <summary>
         /// Initialiserer en ny instans av <see cref="RolesController"/>.
         /// </summary>
         /// <param name="roleService">Service for håndtering av roller.</param>
-        public RolesController(IRoleService roleService)
+        public RolesController(
+            IRoleService coreRoleService,
+            IRoleService persistenceRoleService,
+            IFeatureManager featureManager)
         {
-            this.roleService = roleService;
+            this.coreRoleService = coreRoleService;
+            this.persistenceRoleService = persistenceRoleService;
+            this.featureManager = featureManager;
         }
 
         /// <summary>
