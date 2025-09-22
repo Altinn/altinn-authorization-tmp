@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.42.0"
+      version = "4.44.0"
     }
     static = {
       source  = "tiwood/static"
@@ -197,6 +197,7 @@ module "appsettings" {
         "Altinn:register:PartyImport:A2:Enable"             = { value = var.features.a2_party_import.parties }
         "Altinn:register:PartyImport:A2:PartyUserId:Enable" = { value = var.features.a2_party_import.user_ids }
         "Altinn:register:PartyImport:A2:Profiles:Enable"    = { value = var.features.a2_party_import.profiles }
+        "Altinn:register:PartyImport:SystemUsers:Enable"    = { value = var.features.party_import.system_users }
 
         // config
         "Altinn:register:PartyImport:A2:MaxDbSizeInGib" = { value = var.config.a2_party_import.max_db_size_in_gib }

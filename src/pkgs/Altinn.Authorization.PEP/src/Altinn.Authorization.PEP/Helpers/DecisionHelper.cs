@@ -98,7 +98,7 @@ namespace Altinn.Common.PEP.Helpers
         /// <param name="user">Claims principal user.</param>
         /// <param name="actionType">Policy action type i.e. read, write, delete, instantiate.</param>
         /// <returns>The decision request.</returns>
-        public static XacmlJsonRequestRoot CreateDecisionRequestForResourceRegistryResource(string resource, Guid resourcePartyUuid, ClaimsPrincipal user, string actionType)
+        public static XacmlJsonRequestRoot CreateDecisionRequestForResourceRegistryResource(string resource, Guid? resourcePartyUuid, ClaimsPrincipal user, string actionType)
         {
             XacmlJsonRequest request = new()
             {
@@ -533,7 +533,7 @@ namespace Altinn.Common.PEP.Helpers
                 if (attributeMinLvAuth != null)
                 {
                     string minAuthenticationLevel = attributeMinLvAuth.Value;
-                    string usersAuthenticationLevel = user.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:authlevel")).Value;
+                    string usersAuthenticationLevel = user.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:authlevel"))?.Value;
 
                     // Checks that the user meets the minimum authentication level
                     if (Convert.ToInt32(usersAuthenticationLevel) < Convert.ToInt32(minAuthenticationLevel))
@@ -582,7 +582,7 @@ namespace Altinn.Common.PEP.Helpers
                 if (attributeMinLvAuth != null)
                 {
                     string minAuthenticationLevel = attributeMinLvAuth.Value;
-                    string usersAuthenticationLevel = user.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:authlevel")).Value;
+                    string usersAuthenticationLevel = user.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:authlevel"))?.Value;
 
                     // Checks that the user meets the minimum authentication level
                     if (Convert.ToInt32(usersAuthenticationLevel) < Convert.ToInt32(minAuthenticationLevel))

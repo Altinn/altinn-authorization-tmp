@@ -6,6 +6,12 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  packages: write
+  pull-requests: write
+  id-token: write
+
 jobs:
   find-verticals:
     uses: ./.github/workflows/tpl-find-verticals.yml
