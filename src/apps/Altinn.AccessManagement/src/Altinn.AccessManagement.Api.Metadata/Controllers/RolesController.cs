@@ -1,4 +1,4 @@
-﻿using Altinn.AccessMgmt.Core;
+﻿using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;

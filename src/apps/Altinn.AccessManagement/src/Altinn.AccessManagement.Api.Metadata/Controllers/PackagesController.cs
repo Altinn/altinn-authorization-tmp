@@ -1,4 +1,4 @@
-﻿using Altinn.AccessMgmt.Core;
+﻿using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Utilities.Search;
 using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
@@ -15,8 +15,8 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers;
 [ApiController]
 public class PackagesController : ControllerBase
 {
-    private readonly IPackageService corePackageService;
-    private readonly IPackageService persistencePackageService;
+    private readonly Altinn.AccessMgmt.Core.Services.Contracts.IPackageService corePackageService;
+    private readonly Altinn.AccessMgmt.Persistence.Services.Contracts.IPackageService persistencePackageService;
     private readonly IFeatureManager featureManager;
 
     /// <summary>
@@ -24,8 +24,8 @@ public class PackagesController : ControllerBase
     /// </summary>
     /// <param name="packageService">Service for håndtering av access packages.</param>
     public PackagesController(
-        IPackageService corePackageService,
-        IPackageService persistencePackageService,
+        Altinn.AccessMgmt.Core.Services.Contracts.IPackageService corePackageService,
+        Altinn.AccessMgmt.Persistence.Services.Contracts.IPackageService persistencePackageService,
         IFeatureManager featureManager)
     {
         this.corePackageService = corePackageService;
