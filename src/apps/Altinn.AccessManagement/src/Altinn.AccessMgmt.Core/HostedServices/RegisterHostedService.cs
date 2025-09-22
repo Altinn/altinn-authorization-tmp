@@ -75,7 +75,7 @@ public partial class RegisterHostedService(
                 await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_register_sync", cancellationToken);
 
                 await SyncRegisterParty(lease, cancellationToken);
-                // await SyncRegisterRoles(lease, cancellationToken);
+                await SyncRegisterRoles(lease, cancellationToken);
             }
 
             _logger.LogInformation("Register sync completed!");

@@ -86,7 +86,12 @@ public class IngestService(AppDbContext dbContext) : IIngestService
         */
 
         string mergeUpdateStatement = string.Join(", ", ingestColumns.Where(t => !t.IsPK && !matchColumns.Any(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase))).Select(t => $"{t.Name} = source.{t.Name}"));
-        mergeUpdateStatement += $", audit_changedby = '{auditValues.ChangedBy}', audit_changedbysystem = '{auditValues.ChangedBySystem}', audit_changeoperation = '{auditValues.OperationId}'";
+        if (!string.IsNullOrEmpty(mergeUpdateStatement))
+        {
+            mergeUpdateStatement += ", ";
+        }
+
+        mergeUpdateStatement += $"audit_changedby = '{auditValues.ChangedBy}', audit_changedbysystem = '{auditValues.ChangedBySystem}', audit_changeoperation = '{auditValues.OperationId}'";
 
         var insertColumns = string.Join(", ", ingestColumns.Select(t => $"{t.Name}"));
         var insertValues = string.Join(", ", ingestColumns.Select(t => $"source.{t.Name}"));

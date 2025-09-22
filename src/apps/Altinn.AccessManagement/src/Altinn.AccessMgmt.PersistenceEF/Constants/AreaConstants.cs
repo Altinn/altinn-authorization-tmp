@@ -35,6 +35,8 @@ public static class AreaConstants
     public static IReadOnlyCollection<TranslationEntry> AllTranslations()
         => ConstantLookup.AllTranslations<Area>(typeof(AreaConstants));
 
+    private static Uri AltinnCDNPackageIcons { get; } = new Uri("https://altinncdn.no/authorization/accesspackageicons");
+
     /// <summary>
     /// Represents the Tax, Fees, Accounting and Customs area.
     /// </summary>
@@ -52,7 +54,7 @@ public static class AreaConstants
         {
             Name = "Skatt, avgift, regnskap og toll",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til skatt, avgift, regnskap og toll.",
-            IconUrl = "Aksel_Money_SackKroner.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Money_SackKroner.svg").ToString(),
             GroupId = AreaGroupConstants.General,
             Urn = "accesspackage:area:skatt_avgift_regnskap_og_toll"
         },
@@ -81,7 +83,7 @@ public static class AreaConstants
         {
             Name = "Personale",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til personale.",
-            IconUrl = "Aksel_People_PersonGroup.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_People_PersonGroup.svg").ToString(),
             GroupId = AreaGroupConstants.General,
             Urn = "accesspackage:area:personale"
         },
@@ -110,7 +112,7 @@ public static class AreaConstants
         {
             Name = "Miljø, ulykke og sikkerhet",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til miljø, ulykke og sikkerhet.",
-            IconUrl = "Aksel_People_HandHeart.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_People_HandHeart.svg").ToString(),
             GroupId = AreaGroupConstants.General,
             Urn = "accesspackage:area:miljo_ulykke_og_sikkerhet"
         },
@@ -139,7 +141,7 @@ public static class AreaConstants
         {
             Name = "Post og arkiv",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til post og arkiv.",
-            IconUrl = "Aksel_Interface_EnvelopeClosed.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Interface_EnvelopeClosed.svg").ToString(),
             GroupId = AreaGroupConstants.General,
             Urn = "accesspackage:area:post_og_arkiv"
         },
@@ -168,7 +170,7 @@ public static class AreaConstants
         {
             Name = "Forhold ved virksomheten",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til forhold ved virksomheten.",
-            IconUrl = "Aksel_Workplace_Buildings3.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Workplace_Buildings3.svg").ToString(),
             GroupId = AreaGroupConstants.General,
             Urn = "accesspackage:area:forhold_ved_virksomheten"
         },
@@ -197,7 +199,7 @@ public static class AreaConstants
         {
             Name = "Integrasjoner",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til integrasjoner.",
-            IconUrl = "Aksel_Interface_RotateLeft.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Interface_RotateLeft.svg").ToString(),
             GroupId = AreaGroupConstants.General,
             Urn = "accesspackage:area:integrasjoner"
         },
@@ -226,7 +228,7 @@ public static class AreaConstants
         {
             Name = "Administrere tilganger",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til administrere tilganger.",
-            IconUrl = "Altinn_Administrere-tilganger_PersonLock.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Altinn_Administrere-tilganger_PersonLock.svg").ToString(),
             GroupId = AreaGroupConstants.General,
             Urn = "accesspackage:area:administrere_tilganger"
         },
@@ -255,7 +257,7 @@ public static class AreaConstants
         {
             Name = "Jordbruk, skogbruk, jakt, fiske og akvakultur",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til jordbruk, skogbruk, jakt, fiske og akvakultur.",
-            IconUrl = "Aksel_Nature-and-animals-Plant.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Nature-and-animals-Plant.svg").ToString(),
             GroupId = AreaGroupConstants.Industry,
             Urn = "accesspackage:area:jordbruk_skogbruk_jakt_fiske_og_akvakultur"
         },
@@ -284,7 +286,7 @@ public static class AreaConstants
         {
             Name = "Bygg, anlegg og eiendom",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til bygg, anlegg og eiendom.",
-            IconUrl = "Altinn_Bygg-anlegg-og-eiendom_HandHouse.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Altinn_Bygg-anlegg-og-eiendom_HandHouse.svg").ToString(),
             GroupId = AreaGroupConstants.Industry,
             Urn = "accesspackage:area:bygg_anlegg_og_eiendom"
         },
@@ -313,7 +315,7 @@ public static class AreaConstants
         {
             Name = "Transport og lagring",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til transport og lagring.",
-            IconUrl = "Aksel_Transportation_Truck.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Transportation_Truck.svg").ToString(),
             GroupId = AreaGroupConstants.Industry,
             Urn = "accesspackage:area:transport_og_lagring"
         },
@@ -342,7 +344,7 @@ public static class AreaConstants
         {
             Name = "Helse, pleie, omsorg og vern",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til helse, pleie, omsorg og vern.",
-            IconUrl = "Aksel_Wellness_Hospital.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_Hospital.svg").ToString(),
             GroupId = AreaGroupConstants.Industry,
             Urn = "accesspackage:area:helse_pleie_omsorg_og_vern"
         },
@@ -371,7 +373,7 @@ public static class AreaConstants
         {
             Name = "Oppvekst og utdanning",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til oppvekst og utdanning.",
-            IconUrl = "Aksel_Workplace_Buildings2.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Workplace_Buildings2.svg").ToString(),
             GroupId = AreaGroupConstants.Industry,
             Urn = "accesspackage:area:oppvekst_og_utdanning"
         },
@@ -400,7 +402,7 @@ public static class AreaConstants
         {
             Name = "Energi, vann, avløp og avfall",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til energi, vann, avløp og avfall.",
-            IconUrl = "Aksel_Workplace_TapWater.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Workplace_TapWater.svg").ToString(),
             GroupId = AreaGroupConstants.Industry,
             Urn = "accesspackage:area:energi_vann_avlop_og_avfall"
         },
@@ -429,7 +431,7 @@ public static class AreaConstants
         {
             Name = "Industrier",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til industrier.",
-            IconUrl = "Altinn_Industrier_Factory.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Altinn_Industrier_Factory.svg").ToString(),
             GroupId = AreaGroupConstants.Industry,
             Urn = "accesspackage:area:industrier"
         },
@@ -458,7 +460,7 @@ public static class AreaConstants
         {
             Name = "Kultur og frivillighet",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til kultur og frivillighet.",
-            IconUrl = "Aksel_Wellness_HeadHeart.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_HeadHeart.svg").ToString(),
             GroupId = AreaGroupConstants.Industry,
             Urn = "accesspackage:area:kultur_og_frivillighet"
         },
@@ -487,7 +489,7 @@ public static class AreaConstants
         {
             Name = "Handel, overnatting og servering",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til handel, overnatting og servering.",
-            IconUrl = "Aksel_Wellness_TrayFood.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Wellness_TrayFood.svg").ToString(),
             GroupId = AreaGroupConstants.Industry,
             Urn = "accesspackage:area:handel_overnatting_og_servering"
         },
@@ -516,7 +518,7 @@ public static class AreaConstants
         {
             Name = "Andre tjenesteytende næringer",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til andre tjenesteytende næringer.",
-            IconUrl = "Aksel_Workplace_Reception.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Workplace_Reception.svg").ToString(),
             GroupId = AreaGroupConstants.Industry,
             Urn = "accesspackage:area:andre_tjenesteytende_naeringer"
         },
@@ -545,7 +547,7 @@ public static class AreaConstants
         {
             Name = "Fullmakter for regnskapsfører",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til fullmakter for regnskapsfører.",
-            IconUrl = "Aksel_Home_Calculator.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Home_Calculator.svg").ToString(),
             GroupId = AreaGroupConstants.Special,
             Urn = "accesspackage:area:fullmakter_for_regnskapsforer"
         },
@@ -574,7 +576,7 @@ public static class AreaConstants
         {
             Name = "Fullmakter for revisor",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til fullmakter for revisor.",
-            IconUrl = "Aksel_Files-and-application_FileSearch.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Files-and-application_FileSearch.svg").ToString(),
             GroupId = AreaGroupConstants.Special,
             Urn = "accesspackage:area:fullmakter_for_revisor"
         },
@@ -603,7 +605,7 @@ public static class AreaConstants
         {
             Name = "Fullmakter for konkursbo",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til fullmakter for konkursbo.",
-            IconUrl = "Aksel_Statistics-and-math_TrendDown.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
             GroupId = AreaGroupConstants.Special,
             Urn = "accesspackage:area:fullmakter_for_konkursbo"
         },
@@ -632,7 +634,7 @@ public static class AreaConstants
         {
             Name = "Fullmakter for forretningsfører",
             Description = "Dette fullmaktsområdet omfatter tilgangspakker knyttet til fullmakter for forretningsfører.",
-            IconUrl = "Aksel_Statistics-and-math_TrendDown.svg",
+            IconUrl = new Uri(AltinnCDNPackageIcons, "Aksel_Statistics-and-math_TrendDown.svg").ToString(),
             GroupId = AreaGroupConstants.Special,
             Urn = "accesspackage:area:fullmakter_for_forretningsforer"
         },

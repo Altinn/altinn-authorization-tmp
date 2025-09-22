@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -30,7 +31,6 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
     private readonly IAltinnRegister _register;
     private readonly ILogger<RoleSyncService> _logger;
-    private readonly IIngestService _ingestService;
     private readonly IServiceProvider _serviceProvider;
 
     /// <inheritdoc />
@@ -49,9 +49,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
-        OrgType = await appDbContext.EntityTypes
-            .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Name == "Organisasjon", cancellationToken);
+        OrgType = EntityTypeConstants.Organisation;
 
         Provider = await appDbContext.Providers
             .AsNoTracking()
@@ -109,7 +107,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                         if (deleteAssignment is { })
                         {
                             appDbContext.Remove(deleteAssignment);
-                            await appDbContext.SaveChangesAsync(cancellationToken);
+                            await appDbContext.SaveChangesAsync(options,  cancellationToken);
                         }
 
                         if (item.RoleIdentifier == "hovedenhet" || item.RoleIdentifier == "ikke-naeringsdrivende-hovedenhet")
@@ -138,14 +136,14 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 try
                 {
                     _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchId.ToString());
-                    var ingested = await _ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
+                    var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
 
                     if (ingested != batchData.Count)
                      {
                         _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
                     }
 
-                    var merged = await _ingestService.MergeTempData<Assignment>(batchId, options, ["fromid", "roleid", "toid"], cancellationToken: cancellationToken);
+                    var merged = await ingestService.MergeTempData<Assignment>(batchId, options, ["fromid", "roleid", "toid"], cancellationToken: cancellationToken);
 
                     _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
                 }
@@ -172,7 +170,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 .FirstAsync(e => e.Id == childId, cancellationToken: cancellationToken);
 
             entity.ParentId = parentId;
-            await dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(options, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -189,7 +187,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 .FirstAsync(e => e.Id == childId, cancellationToken: cancellationToken);
 
             entity.ParentId = null;
-            await dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(options, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -239,7 +237,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             };
 
             dbContext.Roles.Add(role);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            await dbContext.SaveChangesAsync(options, cancellationToken);
         }
 
         Roles.Add(role.Code, role);
