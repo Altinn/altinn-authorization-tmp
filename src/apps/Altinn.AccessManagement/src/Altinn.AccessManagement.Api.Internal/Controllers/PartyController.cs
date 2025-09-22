@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using Altinn.AccessManagement.Api.Internal.Extensions;
 using Altinn.AccessManagement.Core.Constants;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
@@ -8,6 +9,7 @@ using Altinn.Authorization.Api.Contracts.Party;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.Controllers
 {
@@ -15,11 +17,18 @@ namespace Altinn.AccessManagement.Controllers
     [Route("accessmanagement/api/v1/internal/party")]
     public class PartyController : ControllerBase
     {
-        private readonly IPartyService _partyService;
+        private readonly Altinn.AccessMgmt.Core.Services.Contracts.IPartyService corePartyService;
+        private readonly Altinn.AccessMgmt.Persistence.Services.Contracts.IPartyService persistencePartyService;
+        private readonly IFeatureManager featureManager;
 
-        public PartyController(IPartyService partyService)
+        public PartyController(
+            Altinn.AccessMgmt.Core.Services.Contracts.IPartyService corePartyService,
+            Altinn.AccessMgmt.Persistence.Services.Contracts.IPartyService persistencePartyService,
+            IFeatureManager featureManager)
         {
-            _partyService = partyService;
+            this.corePartyService = corePartyService;
+            this.persistencePartyService = persistencePartyService;
+            this.featureManager = featureManager;
         }
 
         [HttpPost]
@@ -36,15 +45,44 @@ namespace Altinn.AccessManagement.Controllers
                 ChangedBySystem = AuditDefaults.InternalApiImportSystem
             };
 
-            var res = await _partyService.AddParty(party.ToCore(), options, cancellationToken);
+            Result<AddPartyResultDto> resDto = null;
+            Result<AddPartyResult> res = null;
 
-            if (res.IsProblem)
+            if (await featureManager.IsEnabledAsync("AccessMgmt.PartyService.EFCore"))
             {
-                return res.Problem.ToActionResult();
+                // EFCore implementation
+                resDto = await corePartyService.AddParty(party.ToCore(), cancellationToken);
+            }
+            else
+            {
+                // Persistence implementation
+                res = await persistencePartyService.AddParty(party.ToCore(), options, cancellationToken);
             }
 
-            var partyResultDto = res.Value.ToPartyResultDto();
-            return partyResultDto.PartyCreated ? CreatedAtAction(nameof(AddParty), new { id = partyResultDto.PartyUuid }, partyResultDto) : Ok(partyResultDto);
+            if (resDto != null)
+            {
+                if (resDto.IsProblem)
+                {
+                    return resDto.Problem.ToActionResult();
+                }
+                var partyResultDto = resDto.Value;
+                return partyResultDto.PartyCreated ? CreatedAtAction(nameof(AddParty), new { id = partyResultDto.PartyUuid }, partyResultDto) : Ok(partyResultDto);
+            }
+            else if (res != null)
+            {
+                if (res.IsProblem)
+                {
+                    return res.Problem.ToActionResult();
+                }
+                var partyResultDto = new AddPartyResultDto
+                {
+                    PartyUuid = res.Value.PartyUuid,
+                    PartyCreated = res.Value.PartyCreated
+                };
+                return partyResultDto.PartyCreated ? CreatedAtAction(nameof(AddParty), new { id = partyResultDto.PartyUuid }, partyResultDto) : Ok(partyResultDto);
+            }
+
+            return BadRequest();
         }
 
         /// <summary>
