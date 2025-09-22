@@ -4,9 +4,11 @@ using Altinn.AccessManagement.Enduser.Services;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.Authorization.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.Controllers;
 
@@ -19,7 +21,9 @@ public class PolicyInformationPointController : ControllerBase
 {
     private readonly IPolicyInformationPoint _pip;
     private readonly IMapper _mapper;
-    private readonly IRelationService _relationService;
+    private readonly IRelationService relationService;
+    private readonly IConnectionService connectionService;
+    private readonly IFeatureManager featureManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PolicyInformationPointController"/> class.
@@ -27,11 +31,20 @@ public class PolicyInformationPointController : ControllerBase
     /// <param name="pip">The policy information point</param>
     /// <param name="mapper">The mapper</param>
     /// <param name="relationService">Relation Service</param>
-    public PolicyInformationPointController(IPolicyInformationPoint pip, IMapper mapper, IRelationService relationService)
+    /// <param name="connectionService">Connection Service</param>
+    /// <param name="featureManager">featureManager</param>
+    public PolicyInformationPointController(
+        IPolicyInformationPoint pip,
+        IMapper mapper,
+        IRelationService relationService,
+        IConnectionService connectionService,
+        IFeatureManager featureManager)
     {
         _pip = pip;
         _mapper = mapper;
-        _relationService = relationService;
+        this.relationService = relationService;
+        this.connectionService = connectionService;
+        this.featureManager = featureManager;
     }
 
     /// <summary>
@@ -74,7 +87,19 @@ public class PolicyInformationPointController : ControllerBase
     {
         List<AccessPackageUrn> packages = new();
 
-        var connectionPackages = await _relationService.GetPackagePermissionsFromOthers(partyId: to, fromId: from, cancellationToken: cancellationToken);
+        IEnumerable<PackagePermission> connectionPackages;
+
+        if (await featureManager.IsEnabledAsync("AccessMgmt.ConnectionService.EFCore"))
+        {
+            // Use EFCore ConnectionService
+            var efPackages = await connectionService.GetPackagePermissionsFromOthers(partyId: to, fromId: from, cancellationToken: cancellationToken);
+            connectionPackages = efPackages.Select(p => new PackagePermission { Package = new CompactPackage { Id = p.Package.Id, Urn = p.Package.Urn, AreaId = p.Package.AreaId } });
+        }
+        else
+        {
+            // Use Persistence RelationService
+            connectionPackages = await relationService.GetPackagePermissionsFromOthers(partyId: to, fromId: from, cancellationToken: cancellationToken);
+        }
 
         if (connectionPackages != null)
         {
