@@ -69,7 +69,13 @@ public class AppDbContext : DbContext
     public DbSet<ProviderType> ProviderTypes => Set<ProviderType>();
 
     public DbSet<Resource> Resources => Set<Resource>();
-    
+
+    public DbSet<ResourceType> ResourceTypes => Set<ResourceType>();
+
+    public DbSet<ResourceElement> ResourceElements => Set<ResourceElement>();
+
+    public DbSet<ResourceElementType> ResourceElementTypes => Set<ResourceElementType>();
+
     public DbSet<Role> Roles => Set<Role>();
     
     public DbSet<RoleLookup> RoleLookups => Set<RoleLookup>();

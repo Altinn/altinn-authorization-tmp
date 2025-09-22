@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Configurations;
 
-public class ResourceConfiguration : IEntityTypeConfiguration<Resource> 
+public class ResourceElementConfiguration : IEntityTypeConfiguration<ResourceElement>
 {
-    public void Configure(EntityTypeBuilder<Resource> builder)
+    public void Configure(EntityTypeBuilder<ResourceElement> builder)
     {
         builder.ToDefaultTable();
         builder.EnableAudit();
@@ -20,10 +20,9 @@ public class ResourceConfiguration : IEntityTypeConfiguration<Resource>
         builder.Property(t => t.Description).IsRequired();
         builder.Property(t => t.RefId);
 
+        builder.PropertyWithReference(navKey: t => t.Resource, foreignKey: t => t.ResourceId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
         builder.PropertyWithReference(navKey: t => t.Type, foreignKey: t => t.TypeId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Restrict);
-        builder.PropertyWithReference(navKey: t => t.Provider, foreignKey: t => t.ProviderId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Restrict);
     }
 }
 
-public class AuditResourceConfiguration : AuditConfiguration<AuditResource> { }
-
+public class AuditResourceElementConfiguration : AuditConfiguration<AuditResourceElement> { }

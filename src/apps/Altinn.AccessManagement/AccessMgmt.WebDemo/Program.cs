@@ -24,7 +24,7 @@ builder.Services.AddScoped<IEntityService, EntityService>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IResourceService, ResourceService>();
 
-var connString = "Database=accessmgmt_ef_05;Host=localhost;Username=platform_authorization_admin;Password=Password;Include Error Detail=true";
+var connString = "Database=accessmgmt_ef_02;Host=localhost;Username=platform_authorization_admin;Password=Password;Include Error Detail=true";
 
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
 {
@@ -34,20 +34,18 @@ builder.Services.AddDbContext<AppDbContext>((sp, options) =>
     options.LogTo(Console.WriteLine);
 });
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
 using var scope = app.Services.CreateScope();
 var seed = scope.ServiceProvider.GetRequiredService<StaticDataIngest>();
-seed.IngestRequestStatus().Wait();
+seed.IngestAll().Wait();
+//seed.IngestRequestStatus().Wait();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -56,7 +54,6 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.Run();

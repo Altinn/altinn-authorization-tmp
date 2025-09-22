@@ -44,11 +44,62 @@ Welcome to your new app.
             await CreateDemoData();
             Entities = await dbContext.Entities.Include(t => t.Type).ToListAsync();
         }
+        await CreateResources();
     }
 
     private async Task LoadData()
     {
         Entities = await dbContext.Entities.Include(t => t.Type).ToListAsync();
+    }
+
+    private async Task CreateResources()
+    {
+        var resourceCnt = await dbContext.Resources.AsNoTracking().CountAsync();
+        if(resourceCnt == 0)
+        {
+            var provider = await dbContext.Providers.FirstOrDefaultAsync();
+            if (provider == null) return;
+
+            var resourceType = await dbContext.ResourceTypes.FirstOrDefaultAsync();
+            if (resourceType == null)
+            {
+                resourceType = new ResourceType() { Name = "Skjema" };
+                dbContext.ResourceTypes.Add(resourceType);
+            }
+
+            var package01 = await dbContext.Packages.AsNoTracking().Where(t => t.Name == "Byggesøknad").Select(t => t.Id).SingleAsync();
+            var package02 = await dbContext.Packages.AsNoTracking().Where(t => t.Name == "Skoleeier").Select(t => t.Id).SingleAsync();
+
+            var r01 = new Resource() { Name = "Skjema #1", Description = "Et fint og flott skjema", ProviderId = provider.Id, RefId = "S01", TypeId = resourceType.Id };
+            var r02 = new Resource() { Name = "Skjema #2", Description = "Et fint og flott skjema", ProviderId = provider.Id, RefId = "S02", TypeId = resourceType.Id };
+            var r03 = new Resource() { Name = "Skjema #3", Description = "Et fint og flott skjema", ProviderId = provider.Id, RefId = "S03", TypeId = resourceType.Id };
+            var r04 = new Resource() { Name = "Skjema #4", Description = "Et fint og flott skjema", ProviderId = provider.Id, RefId = "S04", TypeId = resourceType.Id };
+            var r05 = new Resource() { Name = "Skjema #5", Description = "Et fint og flott skjema", ProviderId = provider.Id, RefId = "S05", TypeId = resourceType.Id };
+
+            dbContext.Resources.Add(r01);
+            dbContext.Resources.Add(r02);
+            dbContext.Resources.Add(r03);
+            dbContext.Resources.Add(r04);
+            dbContext.Resources.Add(r05);
+
+            dbContext.PackageResources.Add(new PackageResource() { PackageId = package01, ResourceId = r01.Id });
+            dbContext.PackageResources.Add(new PackageResource() { PackageId = package01, ResourceId = r02.Id });
+            dbContext.PackageResources.Add(new PackageResource() { PackageId = package01, ResourceId = r03.Id });
+
+            dbContext.PackageResources.Add(new PackageResource() { PackageId = package02, ResourceId = r04.Id });
+            dbContext.PackageResources.Add(new PackageResource() { PackageId = package02, ResourceId = r05.Id });
+
+            await dbContext.SaveChangesAsync(new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(
+                Altinn.AccessMgmt.PersistenceEF.Utils.AuditDefaults.StaticDataIngest, 
+                Altinn.AccessMgmt.PersistenceEF.Utils.AuditDefaults.StaticDataIngest,
+            Guid.NewGuid().ToString()));
+        }
+
+        var resourceElementCnt = await dbContext.ResourceElements.AsNoTracking().CountAsync();
+        if (resourceElementCnt == 0)
+        {
+            
+        }
     }
 
     private async Task CreateDemoData()
