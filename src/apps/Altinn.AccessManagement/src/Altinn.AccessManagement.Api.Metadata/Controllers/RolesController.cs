@@ -64,12 +64,19 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         [HttpGet]
         public async Task<ActionResult<RoleDto>> GetId(Guid id)
         {
-            var res = await roleService.GetById(id);
+            RoleDto res;
+            if (await featureManager.IsEnabledAsync("AccessMgmt.RoleService.EFCore"))
+            {
+                res = await coreRoleService.GetById(id);
+            }
+            else
+            {
+                res = await persistenceRoleService.GetById(id);
+            }
             if (res == null)
             {
                 return NotFound();
             }
-
             return Ok(res);
         }
 
