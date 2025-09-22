@@ -67,12 +67,19 @@ public class PackagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<AreaGroupDto>> GetHierarchy()
     {
-        var res = await packageService.GetHierarchy();
+        IEnumerable<AreaGroupDto> res;
+        if (await featureManager.IsEnabledAsync("AccessMgmt.PackageService.EFCore"))
+        {
+            res = await corePackageService.GetHierarchy();
+        }
+        else
+        {
+            res = await persistencePackageService.GetHierarchy();
+        }
         if (res == null || !res.Any())
         {
             return NoContent();
         }
-
         return Ok(res);
     }
 
