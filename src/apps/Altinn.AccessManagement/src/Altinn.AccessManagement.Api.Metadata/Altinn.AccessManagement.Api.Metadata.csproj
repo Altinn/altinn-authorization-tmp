@@ -5,7 +5,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Altinn.AccessMgmt.Persistence\Altinn.AccessMgmt.Persistence.csproj" />
+		<ProjectReference Include="..\Altinn.AccessMgmt.Persistence\Altinn.AccessMgmt.Persistence.csproj" />
+		<ProjectReference Include="..\Altinn.AccessMgmt.Persistence\Altinn.AccessMgmt.Core.csproj" />
     </ItemGroup>
 
 </Project>
