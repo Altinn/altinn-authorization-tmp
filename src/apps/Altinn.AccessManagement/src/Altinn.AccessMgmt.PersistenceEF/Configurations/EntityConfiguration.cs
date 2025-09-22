@@ -23,7 +23,7 @@ public class EntityConfiguration : IEntityTypeConfiguration<Entity>
         builder.PropertyWithReference(navKey: t => t.Variant, foreignKey: t => t.VariantId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Restrict);
         builder.PropertyWithReference(navKey: t => t.Parent, foreignKey: t => t.ParentId, principalKey: t => t.Id, required: false, deleteBehavior: DeleteBehavior.Cascade);
 
-        builder.HasIndex(["Name", "TypeId", "VariantId"]).IsUnique();
+        builder.HasIndex(["Name", "RefId", "TypeId", "VariantId"]).IsUnique();
     }
 }
 
