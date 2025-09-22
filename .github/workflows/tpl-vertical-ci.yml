@@ -48,6 +48,9 @@ on:
         type: string
         description: The SonarCloud project name for the vertical
 
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     name: Build and Test
@@ -90,7 +93,7 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
-    if: inputs.sonarProjectKey != 'false'
+    if: inputs.sonarProjectKey != 'false' && !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true)
 
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
