@@ -18,7 +18,7 @@ public class EntityVariantConfiguration : IEntityTypeConfiguration<EntityVariant
 
         builder.Property(t => t.Name).IsRequired();
         builder.Property(t => t.Description).IsRequired();
-        builder.PropertyWithReference(navKey: t => t.Type, foreignKey: t => t.TypeId, principalKey: t => t.Id);
+        builder.PropertyWithReference(navKey: t => t.Type, foreignKey: t => t.TypeId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Cascade);
 
         builder.HasIndex(["Name", "TypeId"]).IsUnique();
     }

@@ -17,7 +17,7 @@ public class EntityTypeConfiguration : IEntityTypeConfiguration<EntityType>
         builder.HasKey(p => p.Id);
 
         builder.Property(t => t.Name).IsRequired();
-        builder.PropertyWithReference(navKey: t => t.Provider, foreignKey: t => t.ProviderId, principalKey: t => t.Id);
+        builder.PropertyWithReference(navKey: t => t.Provider, foreignKey: t => t.ProviderId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Restrict);
 
         builder.HasIndex(["Name", "ProviderId"]).IsUnique();
     }
