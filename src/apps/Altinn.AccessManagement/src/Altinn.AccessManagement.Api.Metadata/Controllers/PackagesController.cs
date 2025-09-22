@@ -141,20 +141,33 @@ public class PackagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<Area>> GetGroupAreas(Guid id)
     {
-        var res = await packageService.GetAreas(id);
-        if (res == null || !res.Any())
+        IEnumerable<Area> res;
+        if (await featureManager.IsEnabledAsync("AccessMgmt.PackageService.EFCore"))
         {
-            var grp = await packageService.GetAreaGroup(id);
-            if (grp == null)
+            res = await corePackageService.GetAreas(id);
+            if (res == null || !res.Any())
             {
-                // Group is not found
-                return NotFound();
+                var grp = await corePackageService.GetAreaGroup(id);
+                if (grp == null)
+                {
+                    return NotFound();
+                }
+                return NoContent();
             }
-
-            // Group found, but no areas
-            return NoContent();
         }
-
+        else
+        {
+            res = await persistencePackageService.GetAreas(id);
+            if (res == null || !res.Any())
+            {
+                var grp = await persistencePackageService.GetAreaGroup(id);
+                if (grp == null)
+                {
+                    return NotFound();
+                }
+                return NoContent();
+            }
+        }
         return Ok(res);
     }
 
