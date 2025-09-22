@@ -20,7 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITranslationService, TranslationService>();
         return options.Source switch
         {
-            SourceType.App => services.AddDbContextPool<AppDbContext>((sp, options) =>
+            SourceType.App => services.AddDbContext<AppDbContext>((sp, options) =>
             {
                 var db = sp.GetRequiredService<IAltinnDatabase>();
                 var connectionString = db.CreatePgsqlConnection(SourceType.App);

@@ -86,6 +86,7 @@ public class IngestService(AppDbContext dbContext) : IIngestService
         */
 
         string mergeUpdateStatement = string.Join(", ", ingestColumns.Where(t => !t.IsPK && !matchColumns.Any(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase))).Select(t => $"{t.Name} = source.{t.Name}"));
+        mergeUpdateStatement += $", audit_changedby = '{auditValues.ChangedBy}', audit_changedbysystem = '{auditValues.ChangedBySystem}', audit_changeoperation = '{auditValues.OperationId}'";
 
         var insertColumns = string.Join(", ", ingestColumns.Select(t => $"{t.Name}"));
         var insertValues = string.Join(", ", ingestColumns.Select(t => $"source.{t.Name}"));
@@ -97,7 +98,8 @@ public class IngestService(AppDbContext dbContext) : IIngestService
         sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
         sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
         sb.AppendLine($"WHEN NOT MATCHED THEN ");
-        sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
+        // sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
+        sb.AppendLine($"INSERT ({insertColumns},audit_changedby,audit_changedbysystem,audit_changeoperation) VALUES ({insertValues},'{auditValues.ChangedBy}','{auditValues.ChangedBySystem}','{auditValues.OperationId}');");
 
         string mergeStatement = sb.ToString();
 

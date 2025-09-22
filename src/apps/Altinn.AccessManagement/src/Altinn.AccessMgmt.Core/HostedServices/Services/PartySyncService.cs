@@ -154,15 +154,6 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
     private Entity ConvertPartyModel(PartyModel model, CancellationToken cancellationToken = default)
     {
-        /*
-        // To add autoCreate for types and variants
-        - Add AuditValus options, AppDbContext dbContext
-        - Use GetOrCreateTypeAndVariant
-
-        bool autoCreateTypes = false;
-        bool autoCreateVariants = false;
-        */
-
         if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
         {
             return new Entity()
@@ -198,7 +189,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 Name = model.DisplayName,
                 RefId = model.VersionId.ToString(),
                 TypeId = EntityTypeConstants.Person,
-                VariantId = EntityVariantConstants.SelfIdentifiedUser
+                VariantId = EntityVariantConstants.SI
             };
         }
 

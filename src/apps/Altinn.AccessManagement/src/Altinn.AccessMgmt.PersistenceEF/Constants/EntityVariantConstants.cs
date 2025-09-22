@@ -32,8 +32,46 @@ public static class EntityVariantConstants
     /// <summary>
     /// Get all translations as read-only collection.
     /// </summary>
-    public static IReadOnlyCollection<TranslationEntry> AllTranslations() 
+    public static IReadOnlyCollection<TranslationEntry> AllTranslations()
         => ConstantLookup.AllTranslations<EntityVariant>(typeof(EntityVariantConstants));
+
+    /// <summary>
+    /// Represents the entity variant for "Virksomhet drevet i fellesskap" (VIFE).
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> c4177195-668d-401c-9a2b-1bbcf3c02d37  
+    /// - <c>Name:</c> "VIFE"  
+    /// - <c>Description:</c> "Virksomhet drevet i fellesskap, jf. mval § 12, 4. ledd"  
+    /// - <c>TypeId:</c> References <see cref="EntityTypeConstants.Organisation"/>  
+    /// - <c>Translations:</c>  
+    ///   - EN: "VIFE" / "Business carried out jointly, cf. VAT Act § 12, fourth paragraph."  
+    ///   - NN: "VIFE" / "Verksemd driven i fellesskap, jf. mval § 12, 4. ledd"  
+    /// </remarks>
+    public static ConstantDefinition<EntityVariant> VIFE { get; } = new ConstantDefinition<EntityVariant>("c4177195-668d-401c-9a2b-1bbcf3c02d37")
+    {
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "VIFE", Description = "Virksomhet drevet i fellesskap, jf mval § 12, 4.le" },
+        EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "VIFE"), KeyValuePair.Create("Description", "Business carried out jointly, cf. VAT Act § 12, fourth paragraph.")),
+        NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "VIFE"), KeyValuePair.Create("Description", "Verksemd driven i fellesskap, jf. mval § 12, 4. ledd")),
+    };
+        
+    /// <summary>
+    /// Represents the entity variant for "Indre selskap" (IS).
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> baa7abe6-1246-4fe2-ada6-97e548e3dbaf  
+    /// - <c>Name:</c> "IS"  
+    /// - <c>Description:</c> "Et samarbeidsarrangement der en eller flere aktører driver næringsvirksomhet for felles regning og risiko."  
+    /// - <c>TypeId:</c> References <see cref="EntityTypeConstants.Organisation"/>  
+    /// - <c>Translations:</c>  
+    ///   - EN: "IS" / "A cooperative arrangement where one or more parties conduct business activities for joint account and risk."  
+    ///   - NN: "IS" / "Eit samarbeidsopplegg der ein eller fleire aktørar driv næringsverksemd for felles rekning og risiko."  
+    /// </remarks>
+    public static ConstantDefinition<EntityVariant> IS { get; } = new ConstantDefinition<EntityVariant>("baa7abe6-1246-4fe2-ada6-97e548e3dbaf")
+    {
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "IS", Description = "Et samarbeidsarrangement der en eller flere aktører driver næringsvirksomhet for felles regning og risiko." },
+        EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "IS"), KeyValuePair.Create("Description", "A cooperative arrangement where one or more parties conduct business activities for joint account and risk.")),
+        NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "IS"), KeyValuePair.Create("Description", "Eit samarbeidsopplegg der ein eller fleire aktørar driv næringsverksemd for felles rekning og risiko.")),
+    };
 
     /// <summary>
     /// Represents the entity variant for legal co-ownership ("SAM").
@@ -47,9 +85,9 @@ public static class EntityVariantConstants
     ///   - EN: "SAM" / "Legal co-ownership"  
     ///   - NN: "SAM" / "Tingsrettslig sameie"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> LegalCoOwnership { get; } = new ConstantDefinition<EntityVariant>("d786bc0e-8e9e-4116-bfc2-0344207c9127")
+    public static ConstantDefinition<EntityVariant> SAM { get; } = new ConstantDefinition<EntityVariant>("d786bc0e-8e9e-4116-bfc2-0344207c9127")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("d786bc0e-8e9e-4116-bfc2-0344207c9127"), TypeId = EntityTypeConstants.Organisation, Name = "SAM", Description = "Tingsrettslig sameie" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "SAM", Description = "Tingsrettslig sameie" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SAM"), KeyValuePair.Create("Description", "Legal co-ownership")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SAM"), KeyValuePair.Create("Description", "Tingsrettslig sameie"))
     };
@@ -66,9 +104,9 @@ public static class EntityVariantConstants
     ///   - EN: "VPFO" / "Securities fund"  
     ///   - NN: "VPFO" / "Verdipapirfond"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> SecuritiesFund { get; } = new ConstantDefinition<EntityVariant>("d0a08401-5ae0-4da9-a79a-1113a7746b60")
+    public static ConstantDefinition<EntityVariant> VPFO { get; } = new ConstantDefinition<EntityVariant>("d0a08401-5ae0-4da9-a79a-1113a7746b60")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("d0a08401-5ae0-4da9-a79a-1113a7746b60"), TypeId = EntityTypeConstants.Organisation, Name = "VPFO", Description = "Verdipapirfond" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "VPFO", Description = "Verdipapirfond" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "VPFO"), KeyValuePair.Create("Description", "Securities fund")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "VPFO"), KeyValuePair.Create("Description", "Verdipapirfond"))
     };
@@ -85,9 +123,9 @@ public static class EntityVariantConstants
     ///   - EN: "UTLA" / "Foreign entity"  
     ///   - NN: "UTLA" / "Utanlandsk eining"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> ForeignEntity { get; } = new ConstantDefinition<EntityVariant>("c161a605-3c72-40f2-8a5a-15e57e49638c")
+    public static ConstantDefinition<EntityVariant> UTLA { get; } = new ConstantDefinition<EntityVariant>("c161a605-3c72-40f2-8a5a-15e57e49638c")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("c161a605-3c72-40f2-8a5a-15e57e49638c"), TypeId = EntityTypeConstants.Organisation, Name = "UTLA", Description = "Utenlandsk enhet" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "UTLA", Description = "Utenlandsk enhet" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTLA"), KeyValuePair.Create("Description", "Foreign entity")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTLA"), KeyValuePair.Create("Description", "Utanlandsk eining"))
     };
@@ -104,9 +142,9 @@ public static class EntityVariantConstants
     ///   - EN: "BO" / "Other estate"  
     ///   - NN: "BO" / "Andre bo"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> OtherEstate { get; } = new ConstantDefinition<EntityVariant>("752f87dc-b04f-42cb-becd-173935ec6164")
+    public static ConstantDefinition<EntityVariant> BO { get; } = new ConstantDefinition<EntityVariant>("752f87dc-b04f-42cb-becd-173935ec6164")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("752f87dc-b04f-42cb-becd-173935ec6164"), TypeId = EntityTypeConstants.Organisation, Name = "BO", Description = "Andre bo" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "BO", Description = "Andre bo" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "BO"), KeyValuePair.Create("Description", "Other estate")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "BO"), KeyValuePair.Create("Description", "Andre bo"))
     };
@@ -123,9 +161,9 @@ public static class EntityVariantConstants
     ///   - EN: "AS" / "Limited company"  
     ///   - NN: "AS" / "Aksjeselskap"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> LimitedCompany { get; } = new ConstantDefinition<EntityVariant>("263762ec-54fc-4eae-b7a1-17e92eea9a5c")
+    public static ConstantDefinition<EntityVariant> AS { get; } = new ConstantDefinition<EntityVariant>("263762ec-54fc-4eae-b7a1-17e92eea9a5c")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("263762ec-54fc-4eae-b7a1-17e92eea9a5c"), TypeId = EntityTypeConstants.Organisation, Name = "AS", Description = "Aksjeselskap" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "AS", Description = "Aksjeselskap" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "AS"), KeyValuePair.Create("Description", "Limited company")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "AS"), KeyValuePair.Create("Description", "Aksjeselskap"))
     };
@@ -142,9 +180,9 @@ public static class EntityVariantConstants
     ///   - EN: "PK" / "Pension fund"  
     ///   - NN: "PK" / "Pensjonskasse"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> PensionFund { get; } = new ConstantDefinition<EntityVariant>("6b2449e7-af5a-4c4e-b475-1b75998ba804")
+    public static ConstantDefinition<EntityVariant> PK { get; } = new ConstantDefinition<EntityVariant>("6b2449e7-af5a-4c4e-b475-1b75998ba804")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("6b2449e7-af5a-4c4e-b475-1b75998ba804"), TypeId = EntityTypeConstants.Organisation, Name = "PK", Description = "Pensjonskasse" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "PK", Description = "Pensjonskasse" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "PK"), KeyValuePair.Create("Description", "Pension fund")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "PK"), KeyValuePair.Create("Description", "Pensjonskasse"))
     };
@@ -161,9 +199,9 @@ public static class EntityVariantConstants
     ///   - EN: "PERS" / "Other individuals registered in the associated register"  
     ///   - NN: "PERS" / "Andre enkeltpersonar som registrerast i tilknytta register"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> OtherIndividualsRegisteredInTheAssociatedRegister { get; } = new ConstantDefinition<EntityVariant>("ed5d05b6-588c-40fa-8885-2bd36f75ac34")
+    public static ConstantDefinition<EntityVariant> PERS { get; } = new ConstantDefinition<EntityVariant>("ed5d05b6-588c-40fa-8885-2bd36f75ac34")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("ed5d05b6-588c-40fa-8885-2bd36f75ac34"), TypeId = EntityTypeConstants.Organisation, Name = "PERS", Description = "Andre enkeltpersoner som registreres i tilknyttet register" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "PERS", Description = "Andre enkeltpersoner som registreres i tilknyttet register" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "PERS"), KeyValuePair.Create("Description", "Other individuals registered in the associated register")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "PERS"), KeyValuePair.Create("Description", "Andre enkeltpersonar som registrerast i tilknytta register"))
     };
@@ -180,9 +218,9 @@ public static class EntityVariantConstants
     ///   - EN: "EOFG" / "European Economic Interest Grouping"  
     ///   - NN: "EOFG" / "Europeisk økonomisk foretaksgruppe"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> EuropeanEconomicInterestGrouping { get; } = new ConstantDefinition<EntityVariant>("e0444411-a021-4774-854c-2ed876ffd64e")
+    public static ConstantDefinition<EntityVariant> EOFG { get; } = new ConstantDefinition<EntityVariant>("e0444411-a021-4774-854c-2ed876ffd64e")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("e0444411-a021-4774-854c-2ed876ffd64e"), TypeId = EntityTypeConstants.Organisation, Name = "EOFG", Description = "Europeisk økonomisk foretaksgruppe" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "EOFG", Description = "Europeisk økonomisk foretaksgruppe" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "EOFG"), KeyValuePair.Create("Description", "European Economic Interest Grouping")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "EOFG"), KeyValuePair.Create("Description", "Europeisk økonomisk foretaksgruppe"))
     };
@@ -199,9 +237,9 @@ public static class EntityVariantConstants
     ///   - EN: "SE" / "European company"  
     ///   - NN: "SE" / "Europeisk selskap"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> EuropeanCompany { get; } = new ConstantDefinition<EntityVariant>("441a2876-f15f-4007-9e2e-3d25acbd98ff")
+    public static ConstantDefinition<EntityVariant> SE { get; } = new ConstantDefinition<EntityVariant>("441a2876-f15f-4007-9e2e-3d25acbd98ff")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("441a2876-f15f-4007-9e2e-3d25acbd98ff"), TypeId = EntityTypeConstants.Organisation, Name = "SE", Description = "Europeisk selskap" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "SE", Description = "Europeisk selskap" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SE"), KeyValuePair.Create("Description", "European company")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SE"), KeyValuePair.Create("Description", "Europeisk selskap"))
     };
@@ -218,9 +256,9 @@ public static class EntityVariantConstants
     ///   - EN: "TVAM" / "Compulsory VAT registration"  
     ///   - NN: "TVAM" / "Tvangsregistrert for MVA"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> CompulsoryVATRegistration { get; } = new ConstantDefinition<EntityVariant>("3d5a890a-51aa-4e8a-b53d-3ec4111fe9e9")
+    public static ConstantDefinition<EntityVariant> TVAM { get; } = new ConstantDefinition<EntityVariant>("3d5a890a-51aa-4e8a-b53d-3ec4111fe9e9")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("3d5a890a-51aa-4e8a-b53d-3ec4111fe9e9"), TypeId = EntityTypeConstants.Organisation, Name = "TVAM", Description = "Tvangsregistrert for MVA" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "TVAM", Description = "Tvangsregistrert for MVA" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "TVAM"), KeyValuePair.Create("Description", "Compulsory VAT registration")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "TVAM"), KeyValuePair.Create("Description", "Tvangsregistrert for MVA"))
     };
@@ -237,9 +275,9 @@ public static class EntityVariantConstants
     ///   - EN: "GFS" / "Mutual insurance company"  
     ///   - NN: "GFS" / "Gjensidig forsikringsselskap"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> MutualInsuranceCompany { get; } = new ConstantDefinition<EntityVariant>("e5d4a90e-948a-4c61-965a-43dbbd0efddb")
+    public static ConstantDefinition<EntityVariant> GFS { get; } = new ConstantDefinition<EntityVariant>("e5d4a90e-948a-4c61-965a-43dbbd0efddb")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("e5d4a90e-948a-4c61-965a-43dbbd0efddb"), TypeId = EntityTypeConstants.Organisation, Name = "GFS", Description = "Gjensidig forsikringsselskap" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "GFS", Description = "Gjensidig forsikringsselskap" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "GFS"), KeyValuePair.Create("Description", "Mutual insurance company")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "GFS"), KeyValuePair.Create("Description", "Gjensidig forsikringsselskap"))
     };
@@ -256,9 +294,9 @@ public static class EntityVariantConstants
     ///   - EN: "FYLK" / "County municipality"  
     ///   - NN: "FYLK" / "Fylkeskommune"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> CountyMunicipality { get; } = new ConstantDefinition<EntityVariant>("a581992e-c9dd-4250-8a9e-4e91d9b55424")
+    public static ConstantDefinition<EntityVariant> FYLK { get; } = new ConstantDefinition<EntityVariant>("a581992e-c9dd-4250-8a9e-4e91d9b55424")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("a581992e-c9dd-4250-8a9e-4e91d9b55424"), TypeId = EntityTypeConstants.Organisation, Name = "FYLK", Description = "Fylkeskommune" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "FYLK", Description = "Fylkeskommune" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "FYLK"), KeyValuePair.Create("Description", "County municipality")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "FYLK"), KeyValuePair.Create("Description", "Fylkeskommune"))
     };
@@ -275,9 +313,9 @@ public static class EntityVariantConstants
     ///   - EN: "IKJP" / "Other non-legal persons"  
     ///   - NN: "IKJP" / "Andre ikkje-juridiske personar"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> OtherNonLegalPersons { get; } = new ConstantDefinition<EntityVariant>("ab5013e9-4210-4ab3-9fc2-554fd78a1b03")
+    public static ConstantDefinition<EntityVariant> IKJP { get; } = new ConstantDefinition<EntityVariant>("ab5013e9-4210-4ab3-9fc2-554fd78a1b03")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("ab5013e9-4210-4ab3-9fc2-554fd78a1b03"), TypeId = EntityTypeConstants.Organisation, Name = "IKJP", Description = "Andre ikke-juridiske personer" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "IKJP", Description = "Andre ikke-juridiske personer" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "IKJP"), KeyValuePair.Create("Description", "Other non-legal persons")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "IKJP"), KeyValuePair.Create("Description", "Andre ikkje-juridiske personar"))
     };
@@ -294,9 +332,9 @@ public static class EntityVariantConstants
     ///   - EN: "NUF" / "Norwegian-registered foreign company"  
     ///   - NN: "NUF" / "Norskregistrert utanlandsk foretak"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> NorwegianRegisteredForeignCompany { get; } = new ConstantDefinition<EntityVariant>("a90417b4-5fa9-4a01-bfd0-57a1069a000c")
+    public static ConstantDefinition<EntityVariant> NUF { get; } = new ConstantDefinition<EntityVariant>("a90417b4-5fa9-4a01-bfd0-57a1069a000c")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("a90417b4-5fa9-4a01-bfd0-57a1069a000c"), TypeId = EntityTypeConstants.Organisation, Name = "NUF", Description = "Norskregistrert utenlandsk foretak" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "NUF", Description = "Norskregistrert utenlandsk foretak" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "NUF"), KeyValuePair.Create("Description", "Norwegian-registered foreign company")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "NUF"), KeyValuePair.Create("Description", "Norskregistrert utanlandsk foretak"))
     };
@@ -313,9 +351,9 @@ public static class EntityVariantConstants
     ///   - EN: "ANS" / "Partnership with joint liability"  
     ///   - NN: "ANS" / "Ansvarleg selskap med solidarisk ansvar"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> PartnershipWithJointLiability { get; } = new ConstantDefinition<EntityVariant>("fca69e4d-453c-4404-b057-5e188c603f4b")
+    public static ConstantDefinition<EntityVariant> ANS { get; } = new ConstantDefinition<EntityVariant>("fca69e4d-453c-4404-b057-5e188c603f4b")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("fca69e4d-453c-4404-b057-5e188c603f4b"), TypeId = EntityTypeConstants.Organisation, Name = "ANS", Description = "Ansvarlig selskap med solidarisk ansvar" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "ANS", Description = "Ansvarlig selskap med solidarisk ansvar" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ANS"), KeyValuePair.Create("Description", "Partnership with joint liability")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ANS"), KeyValuePair.Create("Description", "Ansvarleg selskap med solidarisk ansvar"))
     };
@@ -332,9 +370,9 @@ public static class EntityVariantConstants
     ///   - EN: "KS" / "Limited partnership"  
     ///   - NN: "KS" / "Kommandittselskap"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> LimitedPartnership { get; } = new ConstantDefinition<EntityVariant>("64b05309-7b6e-40c8-bd29-62d8fa0bd5ec")
+    public static ConstantDefinition<EntityVariant> KS { get; } = new ConstantDefinition<EntityVariant>("64b05309-7b6e-40c8-bd29-62d8fa0bd5ec")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("64b05309-7b6e-40c8-bd29-62d8fa0bd5ec"), TypeId = EntityTypeConstants.Organisation, Name = "KS", Description = "Kommandittselskap" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "KS", Description = "Kommandittselskap" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KS"), KeyValuePair.Create("Description", "Limited partnership")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KS"), KeyValuePair.Create("Description", "Kommandittselskap"))
     };
@@ -351,9 +389,9 @@ public static class EntityVariantConstants
     ///   - EN: "SÆR" / "Other company according to special law"  
     ///   - NN: "SÆR" / "Annet foretak i følgje særskild lov"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> OtherCompanyAccordingToSpecialLaw { get; } = new ConstantDefinition<EntityVariant>("90b3eb3b-87cb-4ec3-bc44-65630cd02a67")
+    public static ConstantDefinition<EntityVariant> SAER { get; } = new ConstantDefinition<EntityVariant>("90b3eb3b-87cb-4ec3-bc44-65630cd02a67")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("90b3eb3b-87cb-4ec3-bc44-65630cd02a67"), TypeId = EntityTypeConstants.Organisation, Name = "SÆR", Description = "Annet foretak iflg. særskilt lov" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "SÆR", Description = "Annet foretak iflg. særskilt lov" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SÆR"), KeyValuePair.Create("Description", "Other company according to special law")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SÆR"), KeyValuePair.Create("Description", "Annet foretak i følgje særskild lov"))
     };
@@ -370,9 +408,9 @@ public static class EntityVariantConstants
     ///   - EN: "IKS" / "Inter-municipal company"  
     ///   - NN: "IKS" / "Interkommunalt selskap"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> InterMunicipalCompany { get; } = new ConstantDefinition<EntityVariant>("d0648c3e-1567-48dc-a7cf-6837653dbc12")
+    public static ConstantDefinition<EntityVariant> IKS { get; } = new ConstantDefinition<EntityVariant>("d0648c3e-1567-48dc-a7cf-6837653dbc12")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("d0648c3e-1567-48dc-a7cf-6837653dbc12"), TypeId = EntityTypeConstants.Organisation, Name = "IKS", Description = "Interkommunalt selskap" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "IKS", Description = "Interkommunalt selskap" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "IKS"), KeyValuePair.Create("Description", "Inter-municipal company")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "IKS"), KeyValuePair.Create("Description", "Interkommunalt selskap"))
     };
@@ -389,9 +427,9 @@ public static class EntityVariantConstants
     ///   - EN: "STI" / "Foundation"  
     ///   - NN: "STI" / "Stiftelse"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> Foundation { get; } = new ConstantDefinition<EntityVariant>("9d80264a-b968-45f8-b740-6a283cbc06ad")
+    public static ConstantDefinition<EntityVariant> STI { get; } = new ConstantDefinition<EntityVariant>("9d80264a-b968-45f8-b740-6a283cbc06ad")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("9d80264a-b968-45f8-b740-6a283cbc06ad"), TypeId = EntityTypeConstants.Organisation, Name = "STI", Description = "Stiftelse" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "STI", Description = "Stiftelse" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "STI"), KeyValuePair.Create("Description", "Foundation")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "STI"), KeyValuePair.Create("Description", "Stiftelse"))
     };
@@ -408,9 +446,9 @@ public static class EntityVariantConstants
     ///   - EN: "BBL" / "Housing cooperative"  
     ///   - NN: "BBL" / "Boligbyggelag"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> HousingCooperative { get; } = new ConstantDefinition<EntityVariant>("8aa09ac2-dd61-492f-9613-6fc0558ab6fb")
+    public static ConstantDefinition<EntityVariant> BBL { get; } = new ConstantDefinition<EntityVariant>("8aa09ac2-dd61-492f-9613-6fc0558ab6fb")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("8aa09ac2-dd61-492f-9613-6fc0558ab6fb"), TypeId = EntityTypeConstants.Organisation, Name = "BBL", Description = "Boligbyggelag" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "BBL", Description = "Boligbyggelag" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "BBL"), KeyValuePair.Create("Description", "Housing cooperative")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "BBL"), KeyValuePair.Create("Description", "Boligbyggelag"))
     };
@@ -427,9 +465,9 @@ public static class EntityVariantConstants
     ///   - EN: "KTRF" / "Shared office"  
     ///   - NN: "KTRF" / "Kontorfellesskap"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> SharedOffice { get; } = new ConstantDefinition<EntityVariant>("e9b021a9-b257-42c0-8460-717a95c883f6")
+    public static ConstantDefinition<EntityVariant> KTRF { get; } = new ConstantDefinition<EntityVariant>("e9b021a9-b257-42c0-8460-717a95c883f6")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("e9b021a9-b257-42c0-8460-717a95c883f6"), TypeId = EntityTypeConstants.Organisation, Name = "KTRF", Description = "Kontorfellesskap" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "KTRF", Description = "Kontorfellesskap" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KTRF"), KeyValuePair.Create("Description", "Shared office")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KTRF"), KeyValuePair.Create("Description", "Kontorfellesskap"))
     };
@@ -446,9 +484,9 @@ public static class EntityVariantConstants
     ///   - EN: "ANNA" / "Other legal entity"  
     ///   - NN: "ANNA" / "Annan juridisk person"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> OtherLegalEntity { get; } = new ConstantDefinition<EntityVariant>("2587990f-b036-4a6b-a7d9-815853be1382")
+    public static ConstantDefinition<EntityVariant> ANNA { get; } = new ConstantDefinition<EntityVariant>("2587990f-b036-4a6b-a7d9-815853be1382")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("2587990f-b036-4a6b-a7d9-815853be1382"), TypeId = EntityTypeConstants.Organisation, Name = "ANNA", Description = "Annen juridisk person" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "ANNA", Description = "Annen juridisk person" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ANNA"), KeyValuePair.Create("Description", "Other legal entity")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ANNA"), KeyValuePair.Create("Description", "Annan juridisk person"))
     };
@@ -465,9 +503,9 @@ public static class EntityVariantConstants
     ///   - EN: "SA" / "Cooperative enterprise"  
     ///   - NN: "SA" / "Samvirkeforetak"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> CooperativeEnterprise { get; } = new ConstantDefinition<EntityVariant>("7d356f18-2f72-49b5-a6f2-83d7c0871991")
+    public static ConstantDefinition<EntityVariant> SA { get; } = new ConstantDefinition<EntityVariant>("7d356f18-2f72-49b5-a6f2-83d7c0871991")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("7d356f18-2f72-49b5-a6f2-83d7c0871991"), TypeId = EntityTypeConstants.Organisation, Name = "SA", Description = "Samvirkeforetak" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "SA", Description = "Samvirkeforetak" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SA"), KeyValuePair.Create("Description", "Cooperative enterprise")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SA"), KeyValuePair.Create("Description", "Samvirkeforetak"))
     };
@@ -484,9 +522,9 @@ public static class EntityVariantConstants
     ///   - EN: "ADOS" / "Administrative unit - public sector"  
     ///   - NN: "ADOS" / "Administrativ eining - offentleg sektor"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> AdministrativeUnitPublicSector { get; } = new ConstantDefinition<EntityVariant>("e57cac52-e401-4c0f-a1cf-8bb4628fe671")
+    public static ConstantDefinition<EntityVariant> ADOS { get; } = new ConstantDefinition<EntityVariant>("e57cac52-e401-4c0f-a1cf-8bb4628fe671")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("e57cac52-e401-4c0f-a1cf-8bb4628fe671"), TypeId = EntityTypeConstants.Organisation, Name = "ADOS", Description = "Administrativ enhet - offentlig sektor" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "ADOS", Description = "Administrativ enhet - offentlig sektor" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ADOS"), KeyValuePair.Create("Description", "Administrative unit - public sector")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ADOS"), KeyValuePair.Create("Description", "Administrativ eining - offentleg sektor"))
     };
@@ -503,9 +541,9 @@ public static class EntityVariantConstants
     ///   - EN: "KF" / "Municipal enterprise"  
     ///   - NN: "KF" / "Kommunalt foretak"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> MunicipalEnterprise { get; } = new ConstantDefinition<EntityVariant>("3ae468d4-ea92-471d-b7b1-924e49b0d619")
+    public static ConstantDefinition<EntityVariant> KF { get; } = new ConstantDefinition<EntityVariant>("3ae468d4-ea92-471d-b7b1-924e49b0d619")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("3ae468d4-ea92-471d-b7b1-924e49b0d619"), TypeId = EntityTypeConstants.Organisation, Name = "KF", Description = "Kommunalt foretak" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "KF", Description = "Kommunalt foretak" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KF"), KeyValuePair.Create("Description", "Municipal enterprise")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KF"), KeyValuePair.Create("Description", "Kommunalt foretak"))
     };
@@ -522,9 +560,9 @@ public static class EntityVariantConstants
     ///   - EN: "AAFY" / "Subunit of non-commercial entity"  
     ///   - NN: "AAFY" / "Underenhet til ikkje-næringsdrivande"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> SubunitOfNonCommercialEntity { get; } = new ConstantDefinition<EntityVariant>("0c31bb8f-587a-416b-a3cd-980bb73c5612")
+    public static ConstantDefinition<EntityVariant> AAFY { get; } = new ConstantDefinition<EntityVariant>("0c31bb8f-587a-416b-a3cd-980bb73c5612")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("0c31bb8f-587a-416b-a3cd-980bb73c5612"), TypeId = EntityTypeConstants.Organisation, Name = "AAFY", Description = "Underenhet til ikke-næringsdrivende" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "AAFY", Description = "Underenhet til ikke-næringsdrivende" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "AAFY"), KeyValuePair.Create("Description", "Subunit of non-commercial entity")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "AAFY"), KeyValuePair.Create("Description", "Underenhet til ikkje-næringsdrivande"))
     };
@@ -541,9 +579,9 @@ public static class EntityVariantConstants
     ///   - EN: "DA" / "Partnership with divided liability"  
     ///   - NN: "DA" / "Ansvarleg selskap med delt ansvar"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> PartnershipWithDividedLiability { get; } = new ConstantDefinition<EntityVariant>("b3433097-38b9-4a47-bd50-a4bb794cab3d")
+    public static ConstantDefinition<EntityVariant> DA { get; } = new ConstantDefinition<EntityVariant>("b3433097-38b9-4a47-bd50-a4bb794cab3d")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("b3433097-38b9-4a47-bd50-a4bb794cab3d"), TypeId = EntityTypeConstants.Organisation, Name = "DA", Description = "Ansvarlig selskap med delt ansvar" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "DA", Description = "Ansvarlig selskap med delt ansvar" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "DA"), KeyValuePair.Create("Description", "Partnership with divided liability")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "DA"), KeyValuePair.Create("Description", "Ansvarleg selskap med delt ansvar"))
     };
@@ -560,9 +598,9 @@ public static class EntityVariantConstants
     ///   - EN: "OPMV" / "Specially divided unit, cf. VAT Act § 2-2"  
     ///   - NN: "OPMV" / "Særskild oppdelt eining, jf. mval. § 2-2"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> SpeciallyDividedUnitCFVATAct { get; } = new ConstantDefinition<EntityVariant>("4effb14f-8a1f-4272-aefb-b92ee302050f")
+    public static ConstantDefinition<EntityVariant> OPMV { get; } = new ConstantDefinition<EntityVariant>("4effb14f-8a1f-4272-aefb-b92ee302050f")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("4effb14f-8a1f-4272-aefb-b92ee302050f"), TypeId = EntityTypeConstants.Organisation, Name = "OPMV", Description = "Særskilt oppdelt enhet, jf. mval. § 2-2" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "OPMV", Description = "Særskilt oppdelt enhet, jf. mval. § 2-2" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "OPMV"), KeyValuePair.Create("Description", "Specially divided unit, cf. VAT Act § 2-2")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "OPMV"), KeyValuePair.Create("Description", "Særskild oppdelt eining, jf. mval. § 2-2"))
     };
@@ -579,9 +617,9 @@ public static class EntityVariantConstants
     ///   - EN: "ORGL" / "Organizational unit"  
     ///   - NN: "ORGL" / "Organisasjonsledd"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> OrganizationalUnit { get; } = new ConstantDefinition<EntityVariant>("4f6c04d2-7223-41cc-8135-bb91d79ed311")
+    public static ConstantDefinition<EntityVariant> ORGL { get; } = new ConstantDefinition<EntityVariant>("4f6c04d2-7223-41cc-8135-bb91d79ed311")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("4f6c04d2-7223-41cc-8135-bb91d79ed311"), TypeId = EntityTypeConstants.Organisation, Name = "ORGL", Description = "Organisasjonsledd" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "ORGL", Description = "Organisasjonsledd" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ORGL"), KeyValuePair.Create("Description", "Organizational unit")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ORGL"), KeyValuePair.Create("Description", "Organisasjonsledd"))
     };
@@ -598,9 +636,9 @@ public static class EntityVariantConstants
     ///   - EN: "STAT" / "The State"  
     ///   - NN: "STAT" / "Staten"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> TheState { get; } = new ConstantDefinition<EntityVariant>("28157281-cc8f-46e0-9e2a-c20cb3b72930")
+    public static ConstantDefinition<EntityVariant> STAT { get; } = new ConstantDefinition<EntityVariant>("28157281-cc8f-46e0-9e2a-c20cb3b72930")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("28157281-cc8f-46e0-9e2a-c20cb3b72930"), TypeId = EntityTypeConstants.Organisation, Name = "STAT", Description = "Staten" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "STAT", Description = "Staten" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "STAT"), KeyValuePair.Create("Description", "The State")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "STAT"), KeyValuePair.Create("Description", "Staten"))
     };
@@ -617,9 +655,9 @@ public static class EntityVariantConstants
     ///   - EN: "SF" / "State enterprise"  
     ///   - NN: "SF" / "Statsforetak"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> StateEnterprise { get; } = new ConstantDefinition<EntityVariant>("d5b0abc8-22e7-44bb-bb55-c33bd6d7df4d")
+    public static ConstantDefinition<EntityVariant> SF { get; } = new ConstantDefinition<EntityVariant>("d5b0abc8-22e7-44bb-bb55-c33bd6d7df4d")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("d5b0abc8-22e7-44bb-bb55-c33bd6d7df4d"), TypeId = EntityTypeConstants.Organisation, Name = "SF", Description = "Statsforetak" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "SF", Description = "Statsforetak" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SF"), KeyValuePair.Create("Description", "State enterprise")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SF"), KeyValuePair.Create("Description", "Statsforetak"))
     };
@@ -636,9 +674,9 @@ public static class EntityVariantConstants
     ///   - EN: "PRE" / "Partnership for ship ownership"  
     ///   - NN: "PRE" / "Partrederi"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> PartnershipForShipOwnership { get; } = new ConstantDefinition<EntityVariant>("3aded080-d0d4-4893-8d30-c45dff4d7656")
+    public static ConstantDefinition<EntityVariant> PRE { get; } = new ConstantDefinition<EntityVariant>("3aded080-d0d4-4893-8d30-c45dff4d7656")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("3aded080-d0d4-4893-8d30-c45dff4d7656"), TypeId = EntityTypeConstants.Organisation, Name = "PRE", Description = "Partrederi" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "PRE", Description = "Partrederi" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "PRE"), KeyValuePair.Create("Description", "Partnership for ship ownership")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "PRE"), KeyValuePair.Create("Description", "Partrederi"))
     };
@@ -655,9 +693,9 @@ public static class EntityVariantConstants
     ///   - EN: "BRL" / "Housing association"  
     ///   - NN: "BRL" / "Borettslag"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> HousingAssociation { get; } = new ConstantDefinition<EntityVariant>("7c0ae1b2-2fa9-4266-8911-c4cb82c1489b")
+    public static ConstantDefinition<EntityVariant> BRL { get; } = new ConstantDefinition<EntityVariant>("7c0ae1b2-2fa9-4266-8911-c4cb82c1489b")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("7c0ae1b2-2fa9-4266-8911-c4cb82c1489b"), TypeId = EntityTypeConstants.Organisation, Name = "BRL", Description = "Borettslag" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "BRL", Description = "Borettslag" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "BRL"), KeyValuePair.Create("Description", "Housing association")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "BRL"), KeyValuePair.Create("Description", "Borettslag"))
     };
@@ -674,9 +712,9 @@ public static class EntityVariantConstants
     ///   - EN: "KOMM" / "Municipality"  
     ///   - NN: "KOMM" / "Kommune"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> Municipality { get; } = new ConstantDefinition<EntityVariant>("ed82281c-a5a1-4a28-9046-c70d95ce4658")
+    public static ConstantDefinition<EntityVariant> KOMM { get; } = new ConstantDefinition<EntityVariant>("ed82281c-a5a1-4a28-9046-c70d95ce4658")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("ed82281c-a5a1-4a28-9046-c70d95ce4658"), TypeId = EntityTypeConstants.Organisation, Name = "KOMM", Description = "Kommune" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "KOMM", Description = "Kommune" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KOMM"), KeyValuePair.Create("Description", "Municipality")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KOMM"), KeyValuePair.Create("Description", "Kommune"))
     };
@@ -693,9 +731,9 @@ public static class EntityVariantConstants
     ///   - EN: "FLI" / "Association/club/institution"  
     ///   - NN: "FLI" / "Forening/lag/innretting"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> AssociationClubInstitution { get; } = new ConstantDefinition<EntityVariant>("ecd6e878-9121-43e6-aec0-c74b562cd3da")
+    public static ConstantDefinition<EntityVariant> FLI { get; } = new ConstantDefinition<EntityVariant>("ecd6e878-9121-43e6-aec0-c74b562cd3da")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("ecd6e878-9121-43e6-aec0-c74b562cd3da"), TypeId = EntityTypeConstants.Organisation, Name = "FLI", Description = "Forening/lag/innretning" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "FLI", Description = "Forening/lag/innretning" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "FLI"), KeyValuePair.Create("Description", "Association/club/institution")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "FLI"), KeyValuePair.Create("Description", "Forening/lag/innretting"))
     };
@@ -712,9 +750,9 @@ public static class EntityVariantConstants
     ///   - EN: "SPA" / "Savings bank"  
     ///   - NN: "SPA" / "Sparebank"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> SavingsBank { get; } = new ConstantDefinition<EntityVariant>("80acaf52-3bf5-48c7-ab79-cb6f141a5b6f")
+    public static ConstantDefinition<EntityVariant> SPA { get; } = new ConstantDefinition<EntityVariant>("80acaf52-3bf5-48c7-ab79-cb6f141a5b6f")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("80acaf52-3bf5-48c7-ab79-cb6f141a5b6f"), TypeId = EntityTypeConstants.Organisation, Name = "SPA", Description = "Sparebank" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "SPA", Description = "Sparebank" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SPA"), KeyValuePair.Create("Description", "Savings bank")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SPA"), KeyValuePair.Create("Description", "Sparebank"))
     };
@@ -731,9 +769,9 @@ public static class EntityVariantConstants
     ///   - EN: "ASA" / "Public limited company"  
     ///   - NN: "ASA" / "Allmennaksjeselskap"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> PublicLimitedCompany { get; } = new ConstantDefinition<EntityVariant>("ca45ed3a-41b3-4d2b-add9-db0d41a4e42b")
+    public static ConstantDefinition<EntityVariant> ASA { get; } = new ConstantDefinition<EntityVariant>("ca45ed3a-41b3-4d2b-add9-db0d41a4e42b")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("ca45ed3a-41b3-4d2b-add9-db0d41a4e42b"), TypeId = EntityTypeConstants.Organisation, Name = "ASA", Description = "Allmennaksjeselskap" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "ASA", Description = "Allmennaksjeselskap" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ASA"), KeyValuePair.Create("Description", "Public limited company")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ASA"), KeyValuePair.Create("Description", "Allmennaksjeselskap"))
     };
@@ -750,9 +788,9 @@ public static class EntityVariantConstants
     ///   - EN: "ESEK" / "Condominium"  
     ///   - NN: "ESEK" / "Eigarseksjonssameie"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> Condominium { get; } = new ConstantDefinition<EntityVariant>("1e2e44c0-e5e6-4962-8beb-e0ce16760a04")
+    public static ConstantDefinition<EntityVariant> ESEK { get; } = new ConstantDefinition<EntityVariant>("1e2e44c0-e5e6-4962-8beb-e0ce16760a04")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("1e2e44c0-e5e6-4962-8beb-e0ce16760a04"), TypeId = EntityTypeConstants.Organisation, Name = "ESEK", Description = "Eierseksjonssameie" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "ESEK", Description = "Eierseksjonssameie" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ESEK"), KeyValuePair.Create("Description", "Condominium")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ESEK"), KeyValuePair.Create("Description", "Eigarseksjonssameie"))
     };
@@ -769,9 +807,9 @@ public static class EntityVariantConstants
     ///   - EN: "ENK" / "Sole proprietorship"  
     ///   - NN: "ENK" / "Enkeltpersonforetak"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> SoleProprietorship { get; } = new ConstantDefinition<EntityVariant>("d78400f0-27d9-488a-886c-e264cc5c77ba")
+    public static ConstantDefinition<EntityVariant> ENK { get; } = new ConstantDefinition<EntityVariant>("d78400f0-27d9-488a-886c-e264cc5c77ba")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("d78400f0-27d9-488a-886c-e264cc5c77ba"), TypeId = EntityTypeConstants.Organisation, Name = "ENK", Description = "Enkeltpersonforetak" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "ENK", Description = "Enkeltpersonforetak" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ENK"), KeyValuePair.Create("Description", "Sole proprietorship")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "ENK"), KeyValuePair.Create("Description", "Enkeltpersonforetak"))
     };
@@ -788,9 +826,9 @@ public static class EntityVariantConstants
     ///   - EN: "FKF" / "County municipal enterprise"  
     ///   - NN: "FKF" / "Fylkeskommunalt foretak"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> CountyMunicipalEnterprise { get; } = new ConstantDefinition<EntityVariant>("6b798668-a98d-49f2-a6d9-e391bad99fb2")
+    public static ConstantDefinition<EntityVariant> FKF { get; } = new ConstantDefinition<EntityVariant>("6b798668-a98d-49f2-a6d9-e391bad99fb2")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("6b798668-a98d-49f2-a6d9-e391bad99fb2"), TypeId = EntityTypeConstants.Organisation, Name = "FKF", Description = "Fylkeskommunalt foretak" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "FKF", Description = "Fylkeskommunalt foretak" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "FKF"), KeyValuePair.Create("Description", "County municipal enterprise")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "FKF"), KeyValuePair.Create("Description", "Fylkeskommunalt foretak"))
     };
@@ -807,9 +845,9 @@ public static class EntityVariantConstants
     ///   - EN: "KIRK" / "The Church of Norway"  
     ///   - NN: "KIRK" / "Den norske kyrkja"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> TheChurchOfNorway { get; } = new ConstantDefinition<EntityVariant>("7b43c6c2-e8ce-4f63-bb46-e4eb830fa222")
+    public static ConstantDefinition<EntityVariant> KIRK { get; } = new ConstantDefinition<EntityVariant>("7b43c6c2-e8ce-4f63-bb46-e4eb830fa222")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("7b43c6c2-e8ce-4f63-bb46-e4eb830fa222"), TypeId = EntityTypeConstants.Organisation, Name = "KIRK", Description = "Den norske kirke" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "KIRK", Description = "Den norske kirke" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KIRK"), KeyValuePair.Create("Description", "The Church of Norway")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KIRK"), KeyValuePair.Create("Description", "Den norske kyrkja"))
     };
@@ -826,9 +864,9 @@ public static class EntityVariantConstants
     ///   - EN: "BEDR" / "Subunit of commercial and public administration"  
     ///   - NN: "BEDR" / "Underenhet til næringsdrivande og offentleg forvaltning"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> SubunitOfCommercialAndPublicAdministration { get; } = new ConstantDefinition<EntityVariant>("1f1e3720-b8a8-490e-8304-e81da21e3d3b")
+    public static ConstantDefinition<EntityVariant> BEDR { get; } = new ConstantDefinition<EntityVariant>("1f1e3720-b8a8-490e-8304-e81da21e3d3b")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("1f1e3720-b8a8-490e-8304-e81da21e3d3b"), TypeId = EntityTypeConstants.Organisation, Name = "BEDR", Description = "Underenhet til næringsdrivende og offentlig forvaltning" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "BEDR", Description = "Underenhet til næringsdrivende og offentlig forvaltning" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "BEDR"), KeyValuePair.Create("Description", "Subunit of commercial and public administration")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "BEDR"), KeyValuePair.Create("Description", "Underenhet til næringsdrivande og offentleg forvaltning"))
     };
@@ -845,9 +883,9 @@ public static class EntityVariantConstants
     ///   - EN: "KBO" / "Bankruptcy estate"  
     ///   - NN: "KBO" / "Konkursbo"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> BankruptcyEstate { get; } = new ConstantDefinition<EntityVariant>("d7208d54-067d-4b5c-a906-f0da3d3de0f1")
+    public static ConstantDefinition<EntityVariant> KBO { get; } = new ConstantDefinition<EntityVariant>("d7208d54-067d-4b5c-a906-f0da3d3de0f1")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("d7208d54-067d-4b5c-a906-f0da3d3de0f1"), TypeId = EntityTypeConstants.Organisation, Name = "KBO", Description = "Konkursbo" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "KBO", Description = "Konkursbo" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KBO"), KeyValuePair.Create("Description", "Bankruptcy estate")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "KBO"), KeyValuePair.Create("Description", "Konkursbo"))
     };
@@ -864,9 +902,9 @@ public static class EntityVariantConstants
     ///   - EN: "BA" / "Limited liability company"  
     ///   - NN: "BA" / "Selskap med avgrensa ansvar"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> LimitedLiabilityCompany { get; } = new ConstantDefinition<EntityVariant>("ea460099-515f-4e54-88d8-fbe53a807276")
+    public static ConstantDefinition<EntityVariant> BA { get; } = new ConstantDefinition<EntityVariant>("ea460099-515f-4e54-88d8-fbe53a807276")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("ea460099-515f-4e54-88d8-fbe53a807276"), TypeId = EntityTypeConstants.Organisation, Name = "BA", Description = "Selskap med begrenset ansvar" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "BA", Description = "Selskap med begrenset ansvar" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "BA"), KeyValuePair.Create("Description", "Limited liability company")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "BA"), KeyValuePair.Create("Description", "Selskap med avgrensa ansvar"))
     };
@@ -885,7 +923,7 @@ public static class EntityVariantConstants
     /// </remarks>
     public static ConstantDefinition<EntityVariant> Person { get; } = new ConstantDefinition<EntityVariant>("b0690e14-7a75-45a4-8c02-437f6705b5ee")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("b0690e14-7a75-45a4-8c02-437f6705b5ee"), TypeId = EntityTypeConstants.Person, Name = "Person", Description = "Person" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Person, Name = "Person", Description = "Person" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Person"), KeyValuePair.Create("Description", "Person")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "PERS"), KeyValuePair.Create("Description", "Person"))
     };
@@ -904,7 +942,7 @@ public static class EntityVariantConstants
     /// </remarks>
     public static ConstantDefinition<EntityVariant> AgentSystem { get; } = new ConstantDefinition<EntityVariant>("8ca2ffdb-b4a9-4c64-8a9a-ed0f8dd722a3")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("8ca2ffdb-b4a9-4c64-8a9a-ed0f8dd722a3"), TypeId = EntityTypeConstants.SystemUser, Name = "AgentSystem", Description = "AgentSystem" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.SystemUser, Name = "AgentSystem", Description = "AgentSystem" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "AgentSystem"), KeyValuePair.Create("Description", "AgentSystem")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "AgentSystem"), KeyValuePair.Create("Description", "AgentSystem"))
     };
@@ -923,7 +961,7 @@ public static class EntityVariantConstants
     /// </remarks>
     public static ConstantDefinition<EntityVariant> StandardSystem { get; } = new ConstantDefinition<EntityVariant>("f948baa3-8f6b-4790-a35c-85064c1b7f9b")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("f948baa3-8f6b-4790-a35c-85064c1b7f9b"), TypeId = EntityTypeConstants.SystemUser, Name = "StandardSystem", Description = "StandardSystem" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.SystemUser, Name = "StandardSystem", Description = "StandardSystem" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "StandardSystem"), KeyValuePair.Create("Description", "StandardSystem")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "StandardSystem"), KeyValuePair.Create("Description", "StandardSystem"))
     };
@@ -940,9 +978,9 @@ public static class EntityVariantConstants
     ///   - EN: "SI" / "Self-identified user"  
     ///   - NN: "SI" / "Sjølvidentifisert brukar"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> SelfIdentifiedUser { get; } = new ConstantDefinition<EntityVariant>("03d08113-40d0-48bd-85b6-bd4430ccc182")
+    public static ConstantDefinition<EntityVariant> SI { get; } = new ConstantDefinition<EntityVariant>("03d08113-40d0-48bd-85b6-bd4430ccc182")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("03d08113-40d0-48bd-85b6-bd4430ccc182"), TypeId = EntityTypeConstants.Person, Name = "SI", Description = "Selvidentifisert bruker" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Person, Name = "SI", Description = "Selvidentifisert bruker" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SI"), KeyValuePair.Create("Description", "Self-identified user")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "SI"), KeyValuePair.Create("Description", "Sjølvidentifisert brukar"))
     };
@@ -959,9 +997,9 @@ public static class EntityVariantConstants
     ///   - EN: "Default" / "Default internal entity"  
     ///   - NN: "Standard" / "Standard intern entitet"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> DefaultInternalEntity { get; } = new ConstantDefinition<EntityVariant>("cbe2834d-3db0-4a14-baa2-d32de004d6d7")
+    public static ConstantDefinition<EntityVariant> Standard { get; } = new ConstantDefinition<EntityVariant>("cbe2834d-3db0-4a14-baa2-d32de004d6d7")
     {
-        Entity = new EntityVariant() { Id = Guid.Parse("cbe2834d-3db0-4a14-baa2-d32de004d6d7"), TypeId = EntityTypeConstants.Internal, Name = "Standard", Description = "Standard intern entitet" },
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Internal, Name = "Standard", Description = "Standard intern entitet" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Default"), KeyValuePair.Create("Description", "Default internal entity")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Standard"), KeyValuePair.Create("Description", "Standard intern entitet")),
     };
