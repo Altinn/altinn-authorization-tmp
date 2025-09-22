@@ -121,30 +121,7 @@ internal static partial class AccessManagementHost
         builder.AddAccessManagementEnduser();
         builder.AddAccessManagementInternal();
 
-        builder.ConfigureEF();
-
         return builder.Build();
-    }
-
-    private static WebApplicationBuilder ConfigureEF(this WebApplicationBuilder builder)
-    {
-        builder.Services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
-        builder.Services.AddScoped<ITranslationService, TranslationService>();
-        builder.Services.AddScoped<StaticDataIngest>();
-
-        var connString = "Database=accessmgmt_premig_04;Host=localhost;Username=platform_authorization_admin;Password=Password;Include Error Detail=true";
-
-        builder.Services.AddDbContext<AppDbContext>((sp, options) =>
-        {
-            options
-                .UseNpgsql(connString)
-                .ReplaceService<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
-
-            options.EnableSensitiveDataLogging();
-            options.LogTo(Console.WriteLine);
-        });
-
-        return builder;
     }
 
     private static WebApplicationBuilder ConfigureAccessManagementPersistence(this WebApplicationBuilder builder)
