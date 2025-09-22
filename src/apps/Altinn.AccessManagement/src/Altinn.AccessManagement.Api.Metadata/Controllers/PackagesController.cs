@@ -15,16 +15,21 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers;
 [ApiController]
 public class PackagesController : ControllerBase
 {
-    private readonly IPackageService packageService;
+    private readonly IPackageService corePackageService;
+    private readonly IPackageService persistencePackageService;
     private readonly IFeatureManager featureManager;
 
     /// <summary>
     /// Initialiserer en ny instans av <see cref="PackagesController"/>.
     /// </summary>
     /// <param name="packageService">Service for håndtering av access packages.</param>
-    public PackagesController(IPackageService packageService, IFeatureManager featureManager)
+    public PackagesController(
+        IPackageService corePackageService,
+        IPackageService persistencePackageService,
+        IFeatureManager featureManager)
     {
-        this.packageService = packageService;
+        this.corePackageService = corePackageService;
+        this.persistencePackageService = persistencePackageService;
         this.featureManager = featureManager;
     }
 
@@ -38,12 +43,19 @@ public class PackagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<SearchObject<PackageDto>>> Search([FromQuery] string term, [FromQuery] bool searchInResources = false)
     {
-        var res = await packageService.Search(term, searchInResources);
+        IEnumerable<SearchObject<PackageDto>> res;
+        if (await featureManager.IsEnabledAsync("AccessMgmt.PackageService.EFCore"))
+        {
+            res = await corePackageService.Search(term, searchInResources);
+        }
+        else
+        {
+            res = await persistencePackageService.Search(term, searchInResources);
+        }
         if (res == null || !res.Any())
         {
             return NoContent();
         }
-
         return Ok(res);
     }
 
