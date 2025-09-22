@@ -245,12 +245,19 @@ public class PackagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PackageDto>> GetPackage(Guid id)
     {
-        var res = await packageService.GetPackage(id);
+        PackageDto res;
+        if (await featureManager.IsEnabledAsync("AccessMgmt.PackageService.EFCore"))
+        {
+            res = await corePackageService.GetPackage(id);
+        }
+        else
+        {
+            res = await persistencePackageService.GetPackage(id);
+        }
         if (res == null)
         {
             return NotFound();
         }
-
         return Ok(res);
     }
 
