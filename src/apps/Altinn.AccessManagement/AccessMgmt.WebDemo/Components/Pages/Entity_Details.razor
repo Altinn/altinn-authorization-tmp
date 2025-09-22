@@ -1,0 +1,66 @@
+﻿@page "/entity/{id}"
+@using Altinn.AccessMgmt.Core.Services
+@using Altinn.AccessMgmt.Core.Services.Contracts
+@using Altinn.AccessMgmt.PersistenceEF.Contexts
+@using Altinn.AccessMgmt.PersistenceEF.Models
+@using Microsoft.EntityFrameworkCore
+@inject IRequestService requestService
+@inject IEntityService entityService
+@inject IAssignmentService assignmentService
+@inject AppDbContext dbContext;
+
+@if(Entity != null)
+{
+    <h3>@Entity.Name (@Entity.RefId)</h3>
+    <em>@Entity.Type.Name - @Entity.Variant.Name</em>
+
+    @if(IncommingRequests != null)
+    {
+        <h4>Inkommende forespørsler</h4>
+        <ul>
+            @foreach(var request in IncommingRequests)
+            {
+                <li>
+                    <a href="/request/@request.Id">
+                        @request.From.Name
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (OutgoingRequests != null)
+    {
+        <h4>Utgående forespørsler</h4>
+        <ul>
+            @foreach (var request in OutgoingRequests)
+            {
+                <li>
+                    <a href="/request/@request.Id">
+                        @request.To.Name
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+
+
+}
+
+@code {
+
+    [Parameter] public string id { get; set; }
+
+    public Entity Entity { get; set; }
+    public IEnumerable<Request> IncommingRequests { get; set; }
+    public IEnumerable<Request> OutgoingRequests { get; set; }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        Entity = await entityService.GetEntity(Guid.Parse(id), new CancellationToken());
+        IncommingRequests = await requestService.GetAllRequests(null, Entity.Id, null);
+        OutgoingRequests = await requestService.GetAllRequests(Entity.Id, null, null);
+
+    }
+
+}

@@ -1,0 +1,121 @@
+﻿@page "/"
+@using Altinn.AccessMgmt.Core.Services
+@using Altinn.AccessMgmt.Core.Services.Contracts
+@using Altinn.AccessMgmt.PersistenceEF.Contexts
+@using Altinn.AccessMgmt.PersistenceEF.Models
+@using Microsoft.EntityFrameworkCore
+@inject IRequestService requestService
+@inject IEntityService entityService
+@inject IAssignmentService assignmentService
+@inject AppDbContext dbContext;
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<button @onclick="() => CreateDemoData()">Create</button>
+<button @onclick="() => LoadData()">Load</button>
+
+@if(Entities != null && Entities.Any())
+{
+    <ul>
+        @foreach(var entity in Entities.Where(t => t.Type.Name != "Intern"))
+        {
+            <li>
+                <a href="/entity/@entity.Id">
+                @entity.Name (@entity.Type.Name)
+                </a>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+
+    public List<Entity> Entities { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        // if (Entities == null)
+        // {
+        //     await CreateDemoData();
+        // }
+        // if(Entities.Where(t=>t.Name == "Baker Fransen").Count() == 0)
+        // {
+        //     await CreateDemoData();
+        //     Entities = await dbContext.Entities.Include(t => t.Type).ToListAsync();
+        // }
+    }
+
+    private async Task LoadData()
+    {
+        Entities = await dbContext.Entities.Include(t => t.Type).ToListAsync();
+    }
+
+    private async Task CreateDemoData()
+    {
+        /*
+        0195efb8-7c80-760e-bfc9-f067e0529eef
+        0195efb8-7c80-7f22-8b85-85d245d58df4
+        0195efb8-7c80-75c7-8ba6-65250d659343
+        0195efb8-7c80-7750-a65e-8d8367e20b8d
+        0195efb8-7c80-7622-97ef-8a214ba5c498
+        0195efb8-7c80-7283-8962-1b1f064361ca
+        0195efb8-7c80-794a-89e8-ca5e9a72c823
+        0195efb8-7c80-73c6-a6d4-0b450c59c071
+        0195efb8-7c80-793d-baa9-18244658f2c3
+         */
+
+    var org01 = await entityService.GetOrCreateEntity(Guid.Parse("0195efb8-7c80-7162-b300-5833d839f730"), "Baker Fransen", "DEMO-O-01", "Organisasjon", "AS");
+        var org02 = await entityService.GetOrCreateEntity(Guid.Parse("0195efb8-7c80-7afd-8dc8-7511cc6bccaf"), "BDO", "DEMO-O-02", "Organisasjon", "AS");
+        var org03 = await entityService.GetOrCreateEntity(Guid.Parse("0195efb8-7c80-715a-adf6-89d8c77a5c5b"), "PwC", "DEMO-O-03", "Organisasjon", "AS");
+
+        var pers01 = await entityService.GetOrCreateEntity(Guid.Parse("0195efb8-7c80-74ca-b8d1-fd3d11a2aff9"), "Per", "DEMO-P-01", "Person", "Person");
+        var pers02 = await entityService.GetOrCreateEntity(Guid.Parse("0195efb8-7c80-71c1-b6ba-fd6c5adeb9ca"), "Kari", "DEMO-P-02", "Person", "Person");
+        var pers03 = await entityService.GetOrCreateEntity(Guid.Parse("0195efb8-7c80-73ed-b04f-5e614b3c5113"), "Gunnar", "DEMO-P-03", "Person", "Person");
+        var pers04 = await entityService.GetOrCreateEntity(Guid.Parse("0195efb8-7c80-71d5-b0c8-8fd6459c8112"), "Fredrik", "DEMO-P-04", "Person", "Person");
+        var pers05 = await entityService.GetOrCreateEntity(Guid.Parse("0195efb8-7c80-7fb2-8736-10ec554ca931"), "Silje", "DEMO-P-05", "Person", "Person");
+        var pers06 = await entityService.GetOrCreateEntity(Guid.Parse("0195efb8-7c80-72a9-a76d-6378be0d9bf9"), "Nina", "DEMO-P-06", "Person", "Person");
+        var pers07 = await entityService.GetOrCreateEntity(Guid.Parse("0195efb8-7c80-77b7-b167-d7ae460917f6"), "Victoria", "DEMO-P-07", "Person", "Person");
+
+        await entityService.GetOrCreateEntity(Guid.Parse("0195efb8-7c80-7c2a-981b-e42200d3421d"), "Visms_BF_01", "DEMO-S-01", "Systembruker", "StandardSystem");
+
+        await assignmentService.GetOrCreateAssignment(org01.Id, pers01.Id, "daglig-leder");
+        await assignmentService.GetOrCreateAssignment(org02.Id, pers02.Id, "daglig-leder");
+        await assignmentService.GetOrCreateAssignment(org03.Id, pers03.Id, "daglig-leder");
+
+        await assignmentService.GetOrCreateAssignment(org01.Id, org03.Id, "regnskapsforer");
+
+        await GetOrCreateRequest(pers04, org01, pers04, "rettighetshaver", ["Byggesøknad", "Skoleeier"], []);
+        await GetOrCreateRequest(pers05, org01, pers05, "rettighetshaver", ["Byggesøknad", "Skoleeier"], []);
+
+    }
+
+    private async Task<Request> GetOrCreateRequest(Entity by, Entity from, Entity to, string role, List<string> packages, List<string> resources)
+    {
+        var requests = await requestService.GetAllRequests(from.Id, to.Id, null);
+        if(requests == null || !requests.Any())
+        {
+            var roleId = await dbContext.Roles.AsNoTracking().Where(t => t.Code == role).Select(t => t.Id).SingleAsync();
+
+            var packageIds = new List<Guid>();
+            foreach(var packageCode in packages)
+            {
+                packageIds.Add(await dbContext.Packages.AsNoTracking().Where(t => t.Name == packageCode).Select(t => t.Id).SingleAsync());
+            }
+
+            var resourceIds = new List<Guid>();
+            foreach (var resourceCode in resources)
+            {
+                resourceIds.Add(await dbContext.Resources.AsNoTracking().Where(t => t.RefId == resourceCode).Select(t => t.Id).SingleAsync());
+            }
+
+            return await requestService.CreateRequest(by.Id, from.Id, to.Id, roleId, packageIds, resourceIds);
+        }
+
+        return requests.First();
+    }
+}

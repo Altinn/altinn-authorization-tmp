@@ -1,0 +1,111 @@
+﻿@page "/request/{id}"
+@using Altinn.AccessMgmt.Core.Services
+@using Altinn.AccessMgmt.Core.Services.Contracts
+@using Altinn.AccessMgmt.PersistenceEF.Contexts
+@using Altinn.AccessMgmt.PersistenceEF.Models
+@using Microsoft.EntityFrameworkCore
+@inject IRequestService requestService
+@inject IEntityService entityService
+@inject IAssignmentService assignmentService
+@inject AppDbContext dbContext;
+
+@if(Request != null)
+{
+    <h3>Request</h3>
+
+    <dl>
+        <dt>Status</dt>
+        <dd>@Request.Status.Name</dd>
+
+        <dt>By</dt>
+        <dd>
+            <a href="/entity/@Request.RequestedBy.Id">
+                @Request.RequestedBy.Name
+            </a>
+        </dd>
+
+        <dt>From</dt>
+        <dd>
+            <a href="/entity/@Request.From.Id">
+                @Request.From.Name
+            </a>
+        </dd>
+
+        <dt>To</dt>
+        <dd>
+            <a href="/entity/@Request.To.Id">
+                @Request.To.Name
+            </a>
+        </dd>
+
+        <dt>Role</dt>
+        <dd>@Request.Role.Name</dd>
+
+        @if (Request.ViaId.HasValue)
+        {
+            <dt>Via</dt>
+            <dd>
+                <a href="/entity/@Request.Via?.Id">
+                    @Request.Via?.Name
+                </a>
+            </dd>
+        }
+
+        @if (Request.ViaRoleId.HasValue)
+        {
+            <dt>Via Role</dt>
+            <dd>@Request.ViaRole?.Name</dd>
+        }
+
+    </dl>
+
+    <h4>Packages</h4>
+    @if(Packages != null)
+    {
+        <dl>
+            @foreach(var package in Packages)
+            {
+                <dt>@package.Package.Name</dt>
+                <dd>@package.Status.Name</dd>
+            }
+        </dl>
+    }
+
+
+    <h4>Resources</h4>
+    @if(Resources != null)
+    {
+        <dl>
+            @foreach (var resource in Resources)
+            {
+                <dt>@resource.Resource.Name</dt>
+                <dd>@resource.Status.Name</dd>
+            }
+        </dl>
+    }
+
+
+}
+
+
+
+@code 
+{
+    [Parameter] public string id { get; set; }
+
+    public Request Request { get; set; }
+    public IEnumerable<RequestPackage> Packages { get; set; }
+    public IEnumerable<RequestResource> Resources { get; set; }
+    public IEnumerable<RequestMessage> Messages { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        Request = await requestService.GetRequest(Guid.Parse(id));
+
+        Packages = await requestService.GetRequestPackages(Request.Id);
+        Resources = await requestService.GetRequestResources(Request.Id);
+        Messages = await requestService.GetRequestMessages(Request.Id);
+
+    }
+
+}
