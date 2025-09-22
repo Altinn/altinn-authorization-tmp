@@ -12,7 +12,6 @@ using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Persistence.Extensions;
-using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.Host;
@@ -116,22 +115,7 @@ internal static partial class AccessManagementHost
         builder.AddAccessManagementEnduser();
         builder.AddAccessManagementInternal();
 
-        builder.Services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
-
         return builder.Build();
-    }
-
-    private static WebApplicationBuilder ConfigureEF(this WebApplicationBuilder builder)
-    {
-        // builder.Services.Replace(ServiceDescriptor.Singleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>());
-        // builder.Services.AddSingleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
-
-        // builder.Services.AddScoped<IAuditContextProvider, HttpContextAuditContextProvider>();
-        // builder.Services.AddScoped<AuditConnectionInterceptor>();
-
-        builder.Services.AddScoped<ReadOnlyInterceptor>();
-
-        return builder;
     }
 
     private static WebApplicationBuilder ConfigureAccessManagementPersistence(this WebApplicationBuilder builder)
