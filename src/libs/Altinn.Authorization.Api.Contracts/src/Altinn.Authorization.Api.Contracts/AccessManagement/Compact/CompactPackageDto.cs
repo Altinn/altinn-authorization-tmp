@@ -1,7 +1,7 @@
 ﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
-/// Compact Package Model HELLO
+/// Compact Package Model
 /// </summary>
 public class CompactPackageDto
 {
