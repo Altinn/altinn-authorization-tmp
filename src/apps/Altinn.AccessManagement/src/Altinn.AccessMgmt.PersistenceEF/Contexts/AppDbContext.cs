@@ -5,7 +5,6 @@ using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
@@ -26,6 +25,9 @@ public class AppDbContext : DbContext
     public DbSet<RequestPackage> RequestPackages { get; set; }
 
     public DbSet<RequestResource> RequestResources { get; set; }
+
+    public DbSet<RequestResourceElement> RequestElements { get; set; }
+
     public DbSet<RequestMessage> RequestMessages { get; set; }
 
     public DbSet<Connection> Connections => Set<Connection>();
@@ -191,6 +193,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration<AuditRequestMessage>(new AuditRequestMessageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRequestPackage>(new AuditRequestPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRequestResource>(new AuditRequestResourceConfiguration());
+        modelBuilder.ApplyConfiguration<AuditRequestResourceElement>(new AuditRequestResourceElementConfiguration());
     }
     
     private void ApplyConfiguration(ModelBuilder modelBuilder)
@@ -227,6 +230,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration<RequestMessage>(new RequestMessageConfiguration());
         modelBuilder.ApplyConfiguration<RequestPackage>(new RequestPackageConfiguration());
         modelBuilder.ApplyConfiguration<RequestResource>(new RequestResourceConfiguration());
+        modelBuilder.ApplyConfiguration<RequestResourceElement>(new RequestResourceElementConfiguration());
     }
 
     #region Extensions

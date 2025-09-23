@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Configurations;
 
-public class RequestResourceConfiguration : IEntityTypeConfiguration<RequestResource>
+public class RequestResourceElementConfiguration : IEntityTypeConfiguration<RequestResourceElement>
 {
-    public void Configure(EntityTypeBuilder<RequestResource> builder)
+    public void Configure(EntityTypeBuilder<RequestResourceElement> builder)
     {
         builder.ToDefaultTable();
         builder.EnableAudit();
@@ -19,14 +19,15 @@ public class RequestResourceConfiguration : IEntityTypeConfiguration<RequestReso
         builder.Property(t => t.RequestId).IsRequired();
         builder.Property(t => t.StatusId).IsRequired();
         builder.Property(t => t.ResourceId).IsRequired();
+        builder.Property(t => t.ElementId).IsRequired();
 
         builder.PropertyWithReference(navKey: t => t.Request, foreignKey: t => t.RequestId, principalKey: t => t.Id, autoInclude: true);
         builder.PropertyWithReference(navKey: t => t.Status, foreignKey: t => t.StatusId, principalKey: t => t.Id, autoInclude: true);
         builder.PropertyWithReference(navKey: t => t.Resource, foreignKey: t => t.ResourceId, principalKey: t => t.Id, autoInclude: true);
+        builder.PropertyWithReference(navKey: t => t.Element, foreignKey: t => t.ElementId, principalKey: t => t.Id, autoInclude: true);
 
-        builder.HasIndex(["RequestId", "ResourceId"]).IsUnique();
+        builder.HasIndex(["RequestId", "ElementId"]).IsUnique();
     }
 }
 
-public class AuditRequestResourceConfiguration : AuditConfiguration<AuditRequestResource> { }
-
+public class AuditRequestResourceElementConfiguration : AuditConfiguration<AuditRequestResourceElement> { }
