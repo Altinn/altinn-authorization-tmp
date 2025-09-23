@@ -381,11 +381,8 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             XacmlContextAttributes subjectContextAttributes = request.GetSubjectAttributes();
 
             Guard.IsNotNull(subjectContextAttributes);
-
-            if (subjectContextAttributes.Attributes == null || subjectContextAttributes.Attributes.Count == 0)
-            {
-                throw new ArgumentException($"Subject attributes missing");
-            }
+            Guard.IsNotNull(subjectContextAttributes.Attributes, $"Subject attributes missing");
+            Guard.IsNotEmpty(subjectContextAttributes.Attributes, $"Subject attributes empty");
 
             int subjectUserId = 0;
             int.TryParse(resourceAttr.ResourcePartyValue, out int resourcePartyId);
