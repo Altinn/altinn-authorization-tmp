@@ -382,6 +382,11 @@ namespace Altinn.Platform.Authorization.Services.Implementation
 
             Guard.IsNotNull(subjectContextAttributes);
 
+            if (subjectContextAttributes.Attributes == null || subjectContextAttributes.Attributes.Count == 0)
+            {
+                throw new ArgumentException($"Subject attributes missing");
+            }
+
             int subjectUserId = 0;
             int.TryParse(resourceAttr.ResourcePartyValue, out int resourcePartyId);
             string subjectSsn = string.Empty;
