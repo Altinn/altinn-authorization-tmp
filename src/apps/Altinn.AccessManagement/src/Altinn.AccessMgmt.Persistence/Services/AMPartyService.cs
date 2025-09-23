@@ -1,5 +1,4 @@
 ﻿using Altinn.AccessManagement.Core.Models.Party;
-using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Models;
@@ -41,13 +40,38 @@ namespace Altinn.AccessMgmt.Persistence.Services
                 Name = extEntityLookup.Entity.Name,
                 PartyUuid = extEntityLookup.Entity.Id,
                 OrganizationId = extEntityLookup.Value,
+                PartyType = extEntityLookup.Entity.TypeId
             };
         }
 
         /// <inheritdoc />
-        public Task<MinimalParty> GetByPartyId(int partyId, CancellationToken cancellationToken = default)
+        public async Task<MinimalParty> GetByPartyId(int partyId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            GenericFilterBuilder<EntityLookup> filter = entityLookupRepository.CreateFilterBuilder();
+            filter.Equal(t => t.Key, "PartyId");
+            filter.Equal(t => t.Value, partyId.ToString());
+
+            IEnumerable<ExtEntityLookup> res = await entityLookupRepository.GetExtended(filter, cancellationToken: cancellationToken);
+
+            if (res == null || !res.Any())
+            {
+                return null;
+            }
+
+            if (res.Count() > 1)
+            {
+                throw new InvalidOperationException("Multiple matches found for the given criteria.Should never happen.");
+            }
+
+            ExtEntityLookup extEntityLookup = res.First();
+
+            return new MinimalParty()
+            {
+                Name = extEntityLookup.Entity.Name,
+                PartyUuid = extEntityLookup.Entity.Id,
+                PartyId = partyId,
+                PartyType = extEntityLookup.Entity.TypeId
+            };
         }
 
         /// <inheritdoc />
@@ -76,6 +100,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
                 Name = extEntityLookup.Entity.Name,
                 PartyUuid = extEntityLookup.Entity.Id,
                 OrganizationId = extEntityLookup.Value,
+                PartyType = extEntityLookup.Entity.TypeId
             };
         }
 
@@ -93,7 +118,8 @@ namespace Altinn.AccessMgmt.Persistence.Services
             MinimalParty party = new()
             {
                 PartyUuid = partyUuid,
-                Name = parties.First().Entity.Name
+                Name = parties.First().Entity.Name,
+                PartyType = parties.First().Entity.TypeId
             };
 
             if (res.TryGetValue("OrganizationIdentifier", out string orgNo))
@@ -112,6 +138,34 @@ namespace Altinn.AccessMgmt.Persistence.Services
             }
 
             return party;
+        }
+
+        public async Task<MinimalParty> GetByUserId(int userId, CancellationToken cancellationToken = default)
+        {
+            GenericFilterBuilder<EntityLookup> filter = entityLookupRepository.CreateFilterBuilder();
+            filter.Equal(t => t.Key, "UserId");
+            filter.Equal(t => t.Value, userId.ToString());
+
+            IEnumerable<ExtEntityLookup> res = await entityLookupRepository.GetExtended(filter, cancellationToken: cancellationToken);
+
+            if (res == null || !res.Any())
+            {
+                return null;
+            }
+
+            if (res.Count() > 1)
+            {
+                throw new InvalidOperationException("Multiple matches found for the given criteria.Should never happen.");
+            }
+
+            ExtEntityLookup extEntityLookup = res.First();
+
+            return new MinimalParty()
+            {
+                Name = extEntityLookup.Entity.Name,
+                PartyUuid = extEntityLookup.Entity.Id,
+                PartyType = extEntityLookup.Entity.TypeId
+            };
         }
     }
 }
