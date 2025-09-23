@@ -96,10 +96,10 @@ public class CustomMigrationsSqlGenerator : NpgsqlMigrationsSqlGenerator
         sb.AppendLine("SELECT current_setting('app.changed_by', false) INTO changed_by;");
         sb.AppendLine("SELECT current_setting('app.changed_by_system', false) INTO changed_by_system;");
         sb.AppendLine("SELECT current_setting('app.change_operation_id', false) INTO change_operation_id;");
-        sb.AppendLine("NEW.audit_changedby := changed_by;");
-        sb.AppendLine("NEW.audit_changedbysystem := changed_by_system;");
-        sb.AppendLine("NEW.audit_changeoperation := change_operation_id;");
-        sb.AppendLine("NEW.audit_validfrom := now();");
+        sb.AppendLine("IF NEW.audit_changedby IS NULL THEN NEW.audit_changedby := changed_by; END IF;");
+        sb.AppendLine("IF NEW.audit_changedbysystem IS NULL THEN NEW.audit_changedbysystem := changed_by_system; END IF;");
+        sb.AppendLine("IF NEW.audit_changeoperation IS NULL THEN NEW.audit_changeoperation := change_operation_id; END IF;");
+        sb.AppendLine("IF NEW.audit_validfrom IS NULL THEN NEW.audit_validfrom := now(); END IF;");
         sb.AppendLine("RETURN NEW;");
         sb.AppendLine("END;");
         sb.AppendLine("END;");
