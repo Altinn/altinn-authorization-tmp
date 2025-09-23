@@ -15,7 +15,6 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="leaseService">Lease provider for distributed locking.</param>
 /// <param name="logger">Logger for logging service activities.</param>
 /// <param name="featureManager">for reading feature flags</param>
-/// <param name="statusService">Status service</param>
 /// <param name="resourceSyncService">Service for syncing resources</param>
 /// <param name="partySyncService">Service for syncing parties</param>
 /// <param name="roleSyncService">Service for syncing roles</param>
@@ -23,7 +22,6 @@ public partial class RegisterHostedService(
     ILeaseService leaseService,
     ILogger<RegisterHostedService> logger,
     IFeatureManager featureManager,
-    IStatusService statusService,
     IResourceSyncService resourceSyncService,
     IPartySyncService partySyncService,
     IRoleSyncService roleSyncService
@@ -32,7 +30,6 @@ public partial class RegisterHostedService(
     private readonly ILeaseService _leaseService = leaseService;
     private readonly ILogger<RegisterHostedService> _logger = logger;
     private readonly IFeatureManager _featureManager = featureManager;
-    private readonly IStatusService statusService = statusService;
     private readonly IResourceSyncService resourceSyncService = resourceSyncService;
     private readonly IPartySyncService partySyncService = partySyncService;
     private readonly IRoleSyncService roleSyncService = roleSyncService;
