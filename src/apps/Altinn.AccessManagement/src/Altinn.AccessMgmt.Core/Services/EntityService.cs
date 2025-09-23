@@ -75,6 +75,20 @@ public class EntityService(AppDbContext db) : IEntityService
     }
 
     /// <inheritdoc/>
+    public async Task<Entity> GetByPartyId(string partyId, CancellationToken cancellationToken = default)
+    {
+        var entityId = await db.EntityLookups.AsNoTracking().Where(t => t.Key == "PartyId" && t.Value == partyId).Select(t => t.EntityId).FirstOrDefaultAsync();
+        return await GetEntity(entityId, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Entity> GetByUserId(string userId, CancellationToken cancellationToken = default)
+    {
+        var entityId = await db.EntityLookups.AsNoTracking().Where(t => t.Key == "UserId" && t.Value == userId).Select(t => t.EntityId).FirstOrDefaultAsync();
+        return await GetEntity(entityId, cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<Entity> GetByProfile(string profileId, CancellationToken cancellationToken = default)
     {
         var entityId = await db.EntityLookups.AsNoTracking().Where(t => t.Key == "ProfileId" && t.Value == profileId).Select(t => t.EntityId).FirstOrDefaultAsync();
@@ -91,5 +105,5 @@ public class EntityService(AppDbContext db) : IEntityService
     public async Task<Entity> GetParent(Guid parentId, CancellationToken cancellationToken = default)
     {
         return await GetEntity(parentId, cancellationToken);
-    }
+    }    
 }
