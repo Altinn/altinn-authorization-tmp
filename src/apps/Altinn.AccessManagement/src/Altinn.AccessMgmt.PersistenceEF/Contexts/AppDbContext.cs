@@ -3,6 +3,7 @@ using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
+using Altinn.AccessMgmt.PersistenceEF.Models.Legacy.Enums;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -132,7 +133,13 @@ public class AppDbContext : DbContext
         ApplyAuditConfiguration(modelBuilder);
         ApplyConfiguration(modelBuilder);
         ApplyViewConfiguration(modelBuilder);
+        AddLegacyEnums(modelBuilder);
         modelBuilder.UseLowerCaseNamingConvention();
+    }
+
+    private void AddLegacyEnums(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasPostgresEnum<DelegationChangeType>();
     }
 
     private void ApplyViewConfiguration(ModelBuilder modelBuilder)
