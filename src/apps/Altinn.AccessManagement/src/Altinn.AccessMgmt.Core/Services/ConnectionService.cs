@@ -4,8 +4,7 @@ using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
-using Altinn.Authorization.ProblemDetails;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Services;
@@ -97,7 +96,7 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
         {
             return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
-                Package = permission.Package,
+                Package = DtoMapper.ConvertCompactPackage(permission.Package),
                 Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(DtoMapper.ConvertToPermission)
             });
         }
@@ -120,7 +119,7 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
         {
             return packages.DistinctBy(t => t.Package.Id).Select(permission => new PackagePermissionDto()
             {
-                Package = permission.Package,
+                Package = DtoMapper.ConvertCompactPackage(permission.Package),
                 Permissions = packages.Where(t => t.Package.Id == permission.Package.Id).Select(DtoMapper.ConvertToPermission)
             });
         }
@@ -290,9 +289,9 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
     {
         return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.ToId).Select(relation => new ConnectionPackageDto()
         {
-            Party = relation.To,
-            Roles = res.Where(t => t.ToId == relation.ToId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.ToId == relation.ToId && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Party = DtoMapper.Convert(relation.To),
+            Roles = res.Where(t => t.ToId == relation.ToId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.ToId == relation.ToId && t.Package != null).Select(t => DtoMapper.ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubRelationDtoToOthers(res, relation.ToId).ToList() : new()
         });
     }
@@ -301,9 +300,9 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.FromId).Select(relation => new ConnectionPackageDto()
         {
-            Party = relation.From,
-            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.FromId == relation.FromId && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Party = DtoMapper.Convert(relation.From),
+            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.FromId == relation.FromId && t.Package != null).Select(t => DtoMapper.ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
             Connections = new()
         });
     }
@@ -324,8 +323,8 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.FromId).Select(relation => new ConnectionDto()
         {
-            Party = relation.From,
-            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Party = DtoMapper.Convert(relation.From),
+            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
             Connections = new()
         });
     }
@@ -334,8 +333,8 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
     {
         return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.ToId).Select(relation => new ConnectionDto()
         {
-            Party = relation.To,
-            Roles = res.Where(t => t.ToId == relation.ToId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Party = DtoMapper.Convert(relation.To),
+            Roles = res.Where(t => t.ToId == relation.ToId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubRelationDtoToOthers(res, relation.ToId).ToList() : new()
         });
     }
@@ -344,8 +343,8 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.To.Id).Select(relation => new ConnectionDto()
         {
-            Party = relation.To,
-            Roles = res.Where(t => t.ToId == relation.To.Id).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Party = DtoMapper.Convert(relation.To),
+            Roles = res.Where(t => t.ToId == relation.To.Id).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
             Connections = new()
         });
     }
@@ -354,9 +353,9 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.ToId).Select(relation => new ConnectionPackageDto()
         {
-            Party = relation.To,
-            Roles = res.Where(t => t.ToId == relation.ToId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.ToId == relation.ToId && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Party = DtoMapper.Convert(relation.To),
+            Roles = res.Where(t => t.ToId == relation.ToId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.ToId == relation.ToId && t.Package != null).Select(t => DtoMapper.ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
             Connections = new()
         });
     }
@@ -365,8 +364,8 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
     {
         return res.DistinctBy(t => t.FromId).Select(relation => new ConnectionDto()
         {
-            Party = relation.From,
-            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
+            Party = DtoMapper.Convert(relation.From),
+            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.FromId).ToList() : new()
         });
     }
@@ -375,9 +374,9 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
     {
         return res.DistinctBy(t => t.FromId).Select(relation => new ConnectionPackageDto()
         {
-            Party = relation.From,
-            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => t.Role).DistinctBy(t => t.Id).ToList(),
-            Packages = res.Where(t => t.FromId == relation.FromId && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
+            Party = DtoMapper.Convert(relation.From),
+            Roles = res.Where(t => t.FromId == relation.FromId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
+            Packages = res.Where(t => t.FromId == relation.FromId && t.Package != null).Select(t => DtoMapper.ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.FromId).ToList() : new()
         });
     }
