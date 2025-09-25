@@ -44,7 +44,7 @@ public class AMPartyService(IEntityService entityService) : IAmPartyRepository
         {
             Name = entity.Name,
             PartyUuid = entity.Id,
-            OrganizationId = entity.RefId,
+            PartyId = partyId,
             PartyType = entity.TypeId
         };
 
@@ -93,14 +93,8 @@ public class AMPartyService(IEntityService entityService) : IAmPartyRepository
         {
             Name = entity.Name,
             PartyUuid = entity.Id,
-            OrganizationId = entity.RefId,
             PartyType = entity.TypeId
         };
-
-        if (entity.Type.Id == EntityTypeConstants.Organisation.Id)
-        {
-            party.OrganizationId = entity.RefId;
-        }
 
         if (entity.Type.Id == EntityTypeConstants.Person.Id)
         {

@@ -64,13 +64,28 @@ namespace Altinn.AccessMgmt.Persistence.Services
             }
 
             ExtEntityLookup extEntityLookup = res.First();
+            Guid partyType = extEntityLookup.Entity.TypeId;
+            string personId = null;
+            string organizationId = null;
+            
+            if (partyType == Guid.Parse("bfe09e70-e868-44b3-8d81-dfe0e13e058a"))
+            {
+                personId = extEntityLookup.Entity.RefId;
+            }
+
+            if (partyType == Guid.Parse("8c216e2f-afdd-4234-9ba2-691c727bb33d"))
+            {
+                organizationId = extEntityLookup.Entity.RefId;
+            }
 
             return new MinimalParty()
             {
                 Name = extEntityLookup.Entity.Name,
                 PartyUuid = extEntityLookup.Entity.Id,
                 PartyId = partyId,
-                PartyType = extEntityLookup.Entity.TypeId
+                PersonId = personId,
+                OrganizationId = organizationId,
+                PartyType = partyType
             };
         }
 
@@ -159,12 +174,20 @@ namespace Altinn.AccessMgmt.Persistence.Services
             }
 
             ExtEntityLookup extEntityLookup = res.First();
-
+            Guid partyType = extEntityLookup.Entity.TypeId;
+            string personId = null;
+            
+            if (partyType == Guid.Parse("bfe09e70-e868-44b3-8d81-dfe0e13e058a")) 
+            {
+                personId = extEntityLookup.Entity.RefId;
+            }
+            
             return new MinimalParty()
             {
                 Name = extEntityLookup.Entity.Name,
                 PartyUuid = extEntityLookup.Entity.Id,
-                PartyType = extEntityLookup.Entity.TypeId
+                PersonId = personId,
+                PartyType = partyType
             };
         }
     }
