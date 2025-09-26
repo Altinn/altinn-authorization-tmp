@@ -7,8 +7,8 @@ using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,7 +47,11 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         }
 
         // Fetch client assignments
-        var clientAssignmentResult = await db.Assignments.AsNoTracking().Where(t => t.ToId == toId && filterRoleIds.Contains(t.RoleId)).ToListAsync(cancellationToken);
+        var clientAssignmentResult = 
+            await db.Assignments.AsNoTracking()
+                .Include(t => t.From)
+                .Where(t => t.ToId == toId && filterRoleIds.Contains(t.RoleId))
+            .ToListAsync(cancellationToken);
 
         // Discard non-organization clients (for now). To be opened up for private individuals in the future.
         var clients = clientAssignmentResult.Where(c => c.From.TypeId == PartyTypeOrganizationUuid);
