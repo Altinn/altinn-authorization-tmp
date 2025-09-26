@@ -139,4 +139,5 @@ public partial class DtoMapper
         };
     }
 }
+
 public interface IDtoMapper { }
