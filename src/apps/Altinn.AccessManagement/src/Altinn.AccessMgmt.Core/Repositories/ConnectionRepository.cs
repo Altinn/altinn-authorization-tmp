@@ -1,4 +1,4 @@
-﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -7,10 +7,10 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 
-namespace Altinn.AccessMgmt.Core.Services;
+namespace Altinn.AccessMgmt.Core.Repositories;
 
 /// <inheritdoc />
-public class ConnectionService(AppDbContext dbContext) : IConnectionService
+public class ConnectionRepository(AppDbContext dbContext) : IConnectionRepository
 {
     /// <inheritdoc />
     public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
@@ -171,7 +171,7 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
             Connections = includeSubConnections ? ExtractSubRelationDtoToOthers(res, relation.ToId).ToList() : new()
         });
     }
-    
+
     private IEnumerable<ConnectionPackageDto> ExtractSubRelationPackageDtoFromOthers(IEnumerable<Connection> res, Guid party)
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.FromId).Select(relation => new ConnectionPackageDto()
@@ -182,7 +182,7 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
             Connections = new()
         });
     }
-    
+
     private IEnumerable<ConnectionDto> ExtractSubRelationDtoFromOthers(IEnumerable<Connection> res, Guid party)
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.FromId).Select(relation => new ConnectionDto()
@@ -192,7 +192,7 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
             Connections = new()
         });
     }
-    
+
     private IEnumerable<ConnectionDto> ExtractRelationDtoToOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
     {
         return res.Where(t => t.Reason == "Direct").DistinctBy(t => t.ToId).Select(relation => new ConnectionDto()
@@ -202,7 +202,7 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
             Connections = includeSubConnections ? ExtractSubRelationDtoToOthers(res, relation.ToId).ToList() : new()
         });
     }
-    
+
     private IEnumerable<ConnectionDto> ExtractSubRelationDtoToOthers(IEnumerable<Connection> res, Guid party)
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.To.Id).Select(relation => new ConnectionDto()
@@ -212,7 +212,7 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
             Connections = new()
         });
     }
-    
+
     private IEnumerable<ConnectionPackageDto> ExtractSubRelationPackageDtoToOthers(IEnumerable<Connection> res, Guid party)
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.ToId).Select(relation => new ConnectionPackageDto()
@@ -246,3 +246,74 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
     }
     #endregion
 }
+
+/// <summary>
+/// Service for getting connections
+/// </summary>
+public interface IConnectionRepository
+{
+    /// <summary>
+    /// Get Connections given from party
+    /// </summary>
+    /// <param name="partyId">Filter for party</param>
+    /// <param name="toId">to party</param>
+    /// <param name="roleId">Filter for role</param>
+    /// <param name="packageId">Filter for package</param>
+    /// <param name="resourceId">Filter for resource</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
+    Task<IEnumerable<ConnectionPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get Connections recived from party
+    /// </summary>
+    /// <param name="partyId">Filter for party</param>
+    /// <param name="fromId">to party</param>
+    /// <param name="roleId">Filter for role</param>
+    /// <param name="packageId">Filter for package</param>
+    /// <param name="resourceId">Filter for resource</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
+    Task<IEnumerable<ConnectionPackageDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get connections given from party
+    /// </summary>
+    /// <param name="partyId">Filter for party</param>
+    /// <param name="toId">to party</param>
+    /// <param name="roleId">Filter for role</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
+    Task<IEnumerable<ConnectionDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get Connections recived from party
+    /// </summary>
+    /// <param name="partyId">Filter for party</param>
+    /// <param name="fromId">to party</param>
+    /// <param name="roleId">Filter for role</param>
+    /// <param name="cancellationToken">CancellationToken</param>
+    /// <returns></returns>
+    Task<IEnumerable<ConnectionDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get list of packages with a list of parties you have this permission at
+    /// </summary>
+    Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get list of packages with a list of parties that have this permission
+    /// </summary>
+    Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get list of resources with a list of parties you have this permission at
+    /// </summary>
+    Task<IEnumerable<ResourcePermission>> GetResourcePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get list of resources with a list of parties that have this permission
+    /// </summary>
+    Task<IEnumerable<ResourcePermission>> GetResourcePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default);
+}
+
