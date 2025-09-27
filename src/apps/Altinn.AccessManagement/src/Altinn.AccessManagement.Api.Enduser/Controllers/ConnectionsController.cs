@@ -3,11 +3,13 @@ using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Enduser.Services;
+using Altinn.AccessMgmt.Core.Services;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
@@ -24,9 +26,15 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [Route("accessmanagement/api/v1/enduser/connections")]
 [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-public class ConnectionsController(IEnduserConnectionService connectionService) : ControllerBase
+public class ConnectionsController(IConnectionService connectionService) : ControllerBase
 {
-    private IEnduserConnectionService ConnectionService { get; } = connectionService;
+    private IConnectionService ConnectionService { get; } = connectionService;
+
+    private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
+    {
+        options.SupportedFromEntityTypes = [EntityTypeConstants.Organisation];
+        options.SupportedToEntityTypes = [EntityTypeConstants.Organisation];
+    };
 
     /// <summary>
     /// Get connections between the authenticated user's selected party and the specified target party.
@@ -74,7 +82,7 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
 
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);
-        var result = await ConnectionService.AddAssignment(fromUuid, toUuid, "rettighetshaver", cancellationToken);
+        var result = await ConnectionService.AddAssignment(fromUuid, toUuid, RoleConstants.Rightholder, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -102,7 +110,7 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
 
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);
-        problem = await ConnectionService.RemoveAssignment(fromUuid, toUuid, "rettighetshaver", cascade, cancellationToken);
+        problem = await ConnectionService.RemoveAssignment(fromUuid, toUuid, RoleConstants.Rightholder, cascade, ConfigureConnections, cancellationToken);
         if (problem is { })
         {
             return problem.ToActionResult();
@@ -158,14 +166,14 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
 
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);
-        async Task<Result<AssignmentPackage>> AddPackage()
+        async Task<Result<AssignmentPackageDto>> AddPackage()
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.AddPackage(fromUuid, toUuid, "rettighetshaver", packageId.Value, cancellationToken);
+                return await ConnectionService.AddPackage(fromUuid, toUuid, RoleConstants.Rightholder, packageId.Value, ConfigureConnections, cancellationToken);
             }
 
-            return await ConnectionService.AddPackage(fromUuid, toUuid, "rettighetshaver", package, cancellationToken);
+            return await ConnectionService.AddPackage(fromUuid, toUuid, RoleConstants.Rightholder, package, ConfigureConnections, cancellationToken);
         }
 
         var result = await AddPackage();
@@ -200,10 +208,10 @@ public class ConnectionsController(IEnduserConnectionService connectionService) 
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.RemovePackage(fromUuid, toUuid, "rettighetshaver", packageId.Value, cancellationToken);
+                return await ConnectionService.RemovePackage(fromUuid, toUuid, RoleConstants.Rightholder, packageId.Value, cancellationToken);
             }
 
-            return await ConnectionService.RemovePackage(fromUuid, toUuid, "rettighetshaver", package, cancellationToken);
+            return await ConnectionService.RemovePackage(fromUuid, toUuid, RoleConstants.Rightholder, package, cancellationToken);
         }
 
         problem = await RemovePackage();

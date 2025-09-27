@@ -1,4 +1,5 @@
 using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.ProblemDetails;
 
@@ -9,26 +10,34 @@ namespace Altinn.AccessMgmt.Core.Validation;
 /// </summary>
 public static class EntityTypeValidation
 {
-    internal static RuleExpression IsOfType(EntityType entityType, IEnumerable<string> entityTypeNames, string paramName) => () =>
+    internal static RuleExpression IsOfType(Guid entityType, IEnumerable<Guid> entityTypeIds, string paramName) => () =>
     {
-        ArgumentNullException.ThrowIfNull(entityType);
-        ArgumentNullException.ThrowIfNull(entityTypeNames);
-
-        if (entityTypeNames.Contains(entityType.Name))
+        ArgumentNullException.ThrowIfNull(entityTypeIds);
+        if (entityTypeIds.Contains(entityType))
         {
             return null;
         }
 
-        var allowedEntityTypes = string.Join(",", entityTypeNames);
-        return (ref ValidationErrorBuilder errors) => errors.Add(ValidationErrors.DisallowedEntityType, $"QUERY/{paramName}", [new("type", $"Got '{entityType.Name}', expected one of: {allowedEntityTypes}.")]);
+        var allowedEntityTypeNames = EntityTypeConstants.AllEntities()
+            .Where(e => entityTypeIds.Contains(e))
+            .Select(e => e.Entity.Name);
+        var allowedEntityTypes = string.Join(",", allowedEntityTypeNames);
+
+        var entityTypeName = "Unkown";
+        if (EntityTypeConstants.TryGetById(entityType, out var e))
+        {
+            entityTypeName = e.Entity.Name;
+        }
+        
+        return (ref ValidationErrorBuilder errors) => errors.Add(ValidationErrors.DisallowedEntityType, $"QUERY/{paramName}", [new("type", $"Got '{entityTypeName}', expected one of: {allowedEntityTypes}.")]);
     };
 
-    internal static RuleExpression FromIsOfType(EntityType party, params string[] entityTypeNames) => () =>
+    internal static RuleExpression FromIsOfType(Guid party, params Guid[] entityTypeNames) => () =>
     {
         return IsOfType(party, entityTypeNames, "from")();
     };
 
-    internal static RuleExpression ToIsOfType(EntityType party, params string[] entityTypeNames) => () =>
+    internal static RuleExpression ToIsOfType(Guid party, params Guid[] entityTypeNames) => () =>
     {
         return IsOfType(party, entityTypeNames, "to")();
     };

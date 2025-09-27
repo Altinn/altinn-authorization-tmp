@@ -389,8 +389,8 @@ public partial class ConnectionService(AppDbContext dbContext) : IConnectionServ
         }
 
         var entitiesIsOfRightType = ValidationComposer.Validate(
-            EntityTypeValidation.FromIsOfType(from.Type, [.. options.SupportedFromEntityTypes]),
-            EntityTypeValidation.ToIsOfType(to.Type, [.. options.SupportedToEntityTypes])
+            EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.SupportedFromEntityTypes]),
+            EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.SupportedToEntityTypes])
         );
 
         if (entitiesIsOfRightType is { })
@@ -412,9 +412,9 @@ public sealed class ConnectionOptions
         }
     }
 
-    public IEnumerable<string> SupportedFromEntityTypes { get; set; } = [];
+    public IEnumerable<Guid> SupportedFromEntityTypes { get; set; } = [];
 
-    public IEnumerable<string> SupportedToEntityTypes { get; set; } = [];
+    public IEnumerable<Guid> SupportedToEntityTypes { get; set; } = [];
 }
 
 /// <inheritdoc />
