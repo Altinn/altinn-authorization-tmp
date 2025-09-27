@@ -7,6 +7,7 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -308,37 +309,43 @@ public partial class ConnectionService(AppDbContext dbContext) : IConnectionServ
         return DtoMapper.Convert(existingAssignmentPackage);
     }
 
-        public Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
     {
-        return null;
-        // return assignablePackages.GroupBy(p => p.Package.Id).Select(group =>
-        // {
-        //     var firstPackage = group.First();
-        //     return new AccessPackageDto.Check
-        //     {
-        //         Package = new AccessPackageDto
-        //         {
-        //             Id = firstPackage.Package.Id,
-        //             Urn = firstPackage.Package.Urn,
-        //             AreaId = firstPackage.Package.AreaId
-        //         },
-        //         Result = group.Any(p => p.Result),
-        //         Reasons = group.Select(p => new AccessPackageDto.Check.Reason
-        //         {
-        //             Description = p.Reason.Description,
-        //             RoleId = p.Reason.RoleId,
-        //             RoleUrn = p.Reason.RoleUrn,
-        //             FromId = p.Reason.FromId,
-        //             FromName = p.Reason.FromName,
-        //             ToId = p.Reason.ToId,
-        //             ToName = p.Reason.ToName,
-        //             ViaId = p.Reason.ViaId,
-        //             ViaName = p.Reason.ViaName,
-        //             ViaRoleId = p.Reason.ViaRoleId,
-        //             ViaRoleUrn = p.Reason.ViaRoleUrn
-        //         })
-        //     };
-        // }).ToList();
+        var assignablePackages = await dbContext.GetAssignableAccessPackages(
+            Guid.NewGuid(), // DbAudit.Value.ChangedBy, 
+            party,
+            packageIds,
+            cancellationToken
+        );
+
+        return assignablePackages.GroupBy(p => p.Package.Id).Select(group =>
+        {
+            var firstPackage = group.First();
+            return new AccessPackageDto.Check
+            {
+                Package = new AccessPackageDto
+                {
+                    Id = firstPackage.Package.Id,
+                    Urn = firstPackage.Package.Urn,
+                    AreaId = firstPackage.Package.AreaId
+                },
+                Result = group.Any(p => p.Result),
+                Reasons = group.Select(p => new AccessPackageDto.Check.Reason
+                {
+                    Description = p.Reason.Description,
+                    RoleId = p.Reason.RoleId,
+                    RoleUrn = p.Reason.RoleUrn,
+                    FromId = p.Reason.FromId,
+                    FromName = p.Reason.FromName,
+                    ToId = p.Reason.ToId,
+                    ToName = p.Reason.ToName,
+                    ViaId = p.Reason.ViaId,
+                    ViaName = p.Reason.ViaName,
+                    ViaRoleId = p.Reason.ViaRoleId,
+                    ViaRoleUrn = p.Reason.ViaRoleUrn
+                })
+            };
+        }).ToList();
     }
 
     public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
