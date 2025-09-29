@@ -95,7 +95,7 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<MockDataService>();
 
         // Core interfaces & implementations
-        builder.Services.AddSingleton<IAmPartyRepository, AMPartyService>();
+        builder.Services.AddSingleton<IAmPartyRepository, AccessMgmt.Core.Services.AMPartyService>();
 
         builder.Services.Add(Marker.ServiceDescriptor);
 
