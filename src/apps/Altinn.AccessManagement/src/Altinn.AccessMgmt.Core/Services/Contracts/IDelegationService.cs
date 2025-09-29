@@ -8,6 +8,10 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts;
 /// </summary>
 public interface IDelegationService
 {
+    Task<Delegation> GetDelegation(Guid id, CancellationToken cancellationToken = default);
+
+    Task<Delegation> GetDelegation(Guid fromId, Guid toId, Guid roleId, Guid viaRoleId, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Create a new delegation betweeen two assignments
     /// </summary>
@@ -17,6 +21,8 @@ public interface IDelegationService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns></returns>
     Task<Delegation> CreateDelegation(Guid userId, Guid fromAssignmentId, Guid toAssignmentId, CancellationToken cancellationToken);
+
+    Task<DelegationPackage> GetOrAddPackage(Guid partyId, Guid fromId, Guid toId, Guid roleId, Guid viaId, Guid viaRoleId, Guid packageId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a package to the delegation

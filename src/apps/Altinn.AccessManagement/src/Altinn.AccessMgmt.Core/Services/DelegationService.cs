@@ -14,17 +14,6 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
 {
     public AuditValues AuditValues { get; set; } = new AuditValues(AuditDefaults.InternalApi, AuditDefaults.InternalApi, Guid.NewGuid().ToString());
 
-    private async Task<bool> CheckIfEntityHasRole(string roleCode, Guid fromId, Guid toId, CancellationToken cancellationToken)
-    {
-        var assignment = await assignmentService.GetAssignment(fromId, toId, roleCode, cancellationToken);
-        if (assignment == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     /// <inheritdoc/>
     public async Task<Delegation> CreateDelegation(Guid userId, Guid fromAssignmentId, Guid toAssignmentId, CancellationToken cancellationToken)
     {
@@ -60,14 +49,9 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         return await db.Delegations.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
-    private async Task<Delegation> GetDelegation(Guid fromId, Guid toId, Guid roleId, Guid viaRoleId, CancellationToken cancellationToken = default)
+    public async Task<Delegation> GetDelegation(Guid fromId, Guid toId, Guid roleId, Guid viaRoleId, CancellationToken cancellationToken = default)
     {
         return await db.Delegations.AsNoTracking().Where(t => t.From.FromId == fromId && t.To.ToId == toId && t.From.RoleId == viaRoleId && t.To.RoleId == roleId).FirstOrDefaultAsync(cancellationToken);
-    }
-
-    private async Task<IEnumerable<Delegation>> GetDelegation(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
-    {
-        return await db.Delegations.AsNoTracking().Where(t => t.From.FromId == fromId && t.To.ToId == toId).ToListAsync(cancellationToken);
     }
 
     public async Task<DelegationPackage> GetOrAddPackage(Guid partyId, Guid fromId, Guid toId, Guid roleId, Guid viaId, Guid viaRoleId, Guid packageId, CancellationToken cancellationToken = default)
@@ -282,6 +266,17 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         return result;
     }
 
+    private async Task<bool> CheckIfEntityHasRole(string roleCode, Guid fromId, Guid toId, CancellationToken cancellationToken)
+    {
+        var assignment = await assignmentService.GetAssignment(fromId, toId, roleCode, cancellationToken);
+        if (assignment == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     private async Task<Dictionary<string, List<PackageDto>>> VerifyDelegationPackages(CreateSystemDelegationRequestDto request)
     {
         var rolepacks = new Dictionary<string, List<PackageDto>>();
@@ -301,6 +296,11 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         }
 
         return rolepacks;
+    }
+
+    private async Task<IEnumerable<Delegation>> GetDelegation(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    {
+        return await db.Delegations.AsNoTracking().Where(t => t.From.FromId == fromId && t.To.ToId == toId).ToListAsync(cancellationToken);
     }
 
     private async Task<DelegationPackage> GetOrCreateDelegationPackage(Guid delegationId, Guid packageId, Guid? assignmentPackageId, Guid? rolePackageId, CancellationToken cancellationToken = default)
