@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
@@ -78,4 +79,10 @@ public interface IAssignmentService
     /// </summary>
     /// <returns></returns>
     Task<IEnumerable<Resource>> GetAssignmentResources(Guid assignmentId, CancellationToken cancellationToken = default);
+
+    Task<List<ClientDto>> GetFilteredClientsFromAssignments(IEnumerable<Assignment> assignments,IEnumerable<AssignmentPackage> assignmentPackages, QueryResponse<Role> roles, QueryResponse<Package> packages, QueryResponse<RolePackage> rolePackages, string[] filterPackages, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<Assignment>> GetAssignment(Guid fromId, Guid toId, CancellationToken cancellationToken = default);
+
+    Task<AssignmentPackage> GetOrAddPackage(Guid partyId, Guid fromId, Guid toId, Guid roleId, Guid packageId,CancellationToken cancellationToken = default);
 }

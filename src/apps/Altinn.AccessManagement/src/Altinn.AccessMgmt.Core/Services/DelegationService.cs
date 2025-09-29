@@ -2,8 +2,8 @@
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -14,19 +14,8 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
 {
     public AuditValues AuditValues { get; set; } = new AuditValues(AuditDefaults.InternalApi, AuditDefaults.InternalApi, Guid.NewGuid().ToString());
 
-    private async Task<bool> CheckIfEntityHasRole(string roleCode, Guid fromId, Guid toId, CancellationToken cancellationToken)
-    {
-        var assignment = await assignmentService.GetAssignment(fromId, toId, roleCode, cancellationToken);
-        if (assignment == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     /// <inheritdoc/>
-    public async Task<Delegation> CreateDelgation(Guid userId, Guid fromAssignmentId, Guid toAssignmentId, CancellationToken cancellationToken)
+    public async Task<Delegation> CreateDelegation(Guid userId, Guid fromAssignmentId, Guid toAssignmentId, CancellationToken cancellationToken)
     {
         var fromAssignment = await assignmentService.GetAssignment(fromAssignmentId, cancellationToken);
         var toAssignment = await assignmentService.GetAssignment(toAssignmentId, cancellationToken);
@@ -58,6 +47,52 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
     public async Task<Delegation> GetDelegation(Guid id, CancellationToken cancellationToken = default)
     {
         return await db.Delegations.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id, cancellationToken);
+    }
+
+    public async Task<Delegation> GetDelegation(Guid fromId, Guid toId, Guid roleId, Guid viaRoleId, CancellationToken cancellationToken = default)
+    {
+        return await db.Delegations.AsNoTracking().Where(t => t.From.FromId == fromId && t.To.ToId == toId && t.From.RoleId == viaRoleId && t.To.RoleId == roleId).FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<DelegationPackage> GetOrAddPackage(Guid partyId, Guid fromId, Guid toId, Guid roleId, Guid viaId, Guid viaRoleId, Guid packageId, CancellationToken cancellationToken = default)
+    {
+        var delegations = await GetDelegation(fromId, toId);
+        if (delegations == null || !delegations.Any())
+        {
+            throw new Exception("Delegation not found");
+        }
+
+        var delegation = delegations.FirstOrDefault(t => t.From.RoleId == viaRoleId && t.To.RoleId == roleId);
+        if (delegation == null)
+        {
+            throw new Exception("Delegation not found");
+        }
+
+        var assignmentPackages = await db.AssignmentPackages.AsNoTracking().Where(t => t.AssignmentId == delegation.FromId).ToListAsync();
+        var assignmentPackage = assignmentPackages.FirstOrDefault(t => t.Id.Equals(packageId));
+        if (assignmentPackage == null)
+        {
+            throw new Exception("Assignment does not have the package assigned on this entity");
+        }
+
+        if (!assignmentPackage.Package.IsDelegable)
+        {
+            throw new Exception("Package is not delegable");
+        }
+
+        var delegationPackage = await db.DelegationPackages.Where(t => t.DelegationId == delegation.Id && t.PackageId == packageId).FirstOrDefaultAsync(cancellationToken);
+        if (delegationPackage == null)
+        {
+            delegationPackage = new DelegationPackage() { DelegationId = delegation.Id, PackageId = packageId };
+            db.DelegationPackages.Add(delegationPackage);
+            var res = await db.SaveChangesAsync(new AuditValues(partyId, AuditDefaults.InternalApi, Guid.NewGuid().ToString()));
+            if (res == 0)
+            {
+                throw new Exception("Unable to add package to delegation");
+            }
+        }
+
+        return delegationPackage;
     }
 
     /// <inheritdoc/>
@@ -231,6 +266,17 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         return result;
     }
 
+    private async Task<bool> CheckIfEntityHasRole(string roleCode, Guid fromId, Guid toId, CancellationToken cancellationToken)
+    {
+        var assignment = await assignmentService.GetAssignment(fromId, toId, roleCode, cancellationToken);
+        if (assignment == null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     private async Task<Dictionary<string, List<PackageDto>>> VerifyDelegationPackages(CreateSystemDelegationRequestDto request)
     {
         var rolepacks = new Dictionary<string, List<PackageDto>>();
@@ -250,6 +296,11 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         }
 
         return rolepacks;
+    }
+
+    private async Task<IEnumerable<Delegation>> GetDelegation(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    {
+        return await db.Delegations.AsNoTracking().Where(t => t.From.FromId == fromId && t.To.ToId == toId).ToListAsync(cancellationToken);
     }
 
     private async Task<DelegationPackage> GetOrCreateDelegationPackage(Guid delegationId, Guid packageId, Guid? assignmentPackageId, Guid? rolePackageId, CancellationToken cancellationToken = default)

@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,23 @@ namespace Altinn.AccessMgmt.Core.Services;
 /// <inheritdoc />
 public class ConnectionService(AppDbContext dbContext) : IConnectionService
 {
+    /// <inheritdoc />
+    public async Task<IEnumerable<BasicConnectionDto>> GetConnectionsToOthers(Guid? fromId = null, Guid? viaId = null, Guid? toId = null, CancellationToken cancellationToken = default)
+    {
+        if (!fromId.HasValue && !toId.HasValue && !viaId.HasValue)
+        {
+            throw new ArgumentNullException();
+        }
+
+        var result = await dbContext.Connections.AsNoTracking()
+            .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
+            .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
+            .WhereIf(viaId.HasValue, t => t.ViaId == viaId.Value)
+            .ToListAsync(cancellationToken);
+
+        return ExtractBasicConnectionDto(result);
+    }
+
     /// <inheritdoc />
     public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
@@ -62,6 +80,11 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
             .ToListAsync(cancellationToken);
 
         return ExtractRelationDtoFromOthers(result, includeSubConnections: false);
+    }
+
+    public async Task<IEnumerable<Package>> GetConnectionPackages(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Connections.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId).Include(t => t.Package).Select(t => t.Package).ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
@@ -182,7 +205,19 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
             Connections = new()
         });
     }
-    
+
+    private IEnumerable<BasicConnectionDto> ExtractBasicConnectionDto(IEnumerable<Connection> res)
+    {
+        return res.Select(t => new BasicConnectionDto()
+        {
+            From = t.From,
+            Via = t.Via,
+            To = t.To,
+            Role = t.Role,
+            ViaRole = t.ViaRole
+        });
+    }
+
     private IEnumerable<ConnectionDto> ExtractSubRelationDtoFromOthers(IEnumerable<Connection> res, Guid party)
     {
         return res.Where(t => t.Reason != "Direct" && t.ViaId == party).DistinctBy(t => t.FromId).Select(relation => new ConnectionDto()
