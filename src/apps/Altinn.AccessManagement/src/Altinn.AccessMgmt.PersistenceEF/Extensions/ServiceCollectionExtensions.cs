@@ -1,3 +1,4 @@
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -15,11 +16,13 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAccessManagementDatabase(this IServiceCollection services, Action<AccessManagementDatabaseOptions> configureOptions)
     {
         var options = new AccessManagementDatabaseOptions(configureOptions);
+        ConstantGuard.ConstantIdsAreUnique();
         services.AddScoped<ReadOnlyInterceptor>();
+        services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
         services.AddScoped<ITranslationService, TranslationService>();
         return options.Source switch
         {
-            SourceType.App => services.AddDbContextPool<AppDbContext>((sp, options) =>
+            SourceType.App => services.AddDbContext<AppDbContext>((sp, options) =>
             {
                 var db = sp.GetRequiredService<IAltinnDatabase>();
                 var connectionString = db.CreatePgsqlConnection(SourceType.App);

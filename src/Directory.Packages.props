@@ -16,7 +16,7 @@
     <PackageVersion Include="Altinn.Common.AccessToken" Version="5.0.5" />
     <PackageVersion Include="Altinn.Common.AccessTokenClient" Version="3.0.15" />
     <PackageVersion Include="Altinn.Platform.Models" Version="1.6.1" />
-    <PackageVersion Include="Altinn.Platform.Storage.Interface" Version="4.0.13" />
+    <PackageVersion Include="Altinn.Platform.Storage.Interface" Version="4.0.14" />
     <PackageVersion Include="Altinn.Swashbuckle.Abstractions" Version="2.4.1" />
     <PackageVersion Include="Altinn.Swashbuckle" Version="2.4.1" />
     <PackageVersion Include="Altinn.Urn.Swashbuckle" Version="2.7.0" />
@@ -39,6 +39,7 @@
     <PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageVersion Include="CommunityToolkit.Diagnostics" Version="8.4.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
     <PackageVersion Include="IdentityModel" Version="7.0.0" />
     <PackageVersion Include="JWTCookieAuthentication" Version="4.0.4" />
     <PackageVersion Include="MassTransit" Version="8.5.2" />
@@ -57,7 +58,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.9" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
     <PackageVersion Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.3.0" />
-    <PackageVersion Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.3.0" />
+    <PackageVersion Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.4.0" />
     <PackageVersion Include="Microsoft.Azure.DocumentDB.Core" Version="2.22.0" />
     <PackageVersion Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.2" />
     <PackageVersion Include="Microsoft.Build.Artifacts" Version="6.1.63" />
@@ -88,6 +89,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.23.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Telemetry.Abstractions" Version="9.9.0" />
     <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.3.0" />
@@ -95,6 +97,8 @@
     <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+    <PackageVersion Include="MongoDB.Driver" Version="3.4.3" />
+    <PackageVersion Include="MongoDB.Driver.Core" Version="2.30.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Nerdbank.Streams" Version="2.13.16" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
