@@ -26,7 +26,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
     }
 
     /// <inheritdoc/>
-    public async Task<Delegation> CreateDelgation(Guid userId, Guid fromAssignmentId, Guid toAssignmentId, CancellationToken cancellationToken)
+    public async Task<Delegation> CreateDelegation(Guid userId, Guid fromAssignmentId, Guid toAssignmentId, CancellationToken cancellationToken)
     {
         var fromAssignment = await assignmentService.GetAssignment(fromAssignmentId, cancellationToken);
         var toAssignment = await assignmentService.GetAssignment(toAssignmentId, cancellationToken);

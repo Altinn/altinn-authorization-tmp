@@ -16,7 +16,7 @@ public interface IDelegationService
     /// <param name="toAssignmentId">To</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns></returns>
-    Task<Delegation> CreateDelgation(Guid userId, Guid fromAssignmentId, Guid toAssignmentId, CancellationToken cancellationToken);
+    Task<Delegation> CreateDelegation(Guid userId, Guid fromAssignmentId, Guid toAssignmentId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Adds a package to the delegation
