@@ -1,23 +1,18 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Configurations;
+﻿using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Configurations;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
-using Altinn.AccessMgmt.PersistenceEF.Queries.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
 /// <inheritdoc />
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options, IAuditContextAccessor auditContext) : base(options)
-    {
-        _auditAccessor = auditContext;
-    }
-
-    private readonly IAuditContextAccessor _auditAccessor;
+    internal IAuditAccessor AuditAccessor { get; set; }
 
     public DbSet<Connection> Connections => Set<Connection>();
 
@@ -208,10 +203,10 @@ public class AppDbContext : DbContext
     #region Extensions
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default) =>
-        SaveChangesAsync(_auditAccessor.Current ?? throw MissingAudit(), ct);
+        SaveChangesAsync(AuditAccessor.Current ?? throw MissingAudit(), ct);
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken ct = default) =>
-        SaveChangesAsync(_auditAccessor.Current ?? throw MissingAudit(), acceptAllChangesOnSuccess, ct);
+        SaveChangesAsync(AuditAccessor.Current ?? throw MissingAudit(), acceptAllChangesOnSuccess, ct);
 
     private static InvalidOperationException MissingAudit() =>
         new("AuditContextAccessor.Current is null. Set it in your controller/service OR call SaveChangesAsync(BaseAudit audit, ...) explicitly.");
@@ -284,19 +279,4 @@ public class AppDbContext : DbContext
     VALUES ({a.ChangedBy}, {a.ChangedBySystem}, {a.OperationId});
     """;
     #endregion
-}
-
-public interface IAuditContextAccessor
-{
-    AuditValues? Current { get; set; }
-}
-
-public sealed class AuditContextAccessor : IAuditContextAccessor
-{
-    public AuditValues? Current { get; set; }
-}
-
-public sealed class DesignTimeAuditAccessor : IAuditContextAccessor
-{
-    public AuditValues? Current { get; set; } = new AuditValues(Guid.Empty, Guid.Empty, "design-time");
 }

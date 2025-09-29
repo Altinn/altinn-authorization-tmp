@@ -15,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public partial class ConnectionService(AppDbContext dbContext) : IConnectionService
+public partial class ConnectionService(AppDbContextFactory dbContextFactory) : IConnectionService
 {
     public async Task<Result<List<ConnectionDto>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default)
     {
@@ -38,6 +38,7 @@ public partial class ConnectionService(AppDbContext dbContext) : IConnectionServ
     {
         ArgumentNullException.ThrowIfNull(role);
         var options = new ConnectionOptions(configureOptions);
+        var dbContext = dbContextFactory.CreateDbContext();
         var entities = await dbContext.Entities
             .AsNoTracking()
             .Where(e => e.Id == fromId || e.Id == toId)
@@ -82,6 +83,7 @@ public partial class ConnectionService(AppDbContext dbContext) : IConnectionServ
     {
         ArgumentNullException.ThrowIfNull(role);
         var options = new ConnectionOptions(configureConnectionOptions);
+        var dbContext = dbContextFactory.CreateDbContext();
         var entities = await dbContext.Entities
             .AsNoTracking()
             .Where(e => e.Id == fromId || e.Id == toId)
@@ -168,6 +170,7 @@ public partial class ConnectionService(AppDbContext dbContext) : IConnectionServ
     public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Role role, string packageUrn, Action<ConnectionOptions> configureConnectionOptions = null, CancellationToken cancellationToken = default)
     {
         packageUrn = (packageUrn.StartsWith("urn:", StringComparison.Ordinal) || packageUrn.StartsWith(':')) ? packageUrn : ":" + packageUrn;
+        var dbContext = dbContextFactory.CreateDbContext();
 
         var package = await dbContext.Packages
             .AsNoTracking()
@@ -197,6 +200,7 @@ public partial class ConnectionService(AppDbContext dbContext) : IConnectionServ
     public async Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, Role role, Guid packageId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(role);
+        var dbContext = dbContextFactory.CreateDbContext();
 
         var assignment = await dbContext.Assignments
             .AsNoTracking()
@@ -231,6 +235,7 @@ public partial class ConnectionService(AppDbContext dbContext) : IConnectionServ
     {
         ArgumentNullException.ThrowIfNull(role);
         var options = new ConnectionOptions(configureConnectionOptions);
+        var dbContext = dbContextFactory.CreateDbContext();
         var entities = await dbContext.Entities
             .AsNoTracking()
             .Where(e => e.Id == fromId || e.Id == toId)
@@ -311,6 +316,7 @@ public partial class ConnectionService(AppDbContext dbContext) : IConnectionServ
 
     public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         var assignablePackages = await dbContext.GetAssignableAccessPackages(
             Guid.NewGuid(), // DbAudit.Value.ChangedBy, 
             party,
@@ -423,6 +429,7 @@ public partial class ConnectionService : IConnectionRepository
     /// <inheritdoc />
     public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         var result = await dbContext.Connections.AsNoTracking()
             .Where(t => t.FromId == partyId)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
@@ -437,7 +444,12 @@ public partial class ConnectionService : IConnectionRepository
     /// <inheritdoc />
     public async Task<IEnumerable<ConnectionDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         var result = await dbContext.Connections.AsNoTracking()
+            .Include(t => t.To)
+            .ThenInclude(t => t.Variant)
+            .Include(t => t.To)
+            .ThenInclude(t => t.Type)
             .Where(t => t.FromId == partyId)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
             .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
@@ -449,6 +461,7 @@ public partial class ConnectionService : IConnectionRepository
     /// <inheritdoc />
     public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         var result = await dbContext.Connections.AsNoTracking()
             .Where(t => t.ToId == partyId)
             .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
@@ -463,7 +476,13 @@ public partial class ConnectionService : IConnectionRepository
     /// <inheritdoc />
     public async Task<IEnumerable<ConnectionDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         var result = await dbContext.Connections.AsNoTracking()
+            .Include(c => c.From)
+            .ThenInclude(c => c.Type)
+            .Include(c => c.From)
+            .ThenInclude(c => c.Variant)
+            .Include(c => c.Role)
             .Where(t => t.ToId == partyId)
             .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
             .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
@@ -475,6 +494,7 @@ public partial class ConnectionService : IConnectionRepository
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         var result = await dbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
@@ -498,6 +518,7 @@ public partial class ConnectionService : IConnectionRepository
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         var result = await dbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
@@ -521,6 +542,7 @@ public partial class ConnectionService : IConnectionRepository
     /// <inheritdoc />
     public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         var result = await dbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
@@ -546,6 +568,7 @@ public partial class ConnectionService : IConnectionRepository
     /// <inheritdoc />
     public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         var result = await dbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)

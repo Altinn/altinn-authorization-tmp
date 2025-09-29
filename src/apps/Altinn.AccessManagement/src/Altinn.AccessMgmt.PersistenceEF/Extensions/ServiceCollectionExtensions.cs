@@ -1,8 +1,10 @@
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
@@ -18,11 +20,14 @@ public static class ServiceCollectionExtensions
         var options = new AccessManagementDatabaseOptions(configureOptions);
         ConstantGuard.ConstantIdsAreUnique();
         services.AddScoped<ReadOnlyInterceptor>();
-        services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
+        services.AddScoped<IAuditAccessor, AuditAccessor>();
         services.AddScoped<ITranslationService, TranslationService>();
+        services.AddScoped<AppDbContextFactory>();
+
+        services.AddSingleton<AuditMiddleware>();
         return options.Source switch
         {
-            SourceType.App => services.AddDbContext<AppDbContext>((sp, options) =>
+            SourceType.App => services.AddPooledDbContextFactory<AppDbContext>((sp, options) =>
             {
                 var db = sp.GetRequiredService<IAltinnDatabase>();
                 var connectionString = db.CreatePgsqlConnection(SourceType.App);
