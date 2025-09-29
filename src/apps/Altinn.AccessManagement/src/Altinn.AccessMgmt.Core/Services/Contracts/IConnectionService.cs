@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Services.Contracts;
@@ -61,6 +62,8 @@ public interface IConnectionService
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
     Task<IEnumerable<ConnectionDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<Package>> GetConnectionPackages(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
 
     /// <summary>
     /// Get list of packages with a list of parties you have this permission at

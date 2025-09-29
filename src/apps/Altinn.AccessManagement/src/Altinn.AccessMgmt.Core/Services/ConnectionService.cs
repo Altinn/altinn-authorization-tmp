@@ -82,6 +82,11 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
         return ExtractRelationDtoFromOthers(result, includeSubConnections: false);
     }
 
+    public async Task<IEnumerable<Package>> GetConnectionPackages(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Connections.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId).Include(t => t.Package).Select(t => t.Package).ToListAsync(cancellationToken);
+    }
+
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {

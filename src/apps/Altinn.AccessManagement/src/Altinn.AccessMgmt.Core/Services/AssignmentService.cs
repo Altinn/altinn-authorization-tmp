@@ -15,10 +15,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class AssignmentService(AppDbContext db) : IAssignmentService
+public class AssignmentService(AppDbContext db, IConnectionService connectionService) : IAssignmentService
 {
     private static readonly string RETTIGHETSHAVER = "rettighetshaver";
     private static readonly Guid PartyTypeOrganizationUuid = new Guid("8c216e2f-afdd-4234-9ba2-691c727bb33d");
+    private readonly IConnectionService connectionService = connectionService;
 
     public AuditValues AuditValues { get; set; } = new AuditValues(AuditDefaults.InternalApi, AuditDefaults.InternalApi, Guid.NewGuid().ToString());
 
@@ -175,7 +176,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
             throw new Exception("Assignment not found");
         }
 
-        var userPackages = await GetConnectionPackages(assignment.FromId, partyId, cancellationToken: cancellationToken);
+        var userPackages = await connectionService.GetConnectionPackages(assignment.FromId, partyId, cancellationToken: cancellationToken);
         var userPackage = userPackages.FirstOrDefault(t => t.Id.Equals(packageId));
 
         if (userPackage == null)
@@ -206,11 +207,6 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         }
 
         return assignmentPackage;
-    }
-
-    public async Task<IEnumerable<Package>> GetConnectionPackages(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
-    {
-        return await db.Connections.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId).Include(t => t.Package).Select(t => t.Package).ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
