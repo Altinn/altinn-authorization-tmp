@@ -44,12 +44,12 @@ public class BasicConnectionDto
     /// <summary>
     /// Party
     /// </summary>
-    public Role Role { get; set; } = new();
+    public RoleDto Role { get; set; } = new();
 
     /// <summary>
     /// Party
     /// </summary>
-    public Role ViaRole { get; set; } = new();
+    public RoleDto ViaRole { get; set; } = new();
 }
 
 /// <summary>

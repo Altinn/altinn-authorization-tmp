@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 
@@ -175,113 +176,6 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
         }
 
         return [];
-    }
-
-    public async Task<IEnumerable<Package>> GetConnectionPackages(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Connections.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId).Include(t => t.Package).Select(t => t.Package).ToListAsync(cancellationToken);
-    }
-
-    private async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Assignments.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId && t.RoleId == roleId).FirstOrDefaultAsync(cancellationToken);
-    }
-
-    private async Task<IEnumerable<Assignment>> GetAssignment(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Assignments.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId).ToListAsync(cancellationToken);
-    }
-
-    private async Task<Delegation> GetDelegation(Guid fromId, Guid toId, Guid roleId, Guid viaRoleId, CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Delegations.AsNoTracking().Where(t => t.From.FromId == fromId && t.To.ToId == toId && t.From.RoleId == viaRoleId && t.To.RoleId == roleId).FirstOrDefaultAsync(cancellationToken);
-    }
-
-    private async Task<IEnumerable<Delegation>> GetDelegation(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
-    {
-        return await dbContext.Delegations.AsNoTracking().Where(t => t.From.FromId == fromId && t.To.ToId == toId).ToListAsync(cancellationToken);
-    }
-
-    public async Task<DelegationPackage> GetOrAddPackage(Guid partyId, Guid fromId, Guid toId, Guid roleId, Guid viaId, Guid viaRoleId, Guid packageId, CancellationToken cancellationToken = default)
-    {
-        var delegations = await GetDelegation(fromId, toId);
-        if (delegations == null || !delegations.Any())
-        {
-            throw new Exception("Delegation not found");
-        }
-
-        var delegation = delegations.FirstOrDefault(t => t.From.RoleId == viaRoleId && t.To.RoleId == roleId);
-        if (delegation == null)
-        {
-            throw new Exception("Delegation not found");
-        }
-
-        var assignmentPackages = await dbContext.AssignmentPackages.AsNoTracking().Where(t => t.AssignmentId == delegation.FromId).ToListAsync();
-        var assignmentPackage = assignmentPackages.FirstOrDefault(t => t.Id.Equals(packageId));
-        if (assignmentPackage == null)
-        {
-            throw new Exception("Assignment does not have the package assigned on this entity");
-        }
-
-        if (!assignmentPackage.Package.IsDelegable)
-        {
-            throw new Exception("Package is not delegable");
-        }
-
-        var delegationPackage = await dbContext.DelegationPackages.Where(t => t.DelegationId == delegation.Id && t.PackageId == packageId).FirstOrDefaultAsync(cancellationToken);
-        if (delegationPackage == null)
-        {
-            delegationPackage = new DelegationPackage() { DelegationId = delegation.Id, PackageId = packageId };
-            dbContext.DelegationPackages.Add(delegationPackage);
-            var res = await dbContext.SaveChangesAsync(new AuditValues(partyId, AuditDefaults.InternalApi, Guid.NewGuid().ToString()));
-            if (res == 0)
-            {
-                throw new Exception("Unable to add package to delegation");
-            }
-        }
-
-        return delegationPackage;
-    }
-
-    public async Task<AssignmentPackage> GetOrAddPackage(Guid partyId, Guid fromId, Guid toId, Guid roleId, Guid packageId, CancellationToken cancellationToken = default)
-    {
-        var assignment = await GetAssignment(fromId, toId, roleId, cancellationToken);
-        if (assignment == null)
-        {
-            throw new Exception("Assignment not found");
-        }
-
-        var userPackages = await GetConnectionPackages(assignment.FromId, partyId, cancellationToken: cancellationToken);
-        var userPackage = userPackages.FirstOrDefault(t => t.Id.Equals(packageId));
-
-        if (userPackage == null)
-        {
-            throw new Exception("User does not have the package assigned on this entity");
-        }
-
-        // if (!userPackage.CanAssign)
-        // {
-        //     throw new Exception("User can't assign package");
-        // }
-
-        if (!userPackage.IsAssignable)
-        {
-            throw new Exception("Package is not assignable");
-        }
-
-        var assignmentPackage = await dbContext.AssignmentPackages.Where(t => t.AssignmentId == assignment.Id && t.PackageId == packageId).FirstOrDefaultAsync(cancellationToken);
-        if (assignmentPackage == null)
-        {
-            assignmentPackage = new AssignmentPackage() { AssignmentId = assignment.Id, PackageId = packageId };
-            dbContext.AssignmentPackages.Add(assignmentPackage);
-            var res = await dbContext.SaveChangesAsync(new AuditValues(partyId, AuditDefaults.InternalApi, Guid.NewGuid().ToString()));
-            if (res == 0)
-            {
-                throw new Exception("Unable to add package to assignment");
-            }
-        }
-
-        return assignmentPackage;
     }
 
     #region Mappers

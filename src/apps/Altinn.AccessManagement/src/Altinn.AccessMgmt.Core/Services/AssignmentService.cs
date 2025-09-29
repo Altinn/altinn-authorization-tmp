@@ -7,8 +7,8 @@ using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 
@@ -66,7 +66,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         return await GetFilteredClientsFromAssignments(clients, assignmentPackageResult, roleResult, packageResult, rolePackageResult, packages, cancellationToken);
     }
 
-    private async Task<List<ClientDto>> GetFilteredClientsFromAssignments(IEnumerable<Assignment> assignments, IEnumerable<AssignmentPackage> assignmentPackages, QueryResponse<Role> roles, QueryResponse<Package> packages, QueryResponse<RolePackage> rolePackages, string[] filterPackages, CancellationToken cancellationToken)
+    public async Task<List<ClientDto>> GetFilteredClientsFromAssignments(IEnumerable<Assignment> assignments, IEnumerable<AssignmentPackage> assignmentPackages, QueryResponse<Role> roles, QueryResponse<Package> packages, QueryResponse<RolePackage> rolePackages, string[] filterPackages, CancellationToken cancellationToken)
     {
         Dictionary<Guid, ClientDto> clients = new();
 
@@ -145,16 +145,14 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         return await db.Assignments.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
-    /// <inheritdoc/>
+    public async Task<IEnumerable<Assignment>> GetAssignment(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    {
+        return await db.Assignments.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId).ToListAsync(cancellationToken);
+    }
+
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default)
     {
-        var result = await db.Assignments.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId && t.RoleId == roleId).ToListAsync(cancellationToken);
-        if (result == null || !result.Any())
-        {
-            return null;
-        }
-
-        return result.First();
+        return await db.Assignments.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId && t.RoleId == roleId).FirstOrDefaultAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -167,6 +165,52 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         }
 
         return await GetAssignment(fromId, toId, roleResult.First().Id);
+    }
+
+    public async Task<AssignmentPackage> GetOrAddPackage(Guid partyId, Guid fromId, Guid toId, Guid roleId, Guid packageId, CancellationToken cancellationToken = default)
+    {
+        var assignment = await GetAssignment(fromId, toId, roleId, cancellationToken);
+        if (assignment == null)
+        {
+            throw new Exception("Assignment not found");
+        }
+
+        var userPackages = await GetConnectionPackages(assignment.FromId, partyId, cancellationToken: cancellationToken);
+        var userPackage = userPackages.FirstOrDefault(t => t.Id.Equals(packageId));
+
+        if (userPackage == null)
+        {
+            throw new Exception("User does not have the package assigned on this entity");
+        }
+
+        // if (!userPackage.CanAssign)
+        // {
+        //     throw new Exception("User can't assign package");
+        // }
+
+        if (!userPackage.IsAssignable)
+        {
+            throw new Exception("Package is not assignable");
+        }
+
+        var assignmentPackage = await db.AssignmentPackages.Where(t => t.AssignmentId == assignment.Id && t.PackageId == packageId).FirstOrDefaultAsync(cancellationToken);
+        if (assignmentPackage == null)
+        {
+            assignmentPackage = new AssignmentPackage() { AssignmentId = assignment.Id, PackageId = packageId };
+            db.AssignmentPackages.Add(assignmentPackage);
+            var res = await db.SaveChangesAsync(new AuditValues(partyId, AuditDefaults.InternalApi, Guid.NewGuid().ToString()));
+            if (res == 0)
+            {
+                throw new Exception("Unable to add package to assignment");
+            }
+        }
+
+        return assignmentPackage;
+    }
+
+    public async Task<IEnumerable<Package>> GetConnectionPackages(Guid fromId, Guid toId, CancellationToken cancellationToken = default)
+    {
+        return await db.Connections.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId).Include(t => t.Package).Select(t => t.Package).ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
