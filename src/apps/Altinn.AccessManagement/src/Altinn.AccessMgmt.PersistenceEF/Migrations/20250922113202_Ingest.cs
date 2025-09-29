@@ -12,9 +12,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
         {
             migrationBuilder.Sql("""
                 CREATE SCHEMA ingest;
-                CREATE ROLE ingest_admins NOLOGIN;
-                GRANT ingest_admins TO platform_authorization_admin, platform_authorization;
-                ALTER SCHEMA ingest OWNER TO ingest_admins;
+                ALTER SCHEMA ingest OWNER TO platform_authorization_admin;
+                GRANT USAGE, CREATE ON SCHEMA ingest TO platform_authorization;
+                GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA ingest TO platform_authorization;
                 """);
         }
 
@@ -23,7 +23,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
         {
             migrationBuilder.Sql("""
                 DROP SCHEMA ingest CASCADE;
-                DROP ROLE ingest_admins;
                 """);
         }
     }
