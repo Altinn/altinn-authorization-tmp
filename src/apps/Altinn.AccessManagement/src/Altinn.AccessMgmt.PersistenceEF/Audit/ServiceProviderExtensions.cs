@@ -1,5 +1,7 @@
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Audit;
 
@@ -13,4 +15,9 @@ public static class ServiceProviderExtensions
         return scope;
     }
 
+    public static IApplicationBuilder UseEfAudit(this IApplicationBuilder builder)
+    {
+        builder.UseMiddleware<AuditMiddleware>();
+        return builder;
+    }
 }

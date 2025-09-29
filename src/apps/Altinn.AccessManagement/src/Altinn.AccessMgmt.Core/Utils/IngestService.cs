@@ -5,20 +5,15 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using NpgsqlTypes;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Utils;
 
-public class IngestService(AppDbContext dbContext) : IIngestService
+public class IngestService(AppDbContextFactory dbContextFactory) : IIngestService
 {
     public async Task<int> IngestData<T>(List<T> data, CancellationToken cancellationToken = default)
     {
-        var model = dbContext.Model;
-        if (model == null)
-        {
-            throw new ArgumentNullException(nameof(T));
-        }
-
+        var dbContext = dbContextFactory.CreateDbContext();
+        var model = dbContext.Model ?? throw new ArgumentNullException(nameof(T));
         var tableName = GetTableName<T>(model);
         var ingestColumns = GetColumns<T>(model);
 
@@ -28,6 +23,7 @@ public class IngestService(AppDbContext dbContext) : IIngestService
     /// <inheritdoc />
     public async Task<int> IngestTempData<T>(List<T> data, Guid ingestId, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         if (ingestId.Equals(Guid.Empty))
         {
             throw new Exception(string.Format("Ingest id '{0}' not valid", ingestId.ToString()));
@@ -53,6 +49,7 @@ public class IngestService(AppDbContext dbContext) : IIngestService
     /// <inheritdoc />
     public async Task<int> MergeTempData<T>(Guid ingestId, AuditValues auditValues, IEnumerable<string> matchColumns = null, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         if (matchColumns == null || matchColumns.Count() == 0)
         {
             matchColumns = ["id"];
@@ -133,6 +130,7 @@ public class IngestService(AppDbContext dbContext) : IIngestService
 
     private async Task<int> WriteToIngest<T>(List<T> data, List<IngestColumnDefinition> ingestColumns, string tableName, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         var conn = (Npgsql.NpgsqlConnection)dbContext.Database.GetDbConnection();
         if (conn.State != ConnectionState.Open)
         {
@@ -179,6 +177,7 @@ public class IngestService(AppDbContext dbContext) : IIngestService
 
     private async Task<int> ExecuteMigrationCommand(string query, CancellationToken cancellationToken = default)
     {
+        var dbContext = dbContextFactory.CreateDbContext();
         return await dbContext.Database.ExecuteSqlRawAsync(query, cancellationToken);
     }
 

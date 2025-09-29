@@ -2,12 +2,16 @@ using System.Net.Mime;
 using Altinn.AccessManagement.Api.Internal.Models;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
-using Altinn.AccessManagement.Internal.Services;
+using Altinn.AccessMgmt.Core.Services;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,16 +26,22 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers;
 [Route("accessmanagement/api/v1/internal/connections")]
 [FeatureGate(AccessManagementInternalFeatureFlags.ControllerConnections)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-public class InternalConnectionsController(IInternalConnectionService connectionService) : ControllerBase
+public class InternalConnectionsController(IConnectionService connectionService) : ControllerBase
 {
-    private IInternalConnectionService ConnectionService { get; } = connectionService;
+    private IConnectionService ConnectionService { get; } = connectionService;
+
+    private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
+    {
+        options.SupportedFromEntityTypes = [EntityTypeConstants.Organisation];
+        options.SupportedToEntityTypes = [EntityTypeConstants.SystemUser];
+    };
 
     /// <summary>
     /// Get connections between organizations and systemusers.
     /// </summary>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-    [ProducesResponseType<PaginatedResult<CompactRelationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<PaginatedResult<AccessMgmt.Persistence.Services.Models.ConnectionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -50,7 +60,8 @@ public class InternalConnectionsController(IInternalConnectionService connection
     /// Creates "rettighetshaver" relation between an organization and systemuser.
     /// </summary>
     [HttpPost]
-    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
+    // [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<Assignment>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -58,7 +69,7 @@ public class InternalConnectionsController(IInternalConnectionService connection
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddAssignment([FromQuery] ConnectionInput connection, CancellationToken cancellationToken = default)
     {
-        var result = await ConnectionService.AddAssignment(connection.Party, connection.To, "rettighetshaver", cancellationToken);
+        var result = await ConnectionService.AddAssignment(connection.Party, connection.To, RoleConstants.Rightholder, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -72,14 +83,15 @@ public class InternalConnectionsController(IInternalConnectionService connection
     /// </summary>
     [HttpDelete]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
+    // [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemoveAssignment([FromQuery] ConnectionInput connection, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
-        var problem = await ConnectionService.RemoveAssignment(connection.Party, connection.To, "rettighetshaver", cascade, cancellationToken);
+        var problem = await ConnectionService.RemoveAssignment(connection.Party, connection.To, RoleConstants.Rightholder, cascade, ConfigureConnections,  cancellationToken);
         if (problem is { })
         {
             return problem.ToActionResult();
@@ -93,7 +105,8 @@ public class InternalConnectionsController(IInternalConnectionService connection
     /// </summary>
     [HttpGet("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
+    // [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
     [ProducesResponseType<PaginatedResult<PackagePermission>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -113,22 +126,23 @@ public class InternalConnectionsController(IInternalConnectionService connection
     /// Assigns package to system user from organization. 
     /// </summary>
     [HttpPost("accesspackages")]
-    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
+    // [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ProducesResponseType<AssignmentPackage>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AssignmentPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddPackages([FromQuery] ConnectionInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
     {
-        async Task<Result<AssignmentPackage>> AddPackage()
+        async Task<Result<AssignmentPackageDto>> AddPackage()
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.AddPackage(connection.Party, connection.To, "rettighetshaver", packageId.Value, cancellationToken);
+                return await ConnectionService.AddPackage(connection.Party, connection.To, RoleConstants.Rightholder,  packageId.Value, ConfigureConnections, cancellationToken);
             }
 
-            return await ConnectionService.AddPackage(connection.Party, connection.To, "rettighetshaver", package, cancellationToken);
+            return await ConnectionService.AddPackage(connection.Party, connection.To, RoleConstants.Rightholder, package, ConfigureConnections, cancellationToken);
         }
 
         var result = await AddPackage();
@@ -144,7 +158,8 @@ public class InternalConnectionsController(IInternalConnectionService connection
     /// Removes package given to system user from an organization. 
     /// </summary>
     [HttpDelete("accesspackages")]
-    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
+    // [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -156,10 +171,10 @@ public class InternalConnectionsController(IInternalConnectionService connection
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.RemovePackage(connection.Party, connection.To, "rettighetshaver", packageId.Value, cancellationToken);
+                return await ConnectionService.RemovePackage(connection.Party, connection.To, RoleConstants.Rightholder, packageId.Value, cancellationToken);
             }
 
-            return await ConnectionService.RemovePackage(connection.Party, connection.To, "rettighetshaver", package, cancellationToken);
+            return await ConnectionService.RemovePackage(connection.Party, connection.To, RoleConstants.Rightholder, package, cancellationToken);
         }
 
         var problem = await RemovePackage();

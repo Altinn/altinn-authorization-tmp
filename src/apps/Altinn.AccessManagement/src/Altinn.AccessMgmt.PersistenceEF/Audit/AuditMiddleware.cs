@@ -1,12 +1,14 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Audit;
 
-public class AuditMiddleware(IAuditAccessor auditContextAccessor) : IMiddleware
+public class AuditMiddleware : IMiddleware
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
+        var auditContextAccessor = context.RequestServices.GetRequiredService<IAuditAccessor>();
         if (context.GetEndpoint() is var endpoint && endpoint != null)
         {
             if (endpoint.Metadata.GetMetadata<AuditJWTClaimToDbAttribute>() is var attr && attr != null)

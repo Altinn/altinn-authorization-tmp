@@ -21,10 +21,10 @@ public static class ServiceCollectionExtensions
         ConstantGuard.ConstantIdsAreUnique();
         services.AddScoped<ReadOnlyInterceptor>();
         services.AddScoped<IAuditAccessor, AuditAccessor>();
-        services.AddScoped<ITranslationService, TranslationService>();
+        // services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<AppDbContextFactory>();
-
         services.AddSingleton<AuditMiddleware>();
+        
         return options.Source switch
         {
             SourceType.App => services.AddPooledDbContextFactory<AppDbContext>((sp, options) =>
@@ -33,7 +33,7 @@ public static class ServiceCollectionExtensions
                 var connectionString = db.CreatePgsqlConnection(SourceType.App);
                 options.UseNpgsql(connectionString, ConfigureNpgsql);
             }),
-            SourceType.Migration => services.AddDbContext<AppDbContext>((sp, options) =>
+            SourceType.Migration => services.AddPooledDbContextFactory<AppDbContext>((sp, options) =>
             {
                 var db = sp.GetRequiredService<IAltinnDatabase>();
                 var connectionString = db.CreatePgsqlConnection(SourceType.Migration);
