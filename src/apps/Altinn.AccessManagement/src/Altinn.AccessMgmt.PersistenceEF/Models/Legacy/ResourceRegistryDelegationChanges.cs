@@ -1,6 +1,14 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-public class ResourceRegistryDelegationChanges : BaseDelegationChanges
+namespace Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
+
+public class ResourceRegistryDelegationChanges : BaseResourceRegistryDelegationChanges
+{
+    public Resource Resource { get; set; }
+}
+
+[NotMapped]
+public class BaseResourceRegistryDelegationChanges : CommonDelegationChanges
 {
     /// <summary>
     /// Gets or sets the delegation change id
@@ -12,18 +20,4 @@ public class ResourceRegistryDelegationChanges : BaseDelegationChanges
     /// </summary>
     public string ResourceId { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Gets or sets the resourcetype.
-    /// </summary>
-    public string ResourceType { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the Altinn App Id
-    /// </summary>
-    public int resourceid_fk { get; set; }
-
-    /// <summary>
-    /// Gets or sets the Altinn App Id
-    /// </summary>
-    public int performedbypartyid { get; set; }
 }

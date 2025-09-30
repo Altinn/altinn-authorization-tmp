@@ -1,6 +1,14 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-public class InstanceDelegationChanges : BaseDelegationChanges
+namespace Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
+
+public class InstanceDelegationChanges : BaseInstanceDelegationChanges
+{
+    public Resource Resource { get; set; }
+}
+
+[NotMapped]
+public class BaseInstanceDelegationChanges : CommonDelegationChanges
 {
     /// <summary>
     /// Gets or sets the delegation change id

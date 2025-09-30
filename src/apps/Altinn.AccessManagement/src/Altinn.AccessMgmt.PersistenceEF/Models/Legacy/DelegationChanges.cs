@@ -1,9 +1,17 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
+
+public class DelegationChanges : BaseDelegationChanges
+{
+    public Resource AltinnApp { get; set; } // AltinnApp?
+}
 
 /// <summary>
 /// This model describes a delegation change as stored in the Authorization postgre DelegationChanges table.
 /// </summary>
-public class DelegationChanges : BaseDelegationChanges
+[NotMapped]
+public class BaseDelegationChanges : CommonDelegationChanges
 {
     /// <summary>
     /// Gets or sets the delegation change id

@@ -3,11 +3,48 @@ using Altinn.AccessMgmt.PersistenceEF.Models.Legacy.Enums;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
 
+public class CommonDelegationChanges : BaseCommonDelegationChanges, ICommonDelegationChanges
+{
+    public Entity OfferedBy { get; set; }
+
+    public Entity CoveredBy { get; set; }
+
+    public Entity PerformedBy { get; set; }
+
+    public Entity From { get; set; }
+
+    public Entity To { get; set; }
+}
+
+public interface ICommonDelegationChanges
+{
+    Entity CoveredBy { get; set; }
+    Entity From { get; set; }
+    Entity OfferedBy { get; set; }
+    Entity PerformedBy { get; set; }
+    Entity To { get; set; }
+    string BlobStoragePolicyPath { get; set; }
+    string BlobStorageVersionId { get; set; }
+    int? CoveredByPartyId { get; set; }
+    int? CoveredByUserId { get; set; }
+    DateTime? Created { get; set; }
+    DelegationChangeType DelegationChangeType { get; set; }
+    Guid? FromUuid { get; set; }
+    UuidType FromUuidType { get; set; }
+    int OfferedByPartyId { get; set; }
+    int? PerformedByPartyId { get; set; }
+    int? PerformedByUserId { get; set; }
+    string PerformedByUuid { get; set; }
+    UuidType PerformedByUuidType { get; set; }
+    Guid? ToUuid { get; set; }
+    UuidType ToUuidType { get; set; }
+}
+
 /// <summary>
 /// This model describes a delegation change as stored in the Authorization postgre DelegationChanges table.
 /// </summary>
 [NotMapped]
-public class BaseDelegationChanges
+public class BaseCommonDelegationChanges
 {
     /// <summary>
     /// Gets or sets the delegation change type
