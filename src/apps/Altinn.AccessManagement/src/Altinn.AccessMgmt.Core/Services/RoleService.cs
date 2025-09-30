@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -69,10 +70,11 @@ public class RoleService(AppDbContext db) : IRoleService
     /// <inheritdoc />
     public async Task<RoleDto> GetByKeyValue(string key, string value, CancellationToken cancellationToken = default)
     {
-        var res = await db.RoleLookups.AsNoTracking().Where(t => t.Key.Contains(key) && t.Value.Contains(value))
+        var res = (await db.RoleLookups.AsNoTracking()
             .Include(t => t.Role).ThenInclude(t => t.Provider)
             .Include(t => t.Role).ThenInclude(t => t.EntityType)
-            .FirstOrDefaultAsync(cancellationToken);
+            .ToListAsync(cancellationToken)
+            ).FirstOrDefault(t => t.Key.Contains(key, StringComparison.OrdinalIgnoreCase) && t.Value.Contains(value, StringComparison.OrdinalIgnoreCase));
 
         if (res == null)
         {
