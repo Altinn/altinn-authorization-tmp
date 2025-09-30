@@ -18,7 +18,6 @@ namespace Altinn.AccessManagement.Controllers;
 [ApiController]
 [Route("accessmanagement/api/v1/internal/[controller]")]
 [ApiExplorerSettings(IgnoreApi = false)]
-[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class SystemUserClientDelegationController : ControllerBase
 {
     private readonly IConnectionService connectionService;
@@ -57,6 +56,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <param name="packages"> The list of package identifiers to filter the connections by</param>
     /// <returns>List of Clients<seealso cref="ClientDto"/></returns>
     [HttpGet("clients")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
     public async Task<ActionResult> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null)
     {
@@ -96,6 +96,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <param name="systemUser">The system user the authenticated user is delegating access to</param>
     /// <returns><seealso cref="ConnectionDto"/>List of connections</returns>
     [HttpGet]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
     public async Task<ActionResult<ConnectionDto>> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser)
     {
@@ -125,6 +126,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <param name="request">Request Dto</param>
     /// <returns><seealso cref="CreateDelegationResponse"/>List of delegation responses</returns>
     [HttpPost]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     public async Task<ActionResult<CreateDelegationResponse>> PostClientDelegation([FromQuery] Guid party, [FromBody] CreateSystemDelegationRequestDto request)
     {
@@ -159,6 +161,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <param name="delegationId">The delegation identifier</param>
     [HttpDelete]
     [Route("deletedelegation")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     public async Task<ActionResult> DeleteDelegation([FromQuery] Guid party, [FromQuery] Guid delegationId)
     {
@@ -210,6 +213,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <param name="cascade">If true; dependent rows in the database will be deleted</param>
     [HttpDelete]
     [Route("deleteassignment")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     public async Task<ActionResult> DeleteAssignment([FromQuery] Guid party, [FromQuery] Guid assignmentId, [FromQuery] bool cascade = false)
     {
@@ -275,6 +279,7 @@ public class SystemUserClientDelegationController : ControllerBase
     /// <param name="cascade">If true; dependent rows in the database will be deleted</param>
     [HttpDelete]
     [Route("deleteagentassignment")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     public async Task<ActionResult> DeleteAgentAssignment([FromQuery] Guid party, [FromQuery] Guid agentId, [FromQuery] bool cascade = false)
     {
