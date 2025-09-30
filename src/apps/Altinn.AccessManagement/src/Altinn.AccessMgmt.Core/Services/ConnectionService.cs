@@ -1,6 +1,7 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -161,14 +162,29 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<SystemUserClientConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, CancellationToken cancellationToken = default)
     {
         var result = await dbContext.Connections.AsNoTracking()
+            .Include(t => t.Delegation)
+            .Include(t => t.From)
+            .ThenInclude(t => t.Type)
+            .Include(t => t.From)
+            .ThenInclude(t => t.Variant)
+            .Include(t => t.Role)
+            .Include(t => t.To)
+            .ThenInclude(t => t.Type)
+            .Include(t => t.To)
+            .ThenInclude(t => t.Variant)
+            .Include(t => t.Via)
+            .ThenInclude(t => t.Type)
+            .Include(t => t.Via)
+            .ThenInclude(t => t.Variant)
+            .Include(t => t.ViaRole)
             .Where(t => t.ToId == toId)
             .Where(t => t.ViaId == viaId)
             .ToListAsync(cancellationToken);
 
-        return ExtractRelationDtoFromOthers(result, includeSubConnections: false);
+        return GetConnectionsAsSystemUserClientConnectionDto(result);
     }
 
     #region Mappers
@@ -253,6 +269,66 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
             Roles = res.Where(t => t.FromId == relation.FromId).Select(t => DtoMapper.ConvertCompactRole(t.Role)).DistinctBy(t => t.Id).ToList(),
             Packages = res.Where(t => t.FromId == relation.FromId && t.Package != null).Select(t => DtoMapper.ConvertCompactPackage(t.Package)).DistinctBy(t => t.Id).ToList(),
             Connections = includeSubConnections ? ExtractSubRelationDtoFromOthers(res, relation.FromId).ToList() : new()
+        });
+    }
+
+    private IEnumerable<SystemUserClientConnectionDto> GetConnectionsAsSystemUserClientConnectionDto(IEnumerable<Connection> res)
+    {
+        return res.DistinctBy(t => t.DelegationId).Select(connection => new SystemUserClientConnectionDto()
+        {
+            Id = connection.DelegationId.Value,
+            Delegation = connection.DelegationId.HasValue ? new SystemUserClientConnectionDto.ClientDelegation()
+            {
+                Id = connection.DelegationId.Value,
+                FromId = connection.FromId,
+                ToId = connection.ToId,
+                FacilitatorId = connection.ViaId ?? Guid.Empty
+            } : null,
+            From = new SystemUserClientConnectionDto.Client()
+            {
+                Id = connection.From.Id,
+                TypeId = connection.From.TypeId,
+                VariantId = connection.From.VariantId,
+                Name = connection.From.Name,
+                RefId = connection.From.RefId,
+                ParentId = connection.From.ParentId.HasValue ? connection.From.ParentId.Value : Guid.Empty
+            },
+            Role = new SystemUserClientConnectionDto.AgentRole()
+            {
+                Id = connection.Role.Id,
+                Name = connection.Role.Name,
+                Code = connection.Role.Code,
+                Description = connection.Role.Description,
+                IsKeyRole = connection.Role.IsKeyRole,
+                Urn = connection.Role.Urn
+            },
+            To = new SystemUserClientConnectionDto.Agent()
+            {
+                Id = connection.To.Id,
+                TypeId = connection.To.TypeId,
+                VariantId = connection.To.VariantId,
+                Name = connection.To.Name,
+                RefId = connection.To.RefId,
+                ParentId = connection.To.ParentId.HasValue ? connection.To.ParentId.Value : Guid.Empty
+            },
+            Facilitator = connection.ViaId.HasValue ? new SystemUserClientConnectionDto.ServiceProvider()
+            {
+                Id = connection.Via.Id,
+                TypeId = connection.Via.TypeId,
+                VariantId = connection.Via.VariantId,
+                Name = connection.Via.Name,
+                RefId = connection.Via.RefId,
+                ParentId = connection.Via.ParentId.HasValue ? connection.Via.ParentId.Value : Guid.Empty
+            } : null,
+            FacilitatorRole = connection.ViaRoleId.HasValue ? new SystemUserClientConnectionDto.ServiceProviderRole()
+            {
+                Id = connection.ViaRole.Id,
+                Name = connection.ViaRole.Name,
+                Code = connection.ViaRole.Code,
+                Description = connection.ViaRole.Description,
+                IsKeyRole = connection.ViaRole.IsKeyRole,
+                Urn = connection.ViaRole.Urn
+            } : null
         });
     }
     #endregion

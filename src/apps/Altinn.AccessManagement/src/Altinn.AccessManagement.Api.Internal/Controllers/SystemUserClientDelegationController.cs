@@ -2,12 +2,14 @@
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ClientDto = Altinn.Authorization.Api.Contracts.AccessManagement.ClientDto;
+using CreateSystemDelegationRequestDto = Altinn.Authorization.Api.Contracts.AccessManagement.CreateSystemDelegationRequestDto;
 
 namespace Altinn.AccessManagement.Api.Internal.Controllers;
 
@@ -73,11 +75,11 @@ public class SystemUserClientDelegationController(
     /// <param name="party">The party the authenticated user is performing client administration on behalf of</param>
     /// <param name="systemUser">The system user the authenticated user is delegating access to</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
-    /// <returns><seealso cref="ConnectionDto"/>List of connections</returns>
+    /// <returns><seealso cref="SystemUserClientConnectionDto"/>List of connections</returns>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
-    public async Task<ActionResult<IEnumerable<ConnectionDto>>> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<IEnumerable<SystemUserClientConnectionDto>>> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser, CancellationToken cancellationToken = default)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
         if (userId == Guid.Empty)

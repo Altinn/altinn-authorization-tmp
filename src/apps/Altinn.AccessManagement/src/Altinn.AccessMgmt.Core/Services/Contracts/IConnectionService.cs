@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Services.Contracts;
@@ -79,5 +80,5 @@ public interface IConnectionService
     /// <param name="toId">The uuid of the agent</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>collection of all connections of the agent</returns>
-    Task<IEnumerable<ConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<SystemUserClientConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, CancellationToken cancellationToken = default);
 }

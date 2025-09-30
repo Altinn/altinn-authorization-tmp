@@ -105,7 +105,7 @@ public partial class DtoMapper
             Name = compactEntity.Name,
             Type = compactEntity.Type.Name,
             Variant = compactEntity.Variant.Name,
-            Parent = Convert(compactEntity.Parent),
+            Parent = compactEntity.Parent != null ? Convert(compactEntity.Parent) : null,
             Children = null
         };
     }
