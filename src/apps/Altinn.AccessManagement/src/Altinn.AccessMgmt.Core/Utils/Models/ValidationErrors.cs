@@ -100,5 +100,5 @@ public static class ValidationErrors
     /// Gets a validation error descriptor indicating that the operation could not be completed.
     /// </summary>
     public static ValidationErrorDescriptor UnableToCompleteOperation { get; }
-    = _factory.Create(26, $"The operation could not be completed.");
+    = _factory.Create(27, $"The operation could not be completed.");
 }
