@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 
@@ -95,7 +96,7 @@ public partial class StaticDataIngest
             new Role() { Id = Guid.Parse("10fcad57-7a91-4e02-a921-63e5751fbc24"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Revisormedarbeider",                           Code = "A0238",               Description = "Denne rollen gir revisor rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:A0238", IsKeyRole = false },
             new Role() { Id = Guid.Parse("ebed65a5-dd87-4180-b898-e1da249b128d"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Regnskapsfører med signeringsrettighet",       Code = "A0239",               Description = "Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester, samt signeringsrettighet for tjenestene. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:A0239", IsKeyRole = false },
             new Role() { Id = Guid.Parse("9407620b-21b6-4538-b4d8-2b4eb339c373"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Regnskapsfører uten signeringsrettighet",      Code = "A0240",               Description = "Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:A0240", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("723a43ab-13d8-4585-81e2-e4c734b2d4fc"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Regnskapsfører lønn",                          Code = "A0241",               Description = "Denne rollen gir regnskapsfører rettighet til lønnsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.  ", Urn = "urn:altinn:rolecode:A0241", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("723a43ab-13d8-4585-81e2-e4c734b2d4fc"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Regnskapsfører lønn",                          Code = "A0241",               Description = "Denne rollen gir regnskapsfører rettighet til lønnsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:A0241", IsKeyRole = false },
             new Role() { Id = Guid.Parse("6828080b-e846-4c51-b670-201af4917562"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Plan- og byggesak",                            Code = "A0278",               Description = "Rollen er forbeholdt skjemaer og tjenester som er godkjent av Direktoratet for byggkvalitet (DiBK). Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:A0278", IsKeyRole = false },
             new Role() { Id = Guid.Parse("f4df0522-3034-405b-a9e5-83f971737033"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Skatteforhold for privatpersoner",             Code = "A0282",               Description = "Tillatelsen gjelder alle opplysninger vedrørende dine eller ditt enkeltpersonsforetaks skatteforhold. Ved regelverksendringer eller innføring av nye digitale tjenester kan Skatteetaten endre i tillatelsen.", Urn = "urn:altinn:rolecode:A0282", IsKeyRole = false },
             new Role() { Id = Guid.Parse("92ea5544-ca64-4e03-9532-646b9f86ff65"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Taushetsbelagt post ",                         Code = "A0286",               Description = "Denne rollen gir tilgang til taushetsbelagt post fra stat og kommune. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:A0286", IsKeyRole = false },
@@ -103,12 +104,12 @@ public partial class StaticDataIngest
             new Role() { Id = Guid.Parse("5fda4732-dd10-416d-b876-9e1715bbf21c"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Taushetsbelagt post - administrasjon",         Code = "A0288",               Description = "Gir tilgang til taushetsbelagt post fra det offentlige innen administrasjon", Urn = "urn:altinn:rolecode:A0288", IsKeyRole = false },
             new Role() { Id = Guid.Parse("4652e98f-7a6b-4dc2-b061-fc8d6840e456"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Algetestdata",                                 Code = "A0293",               Description = "Havforskningsinstituttet - registrering av algetestdata", Urn = "urn:altinn:rolecode:A0293", IsKeyRole = false },
             new Role() { Id = Guid.Parse("c22c6add-dd5d-4735-87de-b75491018e50"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Transportløyvegaranti",                        Code = "A0294",               Description = "Statens vegvesen - rolle som gir tilgang til app for transportløyvegarantister", Urn = "urn:altinn:rolecode:A0294", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("d8b9c47b-e5a7-4912-8aa8-1d2bab75e41c"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Revisorattesterer",                            Code = "A0298",               Description = "Rollen gir bruker tilgang til å attestere tjenester for avgiver som revisor.  Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:A0298", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("48f9e5ec-efd5-4863-baba-9697b8971666"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Tilgangsstyring",                              Code = "ADMAI",               Description = "Denne rollen gir administratortilgang til å gi videre rettigheter til andre.  ", Urn = "urn:altinn:rolecode:ADMAI", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("e078bb18-f55a-4a2d-8964-c599f41b29b5"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Programmeringsgrensesnitt (API)",              Code = "APIADM",              Description = "Delegerbar rolle som gir  tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av virksomheten.", Urn = "urn:altinn:rolecode:APIADM", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("d8b9c47b-e5a7-4912-8aa8-1d2bab75e41c"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Revisorattesterer",                            Code = "A0298",               Description = "Rollen gir bruker tilgang til å attestere tjenester for avgiver som revisor. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:A0298", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("48f9e5ec-efd5-4863-baba-9697b8971666"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Tilgangsstyring",                              Code = "ADMAI",               Description = "Denne rollen gir administratortilgang til å gi videre rettigheter til andre.", Urn = "urn:altinn:rolecode:ADMAI", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("e078bb18-f55a-4a2d-8964-c599f41b29b5"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Programmeringsgrensesnitt (API)",              Code = "APIADM",              Description = "Delegerbar rolle som gir tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av virksomheten.", Urn = "urn:altinn:rolecode:APIADM", IsKeyRole = false },
             new Role() { Id = Guid.Parse("0ea4e5de-3fb4-499e-b013-1e1b4459af24"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Programmeringsgrensesnitt for NUF (API)",      Code = "APIADMNUF",           Description = "Delegerbar rolle som gir kontaktperson for norskregistrert utenlandsk foretak (NUF) tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av virksomheten.", Urn = "urn:altinn:rolecode:APIADMNUF", IsKeyRole = false },
             new Role() { Id = Guid.Parse("60abf944-cf8c-4845-b310-83bcb6c77198"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Revisorattesterer - MVA kompensasjon",         Code = "ATTST",               Description = "Denne rollen gir revisor rettighet til å attestere tjenesten Merverdiavgift - søknad om kompensasjon (RF-0009).", Urn = "urn:altinn:rolecode:ATTST", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("0a76304e-345b-4f22-bb31-4837a630eb7a"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Konkursbo tilgangsstyring",                    Code = "BOADM",               Description = "Denne rollen gir advokater mulighet til å styre hvem som har rettigheter til konkursbo.  ", Urn = "urn:altinn:rolecode:BOADM", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("0a76304e-345b-4f22-bb31-4837a630eb7a"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Konkursbo tilgangsstyring",                    Code = "BOADM",               Description = "Denne rollen gir advokater mulighet til å styre hvem som har rettigheter til konkursbo.", Urn = "urn:altinn:rolecode:BOADM", IsKeyRole = false },
             new Role() { Id = Guid.Parse("7246639c-137b-4981-b172-6134c9fc1a7f"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Konkursbo lesetilgang",                        Code = "BOBEL",               Description = "Tilgang til å lese informasjon i tjenesten Konkursbehandling", Urn = "urn:altinn:rolecode:BOBEL", IsKeyRole = false },
             new Role() { Id = Guid.Parse("5f73b031-8b5b-45d8-a682-e9a7e75a7691"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Konkursbo skrivetilgang",                      Code = "BOBES",               Description = "Utvidet lesetilgang og innsendingsrett for tjenesten Konkursbehandling", Urn = "urn:altinn:rolecode:BOBES", IsKeyRole = false },
             new Role() { Id = Guid.Parse("e0684f66-a46e-4706-a754-8889b532509c"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "ECKEYROLE",                                    Code = "ECKEYROLE",           Description = "Nøkkelrolle for virksomhetsertifikatbrukere", Urn = "urn:altinn:rolecode:ECKEYROLE", IsKeyRole = true },
@@ -118,10 +119,10 @@ public partial class StaticDataIngest
             new Role() { Id = Guid.Parse("98bebcac-d6bb-4343-97b8-0fe8bc744d7a"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Økokrim rapportering",                         Code = "HVASK",               Description = "Tilgang til tjenester fra Økokrim. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:HVASK", IsKeyRole = false },
             new Role() { Id = Guid.Parse("27e1ef41-df4d-439e-b948-df136c139e81"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Klientadministrator",                          Code = "KLADM",               Description = "Tilgang til å administrere klientroller for regnskapsførere og revisorer", Urn = "urn:altinn:rolecode:KLADM", IsKeyRole = false },
             new Role() { Id = Guid.Parse("b8e6dd1c-ca10-4ce6-9c27-53cdb3c275b3"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Kommunale tjenester",                          Code = "KOMAB",               Description = "Rollen gir tilgang til kommunale tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:KOMAB", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("010b4c49-bf56-44e3-b73b-84be7b2a5eb6"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Lønn og personalmedarbeider",                  Code = "LOPER",               Description = "Denne rollen gir rettighet til lønns- og personalrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.  ", Urn = "urn:altinn:rolecode:LOPER", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("0f276fc4-c201-4ff7-8e8a-caa3efe9c02a"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Parallell signering",                          Code = "PASIG",               Description = "Denne rollen gir rettighet til å signere elementer fra andre avgivere.  ", Urn = "urn:altinn:rolecode:PASIG", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("010b4c49-bf56-44e3-b73b-84be7b2a5eb6"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Lønn og personalmedarbeider",                  Code = "LOPER",               Description = "Denne rollen gir rettighet til lønns- og personalrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:LOPER", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("0f276fc4-c201-4ff7-8e8a-caa3efe9c02a"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Parallell signering",                          Code = "PASIG",               Description = "Denne rollen gir rettighet til å signere elementer fra andre avgivere.", Urn = "urn:altinn:rolecode:PASIG", IsKeyRole = false },
             new Role() { Id = Guid.Parse("23cade0a-287a-49e0-8957-22d5a14cb100"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Patent, varemerke og design",                  Code = "PAVAD",               Description = "Denne rollen gir rettighet til tjenester relatert til patent, varemerke og design. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:PAVAD", IsKeyRole = false },
-            new Role() { Id = Guid.Parse("696478f4-c85b-4bda-ace0-caa058fe5def"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Privatperson begrensede rettigheter",          Code = "PRIUT",               Description = "Denne rollen gir mulighet til å benytte tjenester på vegne av en annen privatperson. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.  ", Urn = "urn:altinn:rolecode:PRIUT", IsKeyRole = false },
+            new Role() { Id = Guid.Parse("696478f4-c85b-4bda-ace0-caa058fe5def"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Privatperson begrensede rettigheter",          Code = "PRIUT",               Description = "Denne rollen gir mulighet til å benytte tjenester på vegne av en annen privatperson. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:PRIUT", IsKeyRole = false },
             new Role() { Id = Guid.Parse("633cde7d-3604-45b2-ba8c-e16161cf2cf8"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Regnskapsmedarbeider",                         Code = "REGNA",               Description = "Denne rollen gir rettighet til regnskapsrelaterte skjema og tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.", Urn = "urn:altinn:rolecode:REGNA", IsKeyRole = false },
             new Role() { Id = Guid.Parse("1d71e23d-91b6-44ca-b171-c179028e7cdf"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Revisorrettighet",                             Code = "REVAI",               Description = "Denne rollen gir revisor rettighet til aktuelle skjema og tjenester", Urn = "urn:altinn:rolecode:REVAI", IsKeyRole = false },
             new Role() { Id = Guid.Parse("1a15b75c-2387-4278-ba3a-7eb1cffe1653"), EntityTypeId = orgEntityTypeId,  ProviderId = a2ProviderId, Name = "Taushetsbelagt post fra kommunen",             Code = "SENS01",              Description = "Rollen gir tilgang til tjenester med taushetsbelagt informasjon fra kommunen, og bør ikke delegeres i stort omfang", Urn = "urn:altinn:rolecode:SENS01", IsKeyRole = false },
@@ -298,8 +299,62 @@ public partial class StaticDataIngest
             new TranslationEntryList() { Id = Guid.Parse("e16ab886-1e1e-4f45-8f79-46f06f720f3e"), LanguageCode = "nno", Type = nameof(Role), Translations = { { "Name" , "Sjølregistrert brukar" } ,                         { "Description" , "Sjølregistrert brukar" } } },
         };
 
+        var missing = data.Where(d => !RoleConstants.AllEntities().Any(f => f.Id == d.Id)).ToList();
+
+        foreach (var m in missing)
+        {
+            Console.WriteLine($"{m.Id} : {m.Name}");
+        }
+
         foreach (var d in data)
         {
+            RoleConstants.TryGetById(d.Id, out var role);
+            Console.WriteLine(d.Id);
+
+            if (role.Id != d.Id)
+            {
+                throw new Exception("kake");
+            }
+
+            if (role.Entity.Code != d.Code)
+            {
+                throw new Exception("kake");
+            }
+
+            if (role.Entity.Description != d.Description)
+            {
+                throw new Exception("kake");
+            }
+
+            if (role.Entity.EntityTypeId != d.EntityTypeId)
+            {
+                throw new Exception("kake");
+            }
+            if (role.Entity.IsAssignable != d.IsAssignable)
+            {
+                throw new Exception("kake");
+            }
+
+            if (role.Entity.IsKeyRole != d.IsKeyRole)
+            {
+                throw new Exception("kake");
+            }
+
+            if (role.Entity.Name != d.Name)
+            {
+                throw new Exception("kake");
+            }
+
+            if (role.Entity.ProviderId != d.ProviderId)
+            {
+                throw new Exception("kake");
+            }
+
+            if (role.Entity.Urn != d.Urn)
+            {
+                throw new Exception("kake");
+            }
+
             var obj = db.Roles.FirstOrDefault(t => t.Id == d.Id);
             if (obj == null)
             {
@@ -313,6 +368,25 @@ public partial class StaticDataIngest
 
         foreach (var translation in translations.SelectMany(t => t.SingleEntries()))
         {
+            RoleConstants.TryGetById(translation.Id, out var role);
+            if (translation.LanguageCode == "nno")
+            {
+                foreach (var entry in role.NN.Translations.ToList())
+                {
+                    role.NN.Translations.Any(e => e.Key == entry.Key);
+                    role.NN.Translations.Any(e => e.Value == entry.Value);
+                }
+            } 
+
+            if (translation.LanguageCode == "eng")
+            {
+                foreach (var entry in role.EN.Translations.ToList())
+                {
+                    role.EN.Translations.Any(e => e.Key == entry.Key);
+                    role.EN.Translations.Any(e => e.Value == entry.Value);
+                }
+            } 
+            
             await translationService.UpsertTranslationAsync(translation);
         }
 
