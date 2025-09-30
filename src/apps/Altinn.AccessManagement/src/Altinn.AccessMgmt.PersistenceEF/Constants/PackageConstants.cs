@@ -66,9 +66,9 @@ public static class PackageConstants
             IsDelegable = false,
             HasResources = false,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ManageAccess.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ManageAccess,
         },
     };
 
@@ -85,9 +85,9 @@ public static class PackageConstants
             IsDelegable = false,
             HasResources = false,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ManageAccess.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ManageAccess,
         },
     };
 
@@ -104,9 +104,9 @@ public static class PackageConstants
             IsDelegable = false,
             HasResources = false,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ManageAccess.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ManageAccess,
         },
     };
 
@@ -133,9 +133,9 @@ public static class PackageConstants
             IsDelegable = false,
             HasResources = false,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ManageAccess.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ManageAccess,
         },
     };
 
@@ -162,9 +162,9 @@ public static class PackageConstants
             IsDelegable = false,
             HasResources = false,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ManageAccess.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ManageAccess,
         },
     };
 
@@ -185,9 +185,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TaxFeesAccountingAndCustoms.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
     };
 
@@ -204,9 +204,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TaxFeesAccountingAndCustoms.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
     };
 
@@ -223,9 +223,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TaxFeesAccountingAndCustoms.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
     };
 
@@ -242,9 +242,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TaxFeesAccountingAndCustoms.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
     };
 
@@ -261,9 +261,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TaxFeesAccountingAndCustoms.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
     };
 
@@ -280,9 +280,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TaxFeesAccountingAndCustoms.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
     };
 
@@ -295,13 +295,13 @@ public static class PackageConstants
         {
             Name = "Revisorattesterer",
             Description = "Denne fullmakten gir tilgang til alle tjenester som krever revisorattestering. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            Urn = "urn:altinn:accesspackage:reviorattesterer",
+            Urn = "urn:altinn:accesspackage:revisorattesterer",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TaxFeesAccountingAndCustoms.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
     };
 
@@ -318,9 +318,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TaxFeesAccountingAndCustoms.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
     };
 
@@ -337,9 +337,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TaxFeesAccountingAndCustoms.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
     };
 
@@ -356,9 +356,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TaxFeesAccountingAndCustoms.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
     };
 
@@ -379,9 +379,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Personnel.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Personnel,
         },
     };
 
@@ -398,9 +398,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Personnel.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Personnel,
         },
     };
 
@@ -417,9 +417,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Personnel.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Personnel,
         },
     };
 
@@ -436,9 +436,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Personnel.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Personnel,
         },
     };
 
@@ -455,9 +455,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Personnel.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Personnel,
         },
     };
 
@@ -474,9 +474,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Personnel.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Personnel,
         },
     };
 
@@ -492,14 +492,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Renovasjon",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till renovasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til renovasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:renovasjon",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnvironmentAccidentAndSafety.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnvironmentAccidentAndSafety,
         },
     };
 
@@ -511,14 +511,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Miljørydding, miljørensing og lignende",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till miljørydding, miljørensing og lignende. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til miljørydding, miljørensing og lignende. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:miljorydding-miljorensing-og-lignende",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnvironmentAccidentAndSafety.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnvironmentAccidentAndSafety,
         },
     };
 
@@ -530,14 +530,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Bærekraft",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till tiltak og rapportering på bærekraft. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til tiltak og rapportering på bærekraft. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:baerekraft",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnvironmentAccidentAndSafety.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnvironmentAccidentAndSafety,
         },
     };
 
@@ -549,14 +549,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Sikkerhet og internkontroll",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till sikkerhet og internkontroll. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til sikkerhet og internkontroll. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:sikkerhet-og-internkontroll",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnvironmentAccidentAndSafety.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnvironmentAccidentAndSafety,
         },
     };
 
@@ -568,14 +568,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Ulykke",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till ulykke. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til ulykke. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:ulykke",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnvironmentAccidentAndSafety.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnvironmentAccidentAndSafety,
         },
     };
 
@@ -587,14 +587,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Yrkesskade",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till yrkesskade. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til yrkesskade. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:yrkesskade",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnvironmentAccidentAndSafety.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnvironmentAccidentAndSafety,
         },
     };
 
@@ -610,14 +610,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Ordinær post til virksomheten",
-            Description = "Denna fullmaktan gir tilgang till all mottatt post som ikke innholder sensitiv/taushetsbelagt informasjon som sendes virksomheten. Fullmaktan gis normalt till de i virksomheten som håndterer mottak av post. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til all mottatt post som ikke innholder sensitiv/taushetsbelagt informasjon som sendes virksomheten. Fullmakten gis normalt til de i virksomheten som håndterer mottak av post. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:ordinaer-post-til-virksomheten",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.MailAndArchive.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.MailAndArchive,
         },
     };
 
@@ -629,14 +629,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Post til virksomheten med taushetsbelagt innhold",
-            Description = "Denna fullmaktan gir tilgang till all mottatt post som innholder sensitiv/taushetsbelagt informasjon som sendes virksomheten. Fullmaktan gis normalt till de i virksomheten som håndterer mottak av post som har taushetsbelagt innhold. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til all mottatt post som innholder sensitiv/taushetsbelagt informasjon som sendes virksomheten. Fullmakten gis normalt til de i virksomheten som håndterer mottak av post som har taushetsbelagt innhold. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:post-til-virksomheten-med-taushetsbelagt-innhold",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.MailAndArchive.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.MailAndArchive,
         },
     };
 
@@ -657,9 +657,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -676,9 +676,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -695,9 +695,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -714,9 +714,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -733,9 +733,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -752,9 +752,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -771,9 +771,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -790,9 +790,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -808,14 +808,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Jordbruk",
-            Description = "Denna tilgangspakken gir tilgang till tjenester knyttet till jordbruk. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir tilgang til tjenester knyttet til jordbruk. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:jordbruk",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture,
         },
     };
 
@@ -827,14 +827,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Dyrehold",
-            Description = "Denna tilgangspakken gir tilgang till tjenester knyttet till dyrehold. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir tilgang til tjenester knyttet til dyrehold. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:dyrehold",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture,
         },
     };
 
@@ -846,14 +846,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Reindrift",
-            Description = "Denna tilgangspakken gir tilgang till tjenester knyttet till reindrift. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir tilgang til tjenester knyttet til reindrift. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:reindrift",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture,
         },
     };
 
@@ -865,14 +865,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Jakt og viltstell",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till jakt og viltstell. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til jakt og viltstell. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:jakt-og-viltstell",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture,
         },
     };
 
@@ -884,14 +884,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Skogbruk",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till skogbruk. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til skogbruk. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:skogbruk",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture,
         },
     };
 
@@ -903,14 +903,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Fiske",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till fiske. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til fiske. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:fiske",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture,
         },
     };
 
@@ -922,14 +922,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Akvakultur",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till akvakultur og fiskeoppdrett. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til akvakultur og fiskeoppdrett. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:akvakultur",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture,
         },
     };
 
@@ -945,14 +945,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Byggesøknad",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester som ansvarlig søker/tiltakshaver trenger, for eksempel byggesøknader, direkte signerte erklæringer, nabovarsel og eiendomssak. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester som ansvarlig søker/tiltakshaver trenger, for eksempel byggesøknader, direkte signerte erklæringer, nabovarsel og eiendomssak. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:byggesoknad",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
     };
 
@@ -964,14 +964,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Plansak",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester som forslagsstiller/ plankonsulent trenger, for eksempel varsel om planopppstart og høring og offentlig ettersyn. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester som forslagsstiller/ plankonsulent trenger, for eksempel varsel om planopppstart og høring og offentlig ettersyn. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:plansak",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
     };
 
@@ -983,14 +983,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Motta nabo- og planvarsel",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester till å lese og svare på varsel om plan-/byggesak. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester til å lese og svare på varsel om plan-/byggesak. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:motta-nabo-og-planvarsel",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
     };
 
@@ -1002,14 +1002,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Oppføring av bygg og anlegg",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester relatert till oppføring av bygninger og annlegg unntatt plan og byggesaksbehandling. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester relatert til oppføring av bygninger og annlegg unntatt plan og byggesaksbehandling. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:oppforing-bygg-anlegg",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
     };
 
@@ -1021,14 +1021,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Kjøp og salg av eiendom",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till kjøp og salg av eiendom. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til kjøp og salg av eiendom. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:kjop-og-salg-eiendom",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
     };
 
@@ -1040,14 +1040,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Utleie av eiendom",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till utleie av eiendom. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til utleie av eiendom. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:utleie-eiendom",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
     };
 
@@ -1059,14 +1059,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Eiendomsmegler",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till omsetning og drift av fast eiendom på oppdrag, som eiendomsmegling og eiendomsforvaltning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til omsetning og drift av fast eiendom på oppdrag, som eiendomsmegling og eiendomsforvaltning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:eiendomsmegler",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
     };
 
@@ -1078,14 +1078,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Tinglysing eiendom",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till elektronisk tinglysing av rettigheter i eiendom.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til elektronisk tinglysing av rettigheter i eiendom.",
             Urn = "urn:altinn:accesspackage:tinglysing-eiendom",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
     };
 
@@ -1101,14 +1101,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Veitransport",
-            Description = "Denna fullmaktan gir tilgang till tjenester knyttet till person- og godstransport langs veinettet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til person- og godstransport langs veinettet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:veitransport",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TransportAndStorage.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TransportAndStorage,
         },
     };
 
@@ -1120,14 +1120,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Transport i rør",
-            Description = "Denna fullmaktan gir tilgang till tjenester knyttet till transport i rør. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til transport i rør. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:transport-i-ror",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TransportAndStorage.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TransportAndStorage,
         },
     };
 
@@ -1139,14 +1139,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Sjøfart",
-            Description = "Denna fullmaktan gir tilgang till tjenester knyttet till skipsarbeidstakere og fartøy till sjøs. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til skipsarbeidstakere og fartøy til sjøs. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:sjofart",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TransportAndStorage.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TransportAndStorage,
         },
     };
 
@@ -1158,14 +1158,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Lufttransport",
-            Description = "Denna fullmaktan gir tilgang till tjenester knyttet till luftfartøy og romfartøy. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til luftfartøy og romfartøy. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:lufttransport",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TransportAndStorage.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TransportAndStorage,
         },
     };
 
@@ -1177,14 +1177,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Jernbanetransport",
-            Description = "Denna fullmaktan gir tilgang till tjenester knyttet till jernbane, inkludert trikk, T-bane og sporvogn. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til jernbane, inkludert trikk, T-bane og sporvogn. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:jernbanetransport",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TransportAndStorage.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TransportAndStorage,
         },
     };
 
@@ -1196,14 +1196,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Lagring og andre tjenester tilknyttet transport",
-            Description = "Denna fullmaktan gir tilgang till tjenester knyttet till lagring og hjelpetjenester i forbindelse med transport, samt post- og kurervirksomhet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til lagring og hjelpetjenester i forbindelse med transport, samt post- og kurervirksomhet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:lagring-og-andre-tjenester-tilknyttet-transport",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TransportAndStorage.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TransportAndStorage,
         },
     };
 
@@ -1219,14 +1219,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Kommuneoverlege",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till sykehus, lege, tannlege og hjemmesykepleie,fysioterapi, ambulanse og lignende, som er relevant for kommuneleger. Denna fullmaktan kan gi bruker tilgang till personopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til sykehus, lege, tannlege og hjemmesykepleie,fysioterapi, ambulanse og lignende, som er relevant for kommuneleger. Denne fullmakten kan gi bruker tilgang til personopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:kommuneoverlege",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.HealthCareAndProtection.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.HealthCareAndProtection,
         },
     };
 
@@ -1238,14 +1238,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Helsetjenester med personopplysninger av særlig kategori",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till sykehus, lege, tannlege og hjemmesykepleie,fysioterapi, ambulanse og lignende, som er av særlig kategori. Denna fullmaktan kan gi bruker tilgang till sensitive personopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til sykehus, lege, tannlege og hjemmesykepleie,fysioterapi, ambulanse og lignende, som er av særlig kategori. Denne fullmakten kan gi bruker tilgang til sensitive personopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.HealthCareAndProtection.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.HealthCareAndProtection,
         },
     };
 
@@ -1257,14 +1257,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Helsetjenester",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till sykehus, lege, tannlege og hjemmesykepleie,fysioterapi, ambulanse og lignende. Denna fullmaktan kan gi bruker tilgang till personopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til sykehus, lege, tannlege og hjemmesykepleie,fysioterapi, ambulanse og lignende. Denne fullmakten kan gi bruker tilgang til personopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:helsetjenester",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.HealthCareAndProtection.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.HealthCareAndProtection,
         },
     };
 
@@ -1280,14 +1280,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Barnevern",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till barnevern. Denna fullmaktan kan gi bruker tilgang till helseopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir. OBS! Vær oppmerksom på at tilgangspakken inneholder fullmakter som kan ha sensitiv karakter. Vurder om fullmaktene skal gis som enkeltrettigheter.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til barnevern. Denne fullmakten kan gi bruker tilgang til helseopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir. OBS! Vær oppmerksom på at tilgangspakken inneholder fullmakter som kan ha sensitiv karakter. Vurder om fullmaktene skal gis som enkeltrettigheter.",
             Urn = "urn:altinn:accesspackage:barnevern",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.HealthCareAndProtection,
         },
     };
 
@@ -1299,14 +1299,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Godkjenning av personell",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till å søke om godkjenning till enkeltpersoner. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til å søke om godkjenning til enkeltpersoner. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:godkjenning-av-personell",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
@@ -1318,14 +1318,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Godkjenning av utdanningsvirksomhet",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till å søke om godkjenning av utdanningsvirksomheter. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til å søke om godkjenning av utdanningsvirksomheter. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:godkjenning-av-utdanningsvirksomhet",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
@@ -1337,14 +1337,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Høyere utdanning og høyere yrkesfaglig utdanning",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till høyere utdanning og høyere yrkesfaglig utdanning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til høyere utdanning og høyere yrkesfaglig utdanning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:hoyere-utdanning-og-hoyere-yrkesfaglig-utdanning",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
@@ -1356,14 +1356,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "SFO-leder",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till førskole og fritidsordning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til førskole og fritidsordning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:sfo-leder",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
@@ -1379,14 +1379,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Delegerbare Maskinporten scopes",
-            Description = "Denna tilgangspakken gir fullmakter till data og programmeringsgrensenitt (API) som benytter Maskinporten eller tilsvarende løsninger for APIsikring. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til data og programmeringsgrensenitt (API) som benytter Maskinporten eller tilsvarende løsninger for APIsikring. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:maskinporten-scopes",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Integrations.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Integrations,
         },
     };
 
@@ -1398,14 +1398,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Delegerbare Maskinporten scopes - NUF",
-            Description = "Denna tilgangspakken gir fullmakter till data og programmeringsgrensenitt (API) som benytter Maskinporten eller tilsvarende løsninger for APIsikring på vegne av norskregistrerte utenlandske foretak (NUF). Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til data og programmeringsgrensenitt (API) som benytter Maskinporten eller tilsvarende løsninger for APIsikring på vegne av norskregistrerte utenlandske foretak (NUF). Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:maskinporten-scopes-nuf",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Integrations.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Integrations,
         },
     };
 
@@ -1413,43 +1413,6 @@ public static class PackageConstants
 
     #region Professional Authorization Packages
 
-    /// <summary>
-    /// Represents the Accountant Authorizations package.
-    /// </summary>
-    public static ConstantDefinition<Package> AccountantAuthorizations { get; } = new ConstantDefinition<Package>("0195efb8-7c80-7e0e-9d6a-5a6c50c9bb8a")
-    {
-        Entity = new()
-        {
-            Name = "Fullmakter for regnskapsfører",
-            Description = "Denna fullmaktan gir regnskapsfører tilgang till å opptre på vegne av kunde, og utføre alle tjenester som krever denna fullmaktan. Dette er tjenester som tjenestetilbyder har vurdert det som naturlig at en regnskapsfører utfører på vegne av sin kunde. Fullmakt hos regnskapsfører oppstår når virksomheten registrerer regnskapsfører i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
-            Urn = "urn:altinn:accesspackage:regnskapsfoerer",
-            IsDelegable = true,
-            HasResources = true,
-            IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AuthorizationsForAccountants.Id,
-        },
-    };
-
-    /// <summary>
-    /// Represents the Auditor Authorizations package.
-    /// </summary>
-    public static ConstantDefinition<Package> AuditorAuthorizations { get; } = new ConstantDefinition<Package>("0195efb8-7c80-7d16-a3c4-6b5e8c40b1d5")
-    {
-        Entity = new()
-        {
-            Name = "Fullmakter for revisor",
-            Description = "Denna fullmaktan gir revisor tilgang till å opptre på vegne av kunde, og utføre alle tjenester som krever denna fullmaktan. Dette er tjenester som tjenestetilbyder har vurdert det som naturlig at en revisor utfører på vegne av sin kunde. Fullmakt hos revisor oppstår når virksomheten registrerer revisor i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
-            Urn = "urn:altinn:accesspackage:revisor",
-            IsDelegable = true,
-            HasResources = true,
-            IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AuthorizationsForAuditors.Id,
-        },
-    };
 
     #endregion
 
@@ -1463,14 +1426,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Elektrisitet - produsere, overføre og distribuere",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till elektrisitet: produsere, overføre og distribuere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til elektrisitet: produsere, overføre og distribuere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:elektrisitet-produsere-overfore-distrubere",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnergyWaterSewageAndWaste.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
     };
 
@@ -1482,14 +1445,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Damp- og varmtvann",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till damp- og varmtvann. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til damp- og varmtvann. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:damp-varmtvann",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnergyWaterSewageAndWaste.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
     };
 
@@ -1501,14 +1464,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Vann - ta ut fra kilde, rense og distribuere",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till vann: ta ut fra kilde, rense og distribuere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til vann: ta ut fra kilde, rense og distribuere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:vann-kilde-rense-distrubere",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnergyWaterSewageAndWaste.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
     };
 
@@ -1520,14 +1483,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Samle opp og behandle avløpsvann",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till samle opp og behandle avløpsvann. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til samle opp og behandle avløpsvann. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:samle-behandle-avlopsvann",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnergyWaterSewageAndWaste.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
     };
 
@@ -1539,14 +1502,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Avfall - samle inn, behandle, bruke og gjenvinne",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till avfall: samle inn, behandle bruke og gjenvinne. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til avfall: samle inn, behandle bruke og gjenvinne. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:avfall-behandle-gjenvinne",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnergyWaterSewageAndWaste.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
     };
 
@@ -1562,14 +1525,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Barnehageeier",
-            Description = "Denna fullmaktan gir tilgang till tjenester innen drift av barnehage som barnehageeier er ansvarlig for. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester innen drift av barnehage som barnehageeier er ansvarlig for. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:barnehageeier",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
@@ -1581,14 +1544,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Skoleleder",
-            Description = "Full tilgang til alle tjenester for skoleleder",
-            Urn = "urn:altinn:accesspackage:schoolleader",
-            IsDelegable = false,
+            Description = "Denne fullmakten gir tilgang til tjenester innen drift av skole som skoleleder er ansvarlig for. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:skoleleder",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
@@ -1600,14 +1563,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Skoleeier",
-            Description = "Full tilgang til alle tjenester for skoleeier",
-            Urn = "urn:altinn:accesspackage:schoolowner",
-            IsDelegable = false,
+            Description = "Denne fullmakten gir tilgang til tjenester innen drift av skole som skoleeier er ansvarlig for. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:skoleeier",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
@@ -1618,15 +1581,15 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Fylkesmann - utdanning",
-            Description = "Full tilgang til alle tjenester for fylkesmann innen utdanning",
-            Urn = "urn:altinn:accesspackage:governorschooleducation",
-            IsDelegable = false,
+            Name = "Statsforvalter - skole og opplæring",
+            Description = "Denne fullmakten gir tilgang til tjenester for statsforvalter knyttet til skole- og opplæringssektor, herunder fagopplæring og voksenopplæring.",
+            Urn = "urn:altinn:accesspackage:statsforvalter-skole-og-opplaring",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
@@ -1637,15 +1600,15 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Fylkesmann - barnehager",
-            Description = "Full tilgang til alle tjenester for fylkesmann innen barnehager",
-            Urn = "urn:altinn:accesspackage:governorkindergartenauthority",
-            IsDelegable = false,
+            Name = "Statsforvalter - barnehage",
+            Description = "Denne fullmakten gir tilgang til tjenester for statsforvalter knyttet til barnehagesektor.",
+            Urn = "urn:altinn:accesspackage:statsforvalter-barnehage",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
@@ -1656,15 +1619,15 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Barnehager",
-            Description = "Full tilgang til alle tjenester for barnehager",
-            Urn = "urn:altinn:accesspackage:kindergartenauthority",
-            IsDelegable = false,
+            Name = "Barnehagemyndighet",
+            Description = "Denne fullmakten gir tilgang til tjenester innen drift av barnehage som barnehagemyndighet er ansvarlig for. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:barnehagemyndighet",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
@@ -1676,14 +1639,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Barnehageleder",
-            Description = "Full tilgang til alle tjenester for barnehageleder",
-            Urn = "urn:altinn:accesspackage:kindergartenleader",
-            IsDelegable = false,
+            Description = "Denne fullmakten gir tilgang til tjenester innen drift av barnehage som barnehageleder er ansvarlig for. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:barnehageleder",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.ChildhoodAndEducation.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
@@ -1698,15 +1661,15 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Regnskapsfører lønn",
-            Description = "Regnskapsfører lønn",
-            Urn = "urn:altinn:accesspackage:accountantpayroll",
-            IsDelegable = false,
+            Name = "Miljørydding - rensing og lignende virksomhet",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til miljøryddng, -rensing og lignende virksomhet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:miljorydding-rensing",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
     };
 
@@ -1717,15 +1680,15 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Ansvarlig revisor",
-            Description = "Ansvarlig revisor",
-            Urn = "urn:altinn:accesspackage:responsibleauditor",
-            IsDelegable = false,
+            Name = "Reparasjon og installasjon av maskiner og utstyr",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med reparasjon og installasjon av maskiner og utstyr. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:reparasjon-og-installasjon-av-maskiner-og-utstyr",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -1736,15 +1699,15 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Revisormedarbeider",
-            Description = "Revisormedarbeider",
-            Urn = "urn:altinn:accesspackage:auditoremployee",
-            IsDelegable = false,
+            Name = "Regnskapsfører med signeringsrettighet",
+            Description = "Denne fullmakten gir tilgang til regnskapfører å kunne signere på vegne av kunden for alle tjenester som krever signeringsrett. Dette er tjenester som man har vurdert det som naturlig at en regnskapsfører utfører på vegne av sin kunde. Fullmakten gis kun til autoriserte regnskapsførere. Fullmakt hos regnskapfører oppstår når kunden registrerer regnskapsfører i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:regnskapsforer-med-signeringsrettighet",
+            IsDelegable = true,
             HasResources = true,
-            IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            IsAssignable = false,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AuthorizationsForAccountants,
         },
     };
 
@@ -1759,15 +1722,15 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Folkeregister",
-            Description = "Folkeregister",
-            Urn = "urn:altinn:accesspackage:populationregistry",
-            IsDelegable = false,
+            Name = "Regnskapsfører uten signeringsrettighet",
+            Description = "Denne fullmakten gir tilgang til å kunne utføre alle tjenester som ikke krever signeringsrett. Dette er tjenester som man har vurdert det som naturlig at en regnskapsfører utfører på vegne av sin kunde. Fullmakten gis kun til autoriserte regnskapsførere. Fullmakt hos regnskapfører oppstår når kunden registrerer regnskapsfører i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:regnskapsforer-uten-signeringsrettighet",
+            IsDelegable = true,
             HasResources = true,
-            IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            IsAssignable = false,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AuthorizationsForAccountants,
         },
     };
 
@@ -1778,15 +1741,15 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Sentralt koordineringsregister",
-            Description = "Sentralt koordineringsregister",
-            Urn = "urn:altinn:accesspackage:centralcoordinationregister",
-            IsDelegable = false,
+            Name = "Regnskapsfører lønn",
+            Description = "Denne fullmakten gir tilgang til regnskapsfører å rapportere lønn for sin kunde. Dette er tjenester som man har vurdert det som naturlig at en regnskapsfører utfører på vegne av sin kunde. Fullmakten gis kun til autoriserte regnskapsførere. Fullmakt hos regnskapfører oppstår når kunden registrerer regnskapsfører i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:regnskapsforer-lonn",
+            IsDelegable = true,
             HasResources = true,
-            IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            IsAssignable = false,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AuthorizationsForAccountants,
         },
     };
 
@@ -1797,15 +1760,15 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Personnummer og identitetsforvaltning",
-            Description = "Personnummer og identitetsforvaltning",
-            Urn = "urn:altinn:accesspackage:personalidentityregistry",
-            IsDelegable = false,
+            Name = "Ansvarlig revisor",
+            Description = "Denne fullmakten gir revisor tilgang til å opptre som ansvarlig revisor for en kunde og utføre alle tjenester som krever denne fullmakten. Dette er tjenester som tjenestetilbyder har vurdert det som naturlig at en revisor utfører på vegne av sin kunde. Fullmakten gis kun til autoriserte revisorer. Fullmakt hos revisor oppstår når kunden registrerer revisor i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:ansvarlig-revisor",
+            IsDelegable = true,
             HasResources = true,
-            IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            IsAssignable = false,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AuthorizationsForAuditors,
         },
     };
 
@@ -1816,15 +1779,15 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Namsmann",
-            Description = "Namsmann",
-            Urn = "urn:altinn:accesspackage:enforcementofficer",
-            IsDelegable = false,
+            Urn = "urn:altinn:accesspackage:revisormedarbeider",
+            Name = "Revisormedarbeider",
+            Description = "Denne fullmakten gir revisor tilgang til å opptre som revisormedarbeider for en kunde og utføre alle tjenester som krever denne fullmakten. Dette er tjenester som tjenestetilbyder har vurdert det som naturlig at en revisor utfører på vegne av sin kunde. Fullmakten gis kun til autoriserte revisorer. Fullmakt hos revisor oppstår når kunden registrerer revisor i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            IsDelegable = true,
             HasResources = true,
-            IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            IsAssignable = false,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AuthorizationsForAuditors
         },
     };
 
@@ -1835,16 +1798,16 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Privat namsmann",
-            Description = "Privat namsmann",
-            Urn = "urn:altinn:accesspackage:privateenforcementofficer",
-            IsDelegable = false,
+            Urn = "urn:altinn:accesspackage:konkursbo-lesetilgang",
+            Name = "Konkursbo lesetilgang",
+            Description = "Denne fullmakten delegeres til kreditorer og andre som skal ha lesetilgang til det enkelte konkursbo.",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
-        },
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AuthorizationsForBankruptcyEstates,
+        }
     };
 
     #endregion
@@ -1852,41 +1815,41 @@ public static class PackageConstants
     #region Integration Packages
 
     /// <summary>
-    /// Represents the Machine Readable Events package.
+    /// Represents PPT-leder.
     /// </summary>
-    public static ConstantDefinition<Package> MachineReadableEvents { get; } = new ConstantDefinition<Package>("4cd69693-aff0-4e88-8b64-6b5620672468")
+    public static ConstantDefinition<Package> PPTLeader { get; } = new ConstantDefinition<Package>("4cd69693-aff0-4e88-8b64-6b5620672468")
     {
         Entity = new()
         {
-            Name = "Maskinlesbare hendelser",
-            Description = "Maskinlesbare hendelser",
-            Urn = "urn:altinn:accesspackage:machinereadableevents",
-            IsDelegable = false,
+            Urn = "urn:altinn:accesspackage:ppt-leder",
+            Name = "PPT-leder",
+            Description = "Denne fullmakten gir tilgang til tjenester innen drift av Pedagogisk-psykologisk tjeneste (PPT) som PPT-leder er ansvarlig for. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
         },
     };
 
     /// <summary>
     /// Represents the Altinn Events package.
     /// </summary>
-    public static ConstantDefinition<Package> AltinnEvents { get; } = new ConstantDefinition<Package>("40397a93-b047-4011-a6b8-6b8af16b6324")
+    public static ConstantDefinition<Package> OfficeLeader { get; } = new ConstantDefinition<Package>("40397a93-b047-4011-a6b8-6b8af16b6324")
     {
         Entity = new()
         {
-            Name = "Altinn Hendelser",
-            Description = "Altinn Hendelser",
-            Urn = "urn:altinn:accesspackage:altinnevents",
-            IsDelegable = false,
+            Urn = "urn:altinn:accesspackage:opplaeringskontorleder",
+            Name = "Opplæringskontorleder",
+            Description = "Denne fullmakten gir tilgang til tjenester innen drift av opplæringskontor som opplæringskontorleder er ansvarlig for. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
-        },
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.ChildhoodAndEducation,
+        }
     };
 
     #endregion
@@ -1894,65 +1857,46 @@ public static class PackageConstants
     #region Transportation and Infrastructure Packages
 
     /// <summary>
-    /// Represents the Vessel Management Registry package.
+    /// Represents the Social Care Services Without Housing package.
     /// </summary>
-    public static ConstantDefinition<Package> VesselManagementRegistry { get; } = new ConstantDefinition<Package>("70831546-6bfa-45a0-bdad-14e9db265847")
+    public static ConstantDefinition<Package> SocialCareServicesWithoutHousing { get; } = new ConstantDefinition<Package>("70831546-6bfa-45a0-bdad-14e9db265847")
     {
         Entity = new()
         {
-            Name = "Fartøyregistrering",
-            Description = "Fartøyregistrering",
-            Urn = "urn:altinn:accesspackage:vesselmanagementregistry",
-            IsDelegable = false,
+            Name = "Sosiale omsorgstjenester uten botilbud og flyktningemottak",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til sosiale omsorgstjeneser uten botilbud for eldre, funksjonshemmede og rusmisbrukere samt flykningemottak, og tjenester relatert til arbeidstrening og andre sosiale tjenester, f eks i regi av velferdsorganisasjoner. Denne fullmakten kan gi bruker tilgang til helseopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:sosiale-omsorgstjenester-uten-botilbud-og-flyktningemottak",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TransportAndStorage.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.HealthCareAndProtection,
         },
     };
 
     /// <summary>
-    /// Represents the Shipping Company package.
+    /// Represents the Family Counseling package.
     /// </summary>
-    public static ConstantDefinition<Package> ShippingCompany { get; } = new ConstantDefinition<Package>("98c404f4-5350-42cd-86d0-15fd38f178c4")
+    public static ConstantDefinition<Package> FamilyCounseling { get; } = new ConstantDefinition<Package>("98c404f4-5350-42cd-86d0-15fd38f178c4")
     {
         Entity = new()
         {
-            Name = "Skipsfartsselskap",
-            Description = "Skipsfartsselskap",
-            Urn = "urn:altinn:accesspackage:shippingcompany",
-            IsDelegable = false,
+            Name = "Familievern",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til familievern. Denne fullmakten kan gi bruker tilgang til helseopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir. OBS! Vær oppmerksom på at tilgangspakken inneholder fullmakter som kan ha sensitiv karakter. Vurder om fullmaktene skal gis som enkeltrettigheter.",
+            Urn = "urn:altinn:accesspackage:familievern",
+            IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.TransportAndStorage.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.HealthCareAndProtection,
         },
     };
 
     #endregion
 
     #region Bankruptcy Estate Packages
-
-    /// <summary>
-    /// Represents the Bankruptcy Estate Read Access package.
-    /// </summary>
-    public static ConstantDefinition<Package> BankruptcyEstateReadAccess { get; } = new ConstantDefinition<Package>("0195efb8-7c80-7e8c-8c8a-bd7c13a4f32e")
-    {
-        Entity = new()
-        {
-            Name = "Konkursbo lesetilgang",
-            Description = "Denna fullmaktan gir bostyrer tilgang till å lese alt innhold som er rapportert til det offentlige for et konkursbo. Fullmaktan gis till bostyrer automatisk når oppstarten av konkursbo registreres i Konkursregisteret. Fullmaktan er personlig, og kan ikke delegeres videre.",
-            Urn = "urn:altinn:accesspackage:konkursbo-lesetilgang",
-            IsDelegable = true,
-            HasResources = true,
-            IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AuthorizationsForBankruptcyEstates.Id,
-        },
-    };
 
     /// <summary>
     /// Represents the Bankruptcy Estate Write Access package.
@@ -1962,14 +1906,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Konkursbo skrivetilgang",
-            Description = "Denna fullmaktan gir bostyrers medhjelper tilgang till å jobbe på vegne av bostyrer. Bostyrer delegerer denna fullmaktan sammen med Konkursbo lesetilgang till medhjelper for hvert konkursbo.",
+            Description = "Denne fullmakten gir bostyrers medhjelper tilgang til å jobbe på vegne av bostyrer. Bostyrer delegerer denne fullmakten sammen med Konkursbo lesetilgang til medhjelper for hvert konkursbo.",
             Urn = "urn:altinn:accesspackage:konkursbo-skrivetilgang",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AuthorizationsForBankruptcyEstates.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AuthorizationsForBankruptcyEstates,
         },
     };
 
@@ -1984,15 +1928,15 @@ public static class PackageConstants
     {
         Entity = new()
         {
-            Name = "Forretningsfører eiendom",
-            Description = "Denna fullmaktan gir forretningsfører for Borettslag og Eierseksjonssameie tilgang till å opptre på vegne av kunde, og utføre alla tjenester som krever denna fullmaktan. Dette er tjenester som tjenestetilbyder har vurdert det som naturlig at en forretningsfører utfører på vegne av sin kunde. Fullmakt hos forretningsfører oppstår når Borettslaget eller Eierseksjonssameiet registrerer forretningsfører i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
             Urn = "urn:altinn:accesspackage:forretningsforer-eiendom",
+            Name = "Forretningsforer eiendom",
+            Description = "Denne fullmakten gir forretningsfører for Borettslag og Eierseksjonssameie tilgang til å opptre på vegne av kunde, og utføre alle tjenester som krever denne fullmakten. Dette er tjenester som tjenestetilbyder har vurdert det som naturlig at en forretningsfører utfører på vegne av sin kunde. Fullmakt hos forretningsfører oppstår når Borettslaget eller Eierseksjonssameiet registrerer forretningsfører i Enhetsregisteret. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.AuthorizationsForBusinesses.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.AuthorizationsForBusinesses,
         },
     };
 
@@ -2008,14 +1952,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Utvinning av råolje, naturgass og kull",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till utvinning av råolje, naturgass og kull. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til utvinning av råolje, naturgass og kull. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:utvinning-raaolje-naturgass-kull",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.EnergyWaterSewageAndWaste.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
     };
 
@@ -2031,14 +1975,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Næringsmidler, drikkevarer og tobakk",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till industri i forbindelse med næringsmidler, drikkevarer og tobakk. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med næringsmidler, drikkevarer og tobakk. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:naeringsmidler-drikkevarer-og-tobakk",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Industries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -2050,14 +1994,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Tekstiler, klær og lærvarer",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till industri i forbindelse med tekstiler, klær og lærvarer. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med tekstiler, klær og lærvarer. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:tekstiler-klaer-laervarer",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Industries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -2069,14 +2013,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Trelast, trevarer og papirvarer",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till industri i forbindelse med trelast, trevarer og papirvarer. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med trelast, trevarer og papirvarer. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:trelast-trevarer-papirvarer",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Industries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -2088,14 +2032,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Trykkerier og reproduksjon av innspilte opptak",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till industri i forbindelse med trykkerier og reproduksjon av innspilte opptak. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med trykkerier og reproduksjon av innspilte opptak. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:trykkerier-reproduksjon-opptak",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Industries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -2107,14 +2051,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Oljeraffinering, kjemisk og farmasøytisk industri",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till industri i forbindelse med oljeraffinering, kjemisk og farmasøytisk industri. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med oljeraffinering, kjemisk og farmasøytisk industri. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:oljeraffinering-kjemisk-farmasoytisk-industri",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Industries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -2126,14 +2070,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Gummi, plast og ikke-metallholdige mineralprodukter",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till industri i forbindelse med gummi, plast og ikke-metallholdige mineralprodukter. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med gummi, plast og ikke-metallholdige mineralprodukter. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:gummi-plast-og-ikkemetallholdige-mineralprodukter",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Industries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -2145,14 +2089,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Metaller og mineraler",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till industri i forbindelse med metaller og mineraler. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med metaller og mineraler. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:metaller-og-mineraler",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Industries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -2164,14 +2108,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Metallvarer elektrisk utstyr og maskiner",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till industri i forbindelse med metallvarer, elektrisk utstyr og maskiner. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med metallvarer, elektrisk utstyr og maskiner. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:metallvarer-elektrisk-utstyr-og-maskiner",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Industries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -2183,14 +2127,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Verft og andre transportmidler",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till industri i forbindelse med verft og andre transportmidler. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med verft og andre transportmidler. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:verft-og-andre-transportmidler",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Industries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -2202,14 +2146,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Møbler og annen industri",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till industri i forbindelse med møbler og annen industri. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med møbler og annen industri. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:mobler-og-annen-industri",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Industries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -2221,14 +2165,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Bergverk",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till industri i forbindelse med bergverk og tilhörande tjenester till bergverksdrift og utvinning. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med bergverk og tilhørende tjenester til bergverksdrift og utvinning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:bergverk",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.Industries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Industries,
         },
     };
 
@@ -2244,14 +2188,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Kunst og underholdning",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till kunstnerisk og underholdningsaktiviteter. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til kunstnerisk og underholdningsaktiviteter. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:kunst-og-underholdning",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.CultureAndVolunteering.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.CultureAndVolunteering,
         },
     };
 
@@ -2263,14 +2207,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Biblioteker, museer, arkiver og annen kultur",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till biblioteker, museer, arkiver, og annan kultur som botaniske og zoologiske hager, og drift av naturfenomener av historisk, kulturell eller undervisningsmessig interesse (f.eks. verdenskulturarv mv.). Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til biblioteker, museer, arkiver, og annen kultur som botaniske og zoologiske hager, og drift av naturfenomener av historisk, kulturell eller undervisningsmessig interesse (f.eks. verdenskulturarv mv.). Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:biblioteker-museer-arkiver-og-annen-kultur",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.CultureAndVolunteering.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.CultureAndVolunteering,
         },
     };
 
@@ -2282,14 +2226,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Lotteri og spill",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till lotteri og spill, som f eks kasinoer, bingohaller og videospillhaller samt spillevirksomhet som f.eks. lotterier och veddemål som inngås utenfor banen. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til lotteri og spill, som f eks kasinoer, bingohaller og videospillhaller samt spillevirksomhet som f.eks. lotterier og veddemål som inngås utenfor banen. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:lotteri-og-spill",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.CultureAndVolunteering.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.CultureAndVolunteering,
         },
     };
 
@@ -2301,14 +2245,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Sport og fritid",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till sports- og fritidsaktiviteter. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til sports- og fritidsaktiviteter. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:sport-og-fritid",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.CultureAndVolunteering.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.CultureAndVolunteering,
         },
     };
 
@@ -2320,14 +2264,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Fornøyelser",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till drift av fornöyelsesetablissementer. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til drift av fornøyelsesetablissementer. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:fornoyelser",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.CultureAndVolunteering.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.CultureAndVolunteering,
         },
     };
 
@@ -2339,14 +2283,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Politikk",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till aktiviteter i forbindelse med politisk arbeid. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til aktiviteter i forbindelse med politisk arbeid. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:politikk",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.CultureAndVolunteering.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.CultureAndVolunteering,
         },
     };
 
@@ -2362,14 +2306,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Varehandel",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till varehandel, inkludert engros- og detaljhandel, import og eksport, og salg og reparasjon av motorvogner. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til varehandel, inkludert engros- og detaljhandel, import og eksport, og salg og reparasjon av motorvogner. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:varehandel",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.CommerceAccommodationAndCatering.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.CommerceAccommodationAndCatering,
         },
     };
 
@@ -2381,14 +2325,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Overnatting",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till overnattingsvirksomhet. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til overnattingsvirksomhet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:overnatting",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.CommerceAccommodationAndCatering.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.CommerceAccommodationAndCatering,
         },
     };
 
@@ -2400,14 +2344,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Servering",
-            Description = "Denna tilgangspakken gir fullmakter till tjenester knyttet till serveringsvirksomhet. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til serveringsvirksomhet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:servering",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.CommerceAccommodationAndCatering.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.CommerceAccommodationAndCatering,
         },
     };
 
@@ -2423,14 +2367,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Post- og telekommunikasjon",
-            Description = "Denna fullmaktan gir tilgang till tjenester knyttet till post og telekommunikasjon. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til post og telekommunikasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:post-og-telekommunikasjon",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.OtherServiceIndustries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.OtherServiceIndustries,
         },
     };
 
@@ -2442,14 +2386,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Informasjon og kommunikasjon",
-            Description = "Denna fullmaktan gir tilgang till tjenester knyttet till informasjon og kommunikasjon. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til informasjon og kommunikasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:informasjon-og-kommunikasjon",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.OtherServiceIndustries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.OtherServiceIndustries,
         },
     };
 
@@ -2461,14 +2405,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Finansiering og forsikring",
-            Description = "Denna fullmaktan gir tilgang till tjenester knyttet till finansiering og forsikring. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til finansiering og forsikring. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:finansiering-og-forsikring",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.OtherServiceIndustries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.OtherServiceIndustries,
         },
     };
 
@@ -2480,14 +2424,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Annen tjenesteyting",
-            Description = "Denna fullmaktan gir tilgang till tjenester knyttet till annan tjenesteyting som f eks organisasjoner og foreninger, reparasjon av datamaskiner och varer till personlig bruk och husholdningsbruk och en rekke personlige tjenester som ikke er nevnt annet sted. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til annen tjenesteyting som f eks organisasjoner og foreninger, reparasjon av datamaskiner og varer til personlig bruk og husholdningsbruk og en rekke personlige tjenester som ikke er nevnt annet sted. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:annen-tjenesteyting",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.OtherServiceIndustries.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.OtherServiceIndustries,
         },
     };
 
@@ -2508,9 +2452,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -2522,14 +2466,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Mine sider hos kommunen",
-            Description = "Denne fullmaktan gir generell tilgang til tjenester av typen \"mine side\" tjenester hos kommuner. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir generell tilgang til tjenester av typen “mine side” tjenester hos kommuner. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:mine-sider-kommune",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -2546,9 +2490,9 @@ public static class PackageConstants
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -2560,14 +2504,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Rapportering av statistikk",
-            Description = "Denna fullmaktan gir tilgang til alle pålagte rapportering av statistikk. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til alle pålagte rapportering av statistikk. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:rapportering-statistikk",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -2579,14 +2523,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Forskning",
-            Description = "Denna fullmaktan gir tilgang til tjenester knyttet til forskning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til forskning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:forskning",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -2598,14 +2542,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Eksplisitt tjenestedelegering",
-            Description = "Denna fullmaktan er ikke delegerbar, og er ikke knyttet til noen roller i ENhetsregisteret. Tilgang til tjenester knyttet til denna pakken kan gis av Huvudadministrator gjennom enkeltrettighetsdelegering.",
+            Description = "Denne fullmakten er ikke delegerbar, og er ikke knyttet til noen roller i ENhetsregisteret. Tilgang til tjenester knyttet til denne pakken kan gis av Hovedadministrator gjennom enkeltrettighetsdelegering.",
             Urn = "urn:altinn:accesspackage:eksplisitt",
             IsDelegable = false,
             HasResources = true,
             IsAssignable = false,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -2617,14 +2561,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Folkeregister",
-            Description = "Denna tilgangspakken gir fullmakt til tjenester som en virksomhet kan ha mot folkeregister. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakt til tjenester som en virksomhet kan ha mot folkeregister. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:folkeregister",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
         },
     };
 
@@ -2636,14 +2580,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Maskinlesbare hendelser",
-            Description = "Denna tilgangspakken gir fullmakter til å administrere tilgang til maskinlesbare hendelser. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til å administrere tilgang til maskinlesbare hendelser. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:maskinlesbare-hendelser",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.BusinessAffairs.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Integrations,
         },
     };
 
@@ -2655,14 +2599,14 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Pleie- og omsorgstjenester i institusjon",
-            Description = "Denna tilgangspakken gir fullmakter til tjenester knyttet til pleie og omsorgstilbud i institusjon. Dette er tjenester som tilbyr institusjonsopphold kombinert med sykepleie, tilsyn eller annen form for pleie alt etter hva som kreves av beboerne. Denna fullmaktan kan gi bruker tilgang til helseopplysninger om personer det rapporteres om. Ved regelverksendringer eller innföring av nye digitale tjenester kan det bli endringer i tilganger som fullmaktan gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til pleie og omsorgstilbud i institursjon. Dette er tjenester som tilbyr institusjonsopphold kombinert med sykepleie, tilsyn eller annen form for pleie alt etter hva som kreves av beboerne. Denne fullmakten kan gi bruker tilgang til helseopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:pleie-omsorgstjenester-i-institusjon",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation.Id,
-            ProviderId = ProviderConstants.Altinn3.Id,
-            AreaId = AreaConstants.HealthCareAndProtection.Id,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.HealthCareAndProtection,
         },
     };
 
