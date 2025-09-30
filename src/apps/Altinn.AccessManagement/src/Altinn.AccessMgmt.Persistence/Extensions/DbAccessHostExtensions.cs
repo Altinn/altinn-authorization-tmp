@@ -96,7 +96,8 @@ public static partial class DbAccessHostExtensions
 
         // Core interfaces & implementations
         builder.Services.AddSingleton<IAmPartyRepository, AccessMgmt.Core.Services.AMPartyService>();
-
+        builder.Services.AddSingleton<AccessMgmt.Core.Services.Contracts.IEntityService, AccessMgmt.Core.Services.EntityService>();
+        
         builder.Services.Add(Marker.ServiceDescriptor);
 
         return builder;
