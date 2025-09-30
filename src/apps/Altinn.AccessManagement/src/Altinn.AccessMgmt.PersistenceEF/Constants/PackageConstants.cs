@@ -1583,7 +1583,7 @@ public static class PackageConstants
         {
             Name = "Statsforvalter - skole og opplæring",
             Description = "Denne fullmakten gir tilgang til tjenester for statsforvalter knyttet til skole- og opplæringssektor, herunder fagopplæring og voksenopplæring.",
-            Urn = "urn:altinn:accesspackage:statsforvalter-skole-og-opplaring",
+            Urn = "urn:altinn:accesspackage:statsforvalter-skole-og-opplearing",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
