@@ -46,8 +46,8 @@ public partial class ResourceSyncService : IResourceSyncService
         }
 
         var options = new AuditValues(
-            AuditDefaults.ResourceRegistryImportSystem,
-            AuditDefaults.ResourceRegistryImportSystem,
+            SystemEntityConstants.ResourceRegistryImportSystem,
+            SystemEntityConstants.ResourceRegistryImportSystem,
             Activity.Current?.TraceId.ToString() ?? Guid.CreateVersion7().ToString()
         );
 
@@ -85,8 +85,8 @@ public partial class ResourceSyncService : IResourceSyncService
         ResourceTypes = await dbContext.ResourceTypes.ToListAsync(cancellationToken);
         var leaseData = await lease.Get<ResourceRegistryLease>(cancellationToken);
         var options = new AuditValues(
-            AuditDefaults.ResourceRegistryImportSystem,
-            AuditDefaults.ResourceRegistryImportSystem,
+            SystemEntityConstants.ResourceRegistryImportSystem,
+            SystemEntityConstants.ResourceRegistryImportSystem,
             Activity.Current?.TraceId.ToString() ?? Guid.CreateVersion7().ToString()
         );
 

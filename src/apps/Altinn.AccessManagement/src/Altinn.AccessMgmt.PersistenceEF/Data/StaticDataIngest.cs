@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
+﻿using System.Data;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models.Contracts;
@@ -12,7 +13,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Data;
 /// </summary>
 internal static partial class StaticDataIngest
 {
-    private static AuditValues AuditValues { get; set; } = new(AuditDefaults.StaticDataIngest, AuditDefaults.StaticDataIngest, Guid.NewGuid().ToString());
+    private static AuditValues AuditValues { get; set; } = new(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest, Guid.NewGuid().ToString());
 
     internal static async Task IngestAll(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
@@ -118,7 +119,20 @@ internal static partial class StaticDataIngest
             },
             cancellationToken);
 
-        await IngestSystemEntity(dbContext, cancellationToken);
+        await AutoIngest(
+            dbContext,
+            SystemEntityConstants.AllEntities(),
+            (systemEntity, seed) =>
+            {
+                systemEntity.Name = seed.Entity.Name;
+                systemEntity.ParentId = seed.Entity.ParentId;
+                systemEntity.RefId = seed.Entity.RefId;
+                systemEntity.TypeId = seed.Entity.TypeId;
+                systemEntity.VariantId = seed.Entity.VariantId;
+            },
+            cancellationToken
+        );
+
         await IngestRoleLookup(dbContext, cancellationToken);
         await IngestRoleMap(dbContext, cancellationToken);
         await IngestRolePackage(dbContext, cancellationToken);

@@ -44,8 +44,8 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     public async Task SyncParty(ILease lease, CancellationToken cancellationToken)
     {
         var options = new AuditValues(
-            AuditDefaults.RegisterImportSystem,
-            AuditDefaults.RegisterImportSystem,
+            SystemEntityConstants.RegisterImportSystem,
+            SystemEntityConstants.RegisterImportSystem,
             Activity.Current?.TraceId.ToString() ?? Guid.CreateVersion7().ToString()
         );
         var leaseData = await lease.Get<RegisterLease>(cancellationToken);

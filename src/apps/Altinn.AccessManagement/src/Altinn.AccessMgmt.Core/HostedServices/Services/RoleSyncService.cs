@@ -40,8 +40,8 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         var seen = new HashSet<(Guid, Guid, Guid)>();
 
         var options = new AuditValues(
-            AuditDefaults.RegisterImportSystem,
-            AuditDefaults.RegisterImportSystem,
+            SystemEntityConstants.RegisterImportSystem,
+            SystemEntityConstants.RegisterImportSystem,
             Activity.Current?.TraceId.ToString() ?? Guid.CreateVersion7().ToString()
         );
 

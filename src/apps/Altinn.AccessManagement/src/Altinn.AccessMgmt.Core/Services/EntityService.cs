@@ -1,15 +1,15 @@
 ﻿using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
 public class EntityService(AppDbContext db) : IEntityService
 {
-    public AuditValues AuditValues { get; set; } = new AuditValues(AuditDefaults.InternalApi, AuditDefaults.InternalApi, Guid.NewGuid().ToString());
+    public AuditValues AuditValues { get; set; } = new AuditValues(SystemEntityConstants.InternalApi, SystemEntityConstants.InternalApi, Guid.NewGuid().ToString());
 
     public async ValueTask<Entity> GetEntity(Guid id, CancellationToken cancellationToken = default)
     {

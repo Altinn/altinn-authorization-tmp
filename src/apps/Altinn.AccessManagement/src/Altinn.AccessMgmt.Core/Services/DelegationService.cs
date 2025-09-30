@@ -6,13 +6,14 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
 public class DelegationService(AppDbContext db, IAssignmentService assignmentService, IRoleService roleService, IPackageService packageService, IResourceService resourceService, IEntityService entityService) : IDelegationService 
 {
-    public AuditValues AuditValues { get; set; } = new AuditValues(AuditDefaults.InternalApi, AuditDefaults.InternalApi, Guid.NewGuid().ToString());
+    public AuditValues AuditValues { get; set; } = new AuditValues(SystemEntityConstants.InternalApi, SystemEntityConstants.InternalApi, Guid.NewGuid().ToString());
 
     private async Task<bool> CheckIfEntityHasRole(string roleCode, Guid fromId, Guid toId, CancellationToken cancellationToken)
     {
