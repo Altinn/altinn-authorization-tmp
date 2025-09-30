@@ -1,20 +1,21 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Data;
 
-public partial class StaticDataIngest
+internal static partial class StaticDataIngest
 {
     /// <summary>
     /// Ingest RolePackage
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestRolePackage(CancellationToken cancellationToken = default)
+    internal async static Task IngestRolePackage(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
-        var packages = (await db.Packages.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
-        var roles = (await db.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
-        var variants = (await db.EntityVariants.ToListAsync()).ToDictionary(t => t.Name, t => t.Id);
+        var packages = (await dbContext.Packages.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
+        var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
+        var variants = (await dbContext.EntityVariants.ToListAsync()).ToDictionary(t => t.Name, t => t.Id);
 
         var roleDagl = roles["urn:altinn:external-role:ccr:daglig-leder"];
         var roleLede = roles["urn:altinn:external-role:ccr:styreleder"];
@@ -1193,10 +1194,10 @@ public partial class StaticDataIngest
 
         foreach (var d in data)
         {
-            var obj = db.RolePackages.FirstOrDefault(t => t.RoleId == d.RoleId && t.PackageId == d.PackageId && t.EntityVariantId == d.EntityVariantId);
+            var obj = dbContext.RolePackages.FirstOrDefault(t => t.RoleId == d.RoleId && t.PackageId == d.PackageId && t.EntityVariantId == d.EntityVariantId);
             if (obj == null)
             {
-                db.RolePackages.Add(d);
+                dbContext.RolePackages.Add(d);
             }
             else
             {
@@ -1209,6 +1210,6 @@ public partial class StaticDataIngest
             }
         }
 
-        await db.SaveChangesAsync(AuditValues, cancellationToken);
+        await dbContext.SaveChangesAsync(AuditValues, cancellationToken);
     }
 }

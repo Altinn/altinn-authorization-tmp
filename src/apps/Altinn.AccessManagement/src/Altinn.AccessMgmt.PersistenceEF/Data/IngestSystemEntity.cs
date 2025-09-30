@@ -1,20 +1,21 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Data;
 
-public partial class StaticDataIngest
+internal static partial class StaticDataIngest
 {
     /// <summary>
     /// Ingest Entity
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestSystemEntity(CancellationToken cancellationToken = default)
+    internal static async Task IngestSystemEntity(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
-        var internalTypeId = (await db.EntityTypes.AsNoTracking().SingleOrDefaultAsync(t => t.Name == "Intern"))?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
-        var internalVariantId = (await db.EntityVariants.AsNoTracking().SingleOrDefaultAsync(t => t.TypeId == internalTypeId && t.Name == "Standard"))?.Id ?? throw new KeyNotFoundException(string.Format("EntityVariant '{0}' not found", "Intern"));
+        var internalTypeId = (await dbContext.EntityTypes.AsNoTracking().SingleOrDefaultAsync(t => t.Name == "Intern"))?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Intern"));
+        var internalVariantId = (await dbContext.EntityVariants.AsNoTracking().SingleOrDefaultAsync(t => t.TypeId == internalTypeId && t.Name == "Standard"))?.Id ?? throw new KeyNotFoundException(string.Format("EntityVariant '{0}' not found", "Intern"));
 
         var data = new List<Entity>()
         {
@@ -28,10 +29,10 @@ public partial class StaticDataIngest
 
         foreach (var d in data)
         {
-            var obj = db.Entities.FirstOrDefault(t => t.Id == d.Id);
+            var obj = dbContext.Entities.FirstOrDefault(t => t.Id == d.Id);
             if (obj == null)
             {
-                db.Entities.Add(d);
+                dbContext.Entities.Add(d);
             }
             else
             {
@@ -39,6 +40,6 @@ public partial class StaticDataIngest
             }
         }
 
-        var result = await db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await dbContext.SaveChangesAsync(AuditValues, cancellationToken);
     }
 }

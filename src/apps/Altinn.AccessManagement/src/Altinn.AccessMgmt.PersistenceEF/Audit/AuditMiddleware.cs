@@ -18,7 +18,7 @@ public class AuditMiddleware : IMiddleware
 
                 if (claim != null && Guid.TryParse(claim.Value, out var uuid))
                 {
-                    auditContextAccessor.Current = new(uuid, Guid.Parse(attr.System), Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier);
+                    auditContextAccessor.AuditValues = new(uuid, Guid.Parse(attr.System), Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier);
                 }
             }
         }

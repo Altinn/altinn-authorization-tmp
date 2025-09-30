@@ -24,7 +24,7 @@ public sealed class AppDbDesignTimeContextFactory : IDesignTimeDbContextFactory<
         {
             AuditAccessor = new AuditAccessor()
             {
-                Current = new AuditValues(Guid.Empty, Guid.Empty, "design-time"),
+                AuditValues = new AuditValues(Guid.Empty, Guid.Empty, "design-time"),
             }
         };
     }

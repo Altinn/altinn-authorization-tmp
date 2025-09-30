@@ -1,24 +1,25 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Data;
 
-public partial class StaticDataIngest
+internal static partial class StaticDataIngest
 {
     /// <summary>
     /// Ingest Roles
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestRole(CancellationToken cancellationToken = default)
+    internal static async Task IngestRole(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
-        var orgEntityTypeId = (await db.EntityTypes.AsNoTracking().SingleOrDefaultAsync(t => t.Name == "Organisasjon", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Organisasjon"));
-        var persEntityTypeId = (await db.EntityTypes.AsNoTracking().SingleOrDefaultAsync(t => t.Name == "Person", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Person"));
-        var ccrProviderId = (await db.Providers.AsNoTracking().SingleOrDefaultAsync(t => t.Code == "sys-ccr", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Enhetsregisteret"));
-        var a3ProviderId = (await db.Providers.AsNoTracking().SingleOrDefaultAsync(t => t.Code == "sys-altinn3", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 3"));
-        var a2ProviderId = (await db.Providers.AsNoTracking().SingleOrDefaultAsync(t => t.Code == "sys-altinn2", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 2"));
+        var orgEntityTypeId = (await dbContext.EntityTypes.AsNoTracking().SingleOrDefaultAsync(t => t.Name == "Organisasjon", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Organisasjon"));
+        var persEntityTypeId = (await dbContext.EntityTypes.AsNoTracking().SingleOrDefaultAsync(t => t.Name == "Person", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("EntityType '{0}' not found", "Person"));
+        var ccrProviderId = (await dbContext.Providers.AsNoTracking().SingleOrDefaultAsync(t => t.Code == "sys-ccr", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Enhetsregisteret"));
+        var a3ProviderId = (await dbContext.Providers.AsNoTracking().SingleOrDefaultAsync(t => t.Code == "sys-altinn3", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 3"));
+        var a2ProviderId = (await dbContext.Providers.AsNoTracking().SingleOrDefaultAsync(t => t.Code == "sys-altinn2", cancellationToken))?.Id ?? throw new KeyNotFoundException(string.Format("Provider not found '{0}'", "Altinn 2"));
 
         var data = new List<Role>()
         {
@@ -355,10 +356,10 @@ public partial class StaticDataIngest
                 throw new Exception("kake");
             }
 
-            var obj = db.Roles.FirstOrDefault(t => t.Id == d.Id);
+            var obj = dbContext.Roles.FirstOrDefault(t => t.Id == d.Id);
             if (obj == null)
             {
-                db.Roles.Add(d);
+                dbContext.Roles.Add(d);
             }
             else
             {
@@ -387,9 +388,9 @@ public partial class StaticDataIngest
                 }
             } 
             
-            await translationService.UpsertTranslationAsync(translation);
+            await new TranslationService(dbContext).UpsertTranslationAsync(translation);
         }
 
-        var result = await db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await dbContext.SaveChangesAsync(AuditValues, cancellationToken);
     }
 }

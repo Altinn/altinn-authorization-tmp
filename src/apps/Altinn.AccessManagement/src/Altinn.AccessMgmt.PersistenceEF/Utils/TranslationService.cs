@@ -88,9 +88,9 @@ public class TranslationService : ITranslationService
         return source;
     }
 
-    public async Task UpsertTranslationAsync(TranslationEntry translationEntry)
+    public async Task UpsertTranslationAsync(TranslationEntry translationEntry, CancellationToken cancellationToken = default)
     {
-        var entry = await _db.TranslationEntries.SingleOrDefaultAsync(t => t.Id == translationEntry.Id && t.Type == translationEntry.Type && t.LanguageCode == translationEntry.LanguageCode && t.FieldName == translationEntry.FieldName);
+        var entry = await _db.TranslationEntries.SingleOrDefaultAsync(t => t.Id == translationEntry.Id && t.Type == translationEntry.Type && t.LanguageCode == translationEntry.LanguageCode && t.FieldName == translationEntry.FieldName, cancellationToken);
 
         if (entry == null)
         {
@@ -131,7 +131,7 @@ public interface ITranslationService
     /// of type <typeparamref name="T"/>.</returns>
     T Translate<T>(T source, string languageCode);
 
-    Task UpsertTranslationAsync(TranslationEntry translationEntry);
+    Task UpsertTranslationAsync(TranslationEntry translationEntry, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

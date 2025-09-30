@@ -203,10 +203,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     #region Extensions
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default) =>
-        SaveChangesAsync(AuditAccessor.Current ?? throw MissingAudit(), ct);
+        SaveChangesAsync(AuditAccessor.AuditValues ?? throw MissingAudit(), ct);
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken ct = default) =>
-        SaveChangesAsync(AuditAccessor.Current ?? throw MissingAudit(), acceptAllChangesOnSuccess, ct);
+        SaveChangesAsync(AuditAccessor.AuditValues ?? throw MissingAudit(), acceptAllChangesOnSuccess, ct);
 
     private static InvalidOperationException MissingAudit() =>
         new("AuditContextAccessor.Current is null. Set it in your controller/service OR call SaveChangesAsync(BaseAudit audit, ...) explicitly.");

@@ -11,7 +11,7 @@ public static class ServiceProviderExtensions
     {
         var scope = provider.CreateScope();
         var accessor = scope.ServiceProvider.GetRequiredService<IAuditAccessor>();
-        accessor.Current = auditValues;
+        accessor.AuditValues = auditValues;
         return scope;
     }
 
