@@ -23,8 +23,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPackageService, PackageService>();
         services.AddScoped<IRoleService, RoleService>();
 
-        services.TryAddScoped<IAmPartyRepository, Services.AMPartyService>();
-        services.AddSingleton<Services.Contracts.IEntityService, Services.EntityService>();
+        services.TryAddScoped<IAmPartyRepository, AMPartyService>();
+        services.TryAddScoped<IEntityService, EntityService>();
 
         return services;
     }
