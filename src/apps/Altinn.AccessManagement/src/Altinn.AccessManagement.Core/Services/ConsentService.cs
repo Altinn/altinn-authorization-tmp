@@ -861,7 +861,7 @@ namespace Altinn.AccessManagement.Core.Services
             return requests;
         }
 
-        private static void AddExpiredEventIfConsentIsExpired(ConsentRequestDetails consentRequest)
+        private void AddExpiredEventIfConsentIsExpired(ConsentRequestDetails consentRequest)
         {
             if (consentRequest.ValidTo < _timeProvider.GetUtcNow() && !consentRequest.ConsentRequestEvents.Exists(r => r.EventType.Equals(ConsentRequestEventType.Expired)))
             {
