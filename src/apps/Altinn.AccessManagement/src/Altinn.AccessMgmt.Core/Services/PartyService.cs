@@ -42,15 +42,9 @@ public class PartyService(AppDbContext dbContext) : IPartyService
                 return Problems.EntityTypeNotFound.Create([new("entityType", party.EntityType)]);
             }
 
-            var entityVariants = await dbContext.EntityVariants
-                .Where(t => t.TypeId == entityType.Id)
-                .ToListAsync(cancellationToken);
-
             var entityVariant = await dbContext.EntityVariants
-                .FirstOrDefaultAsync(
-                    t => t.TypeId == entityType.Id &&
-                         t.Name.ToUpper() == party.EntityVariantType.ToUpper(),
-                    cancellationToken);
+                .Where(t => t.TypeId == entityType.Id && t.Name.ToUpper() == party.EntityVariantType.ToUpper())
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (entityVariant == null)
             {
