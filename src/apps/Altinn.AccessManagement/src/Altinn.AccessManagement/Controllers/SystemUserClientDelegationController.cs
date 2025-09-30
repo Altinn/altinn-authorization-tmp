@@ -89,7 +89,6 @@ public class SystemUserClientDelegationController : ControllerBase
 
         return Ok(clients);
     }
-    */
 
     /// <summary>
     /// Gets all client delegations for a given system user
@@ -170,10 +169,10 @@ public class SystemUserClientDelegationController : ControllerBase
             return Unauthorized();
         }
 
-        /*
-        - [X] Delegation exists
-        - [X] if party is facilitator for delegation
-        */
+        ////
+        ////- [X] Delegation exists
+        ////- [X] if party is facilitator for delegation
+        ////
 
         var delegation = await delegationRepository.Get(delegationId);
         if (delegation == null)
@@ -221,13 +220,13 @@ public class SystemUserClientDelegationController : ControllerBase
             return Unauthorized();
         }
 
-        /*
-        - [X] Assignment exists
-        - [X] Assignment connected to party
-        - [X] Assignment role is owned by Digdir
-        - [X] Assignment not connected to any Delegation (or cascade = true)
-        - [X] Temp: Only 'agent' role - Get this from queryparam future
-        */
+        ////
+        ////- [X] Assignment exists
+        ////- [X] Assignment connected to party
+        ////- [X] Assignment role is owned by Digdir
+        ////- [X] Assignment not connected to any Delegation (or cascade = true)
+        ////- [X] Temp: Only 'agent' role - Get this from queryparam future
+        ////
  
         string roleIdentifier = "agent"; 
 
@@ -286,12 +285,12 @@ public class SystemUserClientDelegationController : ControllerBase
             return Unauthorized();
         }
 
-        /*
-        - [X] Assignment exists
-        - [X] Assignment connected to party
-        - [X] Assignment role is owned by Digdir
-        - [X] Assignment not connected to any Delegation (or cascade = true)
-        */
+        ////
+        ////- [X] Assignment exists
+        ////- [X] Assignment connected to party
+        ////- [X] Assignment role is owned by Digdir
+        ////- [X] Assignment not connected to any Delegation (or cascade = true)
+        ////
 
         string roleIdentifier = "agent";
 
@@ -344,4 +343,5 @@ public class SystemUserClientDelegationController : ControllerBase
 
         return Ok();
     }
+    */
 }

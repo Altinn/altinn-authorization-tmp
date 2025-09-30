@@ -1,9 +1,12 @@
 ﻿using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils.Models;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -55,6 +58,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         return await db.Delegations.AsNoTracking().SingleAsync(t => t.Id == delegation.Id);
     }
 
+    /// <inheritdoc/>
     public async Task<Delegation> GetDelegation(Guid id, CancellationToken cancellationToken = default)
     {
         return await db.Delegations.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id, cancellationToken);
@@ -163,7 +167,32 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         var client = await entityService.GetEntity(request.ClientId, cancellationToken) ?? throw new Exception(string.Format("Party not found '{0}' for client", request.ClientId));
 
         // Create Delegation and DelegationPackage(s)
-        return await CreateClientDelegations(request, client, facilitator, cancellationToken);
+        var delegations = await CreateClientDelegations(request, client, facilitator, cancellationToken);
+
+        // Map to DTO and return
+        return null;                // ToDo!
+    }
+
+    /// <inheritdoc/>
+    public async Task<ProblemInstance> DeleteDelegation(Guid delegationId, CancellationToken cancellationToken)
+    {
+        ValidationErrorBuilder errors = default;
+
+        var existingDelegation = await GetDelegation(delegationId, cancellationToken: cancellationToken);
+        if (existingDelegation == null)
+        {
+            return null;
+        }
+
+        db.Delegations.Remove(existingDelegation);
+        var result = await db.SaveChangesAsync(AuditValues, cancellationToken);
+
+        if (result == 0)
+        {
+            errors.Add(ValidationErrors.UnableToCompleteOperation, "$QUERY/delegationId");
+        }
+
+        return null;
     }
 
     private async Task<IEnumerable<Delegation>> CreateClientDelegations(CreateSystemDelegationRequestDto request, Entity client, Entity facilitator, CancellationToken cancellationToken = default)
@@ -204,6 +233,12 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
                     {
                         // Find or Create Agent Entity
                         var agent = await entityService.GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "AgentSystem", cancellationToken) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
+
+                        // Handle existing agent entity found with different name/type
+                        if (agent.Name != request.AgentName || agent.Type.Id != EntityTypeConstants.SystemUser.Id)
+                        {
+                            throw new Exception(string.Format("An entity with id '{0}' already exists with different name or type", request.AgentId));
+                        }
 
                         // Find or Create Agent Assignment
                         agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));

@@ -90,6 +90,15 @@ public static class ValidationErrors
     public static ValidationErrorDescriptor InvalidResourceContext { get; }
     = _factory.Create(25, $"Resource context does not match consent request rights");
 
+    /// <summary>
+    /// Gets a validation error descriptor indicating that the user is not authorized to perform the operation.
+    /// </summary>
     public static ValidationErrorDescriptor UserNotAuthorized { get; }
     = _factory.Create(26, $"User not authorized for operation.");
+
+    /// <summary>
+    /// Gets a validation error descriptor indicating that the operation could not be completed.
+    /// </summary>
+    public static ValidationErrorDescriptor UnableToCompleteOperation { get; }
+    = _factory.Create(26, $"The operation could not be completed.");
 }

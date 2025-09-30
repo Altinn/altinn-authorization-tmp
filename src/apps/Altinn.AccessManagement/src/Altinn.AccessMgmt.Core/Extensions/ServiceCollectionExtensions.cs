@@ -19,6 +19,14 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IRoleSyncService, RoleSyncService>();
         services.AddSingleton<IResourceSyncService, ResourceSyncService>();
         services.TryAddScoped<IAssignmentService, AssignmentService>();
+
+        services.TryAddScoped<IConnectionService, ConnectionService>();
+        services.TryAddScoped<IDelegationService, DelegationService>();
+        services.TryAddScoped<IRoleService, RoleService>();
+        services.TryAddScoped<IPackageService, PackageService>();
+        services.TryAddScoped<IResourceService, ResourceService>();
+        services.TryAddScoped<IEntityService, EntityService>();
+
         return services;
     }
 }

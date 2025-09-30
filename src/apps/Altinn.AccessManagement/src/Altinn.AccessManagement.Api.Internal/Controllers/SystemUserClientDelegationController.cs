@@ -1,8 +1,10 @@
 ﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
-using Altinn.AccessManagement.Internal.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ClientDto = Altinn.Authorization.Api.Contracts.AccessManagement.ClientDto;
@@ -15,13 +17,11 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers;
 [ApiController]
 [Route("accessmanagement/api/v1/internal/[controller]")]
 [ApiExplorerSettings(IgnoreApi = false)]
-[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class SystemUserClientDelegationController(
         IAssignmentService assignmentService
-        ////,IConnectionService connectionService
-        ////,IDelegationService delegationService
-        ////,IRoleService roleService
-    ): ControllerBase
+        ,IConnectionService connectionService
+        ,IDelegationService delegationService
+    ) : ControllerBase
 {
     private readonly string[] validClientRoles = ["regnskapsforer", "revisor", "forretningsforer", "rettighetshaver"];
 
@@ -34,6 +34,7 @@ public class SystemUserClientDelegationController(
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns>List of Clients<seealso cref="ClientDto"/></returns>
     [HttpGet("clients")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
     public async Task<ActionResult<IEnumerable<ClientDto>>> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null, CancellationToken cancellationToken = default)
     {
@@ -66,7 +67,6 @@ public class SystemUserClientDelegationController(
         return Ok(clients);
     }
 
-    /* ToDo: Remaining endpoints
     /// <summary>
     /// Gets all client delegations for a given system user
     /// </summary>
@@ -75,6 +75,7 @@ public class SystemUserClientDelegationController(
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns><seealso cref="ConnectionDto"/>List of connections</returns>
     [HttpGet]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
     public async Task<ActionResult<IEnumerable<ConnectionDto>>> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser, CancellationToken cancellationToken = default)
     {
@@ -84,14 +85,7 @@ public class SystemUserClientDelegationController(
             return Unauthorized();
         }
 
-        var res = await connectionService.Get(fromId: null, toId: systemUser, facilitatorId: party, cancellationToken: cancellationToken);
-
-        if (res.IsSuccess)
-        {
-            return Ok(res);
-        }
-
-        return BadRequest("Unable to fetch client delegations");
+        return Ok(await connectionService.GetConnectionsToAgent(viaId: party, toId: systemUser, cancellationToken: cancellationToken));
     }
 
     /// <summary>
@@ -102,7 +96,9 @@ public class SystemUserClientDelegationController(
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <returns><seealso cref="CreateDelegationResponseDto"/>List of delegation responses</returns>
     [HttpPost]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
+    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)] // ToDo: Change to new Audit Claim when available
     public async Task<ActionResult<CreateDelegationResponseDto>> PostClientDelegation([FromQuery] Guid party, [FromBody] CreateSystemDelegationRequestDto request, CancellationToken cancellationToken = default)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
@@ -111,22 +107,10 @@ public class SystemUserClientDelegationController(
             return Unauthorized();
         }
 
-        var options = new ChangeRequestOptions()
-        {
-            ChangedBy = userId,
-            ChangedBySystem = AuditDefaults.EnduserApi
-        };
-
-        var delegations = await delegationService.CreateClientDelegation(request, party, options, cancellationToken);
-
-        var result = new List<CreateDelegationResponseDto>();
-        foreach (var delegation in delegations)
-        {
-            result.Add(ConnectionConverter.ConvertToResponseModel(await delegationRepository.GetExtended(delegation.Id)));
-        }
+        var delegations = await delegationService.CreateClientDelegation(request, party, cancellationToken);
 
         // Remark: Kan ikke garantere at det KUN er delegeringer som er opprettet i denne handlingen som blir returnert.
-        return Ok(result);
+        return Ok(delegations);
     }
 
     /// <summary>
@@ -137,7 +121,9 @@ public class SystemUserClientDelegationController(
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     [HttpDelete]
     [Route("deletedelegation")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
+    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)] // ToDo: Change to new Audit Claim when available
     public async Task<ActionResult> DeleteDelegation([FromQuery] Guid party, [FromQuery] Guid delegationId, CancellationToken cancellationToken = default)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
@@ -146,10 +132,12 @@ public class SystemUserClientDelegationController(
             return Unauthorized();
         }
 
-        //// - [X] Delegation exists
-        //// - [X] if party is facilitator for delegation
+        /*
+         - [X] Delegation exists
+         - [X] if party is facilitator for delegation
+        */
 
-        var delegation = await delegationService.Get(delegationId, cancellationToken);
+        var delegation = await delegationService.GetDelegation(delegationId, cancellationToken);
         if (delegation == null)
         {
             return BadRequest("Delegation not found");
@@ -160,20 +148,18 @@ public class SystemUserClientDelegationController(
             return BadRequest("Party does not match delegation facilitator");
         }
 
-        var from = await assignmentService.Get(delegation.FromId);
-        var to = await assignmentService.Get(delegation.ToId);
-        if (!from.ToId.Equals(party) || !to.FromId.Equals(party))
+        var clientAssignmentToFacilitator = await assignmentService.GetAssignment(delegation.FromId, cancellationToken);
+        if (!clientAssignmentToFacilitator.ToId.Equals(party))
         {
             return BadRequest("Party does not match delegation assignments");
         }
 
-        var options = new ChangeRequestOptions()
-        {
-            ChangedBy = userId,
-            ChangedBySystem = AuditDefaults.EnduserApi
-        };
+        var result = await delegationService.DeleteDelegation(delegation.Id, cancellationToken);
 
-        await delegationService.Delete(delegation.Id, options: options, cancellationToken);
+        if (result != null)
+        {
+            return result.ToActionResult();
+        }
 
         return Ok();
     }
@@ -187,6 +173,7 @@ public class SystemUserClientDelegationController(
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     [HttpDelete]
     [Route("deleteassignment")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     public async Task<ActionResult> DeleteAssignment([FromQuery] Guid party, [FromQuery] Guid assignmentId, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
@@ -196,12 +183,14 @@ public class SystemUserClientDelegationController(
             return Unauthorized();
         }
 
-        //// - [X] Assignment exists
-        //// - [X] Assignment connected to party
-        //// - [X] Assignment role is owned by Digdir
-        //// - [X] Assignment not connected to any Delegation (or cascade = true)
-        //// - [X] Temp: Only 'agent' role - Get this from queryparam future
- 
+        /*
+         - [X] Assignment exists
+         - [X] Assignment connected to party
+         - [X] Assignment role is owned by Digdir
+         - [X] Assignment not connected to any Delegation(or cascade = true)
+         - [X] Temp: Only 'agent' role - Get this from queryparam future
+        */
+
         string roleIdentifier = "agent"; 
 
         var assignment = await assignmentService.GetAssignment(assignmentId);
@@ -220,24 +209,12 @@ public class SystemUserClientDelegationController(
             return Problem($"You cannot removed assignments with this role '{assignment.Role.Code}', only '{roleIdentifier}'");
         }
 
-        if (!cascade)
-        {
-            var delegationsFromAssignment = await delegationService.Get(t => t.FromId, assignment.Id, cancellationToken);
-            var delegationsToAssignment = await delegationService.Get(t => t.ToId, assignment.Id, cancellationToken);
+        var result = await assignmentService.DeleteAssignment(assignment.Id, cascade, cancellationToken);
 
-            if (delegationsFromAssignment.Any() || delegationsToAssignment.Any())
-            {
-                return Problem("Assignment is active in one or more delegations and cascadeflag is false.");
-            }
+        if (result != null)
+        {
+            return Problem("Assignment is active in one or more delegations and cascadeflag is false.");
         }
-
-        var options = new ChangeRequestOptions()
-        {
-            ChangedBy = userId,
-            ChangedBySystem = AuditDefaults.EnduserApi
-        };
-
-        await assignmentService.DeleteAssignment(assignment.Id, options: options, cancellationToken);
 
         return Ok();
     }
@@ -251,6 +228,7 @@ public class SystemUserClientDelegationController(
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     [HttpDelete]
     [Route("deleteagentassignment")]
+    [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
     public async Task<ActionResult> DeleteAgentAssignment([FromQuery] Guid party, [FromQuery] Guid agentId, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
@@ -260,60 +238,13 @@ public class SystemUserClientDelegationController(
             return Unauthorized();
         }
 
-        ////- [X] Assignment exists
-        ////- [X] Assignment connected to party
-        ////- [X] Assignment role is owned by Digdir
-        ////- [X] Assignment not connected to any Delegation (or cascade = true)
+        var result = await assignmentService.DeleteAssignment(party, agentId, "agent", cascade, cancellationToken);
 
-        string agentRoleCode = "agent";
-        var role = (await roleService.GetByCode(agentRoleCode, cancellationToken)).FirstOrDefault();
-        if (role == null)
+        if (result != null)
         {
-            return Problem($"Unable to find role '{agentRoleCode}'");
+            return result.ToActionResult();
         }
-
-        if (!role.Code.Equals(agentRoleCode, StringComparison.OrdinalIgnoreCase))
-        {
-            return Problem($"You cannot removed assignments with this role '{role.Code}', only '{agentRoleCode}'");
-        }
-
-        var assignmentFilter = assignmentService.CreateFilterBuilder();
-        assignmentFilter.Equal(t => t.FromId, party);
-        assignmentFilter.Equal(t => t.ToId, agentId);
-        assignmentFilter.Equal(t => t.RoleId, role.Id);
-        var assignments = await assignmentService.GetAssignment(assignmentFilter);
-        if (assignments == null || !assignments.Any())
-        {
-            return BadRequest("Assignment not found");
-        }
-
-        if (assignments.Count() > 1)
-        {
-            return BadRequest("To many assignment found");
-        }
-
-        var assignment = assignments.First();
-
-        if (!cascade)
-        {
-            var delegationsFromAssignment = await delegationService.Get(t => t.FromId, assignment.Id);
-            var delegationsToAssignment = await delegationService.Get(t => t.ToId, assignment.Id);
-
-            if (delegationsFromAssignment.Any() || delegationsToAssignment.Any())
-            {
-                return Problem("Assignment is active in one or more delegations and cascadeflag is false.");
-            }
-        }
-
-        var options = new ChangeRequestOptions()
-        {
-            ChangedBy = userId,
-            ChangedBySystem = AuditDefaults.EnduserApi
-        };
-
-        await assignmentService.DeleteAssignment(assignment.Id, options: options, cancellationToken);
 
         return Ok();
     }
-    */
 }

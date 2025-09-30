@@ -160,6 +160,17 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
         return [];
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<ConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, CancellationToken cancellationToken = default)
+    {
+        var result = await dbContext.Connections.AsNoTracking()
+            .Where(t => t.ToId == toId)
+            .Where(t => t.ViaId == viaId)
+            .ToListAsync(cancellationToken);
+
+        return ExtractRelationDtoFromOthers(result, includeSubConnections: false);
+    }
+
     #region Mappers
     private IEnumerable<ConnectionPackageDto> ExtractRelationPackageDtoToOthers(IEnumerable<Connection> res, bool includeSubConnections = false)
     {
