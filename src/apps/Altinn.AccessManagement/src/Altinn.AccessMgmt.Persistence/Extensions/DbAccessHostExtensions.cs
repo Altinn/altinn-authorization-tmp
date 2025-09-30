@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
@@ -94,10 +93,6 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<DbDataMigrationService>();
         builder.Services.AddSingleton<MockDataService>();
 
-        // Core interfaces & implementations
-        builder.Services.AddSingleton<IAmPartyRepository, AccessMgmt.Core.Services.AMPartyService>();
-        builder.Services.AddSingleton<AccessMgmt.Core.Services.Contracts.IEntityService, AccessMgmt.Core.Services.EntityService>();
-        
         builder.Services.Add(Marker.ServiceDescriptor);
 
         return builder;

@@ -1,3 +1,4 @@
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
@@ -16,6 +17,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPartySyncService, PartySyncService>();
         services.AddSingleton<IRoleSyncService, RoleSyncService>();
         services.AddSingleton<IResourceSyncService, ResourceSyncService>();
+        services.TryAddScoped<IAmPartyRepository, Services.AMPartyService>();
+        services.AddSingleton<Services.Contracts.IEntityService, Services.EntityService>();
+
         return services;
     }
 }
