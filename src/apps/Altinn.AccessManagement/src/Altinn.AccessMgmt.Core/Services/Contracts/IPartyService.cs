@@ -17,5 +17,5 @@ public interface IPartyService
     /// <returns>
     /// A <see cref="Result{AddPartyResultDto}"/> indicating the outcome of the operation.
     /// </returns>
-    Task<Result<AddPartyResultDto>> AddParty(PartyBaseInternal party, CancellationToken cancellationToken = default);
+    Task<Result<AddPartyResultDto>> AddParty(PartyBaseDto party, CancellationToken cancellationToken = default);
 }

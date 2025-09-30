@@ -14,7 +14,7 @@ namespace Altinn.AccessMgmt.Core.Services;
 public class PartyService(AppDbContext dbContext, AuditValues auditValues) : IPartyService
 {
     /// <inheritdoc />
-    public async Task<Result<AddPartyResultDto>> AddParty(PartyBaseInternal party, CancellationToken cancellationToken = default)
+    public async Task<Result<AddPartyResultDto>> AddParty(PartyBaseDto party, CancellationToken cancellationToken = default)
     {
         AddPartyResultDto result = new() { PartyUuid = party.PartyUuid, PartyCreated = false };
 
