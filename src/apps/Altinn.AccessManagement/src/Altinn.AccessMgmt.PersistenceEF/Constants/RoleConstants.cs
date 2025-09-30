@@ -44,21 +44,14 @@ public static class RoleConstants
     #region Altinn 3 Roles
 
     /// <summary>
-    /// Represents the Rightholder role ("Rettighetshaver").
+    /// Represents the 'Rettighetshaver' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 42cae370-2dc1-4fdc-9c67-c2f4b0f0f829
-    /// - <c>Name:</c> "Rettighetshaver"
-    /// - <c>Code:</c> "rettighetshaver"
-    /// - <c>Description:</c> "Gir mulighet til å motta delegerte fullmakter for virksomheten"
-    /// - <c>Urn:</c> "urn:altinn:role:rettighetshaver"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> true
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn3"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Rightholder" - "Allows receiving delegated authorizations for the business"
-    ///   - NN: "Rettshavar" - "Gjev høve til å motta delegerte fullmakter for verksemda"
+    /// <para><strong>ID:</strong> 42cae370-2dc1-4fdc-9c67-c2f4b0f0f829</para>
+    /// <para><strong>URN:</strong> urn:altinn:role:rettighetshaver</para>
+    /// <para><strong>Provider:</strong> Altinn3</para>
+    /// <para><strong>Code:</strong> rettighetshaver</para>
+    /// <para><strong>Description:</strong> Gir mulighet til å motta delegerte fullmakter for virksomheten</para>
     /// </remarks>
     public static ConstantDefinition<Role> Rightholder { get; } = new ConstantDefinition<Role>("42cae370-2dc1-4fdc-9c67-c2f4b0f0f829")
     {
@@ -84,21 +77,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Agent role ("Agent").
+    /// Represents the 'Agent' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> ff4c33f5-03f7-4445-85ed-1e60b8aafb30
-    /// - <c>Name:</c> "Agent"
-    /// - <c>Code:</c> "agent"
-    /// - <c>Description:</c> "Gir mulighet til å motta delegerte fullmakter for virksomheten"
-    /// - <c>Urn:</c> "urn:altinn:role:agent"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> true
-    /// - <c>EntityTypeId:</c> References person entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn3"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Agent" - "Allows receiving delegated authorizations for the business"
-    ///   - NN: "Agent" - "Gjev høve til å motta delegerte fullmakter for verksemda"
+    /// <para><strong>ID:</strong> ff4c33f5-03f7-4445-85ed-1e60b8aafb30</para>
+    /// <para><strong>URN:</strong> urn:altinn:role:agent</para>
+    /// <para><strong>Provider:</strong> Altinn3</para>
+    /// <para><strong>Code:</strong> agent</para>
+    /// <para><strong>Description:</strong> Gir mulighet til å motta delegerte fullmakter for virksomheten</para>
     /// </remarks>
     public static ConstantDefinition<Role> Agent { get; } = new ConstantDefinition<Role>("ff4c33f5-03f7-4445-85ed-1e60b8aafb30")
     {
@@ -124,21 +110,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Main Administrator role ("Hovedadministrator").
+    /// Represents the 'Hovedadministrator' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7
-    /// - <c>Name:</c> "Hovedadministrator"
-    /// - <c>Code:</c> "hovedadministrator"
-    /// - <c>Description:</c> "Intern rolle for å samle alle delegerbare fullmakter en hovedadministrator kan utføre for virksomheten"
-    /// - <c>Urn:</c> "urn:altinn:role:hovedadministrator"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn3"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Main Administrator" - "Internal role to collect all delegable access a main administrator can perform for the business"
-    ///   - NN: "Hovudadministrator" - "Intern rolle for å samla alle delegerbare fullmakter ein hovudadministrator kan utføra for verksemda"
+    /// <para><strong>ID:</strong> ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7</para>
+    /// <para><strong>URN:</strong> urn:altinn:role:hovedadministrator</para>
+    /// <para><strong>Provider:</strong> Altinn3</para>
+    /// <para><strong>Code:</strong> hovedadministrator</para>
+    /// <para><strong>Description:</strong> Intern rolle for å samle alle delegerbare fullmakter en hovedadministrator kan utføre for virksomheten</para>
     /// </remarks>
     public static ConstantDefinition<Role> MainAdministrator { get; } = new ConstantDefinition<Role>("ba1c261c-20ec-44e2-9e0b-4e7cfe9f36e7")
     {
@@ -168,21 +147,14 @@ public static class RoleConstants
     #region CCR External Roles
 
     /// <summary>
-    /// Represents the Administrative Unit - Public Sector role ("Administrativ enhet - offentlig sektor").
+    /// Represents the 'Administrativ enhet - offentlig sektor' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 66ad5542-4f4a-4606-996f-18690129ce00
-    /// - <c>Name:</c> "Administrativ enhet - offentlig sektor"
-    /// - <c>Code:</c> "administrativ-enhet-offentlig-sektor"
-    /// - <c>Description:</c> "Administrativ enhet - offentlig sektor"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:administrativ-enhet-offentlig-sektor"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Administrative Unit - Public Sector" - "Administrative Unit - Public Sector"
-    ///   - NN: "Administrativ eining - offentleg sektor" - "Administrativ eining - offentleg sektor"
+    /// <para><strong>ID:</strong> 66ad5542-4f4a-4606-996f-18690129ce00</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:administrativ-enhet-offentlig-sektor</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> administrativ-enhet-offentlig-sektor</para>
+    /// <para><strong>Description:</strong> Administrativ enhet - offentlig sektor</para>
     /// </remarks>
     public static ConstantDefinition<Role> AdministrativeUnitPublicSector { get; } = new ConstantDefinition<Role>("66ad5542-4f4a-4606-996f-18690129ce00")
     {
@@ -208,21 +180,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Deputy Leader role ("Nestleder").
+    /// Represents the 'Nestleder' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 29a24eab-a25f-445d-b56d-e3b914844853
-    /// - <c>Name:</c> "Nestleder"
-    /// - <c>Code:</c> "nestleder"
-    /// - <c>Description:</c> "Styremedlem som opptrer som styreleder ved leders fravær"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:nestleder"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Deputy Leader" - "Board member who acts as chair in the absence of the leader"
-    ///   - NN: "Nestleiar" - "Styremedlem som fungerer som styreleiar ved leiarens fråvær"
+    /// <para><strong>ID:</strong> 29a24eab-a25f-445d-b56d-e3b914844853</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:nestleder</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> nestleder</para>
+    /// <para><strong>Description:</strong> Styremedlem som opptrer som styreleder ved leders fravær</para>
     /// </remarks>
     public static ConstantDefinition<Role> DeputyLeader { get; } = new ConstantDefinition<Role>("29a24eab-a25f-445d-b56d-e3b914844853")
     {
@@ -248,21 +213,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Office Community Member role ("Inngår i kontorfellesskap").
+    /// Represents the 'Inngår i kontorfellesskap' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 8c1e91c2-a71c-4abf-a74e-a600a98be976
-    /// - <c>Name:</c> "Inngår i kontorfellesskap"
-    /// - <c>Code:</c> "kontorfelleskapmedlem"
-    /// - <c>Description:</c> "Inngår i kontorfellesskap"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:kontorfelleskapmedlem"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Part of Office Community" - "Participates in office community"
-    ///   - NN: "Inngår i kontorfellesskap" - "Inngår i kontorfellesskap"
+    /// <para><strong>ID:</strong> 8c1e91c2-a71c-4abf-a74e-a600a98be976</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:kontorfelleskapmedlem</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> kontorfelleskapmedlem</para>
+    /// <para><strong>Description:</strong> Inngår i kontorfellesskap</para>
     /// </remarks>
     public static ConstantDefinition<Role> OfficeCommunityMember { get; } = new ConstantDefinition<Role>("8c1e91c2-a71c-4abf-a74e-a600a98be976")
     {
@@ -288,21 +246,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Organizational Unit in the Public Sector role ("Organisasjonsledd i offentlig sektor").
+    /// Represents the 'Organisasjonsledd i offentlig sektor' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> cfc41a92-2061-4ff4-97dc-658ffba2c00e
-    /// - <c>Name:</c> "Organisasjonsledd i offentlig sektor"
-    /// - <c>Code:</c> "organisasjonsledd-offentlig-sektor"
-    /// - <c>Description:</c> "Organisasjonsledd i offentlig sektor"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:organisasjonsledd-offentlig-sektor"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Organizational Unit in the Public Sector" - "Organizational Unit in the Public Sector"
-    ///   - NN: "Organisasjonsledd i offentleg sektor" - "Organisasjonsledd i offentleg sektor"
+    /// <para><strong>ID:</strong> cfc41a92-2061-4ff4-97dc-658ffba2c00e</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:organisasjonsledd-offentlig-sektor</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> organisasjonsledd-offentlig-sektor</para>
+    /// <para><strong>Description:</strong> Organisasjonsledd i offentlig sektor</para>
     /// </remarks>
     public static ConstantDefinition<Role> OrganizationalUnitPublicSector { get; } = new ConstantDefinition<Role>("cfc41a92-2061-4ff4-97dc-658ffba2c00e")
     {
@@ -328,21 +279,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Distinct Subunit role ("Særskilt oppdelt enhet").
+    /// Represents the 'Særskilt oppdelt enhet' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 2fec6d4b-cead-419a-adf3-1bf482a3c9dc
-    /// - <c>Name:</c> "Særskilt oppdelt enhet"
-    /// - <c>Code:</c> "saerskilt-oppdelt-enhet"
-    /// - <c>Description:</c> "Særskilt oppdelt enhet"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:saerskilt-oppdelt-enhet"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Distinct Subunit" - "Distinct Subunit"
-    ///   - NN: "Særskild oppdelt eining" - "Særskild oppdelt eining"
+    /// <para><strong>ID:</strong> 2fec6d4b-cead-419a-adf3-1bf482a3c9dc</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:saerskilt-oppdelt-enhet</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> saerskilt-oppdelt-enhet</para>
+    /// <para><strong>Description:</strong> Særskilt oppdelt enhet</para>
     /// </remarks>
     public static ConstantDefinition<Role> DistinctSubunit { get; } = new ConstantDefinition<Role>("2fec6d4b-cead-419a-adf3-1bf482a3c9dc")
     {
@@ -368,21 +312,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Managing Director role ("Daglig leder").
+    /// Represents the 'Daglig leder' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 55bd7d4d-08dd-46ee-ac8e-3a44d800d752
-    /// - <c>Name:</c> "Daglig leder"
-    /// - <c>Code:</c> "daglig-leder"
-    /// - <c>Description:</c> "Fysisk- eller juridisk person som har ansvaret for den daglige driften i en virksomhet"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:daglig-leder"
-    /// - <c>IsKeyRole:</c> true
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Managing Director" - "An individual or legal entity responsible for the daily operations of a business"
-    ///   - NN: "Dagleg leiar" - "Fysisk- eller juridisk person som har ansvaret for den daglege drifta i ei verksemd"
+    /// <para><strong>ID:</strong> 55bd7d4d-08dd-46ee-ac8e-3a44d800d752</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:daglig-leder</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> daglig-leder</para>
+    /// <para><strong>Description:</strong> Fysisk- eller juridisk person som har ansvaret for den daglige driften i en virksomhet</para>
     /// </remarks>
     public static ConstantDefinition<Role> ManagingDirector { get; } = new ConstantDefinition<Role>("55bd7d4d-08dd-46ee-ac8e-3a44d800d752")
     {
@@ -408,21 +345,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Participant with Shared Responsibility role ("Deltaker delt ansvar").
+    /// Represents the 'Deltaker delt ansvar' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 18baa914-ac43-4663-9fa4-6f5760dc68eb
-    /// - <c>Name:</c> "Deltaker delt ansvar"
-    /// - <c>Code:</c> "deltaker-delt-ansvar"
-    /// - <c>Description:</c> "Fysisk- eller juridisk person som har personlig ansvar for deler av selskapets forpliktelser"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:deltaker-delt-ansvar"
-    /// - <c>IsKeyRole:</c> true
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Participant with Shared Responsibility" - "An individual or legal entity who has personal responsibility for parts of the company's obligations"
-    ///   - NN: "Deltakar delt ansvar" - "Fysisk- eller juridisk person som har personleg ansvar for delar av selskapet sine forpliktingar"
+    /// <para><strong>ID:</strong> 18baa914-ac43-4663-9fa4-6f5760dc68eb</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:deltaker-delt-ansvar</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> deltaker-delt-ansvar</para>
+    /// <para><strong>Description:</strong> Fysisk- eller juridisk person som har personlig ansvar for deler av selskapets forpliktelser</para>
     /// </remarks>
     public static ConstantDefinition<Role> ParticipantSharedResponsibility { get; } = new ConstantDefinition<Role>("18baa914-ac43-4663-9fa4-6f5760dc68eb")
     {
@@ -448,21 +378,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Owner role ("Innehaver").
+    /// Represents the 'Innehaver' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 2651ed07-f31b-4bc1-87bd-4d270742a19d
-    /// - <c>Name:</c> "Innehaver"
-    /// - <c>Code:</c> "innehaver"
-    /// - <c>Description:</c> "Fysisk person som er eier av et enkeltpersonforetak"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:innehaver"
-    /// - <c>IsKeyRole:</c> true
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Owner" - "An individual who is the owner of a sole proprietorship"
-    ///   - NN: "Innehavar" - "Fysisk person som er eigar av eit enkeltpersonforetak"
+    /// <para><strong>ID:</strong> 2651ed07-f31b-4bc1-87bd-4d270742a19d</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:innehaver</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> innehaver</para>
+    /// <para><strong>Description:</strong> Fysisk person som er eier av et enkeltpersonforetak</para>
     /// </remarks>
     public static ConstantDefinition<Role> Owner { get; } = new ConstantDefinition<Role>("2651ed07-f31b-4bc1-87bd-4d270742a19d")
     {
@@ -488,21 +411,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Participant with Full Responsibility role ("Deltaker fullt ansvar").
+    /// Represents the 'Deltaker fullt ansvar' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> f1021b8c-9fbc-4296-bd17-a05d713037ef
-    /// - <c>Name:</c> "Deltaker fullt ansvar"
-    /// - <c>Code:</c> "deltaker-fullt-ansvar"
-    /// - <c>Description:</c> "Fysisk- eller juridisk person som har ubegrenset, personlig ansvar for selskapets forpliktelser"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:deltaker-fullt-ansvar"
-    /// - <c>IsKeyRole:</c> true
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Participant with Full Responsibility" - "An individual or legal entity who has unlimited personal responsibility for the company's obligations"
-    ///   - NN: "Deltakar fullt ansvar" - "Fysisk- eller juridisk person som har ubegrensa, personleg ansvar for selskapet sine forpliktingar"
+    /// <para><strong>ID:</strong> f1021b8c-9fbc-4296-bd17-a05d713037ef</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:deltaker-fullt-ansvar</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> deltaker-fullt-ansvar</para>
+    /// <para><strong>Description:</strong> Fysisk- eller juridisk person som har ubegrenset, personlig ansvar for selskapets forpliktelser</para>
     /// </remarks>
     public static ConstantDefinition<Role> ParticipantFullResponsibility { get; } = new ConstantDefinition<Role>("f1021b8c-9fbc-4296-bd17-a05d713037ef")
     {
@@ -528,21 +444,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Alternate Member role ("Varamedlem").
+    /// Represents the 'Varamedlem' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> d41d67f2-15b0-4c82-95db-b8d5baaa14a4
-    /// - <c>Name:</c> "Varamedlem"
-    /// - <c>Code:</c> "varamedlem"
-    /// - <c>Description:</c> "Fysisk- eller juridisk person som er stedfortreder for et styremedlem"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:varamedlem"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Alternate Member" - "An individual or legal entity who acts as a substitute for a board member"
-    ///   - NN: "Varamedlem" - "Fysisk- eller juridisk person som er staden for eit styremedlem"
+    /// <para><strong>ID:</strong> d41d67f2-15b0-4c82-95db-b8d5baaa14a4</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:varamedlem</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> varamedlem</para>
+    /// <para><strong>Description:</strong> Fysisk- eller juridisk person som er stedfortreder for et styremedlem</para>
     /// </remarks>
     public static ConstantDefinition<Role> AlternateMember { get; } = new ConstantDefinition<Role>("d41d67f2-15b0-4c82-95db-b8d5baaa14a4")
     {
@@ -568,21 +477,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Observer role ("Observatør").
+    /// Represents the 'Observatør' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 1f8a2518-9494-468a-80a0-7405f0daf9e9
-    /// - <c>Name:</c> "Observatør"
-    /// - <c>Code:</c> "observator"
-    /// - <c>Description:</c> "Fysisk person som deltar i styremøter i en virksomhet, men uten stemmerett"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:observator"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Observer" - "An individual who participates in board meetings of a business, but without voting rights"
-    ///   - NN: "Observatør" - "Fysisk person som deltek i styremøter i ei verksemd, men utan stemmerett"
+    /// <para><strong>ID:</strong> 1f8a2518-9494-468a-80a0-7405f0daf9e9</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:observator</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> observator</para>
+    /// <para><strong>Description:</strong> Fysisk person som deltar i styremøter i en virksomhet, men uten stemmerett</para>
     /// </remarks>
     public static ConstantDefinition<Role> Observer { get; } = new ConstantDefinition<Role>("1f8a2518-9494-468a-80a0-7405f0daf9e9")
     {
@@ -608,21 +510,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Board Member role ("Styremedlem").
+    /// Represents the 'Styremedlem' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> f045ffda-dbdc-41da-b674-b9b276ad5b01
-    /// - <c>Name:</c> "Styremedlem"
-    /// - <c>Code:</c> "styremedlem"
-    /// - <c>Description:</c> "Fysisk- eller juridisk person som inngår i et styre"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:styremedlem"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Board Member" - "An individual or legal entity who is a member of a board"
-    ///   - NN: "Styremedlem" - "Fysisk- eller juridisk person som inngår i eit styre"
+    /// <para><strong>ID:</strong> f045ffda-dbdc-41da-b674-b9b276ad5b01</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:styremedlem</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> styremedlem</para>
+    /// <para><strong>Description:</strong> Fysisk- eller juridisk person som inngår i et styre</para>
     /// </remarks>
     public static ConstantDefinition<Role> BoardMember { get; } = new ConstantDefinition<Role>("f045ffda-dbdc-41da-b674-b9b276ad5b01")
     {
@@ -648,21 +543,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Chair of the Board role ("Styrets leder").
+    /// Represents the 'Styrets leder' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 9e5d3acf-cef7-4bbe-b101-8e9ab7b8b3e4
-    /// - <c>Name:</c> "Styrets leder"
-    /// - <c>Code:</c> "styreleder"
-    /// - <c>Description:</c> "Fysisk- eller juridisk person som er styremedlem og leder et styre"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:styreleder"
-    /// - <c>IsKeyRole:</c> true
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Chair of the Board" - "An individual or legal entity who is a board member and chairs the board"
-    ///   - NN: "Styrets leiar" - "Fysisk- eller juridisk person som er styremedlem og leiar eit styre"
+    /// <para><strong>ID:</strong> 9e5d3acf-cef7-4bbe-b101-8e9ab7b8b3e4</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:styreleder</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> styreleder</para>
+    /// <para><strong>Description:</strong> Fysisk- eller juridisk person som er styremedlem og leder et styre</para>
     /// </remarks>
     public static ConstantDefinition<Role> ChairOfTheBoard { get; } = new ConstantDefinition<Role>("9e5d3acf-cef7-4bbe-b101-8e9ab7b8b3e4")
     {
@@ -688,21 +576,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Personal Bankruptcy role ("Den personlige konkursen angår").
+    /// Represents the 'Den personlige konkursen angår' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 2e2fc06e-d9b7-4cd9-91bc-d5de766d20de
-    /// - <c>Name:</c> "Den personlige konkursen angår"
-    /// - <c>Code:</c> "personlige-konkurs"
-    /// - <c>Description:</c> "Den personlige konkursen angår"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:personlige-konkurs"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Personal Bankruptcy" - "Personal Bankruptcy"
-    ///   - NN: "Den personlege konkursen angår" - "Den personlege konkursen angår"
+    /// <para><strong>ID:</strong> 2e2fc06e-d9b7-4cd9-91bc-d5de766d20de</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:personlige-konkurs</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> personlige-konkurs</para>
+    /// <para><strong>Description:</strong> Den personlige konkursen angår</para>
     /// </remarks>
     public static ConstantDefinition<Role> PersonalBankruptcy { get; } = new ConstantDefinition<Role>("2e2fc06e-d9b7-4cd9-91bc-d5de766d20de")
     {
@@ -728,21 +609,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Norwegian Representative for a Foreign Entity role ("Norsk representant for utenlandsk enhet").
+    /// Represents the 'Norsk representant for utenlandsk enhet' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> e852d758-e8dd-41ec-a1e2-4632deb6857d
-    /// - <c>Name:</c> "Norsk representant for utenlandsk enhet"
-    /// - <c>Code:</c> "norsk-representant"
-    /// - <c>Description:</c> "Fysisk- eller juridisk person som har ansvaret for den daglige driften i Norge"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:norsk-representant"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Norwegian Representative for a Foreign Entity" - "An individual or legal entity responsible for the daily operations in Norway"
-    ///   - NN: "Norsk representant for utanlandsk eining" - "Fysisk- eller juridisk person som har ansvaret for den daglege drifta i Noreg"
+    /// <para><strong>ID:</strong> e852d758-e8dd-41ec-a1e2-4632deb6857d</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:norsk-representant</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> norsk-representant</para>
+    /// <para><strong>Description:</strong> Fysisk- eller juridisk person som har ansvaret for den daglige driften i Norge</para>
     /// </remarks>
     public static ConstantDefinition<Role> NorwegianRepresentativeForeignEntity { get; } = new ConstantDefinition<Role>("e852d758-e8dd-41ec-a1e2-4632deb6857d")
     {
@@ -768,21 +642,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Contact Person role ("Kontaktperson").
+    /// Represents the 'Kontaktperson' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> db013059-4a8a-442d-bf90-b03539fe5dda
-    /// - <c>Name:</c> "Kontaktperson"
-    /// - <c>Code:</c> "kontaktperson"
-    /// - <c>Description:</c> "Fysisk person som representerer en virksomhet"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:kontaktperson"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Contact Person" - "An individual who represents a business"
-    ///   - NN: "Kontaktperson" - "Fysisk person som representerer ei verksemd"
+    /// <para><strong>ID:</strong> db013059-4a8a-442d-bf90-b03539fe5dda</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:kontaktperson</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> kontaktperson</para>
+    /// <para><strong>Description:</strong> Fysisk person som representerer en virksomhet</para>
     /// </remarks>
     public static ConstantDefinition<Role> ContactPerson { get; } = new ConstantDefinition<Role>("db013059-4a8a-442d-bf90-b03539fe5dda")
     {
@@ -808,21 +675,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Contact Person NUF role ("Kontaktperson NUF").
+    /// Represents the 'Kontaktperson NUF' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 69c4397a-9e34-4e73-9f69-534bc1bb74c8
-    /// - <c>Name:</c> "Kontaktperson NUF"
-    /// - <c>Code:</c> "kontaktperson-nuf"
-    /// - <c>Description:</c> "Fysisk person som representerer en virksomhet - NUF"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:kontaktperson-nuf"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Contact Person NUF" - "An individual who represents a business - NUF"
-    ///   - NN: "Kontaktperson NUF" - "Fysisk person som representerer ei verksemd - NUF"
+    /// <para><strong>ID:</strong> 69c4397a-9e34-4e73-9f69-534bc1bb74c8</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:kontaktperson-nuf</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> kontaktperson-nuf</para>
+    /// <para><strong>Description:</strong> Fysisk person som representerer en virksomhet - NUF</para>
     /// </remarks>
     public static ConstantDefinition<Role> ContactPersonNUF { get; } = new ConstantDefinition<Role>("69c4397a-9e34-4e73-9f69-534bc1bb74c8")
     {
@@ -848,21 +708,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Managing Shipowner role ("Bestyrende reder").
+    /// Represents the 'Bestyrende reder' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 8f0cf433-954e-4680-a25d-a3cf9ffdf149
-    /// - <c>Name:</c> "Bestyrende reder"
-    /// - <c>Code:</c> "bestyrende-reder"
-    /// - <c>Description:</c> "Bestyrende reder"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:bestyrende-reder"
-    /// - <c>IsKeyRole:</c> true
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Managing Shipowner" - "Managing Shipowner"
-    ///   - NN: "Bestyrande reder" - "Bestyrande reder"
+    /// <para><strong>ID:</strong> 8f0cf433-954e-4680-a25d-a3cf9ffdf149</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:bestyrende-reder</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> bestyrende-reder</para>
+    /// <para><strong>Description:</strong> Bestyrende reder</para>
     /// </remarks>
     public static ConstantDefinition<Role> ManagingShipowner { get; } = new ConstantDefinition<Role>("8f0cf433-954e-4680-a25d-a3cf9ffdf149")
     {
@@ -888,21 +741,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Owning Municipality role ("Eierkommune").
+    /// Represents the 'Eierkommune' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 9ce84a4d-4970-4ef2-8208-b8b8f4d45556
-    /// - <c>Name:</c> "Eierkommune"
-    /// - <c>Code:</c> "eierkommune"
-    /// - <c>Description:</c> "Eierkommune"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:eierkommune"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Owning Municipality" - "Owning Municipality"
-    ///   - NN: "Eigarkommune" - "Eigarkommune"
+    /// <para><strong>ID:</strong> 9ce84a4d-4970-4ef2-8208-b8b8f4d45556</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:eierkommune</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> eierkommune</para>
+    /// <para><strong>Description:</strong> Eierkommune</para>
     /// </remarks>
     public static ConstantDefinition<Role> OwningMunicipality { get; } = new ConstantDefinition<Role>("9ce84a4d-4970-4ef2-8208-b8b8f4d45556")
     {
@@ -928,21 +774,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Estate Administrator role ("Bobestyrer").
+    /// Represents the 'Bobestyrer' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 2cacfb35-2346-4a8d-95f6-b6fa4206881c
-    /// - <c>Name:</c> "Bobestyrer"
-    /// - <c>Code:</c> "bostyrer"
-    /// - <c>Description:</c> "Bestyrer av et konkursbo eller dødsbo som er under offentlig skiftebehandling"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:bostyrer"
-    /// - <c>IsKeyRole:</c> true
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Estate Administrator" - "Administrator of a bankruptcy or probate estate under public administration"
-    ///   - NN: "Bobestyrar" - "Bestyrar av eit konkursbo eller dødsbo som er under offentleg skiftehandtering"
+    /// <para><strong>ID:</strong> 2cacfb35-2346-4a8d-95f6-b6fa4206881c</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:bostyrer</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> bostyrer</para>
+    /// <para><strong>Description:</strong> Bestyrer av et konkursbo eller dødsbo som er under offentlig skiftebehandling</para>
     /// </remarks>
     public static ConstantDefinition<Role> EstateAdministrator { get; } = new ConstantDefinition<Role>("2cacfb35-2346-4a8d-95f6-b6fa4206881c")
     {
@@ -968,21 +807,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Healthcare Institution role ("Helseforetak").
+    /// Represents the 'Helseforetak' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> e4674211-034a-45f3-99ac-b2356984968a
-    /// - <c>Name:</c> "Helseforetak"
-    /// - <c>Code:</c> "helseforetak"
-    /// - <c>Description:</c> "Helseforetak"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:helseforetak"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Healthcare Institution" - "Healthcare Institution"
-    ///   - NN: "Helseforetak" - "Helseforetak"
+    /// <para><strong>ID:</strong> e4674211-034a-45f3-99ac-b2356984968a</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:helseforetak</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> helseforetak</para>
+    /// <para><strong>Description:</strong> Helseforetak</para>
     /// </remarks>
     public static ConstantDefinition<Role> HealthcareInstitution { get; } = new ConstantDefinition<Role>("e4674211-034a-45f3-99ac-b2356984968a")
     {
@@ -1008,21 +840,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Auditor role ("Revisor").
+    /// Represents the 'Revisor' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> f76b997a-9bd8-4f7b-899f-fcd85d35669f
-    /// - <c>Name:</c> "Revisor"
-    /// - <c>Code:</c> "revisor"
-    /// - <c>Description:</c> "Revisor"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:revisor"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Auditor" - "Auditor"
-    ///   - NN: "Revisor" - "Revisor"
+    /// <para><strong>ID:</strong> f76b997a-9bd8-4f7b-899f-fcd85d35669f</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:revisor</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> revisor</para>
+    /// <para><strong>Description:</strong> Revisor</para>
     /// </remarks>
     public static ConstantDefinition<Role> Auditor { get; } = new ConstantDefinition<Role>("f76b997a-9bd8-4f7b-899f-fcd85d35669f")
     {
@@ -1048,21 +873,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Business Manager role ("Forretningsfører").
+    /// Represents the 'Forretningsfører' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 348b2f47-47ee-4084-abf8-68aa54c2b27f
-    /// - <c>Name:</c> "Forretningsfører"
-    /// - <c>Code:</c> "forretningsforer"
-    /// - <c>Description:</c> "Forretningsfører"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:forretningsforer"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Business Manager" - "Business Manager"
-    ///   - NN: "Forretningsførar" - "Forretningsførar"
+    /// <para><strong>ID:</strong> 348b2f47-47ee-4084-abf8-68aa54c2b27f</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:forretningsforer</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> forretningsforer</para>
+    /// <para><strong>Description:</strong> Forretningsfører</para>
     /// </remarks>
     public static ConstantDefinition<Role> BusinessManager { get; } = new ConstantDefinition<Role>("348b2f47-47ee-4084-abf8-68aa54c2b27f")
     {
@@ -1088,21 +906,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the General Partner role ("Komplementar").
+    /// Represents the 'Komplementar' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> cfcf75af-9902-41f7-ab47-b77ba60bcae5
-    /// - <c>Name:</c> "Komplementar"
-    /// - <c>Code:</c> "komplementar"
-    /// - <c>Description:</c> "Komplementar"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:komplementar"
-    /// - <c>IsKeyRole:</c> true
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "General Partner" - "General Partner"
-    ///   - NN: "Komplementar" - "Komplementar"
+    /// <para><strong>ID:</strong> cfcf75af-9902-41f7-ab47-b77ba60bcae5</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:komplementar</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> komplementar</para>
+    /// <para><strong>Description:</strong> Komplementar</para>
     /// </remarks>
     public static ConstantDefinition<Role> GeneralPartner { get; } = new ConstantDefinition<Role>("cfcf75af-9902-41f7-ab47-b77ba60bcae5")
     {
@@ -1128,21 +939,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Bankrupt Debtor role ("Konkursdebitor").
+    /// Represents the 'Konkursdebitor' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 50cc3f41-4dde-4417-8c04-eea428f169dd
-    /// - <c>Name:</c> "Konkursdebitor"
-    /// - <c>Code:</c> "konkursdebitor"
-    /// - <c>Description:</c> "Konkursdebitor"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:konkursdebitor"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Bankrupt Debtor" - "Bankrupt Debtor"
-    ///   - NN: "Konkursdebitor" - "Konkursdebitor"
+    /// <para><strong>ID:</strong> 50cc3f41-4dde-4417-8c04-eea428f169dd</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:konkursdebitor</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> konkursdebitor</para>
+    /// <para><strong>Description:</strong> Konkursdebitor</para>
     /// </remarks>
     public static ConstantDefinition<Role> BankruptDebtor { get; } = new ConstantDefinition<Role>("50cc3f41-4dde-4417-8c04-eea428f169dd")
     {
@@ -1168,21 +972,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Part of a Church Council role ("Inngår i kirkelig fellesråd").
+    /// Represents the 'Inngår i kirkelig fellesråd' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> d78dd1d8-a3f3-4ae6-807e-ea5149f47035
-    /// - <c>Name:</c> "Inngår i kirkelig fellesråd"
-    /// - <c>Code:</c> "kirkelig-fellesraad"
-    /// - <c>Description:</c> "Inngår i kirkelig fellesråd"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:kirkelig-fellesraad"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Part of a Church Council" - "Part of a Church Council"
-    ///   - NN: "Inngår i kyrkjeleg fellesråd" - "Inngår i kyrkjeleg fellesråd"
+    /// <para><strong>ID:</strong> d78dd1d8-a3f3-4ae6-807e-ea5149f47035</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:kirkelig-fellesraad</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> kirkelig-fellesraad</para>
+    /// <para><strong>Description:</strong> Inngår i kirkelig fellesråd</para>
     /// </remarks>
     public static ConstantDefinition<Role> PartOfChurchCouncil { get; } = new ConstantDefinition<Role>("d78dd1d8-a3f3-4ae6-807e-ea5149f47035")
     {
@@ -1208,21 +1005,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Information about the Company in the Home Country role ("Opplysninger om foretaket i hjemlandet").
+    /// Represents the 'Opplysninger om foretaket i hjemlandet' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 185f623b-f614-4a83-839c-1788764bd253
-    /// - <c>Name:</c> "Opplysninger om foretaket i hjemlandet"
-    /// - <c>Code:</c> "hovedforetak"
-    /// - <c>Description:</c> "Opplysninger om foretaket i hjemlandet"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:hovedforetak"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Information about the Company in the Home Country" - "Information about the company in the home country"
-    ///   - NN: "Opplysningar om foretaket i heimalandet" - "Opplysningar om foretaket i heimalandet"
+    /// <para><strong>ID:</strong> 185f623b-f614-4a83-839c-1788764bd253</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:hovedforetak</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> hovedforetak</para>
+    /// <para><strong>Description:</strong> Opplysninger om foretaket i hjemlandet</para>
     /// </remarks>
     public static ConstantDefinition<Role> InformationCompanyHomeCountry { get; } = new ConstantDefinition<Role>("185f623b-f614-4a83-839c-1788764bd253")
     {
@@ -1248,21 +1038,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Accountant role ("Regnskapsfører").
+    /// Represents the 'Regnskapsfører' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 46e27685-b3ba-423e-8b42-faab54de5817
-    /// - <c>Name:</c> "Regnskapsfører"
-    /// - <c>Code:</c> "regnskapsforer"
-    /// - <c>Description:</c> "Regnskapsfører"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:regnskapsforer"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Accountant" - "Accountant"
-    ///   - NN: "Reknskapsførar" - "Reknskapsførar"
+    /// <para><strong>ID:</strong> 46e27685-b3ba-423e-8b42-faab54de5817</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:regnskapsforer</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> regnskapsforer</para>
+    /// <para><strong>Description:</strong> Regnskapsfører</para>
     /// </remarks>
     public static ConstantDefinition<Role> Accountant { get; } = new ConstantDefinition<Role>("46e27685-b3ba-423e-8b42-faab54de5817")
     {
@@ -1292,21 +1075,14 @@ public static class RoleConstants
     #region Altinn 2 Role Codes
 
     /// <summary>
-    /// Represents the Primary Industry and Foodstuff role ("Primærnæring og næringsmiddel").
+    /// Represents the 'Primærnæring og næringsmiddel' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> c497b499-7e98-423d-9fe7-ad5a6c3b71ad
-    /// - <c>Name:</c> "Primærnæring og næringsmiddel"
-    /// - <c>Code:</c> "A0212"
-    /// - <c>Description:</c> "Denne rollen gir rettighet til tjenester innen import, foredling, produksjon og/eller salg av primærnæringsprodukter og andre næringsmiddel, samt dyrehold, akvakultur, planter og kosmetikk. Ved regelverksendringer eller innføring av nye digitale tjenester"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0212"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Primary industry and foodstuff" - "Import, processing, production and/or sales of primary products and other foodstuff. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Primærnæring og næringsmiddel" - "Import, foredling, produksjon og/eller sal av primærnæringsprodukter og andre næringsmiddel. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> c497b499-7e98-423d-9fe7-ad5a6c3b71ad</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0212</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0212</para>
+    /// <para><strong>Description:</strong> Denne rollen gir rettighet til tjenester innen import, foredling, produksjon og/eller salg av primærnæringsprodukter og andre næringsmiddel, samt dyrehold, akvakultur, planter og kosmetikk. Ved regelverksendringer eller innføring av nye digitale tjenester</para>
     /// </remarks>
     public static ConstantDefinition<Role> PrimaryIndustryAndFoodstuff { get; } = new ConstantDefinition<Role>("c497b499-7e98-423d-9fe7-ad5a6c3b71ad")
     {
@@ -1332,21 +1108,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Mail/Archive role ("Post/arkiv").
+    /// Represents the 'Post/arkiv' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 151955ec-d8aa-4c14-a435-ffa96b26a9fb
-    /// - <c>Name:</c> "Post/arkiv"
-    /// - <c>Code:</c> "A0236"
-    /// - <c>Description:</c> "Denne rollen gir rettighet til å lese meldinger som blir sendt til brukerens meldingsboks. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0236"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Mail/archive" - "Access to read correpondences. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Post/arkiv" - "Rolle som gjer rett til å lese meldingstenester. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> 151955ec-d8aa-4c14-a435-ffa96b26a9fb</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0236</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0236</para>
+    /// <para><strong>Description:</strong> Denne rollen gir rettighet til å lese meldinger som blir sendt til brukerens meldingsboks. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> MailArchive { get; } = new ConstantDefinition<Role>("151955ec-d8aa-4c14-a435-ffa96b26a9fb")
     {
@@ -1372,21 +1141,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Auditor in Charge role ("Ansvarlig revisor").
+    /// Represents the 'Ansvarlig revisor' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> c2884487-a634-4537-95b4-bafb917b62a8
-    /// - <c>Name:</c> "Ansvarlig revisor"
-    /// - <c>Code:</c> "A0237"
-    /// - <c>Description:</c> "Delegerbar revisorrolle med signeringsrettighet.Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0237"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Auditor in charge" - "Delegateble auditor role with signing right. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Ansvarleg revisor" - "Delegerbar revisorrolle med signeringsrett. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> c2884487-a634-4537-95b4-bafb917b62a8</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0237</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0237</para>
+    /// <para><strong>Description:</strong> Delegerbar revisorrolle med signeringsrettighet.Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> A0237 { get; } = new ConstantDefinition<Role>("c2884487-a634-4537-95b4-bafb917b62a8")
     {
@@ -1412,21 +1174,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Assistant Auditor role ("Revisormedarbeider").
+    /// Represents the 'Revisormedarbeider' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 10fcad57-7a91-4e02-a921-63e5751fbc24
-    /// - <c>Name:</c> "Revisormedarbeider"
-    /// - <c>Code:</c> "A0238"
-    /// - <c>Description:</c> "Denne rollen gir revisor rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0238"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Assistant auditor" - "Delegateble auditor role without signing right. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Revisormedarbeidar" - "Delegerbar revisorrolle utan signeringsrett. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> 10fcad57-7a91-4e02-a921-63e5751fbc24</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0238</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0238</para>
+    /// <para><strong>Description:</strong> Denne rollen gir revisor rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> AssistantAuditor { get; } = new ConstantDefinition<Role>("10fcad57-7a91-4e02-a921-63e5751fbc24")
     {
@@ -1452,21 +1207,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Accountant with Signing Rights role ("Regnskapsfører med signeringsrettighet").
+    /// Represents the 'Regnskapsfører med signeringsrettighet' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> ebed65a5-dd87-4180-b898-e1da249b128d
-    /// - <c>Name:</c> "Regnskapsfører med signeringsrettighet"
-    /// - <c>Code:</c> "A0239"
-    /// - <c>Description:</c> "Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester, samt signeringsrettighet for tjenestene. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0239"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Accountant with signing rights" - "Delegateble accountant role with signing right. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Rekneskapsførar med signeringsrett" - "Delegerbar rekneskapsrolle med signeringsrett. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> ebed65a5-dd87-4180-b898-e1da249b128d</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0239</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0239</para>
+    /// <para><strong>Description:</strong> Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester, samt signeringsrettighet for tjenestene. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> AccountantWithSigningRights { get; } = new ConstantDefinition<Role>("ebed65a5-dd87-4180-b898-e1da249b128d")
     {
@@ -1492,21 +1240,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Accountant without Signing Rights role ("Regnskapsfører uten signeringsrettighet").
+    /// Represents the 'Regnskapsfører uten signeringsrettighet' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 9407620b-21b6-4538-b4d8-2b4eb339c373
-    /// - <c>Name:</c> "Regnskapsfører uten signeringsrettighet"
-    /// - <c>Code:</c> "A0240"
-    /// - <c>Description:</c> "Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0240"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Accountant without signing rights" - "Delegateble accountant role without signing right. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Rekneskapsførar utan signeringsrett" - "Delegerbar rekneskapsrolle utan signeringsrett. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> 9407620b-21b6-4538-b4d8-2b4eb339c373</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0240</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0240</para>
+    /// <para><strong>Description:</strong> Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> AccountantWithoutSigningRights { get; } = new ConstantDefinition<Role>("9407620b-21b6-4538-b4d8-2b4eb339c373")
     {
@@ -1532,21 +1273,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Accountant Salary role ("Regnskapsfører lønn").
+    /// Represents the 'Regnskapsfører lønn' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 723a43ab-13d8-4585-81e2-e4c734b2d4fc
-    /// - <c>Name:</c> "Regnskapsfører lønn"
-    /// - <c>Code:</c> "A0241"
-    /// - <c>Description:</c> "Denne rollen gir regnskapsfører rettighet til lønnsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0241"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Accountant salary" - "Delegateble accountant role with signing right to services related to salary. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Rekneskapsførar løn" - "Delegerbar rekneskapsrolle med signeringsrett for tenester knytta til lønsrapportering. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> 723a43ab-13d8-4585-81e2-e4c734b2d4fc</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0241</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0241</para>
+    /// <para><strong>Description:</strong> Denne rollen gir regnskapsfører rettighet til lønnsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> AccountantSalary { get; } = new ConstantDefinition<Role>("723a43ab-13d8-4585-81e2-e4c734b2d4fc")
     {
@@ -1572,21 +1306,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Private Person role ("Privatperson").
+    /// Represents the 'Privatperson' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 1c6eeec1-fe70-4fc5-8b45-df4a2255dea6
-    /// - <c>Name:</c> "Privatperson"
-    /// - <c>Code:</c> "privatperson"
-    /// - <c>Description:</c> "Denne rollen er hentet fra Folkeregisteret og gir rettighet til flere tjenester."
-    /// - <c>Urn:</c> "urn:altinn:role:privatperson"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References person entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Private person" - "Private person"
-    ///   - NN: "Privatperson" - "Privatperson"
+    /// <para><strong>ID:</strong> 1c6eeec1-fe70-4fc5-8b45-df4a2255dea6</para>
+    /// <para><strong>URN:</strong> urn:altinn:role:privatperson</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> privatperson</para>
+    /// <para><strong>Description:</strong> Denne rollen er hentet fra Folkeregisteret og gir rettighet til flere tjenester.</para>
     /// </remarks>
     public static ConstantDefinition<Role> PrivatePerson { get; } = new ConstantDefinition<Role>("1c6eeec1-fe70-4fc5-8b45-df4a2255dea6")
     {
@@ -1612,21 +1339,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Self Registered User role ("Selvregistrert bruker").
+    /// Represents the 'Selvregistrert bruker' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> e16ab886-1e1e-4f45-8f79-46f06f720f3e
-    /// - <c>Name:</c> "Selvregistrert bruker"
-    /// - <c>Code:</c> "selvregistrert"
-    /// - <c>Description:</c> "Selvregistrert bruker"
-    /// - <c>Urn:</c> "urn:altinn:role:selvregistrert"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References person entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Self registered user" - "Self registered user"
-    ///   - NN: "Sjølregistrert brukar" - "Sjølregistrert brukar"
+    /// <para><strong>ID:</strong> e16ab886-1e1e-4f45-8f79-46f06f720f3e</para>
+    /// <para><strong>URN:</strong> urn:altinn:role:selvregistrert</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> selvregistrert</para>
+    /// <para><strong>Description:</strong> Selvregistrert bruker</para>
     /// </remarks>
     public static ConstantDefinition<Role> SelfRegisteredUser { get; } = new ConstantDefinition<Role>("e16ab886-1e1e-4f45-8f79-46f06f720f3e")
     {
@@ -1652,21 +1372,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Planning and Construction role ("Plan- og byggesak").
+    /// Represents the 'Plan- og byggesak' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 6828080b-e846-4c51-b670-201af4917562
-    /// - <c>Name:</c> "Plan- og byggesak"
-    /// - <c>Code:</c> "A0278"
-    /// - <c>Description:</c> "Rollen er forbeholdt skjemaer og tjenester som er godkjent av Direktoratet for byggkvalitet (DiBK). Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0278"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Planning and construction" - "The role is reserved for forms and services approved by Norwegian Building Authority (DiBK). In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Plan- og byggesak" - "Rollen er reservert skjema og tenester som er godkjend av DiBK. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> 6828080b-e846-4c51-b670-201af4917562</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0278</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0278</para>
+    /// <para><strong>Description:</strong> Rollen er forbeholdt skjemaer og tjenester som er godkjent av Direktoratet for byggkvalitet (DiBK). Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> PlanningAndConstruction { get; } = new ConstantDefinition<Role>("6828080b-e846-4c51-b670-201af4917562")
     {
@@ -1692,21 +1405,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Access Manager role ("Tilgangsstyring").
+    /// Represents the 'Tilgangsstyring' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 48f9e5ec-efd5-4863-baba-9697b8971666
-    /// - <c>Name:</c> "Tilgangsstyring"
-    /// - <c>Code:</c> "ADMAI"
-    /// - <c>Description:</c> "Denne rollen gir administratortilgang til å gi videre rettigheter til andre."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:ADMAI"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Access manager" - "Administration of access"
-    ///   - NN: "Tilgangsstyring" - "Administrasjon av tilgangar"
+    /// <para><strong>ID:</strong> 48f9e5ec-efd5-4863-baba-9697b8971666</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:ADMAI</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> ADMAI</para>
+    /// <para><strong>Description:</strong> Denne rollen gir administratortilgang til å gi videre rettigheter til andre.</para>
     /// </remarks>
     public static ConstantDefinition<Role> AccessManager { get; } = new ConstantDefinition<Role>("48f9e5ec-efd5-4863-baba-9697b8971666")
     {
@@ -1732,21 +1438,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Application Programming Interface (API) role ("Programmeringsgrensesnitt (API)").
+    /// Represents the 'Programmeringsgrensesnitt (API)' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> e078bb18-f55a-4a2d-8964-c599f41b29b5
-    /// - <c>Name:</c> "Programmeringsgrensesnitt (API)"
-    /// - <c>Code:</c> "APIADM"
-    /// - <c>Description:</c> "Delegerbar rolle som gir tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av virksomheten."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:APIADM"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Application Programming Interface (API)" - "Delegable role that provides access to manage access to APIs on behalf of the business."
-    ///   - NN: "Programmeringsgrensesnitt (API)" - "Delegerbar rolle som gir tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av verksemden."
+    /// <para><strong>ID:</strong> e078bb18-f55a-4a2d-8964-c599f41b29b5</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:APIADM</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> APIADM</para>
+    /// <para><strong>Description:</strong> Delegerbar rolle som gir tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av virksomheten.</para>
     /// </remarks>
     public static ConstantDefinition<Role> ApplicationProgrammingInterface { get; } = new ConstantDefinition<Role>("e078bb18-f55a-4a2d-8964-c599f41b29b5")
     {
@@ -1774,18 +1473,14 @@ public static class RoleConstants
     #endregion
 
     /// <summary>
-    /// Represents the Is Accounting Address For role ("Er regnskapsforeradresse for").
+    /// Represents the 'Er regnskapsforeradresse for' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 17cb6a9e-5d27-4a8e-9647-f3a53c7a09c6
-    /// - <c>Name:</c> "Er regnskapsforeradresse for"
-    /// - <c>Code:</c> "regnskapsforeradressat"
-    /// - <c>Description:</c> "Er regnskapsforeradresse for"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:regnskapsforeradressat"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 17cb6a9e-5d27-4a8e-9647-f3a53c7a09c6</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:regnskapsforeradressat</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> regnskapsforeradressat</para>
+    /// <para><strong>Description:</strong> Er regnskapsforeradresse for</para>
     /// </remarks>
     public static ConstantDefinition<Role> IsAccountingAddressFor { get; } = new ConstantDefinition<Role>("17cb6a9e-5d27-4a8e-9647-f3a53c7a09c6")
     {
@@ -1803,18 +1498,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Signatory role ("Signatur").
+    /// Represents the 'Signatur' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> ea8f1038-9717-472d-a579-f32960f0eecb
-    /// - <c>Name:</c> "Signatur"
-    /// - <c>Code:</c> "signerer"
-    /// - <c>Description:</c> "Signatur"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:signerer"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> ea8f1038-9717-472d-a579-f32960f0eecb</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:signerer</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> signerer</para>
+    /// <para><strong>Description:</strong> Signatur</para>
     /// </remarks>
     public static ConstantDefinition<Role> Signatory { get; } = new ConstantDefinition<Role>("ea8f1038-9717-472d-a579-f32960f0eecb")
     {
@@ -1832,18 +1523,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Merger Takeover role ("Skal fusjoneres med").
+    /// Represents the 'Skal fusjoneres med' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 9822b632-3822-4a9e-b768-8411c046bb75
-    /// - <c>Name:</c> "Skal fusjoneres med"
-    /// - <c>Code:</c> "fusjonsovertaker"
-    /// - <c>Description:</c> "Skal fusjoneres med"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:fusjonsovertaker"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 9822b632-3822-4a9e-b768-8411c046bb75</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:fusjonsovertaker</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> fusjonsovertaker</para>
+    /// <para><strong>Description:</strong> Skal fusjoneres med</para>
     /// </remarks>
     public static ConstantDefinition<Role> MergerTakeover { get; } = new ConstantDefinition<Role>("9822b632-3822-4a9e-b768-8411c046bb75")
     {
@@ -1861,18 +1548,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Division Takeover role ("Skal fisjoneres med").
+    /// Represents the 'Skal fisjoneres med' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> e9292053-92ee-42e0-a30c-011667ee8db8
-    /// - <c>Name:</c> "Skal fisjoneres med"
-    /// - <c>Code:</c> "fisjonsovertaker"
-    /// - <c>Description:</c> "Skal fisjoneres med"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:fisjonsovertaker"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> e9292053-92ee-42e0-a30c-011667ee8db8</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:fisjonsovertaker</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> fisjonsovertaker</para>
+    /// <para><strong>Description:</strong> Skal fisjoneres med</para>
     /// </remarks>
     public static ConstantDefinition<Role> DivisionTakeover { get; } = new ConstantDefinition<Role>("e9292053-92ee-42e0-a30c-011667ee8db8")
     {
@@ -1890,18 +1573,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Has As Registration Unit BEDR role ("Har som registreringsenhet BEDR").
+    /// Represents the 'Har som registreringsenhet BEDR' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 5f868b06-7531-448c-a275-a2dfa100f840
-    /// - <c>Name:</c> "Har som registreringsenhet BEDR"
-    /// - <c>Code:</c> "hovedenhet"
-    /// - <c>Description:</c> "Har som registreringsenhet"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:hovedenhet"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 5f868b06-7531-448c-a275-a2dfa100f840</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:hovedenhet</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> hovedenhet</para>
+    /// <para><strong>Description:</strong> Har som registreringsenhet</para>
     /// </remarks>
     public static ConstantDefinition<Role> HasAsRegistrationUnitBEDR { get; } = new ConstantDefinition<Role>("5f868b06-7531-448c-a275-a2dfa100f840")
     {
@@ -1919,18 +1598,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Has As Registration Unit AAFY role ("Har som registreringsenhet AAFY").
+    /// Represents the 'Har som registreringsenhet AAFY' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> a53c833b-6dc1-4ceb-b56c-00d333c211c0
-    /// - <c>Name:</c> "Har som registreringsenhet AAFY"
-    /// - <c>Code:</c> "ikke-naeringsdrivende-hovedenhet"
-    /// - <c>Description:</c> "Har som registreringsenhet"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:ikke-naeringsdrivende-hovedenhet"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> a53c833b-6dc1-4ceb-b56c-00d333c211c0</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:ikke-naeringsdrivende-hovedenhet</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> ikke-naeringsdrivende-hovedenhet</para>
+    /// <para><strong>Description:</strong> Har som registreringsenhet</para>
     /// </remarks>
     public static ConstantDefinition<Role> HasAsRegistrationUnitAAFY { get; } = new ConstantDefinition<Role>("a53c833b-6dc1-4ceb-b56c-00d333c211c0")
     {
@@ -1948,18 +1623,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Joint Procuration role ("Prokura i fellesskap").
+    /// Represents the 'Prokura i fellesskap' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> f7c13f9b-8246-4a16-8b93-33e945b8cf5b
-    /// - <c>Name:</c> "Prokura i fellesskap"
-    /// - <c>Code:</c> "prokurist-fellesskap"
-    /// - <c>Description:</c> "Prokura i fellesskap"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:prokurist-fellesskap"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> f7c13f9b-8246-4a16-8b93-33e945b8cf5b</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:prokurist-fellesskap</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> prokurist-fellesskap</para>
+    /// <para><strong>Description:</strong> Prokura i fellesskap</para>
     /// </remarks>
     public static ConstantDefinition<Role> JointProcuration { get; } = new ConstantDefinition<Role>("f7c13f9b-8246-4a16-8b93-33e945b8cf5b")
     {
@@ -1977,18 +1648,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Individual Procuration role ("Prokura hver for seg").
+    /// Represents the 'Prokura hver for seg' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> e39b6f89-6e42-4ca4-8e21-913a632e9c95
-    /// - <c>Name:</c> "Prokura hver for seg"
-    /// - <c>Code:</c> "prokurist-hver-for-seg"
-    /// - <c>Description:</c> "Prokura hver for seg"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:prokurist-hver-for-seg"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> e39b6f89-6e42-4ca4-8e21-913a632e9c95</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:prokurist-hver-for-seg</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> prokurist-hver-for-seg</para>
+    /// <para><strong>Description:</strong> Prokura hver for seg</para>
     /// </remarks>
     public static ConstantDefinition<Role> IndividualProcuration { get; } = new ConstantDefinition<Role>("e39b6f89-6e42-4ca4-8e21-913a632e9c95")
     {
@@ -2006,18 +1673,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Procuration role ("Prokura").
+    /// Represents the 'Prokura' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 6aa99128-c901-4ab4-86cd-b5d92aeb0b80
-    /// - <c>Name:</c> "Prokura"
-    /// - <c>Code:</c> "prokurist"
-    /// - <c>Description:</c> "Prokura"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:prokurist"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 6aa99128-c901-4ab4-86cd-b5d92aeb0b80</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:prokurist</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> prokurist</para>
+    /// <para><strong>Description:</strong> Prokura</para>
     /// </remarks>
     public static ConstantDefinition<Role> Procuration { get; } = new ConstantDefinition<Role>("6aa99128-c901-4ab4-86cd-b5d92aeb0b80")
     {
@@ -2035,18 +1698,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Is Auditor Address For role ("Er revisoradresse for").
+    /// Represents the 'Er revisoradresse for' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 2c812df3-cbb8-46cf-9071-f5fbb6c28ad2
-    /// - <c>Name:</c> "Er revisoradresse for"
-    /// - <c>Code:</c> "revisoradressat"
-    /// - <c>Description:</c> "Er revisoradresse for"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:revisoradressat"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 2c812df3-cbb8-46cf-9071-f5fbb6c28ad2</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:revisoradressat</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> revisoradressat</para>
+    /// <para><strong>Description:</strong> Er revisoradresse for</para>
     /// </remarks>
     public static ConstantDefinition<Role> IsAuditorAddressFor { get; } = new ConstantDefinition<Role>("2c812df3-cbb8-46cf-9071-f5fbb6c28ad2")
     {
@@ -2064,18 +1723,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Co-Owners role ("Sameiere").
+    /// Represents the 'Sameiere' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 94df9e5c-7d52-43a2-91af-a50cf81fca2d
-    /// - <c>Name:</c> "Sameiere"
-    /// - <c>Code:</c> "sameier"
-    /// - <c>Description:</c> "Ekstern rolle"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:sameier"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 94df9e5c-7d52-43a2-91af-a50cf81fca2d</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:sameier</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> sameier</para>
+    /// <para><strong>Description:</strong> Ekstern rolle</para>
     /// </remarks>
     public static ConstantDefinition<Role> CoOwners { get; } = new ConstantDefinition<Role>("94df9e5c-7d52-43a2-91af-a50cf81fca2d")
     {
@@ -2093,18 +1748,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Joint Signature role ("Signatur i fellesskap").
+    /// Represents the 'Signatur i fellesskap' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 917dcbb9-8cb9-4d2d-984c-8f877b510747
-    /// - <c>Name:</c> "Signatur i fellesskap"
-    /// - <c>Code:</c> "signerer-fellesskap"
-    /// - <c>Description:</c> "Signatur i fellesskap"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:signerer-fellesskap"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 917dcbb9-8cb9-4d2d-984c-8f877b510747</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:signerer-fellesskap</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> signerer-fellesskap</para>
+    /// <para><strong>Description:</strong> Signatur i fellesskap</para>
     /// </remarks>
     public static ConstantDefinition<Role> JointSignature { get; } = new ConstantDefinition<Role>("917dcbb9-8cb9-4d2d-984c-8f877b510747")
     {
@@ -2122,18 +1773,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Individual Signature role ("Signatur hver for seg").
+    /// Represents the 'Signatur hver for seg' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> a6a94254-7459-4096-b889-411793febbee
-    /// - <c>Name:</c> "Signatur hver for seg"
-    /// - <c>Code:</c> "signerer-hver-for-seg"
-    /// - <c>Description:</c> "Signatur hver for seg"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:signerer-hver-for-seg"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> a6a94254-7459-4096-b889-411793febbee</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:signerer-hver-for-seg</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> signerer-hver-for-seg</para>
+    /// <para><strong>Description:</strong> Signatur hver for seg</para>
     /// </remarks>
     public static ConstantDefinition<Role> IndividualSignature { get; } = new ConstantDefinition<Role>("a6a94254-7459-4096-b889-411793febbee")
     {
@@ -2151,18 +1798,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Contact Person in Municipality role ("Kontaktperson i kommune").
+    /// Represents the 'Kontaktperson i kommune' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 0fc0fc0b-d3e1-4360-982e-b1d0a798f374
-    /// - <c>Name:</c> "Kontaktperson i kommune"
-    /// - <c>Code:</c> "kontaktperson-kommune"
-    /// - <c>Description:</c> "Ekstern rolle"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:kontaktperson-kommune"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 0fc0fc0b-d3e1-4360-982e-b1d0a798f374</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:kontaktperson-kommune</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> kontaktperson-kommune</para>
+    /// <para><strong>Description:</strong> Ekstern rolle</para>
     /// </remarks>
     public static ConstantDefinition<Role> ContactPersonInMunicipality { get; } = new ConstantDefinition<Role>("0fc0fc0b-d3e1-4360-982e-b1d0a798f374")
     {
@@ -2180,18 +1823,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Contact Person in Administrative Unit role ("Kontaktperson i Ad").
+    /// Represents the 'Kontaktperson i Ad' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 7f6c14f6-7809-4867-83ab-30c426b53d57
-    /// - <c>Name:</c> "Kontaktperson i Ad"
-    /// - <c>Code:</c> "kontaktperson-ados"
-    /// - <c>Description:</c> "enhet - offentlig sektor"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:kontaktperson-ados"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 7f6c14f6-7809-4867-83ab-30c426b53d57</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:kontaktperson-ados</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> kontaktperson-ados</para>
+    /// <para><strong>Description:</strong> enhet - offentlig sektor</para>
     /// </remarks>
     public static ConstantDefinition<Role> ContactPersonInAdministrativeUnit { get; } = new ConstantDefinition<Role>("7f6c14f6-7809-4867-83ab-30c426b53d57")
     {
@@ -2209,18 +1848,13 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Party Executive Organ Leader role ("Leder i partiets utovende organ").
+    /// Represents the 'Leder i partiets utovende organ' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> E9E25AEC-66AB-4C02-8737-21B79A5D9EB5
-    /// - <c>Name:</c> "Leder i partiets utovende organ"
-    /// - <c>Code:</c> "parti-organ-leder"
-    /// - <c>Description:</c> "Leder i partiets utovende organ"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:parti-organ-leder"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:parti-organ-leder</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> parti-organ-leder</para>
+    /// <para><strong>Description:</strong> Leder i partiets utovende organ</para>
     /// </remarks>
     public static ConstantDefinition<Role> PartyExecutiveOrganLeader { get; } = new ConstantDefinition<Role>("E9E25AEC-66AB-4C02-8737-21B79A5D9EB5")
     {
@@ -2238,18 +1872,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Elektronisk signeringsrett role ("Elektronisk signeringsrett").
+    /// Represents the 'Elektronisk signeringsrett' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 0BE0982C-6650-49F2-9A1E-364AD879472C
-    /// - <c>Name:</c> "Elektronisk signeringsrett"
-    /// - <c>Code:</c> "elektronisk-signeringsrettig"
-    /// - <c>Description:</c> "Elektronisk signeringsrett"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:elektronisk-signeringsrettig"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No English translation available
+    /// <para><strong>ID:</strong> 0</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:elektronisk-signeringsrettig</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> elektronisk-signeringsrettig</para>
+    /// <para><strong>Description:</strong> Elektronisk signeringsrett</para>
     /// </remarks>
     public static ConstantDefinition<Role> ElektroniskSigneringsrett { get; } = new ConstantDefinition<Role>("0BE0982C-6650-49F2-9A1E-364AD879472C")
     {
@@ -2267,18 +1897,13 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Electronic Signing Right Granter role ("Tildeler av elektronisk signeringsrett").
+    /// Represents the 'Tildeler av elektronisk signeringsrett' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> EE453078-9A2A-4997-969E-40F6663379AB
-    /// - <c>Name:</c> "Tildeler av elektronisk signeringsrett"
-    /// - <c>Code:</c> "elektronisk-signeringsrett-tildeler"
-    /// - <c>Description:</c> "Tildeler av elektronisk signeringsrett"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:elektronisk-signeringsrett-tildeler"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:elektronisk-signeringsrett-tildeler</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> elektronisk-signeringsrett-tildeler</para>
+    /// <para><strong>Description:</strong> Tildeler av elektronisk signeringsrett</para>
     /// </remarks>
     public static ConstantDefinition<Role> ElectronicSigningRightGranter { get; } = new ConstantDefinition<Role>("EE453078-9A2A-4997-969E-40F6663379AB")
     {
@@ -2296,18 +1921,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Company Group Member role ("Inngår i foretaksgruppe med").
+    /// Represents the 'Inngår i foretaksgruppe med' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 156AE2E3-D9E8-4DAA-BB3C-5859A31BE8C9
-    /// - <c>Name:</c> "Inngår i foretaksgruppe med"
-    /// - <c>Code:</c> "foretaksgruppe-med"
-    /// - <c>Description:</c> "Inngår i foretaksgruppe med"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:foretaksgruppe-med"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 156</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:foretaksgruppe-med</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> foretaksgruppe-med</para>
+    /// <para><strong>Description:</strong> Inngår i foretaksgruppe med</para>
     /// </remarks>
     public static ConstantDefinition<Role> CompanyGroupMember { get; } = new ConstantDefinition<Role>("156AE2E3-D9E8-4DAA-BB3C-5859A31BE8C9")
     {
@@ -2325,18 +1946,13 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Corporate Subsidiary role ("Har som datter i konsern").
+    /// Represents the 'Har som datter i konsern' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> A14D5CDD-A8C9-4E7B-AC90-5A008C0C6129
-    /// - <c>Name:</c> "Har som datter i konsern"
-    /// - <c>Code:</c> "konsern-datter"
-    /// - <c>Description:</c> "Har som datter i konsern"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:konsern-datter"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:konsern-datter</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> konsern-datter</para>
+    /// <para><strong>Description:</strong> Har som datter i konsern</para>
     /// </remarks>
     public static ConstantDefinition<Role> CorporateSubsidiary { get; } = new ConstantDefinition<Role>("A14D5CDD-A8C9-4E7B-AC90-5A008C0C6129")
     {
@@ -2354,18 +1970,13 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Corporate Basis role ("Har som grunnlag for konsern").
+    /// Represents the 'Har som grunnlag for konsern' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> ACD90AC5-4A9D-4AB1-A5D9-5D33D1684A45
-    /// - <c>Name:</c> "Har som grunnlag for konsern"
-    /// - <c>Code:</c> "konsern-grunnlag"
-    /// - <c>Description:</c> "Har som grunnlag for konsern"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:konsern-grunnlag"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:konsern-grunnlag</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> konsern-grunnlag</para>
+    /// <para><strong>Description:</strong> Har som grunnlag for konsern</para>
     /// </remarks>
     public static ConstantDefinition<Role> CorporateBasis { get; } = new ConstantDefinition<Role>("ACD90AC5-4A9D-4AB1-A5D9-5D33D1684A45")
     {
@@ -2383,18 +1994,13 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Corporate Parent role ("Har som mor i konsern").
+    /// Represents the 'Har som mor i konsern' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> BFA050A6-25BB-4AF8-8DE3-651D0C6FDDC2
-    /// - <c>Name:</c> "Har som mor i konsern"
-    /// - <c>Code:</c> "konsern-mor"
-    /// - <c>Description:</c> "Har som mor i konsern"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:konsern-mor"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:konsern-mor</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> konsern-mor</para>
+    /// <para><strong>Description:</strong> Har som mor i konsern</para>
     /// </remarks>
     public static ConstantDefinition<Role> CorporateParent { get; } = new ConstantDefinition<Role>("BFA050A6-25BB-4AF8-8DE3-651D0C6FDDC2")
     {
@@ -2412,18 +2018,13 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Performs Liquidation role ("Forestår avvikling").
+    /// Represents the 'Forestår avvikling' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> E4A1253C-31C0-4E11-85BA-6E2E63627FB5
-    /// - <c>Name:</c> "Forestår avvikling"
-    /// - <c>Code:</c> "forestaar-avvikling"
-    /// - <c>Description:</c> "Forestår avvikling"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:forestaar-avvikling"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:forestaar-avvikling</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> forestaar-avvikling</para>
+    /// <para><strong>Description:</strong> Forestår avvikling</para>
     /// </remarks>
     public static ConstantDefinition<Role> PerformsLiquidation { get; } = new ConstantDefinition<Role>("E4A1253C-31C0-4E11-85BA-6E2E63627FB5")
     {
@@ -2441,18 +2042,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Joint Registration Member role ("Inngår i felles- registrering").
+    /// Represents the 'Inngår i felles- registrering' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 177B7290-DAEA-4368-9A7A-71DBE1EB3B1B
-    /// - <c>Name:</c> "Inngår i felles- registrering"
-    /// - <c>Code:</c> "felles-registrert-med"
-    /// - <c>Description:</c> "Inngår i felles- registrering"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:felles-registrert-med"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 177</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:felles-registrert-med</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> felles-registrert-med</para>
+    /// <para><strong>Description:</strong> Inngår i felles- registrering</para>
     /// </remarks>
     public static ConstantDefinition<Role> JointRegistrationMember { get; } = new ConstantDefinition<Role>("177B7290-DAEA-4368-9A7A-71DBE1EB3B1B")
     {
@@ -2470,18 +2067,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Voluntary Registered Rental Building role ("Er frivillig registrert utleiebygg for").
+    /// Represents the 'Er frivillig registrert utleiebygg for' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 920F602D-B82B-40EE-BFD2-856A1C6A26F2
-    /// - <c>Name:</c> "Er frivillig registrert utleiebygg for"
-    /// - <c>Code:</c> "utleiebygg"
-    /// - <c>Description:</c> "Er frivillig registrert utleiebygg for"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:utleiebygg"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 920</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:utleiebygg</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> utleiebygg</para>
+    /// <para><strong>Description:</strong> Er frivillig registrert utleiebygg for</para>
     /// </remarks>
     public static ConstantDefinition<Role> VoluntaryRegisteredRentalBuilding { get; } = new ConstantDefinition<Role>("920F602D-B82B-40EE-BFD2-856A1C6A26F2")
     {
@@ -2499,18 +2092,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Jointly Operated Business role ("Er virksomhet drevet i fellesskap av").
+    /// Represents the 'Er virksomhet drevet i fellesskap av' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 3A9E145D-3CE6-4DF4-85D4-8901AFFAF347
-    /// - <c>Name:</c> "Er virksomhet drevet i fellesskap av"
-    /// - <c>Code:</c> "virksomhet-fellesskap-drifter"
-    /// - <c>Description:</c> "Er virksomhet drevet i fellesskap av"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:virksomhet-fellesskap-drifter"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 3</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:virksomhet-fellesskap-drifter</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> virksomhet-fellesskap-drifter</para>
+    /// <para><strong>Description:</strong> Er virksomhet drevet i fellesskap av</para>
     /// </remarks>
     public static ConstantDefinition<Role> JointlyOperatedBusiness { get; } = new ConstantDefinition<Role>("3A9E145D-3CE6-4DF4-85D4-8901AFFAF347")
     {
@@ -2528,18 +2117,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the VAT Form Completer role ("Utfyller MVA-oppgaver").
+    /// Represents the 'Utfyller MVA-oppgaver' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 92651683-36B2-4604-9CE9-B5B688F68696
-    /// - <c>Name:</c> "Utfyller MVA-oppgaver"
-    /// - <c>Code:</c> "mva-utfyller"
-    /// - <c>Description:</c> "Utfyller MVA-oppgaver"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:mva-utfyller"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 92651683-36</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:mva-utfyller</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> mva-utfyller</para>
+    /// <para><strong>Description:</strong> Utfyller MVA-oppgaver</para>
     /// </remarks>
     public static ConstantDefinition<Role> VatFormCompleter { get; } = new ConstantDefinition<Role>("92651683-36B2-4604-9CE9-B5B688F68696")
     {
@@ -2557,18 +2142,13 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the VAT Form Signer role ("Signerer MVA-oppgaver").
+    /// Represents the 'Signerer MVA-oppgaver' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> B5136A2C-F48C-40A7-8276-B74E121AB4EB
-    /// - <c>Name:</c> "Signerer MVA-oppgaver"
-    /// - <c>Code:</c> "mva-signerer"
-    /// - <c>Description:</c> "Signerer MVA-oppgaver"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:mva-signerer"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:mva-signerer</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> mva-signerer</para>
+    /// <para><strong>Description:</strong> Signerer MVA-oppgaver</para>
     /// </remarks>
     public static ConstantDefinition<Role> VatFormSigner { get; } = new ConstantDefinition<Role>("B5136A2C-F48C-40A7-8276-B74E121AB4EB")
     {
@@ -2586,18 +2166,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Registered Auditor role ("Revisor registrert i revisorregisteret").
+    /// Represents the 'Revisor registrert i revisorregisteret' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 4B3AE668-5CAE-4416-9121-C20E81597B12
-    /// - <c>Name:</c> "Revisor registrert i revisorregisteret"
-    /// - <c>Code:</c> "kontaktperson-revisor"
-    /// - <c>Description:</c> "Rettigheter for revisjonsselskap"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:kontaktperson-revisor"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 4</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:kontaktperson-revisor</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> kontaktperson-revisor</para>
+    /// <para><strong>Description:</strong> Rettigheter for revisjonsselskap</para>
     /// </remarks>
     public static ConstantDefinition<Role> RegisteredAuditor { get; } = new ConstantDefinition<Role>("4B3AE668-5CAE-4416-9121-C20E81597B12")
     {
@@ -2615,18 +2191,13 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Founder role ("Stifter").
+    /// Represents the 'Stifter' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> CDD312F9-8A6E-4184-9374-D4AE4BAABE3E
-    /// - <c>Name:</c> "Stifter"
-    /// - <c>Code:</c> "stifter"
-    /// - <c>Description:</c> "Stifter"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:stifter"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:stifter</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> stifter</para>
+    /// <para><strong>Description:</strong> Stifter</para>
     /// </remarks>
     public static ConstantDefinition<Role> Founder { get; } = new ConstantDefinition<Role>("CDD312F9-8A6E-4184-9374-D4AE4BAABE3E")
     {
@@ -2644,18 +2215,13 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Party Executive Organ Alternate Member role ("Varamedlem i partiets utovende organ").
+    /// Represents the 'Varamedlem i partiets utovende organ' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> F23B832A-CE0E-42F0-B314-E1B0751506F2
-    /// - <c>Name:</c> "Varamedlem i partiets utovende organ"
-    /// - <c>Code:</c> "parti-organ-varamedlem"
-    /// - <c>Description:</c> "Varamedlem i partiets utovende organ"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:parti-organ-varamedlem"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:parti-organ-varamedlem</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> parti-organ-varamedlem</para>
+    /// <para><strong>Description:</strong> Varamedlem i partiets utovende organ</para>
     /// </remarks>
     public static ConstantDefinition<Role> PartyExecutiveOrganAlternateMember { get; } = new ConstantDefinition<Role>("F23B832A-CE0E-42F0-B314-E1B0751506F2")
     {
@@ -2673,18 +2239,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Party Executive Organ Deputy Leader role ("Nestleder i partiets utovende organ").
+    /// Represents the 'Nestleder i partiets utovende organ' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 355BC5D6-C346-4B6B-BDB4-ED2CBDEE8318
-    /// - <c>Name:</c> "Nestleder i partiets utovende organ"
-    /// - <c>Code:</c> "parti-organ-nestleder"
-    /// - <c>Description:</c> "Nestleder i partiets utovende organ"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:parti-organ-nestleder"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 355</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:parti-organ-nestleder</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> parti-organ-nestleder</para>
+    /// <para><strong>Description:</strong> Nestleder i partiets utovende organ</para>
     /// </remarks>
     public static ConstantDefinition<Role> PartyExecutiveOrganDeputyLeader { get; } = new ConstantDefinition<Role>("355BC5D6-C346-4B6B-BDB4-ED2CBDEE8318")
     {
@@ -2702,18 +2264,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Party Executive Organ Board Member role ("Styremedlem i partiets utovende organ").
+    /// Represents the 'Styremedlem i partiets utovende organ' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 4A596F51-199E-4586-8292-F9F84B079769
-    /// - <c>Name:</c> "Styremedlem i partiets utovende organ"
-    /// - <c>Code:</c> "parti-organ-styremedlem"
-    /// - <c>Description:</c> "Styremedlem i partiets utovende organ"
-    /// - <c>Urn:</c> "urn:altinn:external-role:ccr:parti-organ-styremedlem"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.CentralCoordinatingRegister"/>
-    /// - <c>Translations:</c> No translations available
+    /// <para><strong>ID:</strong> 4</para>
+    /// <para><strong>URN:</strong> urn:altinn:external-role:ccr:parti-organ-styremedlem</para>
+    /// <para><strong>Provider:</strong> CentralCoordinatingRegister</para>
+    /// <para><strong>Code:</strong> parti-organ-styremedlem</para>
+    /// <para><strong>Description:</strong> Styremedlem i partiets utovende organ</para>
     /// </remarks>
     public static ConstantDefinition<Role> PartyExecutiveOrganBoardMember { get; } = new ConstantDefinition<Role>("4A596F51-199E-4586-8292-F9F84B079769")
     {
@@ -2731,18 +2289,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Private Tax Affairs role ("Skatteforhold for privatpersoner").
+    /// Represents the 'Skatteforhold for privatpersoner' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> f4df0522-3034-405b-a9e5-83f971737033
-    /// - <c>Name:</c> "Skatteforhold for privatpersoner"
-    /// - <c>Code:</c> "A0282"
-    /// - <c>Description:</c> "Tillatelsen gjelder alle opplysninger vedrørende dine eller ditt enkeltpersonsforetaks skatteforhold. Ved regelverksendringer eller innføring av nye digitale tjenester kan Skatteetaten endre i tillatelsen."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0282"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c> English and Norwegian translations available
+    /// <para><strong>ID:</strong> f4df0522-3034-405b-a9e5-83f971737033</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0282</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0282</para>
+    /// <para><strong>Description:</strong> Tillatelsen gjelder alle opplysninger vedrørende dine eller ditt enkeltpersonsforetaks skatteforhold. Ved regelverksendringer eller innføring av nye digitale tjenester kan Skatteetaten endre i tillatelsen.</para>
     /// </remarks>
     public static ConstantDefinition<Role> A0282 { get; } = new ConstantDefinition<Role>("f4df0522-3034-405b-a9e5-83f971737033")
     {
@@ -2767,18 +2321,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Confidential Information role ("Taushetsbelagt post").
+    /// Represents the 'Taushetsbelagt post' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 92ea5544-ca64-4e03-9532-646b9f86ff65
-    /// - <c>Name:</c> "Taushetsbelagt post "
-    /// - <c>Code:</c> "A0286"
-    /// - <c>Description:</c> "Denne rollen gir tilgang til taushetsbelagt post fra stat og kommune. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0286"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c> English and Norwegian translations available
+    /// <para><strong>ID:</strong> 92ea5544-ca64-4e03-9532-646b9f86ff65</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0286</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0286</para>
+    /// <para><strong>Description:</strong> Denne rollen gir tilgang til taushetsbelagt post fra stat og kommune. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> A0286 { get; } = new ConstantDefinition<Role>("92ea5544-ca64-4e03-9532-646b9f86ff65")
     {
@@ -2825,21 +2375,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Conficential - administration role ("Taushetsbelagt post - administrasjon").
+    /// Represents the 'Taushetsbelagt post - administrasjon' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 5fda4732-dd10-416d-b876-9e1715bbf21c
-    /// - <c>Name:</c> "Taushetsbelagt post - administrasjon"
-    /// - <c>Code:</c> "A0288"
-    /// - <c>Description:</c> "Gir tilgang til taushetsbelagt post fra det offentlige innen administrasjon"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0288"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Conficential - administration" - "This role provides access to confidential information from public agencies"
-    ///   - NN: "Taushetslagd post - administrasjon" - "Gir tlgang til taushetslagd post frå det offentlige innan administrasjon"
+    /// <para><strong>ID:</strong> 5fda4732-dd10-416d-b876-9e1715bbf21c</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0288</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0288</para>
+    /// <para><strong>Description:</strong> Gir tilgang til taushetsbelagt post fra det offentlige innen administrasjon</para>
     /// </remarks>
     public static ConstantDefinition<Role> A0288 { get; } = new ConstantDefinition<Role>("5fda4732-dd10-416d-b876-9e1715bbf21c")
     {
@@ -2864,21 +2407,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Algea test data role ("Algetestdata").
+    /// Represents the 'Algetestdata' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 4652e98f-7a6b-4dc2-b061-fc8d6840e456
-    /// - <c>Name:</c> "Algetestdata"
-    /// - <c>Code:</c> "A0293"
-    /// - <c>Description:</c> "Havforskningsinstituttet - registrering av algetestdata"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0293"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Algea test data" - "Havforskningsinstituttet - registration of algea test data"
-    ///   - NN: "Algetestdata" - "Havforskningsinstituttet - registrering av algetestdata"
+    /// <para><strong>ID:</strong> 4652e98f-7a6b-4dc2-b061-fc8d6840e456</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0293</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0293</para>
+    /// <para><strong>Description:</strong> Havforskningsinstituttet - registrering av algetestdata</para>
     /// </remarks>
     public static ConstantDefinition<Role> A0293 { get; } = new ConstantDefinition<Role>("4652e98f-7a6b-4dc2-b061-fc8d6840e456")
     {
@@ -2903,21 +2439,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Transport permit guarantee role ("Transportløyvegaranti").
+    /// Represents the 'Transportløyvegaranti' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> c22c6add-dd5d-4735-87de-b75491018e50
-    /// - <c>Name:</c> "Transportløyvegaranti"
-    /// - <c>Code:</c> "A0294"
-    /// - <c>Description:</c> "Statens vegvesen - rolle som gir tilgang til app for transportløyvegarantister"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0294"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Transport permit guarantee" - "The Norwegian Public Roads Administration - role that provides access to the app for transport permi"
-    ///   - NN: "Transportløyvegaranti" - "Statens vegvesen - rolle som gjer tilgang til app for transportløuvegarantistar"
+    /// <para><strong>ID:</strong> c22c6add-dd5d-4735-87de-b75491018e50</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0294</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0294</para>
+    /// <para><strong>Description:</strong> Statens vegvesen - rolle som gir tilgang til app for transportløyvegarantister</para>
     /// </remarks>
     public static ConstantDefinition<Role> A0294 { get; } = new ConstantDefinition<Role>("c22c6add-dd5d-4735-87de-b75491018e50")
     {
@@ -2942,21 +2471,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Auditor certifier role ("Revisorattesterer").
+    /// Represents the 'Revisorattesterer' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> d8b9c47b-e5a7-4912-8aa8-1d2bab75e41c
-    /// - <c>Name:</c> "Revisorattesterer"
-    /// - <c>Code:</c> "A0298"
-    /// - <c>Description:</c> "Rollen gir bruker tilgang til å attestere tjenester for avgiver som revisor. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:A0298"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Auditor certifier" - "The role gives the user access to certify services for the reportee as an auditor. In the event of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides.."
-    ///   - NN: "Revisorattesterar" - "Rollen gir bruker tilgang til å attestere tjenester for avgiver som revisor. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringer i tilganger som rollen gir"
+    /// <para><strong>ID:</strong> d8b9c47b-e5a7-4912-8aa8-1d2bab75e41c</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:A0298</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> A0298</para>
+    /// <para><strong>Description:</strong> Rollen gir bruker tilgang til å attestere tjenester for avgiver som revisor. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> A0298 { get; } = new ConstantDefinition<Role>("d8b9c47b-e5a7-4912-8aa8-1d2bab75e41c")
     {
@@ -2981,21 +2503,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Application Programming Interface for NUF (API) role ("Programmeringsgrensesnitt for NUF (API)").
+    /// Represents the 'Programmeringsgrensesnitt for NUF (API)' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 0ea4e5de-3fb4-499e-b013-1e1b4459af24
-    /// - <c>Name:</c> "Programmeringsgrensesnitt for NUF (API)"
-    /// - <c>Code:</c> "APIADMNUF"
-    /// - <c>Description:</c> "Delegerbar rolle som gir kontaktperson for norskregistrert utenlandsk foretak (NUF) tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av virksomheten."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:APIADMNUF"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Application Programming Interface for NUF (API)" - "Delegable role that provides the representative for a Norwegian-registered foreign enterprise (NUF) access to manage access to the programming interface - API, on behalf of the business."
-    ///   - NN: "Programmeringsgrensesnitt for NUF (API)" - "Delegerbar rolle som gir kontaktperson for norskregistrert utanlandsk føretak (NUF) tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av verksemden"
+    /// <para><strong>ID:</strong> 0ea4e5de-3fb4-499e-b013-1e1b4459af24</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:APIADMNUF</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> APIADMNUF</para>
+    /// <para><strong>Description:</strong> Delegerbar rolle som gir kontaktperson for norskregistrert utenlandsk foretak (NUF) tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av virksomheten.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Apidfmnuf { get; } = new ConstantDefinition<Role>("0ea4e5de-3fb4-499e-b013-1e1b4459af24")
     {
@@ -3020,21 +2535,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Auditor certifies validity of VAT compensation role ("Revisorattesterer - MVA kompensasjon").
+    /// Represents the 'Revisorattesterer - MVA kompensasjon' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 60abf944-cf8c-4845-b310-83bcb6c77198
-    /// - <c>Name:</c> "Revisorattesterer - MVA kompensasjon"
-    /// - <c>Code:</c> "ATTST"
-    /// - <c>Description:</c> "Denne rollen gir revisor rettighet til å attestere tjenesten Merverdiavgift - søknad om kompensasjon (RF-0009)."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:ATTST"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Auditor certifies validity of VAT compensation" - "Certification by auditor of RF-0009"
-    ///   - NN: "Revisorattesterar - MVA kompensasjon" - "Revisor si attestering av RF-0009"
+    /// <para><strong>ID:</strong> 60abf944-cf8c-4845-b310-83bcb6c77198</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:ATTST</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> ATTST</para>
+    /// <para><strong>Description:</strong> Denne rollen gir revisor rettighet til å attestere tjenesten Merverdiavgift - søknad om kompensasjon (RF-0009).</para>
     /// </remarks>
     public static ConstantDefinition<Role> Attst { get; } = new ConstantDefinition<Role>("60abf944-cf8c-4845-b310-83bcb6c77198")
     {
@@ -3059,18 +2567,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Bankruptcy administrator role ("Konkursbo tilgangsstyring").
+    /// Represents the 'Konkursbo tilgangsstyring' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 0a76304e-345b-4f22-bb31-4837a630eb7a
-    /// - <c>Name:</c> "Konkursbo tilgangsstyring"
-    /// - <c>Code:</c> "BOADM"
-    /// - <c>Description:</c> "Denne rollen gir advokater mulighet til å styre hvem som har rettigheter til konkursbo."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:BOADM"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c> Available in English
+    /// <para><strong>ID:</strong> 0a76304e-345b-4f22-bb31-4837a630eb7a</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:BOADM</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> BOADM</para>
+    /// <para><strong>Description:</strong> Denne rollen gir advokater mulighet til å styre hvem som har rettigheter til konkursbo.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Boadm { get; } = new ConstantDefinition<Role>("0a76304e-345b-4f22-bb31-4837a630eb7a")
     {
@@ -3117,21 +2621,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Bankruptcy write role ("Konkursbo skrivetilgang").
+    /// Represents the 'Konkursbo skrivetilgang' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 5f73b031-8b5b-45d8-a682-e9a7e75a7691
-    /// - <c>Name:</c> "Konkursbo skrivetilgang"
-    /// - <c>Code:</c> "BOBES"
-    /// - <c>Description:</c> "Utvidet lesetilgang og innsendingsrett for tjenesten Konkursbehandling"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:BOBES"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Bankruptcy write" - "Writing rights for information in the service Konkursbehandling (bankruptcy proceedings)"
-    ///   - NN: "Konkursbu skrivetilgang" - "Tilgang til å skrive informasjon i tenesta Konkursbehandling"
+    /// <para><strong>ID:</strong> 5f73b031-8b5b-45d8-a682-e9a7e75a7691</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:BOBES</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> BOBES</para>
+    /// <para><strong>Description:</strong> Utvidet lesetilgang og innsendingsrett for tjenesten Konkursbehandling</para>
     /// </remarks>
     public static ConstantDefinition<Role> Bobes { get; } = new ConstantDefinition<Role>("5f73b031-8b5b-45d8-a682-e9a7e75a7691")
     {
@@ -3156,21 +2653,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the ECKEYROLE role ("ECKEYROLE").
+    /// Represents the 'ECKEYROLE' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> e0684f66-a46e-4706-a754-8889b532509c
-    /// - <c>Name:</c> "ECKEYROLE"
-    /// - <c>Code:</c> "ECKEYROLE"
-    /// - <c>Description:</c> "Nøkkelrolle for virksomhetsertifikatbrukere"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:ECKEYROLE"
-    /// - <c>IsKeyRole:</c> true
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "ECKEYROLE" - "Key role for enterprise users"
-    ///   - NN: "ECKEYROLE" - "Nøkkelrolle for virksomhetsertifikatbrukere"
+    /// <para><strong>ID:</strong> e0684f66-a46e-4706-a754-8889b532509c</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:ECKEYROLE</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> ECKEYROLE</para>
+    /// <para><strong>Description:</strong> Nøkkelrolle for virksomhetsertifikatbrukere</para>
     /// </remarks>
     public static ConstantDefinition<Role> Eckeyrole { get; } = new ConstantDefinition<Role>("e0684f66-a46e-4706-a754-8889b532509c")
     {
@@ -3195,21 +2685,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Explicit service delegation role ("Eksplisitt tjenestedelegering").
+    /// Represents the 'Eksplisitt tjenestedelegering' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 1225bc46-4b03-4b63-b6e8-58926b29a97b
-    /// - <c>Name:</c> "Eksplisitt tjenestedelegering"
-    /// - <c>Code:</c> "EKTJ"
-    /// - <c>Description:</c> "Ikke-delegerbar roller for tjenester som kun skal delegeres enkeltvis"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:EKTJ"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Explicit service delegation" - "Non-delegable role for services to be delegated as single rights"
-    ///   - NN: "Eksplisitt tenestedelegering" - "Ikkje-delegerbar rolle for tenester som kun skal delegerast enkeltvis"
+    /// <para><strong>ID:</strong> 1225bc46-4b03-4b63-b6e8-58926b29a97b</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:EKTJ</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> EKTJ</para>
+    /// <para><strong>Description:</strong> Ikke-delegerbar roller for tjenester som kun skal delegeres enkeltvis</para>
     /// </remarks>
     public static ConstantDefinition<Role> Ektj { get; } = new ConstantDefinition<Role>("1225bc46-4b03-4b63-b6e8-58926b29a97b")
     {
@@ -3234,21 +2717,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Godkjenning av bedriftshelsetjeneste role ("Godkjenning av bedriftshelsetjeneste").
+    /// Represents the 'Godkjenning av bedriftshelsetjeneste' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> cde501eb-0d23-410b-b728-00ab9d68fb2e
-    /// - <c>Name:</c> "Godkjenning av bedriftshelsetjeneste"
-    /// - <c>Code:</c> "GKBHT"
-    /// - <c>Description:</c> "Godkjenning av bedriftshelsetjeneste"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:GKBHT"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Godkjenning av bedriftshelsetjeneste" - "Godkjenning av bedriftshelsetjeneste"
-    ///   - NN: "Godkjenning av bedriftshelsetjeneste" - "Godkjenning av bedriftshelsetjeneste"
+    /// <para><strong>ID:</strong> cde501eb-0d23-410b-b728-00ab9d68fb2e</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:GKBHT</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> GKBHT</para>
+    /// <para><strong>Description:</strong> Godkjenning av bedriftshelsetjeneste</para>
     /// </remarks>
     public static ConstantDefinition<Role> Gkbht { get; } = new ConstantDefinition<Role>("cde501eb-0d23-410b-b728-00ab9d68fb2e")
     {
@@ -3273,21 +2749,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Main Administrator role ("Hovedadministrator").
+    /// Represents the 'Hovedadministrator' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> d9e05d40-9849-4982-bf04-aa03b19e4a66
-    /// - <c>Name:</c> "Hovedadministrator"
-    /// - <c>Code:</c> "HADM"
-    /// - <c>Description:</c> "Denne rollen gir mulighet for å delegere alle roller og rettigheter for en aktør, også de man ikke har selv. Hovedadministrator-rollen kan bare delegeres av daglig leder, styrets leder, innehaver og bestyrende reder."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:HADM"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Main Administrator" - "This role allows you to delegate all roles and rights for an actor, including those you do not have yourself. The Main administrator role can only be delegated by General manager, Chairman of the board, Soul proprietor and Managing shipowner."
-    ///   - NN: "Hovudadministrator" - "Denne rolla gir høve til å delegere alle roller og rettar for ein aktør, også dei ein ikkje har sjøl"
+    /// <para><strong>ID:</strong> d9e05d40-9849-4982-bf04-aa03b19e4a66</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:HADM</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> HADM</para>
+    /// <para><strong>Description:</strong> Denne rollen gir mulighet for å delegere alle roller og rettigheter for en aktør, også de man ikke har selv. Hovedadministrator-rollen kan bare delegeres av daglig leder, styrets leder, innehaver og bestyrende reder.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Hadm { get; } = new ConstantDefinition<Role>("d9e05d40-9849-4982-bf04-aa03b19e4a66")
     {
@@ -3312,21 +2781,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Økokrim reporting role ("Økokrim rapportering").
+    /// Represents the 'Økokrim rapportering' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 98bebcac-d6bb-4343-97b8-0fe8bc744d7a
-    /// - <c>Name:</c> "Økokrim rapportering"
-    /// - <c>Code:</c> "HVASK"
-    /// - <c>Description:</c> "Tilgang til tjenester fra Økokrim. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:HVASK"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Økokrim reporting" - "Access to services from The Norwegian National Authority for Investigation and Prosecution of Economic and Environmental Crime. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provide"
-    ///   - NN: "Økokrim rapportering" - "Tilgang til tenester frå Økokrim. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> 98bebcac-d6bb-4343-97b8-0fe8bc744d7a</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:HVASK</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> HVASK</para>
+    /// <para><strong>Description:</strong> Tilgang til tjenester fra Økokrim. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Hvask { get; } = new ConstantDefinition<Role>("98bebcac-d6bb-4343-97b8-0fe8bc744d7a")
     {
@@ -3351,21 +2813,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Client administrator role ("Klientadministrator").
+    /// Represents the 'Klientadministrator' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 27e1ef41-df4d-439e-b948-df136c139e81
-    /// - <c>Name:</c> "Klientadministrator"
-    /// - <c>Code:</c> "KLADM"
-    /// - <c>Description:</c> "Tilgang til å administrere klientroller for regnskapsførere og revisorer"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:KLADM"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Client administrator" - "Administration of access to client roles for accountants and auditors"
-    ///   - NN: "Klientadministrator" - "Tilgang til å administrere klientroller for rekneskapsførarar og revisorar"
+    /// <para><strong>ID:</strong> 27e1ef41-df4d-439e-b948-df136c139e81</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:KLADM</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> KLADM</para>
+    /// <para><strong>Description:</strong> Tilgang til å administrere klientroller for regnskapsførere og revisorer</para>
     /// </remarks>
     public static ConstantDefinition<Role> Kladm { get; } = new ConstantDefinition<Role>("27e1ef41-df4d-439e-b948-df136c139e81")
     {
@@ -3390,21 +2845,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Municipal services role ("Kommunale tjenester").
+    /// Represents the 'Kommunale tjenester' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> b8e6dd1c-ca10-4ce6-9c27-53cdb3c275b3
-    /// - <c>Name:</c> "Kommunale tjenester"
-    /// - <c>Code:</c> "KOMAB"
-    /// - <c>Description:</c> "Rollen gir tilgang til kommunale tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:KOMAB"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Municipal services" - "Role for municipal services. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Kommunale tenester" - "Rolle for kommunale tenester. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> b8e6dd1c-ca10-4ce6-9c27-53cdb3c275b3</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:KOMAB</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> KOMAB</para>
+    /// <para><strong>Description:</strong> Rollen gir tilgang til kommunale tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Komab { get; } = new ConstantDefinition<Role>("b8e6dd1c-ca10-4ce6-9c27-53cdb3c275b3")
     {
@@ -3429,18 +2877,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Salaries and personnel employee role ("Lønn og personalmedarbeider").
+    /// Represents the 'Lønn og personalmedarbeider' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 010b4c49-bf56-44e3-b73b-84be7b2a5eb6
-    /// - <c>Name:</c> "Lønn og personalmedarbeider"
-    /// - <c>Code:</c> "LOPER"
-    /// - <c>Description:</c> "Denne rollen gir rettighet til lønns- og personalrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:LOPER"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c> Available in English
+    /// <para><strong>ID:</strong> 010b4c49-bf56-44e3-b73b-84be7b2a5eb6</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:LOPER</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> LOPER</para>
+    /// <para><strong>Description:</strong> Denne rollen gir rettighet til lønns- og personalrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Loper { get; } = new ConstantDefinition<Role>("010b4c49-bf56-44e3-b73b-84be7b2a5eb6")
     {
@@ -3487,21 +2931,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Patents, trademarks and design role ("Patent, varemerke og design").
+    /// Represents the 'Patent, varemerke og design' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 23cade0a-287a-49e0-8957-22d5a14cb100
-    /// - <c>Name:</c> "Patent, varemerke og design"
-    /// - <c>Code:</c> "PAVAD"
-    /// - <c>Description:</c> "Denne rollen gir rettighet til tjenester relatert til patent, varemerke og design. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:PAVAD"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Patents, trademarks and design" - "Access to services related to patents, trademarks and design. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Patent, varemerke og design" - "Tilgang til tenester frå Patentstyret. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> 23cade0a-287a-49e0-8957-22d5a14cb100</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:PAVAD</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> PAVAD</para>
+    /// <para><strong>Description:</strong> Denne rollen gir rettighet til tjenester relatert til patent, varemerke og design. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Pavad { get; } = new ConstantDefinition<Role>("23cade0a-287a-49e0-8957-22d5a14cb100")
     {
@@ -3526,21 +2963,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Limited rights for an individual role ("Privatperson begrensede rettigheter").
+    /// Represents the 'Privatperson begrensede rettigheter' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 696478f4-c85b-4bda-ace0-caa058fe5def
-    /// - <c>Name:</c> "Privatperson begrensede rettigheter"
-    /// - <c>Code:</c> "PRIUT"
-    /// - <c>Description:</c> "Denne rollen gir mulighet til å benytte tjenester på vegne av en annen privatperson. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:PRIUT"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Limited rights for an individual" - "Delegable rights to services for individuals. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Privatperson avgrensa retter" - "Delegerbare retter for tenester knytt til privatperson. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> 696478f4-c85b-4bda-ace0-caa058fe5def</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:PRIUT</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> PRIUT</para>
+    /// <para><strong>Description:</strong> Denne rollen gir mulighet til å benytte tjenester på vegne av en annen privatperson. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Priut { get; } = new ConstantDefinition<Role>("696478f4-c85b-4bda-ace0-caa058fe5def")
     {
@@ -3565,21 +2995,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Accounting employee role ("Regnskapsmedarbeider").
+    /// Represents the 'Regnskapsmedarbeider' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 633cde7d-3604-45b2-ba8c-e16161cf2cf8
-    /// - <c>Name:</c> "Regnskapsmedarbeider"
-    /// - <c>Code:</c> "REGNA"
-    /// - <c>Description:</c> "Denne rollen gir rettighet til regnskapsrelaterte skjema og tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:REGNA"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Accounting employee" - "Access to accounting related forms and services. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Rekneskapsmedarbeidar" - "Tilgang til rekneskapsrelaterte skjema og tenester. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> 633cde7d-3604-45b2-ba8c-e16161cf2cf8</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:REGNA</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> REGNA</para>
+    /// <para><strong>Description:</strong> Denne rollen gir rettighet til regnskapsrelaterte skjema og tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Regna { get; } = new ConstantDefinition<Role>("633cde7d-3604-45b2-ba8c-e16161cf2cf8")
     {
@@ -3604,21 +3027,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Auditor's rights role ("Revisorrettighet").
+    /// Represents the 'Revisorrettighet' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 1d71e23d-91b6-44ca-b171-c179028e7cdf
-    /// - <c>Name:</c> "Revisorrettighet"
-    /// - <c>Code:</c> "REVAI"
-    /// - <c>Description:</c> "Denne rollen gir revisor rettighet til aktuelle skjema og tjenester"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:REVAI"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Auditor's rights" - "Delegable auditor's rights"
-    ///   - NN: "Revisorrett" - "Delegerbare revisorrettar"
+    /// <para><strong>ID:</strong> 1d71e23d-91b6-44ca-b171-c179028e7cdf</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:REVAI</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> REVAI</para>
+    /// <para><strong>Description:</strong> Denne rollen gir revisor rettighet til aktuelle skjema og tjenester</para>
     /// </remarks>
     public static ConstantDefinition<Role> Revai { get; } = new ConstantDefinition<Role>("1d71e23d-91b6-44ca-b171-c179028e7cdf")
     {
@@ -3643,21 +3059,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Confidential correspondence from the municipality role ("Taushetsbelagt post fra kommunen").
+    /// Represents the 'Taushetsbelagt post fra kommunen' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 1a15b75c-2387-4278-ba3a-7eb1cffe1653
-    /// - <c>Name:</c> "Taushetsbelagt post fra kommunen"
-    /// - <c>Code:</c> "SENS01"
-    /// - <c>Description:</c> "Rollen gir tilgang til tjenester med taushetsbelagt informasjon fra kommunen, og bør ikke delegeres i stort omfang"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:SENS01"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Confidential correspondence from the municipality" - "This role provides access to services with confidential information from the municipality"
-    ///   - NN: "Taushetslagd post frå kommunen" - "Rolla gir tilgang til tenester med taushetsalgd informasjon frå kommunen."
+    /// <para><strong>ID:</strong> 1a15b75c-2387-4278-ba3a-7eb1cffe1653</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:SENS01</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> SENS01</para>
+    /// <para><strong>Description:</strong> Rollen gir tilgang til tjenester med taushetsbelagt informasjon fra kommunen, og bør ikke delegeres i stort omfang</para>
     /// </remarks>
     public static ConstantDefinition<Role> Sens01 { get; } = new ConstantDefinition<Role>("1a15b75c-2387-4278-ba3a-7eb1cffe1653")
     {
@@ -3682,21 +3091,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Signer of Coordinated register notification role ("Signerer av Samordnet registermelding").
+    /// Represents the 'Signerer av Samordnet registermelding' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> e427a9fb-4b6b-44b3-b873-689d174283b8
-    /// - <c>Name:</c> "Signerer av Samordnet registermelding"
-    /// - <c>Code:</c> "SIGNE"
-    /// - <c>Description:</c> "Denne rollen gir rettighet til tjenester på vegne av enheter/foretak. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:SIGNE"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Signer of Coordinated register notification" - "Applies to singing on behalf of entities/businesses. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Signerar av Samordna registermelding" - "Gjeld for signering på vegne av einingar/føretak. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> e427a9fb-4b6b-44b3-b873-689d174283b8</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:SIGNE</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> SIGNE</para>
+    /// <para><strong>Description:</strong> Denne rollen gir rettighet til tjenester på vegne av enheter/foretak. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Signe { get; } = new ConstantDefinition<Role>("e427a9fb-4b6b-44b3-b873-689d174283b8")
     {
@@ -3721,21 +3123,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Limited signing rights role ("Begrenset signeringsrettighet").
+    /// Represents the 'Begrenset signeringsrettighet' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 16857e39-441f-4dd4-8592-aed94e816c04
-    /// - <c>Name:</c> "Begrenset signeringsrettighet"
-    /// - <c>Code:</c> "SISKD"
-    /// - <c>Description:</c> "Tilgang til å signere utvalgte skjema og tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:SISKD"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Limited signing rights" - "Signing access for selected forms and services.In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Avgrensa signeringsrett" - "Tilgang til å signere utvalde skjema og tenester. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> 16857e39-441f-4dd4-8592-aed94e816c04</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:SISKD</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> SISKD</para>
+    /// <para><strong>Description:</strong> Tilgang til å signere utvalgte skjema og tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Siskd { get; } = new ConstantDefinition<Role>("16857e39-441f-4dd4-8592-aed94e816c04")
     {
@@ -3760,21 +3155,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Health-, social- and welfare services role ("Helse-, sosial- og velferdstjenester").
+    /// Represents the 'Helse-, sosial- og velferdstjenester' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> b1213d79-03fa-4837-9193-e4b9fe24eccb
-    /// - <c>Name:</c> "Helse-, sosial- og velferdstjenester"
-    /// - <c>Code:</c> "UIHTL"
-    /// - <c>Description:</c> "Tilgang til helse-, sosial- og velferdsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:UIHTL"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Health-, social- and welfare services" - "Access to health-, social- and welfare related services. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Helse-, sosial- og velferdstenester" - "Tilgang til helse-, sosial- og velferdsrelaterte tenester. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> b1213d79-03fa-4837-9193-e4b9fe24eccb</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:UIHTL</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> UIHTL</para>
+    /// <para><strong>Description:</strong> Tilgang til helse-, sosial- og velferdsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Uihtl { get; } = new ConstantDefinition<Role>("b1213d79-03fa-4837-9193-e4b9fe24eccb")
     {
@@ -3799,21 +3187,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Transport role ("Samferdsel").
+    /// Represents the 'Samferdsel' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 3c99647d-10b5-447e-9f0b-7bef1c7880f7
-    /// - <c>Name:</c> "Samferdsel"
-    /// - <c>Code:</c> "UILUF"
-    /// - <c>Description:</c> "Rollen gir rettighet til tjenester relatert til samferdsel. For eksempel tjenester fra Statens Vegvesen, Sjøfartsdirektoratet og Luftfartstilsynet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rolen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:UILUF"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>IsAssignable:</c> false
-    /// - <c>EntityTypeId:</c> References organisation entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Transport" - "Access to services related to transport. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Samferdsel" - "Tilgang til tenester relatert til samferdsel. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> 3c99647d-10b5-447e-9f0b-7bef1c7880f7</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:UILUF</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> UILUF</para>
+    /// <para><strong>Description:</strong> Rollen gir rettighet til tjenester relatert til samferdsel. For eksempel tjenester fra Statens Vegvesen, Sjøfartsdirektoratet og Luftfartstilsynet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rolen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Uiluf { get; } = new ConstantDefinition<Role>("3c99647d-10b5-447e-9f0b-7bef1c7880f7")
     {
@@ -3838,20 +3219,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Reporter/Sender role ("Utfyller/Innsender").
+    /// Represents the 'Utfyller/Innsender' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> dbaae9f8-107a-4222-9afd-d9f95cd5319c
-    /// - <c>Name:</c> "Utfyller/Innsender"
-    /// - <c>Code:</c> "UTINN"
-    /// - <c>Description:</c> "Denne rollen gir rettighet til et bredt utvalg skjema og tjenester som ikke har så strenge krav til autorisasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:UTINN"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Reporter/sender" - "This role provides right to a wide selection of forms and services that do not have very strict requirements for authorization. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provide"
-    ///   - NN: "Utfyllar/innsendar" - "Denne rolla gir rett til eit breitt utval skjema og tenester som ikkje har så strenge krav til autorisasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> dbaae9f8-107a-4222-9afd-d9f95cd5319c</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:UTINN</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> UTINN</para>
+    /// <para><strong>Description:</strong> Denne rollen gir rettighet til et bredt utvalg skjema og tjenester som ikke har så strenge krav til autorisasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Utinn { get; } = new ConstantDefinition<Role>("dbaae9f8-107a-4222-9afd-d9f95cd5319c")
     {
@@ -3876,20 +3251,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Energy Environment and Climate role ("Energi, miljø og klima").
+    /// Represents the 'Energi, miljø og klima' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> af338fd5-3f1d-4ab5-8326-9dfecad26f71
-    /// - <c>Name:</c> "Energi, miljø og klima"
-    /// - <c>Code:</c> "UTOMR"
-    /// - <c>Description:</c> "Tilgang til tjenester relatert til energi, miljø og klima. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir."
-    /// - <c>Urn:</c> "urn:altinn:rolecode:UTOMR"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Energy, environment and climate" - "Access to services related to energy, environment and climate. In case of regulatory changes or the introduction of new digital services, there may be changes in access that the role provides."
-    ///   - NN: "Energi, miljø og klima" - "Tilgang til tenester relatert til energi, miljø og klima. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som rolla gir"
+    /// <para><strong>ID:</strong> af338fd5-3f1d-4ab5-8326-9dfecad26f71</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:UTOMR</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> UTOMR</para>
+    /// <para><strong>Description:</strong> Tilgang til tjenester relatert til energi, miljø og klima. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.</para>
     /// </remarks>
     public static ConstantDefinition<Role> Utomr { get; } = new ConstantDefinition<Role>("af338fd5-3f1d-4ab5-8326-9dfecad26f71")
     {
@@ -3914,20 +3283,14 @@ public static class RoleConstants
     };
 
     /// <summary>
-    /// Represents the Main Role for Sensitive Services role ("Hovedrolle for sensitive tjeneste").
+    /// Represents the 'Hovedrolle for sensitive tjeneste' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> 478f710a-4af1-412d-9c67-de976fd0b229
-    /// - <c>Name:</c> "Hovedrolle for sensitive tjeneste"
-    /// - <c>Code:</c> "SENS"
-    /// - <c>Description:</c> "Hovedrolle for sensitive tjeneste"
-    /// - <c>Urn:</c> "urn:altinn:rolecode:SENS"
-    /// - <c>IsKeyRole:</c> false
-    /// - <c>EntityTypeId:</c> References organization entity type
-    /// - <c>ProviderId:</c> References <see cref="ProviderConstants.Altinn2"/>
-    /// - <c>Translations:</c>
-    ///   - EN: "Hovedrolle for sensitive tjeneste" - "Hovedrolle for sensitive tjeneste"
-    ///   - NN: "Hovudrolle for sensitive tenester" - "Hovudrolle for sensitive teneste"
+    /// <para><strong>ID:</strong> 478f710a-4af1-412d-9c67-de976fd0b229</para>
+    /// <para><strong>URN:</strong> urn:altinn:rolecode:SENS</para>
+    /// <para><strong>Provider:</strong> Altinn2</para>
+    /// <para><strong>Code:</strong> SENS</para>
+    /// <para><strong>Description:</strong> Hovedrolle for sensitive tjeneste</para>
     /// </remarks>
     public static ConstantDefinition<Role> Sens { get; } = new ConstantDefinition<Role>("478f710a-4af1-412d-9c67-de976fd0b229")
     {

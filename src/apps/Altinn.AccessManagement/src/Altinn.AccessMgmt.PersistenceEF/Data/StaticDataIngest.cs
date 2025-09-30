@@ -108,13 +108,13 @@ internal static partial class StaticDataIngest
             (role, seed) =>
             {
                 role.Name = seed.Entity.Name;
-                role.Code = seed.Entity.Name;
-                role.Description = seed.Entity.Name;
+                role.Code = seed.Entity.Code;
+                role.Description = seed.Entity.Description;
                 role.EntityTypeId = seed.Entity.EntityTypeId;
                 role.IsAssignable = seed.Entity.IsAssignable;
                 role.IsKeyRole = seed.Entity.IsKeyRole;
                 role.ProviderId = seed.Entity.ProviderId;
-                role.Urn = seed.Entity.Name;
+                role.Urn = seed.Entity.Urn;
             },
             cancellationToken);
 
