@@ -21,6 +21,10 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IPartyService, PartyService>();
 
+
+        services.AddScoped<IPackageService, PackageService>();
+        services.AddScoped<IRoleService, RoleService>();
+
         return services;
     }
 }
