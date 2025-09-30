@@ -20,6 +20,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IResourceSyncService, ResourceSyncService>();
 
         services.AddScoped<IConnectionService, ConnectionService>();
+        services.AddScoped<IPackageService, PackageService>();
+        services.AddScoped<IRoleService, RoleService>();
+
         return services;
     }
 }
