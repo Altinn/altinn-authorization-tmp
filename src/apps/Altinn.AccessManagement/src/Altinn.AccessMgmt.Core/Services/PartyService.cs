@@ -1,9 +1,9 @@
 using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.Party;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -11,8 +11,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public class PartyService(AppDbContext dbContext, AuditValues auditValues) : IPartyService
+public class PartyService(AppDbContext dbContext) : IPartyService
 {
+    public AuditValues AuditValues { get; set; } = new AuditValues(AuditDefaults.InternalApi, AuditDefaults.InternalApi, Guid.NewGuid().ToString());
+    
     /// <inheritdoc />
     public async Task<Result<AddPartyResultDto>> AddParty(PartyBaseDto party, CancellationToken cancellationToken = default)
     {
@@ -59,7 +61,7 @@ public class PartyService(AppDbContext dbContext, AuditValues auditValues) : IPa
             };
 
             dbContext.Entities.Add(entity);
-            var res = await dbContext.SaveChangesAsync(auditValues, cancellationToken);
+            var res = await dbContext.SaveChangesAsync(AuditValues, cancellationToken);
 
             if (res > 0)
             {
