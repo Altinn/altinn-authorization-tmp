@@ -7,9 +7,9 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessManagement.Core.Services.Interfaces;
-using Altinn.AccessMgmt.Persistence.Models;
-using Altinn.AccessMgmt.Persistence.Services.Contracts;
-using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Platform.Register.Models;
 
@@ -18,7 +18,7 @@ namespace Altinn.AccessMgmt.Persistence.Services;
 /// <inheritdoc/>
 public class AuthorizedPartyRepoService(
     IDelegationMetadataRepository resourceDelegationRepository,
-    AccessMgmt.Persistence.Services.Contracts.IRelationService relationService,
+    IConnectionService relationService,
     IContextRetrievalService contextRetrievalService
     ) : IAuthorizedPartyRepoService
 {
@@ -40,7 +40,7 @@ public class AuthorizedPartyRepoService(
         return parties.Values;
     }
 
-    private static void EnrichWithAccessPackageParties(Dictionary<Guid, AuthorizedParty> parties, IEnumerable<Models.RelationDto> connections)
+    private static void EnrichWithAccessPackageParties(Dictionary<Guid, AuthorizedParty> parties, IEnumerable<ConnectionPackageDto> connections)
     {
         foreach (var connection in connections)
         {
@@ -74,7 +74,7 @@ public class AuthorizedPartyRepoService(
         }
     }
 
-    private static AuthorizedParty BuildAuthorizedPartyFromCompactEntity(CompactEntity entity)
+    private static AuthorizedParty BuildAuthorizedPartyFromCompactEntity(CompactEntityDto entity)
     {
         var party = new AuthorizedParty
         {
@@ -111,7 +111,7 @@ public class AuthorizedPartyRepoService(
         return party;
     }
 
-    private static void ValidatePartyIsNotNull(Guid id, ExtEntity entity, ref ValidationErrorBuilder errors, string param)
+    private static void ValidatePartyIsNotNull(Guid id, Entity entity, ref ValidationErrorBuilder errors, string param)
     {
         if (entity is null)
         {
@@ -119,7 +119,7 @@ public class AuthorizedPartyRepoService(
         }
     }
 
-    private static void ValidatePartyIsSystemUser(ExtEntity entity, ref ValidationErrorBuilder errors, string param)
+    private static void ValidatePartyIsSystemUser(Entity entity, ref ValidationErrorBuilder errors, string param)
     {
         if (entity is not null && !entity.Type.Name.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
         {
