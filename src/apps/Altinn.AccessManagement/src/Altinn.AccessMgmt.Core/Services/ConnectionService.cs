@@ -93,6 +93,11 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
         var result = await dbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
+            .Include(t => t.From)
+            .Include(t => t.To)
+            .Include(t => t.Via)
+            .Include(t => t.ViaRole)
+            .Include(t => t.Role)
             .Where(t => t.FromId == partyId)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
             .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
