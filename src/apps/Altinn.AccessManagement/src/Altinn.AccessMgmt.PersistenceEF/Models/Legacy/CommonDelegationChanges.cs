@@ -5,11 +5,11 @@ namespace Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
 
 public class CommonDelegationChanges : BaseCommonDelegationChanges, ICommonDelegationChanges
 {
-    public Entity OfferedBy { get; set; }
+    //public Entity OfferedBy { get; set; }
 
-    public Entity CoveredBy { get; set; }
+    //public Entity CoveredBy { get; set; }
 
-    public Entity PerformedBy { get; set; }
+    //public Entity PerformedBy { get; set; }
 
     public Entity From { get; set; }
 
@@ -18,26 +18,26 @@ public class CommonDelegationChanges : BaseCommonDelegationChanges, ICommonDeleg
 
 public interface ICommonDelegationChanges
 {
-    Entity CoveredBy { get; set; }
+    //Entity CoveredBy { get; set; }
     Entity From { get; set; }
-    Entity OfferedBy { get; set; }
-    Entity PerformedBy { get; set; }
+    //Entity OfferedBy { get; set; }
+    //Entity PerformedBy { get; set; }
     Entity To { get; set; }
     string BlobStoragePolicyPath { get; set; }
     string BlobStorageVersionId { get; set; }
     int? CoveredByPartyId { get; set; }
     int? CoveredByUserId { get; set; }
     DateTime? Created { get; set; }
-    DelegationChangeType DelegationChangeType { get; set; }
+    string DelegationChangeType { get; set; }
     Guid? FromUuid { get; set; }
-    UuidType FromUuidType { get; set; }
+    string FromUuidType { get; set; }
     int OfferedByPartyId { get; set; }
-    int? PerformedByPartyId { get; set; }
+    //int? PerformedByPartyId { get; set; }
     int? PerformedByUserId { get; set; }
-    string PerformedByUuid { get; set; }
-    UuidType PerformedByUuidType { get; set; }
+    Guid? PerformedByUuid { get; set; }
+    string PerformedByUuidType { get; set; }
     Guid? ToUuid { get; set; }
-    UuidType ToUuidType { get; set; }
+    string ToUuidType { get; set; }
 }
 
 /// <summary>
@@ -49,7 +49,7 @@ public class BaseCommonDelegationChanges
     /// <summary>
     /// Gets or sets the delegation change type
     /// </summary>
-    public DelegationChangeType DelegationChangeType { get; set; }
+    public string DelegationChangeType { get; set; }
 
     /// <summary>
     /// Gets or sets the offeredbypartyid, refering to the party id of the user or organization offering the delegation.
@@ -64,7 +64,7 @@ public class BaseCommonDelegationChanges
     /// <summary>
     /// The type of party the right is on behalf of (Person, Organization, SystemUser)
     /// </summary>
-    public UuidType FromUuidType { get; set; }
+    public string FromUuidType { get; set; }
 
     /// <summary>
     /// Gets or sets the coveredbypartyid, refering to the party id of the organization having received the delegation. Otherwise Null if the recipient is a user.
@@ -84,7 +84,7 @@ public class BaseCommonDelegationChanges
     /// <summary>
     /// The type of party holding the right
     /// </summary>
-    public UuidType ToUuidType { get; set; }
+    public string ToUuidType { get; set; }
 
     /// <summary>
     /// Gets or sets the user id of the user that performed the delegation change (either added or removed rules to the policy, or deleted it entirely).
@@ -94,17 +94,17 @@ public class BaseCommonDelegationChanges
     /// <summary>
     /// Gets or sets the party id of the user that performed the delegation change (either added or removed rules to the policy, or deleted it entirely).
     /// </summary>
-    public int? PerformedByPartyId { get; set; }
+    //public int? PerformedByPartyId { get; set; }
 
     /// <summary>
     /// The uuid of the party that performed the delegation
     /// </summary>
-    public string? PerformedByUuid { get; set; }
+    public Guid? PerformedByUuid { get; set; }
 
     /// <summary>
     /// The type of the party that performed the delegation
     /// </summary>
-    public UuidType PerformedByUuidType { get; set; }
+    public string PerformedByUuidType { get; set; }
 
     /// <summary>
     /// Gets or sets blobstoragepolicypath.

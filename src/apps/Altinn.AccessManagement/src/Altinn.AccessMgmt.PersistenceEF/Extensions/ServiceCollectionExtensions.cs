@@ -1,6 +1,8 @@
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
+using Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
+using Altinn.AccessMgmt.PersistenceEF.Models.Legacy.Enums;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +44,12 @@ public static class ServiceCollectionExtensions
 
                 options.UseNpgsql(connectionString, ConfigureNpgsql)
                     .ReplaceService<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
+
+                options.UseNpgsql(opt =>
+                {
+                    opt.MapEnum<UuidType>("delegation", nameof(UuidType).ToLower());
+                    opt.MapEnum<DelegationChangeType>("delegation", nameof(DelegationChangeType).ToLower());
+                });
             }),
             _ => throw new ArgumentException("Invalid configured source must be either <App, Migration>", nameof(configureOptions)),
         };

@@ -4,7 +4,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
 
 public class DelegationChanges : BaseDelegationChanges
 {
-    public Resource AltinnApp { get; set; } // AltinnApp?
+    //public Resource AltinnApp { get; set; } // AltinnApp?
 }
 
 /// <summary>
@@ -21,5 +21,5 @@ public class BaseDelegationChanges : CommonDelegationChanges
     /// <summary>
     /// Gets or sets the Altinn App Id
     /// </summary>
-    public int AltinnAppId { get; set; }
+    public string AltinnAppId { get; set; }
 }

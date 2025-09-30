@@ -1,8 +1,10 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Configurations;
+using Altinn.AccessMgmt.PersistenceEF.Configurations.Legacy;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
+using Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
 using Altinn.AccessMgmt.PersistenceEF.Models.Legacy.Enums;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +25,12 @@ public class AppDbContext : DbContext
     public DbSet<Connection> Connections => Set<Connection>();
 
     public DbSet<TranslationEntry> TranslationEntries => Set<TranslationEntry>();
+
+    #region Legacy
+
+    public DbSet<DelegationChanges> LegacyDelegationChanges { get; set; }
+
+    #endregion
 
     #region DbSets
 
@@ -133,13 +141,16 @@ public class AppDbContext : DbContext
         ApplyAuditConfiguration(modelBuilder);
         ApplyConfiguration(modelBuilder);
         ApplyViewConfiguration(modelBuilder);
-        AddLegacyEnums(modelBuilder);
+        AddLegacy(modelBuilder);
         modelBuilder.UseLowerCaseNamingConvention();
     }
 
-    private void AddLegacyEnums(ModelBuilder modelBuilder)
+    private void AddLegacy(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasPostgresEnum<DelegationChangeType>();
+        modelBuilder.HasPostgresEnum<DelegationChangeType>("delegation", "delegationchangetype");
+        modelBuilder.HasPostgresEnum<UuidType>("delegation", "uuidtype");
+
+        modelBuilder.ApplyConfiguration<DelegationChanges>(new DelegationChangesConfiguration());
     }
 
     private void ApplyViewConfiguration(ModelBuilder modelBuilder)
