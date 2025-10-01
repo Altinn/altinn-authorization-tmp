@@ -40,7 +40,7 @@ public interface IDelegationService
     /// <summary>
     /// Create a delegation and required assignments for system agent flow
     /// </summary>
-    Task<IEnumerable<Delegation>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid facilitatorPartyId, CancellationToken cancellationToken);
+    Task<IEnumerable<CreateDelegationResponseDto>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid facilitatorPartyId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Deletes a delegation of the given id if found.

@@ -1,10 +1,10 @@
 ﻿using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -24,8 +24,6 @@ public class DelegationService : IDelegationService
         EntityService = entityService;
     }
 
-    public AuditValues AuditValues { get; set; } = new AuditValues(SystemEntityConstants.InternalApi, SystemEntityConstants.InternalApi, Guid.NewGuid().ToString());
-    
     public AppDbContext Db { get; }
     
     public IAssignmentService AssignmentService { get; }
@@ -69,7 +67,7 @@ public class DelegationService : IDelegationService
         };
 
         await Db.Delegations.AddAsync(delegation, cancellationToken);
-        var result = await Db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await Db.SaveChangesAsync(cancellationToken);
 
         if (result == 0)
         {
@@ -118,7 +116,7 @@ public class DelegationService : IDelegationService
             PackageId = packageId
         });
 
-        var result = await Db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await Db.SaveChangesAsync(cancellationToken);
 
         return result > 0;
     }
@@ -170,17 +168,14 @@ public class DelegationService : IDelegationService
             }, 
             cancellationToken
         );
-        var result = await Db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await Db.SaveChangesAsync(cancellationToken);
         
         return result > 0;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<Delegation>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid facilitatorPartyId, CancellationToken cancellationToken)
+    public async Task<IEnumerable<CreateDelegationResponseDto>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid facilitatorPartyId, CancellationToken cancellationToken)
     {
-        // Find User
-        var user = await EntityService.GetEntity(AuditValues.ChangedBy, cancellationToken) ?? throw new Exception(string.Format("Party not found '{0}' for user", AuditValues.ChangedBy));
-
         // Find Facilitator
         var facilitator = await EntityService.GetEntity(facilitatorPartyId, cancellationToken) ?? throw new Exception(string.Format("Party not found '{0}' for facilitator", facilitatorPartyId));
 
@@ -191,7 +186,7 @@ public class DelegationService : IDelegationService
         var delegations = await CreateClientDelegations(request, client, facilitator, cancellationToken);
 
         // Map to DTO and return
-        return null;                // ToDo!
+        return DtoMapper.Convert(delegations);
     }
 
     /// <inheritdoc/>
@@ -206,7 +201,7 @@ public class DelegationService : IDelegationService
         }
 
         Db.Delegations.Remove(existingDelegation);
-        var result = await Db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await Db.SaveChangesAsync(cancellationToken);
 
         if (result == 0)
         {
@@ -329,7 +324,7 @@ public class DelegationService : IDelegationService
                 },
                 cancellationToken
             );
-            var result = await Db.SaveChangesAsync(AuditValues, cancellationToken);
+            var result = await Db.SaveChangesAsync(cancellationToken);
 
             return await Db.DelegationPackages
             .AsNoTracking()
@@ -348,6 +343,7 @@ public class DelegationService : IDelegationService
     {
         var delegation = await Db.Delegations
         .AsNoTracking()
+        .Include(t => t.From)
         .Where(t => t.FromId == from.Id && t.ToId == to.Id && t.FacilitatorId == facilitator.Id)
         .FirstOrDefaultAsync(cancellationToken);
 
@@ -362,10 +358,11 @@ public class DelegationService : IDelegationService
                 },
                 cancellationToken
             );
-            var result = await Db.SaveChangesAsync(AuditValues, cancellationToken);
+            var result = await Db.SaveChangesAsync(cancellationToken);
 
             return await Db.Delegations
             .AsNoTracking()
+            .Include(t => t.From)
             .Where(t => t.FromId == from.Id && t.ToId == to.Id && t.FacilitatorId == facilitator.Id)
             .FirstOrDefaultAsync(cancellationToken);
         }
