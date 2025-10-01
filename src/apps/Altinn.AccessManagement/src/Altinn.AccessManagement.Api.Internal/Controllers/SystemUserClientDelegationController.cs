@@ -1,9 +1,9 @@
 ﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Services.Contracts;
-using Altinn.AccessMgmt.Persistence.Services;
+using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Services.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
@@ -100,7 +100,7 @@ public class SystemUserClientDelegationController(
     [HttpPost]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
-    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)] // ToDo: Change to new Audit Claim when available
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
     public async Task<ActionResult<CreateDelegationResponseDto>> PostClientDelegation([FromQuery] Guid party, [FromBody] CreateSystemDelegationRequestDto request, CancellationToken cancellationToken = default)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
@@ -125,7 +125,7 @@ public class SystemUserClientDelegationController(
     [Route("deletedelegation")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
-    [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)] // ToDo: Change to new Audit Claim when available
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
     public async Task<ActionResult> DeleteDelegation([FromQuery] Guid party, [FromQuery] Guid delegationId, CancellationToken cancellationToken = default)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
@@ -177,6 +177,7 @@ public class SystemUserClientDelegationController(
     [Route("deleteassignment")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
     public async Task<ActionResult> DeleteAssignment([FromQuery] Guid party, [FromQuery] Guid assignmentId, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
@@ -232,6 +233,7 @@ public class SystemUserClientDelegationController(
     [Route("deleteagentassignment")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_WRITE)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
     public async Task<ActionResult> DeleteAgentAssignment([FromQuery] Guid party, [FromQuery] Guid agentId, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
         var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
