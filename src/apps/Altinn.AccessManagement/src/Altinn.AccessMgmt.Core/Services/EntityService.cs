@@ -70,7 +70,7 @@ public class EntityService : IEntityService
     /// <inheritdoc/>
     public async Task<Entity> GetByOrgNo(string orgNo, CancellationToken cancellationToken = default)
     {
-        var entityId = await db.EntityLookups.AsNoTracking().Where(t => t.Key == "OrganizationIdentifier" && t.Value == orgNo).Select(t => t.EntityId).FirstOrDefaultAsync();
+        var entityId = await Db.EntityLookups.AsNoTracking().Where(t => t.Key == "OrganizationIdentifier" && t.Value == orgNo).Select(t => t.EntityId).FirstOrDefaultAsync();
         return await GetEntity(entityId, cancellationToken);
     }
 
@@ -84,14 +84,14 @@ public class EntityService : IEntityService
     /// <inheritdoc/>
     public async Task<Entity> GetByPartyId(string partyId, CancellationToken cancellationToken = default)
     {
-        var entityId = await db.EntityLookups.AsNoTracking().Where(t => t.Key == "PartyId" && t.Value == partyId).Select(t => t.EntityId).FirstOrDefaultAsync();
+        var entityId = await Db.EntityLookups.AsNoTracking().Where(t => t.Key == "PartyId" && t.Value == partyId).Select(t => t.EntityId).FirstOrDefaultAsync();
         return await GetEntity(entityId, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<Entity> GetByUserId(string userId, CancellationToken cancellationToken = default)
     {
-        var entityId = await db.EntityLookups.AsNoTracking().Where(t => t.Key == "UserId" && t.Value == userId).Select(t => t.EntityId).FirstOrDefaultAsync();
+        var entityId = await Db.EntityLookups.AsNoTracking().Where(t => t.Key == "UserId" && t.Value == userId).Select(t => t.EntityId).FirstOrDefaultAsync();
         return await GetEntity(entityId, cancellationToken);
     }
 
