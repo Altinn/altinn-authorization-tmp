@@ -11,17 +11,6 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts;
 public interface IConnectionService
 {
     /// <summary>
-    /// Retrieves a list of external connections, optionally filtered by origin and/or destination entity IDs.
-    /// </summary>
-    /// <param name="fromId">ID of the originating entity to filter connections by.</param>
-    /// <param name="toId">ID of the target entity to filter connections by.</param>
-    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-    /// <returns>
-    /// A <see cref="Result{T}"/> containing a list of <see cref="ExtConnection"/> instances matching the criteria.
-    /// </returns>
-    Task<Result<List<ConnectionDto>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Creates a role assignment between two entities.
     /// </summary>
     /// <param name="fromId">ID of the entity from which the assignment originates.</param>
@@ -47,17 +36,6 @@ public interface IConnectionService
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
     Task<ValidationProblemInstance> RemoveAssignment(Guid fromId, Guid toId, Role role, bool cascade = false, Action<ConnectionOptions> configureConnectionOptions = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves a list of connection packages, optionally filtered by origin and/or destination entity IDs.
-    /// </summary>
-    /// <param name="fromId">ID of the originating entity to filter packages by.</param>
-    /// <param name="toId">ID of the target entity to filter packages by.</param>
-    /// <param name="cancellationToken">Token to monitor for cancellation requests.</param>
-    /// <returns>
-    /// A <see cref="Result{T}"/> containing a list of <see cref="ConnectionPackage"/> instances.
-    /// </returns>
-    Task<Result<List<PackagePermissionDto>>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a package to an assignment (by package ID) based on the role between two entities.

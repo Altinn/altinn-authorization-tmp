@@ -3,6 +3,7 @@ using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Validation;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -18,28 +19,13 @@ namespace Altinn.AccessMgmt.Core.Services;
 public partial class ConnectionService : IConnectionService
 {
     private AppDbContext DbContext { get; set; }
-    
-    public ConnectionService(AppDbContextFactory dbContextFactory)
+
+    public IAuditAccessor AuditAccessor { get; }
+
+    public ConnectionService(AppDbContextFactory dbContextFactory, IAuditAccessor auditAccessor)
     {
         DbContext = dbContextFactory.CreateDbContext();
-    }
-
-    [Obsolete("Logic moved to controller")]
-    public async Task<Result<List<ConnectionDto>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default)
-    {
-        if (fromId is { } && fromId.Value != Guid.Empty)
-        {
-            var result = await GetConnectionsToOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken: cancellationToken);
-            return result.ToList();
-        }
-
-        if (toId is { } && toId != Guid.Empty)
-        {
-            var result = await GetConnectionsFromOthers(toId.Value, fromId is { } && fromId.Value != Guid.Empty ? fromId : null, null, cancellationToken: cancellationToken);
-            return result.ToList();
-        }
-
-        return new List<ConnectionDto>();
+        AuditAccessor = auditAccessor;
     }
 
     public async Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Role role, Action<ConnectionOptions> configureOptions = null, CancellationToken cancellationToken = default)
@@ -149,24 +135,6 @@ public partial class ConnectionService : IConnectionService
         DbContext.Remove(existingAssignment);
         await DbContext.SaveChangesAsync(cancellationToken);
         return null;
-    }
-
-    [Obsolete("Logic moved to controller")]
-    public async Task<Result<List<PackagePermissionDto>>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default)
-    {
-        if (fromId is { } && fromId.Value != Guid.Empty)
-        {
-            var result = await GetPackagePermissionsToOthers(fromId.Value, toId is { } && toId != Guid.Empty ? toId : null, null, cancellationToken);
-            return result.ToList();
-        }
-
-        if (toId is { } && toId.Value != Guid.Empty)
-        {
-            var result = await GetPackagePermissionsFromOthers(toId.Value, fromId is { } && fromId.Value != Guid.Empty ? fromId : null, null, cancellationToken);
-            return result.ToList();
-        }
-
-        return new List<PackagePermissionDto>();
     }
 
     public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Role role, Guid packageId, Action<ConnectionOptions> configureConnectionOptions = null, CancellationToken cancellationToken = default)
@@ -307,7 +275,7 @@ public partial class ConnectionService : IConnectionService
     public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
     {
         var assignablePackages = await DbContext.GetAssignableAccessPackages(
-            Guid.NewGuid(), // DbAudit.Value.ChangedBy, 
+            AuditAccessor.AuditValues.ChangedBy, 
             party,
             packageIds,
             cancellationToken
