@@ -4,11 +4,9 @@ using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Utils.Models;
-using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
-using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -16,16 +14,26 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class AssignmentService(AppDbContext db) : IAssignmentService
+public class AssignmentService : IAssignmentService
 {
     private static readonly string RETTIGHETSHAVER = "rettighetshaver";
     private static readonly Guid PartyTypeOrganizationUuid = new Guid("8c216e2f-afdd-4234-9ba2-691c727bb33d");
 
-    public AuditValues AuditValues { get; set; } = new AuditValues(SystemEntityConstants.InternalApi, SystemEntityConstants.InternalApi, Guid.NewGuid().ToString());
+    public AppDbContextFactory DbContextFactory { get; }
+
+    public IAuditAccessor AuditAccessor { get; }
+
+    public AssignmentService(AppDbContextFactory dbContextFactory, IAuditAccessor auditAccessor)
+    {
+        DbContextFactory = dbContextFactory;
+        AuditAccessor = auditAccessor;
+    }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<ClientDto>> GetClients(Guid toId, string[] roles, string[] packages, CancellationToken cancellationToken = default)
     {
+        using var db = DbContextFactory.CreateDbContext();
+
         // Fetch role metadata
         var roleResult = QueryWrapper.WrapQueryResponse(await db.Roles.AsNoTracking().Where(t => roles.Contains(t.Code)).ToListAsync(cancellationToken));
 
@@ -73,6 +81,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
 
     private async Task<List<ClientDto>> GetFilteredClientsFromAssignments(IEnumerable<Assignment> assignments, IEnumerable<AssignmentPackage> assignmentPackages, QueryResponse<Role> roles, QueryResponse<Package> packages, QueryResponse<RolePackage> rolePackages, string[] filterPackages, CancellationToken cancellationToken)
     {
+        using var db = DbContextFactory.CreateDbContext();
         Dictionary<Guid, ClientDto> clients = new();
 
         // Fetch Entity metadata        
@@ -147,12 +156,14 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid id, CancellationToken cancellationToken = default)
     {
+        using var db = DbContextFactory.CreateDbContext();
         return await db.Assignments.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default)
     {
+        using var db = DbContextFactory.CreateDbContext();
         var result = await db.Assignments.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId && t.RoleId == roleId).ToListAsync(cancellationToken);
         if (result == null || !result.Any())
         {
@@ -165,6 +176,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, string roleCode, CancellationToken cancellationToken = default)
     {
+        using var db = DbContextFactory.CreateDbContext();
         var roleResult = await db.Roles.AsNoTracking().Where(t => t.Code == roleCode).ToListAsync(cancellationToken);
         if (roleResult == null || !roleResult.Any())
         {
@@ -187,7 +199,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         */
 
         /* TODO: Future Sjekk om bruker er Tilgangsstyrer */
-        
+        using var db = DbContextFactory.CreateDbContext();
         var user = await db.Entities.AsNoTracking().SingleAsync(t => t.Id == userId, cancellationToken);
         var assignment = await db.Assignments.SingleAsync(t => t.Id == assignmentId, cancellationToken);
         var package = await db.Packages.SingleAsync(t => t.Id == packageId, cancellationToken);
@@ -225,7 +237,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
             cancellationToken
             );
         
-        var result = await db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await db.SaveChangesAsync(cancellationToken);
         if (result == 0)
         {
             return false;
@@ -252,6 +264,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     public async Task<ProblemInstance> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, bool cascade = false, CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errors = default;
+        using var db = DbContextFactory.CreateDbContext();
 
         var fromEntity = await db.Entities.SingleAsync(t => t.Id == fromEntityId, cancellationToken);
         var toEntity = await db.Entities.SingleAsync(t => t.Id == toEntityId, cancellationToken);
@@ -303,7 +316,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
 
         var assignment = await db.Assignments.SingleAsync(t => t.Id == existingAssignment.Id, cancellationToken);
         db.Assignments.Remove(assignment);
-        var result = await db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await db.SaveChangesAsync(cancellationToken);
 
         if (result == 0)
         {
@@ -317,6 +330,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     public async Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errors = default;
+        using var db = DbContextFactory.CreateDbContext();
 
         var existingAssignment = await GetAssignment(assignmentId, cancellationToken: cancellationToken);
         if (existingAssignment == null)
@@ -353,7 +367,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         }
 
         db.Assignments.Remove(existingAssignment);
-        var result = await db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await db.SaveChangesAsync(cancellationToken);
 
         if (result == 0)
         {
@@ -367,6 +381,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     public async Task<Result<Assignment>> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errors = default;
+        using var db = DbContextFactory.CreateDbContext();
 
         var fromEntity = await db.Entities.SingleAsync(t => t.Id == fromEntityId, cancellationToken);
         var toEntity = await db.Entities.SingleAsync(t => t.Id == toEntityId, cancellationToken);
@@ -401,7 +416,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         };
 
         await db.Assignments.AddAsync(assignment, cancellationToken);
-        var result = await db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await db.SaveChangesAsync(cancellationToken);
 
         if (result == 0)
         {
@@ -414,6 +429,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     /// <inheritdoc/>
     public async Task<Assignment> GetOrCreateAssignmentInternal(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default)
     {
+        using var db = DbContextFactory.CreateDbContext();
         var roleResult = await db.Roles.AsNoTracking().Where(t => t.Code == roleCode).ToListAsync(cancellationToken);
         if (roleResult == null || !roleResult.Any())
         {
@@ -426,6 +442,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     /// <inheritdoc/>
     public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, Guid roleId, CancellationToken cancellationToken = default)
     {
+        using var db = DbContextFactory.CreateDbContext();
         var assignment = await GetAssignment(fromEntityId, toEntityId, roleId, cancellationToken: cancellationToken);
         if (assignment != null)
         {
@@ -459,7 +476,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         };
 
         await db.Assignments.AddAsync(assignment, cancellationToken);
-        var result = await db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await db.SaveChangesAsync(cancellationToken);
         
         if (result == 0)
         {
@@ -497,12 +514,14 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
 
     public async Task<IEnumerable<Resource>> GetAssignmentResources(Guid assignmentId, CancellationToken cancellationToken = default)
     {
+        using var db = DbContextFactory.CreateDbContext();
         return await db.AssignmentResources.AsNoTracking().Where(t => t.AssignmentId == assignmentId).Include(t => t.Resource).Select(t => t.Resource).ToListAsync();
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<AssignmentOrRolePackageAccess>> GetPackagesForAssignment(Guid assignmentId, CancellationToken cancellationToken = default)
     {
+        using var db = DbContextFactory.CreateDbContext();
         List<AssignmentOrRolePackageAccess> result = new();
 
         // Get Assignment
