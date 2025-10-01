@@ -25,8 +25,8 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 /// </summary>
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/connections")]
-// [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
-// [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
+[FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
+[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class ConnectionsController(IConnectionService connectionService) : ControllerBase
 {
     private IConnectionService ConnectionService { get; } = connectionService;
@@ -41,7 +41,7 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
     /// Get connections between the authenticated user's selected party and the specified target party.
     /// </summary>
     [HttpGet]
-    // [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
+    [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
     [ProducesResponseType<PaginatedResult<CompactRelationDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
