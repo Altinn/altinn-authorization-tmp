@@ -21,10 +21,11 @@ public class AuditMiddleware : IMiddleware
                     auditContextAccessor.AuditValues = new(uuid, Guid.Parse(jwtClaimToDb.System), Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier);
                 }
             }
-        }
-        else if (endpoint.Metadata.GetMetadata<AuditStaticDbAttribute>() is var staticDb && staticDb != null)
-        {
-            auditContextAccessor.AuditValues = new(Guid.Parse(staticDb.ChangedBy), Guid.Parse(staticDb.System), Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier);
+
+            if (endpoint.Metadata.GetMetadata<AuditStaticDbAttribute>() is var staticDb && staticDb != null)
+            {
+                auditContextAccessor.AuditValues = new(Guid.Parse(staticDb.ChangedBy), Guid.Parse(staticDb.System), Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier);
+            }
         }
 
         await next(context);

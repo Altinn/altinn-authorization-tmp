@@ -10,14 +10,21 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public class PartyService(AppDbContext dbContext) : IPartyService
+public class PartyService : IPartyService
 {
+    public PartyService(AppDbContextFactory appDbContextFactory)
+    {
+        Db = appDbContextFactory.CreateDbContext();
+    }
+
+    public AppDbContext Db { get; }
+
     /// <inheritdoc />
     public async Task<Result<AddPartyResultDto>> AddParty(PartyBaseDto party, CancellationToken cancellationToken = default)
     {
         AddPartyResultDto result = new() { PartyUuid = party.PartyUuid, PartyCreated = false };
 
-        var exists = await dbContext.Entities
+        var exists = await Db.Entities
             .AnyAsync(e => e.Id == party.PartyUuid, cancellationToken);
 
         if (!exists)
@@ -31,7 +38,7 @@ public class PartyService(AppDbContext dbContext) : IPartyService
                 return Problems.UnsuportedEntityType.Create([new("entityType", party.EntityType.ToString())]);
             }
 
-            var entityType = await dbContext.EntityTypes
+            var entityType = await Db.EntityTypes
                 .FirstOrDefaultAsync(t => t.Name == party.EntityType, cancellationToken);
 
             if (entityType == null)
@@ -39,7 +46,7 @@ public class PartyService(AppDbContext dbContext) : IPartyService
                 return Problems.EntityTypeNotFound.Create([new("entityType", party.EntityType)]);
             }
 
-            var entityVariant = await dbContext.EntityVariants
+            var entityVariant = await Db.EntityVariants
                 .Where(t => t.TypeId == entityType.Id && t.Name.ToUpper() == party.EntityVariantType.ToUpper())
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -57,8 +64,8 @@ public class PartyService(AppDbContext dbContext) : IPartyService
                 RefId = party.PartyUuid.ToString()
             };
 
-            dbContext.Entities.Add(entity);
-            var res = await dbContext.SaveChangesAsync(AuditValues, cancellationToken);
+            Db.Entities.Add(entity);
+            var res = await Db.SaveChangesAsync(cancellationToken);
 
             if (res > 0)
             {

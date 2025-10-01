@@ -2,6 +2,7 @@ using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -19,7 +20,7 @@ public static class ServiceCollectionExtensions
         ConstantGuard.ConstantIdsAreUnique();
         services.AddScoped<ReadOnlyInterceptor>();
         services.AddScoped<IAuditAccessor, AuditAccessor>();
-        // services.AddScoped<ITranslationService, TranslationService>();
+        services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<AppDbContextFactory>();
         services.AddSingleton<AuditMiddleware>();
         
