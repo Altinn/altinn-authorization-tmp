@@ -147,8 +147,10 @@ internal static partial class StaticDataIngest
         where T : class, IEntityId
     {
         var table = dbContext.Set<T>();
+        var ids = seeds.Select(s => s.Id);
         var entities = await table
             .AsTracking()
+            .Where(e => ids.Contains(e.Id))
             .ToDictionaryAsync(e => e.Id, cancellationToken);
 
         var translations = await dbContext.TranslationEntries
