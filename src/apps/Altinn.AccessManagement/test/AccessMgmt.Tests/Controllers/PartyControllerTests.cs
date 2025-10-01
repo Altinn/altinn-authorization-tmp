@@ -13,194 +13,81 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Xunit;
 
 namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
 {
     [Collection("Internal PartyController Test")]
-    public class PartyControllerTests(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
+    public class PartyControllerTests : IClassFixture<WebApplicationFixture>
     {
-        private readonly JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        private readonly JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
+        private readonly WebApplicationFactory<Program> _fixture;
 
-        private WebApplicationFactory<Program> Fixture { get; } = fixture.WithWebHostBuilder(builder =>
+        public PartyControllerTests(WebApplicationFixture fixture)
         {
-            builder.ConfigureTestServices(services =>
+            _fixture = fixture.WithWebHostBuilder(builder =>
             {
-                services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+                builder.ConfigureTestServices(services =>
+                {
+                    services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
+                    services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+                });
             });
-        });
+        }
 
         private HttpClient GetClient()
         {
-            HttpClient client = Fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+            var client = _fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             return client;
         }
 
-        [Fact]
-        public async Task AddParty_AuthorizationFail_InvalidIssuer()
+        private async Task<HttpResponseMessage> SendAddPartyRequestAsync(string entityType, string entityVariantType, string displayName, string accessToken)
         {
-            // Arrange
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/accessmanagement/api/v1/internal/party")
+            var request = new HttpRequestMessage(HttpMethod.Post, "/accessmanagement/api/v1/internal/party")
             {
                 Content = JsonContent.Create(new PartyBaseDto
                 {
                     PartyUuid = Guid.NewGuid(),
-                    EntityType = "Systembruker",
-                    EntityVariantType = "StandardSystem",
-                    DisplayName = "Test User"
-                }),
-                Headers =
-                {
-                    { "PlatformAccessToken", PrincipalUtil.GetAccessToken("ttd", "authentication") } // Invalid issuer for this endpoint
-                }
+                    EntityType = entityType,
+                    EntityVariantType = entityVariantType,
+                    DisplayName = displayName
+                })
             };
-
-            // Act
-            HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            request.Headers.Add("PlatformAccessToken", accessToken);
+            return await GetClient().SendAsync(request);
         }
 
-        [Fact]
-        public async Task AddParty_AuthorizationFail_InvalidAppClaim()
+        [Theory]
+        [InlineData("ttd", "authentication", "Systembruker", "StandardSystem", "Test User", HttpStatusCode.Unauthorized)]
+        [InlineData("platform", "unittest", "Organization", "StandardSystem", "Test User", HttpStatusCode.Unauthorized)]
+        public async Task AddParty_AuthorizationFail(string issuer, string appClaim, string entityType, string entityVariantType, string displayName, HttpStatusCode expectedStatus)
         {
-            // Arrange
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/accessmanagement/api/v1/internal/party")
-            {
-                Content = JsonContent.Create(new PartyBaseDto
-                {
-                    PartyUuid = Guid.NewGuid(),
-                    EntityType = "Organization",
-                    EntityVariantType = "StandardSystem",
-                    DisplayName = "Test User"
-                }),
-                Headers =
-                {
-                    { "PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "unittest") } // Valid issuer, but invalid app claim for this endpoint
-                }
-            };
-
-            // Act
-            HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            var accessToken = PrincipalUtil.GetAccessToken(issuer, appClaim);
+            var response = await SendAddPartyRequestAsync(entityType, entityVariantType, displayName, accessToken);
+            Assert.Equal(expectedStatus, response.StatusCode);
         }
 
-        [Fact]
-        public async Task AddParty_AuthorizationOk_InvalidEntityType()
+        [Theory]
+        [InlineData("Organization", "StandardSystem", "Test User", "platform", "authentication", HttpStatusCode.BadRequest, "The Entitytype is not supported")]
+        [InlineData("Systembruker", "BEDR", "Test User", "platform", "authentication", HttpStatusCode.BadRequest, "The EntityVariant is not found or not valid for the given EntityType")]
+        public async Task AddParty_ValidationFail(string entityType, string entityVariantType, string displayName, string issuer, string appClaim, HttpStatusCode expectedStatus, string expectedDetail)
         {
-            // Arrange
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/accessmanagement/api/v1/internal/party")
-            {
-                Content = JsonContent.Create(new PartyBaseDto
-                {
-                    PartyUuid = Guid.NewGuid(),
-                    EntityType = "Organization", // Invalid entity type (at this time only allows for creating type: SystemUser)
-                    EntityVariantType = "StandardSystem",
-                    DisplayName = "Test User"
-                }),
-                Headers =
-                {
-                    { "PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "authentication") }
-                }
-            };
-
-            // Act
-            HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-            AltinnProblemDetails actual = JsonSerializer.Deserialize<AltinnProblemDetails>(await response.Content.ReadAsStringAsync(), options);
-            Assert.Equal("The Entitytype is not supported", actual.Detail);
+            var accessToken = PrincipalUtil.GetAccessToken(issuer, appClaim);
+            var response = await SendAddPartyRequestAsync(entityType, entityVariantType, displayName, accessToken);
+            Assert.Equal(expectedStatus, response.StatusCode);
+            var actual = JsonSerializer.Deserialize<AltinnProblemDetails>(await response.Content.ReadAsStringAsync(), options);
+            Assert.Equal(expectedDetail, actual.Detail);
         }
 
-        [Fact]
-        public async Task AddParty_AuthorizationOk_InvalidEntityVariantType()
+        [Theory]
+        [InlineData("Systembruker", "StandardSystem", "Test User")]
+        [InlineData("Systembruker", "AgentSystem", "Test User")]
+        public async Task AddParty_ValidParty_ReturnsOkAndTrue(string entityType, string entityVariantType, string displayName)
         {
-            // Arrange
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/accessmanagement/api/v1/internal/party")
-            {
-                Content = JsonContent.Create(new PartyBaseDto
-                {
-                    PartyUuid = Guid.NewGuid(),
-                    EntityType = "Systembruker",
-                    EntityVariantType = "BEDR", // Invalid variant type for SystemUser
-                    DisplayName = "Test User"
-                }),
-                Headers =
-                {
-                    { "PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "authentication") }
-                }
-            };
-
-            // Act
-            HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-            AltinnProblemDetails actual = JsonSerializer.Deserialize<AltinnProblemDetails>(await response.Content.ReadAsStringAsync(), options);
-            Assert.Equal("The EntityVariant is not found or not valid for the given EntityType", actual.Detail);
-        }
-
-        [Fact]
-        public async Task AddParty_ValidParty_StandardSystem_ReturnsOkAndTrue()
-        {
-            // Arrange
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/accessmanagement/api/v1/internal/party")
-            {
-                Content = JsonContent.Create(new PartyBaseDto
-                {
-                    PartyUuid = Guid.NewGuid(),
-                    EntityType = "Systembruker",
-                    EntityVariantType = "StandardSystem",
-                    DisplayName = "Test User"
-                }),
-                Headers =
-                {
-                    { "PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "authentication") }
-                }
-            };
-
-            // Act
-            HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
-
-            // Assert
+            var accessToken = PrincipalUtil.GetAccessToken("platform", "authentication");
+            var response = await SendAddPartyRequestAsync(entityType, entityVariantType, displayName, accessToken);
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-
-            var result = await response.Content.ReadFromJsonAsync<AddPartyResultDto>();
-            Assert.True(result.PartyCreated);
-        }
-
-        [Fact]
-        public async Task AddParty_ValidParty_AgentSystem_ReturnsOkAndTrue()
-        {
-            // Arrange
-            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "/accessmanagement/api/v1/internal/party")
-            {
-                Content = JsonContent.Create(new PartyBaseDto
-                {
-                    PartyUuid = Guid.NewGuid(),
-                    EntityType = "Systembruker",
-                    EntityVariantType = "AgentSystem",
-                    DisplayName = "Test User"
-                }),
-                Headers =
-                {
-                    { "PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "authentication") }
-                }
-            };
-
-            // Act
-            HttpResponseMessage response = await GetClient().SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-
             var result = await response.Content.ReadFromJsonAsync<AddPartyResultDto>();
             Assert.True(result.PartyCreated);
         }
