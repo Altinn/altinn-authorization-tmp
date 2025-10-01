@@ -63,7 +63,7 @@ public class EntityService(AppDbContext db) : IEntityService
     /// <inheritdoc/>
     public async Task<Entity> GetByOrgNo(string orgNo, CancellationToken cancellationToken = default)
     {
-        var entityId = await db.EntityLookups.AsNoTracking().Where(t => t.Key == "OrgNo" && t.Value == orgNo).Select(t => t.EntityId).FirstOrDefaultAsync();
+        var entityId = await db.EntityLookups.AsNoTracking().Where(t => t.Key == "OrganizationIdentifier" && t.Value == orgNo).Select(t => t.EntityId).FirstOrDefaultAsync();
         return await GetEntity(entityId, cancellationToken);
     }
 
