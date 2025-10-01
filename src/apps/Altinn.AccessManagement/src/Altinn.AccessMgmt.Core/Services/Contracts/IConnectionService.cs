@@ -144,13 +144,7 @@ public interface IConnectionService
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
     Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default);
-}
 
-/// <summary>
-/// Service for getting connections
-/// </summary>
-public interface IConnectionRepository
-{
     /// <summary>
     /// Get Connections given from party
     /// </summary>

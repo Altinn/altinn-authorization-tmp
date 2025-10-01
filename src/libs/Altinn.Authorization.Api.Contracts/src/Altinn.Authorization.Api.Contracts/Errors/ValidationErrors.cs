@@ -81,7 +81,7 @@ public static class ValidationErrors
     /// Assignment is active in one or more delegations.
     /// </summary>
     public static ValidationErrorDescriptor PackageNotExists { get; }
-        = _factory.Create(10, $"Package do not exists.");
+        = _factory.Create(11, $"Package do not exists.");
 
     /// <summary>
     /// Gets a validation error descriptor

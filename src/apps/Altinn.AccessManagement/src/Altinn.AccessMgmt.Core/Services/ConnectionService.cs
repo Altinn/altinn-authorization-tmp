@@ -24,6 +24,7 @@ public partial class ConnectionService : IConnectionService
         DbContext = dbContextFactory.CreateDbContext();
     }
 
+    [Obsolete("Logic moved to controller")]
     public async Task<Result<List<ConnectionDto>>> Get(Guid? fromId = null, Guid? toId = null, CancellationToken cancellationToken = default)
     {
         if (fromId is { } && fromId.Value != Guid.Empty)
@@ -125,7 +126,7 @@ public partial class ConnectionService : IConnectionService
 
             var delegationsFrom = await DbContext.Delegations
                 .AsNoTracking()
-                .Where(p => p.FromId == fromId)
+                .Where(p => p.FromId == existingAssignment.Id)
                 .ToListAsync(cancellationToken);
 
             var delegationsTo = await DbContext.Delegations
@@ -150,6 +151,7 @@ public partial class ConnectionService : IConnectionService
         return null;
     }
 
+    [Obsolete("Logic moved to controller")]
     public async Task<Result<List<PackagePermissionDto>>> GetPackages(Guid? fromId, Guid? toId, CancellationToken cancellationToken = default)
     {
         if (fromId is { } && fromId.Value != Guid.Empty)
@@ -260,19 +262,7 @@ public partial class ConnectionService : IConnectionService
 
         if (assignment is null)
         {
-            var result = await AddAssignment(fromId, toId, RoleConstants.Rightholder, configureConnectionOptions, cancellationToken);
-            if (result.IsProblem)
-            {
-                return result.Problem;
-            }
-
-            assignment = await DbContext.Assignments
-                .FirstOrDefaultAsync(a => a.Id == result.Value.Id, cancellationToken: cancellationToken);
-
-            if (assignment is null)
-            {
-                return Problems.ConsentCantBeAccepted;
-            }
+            return Problems.MissingRightHolder;
         }
 
         var check = await CheckPackage(fromId, packageIds: [packageId], cancellationToken);
@@ -423,7 +413,7 @@ public sealed class ConnectionOptions
 }
 
 /// <inheritdoc />
-public partial class ConnectionService : IConnectionRepository
+public partial class ConnectionService
 {
     /// <inheritdoc />
     public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
@@ -54,13 +55,19 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
 
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);
-        var result = await ConnectionService.Get(fromUuid, toUuid, cancellationToken: cancellationToken);
-        if (result.IsProblem)
+        if (connection.From == connection.Party)
         {
-            return result.Problem.ToActionResult();
+            var result = await ConnectionService.GetConnectionsToOthers(fromUuid, toUuid, null, null, null, cancellationToken);
+            return Ok(PaginatedResult.Create(result, null));
         }
 
-        return Ok(PaginatedResult.Create(result.Value, null));
+        if (connection.To == connection.Party)
+        {
+            var result = await ConnectionService.GetConnectionsFromOthers(fromUuid, toUuid, null, null, null, cancellationToken);
+            return Ok(PaginatedResult.Create(result, null));
+        }
+
+        throw new UnreachableException();
     }
 
     /// <summary>
@@ -141,13 +148,19 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
 
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);
-        var result = await ConnectionService.GetPackages(fromUuid, toUuid, cancellationToken);
-        if (result.IsProblem)
+        if (connection.From == connection.Party)
         {
-            return result.Problem.ToActionResult();
+            var result = await ConnectionService.GetPackagePermissionsToOthers(fromUuid, toUuid, null, cancellationToken);
+            return Ok(PaginatedResult.Create(result, null));
         }
 
-        return Ok(PaginatedResult.Create(result.Value, null));
+        if (connection.To == connection.Party)
+        {
+            var result = await ConnectionService.GetConnectionsFromOthers(fromUuid, toUuid, null, cancellationToken);
+            return Ok(PaginatedResult.Create(result, null));
+        }
+
+        throw new UnreachableException();
     }
 
     /// <summary>
