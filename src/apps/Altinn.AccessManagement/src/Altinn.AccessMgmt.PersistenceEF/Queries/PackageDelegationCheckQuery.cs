@@ -13,18 +13,51 @@ namespace Altinn.AccessMgmt.PersistenceEF.Queries;
 /// </summary>
 public static class PackageDelegationCheckQuery
 {
-    public static async Task<IReadOnlyList<PackageDelegationCheck>> GetAssignableAccessPackages(this AppDbContext dbContext, Guid fromId, Guid toId, IEnumerable<Guid> packageIds, CancellationToken cancellationToken = default)
+    public static async Task<IReadOnlyList<PackageDelegationCheck>> GetAssignableAccessPackages(
+        this AppDbContext dbContext,
+        Guid fromId,
+        Guid toId,
+        IEnumerable<Guid> packageIds,
+        CancellationToken cancellationToken = default)
     {
-        var query = dbContext.Set<PackageDelegationCheck>();
-        var results = await query
+        var ids = packageIds?.ToArray();
+
+        var rows = await dbContext.PackageDelegationChecks
             .FromSqlRaw(
                 QUERY,
                 new NpgsqlParameter("fromId", fromId),
                 new NpgsqlParameter("toId", toId),
-                new NpgsqlParameter("packageIds", packageIds ?? (object)DBNull.Value))
-                .ToListAsync(cancellationToken);
+                new NpgsqlParameter("packageIds", NpgsqlDbType.Array | NpgsqlDbType.Uuid)
+                {
+                    Value = (ids != null && ids.Length > 0) ? ids : DBNull.Value
+                })
+            .ToListAsync(cancellationToken);
 
-        return results;
+        // Project rows back into your nested model
+        return rows.Select(r => new PackageDelegationCheck
+        {
+            Package = new PackageDelegationCheck.DelegationCheckPackage
+            {
+                Id = r.PackageId,
+                Urn = r.PackageUrn,
+                AreaId = r.AreaId
+            },
+            Result = r.IsAssignable == true && r.CanDelegate == true,
+            Reason = new PackageDelegationCheck.DelegationCheckReason
+            {
+                Description = r.Reason,
+                RoleId = r.RoleId,
+                RoleUrn = r.RoleUrn,
+                FromId = r.FromId,
+                FromName = r.FromName,
+                ToId = r.ToId,
+                ToName = r.ToName,
+                ViaId = r.ViaId,
+                ViaName = r.ViaName,
+                ViaRoleId = r.ViaRoleId,
+                ViaRoleUrn = r.ViaRoleUrn
+            }
+        }).ToList();
     }
 
     private static readonly string QUERY = /* sql */ """
