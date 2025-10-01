@@ -34,6 +34,20 @@ public partial class DtoMapper : IDtoMapper
             Resources = resources?.Select(r => Convert(r)!).ToList() ?? new()
         };
 
+    /// <summary>Convert Package (with Area and Resources) to PackageDto.</summary>
+    public static PackageDto? Convert(Package? obj, Area? area, IEnumerable<ResourceDto>? resources) =>
+        obj is null ? null : new PackageDto
+        {
+            Id = obj.Id,
+            Name = obj.Name,
+            Urn = obj.Urn,
+            Description = obj.Description,
+            IsDelegable = obj.IsDelegable,
+            IsAssignable = obj.IsAssignable,
+            Area = Convert(area),
+            Resources = resources
+        };
+
     /// <summary>Convert RolePackage to RolePackageDto.</summary>
     public static RolePackageDto? Convert(RolePackage? obj) =>
         obj is null ? null : new RolePackageDto

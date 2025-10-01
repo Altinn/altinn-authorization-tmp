@@ -63,7 +63,7 @@ public class PackageService(
         var result = new List<PackageDto>();
         foreach (var package in packages)
         {
-            result.Add(DtoMapper.Convert(package, areas.First(t => t.Id == package.AreaId), await db.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken)));
+            result.Add(DtoMapper.Convert(package, areas.First(t => t.Id == package.AreaId), await GetPackageResources(package.Id, cancellationToken)));
         }
 
         return result;
@@ -84,10 +84,7 @@ public class PackageService(
         }
 
         var package = packages.First();
-
-        var resources = await db.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken);
-
-        return DtoMapper.Convert(package, package.Area, resources);
+        return DtoMapper.Convert(package, package.Area, await GetPackageResources(package.Id, cancellationToken));
     }
 
     /// <inheritdoc/>
@@ -100,20 +97,22 @@ public class PackageService(
             return null;
         }
 
-        var resources = await db.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken);
-
-        return DtoMapper.Convert(package, package.Area, resources);
+        return DtoMapper.Convert(package, package.Area, await GetPackageResources(package.Id, cancellationToken));
     }
 
     /// <inheritdoc/>
     public async Task<IEnumerable<PackageDto>> GetPackagesByArea(Guid areaId, CancellationToken cancellationToken)
     {
-        var packages = await db.Packages.AsNoTracking().Include(t => t.Area).Include(t => t.Provider).Include(t => t.EntityType).Where(t => t.AreaId == areaId).Include(t => t.Area).ToListAsync(cancellationToken);
+        var packages = await db.Packages.AsNoTracking()
+            .Include(t => t.Area)
+            .Include(t => t.Provider)
+            .Include(t => t.EntityType)
+            .Where(t => t.AreaId == areaId).Include(t => t.Area).ToListAsync(cancellationToken);
 
         var result = new List<PackageDto>();
         foreach (var package in packages)
         {
-            result.Add(DtoMapper.Convert(package, package.Area, await db.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken)));
+            result.Add(DtoMapper.Convert(package, package.Area, await GetPackageResources(package.Id, cancellationToken)));
         }
 
         return result;
@@ -166,6 +165,6 @@ public class PackageService(
     /// <inheritdoc/>
     public async Task<IEnumerable<ResourceDto>> GetPackageResources(Guid packageId, CancellationToken cancellationToken = default)
     {
-        return (await db.PackageResources.AsNoTracking().Where(t => t.PackageId == packageId).Select(t => t.Resource).ToListAsync()).Select(DtoMapper.Convert);
+        return (await db.PackageResources.AsNoTracking().Where(t => t.PackageId == packageId).Include(t => t.Resource).ThenInclude(t => t.Provider).Include(t => t.Resource).ThenInclude(t => t.Type).Select(t => t.Resource).ToListAsync()).Select(DtoMapper.Convert);
     }
 }
