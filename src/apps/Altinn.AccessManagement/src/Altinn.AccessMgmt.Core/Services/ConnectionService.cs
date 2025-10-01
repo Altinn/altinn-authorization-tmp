@@ -291,7 +291,7 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
                 VariantId = connection.From.VariantId,
                 Name = connection.From.Name,
                 RefId = connection.From.RefId,
-                ParentId = connection.From.ParentId.HasValue ? connection.From.ParentId.Value : Guid.Empty
+                ParentId = connection.From.ParentId.HasValue ? connection.From.ParentId.Value : null
             },
             Role = new SystemUserClientConnectionDto.AgentRole()
             {
@@ -309,7 +309,7 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
                 VariantId = connection.To.VariantId,
                 Name = connection.To.Name,
                 RefId = connection.To.RefId,
-                ParentId = connection.To.ParentId.HasValue ? connection.To.ParentId.Value : Guid.Empty
+                ParentId = connection.To.ParentId.HasValue ? connection.To.ParentId.Value : null
             },
             Facilitator = connection.ViaId.HasValue ? new SystemUserClientConnectionDto.ServiceProvider()
             {
@@ -318,7 +318,7 @@ public class ConnectionService(AppDbContext dbContext) : IConnectionService
                 VariantId = connection.Via.VariantId,
                 Name = connection.Via.Name,
                 RefId = connection.Via.RefId,
-                ParentId = connection.Via.ParentId.HasValue ? connection.Via.ParentId.Value : Guid.Empty
+                ParentId = connection.Via.ParentId.HasValue ? connection.Via.ParentId.Value : null
             } : null,
             FacilitatorRole = connection.ViaRoleId.HasValue ? new SystemUserClientConnectionDto.ServiceProviderRole()
             {

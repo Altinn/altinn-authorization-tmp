@@ -79,9 +79,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                          JOIN dbo.rolepackage rp ON rp.roleid = a.roleid AND rp.hasaccess = true
                 UNION ALL
                 SELECT fa.fromid,
-                       fa.roleid,
+                       ta.roleid,
                        fa.toid            AS viaid,
-                       ta.roleid          AS viaroleid,
+                       fa.roleid          AS viaroleid,
                        ta.toid,
                        dp.packageid,
                        NULL::uuid         AS resourceid,
