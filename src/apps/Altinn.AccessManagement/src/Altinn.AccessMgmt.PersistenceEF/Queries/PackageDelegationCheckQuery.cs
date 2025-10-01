@@ -13,40 +13,16 @@ namespace Altinn.AccessMgmt.PersistenceEF.Queries;
 /// </summary>
 public static class PackageDelegationCheckQuery
 {
-    public static async Task<IReadOnlyList<PackageDelegationCheck>> GetAssignableAccessPackages(
-        this AppDbContext dbContext,
-        Guid fromId,
-        Guid toId,
-        IEnumerable<Guid> packageIds,
-        CancellationToken cancellationToken = default)
+    public static async Task<IReadOnlyList<PackageDelegationCheck>> GetAssignableAccessPackages(this AppDbContext dbContext, Guid fromId, Guid toId, IEnumerable<Guid> packageIds, CancellationToken cancellationToken = default)
     {
-        var connectionString = dbContext.Database.GetConnectionString();
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            throw new InvalidOperationException("The DbContext does not have a valid connection string.");
-        }
-
-        await using var connection = new NpgsqlConnection(connectionString);
-        await connection.OpenAsync(cancellationToken);
-
-        await using var cmd = new NpgsqlCommand(QUERY, connection);
-        cmd.Parameters.AddWithValue("fromId", NpgsqlDbType.Uuid, fromId);
-        cmd.Parameters.AddWithValue("toId", NpgsqlDbType.Uuid, toId);
-
-        var ids = packageIds?.ToArray();
-        var packageIdsParam = new NpgsqlParameter("packageIds", NpgsqlDbType.Array | NpgsqlDbType.Uuid)
-        {
-            Value = (ids != null && ids.Length > 0) ? ids : DBNull.Value
-        };
-        cmd.Parameters.Add(packageIdsParam);
-
-        var results = new List<PackageDelegationCheck>();
-
-        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
-        while (await reader.ReadAsync(cancellationToken))
-        {
-            results.Add(await GetPackageDelegationCheck(reader));
-        }
+        var query = dbContext.Set<PackageDelegationCheck>();
+        var results = await query
+            .FromSqlRaw(
+                QUERY,
+                new NpgsqlParameter("fromId", fromId),
+                new NpgsqlParameter("toId", toId),
+                new NpgsqlParameter("packageIds", packageIds ?? (object)DBNull.Value))
+                .ToListAsync(cancellationToken);
 
         return results;
     }
