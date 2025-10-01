@@ -14,10 +14,10 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAccessMgmtCore(this IServiceCollection services)
     {
         services.AddHostedService<RegisterHostedService>();
-        services.TryAddScoped<IIngestService, IngestService>();
-        services.AddSingleton<IPartySyncService, PartySyncService>();
-        services.AddSingleton<IRoleSyncService, RoleSyncService>();
-        services.AddSingleton<IResourceSyncService, ResourceSyncService>();
+        services.AddScoped<IIngestService, IngestService>();
+        services.AddScoped<IPartySyncService, PartySyncService>();
+        services.AddScoped<IRoleSyncService, RoleSyncService>();
+        services.AddScoped<IResourceSyncService, ResourceSyncService>();
         services.AddScoped<IConnectionService, ConnectionService>();
         return services;
     }

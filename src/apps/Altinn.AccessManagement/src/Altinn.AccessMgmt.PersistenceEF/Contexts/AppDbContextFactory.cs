@@ -8,8 +8,8 @@ public class AppDbContextFactory(IDbContextFactory<AppDbContext> factory, IAudit
 {
     public AppDbContext CreateDbContext()
     {
-        var context = factory.CreateDbContext();
-        context.AuditAccessor = audit;
-        return context;
+        var dbContext = factory.CreateDbContext();
+        dbContext.AuditAccessor = audit;
+        return dbContext;
     }
 }
