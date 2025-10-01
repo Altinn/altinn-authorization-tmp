@@ -97,15 +97,6 @@ public partial class DtoMapper
         });
     }
 
-    public CompactPermission ConvertToCompactPermission(Connection connection)
-    {
-        return new CompactPermission()
-        {
-            From = connection.From,
-            To = connection.To
-        };
-    }
-
     public static CompactEntityDto Convert(Entity compactEntity)
     {
         if (compactEntity is { })

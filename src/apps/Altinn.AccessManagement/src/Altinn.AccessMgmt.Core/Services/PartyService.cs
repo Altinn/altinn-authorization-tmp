@@ -1,5 +1,4 @@
 using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -11,10 +10,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public class PartyService(AppDbContext dbContext, AuditValues auditValues) : IPartyService
+public class PartyService(AppDbContext dbContext) : IPartyService
 {
     /// <inheritdoc />
-    public async Task<Result<AddPartyResultDto>> AddParty(PartyBaseInternal party, CancellationToken cancellationToken = default)
+    public async Task<Result<AddPartyResultDto>> AddParty(PartyBaseDto party, CancellationToken cancellationToken = default)
     {
         AddPartyResultDto result = new() { PartyUuid = party.PartyUuid, PartyCreated = false };
 
@@ -24,7 +23,7 @@ public class PartyService(AppDbContext dbContext, AuditValues auditValues) : IPa
         if (!exists)
         {
             /*
-             * Info: For now this is restricted to SystemUser as it does not have any logic to set the correct RefId based on entity type Organisation number for Organisation and Fødselsnummer for Person. 
+             * Info: For now this is restricted to SystemUser as it does not have any logic to set the correct RefId based on entity type Organisation number for Organisation and Fï¿½dselsnummer for Person. 
              * Also there should be a matching record in the EntityLookup table for required lookup values SystemUSer does not have any lookup values as the only id it has is its PartyUuid.
              */
             if (!party.EntityType.Equals("Systembruker", StringComparison.InvariantCultureIgnoreCase))
@@ -41,7 +40,7 @@ public class PartyService(AppDbContext dbContext, AuditValues auditValues) : IPa
             }
 
             var entityVariant = await dbContext.EntityVariants
-                .Where(t => t.TypeId == entityType.Id && t.Name.Equals(party.EntityVariantType, StringComparison.OrdinalIgnoreCase))
+                .Where(t => t.TypeId == entityType.Id && t.Name.ToUpper() == party.EntityVariantType.ToUpper())
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (entityVariant == null)
@@ -59,7 +58,7 @@ public class PartyService(AppDbContext dbContext, AuditValues auditValues) : IPa
             };
 
             dbContext.Entities.Add(entity);
-            var res = await dbContext.SaveChangesAsync(auditValues, cancellationToken);
+            var res = await dbContext.SaveChangesAsync(AuditValues, cancellationToken);
 
             if (res > 0)
             {

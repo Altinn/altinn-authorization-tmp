@@ -1,7 +1,6 @@
 ﻿using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
-using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +13,7 @@ public class RoleService(AppDbContext db) : IRoleService
     /// <inheritdoc />
     public async Task<RoleDto> GetById(Guid id, CancellationToken cancellationToken = default)
     {
-        var role = await db.Roles.AsNoTracking().SingleAsync(t => t.Id == id, cancellationToken);
+        var role = await db.Roles.AsNoTracking().Include(t => t.Provider).Include(t => t.EntityType).SingleAsync(t => t.Id == id, cancellationToken);
         if (role == null)
         {
             return null;
@@ -30,7 +29,7 @@ public class RoleService(AppDbContext db) : IRoleService
     /// <inheritdoc/>
     public async Task<IEnumerable<RoleDto>> GetAll(CancellationToken cancellationToken = default)
     {
-        var roles = await db.Roles.AsNoTracking().ToListAsync(cancellationToken);
+        var roles = await db.Roles.AsNoTracking().Include(t => t.Provider).Include(t => t.EntityType).ToListAsync(cancellationToken);
         if (roles == null)
         {
             return null;
@@ -43,7 +42,7 @@ public class RoleService(AppDbContext db) : IRoleService
     /// <inheritdoc />
     public async Task<IEnumerable<RoleDto>> GetByProvider(Guid providerId, CancellationToken cancellationToken = default)
     {
-        var roles = await db.Roles.AsNoTracking().Where(t => t.ProviderId == providerId).ToListAsync(cancellationToken);
+        var roles = await db.Roles.AsNoTracking().Include(t => t.Provider).Include(t => t.EntityType).Where(t => t.ProviderId == providerId).ToListAsync(cancellationToken);
         if (roles == null)
         {
             return null;
@@ -56,7 +55,7 @@ public class RoleService(AppDbContext db) : IRoleService
     /// <inheritdoc />
     public async Task<IEnumerable<RoleDto>> GetByCode(string code, CancellationToken cancellationToken = default)
     {
-        var roles = await db.Roles.AsNoTracking().Where(t => t.Code == code).ToListAsync(cancellationToken);
+        var roles = await db.Roles.AsNoTracking().Include(t => t.Provider).Include(t => t.EntityType).Where(t => t.Code == code).ToListAsync(cancellationToken);
         if (roles == null)
         {
             return null;
@@ -69,7 +68,12 @@ public class RoleService(AppDbContext db) : IRoleService
     /// <inheritdoc />
     public async Task<RoleDto> GetByKeyValue(string key, string value, CancellationToken cancellationToken = default)
     {
-        var res = await db.RoleLookups.AsNoTracking().Where(t => t.Key.Contains(key) && t.Value.Contains(value)).Include(t => t.Role).SingleAsync(cancellationToken);
+        var res = (await db.RoleLookups.AsNoTracking()
+            .Include(t => t.Role).ThenInclude(t => t.Provider)
+            .Include(t => t.Role).ThenInclude(t => t.EntityType)
+            .ToListAsync(cancellationToken)
+            ).FirstOrDefault(t => t.Key.Contains(key, StringComparison.OrdinalIgnoreCase) && t.Value.Contains(value, StringComparison.OrdinalIgnoreCase));
+
         if (res == null)
         {
             return null;
@@ -100,7 +104,12 @@ public class RoleService(AppDbContext db) : IRoleService
     /// <inheritdoc/>
     public async Task<IEnumerable<RolePackageDto>> GetPackagesForRole(Guid id, CancellationToken cancellationToken = default)
     {
-        var rolePackages = await db.RolePackages.AsNoTracking().Where(t => t.RoleId == id).ToListAsync(cancellationToken);
+        var rolePackages = await db.RolePackages.AsNoTracking().Where(t => t.RoleId == id)
+            .Include(t => t.Role)
+            .Include(t => t.Package)
+            .Include(t => t.EntityVariant)
+            .ToListAsync(cancellationToken);
+
         if (rolePackages == null)
         {
             return null;
@@ -142,7 +151,7 @@ public class RoleService(AppDbContext db) : IRoleService
 
     private async Task GetSingleLegacyRoleCodeAndUrn(RoleDto extRole, CancellationToken cancellationToken = default)
     {
-        var legacyRoleCode = await db.RoleLookups.AsNoTracking().Where(t => t.RoleId == extRole.Id && t.Key == "LegacyCode").SingleAsync();
+        var legacyRoleCode = await db.RoleLookups.AsNoTracking().Where(t => t.RoleId == extRole.Id && t.Key == "LegacyCode").FirstOrDefaultAsync();
         if (legacyRoleCode != null)
         {
             extRole.LegacyRoleCode = legacyRoleCode.Value;

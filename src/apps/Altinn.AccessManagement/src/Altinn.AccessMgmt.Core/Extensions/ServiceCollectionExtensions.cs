@@ -5,7 +5,6 @@ using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Altinn.AccessMgmt.Core.Extensions;
 
@@ -15,10 +14,19 @@ public static class ServiceCollectionExtensions
     {
         services.AddHostedService<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
-        services.AddScoped<IPartySyncService, PartySyncService>();
-        services.AddScoped<IRoleSyncService, RoleSyncService>();
-        services.AddScoped<IResourceSyncService, ResourceSyncService>();
         services.AddScoped<IConnectionService, ConnectionService>();
+        services.AddScoped<IPartyService, PartyService>();
+        services.AddScoped<IPackageService, PackageService>();
+        services.AddScoped<IRoleService, RoleService>();
+
+        AddJobs(services);
         return services;
+    }
+
+    private static void AddJobs(IServiceCollection services)
+    {
+        services.AddSingleton<IPartySyncService, PartySyncService>();
+        services.AddSingleton<IRoleSyncService, RoleSyncService>();
+        services.AddSingleton<IResourceSyncService, ResourceSyncService>();
     }
 }
