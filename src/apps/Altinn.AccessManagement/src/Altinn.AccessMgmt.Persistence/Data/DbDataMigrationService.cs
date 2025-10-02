@@ -116,16 +116,16 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Area>(dataKey, string.Empty, 6);
         }
 
-        if (migrationService.NeedMigration<Package>(dataKey, 8))
+        if (migrationService.NeedMigration<Package>(dataKey, 9))
         {
             await IngestPackage(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Package>(dataKey, string.Empty, 8);
+            await migrationService.LogMigration<Package>(dataKey, string.Empty, 9);
         }
 
-        if (migrationService.NeedMigration<RolePackage>(dataKey, 7))
+        if (migrationService.NeedMigration<RolePackage>(dataKey, 8))
         {
             await IngestRolePackage(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 7);
+            await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 8);
         }
 
         if (migrationService.NeedMigration<EntityVariantRole>(dataKey, 2))
