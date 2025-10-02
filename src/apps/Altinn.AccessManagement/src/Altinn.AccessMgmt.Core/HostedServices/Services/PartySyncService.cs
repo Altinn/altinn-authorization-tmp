@@ -48,9 +48,9 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         var options = new AuditValues(SystemEntityConstants.RegisterImportSystem);
         var leaseData = await lease.Get<RegisterLease>(cancellationToken);
 
-        var seen = new HashSet<Guid>();
-        var bulk = new List<Entity>();
-        var bulkLookup = new List<EntityLookup>();
+        var seen = new HashSet<string>();
+        var ingestEntities = new List<Entity>();
+        var ingestEntitiesLookup = new List<EntityLookup>();
 
         using var scope = _serviceProvider.CreateEFScope(options);
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContextFactory>().CreateDbContext();
@@ -58,12 +58,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
         await foreach (var page in await _register.StreamParties(AltinnRegisterClient.AvailableFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-
-            if (!page.IsSuccessful)
+            if (!page.IsProblem)
             {
                 Log.ResponseError(_logger, page.StatusCode);
                 throw new Exception("Stream page is not successful");
@@ -73,48 +68,30 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
             foreach (var item in page?.Content.Data ?? [])
             {
-                try
+                var data = item switch
                 {
-                    Action adds = item switch
-                    {
-                        SelfIdentifiedUser selfIdentifiedUser => () => AddSelfIdentifiedUser(bulk, bulkLookup, selfIdentifiedUser),
-                        Person person => () => AddPerson(bulk, bulkLookup, item),
-                        PartyType.Organization => () => AddSelfIdentifiedUser(bulk, bulkLookup, item),
-                        PartyType.SystemUser => () => AddSelfIdentifiedUser(bulk, bulkLookup, item),
-                        PartyType.EnterpriseUser => () => AddSelfIdentifiedUser(bulk, bulkLookup, item),
-                        _ => () => throw new Exception("ake"),
-                    };
-                    adds();
+                    Person person => MapPerson(person),
+                    Organization organization => MapOrganization(organization),
+                    SelfIdentifiedUser selfIdentifiedUser => MapSelfIdentifiedUser(selfIdentifiedUser),
+                    SystemUser systemUser => MapSystemUser(systemUser),
+                    EnterpriseUser enterpriseUser => MapEnterpriseUser(enterpriseUser),
+                    _ => throw new InvalidDataException($"Unkown Party type {item.Type}"),
+                };
 
-                    if (item.Type == PartyType.SelfIdentifiedUser)
-                    {
-                        continue;
-                    }
-
-                    var entity = ConvertPartyModel(item, cancellationToken: cancellationToken);
-                    if (entity is { })
-                    {
-                        if (!seen.Add(entity.Id) || seen.Count > _bulkSize)
-                        {
-                            await Flush();
-                        }
-
-                        bulk.Add(entity);
-                        bulkLookup.AddRange(ConvertPartyModelToLookup(item));
-                    }
-                    else
-                    {
-                        _logger.LogWarning("skipped adding entity of type '{type}' with id '{id}'", item.PartyType, item.PartyUuid);
-                    }
+                if (!seen.Contains(data.Entity.RefId))
+                {
+                    seen.Add(data.Entity.RefId);
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.LogError(ex, "failed to sync party {partyUuid}", item.PartyUuid);
-                    throw;
+                    await Flush();
                 }
             }
 
-            await Flush();
+            if (ingestEntities.Count > _bulkSize)
+            {
+                await Flush();
+            }
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
             {
@@ -133,12 +110,12 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 {
                     _logger.LogInformation("Ingest and Merge Entity and EntityLookup batch '{0}' to db", batchName);
 
-                    var ingestedEntities = await ingestService.IngestTempData(bulk, batchId, cancellationToken);
-                    var ingestedLookups = await ingestService.IngestTempData(bulkLookup, batchId, cancellationToken);
+                    var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchId, cancellationToken);
+                    var ingestedLookups = await ingestService.IngestTempData(ingestEntitiesLookup, batchId, cancellationToken);
 
-                    if (ingestedEntities != bulk.Count || ingestedLookups != bulkLookup.Count)
+                    if (ingestedEntities != ingestEntities.Count || ingestedLookups != ingestEntitiesLookup.Count)
                     {
-                        _logger.LogWarning("Ingest partial complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", ingestedEntities, bulk.Count, ingestedLookups, bulkLookup.Count);
+                        _logger.LogWarning("Ingest partial complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", ingestedEntities, ingestEntities.Count, ingestedLookups, ingestEntitiesLookup.Count);
                     }
 
                     var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, options, ["id"], cancellationToken);
@@ -153,188 +130,158 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 }
                 finally
                 {
-                    bulk.Clear();
-                    bulkLookup.Clear();
+                    ingestEntities.Clear();
+                    ingestEntitiesLookup.Clear();
                     seen.Clear();
                 }
             }
         }
     }
 
-    private void AddSelfIdentifiedUser(List<Entity> entities, List<EntityLookup> entityLookups, SelfIdentifiedUser party)
+    private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapPerson(Person person)
     {
-        entities.Add(new()
+        var entity = new Entity()
         {
-            Id = party.Uuid,
-            Name = party.DisplayName.Value,
-            RefId = party.VersionId.ToString(),
-            TypeId = EntityTypeConstants.Person,
-            VariantId = EntityVariantConstants.SI
-        });
-
-        entityLookups.AddRange([
-            new()
-            {
-                EntityId = party.Uuid,
-                Key = "PartyId",
-                Value = party.PartyId.ToString(),
-            }
-        ]);
-    }
-
-    private void AddPerson(List<Entity> entities, List<EntityLookup> entityLookups, Person party)
-    {
-        entities.Add(new()
-        {
-            Id = party.Uuid,
-            Name = party.DisplayName.ToString(),
-            RefId = party.PersonIdentifier.ToString(),
+            Id = person.Uuid,
+            Name = person.DisplayName.ToString(),
+            RefId = person.PersonIdentifier.ToString(),
             TypeId = EntityTypeConstants.Person,
             VariantId = EntityVariantConstants.Person,
-        });
+        };
 
-        entityLookups.AddRange([
+        List<EntityLookup> entityLookups = [
             new()
             {
-                EntityId = party.Uuid,
+                EntityId = person.Uuid,
                 Key = "DateOfBirth",
-                Value = party.DateOfBirth.ToString()
+                Value = person.DateOfBirth.ToString()
             },
             new()
             {
-                EntityId = party.Uuid,
+                EntityId = person.Uuid,
                 Key = "PartyId",
-                Value = party.PartyId.ToString(),
+                Value = person.PartyId.ToString(),
             },
             new()
             {
-                EntityId = party.Uuid,
+                EntityId = person.Uuid,
                 Key = "PersonIdentifier",
-                Value = party.PersonIdentifier.ToString(),
+                Value = person.PersonIdentifier.ToString(),
             },
-        ]);
+        ];
 
-        if (party.User.Value?.UserIds.Value is { } userIds)
+        if (person.User.Value?.UserIds.Value is { } userIds)
         {
             entityLookups.AddRange(userIds.Select(userId => new EntityLookup()
             {
-                EntityId = party.Uuid,
+                EntityId = person.Uuid,
                 Key = "UserId",
                 Value = userId.ToString(),
                 IsProtected = false,
             }));
         }
+
+        return (entity, entityLookups);
     }
 
-    private Entity ConvertPartyModel(Party model, CancellationToken cancellationToken = default)
+    private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapOrganization(Organization organization)
     {
-        else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
+        if (!EntityVariantConstants.TryGetByName(organization.UnitType.Value, out var variant))
         {
-            if (!EntityVariantConstants.TryGetByName(model.UnitType, out var variant))
-            {
-                throw new InvalidDataException($"Invalid Unit Type {model.UnitType}");
-            }
-
-            return new Entity()
-            {
-                Id = Guid.Parse(model.PartyUuid),
-                Name = model.DisplayName,
-                RefId = model.OrganizationIdentifier,
-                TypeId = EntityTypeConstants.Organisation,
-                VariantId = variant,
-            };
-        }
-        else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
-        {
-            return new Entity()
-            {
-                Id = Guid.Parse(model.PartyUuid),
-                Name = model.DisplayName,
-                RefId = model.VersionId.ToString(),
-                TypeId = EntityTypeConstants.Person,
-                VariantId = EntityVariantConstants.SI
-            };
+            throw new InvalidDataException($"Invalid Unit Type {organization.UnitType}");
         }
 
-        return null;
-    }
-
-    private List<EntityLookup> ConvertPartyModelToLookup(Party model)
-    {
-        var res = new List<EntityLookup>();
-
-        if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
+        var entity = new Entity()
         {
-            res.Add(new EntityLookup()
-            {
-                EntityId = Guid.Parse(model.PartyUuid),
-                Key = "DateOfBirth",
-                Value = model.DateOfBirth
-            });
+            Id = organization.Uuid,
+            Name = organization.DisplayName.ToString(),
+            RefId = organization.OrganizationIdentifier.ToString(),
+            TypeId = EntityTypeConstants.Organisation,
+            VariantId = variant,
+        };
 
-            res.Add(new EntityLookup()
+        List<EntityLookup> entityLookups = [
+            new EntityLookup()
             {
-                EntityId = Guid.Parse(model.PartyUuid),
+                EntityId = organization.Uuid,
                 Key = "PartyId",
-                Value = model.PartyId.ToString()
-            });
+                Value = organization.PartyId.ToString()
+            },
 
-            res.Add(new EntityLookup()
+            new EntityLookup()
             {
-                EntityId = Guid.Parse(model.PartyUuid),
-                Key = "PersonIdentifier",
-                Value = model.PersonIdentifier,
-                IsProtected = true
-            });
-            if (model.User is { UserId: > 0 })
-            {
-                res.Add(new EntityLookup()
-                {
-                    EntityId = Guid.Parse(model.PartyUuid),
-                    Key = "UserId",
-                    Value = model.User.UserId.ToString(),
-                    IsProtected = false,
-                });
-            }
-
-            if (model.IsDeleted)
-            {
-                // DeletedAt missing in register. (18.juni. 2025)
-                // res.Add(new EntityLookup()
-                // {
-                //     EntityId = Guid.Parse(model.PartyUuid),
-                //     Key = "DeletedAt",
-                //     Value = model.DeletedAt.ToUniversalTime().ToString(),
-                //     IsProtected = false,
-                // });
-            }
-        }
-        else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
-        {
-            res.Add(new EntityLookup()
-            {
-                EntityId = Guid.Parse(model.PartyUuid),
-                Key = "PartyId",
-                Value = model.PartyId.ToString()
-            });
-
-            res.Add(new EntityLookup()
-            {
-                EntityId = Guid.Parse(model.PartyUuid),
+                EntityId = organization.Uuid,
                 Key = "OrganizationIdentifier",
-                Value = model.OrganizationIdentifier
-            });
-        }
-        else if (model.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
-        {
-            res.Add(new EntityLookup()
-            {
-                EntityId = Guid.Parse(model.PartyUuid),
-                Key = "PartyId",
-                Value = model.PartyId.ToString()
-            });
-        }
+                Value = organization.OrganizationIdentifier.ToString(),
+            },
+        ];
 
-        return res;
+        return (entity, entityLookups);
+    }
+
+    private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapSelfIdentifiedUser(SelfIdentifiedUser selfIdentifiedUser)
+    {
+        var entity = new Entity()
+        {
+            Id = selfIdentifiedUser.Uuid,
+            Name = selfIdentifiedUser.DisplayName.Value,
+            RefId = selfIdentifiedUser.User.Value.Username.Value,
+            TypeId = EntityTypeConstants.Person,
+            VariantId = EntityVariantConstants.SI
+        };
+
+        List<EntityLookup> entityLookups = [
+            new()
+            {
+                EntityId = selfIdentifiedUser.Uuid,
+                Key = "PartyId",
+                Value = selfIdentifiedUser.PartyId.ToString(),
+            },
+            new()
+            {
+                EntityId = selfIdentifiedUser.Uuid,
+                Key = "UserId",
+                Value = selfIdentifiedUser.User.Value.Username.Value,
+            }
+        ];
+
+        return (entity, entityLookups);
+    }
+
+    private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapSystemUser(SystemUser systemUser)
+    {
+        var entity = new Entity()
+        {
+            Id = systemUser.Uuid,
+            Name = systemUser.DisplayName.ToString(),
+            RefId = systemUser.Uuid.ToString(),
+            TypeId = EntityTypeConstants.SystemUser,
+            VariantId = EntityVariantConstants.AgentSystem,
+        };
+
+        return (entity, []);
+    }
+
+    private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapEnterpriseUser(EnterpriseUser enterpriseUser)
+    {
+        var entity = new Entity()
+        {
+            Id = enterpriseUser.Uuid,
+            Name = enterpriseUser.DisplayName.ToString(),
+            RefId = enterpriseUser.User.Value.Username.Value,
+            TypeId = EntityTypeConstants.EnterpriseUser,
+            VariantId = EntityVariantConstants.EnterpriseUser,
+        };
+
+        List<EntityLookup> entityLookups = [
+            new()
+            {
+                EntityId = enterpriseUser.Uuid,
+                Key = "PartyId",
+                Value = enterpriseUser.PartyId.Value.ToString(),
+            }
+        ];
+
+        return (entity, entityLookups);
     }
 }
