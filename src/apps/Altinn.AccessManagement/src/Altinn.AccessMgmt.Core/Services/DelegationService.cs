@@ -248,7 +248,7 @@ public class DelegationService : IDelegationService
                     if (agentAssignment == null)
                     {
                         // Find or Create Agent Entity
-                        var agent = await EntityService.GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), "Systembruker", "AgentSystem", cancellationToken) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
+                        var agent = await EntityService.GetOrCreateEntity(request.AgentId, request.AgentName, request.AgentId.ToString(), EntityTypeConstants.SystemUser.Entity.Name, EntityVariantConstants.AgentSystem.Entity.Name, cancellationToken) ?? throw new Exception(string.Format("Could not find or create party '{0}' for agent", request.AgentId));
 
                         // Handle existing agent entity found with different name/type
                         if (agent.Name != request.AgentName || agent.Type.Id != EntityTypeConstants.SystemUser.Id)

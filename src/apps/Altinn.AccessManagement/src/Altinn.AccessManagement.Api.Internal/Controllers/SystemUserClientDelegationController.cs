@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
@@ -25,7 +26,7 @@ public class SystemUserClientDelegationController(
         ,IDelegationService delegationService
     ) : ControllerBase
 {
-    private readonly string[] validClientRoles = ["regnskapsforer", "revisor", "forretningsforer", "rettighetshaver"];
+    private readonly string[] validClientRoles = [RoleConstants.Accountant.Entity.Code, RoleConstants.Auditor.Entity.Code, RoleConstants.BusinessManager.Entity.Code, RoleConstants.Rightholder.Entity.Code];
 
     /// <summary>
     /// Gets all clients for a given facilitator
@@ -40,12 +41,6 @@ public class SystemUserClientDelegationController(
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
     public async Task<ActionResult<IEnumerable<ClientDto>>> GetClients([FromQuery] Guid party, [FromQuery] string[] roles = null, [FromQuery] string[] packages = null, CancellationToken cancellationToken = default)
     {
-        var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
-        if (userId == Guid.Empty)
-        {
-            return Unauthorized();
-        }
-
         if (roles != null && roles.Length > 0)
         {
             var invalidRoles = roles.Where(role => !validClientRoles.Contains(role));
@@ -81,12 +76,6 @@ public class SystemUserClientDelegationController(
     [Authorize(Policy = AuthzConstants.POLICY_CLIENTDELEGATION_READ)]
     public async Task<ActionResult<IEnumerable<SystemUserClientConnectionDto>>> GetClientDelegations([FromQuery] Guid party, [FromQuery] Guid systemUser, CancellationToken cancellationToken = default)
     {
-        var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
-        if (userId == Guid.Empty)
-        {
-            return Unauthorized();
-        }
-
         return Ok(await connectionService.GetConnectionsToAgent(viaId: party, toId: systemUser, cancellationToken: cancellationToken));
     }
 
@@ -103,12 +92,6 @@ public class SystemUserClientDelegationController(
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
     public async Task<ActionResult<IEnumerable<CreateDelegationResponseDto>>> PostClientDelegation([FromQuery] Guid party, [FromBody] CreateSystemDelegationRequestDto request, CancellationToken cancellationToken = default)
     {
-        var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
-        if (userId == Guid.Empty)
-        {
-            return Unauthorized();
-        }
-
         var delegations = await delegationService.CreateClientDelegation(request, party, cancellationToken);
 
         // Remark: Kan ikke garantere at det KUN er delegeringer som er opprettet i denne handlingen som blir returnert.
@@ -128,12 +111,6 @@ public class SystemUserClientDelegationController(
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
     public async Task<ActionResult> DeleteDelegation([FromQuery] Guid party, [FromQuery] Guid delegationId, CancellationToken cancellationToken = default)
     {
-        var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
-        if (userId == Guid.Empty)
-        {
-            return Unauthorized();
-        }
-
         /*
          - [X] Delegation exists
          - [X] if party is facilitator for delegation
@@ -157,7 +134,6 @@ public class SystemUserClientDelegationController(
         }
 
         var result = await delegationService.DeleteDelegation(delegation.Id, cancellationToken);
-
         if (result != null)
         {
             return result.ToActionResult();
@@ -180,21 +156,12 @@ public class SystemUserClientDelegationController(
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
     public async Task<ActionResult> DeleteAssignment([FromQuery] Guid party, [FromQuery] Guid assignmentId, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
-        var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
-        if (userId == Guid.Empty)
-        {
-            return Unauthorized();
-        }
-
         /*
          - [X] Assignment exists
          - [X] Assignment connected to party
-         - [X] Assignment role is owned by Digdir
+         - [X] Assignment role is Agent
          - [X] Assignment not connected to any Delegation(or cascade = true)
-         - [X] Temp: Only 'agent' role - Get this from queryparam future
         */
-
-        string roleIdentifier = "agent"; 
 
         var assignment = await assignmentService.GetAssignment(assignmentId);
         if (assignment == null)
@@ -207,13 +174,12 @@ public class SystemUserClientDelegationController(
             return BadRequest("Assignment not from party");
         }
 
-        if (!assignment.Role.Code.Equals(roleIdentifier, StringComparison.OrdinalIgnoreCase))
+        if (assignment.Role.Code != RoleConstants.Agent.Entity.Code)
         {
-            return Problem($"You cannot removed assignments with this role '{assignment.Role.Code}', only '{roleIdentifier}'");
+            return Problem($"You cannot removed assignments with this role '{assignment.Role.Code}', only '{RoleConstants.Agent.Entity.Code}'");
         }
 
         var result = await assignmentService.DeleteAssignment(assignment.Id, cascade, cancellationToken);
-
         if (result != null)
         {
             return Problem("Assignment is active in one or more delegations and cascadeflag is false.");
@@ -236,14 +202,7 @@ public class SystemUserClientDelegationController(
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.InternalApiStr)]
     public async Task<ActionResult> DeleteAgentAssignment([FromQuery] Guid party, [FromQuery] Guid agentId, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
-        var userId = AuthenticationHelper.GetPartyUuid(HttpContext);
-        if (userId == Guid.Empty)
-        {
-            return Unauthorized();
-        }
-
-        var result = await assignmentService.DeleteAssignment(party, agentId, "agent", cascade, cancellationToken);
-
+        var result = await assignmentService.DeleteAssignment(party, agentId, RoleConstants.Agent.Entity.Code, cascade, cancellationToken);
         if (result != null)
         {
             return result.ToActionResult();
