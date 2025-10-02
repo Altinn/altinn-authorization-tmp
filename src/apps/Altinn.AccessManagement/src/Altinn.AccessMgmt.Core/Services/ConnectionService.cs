@@ -561,8 +561,7 @@ public partial class ConnectionService
     /// <inheritdoc />
     public async Task<IEnumerable<SystemUserClientConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, CancellationToken cancellationToken = default)
     {
-        using var dbContext = DbContextFactory.CreateDbContext();
-        var result = await dbContext.Connections.AsNoTracking()
+        var result = await DbContext.Connections.AsNoTracking()
             .Include(t => t.Delegation)
             .Include(t => t.From)
             .ThenInclude(t => t.Type)

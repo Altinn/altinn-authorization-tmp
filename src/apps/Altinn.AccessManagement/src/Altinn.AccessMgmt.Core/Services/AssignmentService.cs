@@ -157,7 +157,9 @@ public class AssignmentService : IAssignmentService
     public async Task<Assignment> GetAssignment(Guid id, CancellationToken cancellationToken = default)
     {
         using var db = DbContextFactory.CreateDbContext();
-        return await db.Assignments.AsNoTracking().SingleOrDefaultAsync(t => t.Id == id, cancellationToken);
+        return await db.Assignments.AsNoTracking()
+            .Include(t => t.Role)
+            .SingleOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -269,18 +271,21 @@ public class AssignmentService : IAssignmentService
         var fromEntity = await db.Entities.SingleAsync(t => t.Id == fromEntityId, cancellationToken);
         var toEntity = await db.Entities.SingleAsync(t => t.Id == toEntityId, cancellationToken);
         ValidatePartyIsNotNull(fromEntityId, fromEntity, ref errors, "$QUERY/party");
-        ValidatePartyIsOrg(fromEntity, ref errors, "$QUERY/party");
         ValidatePartyIsNotNull(toEntityId, toEntity, ref errors, "$QUERY/to");
-        ValidatePartyIsOrg(toEntity, ref errors, "$QUERY/to");
 
         var roleResult = await db.Roles.AsNoTracking().Where(t => t.Code == roleCode).ToListAsync(cancellationToken);
-        if (roleResult == null || !roleResult.Any())
+        if (roleResult == null || !roleResult.Any() || roleResult.Count > 1)
         {
             Unreachable();
         }
 
-        var roleId = roleResult.First().Id;
-        var existingAssignment = await GetAssignment(fromEntityId, toEntityId, roleId, cancellationToken: cancellationToken);
+        var role = roleResult.First();
+        if (!role.IsAssignable)
+        {
+            errors.Add(ValidationErrors.UnableToRevokeRoleAssignment, "$QUERY/roleCode", [new("role", role.Code)]);
+        }
+        
+        var existingAssignment = await GetAssignment(fromEntityId, toEntityId, role.Id, cancellationToken: cancellationToken);
         if (existingAssignment == null)
         {
             return null;
@@ -304,7 +309,7 @@ public class AssignmentService : IAssignmentService
                 var delegationsToAssignment = await db.Delegations.AsNoTracking().Where(t => t.ToId == existingAssignment.Id).ToListAsync(cancellationToken);
                 if (delegationsToAssignment != null && delegationsToAssignment.Any())
                 {
-                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsFromAssingment.Select(p => p.Id.ToString())))]);
+                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsToAssignment.Select(p => p.Id.ToString())))]);
                 }
             }
         }
@@ -339,6 +344,11 @@ public class AssignmentService : IAssignmentService
         }
         else
         {
+            if (!existingAssignment.Role.IsAssignable)
+            {
+                errors.Add(ValidationErrors.UnableToRevokeRoleAssignment, "$QUERY/assignmentId", [new("role", existingAssignment.Role.Code)]);
+            }
+
             if (!cascade)
             {
                 var packages = await db.AssignmentPackages.AsNoTracking().Where(t => t.AssignmentId == existingAssignment.Id).ToListAsync(cancellationToken);

@@ -67,6 +67,12 @@ public static class ValidationErrors
         = _factory.Create(10, $"Assignment is active in one or more delegations.");
 
     /// <summary>
+    /// Assignment is active in one or more delegations.
+    /// </summary>
+    public static ValidationErrorDescriptor UnableToRevokeRoleAssignment { get; }
+        = _factory.Create(11, $"Role assignment cannot be revoked.");
+
+    /// <summary>
     /// Gets a validation error descriptor
     /// </summary>
     public static ValidationErrorDescriptor TimeNotInFuture { get; }
