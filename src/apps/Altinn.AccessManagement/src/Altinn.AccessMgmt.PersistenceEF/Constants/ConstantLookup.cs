@@ -81,6 +81,20 @@ public static class ConstantLookup
         });
     }
 
+    private static Dictionary<string, object> GetByCode<TType>(Type constantsClass)
+        where TType : IEntityId, IEntityCode
+    {
+        var key = (constantsClass, typeof(TType));
+        return _byName.GetOrAdd(key, _ =>
+        {
+            var constants = GetConstants<TType>(constantsClass);
+            return constants.ToDictionary<ConstantDefinition<TType>, string, object>(
+                cd => cd.Entity.Code,
+                cd => cd,
+                StringComparer.OrdinalIgnoreCase);
+        });
+    }
+
     private static List<object> GetAllEntities<TType>(Type constantsClass)
         where TType : IEntityId
     {
@@ -130,6 +144,23 @@ public static class ConstantLookup
     {
         var byUrn = GetByUrn<TType>(constantsClass);
         if (byUrn.TryGetValue(urn, out var value))
+        {
+            result = (ConstantDefinition<TType>)value;
+            return true;
+        }
+
+        result = null;
+        return false;
+    } 
+
+    /// <summary>
+    /// Try to get entity by ID for types that implement IEntityId.
+    /// </summary>
+    public static bool TryGetByCode<TType>(Type constantsClass, string code, [NotNullWhen(true)] out ConstantDefinition<TType>? result)
+        where TType : IEntityId, IEntityCode
+    {
+        var byUrn = GetByCode<TType>(constantsClass);
+        if (byUrn.TryGetValue(code, out var value))
         {
             result = (ConstantDefinition<TType>)value;
             return true;

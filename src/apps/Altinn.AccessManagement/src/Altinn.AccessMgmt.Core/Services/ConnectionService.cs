@@ -279,7 +279,6 @@ public partial class ConnectionService : IConnectionService
 
     public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
     {
-        
         var assignablePackages = await DbContext.GetAssignableAccessPackages(
             AuditAccessor.AuditValues.ChangedBy, 
             party,
@@ -449,7 +448,6 @@ public partial class ConnectionService
     /// <inheritdoc />
     public async Task<IEnumerable<ConnectionDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
     {
-        
         var result = await DbContext.Connections.AsNoTracking()
             .Include(c => c.From)
             .ThenInclude(c => c.Type)

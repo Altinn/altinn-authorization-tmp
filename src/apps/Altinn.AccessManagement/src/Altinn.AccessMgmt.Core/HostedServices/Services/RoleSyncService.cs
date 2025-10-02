@@ -46,16 +46,6 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContextFactory>().CreateDbContext();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
-        OrgType = EntityTypeConstants.Organisation;
-
-        Provider = await appDbContext.Providers
-            .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Code == "ccr", cancellationToken);
-
-        Roles = (await appDbContext.Roles
-            .AsNoTracking()
-            .ToListAsync(cancellationToken)).ToDictionary(t => t.Code, t => t);
-
         var leaseData = await lease.Get<RegisterLease>(cancellationToken);
 
         await foreach (var page in await _register.StreamRoles([], leaseData.RoleStreamNextPageLink, cancellationToken))
@@ -73,11 +63,11 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
             _logger.LogInformation("Starting proccessing party page ({0}-{1})", page.Content.Stats.PageStart, page.Content.Stats.PageEnd);
 
-            if (page.Content != null)
+            if (page.Content is { })
             {
                 foreach (var item in page.Content.Data)
                 {
-                    var assignment = await ConvertRoleModel(appDbContext, item, options: options, cancellationToken) ?? throw new Exception("Failed to convert RoleModel to Assignment");
+                    var assignment = ConvertRoleModel(item);
 
                     var key = (assignment.FromId, assignment.ToId, assignment.RoleId);
                     if (!seen.Add(key))
@@ -136,7 +126,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                     var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
 
                     if (ingested != batchData.Count)
-                     {
+                    {
                         _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
                     }
 
@@ -194,11 +184,10 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
     private Dictionary<string, Role> Roles { get; set; } = new Dictionary<string, Role>(StringComparer.OrdinalIgnoreCase);
 
-    private async Task<Assignment> ConvertRoleModel(AppDbContext dbContext, RoleModel model, AuditValues options, CancellationToken cancellationToken)
+    private Assignment ConvertRoleModel(RoleModel model)
     {
-        try
+        if (RoleConstants.TryGetByCode(model.RoleSource, out var role))
         {
-            var role = await GetOrCreateRole(dbContext, model.RoleIdentifier, model.RoleSource, cancellationToken);
             return new Assignment()
             {
                 FromId = Guid.Parse(model.FromParty),
@@ -206,42 +195,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 RoleId = role.Id
             };
         }
-        catch
-        {
-            throw new Exception(string.Format("Failed to convert model to Assignment. From:{0} To:{1} Role:{2}", model.FromParty, model.ToParty, model.RoleIdentifier));
-        }
+
+        throw new Exception(string.Format("Failed to convert model to Assignment. From:{0} To:{1} Role:{2}", model.FromParty, model.ToParty, model.RoleIdentifier));
     }
-
-    private async Task<Role> GetOrCreateRole(AppDbContext dbContext, string roleIdentifier, string roleSource, CancellationToken cancellationToken)
-    {
-        if (Roles.TryGetValue(roleIdentifier, out var cached))
-        {
-            return cached;
-        }
-
-        var role = await dbContext.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == roleIdentifier, cancellationToken);
-        if (role is null)
-        {
-            role = new Role()
-            {
-                Id = Guid.CreateVersion7(),
-                Name = roleIdentifier,
-                Description = roleIdentifier,
-                Code = roleIdentifier,
-                Urn = roleIdentifier,
-                EntityTypeId = OrgType.Id,
-                ProviderId = Provider.Id,
-            };
-
-            dbContext.Roles.Add(role);
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
-
-        Roles.Add(role.Code, role);
-        return role;
-    }
-
-    private EntityType OrgType { get; set; }
-
-    private Provider Provider { get; set; }
 }

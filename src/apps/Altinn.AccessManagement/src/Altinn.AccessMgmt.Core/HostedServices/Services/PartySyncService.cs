@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+﻿using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -9,6 +8,8 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
+using Altinn.Authorization.ModelUtils;
+using Altinn.Register.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -74,7 +75,18 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             {
                 try
                 {
-                    if (item.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+                    Action adds = item switch
+                    {
+                        SelfIdentifiedUser selfIdentifiedUser => () => AddSelfIdentifiedUser(bulk, bulkLookup, selfIdentifiedUser),
+                        Person person => () => AddPerson(bulk, bulkLookup, item),
+                        PartyType.Organization => () => AddSelfIdentifiedUser(bulk, bulkLookup, item),
+                        PartyType.SystemUser => () => AddSelfIdentifiedUser(bulk, bulkLookup, item),
+                        PartyType.EnterpriseUser => () => AddSelfIdentifiedUser(bulk, bulkLookup, item),
+                        _ => () => throw new Exception("ake"),
+                    };
+                    adds();
+
+                    if (item.Type == PartyType.SelfIdentifiedUser)
                     {
                         continue;
                     }
@@ -149,19 +161,73 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         }
     }
 
-    private Entity ConvertPartyModel(PartyModel model, CancellationToken cancellationToken = default)
+    private void AddSelfIdentifiedUser(List<Entity> entities, List<EntityLookup> entityLookups, SelfIdentifiedUser party)
     {
-        if (model.PartyType.Equals("person", StringComparison.OrdinalIgnoreCase))
+        entities.Add(new()
         {
-            return new Entity()
+            Id = party.Uuid,
+            Name = party.DisplayName.Value,
+            RefId = party.VersionId.ToString(),
+            TypeId = EntityTypeConstants.Person,
+            VariantId = EntityVariantConstants.SI
+        });
+
+        entityLookups.AddRange([
+            new()
             {
-                Id = Guid.Parse(model.PartyUuid),
-                Name = model.DisplayName,
-                RefId = model.PersonIdentifier,
-                TypeId = EntityTypeConstants.Person,
-                VariantId = EntityVariantConstants.Person,
-            };
+                EntityId = party.Uuid,
+                Key = "PartyId",
+                Value = party.PartyId.ToString(),
+            }
+        ]);
+    }
+
+    private void AddPerson(List<Entity> entities, List<EntityLookup> entityLookups, Person party)
+    {
+        entities.Add(new()
+        {
+            Id = party.Uuid,
+            Name = party.DisplayName.ToString(),
+            RefId = party.PersonIdentifier.ToString(),
+            TypeId = EntityTypeConstants.Person,
+            VariantId = EntityVariantConstants.Person,
+        });
+
+        entityLookups.AddRange([
+            new()
+            {
+                EntityId = party.Uuid,
+                Key = "DateOfBirth",
+                Value = party.DateOfBirth.ToString()
+            },
+            new()
+            {
+                EntityId = party.Uuid,
+                Key = "PartyId",
+                Value = party.PartyId.ToString(),
+            },
+            new()
+            {
+                EntityId = party.Uuid,
+                Key = "PersonIdentifier",
+                Value = party.PersonIdentifier.ToString(),
+            },
+        ]);
+
+        if (party.User.Value?.UserIds.Value is { } userIds)
+        {
+            entityLookups.AddRange(userIds.Select(userId => new EntityLookup()
+            {
+                EntityId = party.Uuid,
+                Key = "UserId",
+                Value = userId.ToString(),
+                IsProtected = false,
+            }));
         }
+    }
+
+    private Entity ConvertPartyModel(Party model, CancellationToken cancellationToken = default)
+    {
         else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))
         {
             if (!EntityVariantConstants.TryGetByName(model.UnitType, out var variant))
@@ -193,7 +259,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         return null;
     }
 
-    private List<EntityLookup> ConvertPartyModelToLookup(PartyModel model)
+    private List<EntityLookup> ConvertPartyModelToLookup(Party model)
     {
         var res = new List<EntityLookup>();
 
