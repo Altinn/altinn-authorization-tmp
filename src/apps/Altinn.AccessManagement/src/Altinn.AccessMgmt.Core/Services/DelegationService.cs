@@ -206,8 +206,8 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
             var clientRole = (await roleService.GetByCode(rp.Key)).First() ?? throw new Exception(string.Format("Role not found '{0}'", rp.Key));
 
             // Find ClientAssignment
-            var clientAssignment = await AssignmentService.GetAssignment(client.Id, facilitator.Id, clientRole.Id, cancellationToken) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
-            var clientPackages = await AssignmentService.GetPackagesForAssignment(clientAssignment.Id);
+            var clientAssignment = await assignmentService.GetAssignment(client.Id, facilitator.Id, clientRole.Id, cancellationToken) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
+            var clientPackages = await assignmentService.GetPackagesForAssignment(clientAssignment.Id);
 
             Delegation delegation = null;
             foreach (var package in rp.Value)
@@ -327,7 +327,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
 
         if (delegation == null)
         {
-            await Db.Delegations.AddAsync(
+            await db.Delegations.AddAsync(
                 new Delegation()
                 {
                     FromId = from.Id,
