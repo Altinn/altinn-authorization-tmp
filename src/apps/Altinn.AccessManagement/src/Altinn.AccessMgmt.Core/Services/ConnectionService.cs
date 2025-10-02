@@ -280,8 +280,8 @@ public partial class ConnectionService : IConnectionService
     public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, CancellationToken cancellationToken = default)
     {
         var assignablePackages = await DbContext.GetAssignableAccessPackages(
-            AuditAccessor.AuditValues.ChangedBy, 
             party,
+            AuditAccessor.AuditValues.ChangedBy, 
             packageIds,
             cancellationToken
         );
@@ -321,7 +321,7 @@ public partial class ConnectionService : IConnectionService
         packages = packages.Select(p =>
         p.StartsWith("urn:", StringComparison.Ordinal)
             ? p
-            : (p.StartsWith(":", StringComparison.Ordinal)
+            : (p.StartsWith(':')
                 ? $"urn:altinn:accesspackage{p}"
                 : $"urn:altinn:accesspackage:{p}"));
 
@@ -391,7 +391,6 @@ public partial class ConnectionService
     /// <inheritdoc />
     public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
-        
         var result = await DbContext.Connections.AsNoTracking()
             .Include(t => t.To)
             .ThenInclude(t => t.Variant)
@@ -417,6 +416,7 @@ public partial class ConnectionService
             .ThenInclude(t => t.Variant)
             .Include(t => t.To)
             .ThenInclude(t => t.Type)
+            .Include(t => t.Role)
             .Where(t => t.FromId == partyId)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
             .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
@@ -465,7 +465,6 @@ public partial class ConnectionService
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {
-         
         var result = await DbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
@@ -489,10 +488,10 @@ public partial class ConnectionService
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, CancellationToken cancellationToken = default)
     {
-        
         var result = await DbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
+            .Include(t => t.Role)
             .Where(t => t.FromId == partyId)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
             .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
@@ -513,10 +512,10 @@ public partial class ConnectionService
     /// <inheritdoc />
     public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsFromOthers(Guid partyId, Guid? fromId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
-        
         var result = await DbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
+            .Include(t => t.Role)
             .Include(t => t.Resource)
             .Where(t => t.ToId == partyId)
             .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
@@ -539,11 +538,11 @@ public partial class ConnectionService
     /// <inheritdoc />
     public async Task<IEnumerable<ResourcePermission>> GetResourcePermissionsToOthers(Guid partyId, Guid? toId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
-        
         var result = await DbContext.Connections
             .AsNoTracking()
             .Include(t => t.Package)
             .Include(t => t.Resource)
+            .Include(t => t.Role)
             .Where(t => t.FromId == partyId)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
             .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
