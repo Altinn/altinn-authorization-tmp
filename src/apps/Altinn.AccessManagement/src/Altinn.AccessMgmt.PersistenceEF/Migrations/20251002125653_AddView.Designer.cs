@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251002122143_AddView")]
+    [Migration("20251002125653_AddView")]
     partial class AddView
     {
         /// <inheritdoc />
