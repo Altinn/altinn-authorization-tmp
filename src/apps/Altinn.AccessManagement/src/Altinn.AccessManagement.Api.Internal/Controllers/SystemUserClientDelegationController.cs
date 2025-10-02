@@ -1,5 +1,4 @@
 ﻿using Altinn.AccessManagement.Core.Constants;
-using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Services.Models;
@@ -18,7 +17,7 @@ namespace Altinn.AccessManagement.Api.Internal.Controllers;
 /// Controller for internal api operations for system user client delegation.
 /// </summary>
 [ApiController]
-[Route("accessmanagement/api/v1/internal/[controller]")]
+[Route("accessmanagement/api/v1/internal/systemuserclientdelegation")]
 [ApiExplorerSettings(IgnoreApi = false)]
 public class SystemUserClientDelegationController(
         IAssignmentService assignmentService
