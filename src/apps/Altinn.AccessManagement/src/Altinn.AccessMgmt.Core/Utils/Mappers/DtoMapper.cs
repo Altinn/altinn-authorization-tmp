@@ -99,35 +99,50 @@ public partial class DtoMapper
 
     public static CompactEntityDto Convert(Entity compactEntity)
     {
-        return new CompactEntityDto()
+        if (compactEntity is { })
         {
-            Id = compactEntity.Id,
-            Name = compactEntity.Name,
-            Type = compactEntity.Type.Name,
-            Variant = compactEntity.Variant.Name,
-            Parent = Convert(compactEntity.Parent),
-            Children = null
-        };
+            return new CompactEntityDto()
+            {
+                Id = compactEntity.Id,
+                Name = compactEntity.Name,
+                Type = compactEntity.Type.Name,
+                Variant = compactEntity.Variant.Name,
+                Parent = Convert(compactEntity.Parent),
+                Children = null
+            };
+        }
+
+        return null;
     }
 
     public static CompactRoleDto ConvertCompactRole(Role role)
     {
-        return new CompactRoleDto()
+        if (role is { })
         {
-            Id = role.Id,
-            Children = null,
-            Code = role.Code
-        };
+            return new CompactRoleDto()
+            {
+                Id = role.Id,
+                Children = null,
+                Code = role.Code
+            };
+        }
+
+        return null;
     }
 
     public static CompactPackageDto ConvertCompactPackage(Package package)
     {
-        return new CompactPackageDto()
+        if (package is { })
         {
-            Id = package.Id,
-            AreaId = package.AreaId,
-            Urn = package.Urn
-        };
+            return new CompactPackageDto()
+            {
+                Id = package.Id,
+                AreaId = package.AreaId,
+                Urn = package.Urn
+            };
+        }
+
+        return null;
     }
 }
 
