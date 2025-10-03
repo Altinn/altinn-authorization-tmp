@@ -1,9 +1,7 @@
 using Altinn.AccessManagement;
-using Altinn.AccessManagement.HostedServices.Contracts;
 using Altinn.AccessManagement.HostedServices.Services;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
-using Altinn.AccessMgmt.Persistence.Services;
 using Altinn.Authorization.Host.Lease;
 using Microsoft.FeatureManagement;
 
@@ -15,24 +13,15 @@ namespace Altinn.Authorization.AccessManagement;
 /// <param name="leaseService">Lease provider for distributed locking.</param>
 /// <param name="logger">Logger for logging service activities.</param>
 /// <param name="featureManager">for reading feature flags</param>
-/// <param name="resourceSyncService">Service for syncing resources</param>
-/// <param name="partySyncService">Service for syncing parties</param>
-/// <param name="roleSyncService">Service for syncing roles</param>
 public partial class RegisterHostedService(
     ILeaseService leaseService,
     ILogger<RegisterHostedService> logger,
-    IFeatureManager featureManager,
-    IResourceSyncService resourceSyncService,
-    IPartySyncService partySyncService,
-    IRoleSyncService roleSyncService
+    IFeatureManager featureManager
     ) : IHostedService, IDisposable
 {
     private readonly ILeaseService _leaseService = leaseService;
     private readonly ILogger<RegisterHostedService> _logger = logger;
     private readonly IFeatureManager _featureManager = featureManager;
-    private readonly IResourceSyncService resourceSyncService = resourceSyncService;
-    private readonly IPartySyncService partySyncService = partySyncService;
-    private readonly IRoleSyncService roleSyncService = roleSyncService;
     private Timer _timer = null;
     private readonly CancellationTokenSource _stop = new();
 
@@ -68,56 +57,14 @@ public partial class RegisterHostedService(
                 {
                     return;
                 }
-
-                await SyncResourceRegistry(lease, options, cancellationToken);
             }
 
             if (await _featureManager.IsEnabledAsync(AccessManagementFeatureFlags.HostedServicesRegisterSync))
             {
                 await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_register_sync", cancellationToken);
-
-                await SyncRegisterParty(lease, options, cancellationToken);
-                await SyncRegisterRoles(lease, options, cancellationToken);
             }
 
             _logger.LogInformation("Register sync completed!");
-        }
-        catch (Exception ex)
-        {
-            Log.SyncError(_logger, ex);
-        }
-    }
-
-    private async Task SyncRegisterRoles(ILease lease, ChangeRequestOptions options, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await roleSyncService.SyncRoles(lease, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            Log.SyncError(_logger, ex);
-        }
-    }
-
-    private async Task SyncResourceRegistry(ILease lease, ChangeRequestOptions options, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await resourceSyncService.SyncResourceOwners(cancellationToken);
-            await resourceSyncService.SyncResources(lease, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            Log.SyncError(_logger, ex);
-        }
-    }
-
-    private async Task SyncRegisterParty(ILease lease, ChangeRequestOptions options, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await partySyncService.SyncParty(lease, cancellationToken);
         }
         catch (Exception ex)
         {

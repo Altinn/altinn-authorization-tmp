@@ -1,5 +1,6 @@
 using Altinn.Authorization.Integration.Platform;
 using Altinn.Authorization.Integration.Platform.Register;
+using Altinn.Register.Contracts;
 
 namespace Altinn.Authorization.Integration.Tests.Register;
 
@@ -54,7 +55,7 @@ public class PartiesStreamEndpointTest : IClassFixture<PlatformFixture>
         }
     }
 
-    private async Task<PlatformResponse<PageStream<PartyModel>>> GetPage(string nextPage = null, CancellationToken cancellationToken = default)
+    private async Task<PlatformResponse<PageStream<Party>>> GetPage(string nextPage = null, CancellationToken cancellationToken = default)
     {
         await foreach (var role in await Register.StreamParties([], nextPage, cancellationToken))
         {
