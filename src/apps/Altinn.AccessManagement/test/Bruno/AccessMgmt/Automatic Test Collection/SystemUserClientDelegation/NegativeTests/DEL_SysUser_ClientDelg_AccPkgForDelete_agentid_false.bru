@@ -46,7 +46,7 @@ tests {
     expect(res.status).to.equal(400);
     
     const data = res.getBody();
-    assert.equal(data.detail, "Assignment is active in one or more delegations and cascadeflag is false.");
+    assert.equal(data.validationErrors.detail, "Assignment is active in one or more delegations.");
     
   });
 }
