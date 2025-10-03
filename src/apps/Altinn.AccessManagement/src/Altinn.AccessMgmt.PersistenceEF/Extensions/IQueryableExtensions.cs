@@ -18,9 +18,6 @@ public static class IQueryableExtensions
             .Include(c => c.From)
             .ThenInclude(c => c.Parent)
             .ThenInclude(c => c.Type)
-            .Include(c => c.From)
-            .ThenInclude(c => c.Parent)
-            .ThenInclude(c => c.Variant)
 
             .Include(c => c.To)
             .ThenInclude(c => c.Variant)
@@ -34,8 +31,6 @@ public static class IQueryableExtensions
             .ThenInclude(c => c.Variant)
             .Include(c => c.To)
             .ThenInclude(c => c.Parent)
-            .ThenInclude(c => c.Type)
-            .Include(c => c.To)
-            .ThenInclude(c => c.Parent);
+            .ThenInclude(c => c.Type);
     }
 }
