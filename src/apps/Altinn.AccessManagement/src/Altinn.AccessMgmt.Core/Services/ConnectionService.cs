@@ -1,4 +1,5 @@
-﻿using Altinn.AccessManagement.Core.Errors;
+﻿using System.Diagnostics;
+using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
@@ -146,31 +147,34 @@ public partial class ConnectionService : IConnectionService
 
     public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Role role, string packageUrn, Action<ConnectionOptions> configureConnectionOptions = null, CancellationToken cancellationToken = default)
     {
-        packageUrn = (packageUrn.StartsWith("urn:", StringComparison.Ordinal) || packageUrn.StartsWith(':')) ? packageUrn : ":" + packageUrn;
+        if (PackageConstants.TryGetByUrn(packageUrn, out var package))
+        {
+            return await AddPackage(fromId, toId, role, package.Id, "package", configureConnectionOptions, cancellationToken);
+        }
         
-        var package = await DbContext.Packages
-            .AsNoTracking()
-            .Where(p => p.Urn.EndsWith(packageUrn))
-            .FirstOrDefaultAsync(cancellationToken);
-
-        var problem = ValidationComposer.Validate(PackageValidation.PackageExists(package));
+        var problem = ValidationComposer.Validate(PackageValidation.PackageExists(package, packageUrn));
         if (problem is { })
         {
             return problem;
         }
 
-        return await AddPackage(fromId, toId, role, package.Id, "package", configureConnectionOptions, cancellationToken);
+        throw new UnreachableException();
     }
 
     public async Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, Role role, string packageUrn, CancellationToken cancellationToken = default)
     {
-        packageUrn = packageUrn.StartsWith("urn:", StringComparison.Ordinal) || packageUrn.StartsWith(':') ? packageUrn : ":" + packageUrn;
-        if (PackageConstants.TryGetByUrn(packageUrn, out var result))
+        if (PackageConstants.TryGetByUrn(packageUrn, out var package))
         {
-            return await RemovePackage(fromId, toId, role, result, cancellationToken);
+            return await RemovePackage(fromId, toId, role, package, cancellationToken);
         }
 
-        return ValidationComposer.Validate(PackageValidation.PackageUrnLookup([], [packageUrn]));
+        var problem = ValidationComposer.Validate(PackageValidation.PackageExists(package, packageUrn));
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        throw new UnreachableException();
     }
 
     public async Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, Role role, Guid packageId, CancellationToken cancellationToken = default)

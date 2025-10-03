@@ -30,7 +30,7 @@ public static class RoleConstants
         => ConstantLookup.TryGetByUrn(typeof(RoleConstants), urn, out result);
     
     /// <summary>
-    /// Try to get <see cref="Role"/> by Code.
+    /// Try to get <see cref="Role"/> by Urn.
     /// </summary>
     public static bool TryGetByCode(string code, [NotNullWhen(true)] out ConstantDefinition<Role>? result)
         => ConstantLookup.TryGetByCode(typeof(RoleConstants), code, out result);

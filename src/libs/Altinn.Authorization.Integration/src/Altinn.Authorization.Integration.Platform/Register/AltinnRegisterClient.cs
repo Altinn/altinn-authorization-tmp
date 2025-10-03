@@ -40,6 +40,5 @@ public interface IAltinnRegister
     /// <param name="fields">The fields to include in the response.</param>
     /// <param name="nextPage">The URL of the next page, if paginated.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>An asynchronous enumerable of paginated <see cref="RoleModel"/> items.</returns>
-    Task<IAsyncEnumerable<PlatformResponse<PageStream<RoleModel>>>> StreamRoles(IEnumerable<string> fields, string nextPage = null, CancellationToken cancellationToken = default);
+    Task<IAsyncEnumerable<PlatformResponse<PageStream<ExternalRoleAssignmentEvent>>>> StreamRoles(IEnumerable<string> fields, string nextPage = null, CancellationToken cancellationToken = default);
 }

@@ -133,9 +133,6 @@ internal static partial class AccessManagementHost
     private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddHostedService<Authorization.AccessManagement.RegisterHostedService>();
-        builder.Services.AddSingleton<IPartySyncService, PartySyncService>();
-        builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
-        builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
 
         // builder.Services.AddHostedService<AltinnRoleHostedService>();
         // builder.Services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();

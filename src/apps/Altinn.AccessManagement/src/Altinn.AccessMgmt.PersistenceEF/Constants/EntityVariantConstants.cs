@@ -1014,13 +1014,13 @@ public static class EntityVariantConstants
     /// - <c>TypeId:</c> References <see cref="EntityTypeConstants.Internal"/>  
     /// - <c>Translations:</c>  
     ///   - EN: "Enterprise User" / "Enterprise User"  
-    ///   - NN: "Standard" / "Standard intern entitet"  
+    ///   - NN: "Verksemdsbrukar" / "Verksemdsbrukar"  
     /// </remarks>
     public static ConstantDefinition<EntityVariant> EnterpriseUser { get; } =
         new ConstantDefinition<EntityVariant>("fa794486-108d-4285-afd1-698763a602dd")
         {
-            Entity = new() { TypeId = EntityTypeConstants.Internal, Name = "Virksomhetbruker", Description = "Virksomhetbruker" },
+            Entity = new() { TypeId = EntityTypeConstants.Internal, Name = "Virksomhetsbruker", Description = "Virksomhetsbruker" },
             EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Enterprise User"), KeyValuePair.Create("Description", "Enterprise User")),
-            NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Standard"), KeyValuePair.Create("Description", "Standard intern entitet")),
+            NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "Verksemdsbrukar"), KeyValuePair.Create("Description", "Verksemdsbrukar")),
         };
 }

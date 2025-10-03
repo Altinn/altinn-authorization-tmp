@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Migrations;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Lease;
@@ -12,6 +13,7 @@ using Altinn.Authorization.ModelUtils;
 using Altinn.Register.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services;
 
@@ -58,7 +60,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
         await foreach (var page in await _register.StreamParties(AltinnRegisterClient.AvailableFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
-            if (!page.IsProblem)
+            if (page.IsProblem)
             {
                 Log.ResponseError(_logger, page.StatusCode);
                 throw new Exception("Stream page is not successful");
@@ -78,20 +80,16 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     _ => throw new InvalidDataException($"Unkown Party type {item.Type}"),
                 };
 
-                if (!seen.Contains(data.Entity.RefId))
-                {
-                    seen.Add(data.Entity.RefId);
-                }
-                else
+                if (!seen.Add(data.Entity.RefId))
                 {
                     await Flush();
                 }
+
+                ingestEntities.Add(data.Entity);
+                ingestEntitiesLookup.AddRange(data.EntityLookups);
             }
 
-            if (ingestEntities.Count > _bulkSize)
-            {
-                await Flush();
-            }
+            await Flush();
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
             {
@@ -100,40 +98,45 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
             leaseData.PartyStreamNextPageLink = page.Content.Links.Next;
             await lease.Update(leaseData, cancellationToken);
+        }
 
-            async Task Flush()
+        async Task Flush()
+        {
+            var batchId = Guid.CreateVersion7();
+            var batchName = batchId.ToString("N");
+            
+            if (ingestEntities.Count == 0 && ingestEntitiesLookup.Count == 0)
             {
-                var batchId = Guid.CreateVersion7();
-                var batchName = batchId.ToString("N");
+                return;
+            }
 
-                try
+            try
+            {
+                _logger.LogInformation("Ingest and Merge Entity and EntityLookup batch '{0}' to db", batchName);
+
+                var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchId, cancellationToken);
+                var ingestedLookups = await ingestService.IngestTempData(ingestEntitiesLookup, batchId, cancellationToken);
+
+                if (ingestedEntities != ingestEntities.Count || ingestedLookups != ingestEntitiesLookup.Count)
                 {
-                    _logger.LogInformation("Ingest and Merge Entity and EntityLookup batch '{0}' to db", batchName);
-
-                    var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchId, cancellationToken);
-                    var ingestedLookups = await ingestService.IngestTempData(ingestEntitiesLookup, batchId, cancellationToken);
-
-                    if (ingestedEntities != ingestEntities.Count || ingestedLookups != ingestEntitiesLookup.Count)
-                    {
-                        _logger.LogWarning("Ingest partial complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", ingestedEntities, ingestEntities.Count, ingestedLookups, ingestEntitiesLookup.Count);
-                    }
-
-                    var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, options, ["id"], cancellationToken);
-                    var mergedLookups = await ingestService.MergeTempData<EntityLookup>(batchId, options, ["entityid", "key"], cancellationToken);
-
-                    _logger.LogInformation("Merge complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", mergedEntities, ingestedEntities, mergedLookups, ingestedLookups);
+                    _logger.LogWarning("Ingest partial complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", ingestedEntities, ingestEntities.Count, ingestedLookups, ingestEntitiesLookup.Count);
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to ingest and/or merge Entity and EntityLookup batch {0} to db", batchName);
-                    await Task.Delay(2000, cancellationToken);
-                }
-                finally
-                {
-                    ingestEntities.Clear();
-                    ingestEntitiesLookup.Clear();
-                    seen.Clear();
-                }
+
+                var mergedEntities = await ingestService.MergeTempData<Entity>(batchId, options, ["id"], cancellationToken);
+                var mergedLookups = await ingestService.MergeTempData<EntityLookup>(batchId, options, ["entityid", "key"], cancellationToken);
+
+                _logger.LogInformation("Merge complete: Entity ({0}/{1}) EntityLookup ({2}/{3})", mergedEntities, ingestedEntities, mergedLookups, ingestedLookups);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to ingest and/or merge Entity and EntityLookup batch {0} to db", batchName);
+                await Task.Delay(2000, cancellationToken);
+            }
+            finally
+            {
+                ingestEntities.Clear();
+                ingestEntitiesLookup.Clear();
+                seen.Clear();
             }
         }
     }
@@ -237,13 +240,18 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 Key = "PartyId",
                 Value = selfIdentifiedUser.PartyId.ToString(),
             },
-            new()
+        ];
+
+        if (selfIdentifiedUser.User.Value?.UserIds.Value is { } userIds)
+        {
+            entityLookups.AddRange(userIds.Select(userId => new EntityLookup()
             {
                 EntityId = selfIdentifiedUser.Uuid,
                 Key = "UserId",
-                Value = selfIdentifiedUser.User.Value.Username.Value,
-            }
-        ];
+                Value = userId.ToString(),
+                IsProtected = false,
+            }));
+        }
 
         return (entity, entityLookups);
     }
@@ -281,6 +289,17 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 Value = enterpriseUser.PartyId.Value.ToString(),
             }
         ];
+
+        if (enterpriseUser.User.Value?.UserIds.Value is { } userIds)
+        {
+            entityLookups.AddRange(userIds.Select(userId => new EntityLookup()
+            {
+                EntityId = enterpriseUser.Uuid,
+                Key = "UserId",
+                Value = userId.ToString(),
+                IsProtected = false,
+            }));
+        }
 
         return (entity, entityLookups);
     }
