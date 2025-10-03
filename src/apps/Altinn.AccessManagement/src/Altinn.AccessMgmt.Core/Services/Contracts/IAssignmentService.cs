@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
@@ -39,7 +40,7 @@ public interface IAssignmentService
     /// Gets assignment and creates if not exits
     /// </summary>
     /// <returns></returns>
-    Task<Assignment> GetOrCreateAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default);
+    Task<Assignment> GetOrCreateAssignment(Guid fromId, Guid toId, Guid roleId, AuditValues audit = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a package to the delegation

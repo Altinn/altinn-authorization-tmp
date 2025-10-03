@@ -1,10 +1,9 @@
 ﻿using Altinn.AccessManagement.HostedServices.Contracts;
 using Altinn.AccessManagement.HostedServices.Leases;
-using Altinn.AccessMgmt.Persistence.Core.Models;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Data;
-using Altinn.AccessMgmt.Persistence.Models;
-using Altinn.AccessMgmt.Persistence.Services.Contracts;
-using Altinn.AccessMgmt.Persistence.Services.Models;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.SblBridge;
 using Microsoft.FeatureManagement;
@@ -43,7 +42,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
         {
             var leaseData = await lease.Get<AltinnClientRoleLease>(cancellationToken);
             var clientDelegations = await _role.StreamRoles("12", leaseData.AltinnClientRoleStreamNextPageLink, cancellationToken);
-
+            string operationId = Guid.CreateVersion7().ToString();
             await foreach (var page in clientDelegations)
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -65,12 +64,11 @@ namespace Altinn.AccessManagement.HostedServices.Services
                 {
                     foreach (var item in page.Content.Data)
                     {
-                        ChangeRequestOptions options = new ChangeRequestOptions()
-                        {
-                            ChangedBy = item.PerformedByUserUuid ?? AuditDefaults.Altinn2RoleImportSystem,
-                            ChangedBySystem = AuditDefaults.Altinn2RoleImportSystem,
-                            ChangedAt = item.DelegationChangeDateTime ?? DateTime.UtcNow,
-                        };
+                        AuditValues audit = new AuditValues(
+                            item.PerformedByUserUuid ?? AuditDefaults.Altinn2RoleImportSystem,
+                            AuditDefaults.Altinn2RoleImportSystem,
+                            operationId,
+                            item.DelegationChangeDateTime ?? DateTime.UtcNow);
 
                         // Convert RoleDelegationModel to Client Delegation 
                         var delegationData = await CreateClientDelegationRequest(item, cancellationToken);
@@ -78,7 +76,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                         if (item.DelegationAction == DelegationAction.Revoke)
                         {
                             // If the action is Revoke, we should delete the delegation
-                            int deleted = await _delegationService.RevokeClientDelegation(delegationData, options, cancellationToken);
+                            int deleted = await _delegationService.RevokeClientDelegation(delegationData, audit, cancellationToken);
                             if (deleted <= 0)
                             {
                                 _logger.LogWarning(
@@ -102,7 +100,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                                 continue;
                             }
 
-                            IEnumerable<Delegation> delegations = await _delegationService.ImportClientDelegation(delegationData, options, cancellationToken);
+                            IEnumerable<CreateDelegationResponseDto> delegations = await _delegationService.ImportClientDelegation(delegationData, audit, cancellationToken);
                         }
 
                     }
@@ -126,7 +124,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                 ClientId = delegationModel.FromPartyUuid,
                 AgentId = delegationModel.ToUserPartyUuid ?? throw new Exception($"'delegationModel.ToUserPartyUuid' does not have value"),
                 AgentRole = "agent",
-                RolePackages = new List<CreateSystemDelegationRolePackageDto>(),
+                RolePackages = [],
                 Facilitator = facilitatorPartyId,
             };
 
@@ -136,7 +134,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
             return request;
         }
 
-        private Task<CreateSystemDelegationRolePackageDto> CreateSystemDelegationRolePackageDtoForClientDelegation(string roleTypeCode, CancellationToken cancellationToken = default)
+        private Task<ImportClientDelegationRolePackageDto> CreateSystemDelegationRolePackageDtoForClientDelegation(string roleTypeCode, CancellationToken cancellationToken = default)
         {
             string urn = string.Empty;
             string clientRoleCode = string.Empty;
@@ -164,7 +162,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                     break;
             }
 
-            CreateSystemDelegationRolePackageDto accessPackage = new CreateSystemDelegationRolePackageDto()
+            ImportClientDelegationRolePackageDto accessPackage = new ImportClientDelegationRolePackageDto()
             {
                 RoleIdentifier = clientRoleCode,
                 PackageUrn = urn

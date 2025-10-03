@@ -1,15 +1,16 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using Altinn.AccessMgmt.Core.Models;
+﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -426,7 +427,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     }
 
     /// <inheritdoc/>
-    public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, Guid roleId, CancellationToken cancellationToken = default)
+    public async Task<Assignment> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, Guid roleId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
         var assignment = await GetAssignment(fromEntityId, toEntityId, roleId, cancellationToken: cancellationToken);
         if (assignment != null)
@@ -457,12 +458,21 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         {
             FromId = fromEntityId,
             ToId = toEntityId,
-            RoleId = role.Id
+            RoleId = role.Id,
         };
-
-        await db.Assignments.AddAsync(assignment, cancellationToken);
-        var result = await db.SaveChangesAsync(cancellationToken);
         
+        await db.Assignments.AddAsync(assignment, cancellationToken);
+        int result;
+
+        if (audit == null)
+        {
+            result = await db.SaveChangesAsync(cancellationToken);
+        }
+        else
+        {
+            result = await db.SaveChangesAsync(audit, cancellationToken);
+        }
+
         if (result == 0)
         {
             Unreachable();
