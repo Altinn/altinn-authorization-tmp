@@ -1,5 +1,4 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Models;
+﻿using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
 using Altinn.AccessMgmt.Persistence.Services.Contracts;
 
@@ -331,15 +330,6 @@ public class RelationService(IRelationRepository relationRepository, IRelationPe
             Packages = res.Where(t => t.From.Id == relation.From.Id && t.Package != null).Select(t => t.Package).DistinctBy(t => t.Id).ToList(),
             Connections = new()
         });
-    }
-
-    private Models.CompactPermission ConvertToCompactPermission(ExtRelation connection)
-    {
-        return new Models.CompactPermission()
-        {
-            From = connection.From,
-            To = connection.To
-        };
     }
 
     private Models.Permission ConvertToPermission(ExtRelation connection)

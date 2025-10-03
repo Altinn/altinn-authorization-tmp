@@ -13,7 +13,6 @@ using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
 using Altinn.AccessMgmt.Core.Extensions;
-using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.Authorization.Api.Contracts.Register;
@@ -316,6 +315,8 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.POLICY_CONSENTREQUEST_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_CONSENTREQUEST_ORG, AuthzConstants.SCOPE_CONSENTREQUEST_READ, AuthzConstants.SCOPE_CONSENTREQUEST_WRITE])))
             .AddPolicy(AuthzConstants.POLICY_CLIENTDELEGATION_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_client_administration")))
             .AddPolicy(AuthzConstants.POLICY_CLIENTDELEGATION_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_client_administration")))
+            .AddPolicy(AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ])))
+            .AddPolicy(AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE])))
             .AddPolicy(AuthzConstants.SCOPE_PORTAL_ENDUSER, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER])));
 
         builder.Services.AddScoped<IAuthorizationHandler, AccessTokenHandler>();
