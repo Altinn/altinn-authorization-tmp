@@ -152,13 +152,7 @@ public partial class ConnectionService : IConnectionService
             return await AddPackage(fromId, toId, role, package.Id, "package", configureConnectionOptions, cancellationToken);
         }
 
-        var problem = ValidationComposer.Validate(PackageValidation.PackageExists(package, packageUrn));
-        if (problem is { })
-        {
-            return problem;
-        }
-
-        throw new UnreachableException();
+        return ValidationComposer.Validate(PackageValidation.PackageExists(package, packageUrn));
     }
 
     public async Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, Role role, string packageUrn, CancellationToken cancellationToken = default)
@@ -168,13 +162,7 @@ public partial class ConnectionService : IConnectionService
             return await RemovePackage(fromId, toId, role, package, cancellationToken);
         }
 
-        var problem = ValidationComposer.Validate(PackageValidation.PackageExists(package, packageUrn));
-        if (problem is { })
-        {
-            return problem;
-        }
-
-        throw new UnreachableException();
+        return ValidationComposer.Validate(PackageValidation.PackageExists(package, packageUrn));
     }
 
     public async Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, Role role, Guid packageId, CancellationToken cancellationToken = default)
