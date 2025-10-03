@@ -70,6 +70,11 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
             foreach (var item in page?.Content.Data ?? [])
             {
+                if (item is SystemUser)
+                {
+                    continue;
+                }
+                
                 var data = item switch
                 {
                     Person person => MapPerson(person),
@@ -258,6 +263,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
     private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapSystemUser(SystemUser systemUser)
     {
+        throw new NotImplementedException("Must get 'agent' and 'standard' type from register.");
         var entity = new Entity()
         {
             Id = systemUser.Uuid,
