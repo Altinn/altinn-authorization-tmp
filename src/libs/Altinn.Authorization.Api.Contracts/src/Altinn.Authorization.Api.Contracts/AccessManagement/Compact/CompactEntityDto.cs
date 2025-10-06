@@ -26,6 +26,11 @@ public class CompactEntityDto
     public string Variant { get; set; }
 
     /// <summary>
+    /// ExternalId
+    /// </summary>
+    public string ExternalId { get; set; }
+
+    /// <summary>
     /// Values from entityLoookup
     /// </summary>
     public Dictionary<string,string> KeyValues { get; set; }
