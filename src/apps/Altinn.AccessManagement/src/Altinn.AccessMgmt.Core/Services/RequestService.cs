@@ -84,7 +84,15 @@ public class RequestService(
             return false;
         }
 
+        var assignment = await assignmentService.GetOrCreateAssignment(request.FromId, request.ToId, request.RoleId);
 
+        var requestPackages = await Db.RequestPackages.Where(t => t.RequestId == request.Id && t.StatusId == statusOpen).ToListAsync();
+        var requestResources = await Db.RequestResources.Where(t => t.RequestId == request.Id && t.StatusId == statusOpen).ToListAsync();
+
+        var addPackageResult = assignmentService.AddPackageToAssignment(auditAccessor.AuditValues.ChangedBy, assignment.Id, requestPackages.Select(t => t.PackageId));
+        var addResourceResult = assignmentService.AddResourceToAssignment(auditAccessor.AuditValues.ChangedBy, assignment.Id, requestResources.Select(t => t.ResourceId));
+
+        // Need return model. Dictionary<guid,bool> for Accepted posible/executed true/false.
 
         return await ChangeRequestStatus(requestId, statusAccepted);
     }
@@ -97,13 +105,14 @@ public class RequestService(
             return false;
         }
 
+        var assignment = await assignmentService.GetOrCreateAssignment(request.FromId, request.ToId, request.RoleId);
+
         var requestPackage = await Db.RequestPackages.FirstOrDefaultAsync(t => t.RequestId == request.Id && t.PackageId == packageId);
         if (requestPackage == null)
         {
             return false;
         }
 
-        var assignment = await assignmentService.GetOrCreateAssignment(request.FromId, request.ToId, request.RoleId);
         var addPackageResult = assignmentService.AddPackageToAssignment(auditAccessor.AuditValues.ChangedBy, assignment.Id, requestPackage.PackageId);
 
         var statusResult = await ChangeRequestPackageStatus(requestId, packageId, statusAccepted);
@@ -124,13 +133,14 @@ public class RequestService(
             return false;
         }
 
+        var assignment = await assignmentService.GetOrCreateAssignment(request.FromId, request.ToId, request.RoleId);
+
         var requestResource = await Db.RequestResources.FirstOrDefaultAsync(t => t.RequestId == request.Id && t.ResourceId == resourceId);
         if (requestResource == null)
         {
             return false;
         }
 
-        var assignment = await assignmentService.GetOrCreateAssignment(request.FromId, request.ToId, request.RoleId);
         var addPackageResult = assignmentService.AddResourceToAssignment(auditAccessor.AuditValues.ChangedBy, assignment.Id, requestResource.ResourceId);
 
         var statusResult = await ChangeRequestResourceStatus(requestId, resourceId, statusAccepted);

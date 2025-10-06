@@ -170,6 +170,51 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     }
 
     /// <inheritdoc/>
+    public async Task<Dictionary<Guid,bool>> AddPackageToAssignment(Guid userId, Guid assignmentId, IEnumerable<Guid> packageIds, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Entities.AsNoTracking().SingleAsync(t => t.Id == userId, cancellationToken);
+        var assignment = await db.Assignments.SingleAsync(t => t.Id == assignmentId, cancellationToken);
+
+        var userAssignments = await db.Assignments.AsNoTracking().Where(t => t.FromId == assignment.FromId && t.ToId == userId).ToListAsync(cancellationToken);
+
+        var hasPackages = new Dictionary<Guid, bool>();
+
+        foreach (var packageId in packageIds)
+        {
+            var assignmentMatches = await db.AssignmentPackages.AsNoTracking().Where(t => t.PackageId == packageId && userAssignments.Select(t => t.Id).Contains(t.AssignmentId)).ToListAsync(cancellationToken);
+            if (assignmentMatches != null && assignmentMatches.Any())
+            {
+                hasPackages.Add(packageId, true);
+                continue;
+            }
+
+            var roleMatches = await db.RolePackages.AsNoTracking().Where(t => t.PackageId == packageId && userAssignments.Select(t => t.RoleId).Distinct().Contains(t.RoleId)).ToListAsync(cancellationToken);
+            if (roleMatches != null && roleMatches.Any())
+            {
+                hasPackages.Add(packageId, true);
+                continue;
+            }
+
+            hasPackages.Add(packageId, false);
+        }
+
+        foreach (var packageId in hasPackages.Where(t => t.Value == true).Select(t => t.Key))
+        {
+            await db.AssignmentPackages.AddAsync(
+                new AssignmentPackage()
+                {
+                    AssignmentId = assignmentId,
+                    PackageId = packageId
+                },
+                cancellationToken
+                );
+        }
+
+        var result = await db.SaveChangesAsync(cancellationToken);
+        return hasPackages;
+    }
+
+    /// <inheritdoc/>
     public async Task<bool> AddPackageToAssignment(Guid userId, Guid assignmentId, Guid packageId, CancellationToken cancellationToken = default)
     {
         /*
@@ -229,18 +274,119 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     }
 
     /// <inheritdoc/>
-    public Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<Guid, bool>> AddResourceToAssignment(Guid userId, Guid assignmentId, IEnumerable<Guid> resourceIds, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Entities.AsNoTracking().SingleAsync(t => t.Id == userId, cancellationToken);
+        var assignment = await db.Assignments.SingleAsync(t => t.Id == assignmentId, cancellationToken);
+
+        var userAssignments = await db.Assignments.AsNoTracking().Where(t => t.FromId == assignment.FromId && t.ToId == userId).ToListAsync(cancellationToken);
+
+        var hasResources = new Dictionary<Guid, bool>();
+
+        foreach (var resourceId in resourceIds)
+        {
+            var assignmentMatches = await db.AssignmentResources.AsNoTracking().Where(t => t.ResourceId == resourceId && userAssignments.Select(t => t.Id).Contains(t.AssignmentId)).ToListAsync(cancellationToken);
+            if (assignmentMatches != null && assignmentMatches.Any())
+            {
+                hasResources.Add(resourceId, true);
+                continue;
+            }
+
+            var roleMatches = await db.RoleResources.AsNoTracking().Where(t => t.ResourceId == resourceId && userAssignments.Select(t => t.RoleId).Distinct().Contains(t.RoleId)).ToListAsync(cancellationToken);
+            if (roleMatches != null && roleMatches.Any())
+            {
+                hasResources.Add(resourceId, true);
+                continue;
+            }
+
+            hasResources.Add(resourceId, false);
+        }
+
+        foreach (var resourceId in hasResources.Where(t => t.Value == true).Select(t => t.Key))
+        {
+            if (await db.AssignmentResources.AsNoTracking().CountAsync(t => t.AssignmentId == assignmentId && t.ResourceId == resourceId) > 0)
+            {
+                continue;
+            }
+
+            await db.AssignmentResources.AddAsync(
+                new AssignmentResource()
+                {
+                    AssignmentId = assignmentId,
+                    ResourceId = resourceId
+                },
+                cancellationToken
+                );
+        }
+
+        var result = await db.SaveChangesAsync(cancellationToken);
+        return hasResources;
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId, CancellationToken cancellationToken = default)
     {
         /*
-        [ ] Check if user is TS
-        [ ] Check if resource can be delegated
-        [ ] Check if user assignment.assignmentpackages has resources
-        [ ] Check if user assignment.roles has packages
-        [ ] Check if users has packages delegated?
+        [X] Check if user is TS
+        [X] Check if user assignment.roles has packages
+        [X] Check if user assignment.assignmentpackages has package
+        [?] Check if users has packages delegated?
+
+        [ ] Check if package can be delegated
         */
 
-        throw new NotImplementedException();
+        /* TODO: Future Sjekk om bruker er Tilgangsstyrer */
+        var user = await db.Entities.AsNoTracking().SingleAsync(t => t.Id == userId, cancellationToken);
+        var assignment = await db.Assignments.SingleAsync(t => t.Id == assignmentId, cancellationToken);
+        var resource = await db.Resources.SingleAsync(t => t.Id == resourceId, cancellationToken);
+
+        var userAssignments = await db.Assignments.AsNoTracking().Where(t => t.FromId == assignment.FromId && t.ToId == userId).ToListAsync(cancellationToken);
+
+        bool hasPackage = false;
+
+        var assignmentMatches = await db.AssignmentResources.AsNoTracking().Where(t => t.ResourceId == resourceId && userAssignments.Select(t => t.Id).Contains(t.AssignmentId)).ToListAsync(cancellationToken);
+        if (assignmentMatches != null && assignmentMatches.Any())
+        {
+            hasPackage = true;
+        }
+
+        if (!hasPackage)
+        {
+            var roleMatches = await db.RoleResources.AsNoTracking().Where(t => t.ResourceId == resourceId && userAssignments.Select(t => t.RoleId).Distinct().Contains(t.RoleId)).ToListAsync(cancellationToken);
+            if (roleMatches != null && roleMatches.Any())
+            {
+                hasPackage = true;
+            }
+        }
+
+        if (!hasPackage)
+        {
+            throw new Exception(string.Format("User '{0}' does not have resource '{1}'", user.Name, resource.Name));
+        }
+
+        if (await db.AssignmentResources.AsNoTracking().CountAsync(t => t.AssignmentId == assignmentId && t.ResourceId == resourceId) > 0)
+        {
+            return true;
+        }
+
+        await db.AssignmentResources.AddAsync(
+            new AssignmentResource()
+            {
+                AssignmentId = assignmentId,
+                ResourceId = resourceId
+            },
+            cancellationToken
+            );
+
+        var result = await db.SaveChangesAsync(cancellationToken);
+        if (result == 0)
+        {
+            return false;
+        }
+
+        return true;
     }
+
 
     /// <inheritdoc/>
     public async Task<ProblemInstance> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, bool cascade = false, CancellationToken cancellationToken = default)

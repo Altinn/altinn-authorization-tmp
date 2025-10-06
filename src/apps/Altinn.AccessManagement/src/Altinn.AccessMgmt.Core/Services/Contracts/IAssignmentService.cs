@@ -48,10 +48,22 @@ public interface IAssignmentService
     Task<bool> AddPackageToAssignment(Guid userId, Guid assignmentId, Guid packageId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Adds a package to the delegation
+    /// </summary>
+    /// <returns></returns>
+    Task<Dictionary<Guid, bool>> AddPackageToAssignment(Guid userId, Guid assignmentId, IEnumerable<Guid> packageIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds a resource to the delegation
     /// </summary>
     /// <returns></returns>
     Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a resource to the delegation
+    /// </summary>
+    /// <returns></returns>
+    Task<Dictionary<Guid, bool>> AddResourceToAssignment(Guid userId, Guid assignmentId, IEnumerable<Guid> resourceIds, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Fetches assignment.
