@@ -157,7 +157,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             {
                 Id = Guid.Parse(model.PartyUuid),
                 Name = model.DisplayName,
-                RefId = model.PersonIdentifier,
+                RefId = model.DateOfBirth, //// .PersonIdentifier,
                 TypeId = EntityTypeConstants.Person,
                 VariantId = EntityVariantConstants.Person,
             };
