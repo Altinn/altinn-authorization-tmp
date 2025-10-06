@@ -122,7 +122,7 @@ public partial class DtoMapper
 
         if (entity.TypeId.Equals(EntityTypeConstants.Organisation))
         {
-            result.Add("OrgNo", entity.RefId);
+            result.Add("OrganizationIdentifier", entity.RefId);
         }
 
         if (entity.TypeId.Equals(EntityTypeConstants.Person))
