@@ -1,8 +1,6 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.PersistenceEF.Constants;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Altinn.AccessMgmt.Core.Utils;
 
