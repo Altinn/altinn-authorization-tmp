@@ -7,10 +7,13 @@ public static class IQueryableExtensions
 {
     public static IQueryable<Connection> IncludeExtendedEntities(this IQueryable<Connection> queryable)
     {
-        return queryable.Include(c => c.From)
+        return queryable
+            .Include(c => c.From)
             .ThenInclude(c => c.Variant)
             .Include(c => c.From)
             .ThenInclude(c => c.Type)
+            .Include(c => c.From)
+            .ThenInclude(c => c.Parent)
 
             .Include(c => c.From)
             .ThenInclude(c => c.Parent)

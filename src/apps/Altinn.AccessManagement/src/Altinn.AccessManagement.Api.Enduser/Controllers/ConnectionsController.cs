@@ -6,17 +6,14 @@ using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
-using Altinn.AccessMgmt.Persistence.Data;
-using Altinn.AccessMgmt.Persistence.Models;
-using Altinn.AccessMgmt.Persistence.Services.Models;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
-using CompactRelationDto = Altinn.AccessMgmt.Persistence.Services.Models.CompactRelationDto;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
@@ -33,8 +30,12 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
 
     private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
     {
-        options.SupportedFromEntityTypes = [EntityTypeConstants.Organisation];
-        options.SupportedToEntityTypes = [EntityTypeConstants.Organisation];
+        options.AllowedWriteFromEntityTypes = [EntityTypeConstants.Organisation];
+        options.AllowedWriteToEntityTypes = [EntityTypeConstants.Organisation];
+        options.AllowedReadFromEntityTypes = [EntityTypeConstants.Organisation, EntityTypeConstants.Person];
+        options.AllowedReadToEntityTypes = [EntityTypeConstants.Organisation, EntityTypeConstants.Person];
+        options.FilterFromEntityTypes = EntityTypeConstants.AllTranslations().Select(e => e.Id);
+        options.FilterToEntityTypes = EntityTypeConstants.AllTranslations().Select(e => e.Id);
     };
 
     /// <summary>
@@ -57,13 +58,13 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
         var isToValidGuid = Guid.TryParse(connection.To, out var toUuid);
         if (connection.From == connection.Party)
         {
-            var result = await ConnectionService.GetConnectionsToOthers(fromUuid, isToValidGuid ? toUuid : null, null, null, null, cancellationToken);
+            var result = await ConnectionService.GetConnectionsToOthers(fromUuid, isToValidGuid ? toUuid : null, null, null, null, ConfigureConnections, cancellationToken);
             return Ok(PaginatedResult.Create(result, null));
         }
 
         if (connection.To == connection.Party)
         {
-            var result = await ConnectionService.GetConnectionsFromOthers(toUuid, isFromValidGuid ? fromUuid : null, null, null, null, cancellationToken);
+            var result = await ConnectionService.GetConnectionsFromOthers(toUuid, isFromValidGuid ? fromUuid : null, null, null, null, ConfigureConnections, cancellationToken);
             return Ok(PaginatedResult.Create(result, null));
         }
 
@@ -74,10 +75,9 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
     /// Add package to connection (assignment or delegation)
     /// </summary>
     [HttpPost]
-    // [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ProducesResponseType<Assignment>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -90,7 +90,7 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
 
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);
-        var result = await ConnectionService.AddAssignment(fromUuid, toUuid, RoleConstants.Rightholder, ConfigureConnections, cancellationToken);
+        var result = await ConnectionService.AddAssignment(fromUuid, toUuid, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -104,8 +104,7 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
     /// </summary>
     [HttpDelete]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
-    // [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -119,7 +118,7 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
 
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);
-        problem = await ConnectionService.RemoveAssignment(fromUuid, toUuid, RoleConstants.Rightholder, cascade, ConfigureConnections, cancellationToken);
+        problem = await ConnectionService.RemoveAssignment(fromUuid, toUuid, cascade, ConfigureConnections, cancellationToken);
         if (problem is { })
         {
             return problem.ToActionResult();
@@ -133,9 +132,8 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
     /// </summary>
     [HttpGet("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
-    // [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
-    [ProducesResponseType<PaginatedResult<PackagePermission>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
+    [ProducesResponseType<PaginatedResult<PackagePermissionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -150,13 +148,13 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
         var isToValidGuid = Guid.TryParse(connection.To, out var toUuid);
         if (connection.From == connection.Party)
         {
-            var result = await ConnectionService.GetPackagePermissionsToOthers(fromUuid, isToValidGuid ? toUuid : null, null, cancellationToken);
+            var result = await ConnectionService.GetPackagePermissionsToOthers(fromUuid, isToValidGuid ? toUuid : null, null, ConfigureConnections, cancellationToken);
             return Ok(PaginatedResult.Create(result, null));
         }
 
         if (connection.To == connection.Party)
         {
-            var result = await ConnectionService.GetPackagePermissionsFromOthers(toUuid, isFromValidGuid ? fromUuid : null, null, cancellationToken);
+            var result = await ConnectionService.GetPackagePermissionsFromOthers(toUuid, isFromValidGuid ? fromUuid : null, null, ConfigureConnections, cancellationToken);
             return Ok(PaginatedResult.Create(result, null));
         }
 
@@ -167,10 +165,9 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
     /// Add package to connection (assignment or delegation)
     /// </summary>
     [HttpPost("accesspackages")]
-    // [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [ProducesResponseType<AssignmentPackage>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<AssignmentPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -187,10 +184,10 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.AddPackage(fromUuid, toUuid, RoleConstants.Rightholder, packageId.Value, ConfigureConnections, cancellationToken);
+                return await ConnectionService.AddPackage(fromUuid, toUuid, packageId.Value, ConfigureConnections, cancellationToken);
             }
 
-            return await ConnectionService.AddPackage(fromUuid, toUuid, RoleConstants.Rightholder, package, ConfigureConnections, cancellationToken);
+            return await ConnectionService.AddPackage(fromUuid, toUuid, package, ConfigureConnections, cancellationToken);
         }
 
         var result = await AddPackage();
@@ -206,8 +203,7 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
     /// Remove package from connection (assignment or delegation)
     /// </summary>
     [HttpDelete("accesspackages")]
-    // [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -226,10 +222,10 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
         {
             if (packageId.HasValue)
             {
-                return await ConnectionService.RemovePackage(fromUuid, toUuid, RoleConstants.Rightholder, packageId.Value, cancellationToken);
+                return await ConnectionService.RemovePackage(fromUuid, toUuid, packageId.Value, ConfigureConnections, cancellationToken);
             }
 
-            return await ConnectionService.RemovePackage(fromUuid, toUuid, RoleConstants.Rightholder, package, cancellationToken);
+            return await ConnectionService.RemovePackage(fromUuid, toUuid, package, ConfigureConnections, cancellationToken);
         }
 
         problem = await RemovePackage();
@@ -246,8 +242,7 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
     /// API for delegation check of access packages, for which packages the authenticated user has permission to assign to others on behalf of the specified party.
     /// </summary>
     [HttpGet("accesspackages/delegationcheck")]
-    // [DbAudit(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
-    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApiStr)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
     [ProducesResponseType<PaginatedResult<AccessPackageDto.Check>>(StatusCodes.Status200OK)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -259,10 +254,10 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
         {
             if (packages.Any())
             {
-                return await ConnectionService.CheckPackage(party, packages, packageIds, cancellationToken);
+                return await ConnectionService.CheckPackage(party, packages, packageIds, ConfigureConnections, cancellationToken);
             }
 
-            return await ConnectionService.CheckPackage(party, packageIds, cancellationToken);
+            return await ConnectionService.CheckPackage(party, packageIds, ConfigureConnections, cancellationToken);
         }
 
         var result = await CheckPackage();

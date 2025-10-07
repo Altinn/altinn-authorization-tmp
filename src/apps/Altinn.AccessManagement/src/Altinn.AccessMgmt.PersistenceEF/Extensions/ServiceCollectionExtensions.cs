@@ -46,7 +46,10 @@ public static class ServiceCollectionExtensions
         };
     }
 
-    private static void ConfigureNpgsql(NpgsqlDbContextOptionsBuilder builder) { }
+    private static void ConfigureNpgsql(NpgsqlDbContextOptionsBuilder builder)
+    {
+        // builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+    }
 
     public class AccessManagementDatabaseOptions
     {
