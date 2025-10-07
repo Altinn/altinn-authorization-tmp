@@ -203,7 +203,7 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
             .Where(a => a.ToId == toId)
             .Where(a => a.RoleId == RoleConstants.Rightholder)
             .FirstOrDefaultAsync(cancellationToken);
-        
+
         if (assignment is null)
         {
             return null;
@@ -381,10 +381,24 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
             return problem;
         }
 
-        if (options.AllowedWriteFromEntityTypes.Any())
+        if (options.AllowedWriteFromEntityTypes.Any() && options.AllowedWriteToEntityTypes.Any())
         {
             problem = ValidationComposer.Validate(
                 EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.AllowedWriteFromEntityTypes]),
+                EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
+            );
+        }
+
+        if (options.AllowedWriteFromEntityTypes.Any())
+        {
+            problem = ValidationComposer.Validate(
+                EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.AllowedWriteFromEntityTypes])
+            );
+        }
+
+        if (options.AllowedWriteToEntityTypes.Any())
+        {
+            problem = ValidationComposer.Validate(
                 EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
             );
         }
