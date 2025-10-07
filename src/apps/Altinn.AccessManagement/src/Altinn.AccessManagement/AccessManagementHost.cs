@@ -102,6 +102,8 @@ internal static partial class AccessManagementHost
         builder.Services.AddAccessManagementDatabase(options =>
         {
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            options.AppConnectionString = appsettings.Database.Postgres.AppConnectionString;
+            options.MigrationConnectionString = appsettings.Database.Postgres.MigrationConnectionString;
             options.Source = appsettings.RunInitOnly ? SourceType.Migration : SourceType.App; 
         });
 
@@ -116,7 +118,6 @@ internal static partial class AccessManagementHost
         builder.ConfigureHostedServices();
         builder.AddAccessManagementEnduser();
         builder.AddAccessManagementInternal();
-        builder.AddEFCoreServices();
 
         return builder.Build();
     }
@@ -127,14 +128,6 @@ internal static partial class AccessManagementHost
         {
             builder.Configuration.GetSection("AccessMgmtPersistenceOptions").Bind(opts);
         });
-
-        return builder;
-    }
-
-    private static WebApplicationBuilder AddEFCoreServices(this WebApplicationBuilder builder)
-    {
-        builder.Services.AddScoped<Altinn.AccessMgmt.Core.Services.Contracts.IPackageService, Altinn.AccessMgmt.Core.Services.PackageService>();
-        builder.Services.AddScoped<Altinn.AccessMgmt.Core.Services.Contracts.IRoleService, Altinn.AccessMgmt.Core.Services.RoleService>();
 
         return builder;
     }
@@ -324,6 +317,8 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.POLICY_CONSENTREQUEST_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_CONSENTREQUEST_ORG, AuthzConstants.SCOPE_CONSENTREQUEST_READ, AuthzConstants.SCOPE_CONSENTREQUEST_WRITE])))
             .AddPolicy(AuthzConstants.POLICY_CLIENTDELEGATION_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_client_administration")))
             .AddPolicy(AuthzConstants.POLICY_CLIENTDELEGATION_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_client_administration")))
+            .AddPolicy(AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ])))
+            .AddPolicy(AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE])))
             .AddPolicy(AuthzConstants.SCOPE_PORTAL_ENDUSER, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER])));
 
         builder.Services.AddScoped<IAuthorizationHandler, AccessTokenHandler>();
