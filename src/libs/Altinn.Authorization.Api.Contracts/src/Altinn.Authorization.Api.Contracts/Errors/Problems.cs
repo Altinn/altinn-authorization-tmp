@@ -97,5 +97,5 @@ public static class Problems
     
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor ConnectionEntitiesDoNotExist { get; }  
-    = _factory.Create(20, HttpStatusCode.BadRequest, "Entities from and to do not exists.");
+    = _factory.Create(21, HttpStatusCode.BadRequest, "Entities from and to do not exists.");
 }
