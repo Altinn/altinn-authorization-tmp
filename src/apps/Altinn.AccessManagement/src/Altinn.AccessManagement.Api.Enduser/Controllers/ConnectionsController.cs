@@ -34,8 +34,8 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
         options.AllowedWriteToEntityTypes = [EntityTypeConstants.Organisation];
         options.AllowedReadFromEntityTypes = [EntityTypeConstants.Organisation, EntityTypeConstants.Person];
         options.AllowedReadToEntityTypes = [EntityTypeConstants.Organisation, EntityTypeConstants.Person];
-        options.FilterFromEntityTypes = EntityTypeConstants.AllTranslations().Select(e => e.Id);
-        options.FilterToEntityTypes = EntityTypeConstants.AllTranslations().Select(e => e.Id);
+        options.FilterFromEntityTypes = [];
+        options.FilterToEntityTypes = [];
     };
 
     /// <summary>
