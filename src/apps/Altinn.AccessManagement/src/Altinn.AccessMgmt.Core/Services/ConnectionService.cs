@@ -151,7 +151,7 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
             return result.ToList();
         }
 
-        if (party == from?.Id)
+        if (party == to?.Id)
         {
             var result = await GetPackagePermissionsFromOthers(party, from?.Id, null, configureConnections, cancellationToken);
             return result.ToList();
