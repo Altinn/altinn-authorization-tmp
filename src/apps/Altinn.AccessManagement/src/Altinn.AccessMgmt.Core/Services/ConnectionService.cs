@@ -448,6 +448,7 @@ public partial class ConnectionService
         var result = await DbContext.Connections
             .AsNoTracking()
             .IncludeExtendedEntities()
+            .Include(t => t.Role)
             .Include(t => t.Package)
             .Include(t => t.Via)
             .Include(t => t.ViaRole)
