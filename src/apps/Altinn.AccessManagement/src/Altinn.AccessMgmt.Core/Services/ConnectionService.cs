@@ -19,21 +19,36 @@ namespace Altinn.AccessMgmt.Core.Services;
 /// <inheritdoc />
 public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor auditAccessor) : IConnectionService
 {
+    public async Task<Result<IEnumerable<ConnectionPackageDto>>> GetAssignments(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnections);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateReadOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        if (party == from?.Id)
+        {
+            var result = await GetConnectionsToOthers(party, to?.Id, null, null, null, configureConnections, cancellationToken);
+            return result.ToList();
+        }
+
+        if (party == to?.Id)
+        {
+            var result = await GetConnectionsFromOthers(party, from?.Id, null, null, null, configureConnections, cancellationToken);
+            return result.ToList();
+        }
+
+        return new List<ConnectionPackageDto>();
     }
 
-    public async Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Action<ConnectionOptions> configureOptions = null, CancellationToken cancellationToken = default)
+    public async Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
-        var options = new ConnectionOptions(configureOptions);
-        var entities = await dbContext.Entities
-            .AsNoTracking()
-            .Where(e => e.Id == fromId || e.Id == toId)
-            .Include(e => e.Type)
-            .ToListAsync(cancellationToken);
-
-        var fromEntity = entities.FirstOrDefault(e => e.Id == fromId);
-        var toEntity = entities.FirstOrDefault(e => e.Id == toId);
-
-        var problem = ValidateWriteOpInput(fromEntity, toEntity, options);
+        var options = new ConnectionOptions(configureConnections);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
         if (problem is { })
         {
             return problem;
@@ -41,8 +56,8 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
 
         var existingAssignment = await dbContext.Assignments
             .AsNoTracking()
-            .Where(e => e.FromId == fromId)
-            .Where(e => e.ToId == toId)
+            .Where(e => e.FromId == from.Id)
+            .Where(e => e.ToId == to.Id)
             .Where(e => e.RoleId == RoleConstants.Rightholder)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -64,19 +79,11 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
         return DtoMapper.Convert(assignment);
     }
 
-    public async Task<ValidationProblemInstance> RemoveAssignment(Guid fromId, Guid toId, bool cascade = false, Action<ConnectionOptions> configureOptions = null, CancellationToken cancellationToken = default)
+    public async Task<ValidationProblemInstance> RemoveAssignment(Guid fromId, Guid toId, bool cascade = false, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
-        var options = new ConnectionOptions(configureOptions);
-        var entities = await dbContext.Entities
-            .AsNoTracking()
-            .Where(e => e.Id == fromId || e.Id == toId)
-            .Include(e => e.Type)
-            .ToListAsync(cancellationToken);
-
-        var fromEntity = entities.FirstOrDefault(e => e.Id == fromId);
-        var toEntity = entities.FirstOrDefault(e => e.Id == toId);
-
-        var problem = ValidateWriteOpInput(fromEntity, toEntity, options);
+        var options = new ConnectionOptions(configureConnections);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
         if (problem is { })
         {
             return problem;
@@ -128,6 +135,31 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
         return null;
     }
 
+    public async Task<Result<IEnumerable<PackagePermissionDto>>> GetPackages(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    {
+        var options = new ConnectionOptions(configureConnections);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateReadOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
+        if (party == from?.Id)
+        {
+            var result = await GetPackagePermissionsToOthers(party, to?.Id, null, configureConnections, cancellationToken);
+            return result.ToList();
+        }
+
+        if (party == from?.Id)
+        {
+            var result = await GetPackagePermissionsFromOthers(party, from?.Id, null, configureConnections, cancellationToken);
+            return result.ToList();
+        }
+
+        return new List<PackagePermissionDto>();
+    }
+
     public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         return await AddPackage(fromId, toId, packageId, "packageId", configureConnection, cancellationToken);
@@ -156,6 +188,13 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
     public async Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnection);
+        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var problem = ValidateWriteOpInput(from, to, options);
+        if (problem is { })
+        {
+            return problem;
+        }
+
         var assignment = await dbContext.Assignments
             .AsNoTracking()
             .Include(a => a.From)
@@ -170,7 +209,7 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
             return null;
         }
 
-        var problem = ValidateWriteOpInput(assignment.From, assignment.To, options);
+        problem = ValidateWriteOpInput(assignment.From, assignment.To, options);
         if (problem is { })
         {
             return problem;
@@ -353,24 +392,33 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
         return problem;
     }
 
-    private ValidationProblemInstance ValidateReadOpInput(Entity from, Entity to, ConnectionOptions options)
+    private ProblemInstance ValidateReadOpInput(Entity? from, Entity? to, ConnectionOptions options)
     {
-        var problem = ValidationComposer.Validate(
-            EntityValidation.FromExists(from),
-            EntityValidation.ToExists(to)
-        );
-
-        if (problem is { })
+        if (from is { })
         {
-            return problem;
+            var problem = ValidationComposer.Validate(
+                EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.AllowedReadFromEntityTypes])
+            );
+
+            if (problem is { })
+            {
+                return problem;
+            }
         }
 
-        problem = ValidationComposer.Validate(
-            EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.AllowedReadFromEntityTypes]),
-            EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
-        );
+        if (to is { })
+        {
+            var problem = ValidationComposer.Validate(
+                EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
+            );
 
-        return problem;
+            if (problem is { })
+            {
+                return problem;
+            }
+        }
+
+        return Problems.ConnectionEntitiesDoNotExist;
     }
 }
 

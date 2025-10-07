@@ -11,6 +11,8 @@ namespace Altinn.AccessMgmt.Core.Services.Contracts;
 /// </summary>
 public interface IConnectionService
 {
+    Task<Result<IEnumerable<ConnectionPackageDto>>> GetAssignments(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Creates a role assignment between two entities.
     /// </summary>
@@ -36,6 +38,17 @@ public interface IConnectionService
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
     Task<ValidationProblemInstance> RemoveAssignment(Guid fromId, Guid toId, bool cascade = false, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="party"></param>
+    /// <param name="fromId"></param>
+    /// <param name="toId"></param>
+    /// <param name="configureConnections"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Result<IEnumerable<PackagePermissionDto>>> GetPackages(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a package to an assignment (by package ID) based on the role between two entities.

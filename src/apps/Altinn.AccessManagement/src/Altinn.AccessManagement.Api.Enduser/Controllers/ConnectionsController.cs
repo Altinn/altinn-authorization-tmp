@@ -54,21 +54,17 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
             return problem.ToActionResult();
         }
 
-        var isFromValidGuid = Guid.TryParse(connection.From, out var fromUuid);
-        var isToValidGuid = Guid.TryParse(connection.To, out var toUuid);
-        if (connection.From == connection.Party)
+        var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
+        var validToUuid = Guid.TryParse(connection.To, out var toUuid);
+        _ = Guid.TryParse(connection.Party, out var partyUuid);
+
+        var result = await ConnectionService.GetAssignments(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
+        if (result.IsProblem)
         {
-            var result = await ConnectionService.GetConnectionsToOthers(fromUuid, isToValidGuid ? toUuid : null, null, null, null, ConfigureConnections, cancellationToken);
-            return Ok(PaginatedResult.Create(result, null));
+            return result.Problem.ToActionResult();
         }
 
-        if (connection.To == connection.Party)
-        {
-            var result = await ConnectionService.GetConnectionsFromOthers(toUuid, isFromValidGuid ? fromUuid : null, null, null, null, ConfigureConnections, cancellationToken);
-            return Ok(PaginatedResult.Create(result, null));
-        }
-
-        throw new UnreachableException();
+        return Ok(PaginatedResult.Create(result.Value, null));
     }
 
     /// <summary>
@@ -144,21 +140,17 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
             return problem.ToActionResult();
         }
 
-        var isFromValidGuid = Guid.TryParse(connection.From, out var fromUuid);
-        var isToValidGuid = Guid.TryParse(connection.To, out var toUuid);
-        if (connection.From == connection.Party)
+        var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
+        var validToUuid = Guid.TryParse(connection.To, out var toUuid);
+        _ = Guid.TryParse(connection.Party, out var partyUuid);
+
+        var result = await ConnectionService.GetPackages(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
+        if (result.IsProblem)
         {
-            var result = await ConnectionService.GetPackagePermissionsToOthers(fromUuid, isToValidGuid ? toUuid : null, null, ConfigureConnections, cancellationToken);
-            return Ok(PaginatedResult.Create(result, null));
+            return result.Problem.ToActionResult();
         }
 
-        if (connection.To == connection.Party)
-        {
-            var result = await ConnectionService.GetPackagePermissionsFromOthers(toUuid, isFromValidGuid ? fromUuid : null, null, ConfigureConnections, cancellationToken);
-            return Ok(PaginatedResult.Create(result, null));
-        }
-
-        throw new UnreachableException();
+        return Ok(PaginatedResult.Create(result.Value, null));
     }
 
     /// <summary>
