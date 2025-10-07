@@ -19,6 +19,8 @@ namespace Altinn.AccessMgmt.Core.Services;
 /// <inheritdoc />
 public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor auditAccessor) : IConnectionService
 {
+    }
+
     public async Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Action<ConnectionOptions> configureOptions = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureOptions);
