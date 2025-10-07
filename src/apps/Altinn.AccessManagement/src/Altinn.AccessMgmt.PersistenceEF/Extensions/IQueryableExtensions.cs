@@ -34,6 +34,11 @@ public static class IQueryableExtensions
             .ThenInclude(c => c.Variant)
             .Include(c => c.To)
             .ThenInclude(c => c.Parent)
+            .ThenInclude(c => c.Type)
+
+            .Include(c => c.Via)
+            .ThenInclude(c => c.Variant)
+            .Include(c => c.Via)
             .ThenInclude(c => c.Type);
     }
 }

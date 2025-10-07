@@ -226,7 +226,7 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
             return null;
         }
 
-        dbContext.Remove(assignment);
+        dbContext.Remove(existingAssignmentPackages);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return null;
@@ -535,7 +535,10 @@ public partial class ConnectionService
         var result = await dbContext.Connections
             .AsNoTracking()
             .IncludeExtendedEntities()
-            .Include(c => c.Package)
+            .Include(t => t.Package)
+            .Include(t => t.Via)
+            .Include(t => t.ViaRole)
+            .Include(t => t.Role)
             .Where(c => c.ToId == partyId)
             .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.FromId))
             .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.ToId))
