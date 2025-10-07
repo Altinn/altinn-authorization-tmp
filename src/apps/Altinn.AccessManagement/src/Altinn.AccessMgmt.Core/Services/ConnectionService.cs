@@ -77,7 +77,7 @@ public partial class ConnectionService : IConnectionService
     public async Task<ValidationProblemInstance> RemoveAssignment(Guid fromId, Guid toId, Role role, bool cascade = false, Action<ConnectionOptions> configureConnectionOptions = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(role);
-        
+
         var options = new ConnectionOptions(configureConnectionOptions);
         var entities = await DbContext.Entities
             .AsNoTracking()
@@ -151,14 +151,8 @@ public partial class ConnectionService : IConnectionService
         {
             return await AddPackage(fromId, toId, role, package.Id, "package", configureConnectionOptions, cancellationToken);
         }
-        
-        var problem = ValidationComposer.Validate(PackageValidation.PackageExists(package, packageUrn));
-        if (problem is { })
-        {
-            return problem;
-        }
 
-        throw new UnreachableException();
+        return ValidationComposer.Validate(PackageValidation.PackageExists(package, packageUrn));
     }
 
     public async Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, Role role, string packageUrn, CancellationToken cancellationToken = default)
@@ -168,19 +162,13 @@ public partial class ConnectionService : IConnectionService
             return await RemovePackage(fromId, toId, role, package, cancellationToken);
         }
 
-        var problem = ValidationComposer.Validate(PackageValidation.PackageExists(package, packageUrn));
-        if (problem is { })
-        {
-            return problem;
-        }
-
-        throw new UnreachableException();
+        return ValidationComposer.Validate(PackageValidation.PackageExists(package, packageUrn));
     }
 
     public async Task<ValidationProblemInstance> RemovePackage(Guid fromId, Guid toId, Role role, Guid packageId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(role);
-        
+
         var assignment = await DbContext.Assignments
             .AsNoTracking()
             .Where(a => a.FromId == fromId)
@@ -204,7 +192,7 @@ public partial class ConnectionService : IConnectionService
             return null;
         }
 
-        DbContext.Remove(assignment);
+        DbContext.Remove(existingAssignmentPackages);
         await DbContext.SaveChangesAsync(cancellationToken);
 
         return null;
@@ -213,7 +201,7 @@ public partial class ConnectionService : IConnectionService
     private async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Role role, Guid packageId, string queryParamName, Action<ConnectionOptions> configureConnectionOptions = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(role);
-        
+
         var options = new ConnectionOptions(configureConnectionOptions);
         var entities = await DbContext.Entities
             .AsNoTracking()
@@ -285,7 +273,7 @@ public partial class ConnectionService : IConnectionService
     {
         var assignablePackages = await DbContext.GetAssignableAccessPackages(
             party,
-            AuditAccessor.AuditValues.ChangedBy, 
+            AuditAccessor.AuditValues.ChangedBy,
             packageIds,
             cancellationToken
         );
@@ -396,10 +384,7 @@ public partial class ConnectionService
     public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
         var result = await DbContext.Connections.AsNoTracking()
-            .Include(t => t.To)
-            .ThenInclude(t => t.Variant)
-            .Include(t => t.To)
-            .ThenInclude(t => t.Type)
+            .IncludeExtendedEntities()
             .Include(t => t.Role)
             .Include(t => t.Package)
             .Where(t => t.FromId == partyId)
@@ -416,10 +401,7 @@ public partial class ConnectionService
     public async Task<IEnumerable<ConnectionDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
     {
         var result = await DbContext.Connections.AsNoTracking()
-            .Include(t => t.To)
-            .ThenInclude(t => t.Variant)
-            .Include(t => t.To)
-            .ThenInclude(t => t.Type)
+            .IncludeExtendedEntities()
             .Include(t => t.Role)
             .Where(t => t.FromId == partyId)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
@@ -433,10 +415,7 @@ public partial class ConnectionService
     public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, CancellationToken cancellationToken = default)
     {
         var result = await DbContext.Connections.AsNoTracking()
-            .Include(t => t.From)
-            .ThenInclude(t => t.Variant)
-            .Include(t => t.From)
-            .ThenInclude(t => t.Type)
+            .IncludeExtendedEntities()
             .Include(t => t.Role)
             .Include(t => t.Package)
             .Where(t => t.ToId == partyId)
@@ -453,10 +432,7 @@ public partial class ConnectionService
     public async Task<IEnumerable<ConnectionDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, CancellationToken cancellationToken = default)
     {
         var result = await DbContext.Connections.AsNoTracking()
-            .Include(c => c.From)
-            .ThenInclude(c => c.Type)
-            .Include(c => c.From)
-            .ThenInclude(c => c.Variant)
+            .IncludeExtendedEntities()
             .Include(c => c.Role)
             .Where(t => t.ToId == partyId)
             .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
@@ -471,10 +447,14 @@ public partial class ConnectionService
     {
         var result = await DbContext.Connections
             .AsNoTracking()
+            .IncludeExtendedEntities()
             .Include(t => t.Package)
-            .Where(t => t.ToId == partyId)
-            .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
-            .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
+            .Include(t => t.Via)
+            .Include(t => t.ViaRole)
+            .Include(t => t.Role)
+            .Where(c => c.ToId == partyId)
+            .WhereIf(fromId.HasValue, c => c.FromId == fromId.Value)
+            .WhereIf(packageId.HasValue, c => c.PackageId == packageId.Value)
             .ToListAsync(cancellationToken);
 
         if (result is { } && result.Any() && result.Where(r => r.Package is { }) is var packages)
@@ -494,7 +474,10 @@ public partial class ConnectionService
     {
         var result = await DbContext.Connections
             .AsNoTracking()
+            .IncludeExtendedEntities()
             .Include(t => t.Package)
+            .Include(t => t.Via)
+            .Include(t => t.ViaRole)
             .Include(t => t.Role)
             .Where(t => t.FromId == partyId)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
@@ -518,6 +501,7 @@ public partial class ConnectionService
     {
         var result = await DbContext.Connections
             .AsNoTracking()
+            .IncludeExtendedEntities()
             .Include(t => t.Package)
             .Include(t => t.Role)
             .Include(t => t.Resource)
@@ -544,6 +528,7 @@ public partial class ConnectionService
     {
         var result = await DbContext.Connections
             .AsNoTracking()
+            .IncludeExtendedEntities()
             .Include(t => t.Package)
             .Include(t => t.Resource)
             .Include(t => t.Role)
@@ -568,17 +553,11 @@ public partial class ConnectionService
     /// <inheritdoc />
     public async Task<IEnumerable<SystemUserClientConnectionDto>> GetConnectionsToAgent(Guid viaId, Guid toId, CancellationToken cancellationToken = default)
     {
-        var result = await DbContext.Connections.AsNoTracking()
+        var result = await DbContext.Connections
+            .AsNoTracking()
+            .IncludeExtendedEntities()
             .Include(t => t.Delegation)
-            .Include(t => t.From)
-            .ThenInclude(t => t.Type)
-            .Include(t => t.From)
-            .ThenInclude(t => t.Variant)
             .Include(t => t.Role)
-            .Include(t => t.To)
-            .ThenInclude(t => t.Type)
-            .Include(t => t.To)
-            .ThenInclude(t => t.Variant)
             .Include(t => t.Via)
             .ThenInclude(t => t.Type)
             .Include(t => t.Via)
