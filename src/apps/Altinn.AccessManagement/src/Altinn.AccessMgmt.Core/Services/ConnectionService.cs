@@ -388,15 +388,13 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
                 EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
             );
         }
-
-        if (options.AllowedWriteFromEntityTypes.Any())
+        else if (options.AllowedWriteFromEntityTypes.Any())
         {
             problem = ValidationComposer.Validate(
                 EntityTypeValidation.FromIsOfType(from.TypeId, [.. options.AllowedWriteFromEntityTypes])
             );
         }
-
-        if (options.AllowedWriteToEntityTypes.Any())
+        else if (options.AllowedWriteToEntityTypes.Any())
         {
             problem = ValidationComposer.Validate(
                 EntityTypeValidation.ToIsOfType(to.TypeId, [.. options.AllowedWriteToEntityTypes])
