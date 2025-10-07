@@ -451,6 +451,7 @@ public partial class ConnectionService
         var options = new ConnectionOptions(configureConnections);
         var result = await dbContext.Connections.AsNoTracking()
             .IncludeExtendedEntities()
+            .Include(t => t.Role)
             .Include(t => t.Package)
             .Where(t => t.FromId == partyId)
             .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.FromId))
