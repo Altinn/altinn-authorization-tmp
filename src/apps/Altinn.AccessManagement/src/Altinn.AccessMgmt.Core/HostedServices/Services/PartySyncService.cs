@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+﻿using System.Runtime.Serialization;
+using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -11,6 +12,7 @@ using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Altinn.Authorization.ModelUtils;
 using Altinn.Register.Contracts;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
@@ -23,7 +25,6 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     private readonly ILogger<RegisterHostedService> _logger;
     private readonly IAltinnRegister _register;
     private readonly IServiceProvider _serviceProvider;
-    private readonly int _bulkSize = 10_000;
 
     /// <summary>
     /// PartySyncService Constructor
@@ -70,11 +71,6 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
             foreach (var item in page?.Content.Data ?? [])
             {
-                if (item is SystemUser)
-                {
-                    continue;
-                }
-                
                 var data = item switch
                 {
                     Person person => MapPerson(person),
@@ -84,6 +80,11 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     EnterpriseUser enterpriseUser => MapEnterpriseUser(enterpriseUser),
                     _ => throw new InvalidDataException($"Unkown Party type {item.Type}"),
                 };
+
+                if ((item is SystemUser || item is EnterpriseUser) && item.IsDeleted.Value)
+                {
+                    await DeleteEntities(appDbContext, ingestEntities, ingestEntitiesLookup, item, cancellationToken);
+                }
 
                 if (!seen.Add(data.Entity.RefId))
                 {
@@ -109,7 +110,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         {
             var batchId = Guid.CreateVersion7();
             var batchName = batchId.ToString("N");
-            
+
             if (ingestEntities.Count == 0 && ingestEntitiesLookup.Count == 0)
             {
                 return;
@@ -146,6 +147,72 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         }
     }
 
+    private static async Task DeleteEntities(AppDbContext appDbContext, List<Entity> ingestEntities, List<EntityLookup> ingestEntitiesLookup, Party item, CancellationToken cancellationToken)
+    {
+        foreach (var e in ingestEntities.Where(e => e.Id == item.Uuid))
+        {
+            ingestEntities.Remove(e);
+        }
+
+        foreach (var e in ingestEntitiesLookup.Where(e => e.Id == item.Uuid))
+        {
+            ingestEntitiesLookup.Remove(e);
+        }
+
+        var entityLookups = await appDbContext.EntityLookups
+            .AsTracking()
+            .Where(e => e.EntityId == item.Uuid)
+            .ToListAsync(cancellationToken);
+
+        var entity = appDbContext.Entities
+            .AsTracking()
+            .FirstOrDefaultAsync(e => e.Id == item.Uuid, cancellationToken);
+
+        if (entityLookups is { })
+        {
+            appDbContext.RemoveRange(entityLookups);
+        }
+
+        if (entity is { })
+        {
+            appDbContext.Remove(entity);
+        }
+
+        await appDbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private List<EntityLookup> AddDefaultEntityLookups(Party party)
+    {
+        var result = new List<EntityLookup>();
+        if (party.PartyId.HasValue)
+        {
+            result.Add(NewEntityLookup("PartyId", party.PartyId.ToString()));
+        }
+
+        if (party.User.Value?.UserIds.Value is { } userIds)
+        {
+            result.AddRange(userIds.Select(userId => NewEntityLookup("UserId", userId.ToString())));
+        }
+
+        if (party.User.Value?.Username.Value is { } username)
+        {
+            result.Add(NewEntityLookup("Username", username));
+        }
+
+        return result;
+
+        EntityLookup NewEntityLookup(string key, string value)
+        {
+            return new EntityLookup()
+            {
+                EntityId = party.Uuid,
+                Key = key,
+                Value = value,
+                IsProtected = false,
+            };
+        }
+    }
+
     private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapPerson(Person person)
     {
         var entity = new Entity()
@@ -167,27 +234,12 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             new()
             {
                 EntityId = person.Uuid,
-                Key = "PartyId",
-                Value = person.PartyId.ToString(),
-            },
-            new()
-            {
-                EntityId = person.Uuid,
                 Key = "PersonIdentifier",
                 Value = person.PersonIdentifier.ToString(),
             },
         ];
 
-        if (person.User.Value?.UserIds.Value is { } userIds)
-        {
-            entityLookups.AddRange(userIds.Select(userId => new EntityLookup()
-            {
-                EntityId = person.Uuid,
-                Key = "UserId",
-                Value = userId.ToString(),
-                IsProtected = false,
-            }));
-        }
+        entityLookups.AddRange(AddDefaultEntityLookups(person));
 
         return (entity, entityLookups);
     }
@@ -212,17 +264,12 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             new EntityLookup()
             {
                 EntityId = organization.Uuid,
-                Key = "PartyId",
-                Value = organization.PartyId.ToString()
-            },
-
-            new EntityLookup()
-            {
-                EntityId = organization.Uuid,
                 Key = "OrganizationIdentifier",
                 Value = organization.OrganizationIdentifier.ToString(),
             },
         ];
+
+        entityLookups.AddRange(AddDefaultEntityLookups(organization));
 
         return (entity, entityLookups);
     }
@@ -238,39 +285,28 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             VariantId = EntityVariantConstants.SI
         };
 
-        List<EntityLookup> entityLookups = [
-            new()
-            {
-                EntityId = selfIdentifiedUser.Uuid,
-                Key = "PartyId",
-                Value = selfIdentifiedUser.PartyId.ToString(),
-            },
-        ];
-
-        if (selfIdentifiedUser.User.Value?.UserIds.Value is { } userIds)
-        {
-            entityLookups.AddRange(userIds.Select(userId => new EntityLookup()
-            {
-                EntityId = selfIdentifiedUser.Uuid,
-                Key = "UserId",
-                Value = userId.ToString(),
-                IsProtected = false,
-            }));
-        }
+        List<EntityLookup> entityLookups = [];
+        entityLookups.AddRange(AddDefaultEntityLookups(selfIdentifiedUser));
 
         return (entity, entityLookups);
     }
 
     private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapSystemUser(SystemUser systemUser)
     {
-        throw new NotImplementedException("Must get 'agent' and 'standard' type from register.");
+        var systemType = systemUser.SystemUserType.Value.Value switch
+        {
+            SystemUserType.ClientPartySystemUser => EntityVariantConstants.AgentSystem,
+            SystemUserType.FirstPartySystemUser => EntityVariantConstants.StandardSystem,
+            _ => throw new InvalidDataException($"Missing mapping for system type {systemUser.SystemUserType}")
+        };
+
         var entity = new Entity()
         {
             Id = systemUser.Uuid,
             Name = systemUser.DisplayName.ToString(),
             RefId = systemUser.Uuid.ToString(),
-            TypeId = EntityTypeConstants.SystemUser,
-            VariantId = EntityVariantConstants.AgentSystem,
+            TypeId = systemType,
+            VariantId = systemType
         };
 
         return (entity, []);
@@ -287,26 +323,8 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             VariantId = EntityVariantConstants.EnterpriseUser,
         };
 
-        List<EntityLookup> entityLookups = [
-            new()
-            {
-                EntityId = enterpriseUser.Uuid,
-                Key = "PartyId",
-                Value = enterpriseUser.PartyId.Value.ToString(),
-            }
-        ];
-
-        if (enterpriseUser.User.Value?.UserIds.Value is { } userIds)
-        {
-            entityLookups.AddRange(userIds.Select(userId => new EntityLookup()
-            {
-                EntityId = enterpriseUser.Uuid,
-                Key = "UserId",
-                Value = userId.ToString(),
-                IsProtected = false,
-            }));
-        }
-
+        List<EntityLookup> entityLookups = [];
+        entityLookups.AddRange(AddDefaultEntityLookups(enterpriseUser));
         return (entity, entityLookups);
     }
 }

@@ -11,20 +11,13 @@ public partial class AltinnRegisterClient
     /// List of available fields that can be retrieved from the register.
     /// </summary>
     public static readonly IEnumerable<string> AvailableFields = [
-        "uuid",
-        "id",
+        "identifiers",
         "type",
         "display-name",
-        "person-id",
-        "org-id",
-        "modified",
         "deleted",
-        "version",
-        "identifiers",
-        "party",
-        "person",
-        "org",
-        "user"
+        "user",
+        "sysuser.type",
+        "org.type",
     ];
 
     /// <inheritdoc/>
