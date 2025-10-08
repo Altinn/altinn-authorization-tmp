@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessMgmt.Core.Services.Contracts;
@@ -22,10 +23,17 @@ public interface IAssignmentService
     Task<Result<Assignment>> GetOrCreateAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets assignment and creates if not exits
+    /// Deletes an assignment of the given role if found between the parties.
     /// </summary>
     /// <returns></returns>
     Task<ProblemInstance> DeleteAssignment(Guid fromId, Guid toId, string roleCode, bool cascade = false, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// NB: It is the callers responsibility to ensure that the assignment is allowed to be deleted.
+    /// Deletes an assignment by the assignment id.
+    /// </summary>
+    /// <returns></returns>
+    Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets assignment and creates if not exits

@@ -1,5 +1,5 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Services.Contracts;
 
@@ -61,7 +61,7 @@ public interface IRoleService
     /// <param name="id">Role identity</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    Task<IEnumerable<RolePackageDto>> GetPackagesForRole(Guid id, CancellationToken cancellationToken);
+    Task<IEnumerable<RolePackageDto>> GetPackagesForRole(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get resources for role
@@ -69,7 +69,7 @@ public interface IRoleService
     /// <param name="id">Role identity</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    Task<IEnumerable<Resource>> GetRoleResources(Guid id, CancellationToken cancellationToken);
+    Task<IEnumerable<Resource>> GetRoleResources(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get resources for role from packages
@@ -77,5 +77,5 @@ public interface IRoleService
     /// <param name="id">Role identity</param>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    Task<IEnumerable<Resource>> GetRolePackageResources(Guid id, CancellationToken cancellationToken);
+    Task<IEnumerable<Resource>> GetRolePackageResources(Guid id, CancellationToken cancellationToken = default);
 }

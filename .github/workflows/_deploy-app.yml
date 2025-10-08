@@ -46,7 +46,7 @@ jobs:
         name: Checkout repository
 
       - name: Install .NET
-        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5
 
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
         with:
@@ -56,7 +56,7 @@ jobs:
               args: [--frozen-lockfile]
             - args: [--global, tsx]
 
-      - uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+      - uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         name: Login to ghcr
         with:
           registry: ghcr.io
