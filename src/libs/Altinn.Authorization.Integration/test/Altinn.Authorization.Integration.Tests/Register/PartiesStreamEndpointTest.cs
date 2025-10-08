@@ -44,7 +44,7 @@ public class PartiesStreamEndpointTest : IClassFixture<PlatformFixture>
     [InlineData(5)]
     public async Task TestStreamPartiesWithAllFieldsSelected(int iterations)
     {
-        await foreach (var role in await Register.StreamParties(AltinnRegisterClient.AvailableFields, null, TestContext.Current.CancellationToken))
+        await foreach (var role in await Register.StreamParties(AltinnRegisterClient.DefaultFields, null, TestContext.Current.CancellationToken))
         {
             if (iterations-- <= 0)
             {

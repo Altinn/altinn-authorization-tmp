@@ -10,13 +10,13 @@ public partial class AltinnRegisterClient
     /// <summary>
     /// List of available fields that can be retrieved from the register.
     /// </summary>
-    public static readonly IEnumerable<string> AvailableFields = [
+    public static readonly IEnumerable<string> DefaultFields = [
         "identifiers",
         "type",
         "display-name",
         "deleted",
         "user",
-        "sysuser.type",
+        "sysuser",
         "org.type",
     ];
 

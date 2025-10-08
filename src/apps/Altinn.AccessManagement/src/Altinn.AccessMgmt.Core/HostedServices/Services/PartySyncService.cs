@@ -59,7 +59,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
-        await foreach (var page in await _register.StreamParties(AltinnRegisterClient.AvailableFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await _register.StreamParties(AltinnRegisterClient.DefaultFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
             if (page.IsProblem)
             {
@@ -154,7 +154,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             ingestEntities.Remove(e);
         }
 
-        foreach (var e in ingestEntitiesLookup.Where(e => e.Id == item.Uuid))
+        foreach (var e in ingestEntitiesLookup.Where(e => e.EntityId == item.Uuid))
         {
             ingestEntitiesLookup.Remove(e);
         }
@@ -293,7 +293,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
     private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapSystemUser(SystemUser systemUser)
     {
-        var systemType = systemUser.SystemUserType.Value.Value switch
+        var systemTypeVariant = systemUser.SystemUserType.Value.Value switch
         {
             SystemUserType.ClientPartySystemUser => EntityVariantConstants.AgentSystem,
             SystemUserType.FirstPartySystemUser => EntityVariantConstants.StandardSystem,
@@ -305,8 +305,8 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             Id = systemUser.Uuid,
             Name = systemUser.DisplayName.ToString(),
             RefId = systemUser.Uuid.ToString(),
-            TypeId = systemType,
-            VariantId = systemType
+            TypeId = EntityTypeConstants.SystemUser,
+            VariantId = systemTypeVariant
         };
 
         return (entity, []);
