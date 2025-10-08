@@ -192,16 +192,21 @@ public static class PostgresServer
 /// </summary>
 public class PostgresDatabase(string dbname, string connectionString) : IOptions<PostgreSQLSettings>
 {
+    // Reused NpgsqlDataSource for user connections to leverage pooling and avoid ephemeral port exhaustion.
+    private NpgsqlDataSource? _userDataSource;
+
     /// <summary>
     /// Database name
     /// </summary>
     public string Dbname { get; } = dbname;
 
+    private NpgsqlDataSource UserDataSource => _userDataSource ??= new NpgsqlDataSourceBuilder(User.ToString()).Build();
+
     /// <summary>
     /// Creates <see cref="DelegationMetadataRepository"/>
     /// </summary>
     public IDelegationMetadataRepository DelegationMetadata =>
-        new DelegationMetadataRepository(new NpgsqlDataSourceBuilder(User.ToString()).Build());
+        new DelegationMetadataRepository(UserDataSource);
 
     /// <summary>
     /// Creates <see cref="ResourceMetadata"/>
@@ -218,8 +223,8 @@ public class PostgresDatabase(string dbname, string connectionString) : IOptions
         Username = PostgresServer.DbAdminName,
         Password = PostgresServer.DbPassword,
         IncludeErrorDetail = true,
-        Pooling = false,      // or "false" to disable pooling entirely
-        ConnectionIdleLifetime = 30,  // (optional) return idle connections quickly
+        // Use default pooling settings
+        // Optionally tune pool size if needed: MinPoolSize = 0, MaxPoolSize = 50
     };
 
     /// <summary>
@@ -232,8 +237,7 @@ public class PostgresDatabase(string dbname, string connectionString) : IOptions
         Username = PostgresServer.DbUserName,
         Password = PostgresServer.DbPassword,
         IncludeErrorDetail = true,
-        Pooling = false,      // or "false" to disable pooling entirely
-        ConnectionIdleLifetime = 30,  // (optional) return idle connections quickly
+        // Pooling enabled (default). Disabling pooling caused ephemeral port exhaustion when opening many short-lived connections in tests.
     };
 
     /// <summary>
