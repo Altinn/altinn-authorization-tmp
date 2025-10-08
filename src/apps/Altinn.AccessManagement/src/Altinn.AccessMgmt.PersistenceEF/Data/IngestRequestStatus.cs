@@ -1,16 +1,18 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Data;
 
-public partial class StaticDataIngest
+public static partial class StaticDataIngest
 {
     /// <summary>
     /// Ingest ProviderTypes
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async Task IngestRequestStatus(CancellationToken cancellationToken = default)
+    public static async Task IngestRequestStatus(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
         /*
 0195efb8-7c80-7c6d-aec6-5eafa8154ca1
@@ -47,12 +49,13 @@ public partial class StaticDataIngest
             new TranslationEntry() { Id = Guid.Parse("0195efb8-7c80-7731-82a3-1f6b659ec848"), LanguageCode = "nno", Type = nameof(RequestStatus), FieldName = "Name", Value = "Stengd" },
         };
 
+
         foreach (var d in data)
         {
-            var obj = db.RequestStatus.FirstOrDefault(t => t.Id == d.Id);
+            var obj = dbContext.RequestStatus.FirstOrDefault(t => t.Id == d.Id);
             if (obj == null)
             {
-                db.RequestStatus.Add(d);
+                dbContext.RequestStatus.Add(d);
             }
             else
             {
@@ -60,11 +63,11 @@ public partial class StaticDataIngest
             }
         }
 
-        foreach (var translation in translations)
-        {
-            await translationService.UpsertTranslationAsync(translation);
-        }
+        //foreach (var translation in translations)
+        //{
+        //    await translationService.UpsertTranslationAsync(translation);
+        //}
 
-        var result = await db.SaveChangesAsync(AuditValues, cancellationToken);
+        var result = await dbContext.SaveChangesAsync(AuditValues, cancellationToken);
     }
 }

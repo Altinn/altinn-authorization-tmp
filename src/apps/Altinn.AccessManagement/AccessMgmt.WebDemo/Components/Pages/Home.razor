@@ -89,10 +89,7 @@ Welcome to your new app.
             dbContext.PackageResources.Add(new PackageResource() { PackageId = package02, ResourceId = r04.Id });
             dbContext.PackageResources.Add(new PackageResource() { PackageId = package02, ResourceId = r05.Id });
 
-            await dbContext.SaveChangesAsync(new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(
-                Altinn.AccessMgmt.PersistenceEF.Utils.AuditDefaults.StaticDataIngest, 
-                Altinn.AccessMgmt.PersistenceEF.Utils.AuditDefaults.StaticDataIngest,
-            Guid.NewGuid().ToString()));
+            await dbContext.SaveChangesAsync();
         }
 
         var resourceElementCnt = await dbContext.ResourceElements.AsNoTracking().CountAsync();

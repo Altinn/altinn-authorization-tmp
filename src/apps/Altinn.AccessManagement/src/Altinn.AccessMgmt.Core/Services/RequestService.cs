@@ -62,12 +62,12 @@ public interface IRequestService
 }
 
 public class RequestService(
-    AppDbContextFactory appDbContextFactory, 
+    AppDbContext appDbContext, 
     IAuditAccessor auditAccessor,
     IAssignmentService assignmentService
     ) : IRequestService
 {
-    public AppDbContext Db { get; } = appDbContextFactory.CreateDbContext();
+    public AppDbContext Db { get; } = appDbContext;
 
     private readonly Guid statusAccepted = Guid.Parse("0195efb8-7c80-7c6d-aec6-5eafa8154ca1");
     private readonly Guid statusRejected = Guid.Parse("0195efb8-7c80-761b-b950-e709c703b6b1");

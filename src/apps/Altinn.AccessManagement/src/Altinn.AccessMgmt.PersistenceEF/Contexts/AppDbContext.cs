@@ -198,6 +198,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<AuditRequestPackage>(new AuditRequestPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRequestResource>(new AuditRequestResourceConfiguration());
         modelBuilder.ApplyConfiguration<AuditRequestResourceElement>(new AuditRequestResourceElementConfiguration());
+        modelBuilder.ApplyConfiguration<AuditResourceElement>(new AuditResourceElementConfiguration());
+        modelBuilder.ApplyConfiguration<AuditResourceElementType>(new AuditResourceElementTypeConfiguration());
     }
 
     private void ApplyConfiguration(ModelBuilder modelBuilder)
@@ -236,6 +238,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<RequestPackage>(new RequestPackageConfiguration());
         modelBuilder.ApplyConfiguration<RequestResource>(new RequestResourceConfiguration());
         modelBuilder.ApplyConfiguration<RequestResourceElement>(new RequestResourceElementConfiguration());
+        modelBuilder.ApplyConfiguration<ResourceElement>(new ResourceElementConfiguration());
+        modelBuilder.ApplyConfiguration<ResourceElementType>(new ResourceElementTypeConfiguration());
     }
 
     #region Extensions

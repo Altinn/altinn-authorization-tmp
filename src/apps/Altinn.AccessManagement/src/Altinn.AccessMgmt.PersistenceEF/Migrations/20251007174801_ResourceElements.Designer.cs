@@ -3,6 +3,7 @@ using System;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251007174801_ResourceElements")]
+    partial class ResourceElements
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1755,54 +1758,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.ToTable("auditresourceelement", "dbo_history");
                 });
 
-            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditResourceElementType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("Audit_ValidFrom")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validfrom");
-
-                    b.Property<DateTimeOffset>("Audit_ValidTo")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("audit_validto");
-
-                    b.Property<string>("Audit_ChangeOperation")
-                        .HasColumnType("text")
-                        .HasColumnName("audit_changeoperation");
-
-                    b.Property<Guid?>("Audit_ChangedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_changedby");
-
-                    b.Property<Guid?>("Audit_ChangedBySystem")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_changedbysystem");
-
-                    b.Property<string>("Audit_DeleteOperation")
-                        .HasColumnType("text")
-                        .HasColumnName("audit_deleteoperation");
-
-                    b.Property<Guid?>("Audit_DeletedBy")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_deletedby");
-
-                    b.Property<Guid?>("Audit_DeletedBySystem")
-                        .HasColumnType("uuid")
-                        .HasColumnName("audit_deletedbysystem");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.HasKey("Id", "Audit_ValidFrom", "Audit_ValidTo")
-                        .HasName("pk_auditresourceelementtype");
-
-                    b.ToTable("auditresourceelementtype", "dbo_history");
-                });
-
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.Audit.AuditResourceType", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3387,20 +3342,13 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("audit_validfrom");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("name");
 
                     b.HasKey("Id")
                         .HasName("pk_resourceelementtype");
 
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasDatabaseName("ix_resourceelementtype_name");
-
-                    b.ToTable("resourceelementtype", "dbo");
-
-                    b.HasAnnotation("EnableAudit", true);
+                    b.ToTable("resourceelementtype", (string)null);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Models.ResourceType", b =>
