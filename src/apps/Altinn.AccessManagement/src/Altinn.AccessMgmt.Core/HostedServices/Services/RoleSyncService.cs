@@ -43,7 +43,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         var options = new AuditValues(SystemEntityConstants.RegisterImportSystem);
 
         using var scope = _serviceProvider.CreateEFScope(options);
-        var dbFactory = scope.ServiceProvider.GetRequiredService<AppDbContextFactory>();
+        var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
         var leaseData = await lease.Get<RegisterLease>(cancellationToken);
 
@@ -95,9 +95,9 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
             async Task Flush()
             {
-                await RemoveParents(dbFactory, removeParent, cancellationToken);
-                await SetParents(dbFactory, addParent, cancellationToken);
-                await RemoveAssignments(dbFactory, removeAssignments, cancellationToken);
+                await RemoveParents(appDbContext, removeParent, cancellationToken);
+                await SetParents(appDbContext, addParent, cancellationToken);
+                await RemoveAssignments(appDbContext, removeAssignments, cancellationToken);
                 await IngestAssigments(ingestService, addAssignments, options, cancellationToken);
 
                 seen.Clear();
@@ -109,10 +109,8 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         }
     }
 
-    private async Task RemoveAssignments(AppDbContextFactory dbFactory, List<Assignment> relations, CancellationToken cancellationToken = default)
+    private async Task RemoveAssignments(AppDbContext dbContext, List<Assignment> relations, CancellationToken cancellationToken = default)
     {
-        using var dbContext = dbFactory.CreateDbContext();
-
         var relationSet = relations
             .Select(r => (r.FromId, r.ToId, r.RoleId))
             .ToHashSet();
@@ -151,10 +149,8 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         }
     }
 
-    private async Task RemoveParents(AppDbContextFactory dbFactory, List<Guid> relations, CancellationToken cancellationToken = default)
+    private async Task RemoveParents(AppDbContext dbContext, List<Guid> relations, CancellationToken cancellationToken = default)
     {
-        using var dbContext = dbFactory.CreateDbContext();
-
         var entities = await dbContext.Entities
             .AsTracking()
             .Where(e => relations.Contains(e.Id))
@@ -168,9 +164,8 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task SetParents(AppDbContextFactory dbFactory, Dictionary<Guid, Guid> relations, CancellationToken cancellationToken = default)
+    private async Task SetParents(AppDbContext dbContext, Dictionary<Guid, Guid> relations, CancellationToken cancellationToken = default)
     {
-        using var dbContext = dbFactory.CreateDbContext();
         var fields = relations.Keys.ToList();
         var entities = await dbContext.Entities
             .AsTracking()
