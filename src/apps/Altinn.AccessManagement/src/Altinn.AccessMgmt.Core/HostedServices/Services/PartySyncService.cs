@@ -81,11 +81,6 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                     _ => throw new InvalidDataException($"Unkown Party type {item.Type}"),
                 };
 
-                if ((item is SystemUser || item is EnterpriseUser) && item.IsDeleted.Value)
-                {
-                    await DeleteEntities(appDbContext, ingestEntities, ingestEntitiesLookup, item, cancellationToken);
-                }
-
                 if (!seen.Add(data.Entity.RefId))
                 {
                     await Flush();
@@ -145,40 +140,6 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 seen.Clear();
             }
         }
-    }
-
-    private static async Task DeleteEntities(AppDbContext appDbContext, List<Entity> ingestEntities, List<EntityLookup> ingestEntitiesLookup, Party item, CancellationToken cancellationToken)
-    {
-        foreach (var e in ingestEntities.Where(e => e.Id == item.Uuid))
-        {
-            ingestEntities.Remove(e);
-        }
-
-        foreach (var e in ingestEntitiesLookup.Where(e => e.EntityId == item.Uuid))
-        {
-            ingestEntitiesLookup.Remove(e);
-        }
-
-        var entityLookups = await appDbContext.EntityLookups
-            .AsTracking()
-            .Where(e => e.EntityId == item.Uuid)
-            .ToListAsync(cancellationToken);
-
-        var entity = await appDbContext.Entities
-            .AsTracking()
-            .FirstOrDefaultAsync(e => e.Id == item.Uuid, cancellationToken);
-
-        if (entityLookups is { })
-        {
-            appDbContext.RemoveRange(entityLookups);
-        }
-
-        if (entity is { })
-        {
-            appDbContext.Remove(entity);
-        }
-
-        await appDbContext.SaveChangesAsync(cancellationToken);
     }
 
     private List<EntityLookup> AddDefaultEntityLookups(Party party)
