@@ -241,6 +241,11 @@ namespace Altinn.Common.PEP.Helpers
                     legacyOrganizationNumberAttibute = CreateXacmlJsonAttribute(AltinnXacmlUrns.OrganizationNumber, claim.Value, DefaultType, claim.Issuer);
                     organizationNumberAttribute = CreateXacmlJsonAttribute(AltinnXacmlUrns.OrganizationNumberAttribute, claim.Value, DefaultType, claim.Issuer);
                 }
+                else if (IsConsumerClaim(claim.Type))
+                {
+                    string orgNumberFromConsumerClaim = GetConsumerParty(claim);
+                    organizationNumberAttribute = CreateXacmlJsonAttribute(AltinnXacmlUrns.OrganizationNumberAttribute, orgNumberFromConsumerClaim, DefaultType, claim.Issuer);
+                }
                 else if (IsScopeClaim(claim.Type))
                 {
                     attributes.Add(CreateXacmlJsonAttribute(AltinnXacmlUrns.Scope, claim.Value, DefaultType, claim.Issuer));
@@ -411,6 +416,11 @@ namespace Altinn.Common.PEP.Helpers
         private static bool IsCamelCaseOrgnumberClaim(string name)
         {
             return name.Equals("urn:altinn:orgNumber");
+        }
+
+        private static bool IsConsumerClaim(string name)
+        {
+            return name.Equals("consumer");
         }
 
         private static bool IsScopeClaim(string name)
@@ -638,6 +648,79 @@ namespace Altinn.Common.PEP.Helpers
             }
 
             return null;
+        }
+
+        private static string? GetConsumerParty(Claim consumerClaim)
+        {
+            string? consumerJson = consumerClaim.Value;
+            if (string.IsNullOrWhiteSpace(consumerJson))
+            {
+                return null;
+            }
+
+            try
+            {
+                using var doc = JsonDocument.Parse(consumerJson);
+                return GetOrg(doc);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Return supplier party from the claims principal.
+        /// </summary>
+        private static string? GetSupplierParty(Claim supplierClaim)
+        {
+            string? consumerJson = supplierClaim.Value;
+            if (string.IsNullOrWhiteSpace(consumerJson))
+            {
+                return null;
+            }
+
+            try
+            {
+                using JsonDocument doc = JsonDocument.Parse(consumerJson);
+                return GetOrg(doc);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        private static string? GetOrg(JsonDocument doc)
+        {
+            var root = doc.RootElement;
+
+            if (!root.TryGetProperty("ID", out var idElement) ||
+                !root.TryGetProperty("authority", out var authorityElement))
+            {
+                return null;
+            }
+
+            var consumerAuthority = authorityElement.GetString();
+            if (!string.Equals(consumerAuthority, "iso6523-actorid-upis", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            var consumerId = idElement.GetString();
+            if (string.IsNullOrEmpty(consumerId) || !consumerId.Contains(':'))
+            {
+                return null;
+            }
+
+            var parts = consumerId.Split(':');
+            if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[1]))
+            {
+                return null;
+            }
+
+            var organisationNumber = parts[1];
+            return organisationNumber;
         }
     }
 }
