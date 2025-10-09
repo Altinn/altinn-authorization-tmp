@@ -35,7 +35,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     /// <inheritdoc />
     public async Task SyncRoles(ILease lease, CancellationToken cancellationToken)
     {
-        var seen = new HashSet<(Guid From, Guid To)>();
+        var seen = new HashSet<(Guid From, Guid To, Guid Role)>();
         var addParent = new Dictionary<Guid, Guid>();
         var removeParent = new List<Guid>();
         var addAssignments = new List<Assignment>();
@@ -43,7 +43,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         var options = new AuditValues(SystemEntityConstants.RegisterImportSystem);
 
         using var scope = _serviceProvider.CreateEFScope(options);
-        var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var appDbContextFactory = scope.ServiceProvider.GetRequiredService<AppDbContextFactory>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
         var leaseData = await lease.Get<RegisterLease>(cancellationToken);
 
@@ -60,9 +60,23 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             foreach (var item in page.Content.Data)
             {
                 var assignment = MapToAssignment(item);
-                if (!seen.Add((From: assignment.FromId, To: assignment.ToId)))
+                if (ShouldSetParent(item))
                 {
-                    await Flush();
+                    if (!seen.Add((From: assignment.FromId, To: assignment.ToId, Role: RoleConstants.HasAsRegistrationUnitBEDR)))
+                    {
+                        await Flush();
+                    }
+                    else if (!seen.Add((From: assignment.FromId, To: assignment.ToId, Role: RoleConstants.HasAsRegistrationUnitAAFY)))
+                    {
+                        await Flush();
+                    }
+                }
+                else
+                {
+                    if (!seen.Add((From: assignment.FromId, To: assignment.ToId, Role: assignment.RoleId)))
+                    {
+                        await Flush();
+                    }
                 }
 
                 if (item.Type == ExternalRoleAssignmentEvent.EventType.Added)
@@ -95,10 +109,12 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
             async Task Flush()
             {
-                await RemoveParents(appDbContext, removeParent, cancellationToken);
-                await SetParents(appDbContext, addParent, cancellationToken);
-                await RemoveAssignments(appDbContext, removeAssignments, cancellationToken);
-                await IngestAssigments(ingestService, addAssignments, options, cancellationToken);
+                await Task.WhenAll(
+                    RemoveParents(appDbContextFactory, removeParent, cancellationToken),
+                    SetParents(appDbContextFactory, addParent, cancellationToken),
+                    RemoveAssignments(appDbContextFactory, removeAssignments, cancellationToken), 
+                    IngestAssigments(ingestService, addAssignments, options, cancellationToken)
+                );
 
                 seen.Clear();
                 addParent.Clear();
@@ -109,8 +125,9 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         }
     }
 
-    private async Task RemoveAssignments(AppDbContext dbContext, List<Assignment> relations, CancellationToken cancellationToken = default)
+    private async Task RemoveAssignments(AppDbContextFactory dbContextFactory, List<Assignment> relations, CancellationToken cancellationToken = default)
     {
+        using var dbContext = dbContextFactory.CreateDbContext();
         var relationSet = relations
             .Select(r => (r.FromId, r.ToId, r.RoleId))
             .ToHashSet();
@@ -120,6 +137,11 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             .AsEnumerable()
             .Where(e => relationSet.Contains((e.FromId, e.ToId, e.RoleId)))
             .ToList();
+
+        if (entities.Any())
+        {
+            Console.WriteLine("kake");
+        }
 
         dbContext.RemoveRange(entities);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -149,8 +171,9 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         }
     }
 
-    private async Task RemoveParents(AppDbContext dbContext, List<Guid> relations, CancellationToken cancellationToken = default)
+    private async Task RemoveParents(AppDbContextFactory dbContextFactory, List<Guid> relations, CancellationToken cancellationToken = default)
     {
+        using var dbContext = dbContextFactory.CreateDbContext();
         var entities = await dbContext.Entities
             .AsTracking()
             .Where(e => relations.Contains(e.Id))
@@ -164,8 +187,9 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task SetParents(AppDbContext dbContext, Dictionary<Guid, Guid> relations, CancellationToken cancellationToken = default)
+    private async Task SetParents(AppDbContextFactory dbContextFactory, Dictionary<Guid, Guid> relations, CancellationToken cancellationToken = default)
     {
+        using var dbContext = dbContextFactory.CreateDbContext();
         var fields = relations.Keys.ToList();
         var entities = await dbContext.Entities
             .AsTracking()

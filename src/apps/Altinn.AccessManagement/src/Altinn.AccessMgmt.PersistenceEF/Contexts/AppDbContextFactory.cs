@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
 /// <inheritdoc />
-internal class AppDbContextFactory(IDbContextFactory<AppDbContext> factory, IAuditAccessor audit) : IDbContextFactory<AppDbContext>
+public class AppDbContextFactory(IDbContextFactory<AppDbContext> factory, IAuditAccessor audit) : IDbContextFactory<AppDbContext>
 {
     public AppDbContext CreateDbContext()
     {

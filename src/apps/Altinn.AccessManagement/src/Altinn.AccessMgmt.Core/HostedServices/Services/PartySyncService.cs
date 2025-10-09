@@ -164,7 +164,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             .Where(e => e.EntityId == item.Uuid)
             .ToListAsync(cancellationToken);
 
-        var entity = appDbContext.Entities
+        var entity = await appDbContext.Entities
             .AsTracking()
             .FirstOrDefaultAsync(e => e.Id == item.Uuid, cancellationToken);
 
@@ -184,17 +184,17 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     private List<EntityLookup> AddDefaultEntityLookups(Party party)
     {
         var result = new List<EntityLookup>();
-        if (party.PartyId.HasValue)
+        if (party.PartyId.HasValue && party.PartyId.Value > 0)
         {
             result.Add(NewEntityLookup("PartyId", party.PartyId.ToString()));
         }
 
         if (party.User.Value?.UserIds.Value is { } userIds)
         {
-            result.AddRange(userIds.Select(userId => NewEntityLookup("UserId", userId.ToString())));
+            result.AddRange(userIds.Where(ids => ids > 0).Select(userId => NewEntityLookup("UserId", userId.ToString())));
         }
 
-        if (party.User.Value?.Username.Value is { } username)
+        if (party.User.Value?.Username.Value is { } username && !string.IsNullOrEmpty(username))
         {
             result.Add(NewEntityLookup("Username", username));
         }
