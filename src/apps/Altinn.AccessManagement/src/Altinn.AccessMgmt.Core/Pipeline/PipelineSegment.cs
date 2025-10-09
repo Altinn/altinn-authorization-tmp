@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Altinn.Authorization.Host.Lease.Telemetry;
 using Microsoft.Extensions.Logging;
 
 namespace Altinn.AccessManagement.Core;
@@ -11,19 +12,25 @@ namespace Altinn.AccessManagement.Core;
 /// <param name="logger">logger</param>
 public partial class PipelineSegment<TIn, TOut>(ILogger<PipelineSegment<TIn, TOut>> logger)
 {
-    public async Task Run(BlockingCollection<TIn> inbound, BlockingCollection<TOut> outbound, PipelineSegmentDelegate<TIn, TOut> fn)
+    public async Task Run(BlockingCollection<PipelineMessage<TIn>> inbound, BlockingCollection<PipelineMessage<TOut>> outbound, PipelineSegmentDelegate<TIn, TOut> fn)
     {
         try
         {
-            foreach (var item in inbound.GetConsumingEnumerable())
+            foreach (var data in inbound.GetConsumingEnumerable())
             {
+                using var activity = PipelineTelemetry.ActivitySource.StartActivity("Processing", System.Diagnostics.ActivityKind.Producer, data.ActivityContext);
                 var ctx = new PipelineContext<TIn>()
                 {
-                    Data = item,
+                    Data = data.Data,
                 };
 
                 var result = await DispatchSegment(fn, ctx);
-                outbound.Add(result);
+
+                outbound.Add(new()
+                {
+                    Data = result,
+                    ActivityContext = data.ActivityContext,
+                });
             }
         }
         finally
