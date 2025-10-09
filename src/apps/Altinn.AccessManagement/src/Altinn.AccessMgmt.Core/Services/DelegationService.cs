@@ -353,7 +353,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
                 Guid? rolePackageId = clientPackage.RolePackageId;
 
                 // Find or Create DelegationPackage
-                var delegationPackage = await GetOrCreateDelegationPackage(delegation.Id, package.Id, assignmentPackageId, rolePackageId);
+                var delegationPackage = await GetOrCreateDelegationPackage(delegation.Id, package.Id, assignmentPackageId, rolePackageId, audit, cancellationToken);
                 if (delegationPackage == null)
                 {
                     throw new Exception("Unable to add package to delegation");
