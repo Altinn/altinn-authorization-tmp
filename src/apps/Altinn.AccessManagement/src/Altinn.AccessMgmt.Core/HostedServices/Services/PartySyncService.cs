@@ -21,7 +21,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     private readonly IAltinnRegister _register;
     private readonly IServiceProvider _serviceProvider;
     private readonly int _bulkSize = 10_000;
-    private readonly IList<string> _supportedEntityTypes = ["person", "organization"];
+    private readonly List<string> _supportedEntityTypes = ["person", "organization"];
 
     /// <summary>
     /// PartySyncService Constructor
