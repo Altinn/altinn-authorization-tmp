@@ -52,7 +52,7 @@ script:pre-request {
 }
 
 tests {
-  test("Forretningsforer access package delegation from non_BBL_client org to systemuser should return 500 ok with", function() {
+  test("Forretningsforer access package delegation from non_BBL_client org to systemuser should return 500", function() {
     expect(res.status).to.equal(500);
   });
 }
