@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Altinn.Authorization.Host.Lease.Telemetry;
+namespace Altinn.Authorization.Host.Telemetry;
 
 /// <summary>
 /// Config to be used for Telemetry in Altinn.AccessManagement.Persistence
