@@ -1,23 +1,25 @@
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Diagnostics;
-using Altinn.Authorization.Host.Telemetry;
+using Altinn.Authorization.Host.Lease;
+using Altinn.Authorization.Host.Pipeline.Telemetry;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Altinn.Authorization.Host.Pipeline.Services;
 
 /// <summary>
-/// Represents a job that runs a <see cref="PipelineSource{TOut}"/> delegate
-/// and streams its output messages into a downstream <see cref="BlockingCollection{T}"/>.
+/// Executes pipeline source functions and streams messages to the outbound queue.
 /// </summary>
-/// <typeparam name="TOut">The type of elements produced by the pipeline source.</typeparam>
-internal partial class PipelineSourceJob(ILogger<PipelineSourceJob> logger)
+internal partial class PipelineSourceService(ILogger<PipelineSourceService> logger, IServiceProvider serviceProvider)
 {
+    /// <summary>
+    /// Runs the pipeline source, enumerating messages and forwarding them to the outbound queue.
+    /// </summary>
     public async Task Run<TOut>(
         IPipelineDescriptor descriptor,
         PipelineState state,
         PipelineSource<TOut> func,
-        BlockingCollection<PipelineSingleMessage<TOut>> outbound,
+        BlockingCollection<PipelineMessage<TOut>> outbound,
         CancellationTokenSource cancellationTokenSource)
     {
         try
@@ -34,13 +36,19 @@ internal partial class PipelineSourceJob(ILogger<PipelineSourceJob> logger)
     private async Task EnumerateSource<TOut>(
         IPipelineDescriptor descriptor,
         PipelineState state,
-        BlockingCollection<PipelineSingleMessage<TOut>> outbound,
+        BlockingCollection<PipelineMessage<TOut>> outbound,
         PipelineSource<TOut> func,
         CancellationTokenSource cancellationTokenSource)
     {
         try
         {
-            var context = new PipelineSourceContext();
+            using var serviceScope = descriptor.ServiceScope?.Invoke(serviceProvider) ?? serviceProvider.CreateScope();
+            var context = new PipelineSourceContext()
+            {
+                Lease = state.Lease,
+                Services = serviceScope,
+            };
+
             await foreach (var data in func(context, cancellationTokenSource.Token))
             {
                 using var activity = PipelineTelemetry.ActivitySource.StartActivity($"Pipeline Source: {descriptor.Name}:", ActivityKind.Internal);
@@ -74,8 +82,24 @@ internal partial class PipelineSourceJob(ILogger<PipelineSourceJob> logger)
     }
 }
 
+/// <summary>
+/// Context provided to pipeline source functions.
+/// </summary>
 public class PipelineSourceContext
 {
+    /// <summary>
+    /// The distributed lease associated with this pipeline, if configured.
+    /// </summary>
+    public ILease? Lease { get; set; }
+
+    /// <summary>
+    /// The scoped service provider for resolving dependencies.
+    /// </summary>
+    public IServiceScope Services { get; set; }
 }
 
+/// <summary>
+/// Delegate for pipeline source functions that produce messages asynchronously.
+/// </summary>
+/// <typeparam name="TOut">The output message type.</typeparam>
 public delegate IAsyncEnumerable<TOut> PipelineSource<TOut>(PipelineSourceContext context, CancellationToken cancellationToken);

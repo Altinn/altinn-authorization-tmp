@@ -1,22 +1,37 @@
 using Altinn.Authorization.Host.Pipeline.HostedServices;
 using Altinn.Authorization.Host.Pipeline.Services;
-using Altinn.Authorization.Host.Telemetry;
+using Altinn.Authorization.Host.Pipeline.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Trace;
 
 namespace Altinn.Authorization.Host.Pipeline.Extensions;
 
+/// <summary>
+/// Extension methods for configuring pipelines in the dependency injection container.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Adds pipeline telemetry to the OpenTelemetry tracer provider.
+    /// </summary>
     public static TracerProviderBuilder AddPipeline(this TracerProviderBuilder builder) =>
         builder.AddSource(PipelineTelemetry.ActivitySource.Name);
 
+    /// <summary>
+    /// Configures OpenTelemetry for pipeline telemetry.
+    /// </summary>
     public static IServiceCollection AddPipelinesOtel(this IServiceCollection services)
     {
         services.ConfigureOpenTelemetryTracerProvider(otel => otel.AddPipeline());
         return services;
     }
 
+    /// <summary>
+    /// Registers a pipeline group with the service collection.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configureDescriptor">Action to configure the pipeline group.</param>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddPipelines(
         this IServiceCollection services,
         Action<IPipelineGroup> configureDescriptor)
@@ -26,9 +41,9 @@ public static class ServiceCollectionExtensions
 
         if (!services.Any(s => s.ServiceType == typeof(PipelineMarker)))
         {
-            services.AddSingleton<PipelineSourceJob>();
-            services.AddSingleton<PipelineSegmentJob>();
-            services.AddSingleton<PipelineSinkJob>();
+            services.AddSingleton<PipelineSourceService>();
+            services.AddSingleton<PipelineSegmentService>();
+            services.AddSingleton<PipelineSinkService>();
             services.AddSingleton<PipelineMarker>();
             services.AddHostedService<PipelineHostedService>();
         }

@@ -1,35 +1,24 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Altinn.Authorization.Host.Lease;
-using Altinn.Authorization.Host.Telemetry;
+using Altinn.Authorization.Host.Pipeline.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Altinn.Authorization.Host.Pipeline.Services;
 
 /// <summary>
-/// Represents the terminal stage of a processing pipeline.  
-/// The sink job consumes messages from an inbound queue, invokes the provided sink delegate,
-/// and completes any final processing such as persistence, dispatch, or acknowledgment.
-/// <para>
-/// Unlike other pipeline stages, the sink does not emit further messages.
-/// It is responsible for completing or releasing resources associated with each message,
-/// ensuring that all in-flight work is flushed before the pipeline shuts down.
-/// </para>
+/// Executes pipeline sink functions with retry logic and scoped services.
 /// </summary>
-/// <param name="options"></param>
-/// <param name="logger">
-/// The <see cref="ILogger"/> used for structured diagnostics and telemetry.
-/// </param>
-internal partial class PipelineSinkJob(
-    IServiceProvider serviceProvider,
-    ILogger<PipelineSinkJob> logger
-)
+internal partial class PipelineSinkService(ILogger<PipelineSinkService> logger, IServiceProvider serviceProvider)
 {
+    /// <summary>
+    /// Runs the pipeline sink, consuming messages from the inbound queue.
+    /// </summary>
     public async Task Run<TIn>(
         IPipelineDescriptor descriptor,
         PipelineState state,
-        BlockingCollection<PipelineSingleMessage<TIn>> inbound,
+        BlockingCollection<PipelineMessage<TIn>> inbound,
         PipelineSink<TIn> fn)
     {
         try
@@ -39,16 +28,17 @@ internal partial class PipelineSinkJob(
         catch (InvalidOperationException ex)
         {
             // Should only occur if inbound is closed. However, this shouldn't be throwed as we use the enumerator of inbound queue.
-            Log.InboundQueueClosed(logger);
+            Log.InboundQueueClosed(logger, ex);
         }
     }
 
     private async Task EnumerateSink<TIn>(
         IPipelineDescriptor descriptor,
         PipelineState state,
-        BlockingCollection<PipelineSingleMessage<TIn>> inbound,
+        BlockingCollection<PipelineMessage<TIn>> inbound,
         PipelineSink<TIn> func)
     {
+        using var serviceScope = descriptor.ServiceScope?.Invoke(serviceProvider) ?? serviceProvider.CreateScope();
         foreach (var data in inbound.GetConsumingEnumerable())
         {
             try
@@ -58,21 +48,19 @@ internal partial class PipelineSinkJob(
                 {
                     Lease = state.Lease,
                     Data = data.Data,
+                    Services = serviceScope,
                 };
 
                 await DispatchSegment(func, ctx);
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
-                // Should only occur if segment fails to process the same data repiteadly
+                // Should only occur if segment fails to process the same data repeatedly
                 data.CancellationTokenSource.Cancel();
             }
         }
     }
 
-    /// <summary>
-    /// Handles Task Issues
-    /// </summary>
     private async Task DispatchSegment<TIn>(
         PipelineSink<TIn> func,
         PipelineSinkContext<TIn> item)
@@ -98,17 +86,12 @@ internal partial class PipelineSinkJob(
                 await Task.Delay(TimeSpan.FromSeconds(attempt));
             }
         }
-
-        throw new InvalidOperationException($"Unreachable code and segment failed after {maxAttempts} attempts.");
     }
 
-    /// <summary>
-    /// Provides structured logging for sink operations.
-    /// </summary>
     static partial class Log
     {
         [LoggerMessage(0, LogLevel.Debug, "Inbound queue closed; stopping segment consumption.")]
-        internal static partial void InboundQueueClosed(ILogger logger);
+        internal static partial void InboundQueueClosed(ILogger logger, Exception ex);
 
         [LoggerMessage(1, LogLevel.Warning, "Pipeline segment attempt {Attempt}/{MaxAttempts} failed.")]
         internal static partial void SegmentAttemptFailed(ILogger logger, int Attempt, int MaxAttempts, Exception ex);
@@ -121,13 +104,30 @@ internal partial class PipelineSinkJob(
     }
 }
 
+/// <summary>
+/// Context provided to pipeline sink functions.
+/// </summary>
+/// <typeparam name="TIn">The message data type.</typeparam>
 public class PipelineSinkContext<TIn>
 {
+    /// <summary>
+    /// The message data being processed.
+    /// </summary>
     public required TIn Data { get; init; }
 
+    /// <summary>
+    /// The distributed lease associated with this pipeline, if configured.
+    /// </summary>
     public ILease? Lease { get; set; }
 
+    /// <summary>
+    /// The scoped service provider for resolving dependencies.
+    /// </summary>
     public IServiceScope Services { get; set; }
 }
 
+/// <summary>
+/// Delegate for pipeline sink functions that perform final message processing.
+/// </summary>
+/// <typeparam name="TIn">The input message type.</typeparam>
 public delegate Task PipelineSink<TIn>(PipelineSinkContext<TIn> context);

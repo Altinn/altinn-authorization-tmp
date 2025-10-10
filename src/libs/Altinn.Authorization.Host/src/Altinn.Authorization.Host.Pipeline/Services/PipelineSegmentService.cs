@@ -1,36 +1,26 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using Altinn.Authorization.Host.Telemetry;
+using Altinn.Authorization.Host.Lease;
+using Altinn.Authorization.Host.Pipeline.Telemetry;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Altinn.Authorization.Host.Pipeline.Services;
 
 /// <summary>
-/// Executes a single segment within a processing pipeline by consuming input messages from an inbound queue,
-/// invoking the specified segment function to transform each message, and publishing the processed results
-/// to an outbound queue.
-/// <para>
-/// If a segment repeatedly fails to process an item beyond the configured retry limit,
-/// a cancellation request is issued for the entire pipeline to ensure consistent shutdown behavior.
-/// </para>
-/// <typeparam name="TIn">The type of data received from the previous pipeline stage.</typeparam>
-/// <typeparam name="TOut">The type of data emitted to the next pipeline stage.</typeparam>
-/// <param name="logger">The logger used for structured diagnostics and telemetry events.</param>
-internal partial class PipelineSegmentJob(ILogger<PipelineSegmentJob> logger)
+/// Executes pipeline segment transformations with retry logic.
+/// </summary>
+internal partial class PipelineSegmentService(ILogger<PipelineSegmentService> logger, IServiceProvider serviceProvider)
 {
     /// <summary>
-    /// Begins consuming input messages, invoking the pipeline segment delegate for each,
-    /// and emitting corresponding output messages into the outbound collection.
+    /// Runs the pipeline segment, transforming messages from inbound to outbound queue.
     /// </summary>
-    /// <param name="inbound">The inbound queue containing messages from the previous stage.</param>
-    /// <param name="outbound">The outbound queue to which processed messages will be added.</param>
-    /// <param name="func">The pipeline segment delegate that transforms input into output.</param>
     public async Task Run<TIn, TOut>(
         IPipelineDescriptor descriptor,
         PipelineState state,
         PipelineSegment<TIn, TOut> func,
-        BlockingCollection<PipelineSingleMessage<TIn>> inbound,
-        BlockingCollection<PipelineSingleMessage<TOut>> outbound)
+        BlockingCollection<PipelineMessage<TIn>> inbound,
+        BlockingCollection<PipelineMessage<TOut>> outbound)
     {
         try
         {
@@ -39,7 +29,7 @@ internal partial class PipelineSegmentJob(ILogger<PipelineSegmentJob> logger)
         catch (InvalidOperationException ex)
         {
             // Should only occur if inbound is closed. However, this shouldn't be throwed as we use the enumerator of inbound queue.
-            Log.InboundQueueClosed(logger);
+            Log.InboundQueueClosed(logger, ex);
         }
         finally
         {
@@ -50,10 +40,11 @@ internal partial class PipelineSegmentJob(ILogger<PipelineSegmentJob> logger)
     private async Task EnumerateSegment<TIn, TOut>(
         IPipelineDescriptor descriptor,
         PipelineState state,
-        BlockingCollection<PipelineSingleMessage<TIn>> inbound,
-        BlockingCollection<PipelineSingleMessage<TOut>> outbound,
+        BlockingCollection<PipelineMessage<TIn>> inbound,
+        BlockingCollection<PipelineMessage<TOut>> outbound,
         PipelineSegment<TIn, TOut> func)
     {
+        using var serviceScope = descriptor.ServiceScope?.Invoke(serviceProvider) ?? serviceProvider.CreateScope();
         foreach (var data in inbound.GetConsumingEnumerable())
         {
             using var activity = PipelineTelemetry.ActivitySource.StartActivity($"Pipeline Segment: {descriptor.Name}", ActivityKind.Internal, data.ActivityContext ?? default);
@@ -62,6 +53,8 @@ internal partial class PipelineSegmentJob(ILogger<PipelineSegmentJob> logger)
                 var ctx = new PipelineSegmentContext<TIn>()
                 {
                     Data = data.Data,
+                    Lease = state.Lease,
+                    Services = serviceScope
                 };
 
                 var result = await DispatchSegment(func, ctx);
@@ -69,16 +62,13 @@ internal partial class PipelineSegmentJob(ILogger<PipelineSegmentJob> logger)
             }
             catch (InvalidOperationException ex)
             {
-                // Should only occur if segment fails to process the same data repiteadly.
+                // Should only occur if segment fails to process the same data repeatedly.
                 activity?.AddException(ex);
                 data.CancellationTokenSource.Cancel();
             }
         }
     }
 
-    /// <summary>
-    /// Handles Task Issues
-    /// </summary>
     private async Task<TOut> DispatchSegment<TIn, TOut>(
         PipelineSegment<TIn, TOut> func,
         PipelineSegmentContext<TIn> item)
@@ -93,7 +83,6 @@ internal partial class PipelineSegmentJob(ILogger<PipelineSegmentJob> logger)
             }
             catch (Exception ex)
             {
-                // Any exception can be raised from func. Must handle
                 Log.SegmentAttemptFailed(logger, attempt, maxAttempts, ex);
 
                 if (attempt >= maxAttempts)
@@ -112,7 +101,7 @@ internal partial class PipelineSegmentJob(ILogger<PipelineSegmentJob> logger)
     static partial class Log
     {
         [LoggerMessage(0, LogLevel.Debug, "Inbound queue closed; stopping segment consumption.")]
-        internal static partial void InboundQueueClosed(ILogger logger);
+        internal static partial void InboundQueueClosed(ILogger logger, Exception ex);
 
         [LoggerMessage(1, LogLevel.Warning, "Pipeline segment attempt {Attempt}/{MaxAttempts} failed.")]
         internal static partial void SegmentAttemptFailed(ILogger logger, int Attempt, int MaxAttempts, Exception ex);
@@ -125,9 +114,31 @@ internal partial class PipelineSegmentJob(ILogger<PipelineSegmentJob> logger)
     }
 }
 
+/// <summary>
+/// Context provided to pipeline segment functions.
+/// </summary>
+/// <typeparam name="TData">The message data type.</typeparam>
 public class PipelineSegmentContext<TData>
 {
+    /// <summary>
+    /// The message data being processed.
+    /// </summary>
     public required TData Data { get; init; }
+    
+    /// <summary>
+    /// The distributed lease associated with this pipeline, if configured.
+    /// </summary>
+    public ILease? Lease { get; set; }
+
+    /// <summary>
+    /// The scoped service provider for resolving dependencies.
+    /// </summary>
+    public IServiceScope Services { get; set; }
 }
 
+/// <summary>
+/// Delegate for pipeline segment functions that transform messages.
+/// </summary>
+/// <typeparam name="TIn">The input message type.</typeparam>
+/// <typeparam name="TOut">The output message type.</typeparam>
 public delegate Task<TOut> PipelineSegment<TIn, TOut>(PipelineSegmentContext<TIn> context);

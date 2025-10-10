@@ -21,7 +21,7 @@ namespace Altinn.Authorization.Host.Pipeline.HostedServices;
 /// <list type="bullet">
 /// <item><description>Feature flag control via <see cref="FeatureManager"/> (enabling or disabling entire pipeline groups).</description></item>
 /// <item><description>Distributed lease coordination using <see cref="ILeaseService"/> to avoid concurrent runs.</description></item>
-/// <item><description>Dynamic runtime construction of pipelines using <see cref="PipelineSourceJob"/>, <see cref="PipelineSegmentJob"/>, and <see cref="PipelineSinkJob"/>.</description></item>
+/// <item><description>Dynamic runtime construction of pipelines using <see cref="PipelineSourceService"/>, <see cref="PipelineSegmentService"/>, and <see cref="PipelineSinkService"/>.</description></item>
 /// <item><description>Graceful cancellation and resource cleanup during application shutdown.</description></item>
 /// </list>
 ///
@@ -39,13 +39,17 @@ internal partial class PipelineHostedService(
     ILogger<PipelineHostedService> logger,
     ILeaseService leaseService,
     FeatureManager featureManager,
-    PipelineSourceJob pipelineSourceJob,
-    PipelineSegmentJob pipelineSegmentJob,
-    PipelineSinkJob pipelineSinkJob,
+    PipelineSourceService pipelineSourceJob,
+    PipelineSegmentService pipelineSegmentJob,
+    PipelineSinkService pipelineSinkJob,
     IPipelineRegistry registry
 ) : IHostedService
 {
     internal List<Task> DispatchedPipelineGroups { get; set; } = [];
+
+    private static readonly MethodInfo _pipelineSourceRunMethodInfo = typeof(PipelineSourceService).GetMethod(nameof(PipelineSourceService.Run))!;
+    private static readonly MethodInfo _pipelineSegmentRunMethodInfo = typeof(PipelineSegmentService).GetMethod(nameof(PipelineSegmentService.Run))!;
+    private static readonly MethodInfo _pipelineSinkRunMethodInfo = typeof(PipelineSinkService).GetMethod(nameof(PipelineSinkService.Run))!;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -227,9 +231,7 @@ internal partial class PipelineHostedService(
     }
 
     private static MethodInfo GetPipelineSourceRunMethod(object func, Type type) =>
-        typeof(PipelineSourceJob)
-            .GetMethod(nameof(PipelineSourceJob.Run))!
-            .MakeGenericMethod(type);
+        _pipelineSourceRunMethodInfo.MakeGenericMethod(type);
 
     private static MethodInfo GetPipelineSegmentRunMethod(object func)
     {
@@ -238,19 +240,15 @@ internal partial class PipelineHostedService(
         var inboundType = genericArgs[0];
         var outboundType = genericArgs[1];
 
-        return typeof(PipelineSegmentJob)
-            .GetMethod(nameof(PipelineSegmentJob.Run))!
-            .MakeGenericMethod(inboundType, outboundType);
+        return _pipelineSegmentRunMethodInfo.MakeGenericMethod(inboundType, outboundType);
     }
 
     private static MethodInfo GetPipelineSinkRunMethod(Type inboundType) =>
-        typeof(PipelineSinkJob)
-            .GetMethod(nameof(PipelineSinkJob.Run))!
-            .MakeGenericMethod(inboundType);
+        _pipelineSinkRunMethodInfo.MakeGenericMethod(inboundType);
 
     private static object GetPipelineOutbound(Type type)
     {
-        var messageType = typeof(PipelineSingleMessage<>).MakeGenericType(type);
+        var messageType = typeof(PipelineMessage<>).MakeGenericType(type);
         var collectionType = typeof(BlockingCollection<>).MakeGenericType(messageType);
         return Activator.CreateInstance(collectionType)!;
     }
