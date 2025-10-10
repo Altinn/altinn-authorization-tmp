@@ -499,6 +499,27 @@ namespace Altinn.Common.PEP.Helpers
             return ValidateDecisionResult(results.First(), user);
         }
 
+
+        /// <summary>
+        /// Validate the response from PDP but do not check obligations like authentication level. Use with casution.
+        /// </summary>
+        /// <param name="results">The response to validate</param>
+        /// <param name="user">The <see cref="ClaimsPrincipal"/></param>
+        /// <returns>true or false, valid or not</returns>
+        public static bool ValidatePdpDecisionWithoutObligationCheck(List<XacmlJsonResult> results, ClaimsPrincipal user)
+        {
+            ArgumentNullException.ThrowIfNull(results, nameof(results));
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+
+            // We request one thing and then only want one result
+            if (results.Count != 1)
+            {
+                return false;
+            }
+
+            return ValidateDecisionResultWithoutObligationsCheck(results.First(), user);
+        }
+
         /// <summary>
         /// Validate the response from PDP
         /// </summary>
@@ -563,6 +584,23 @@ namespace Altinn.Common.PEP.Helpers
                         return false;
                     }
                 }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validate the response from PDP
+        /// </summary>
+        /// <param name="result">The response to validate</param>
+        /// <param name="user">The <see cref="ClaimsPrincipal"/></param>
+        /// <returns>true or false, valid or not</returns>
+        public static bool ValidateDecisionResultWithoutObligationsCheck(XacmlJsonResult result, ClaimsPrincipal user)
+        {
+            // Checks that the result is nothing else than "permit"
+            if (!result.Decision.Equals(XacmlContextDecision.Permit.ToString()))
+            {
+                return false;
             }
 
             return true;
