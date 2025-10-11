@@ -28,9 +28,9 @@ internal class PipelineGroup : IPipelineGroup
     }
 
     /// <inheritdoc/>
-    public IPipelineGroup WithGroupName(string groupName)
+    public IPipelineGroup WithGroupName(string name)
     {
-        GroupName = groupName;
+        GroupName = name;
         return this;
     }
 
@@ -51,9 +51,9 @@ public interface IPipelineGroup
     /// <summary>
     /// Configures the group to execute pipelines on a recurring schedule.
     /// </summary>
-    /// <param name="timeSpan">The interval between pipeline executions.</param>
+    /// <param name="recurring">The interval between pipeline executions.</param>
     /// <returns>The pipeline group for chaining.</returns>
-    IPipelineGroup WithRecurring(TimeSpan timeSpan);
+    IPipelineGroup WithRecurring(TimeSpan recurring);
 
     /// <summary>
     /// Sets the name of the pipeline group.

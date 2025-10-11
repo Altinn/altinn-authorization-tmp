@@ -1,6 +1,6 @@
 namespace Altinn.Authorization.Host.Pipeline.Builders;
 
-internal class PipelineSinkBuilder<TIn>(PipelineGroup descriptor) : ISinkBuilder<TIn>
+internal class PipelineSinkBuilder<TIn>(PipelineGroup descriptor) : ISinkBuilder
 {
     /// <inheritdoc/>
     public IPipelineGroup Build()
@@ -12,8 +12,7 @@ internal class PipelineSinkBuilder<TIn>(PipelineGroup descriptor) : ISinkBuilder
 /// <summary>
 /// Builder for completing pipeline configuration.
 /// </summary>
-/// <typeparam name="TIn">The sink input message type.</typeparam>
-public interface ISinkBuilder<TIn>
+public interface ISinkBuilder
 {
     /// <summary>
     /// Completes the pipeline configuration and returns to the parent group.

@@ -60,7 +60,7 @@ internal partial class PipelineSinkService(
             {
                 // Should only occur if sink fails to process the same data repeatedly
                 activity?.AddException(ex);
-                data.CancellationTokenSource.Cancel();
+                await data.CancellationTokenSource.CancelAsync();
                 Log.SinkMessageAborted(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);
                 return;
             }

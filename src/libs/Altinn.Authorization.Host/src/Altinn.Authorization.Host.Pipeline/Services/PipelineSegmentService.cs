@@ -70,7 +70,7 @@ internal partial class PipelineSegmentService(ILogger<PipelineSegmentService> lo
             {
                 // Should only occur if segment fails to process the same data repeatedly.
                 activity?.AddException(ex);
-                data.CancellationTokenSource.Cancel();
+                await data.CancellationTokenSource.CancelAsync();
                 Log.SegmentMessageAborted(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);
                 return;
             }

@@ -31,8 +31,9 @@ public interface ISourceBuilder
     /// Configures the source function that produces messages.
     /// Sources stream messages asynchronously using <c>IAsyncEnumerable</c>.
     /// </summary>
-    /// <typeparam name="TOut">The output message type.</typeparam>
+    /// <typeparam name="TOutbound">The output message type.</typeparam>
+    /// <param name="name">Name of the source.</param>
     /// <param name="source">Source function: yields messages asynchronously.</param>
     /// <returns>Builder to configure the next stage.</returns>
-    ISegmentBuilder<TOut> AddSource<TOut>(string name, PipelineSource<TOut> source);
+    ISegmentBuilder<TOutbound> AddSource<TOutbound>(string name, PipelineSource<TOutbound> source);
 }

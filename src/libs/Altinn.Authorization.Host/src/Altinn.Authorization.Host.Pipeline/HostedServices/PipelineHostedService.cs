@@ -33,7 +33,7 @@ internal partial class PipelineHostedService(
     private static readonly MethodInfo _pipelineSinkRunMethodInfo = typeof(PipelineSinkService).GetMethod(nameof(PipelineSinkService.Run));
 
     /// <inheritdoc/>
-    public Task StartAsync(CancellationToken _)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         Log.HostedServiceStarting(logger);
 
@@ -66,12 +66,16 @@ internal partial class PipelineHostedService(
 
         try
         {
-            _stopCts.Cancel();
+            await _stopCts.CancelAsync();
             await Task.WhenAll(DispatchedPipelineGroups);
         }
         catch (Exception ex)
         {
             Log.FailedToStopPipelines(logger, ex);
+        }
+        finally
+        {
+            _stopCts.Dispose();
         }
     }
 
@@ -81,60 +85,10 @@ internal partial class PipelineHostedService(
         {
             foreach (var descriptor in group.Builders)
             {
-                var args = new PipelineArgs()
+                var problem = await DispatchPipeline(group, descriptor, cancellationToken);
+                if (problem)
                 {
-                    Descriptor = descriptor,
-                };
-
-                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-                try
-                {
-                    if (!await IsPipelineEnabled(group, cancellationToken))
-                    {
-                        Log.PipelineDisabled(logger, group.GroupName, descriptor.Name);
-                        break;
-                    }
-
-                    if (!string.IsNullOrEmpty(descriptor.LeaseName))
-                    {
-                        var lease = await leaseService.TryAcquireNonBlocking(descriptor.LeaseName, cancellationToken);
-                        if (lease is null)
-                        {
-                            Log.LeaseUnavailable(logger, descriptor.LeaseName);
-                            break;
-                        }
-
-                        args.Lease = lease;
-                        Log.LeaseAcquired(logger, descriptor.LeaseName);
-                    }
-
-                    Log.PipelineStarting(logger, group.GroupName, descriptor.Name);
-                    var pipelineTasks = BuildPipeline([], args, descriptor.Source, null, cts);
-                    var tasks = pipelineTasks.Select(task => Task.Run(async () => await task())).ToList();
-                    await Task.WhenAll(tasks);
-                    Log.PipelineCompleted(logger, group.GroupName, descriptor.Name);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Log.FailedToBuildPipeline(logger, ex);
-                }
-                catch (OperationCanceledException)
-                {
-                    Log.PipelineCanceled(logger, group.GroupName, descriptor.Name);
-                }
-                catch (Exception ex)
-                {
-                    Log.PipelineFailed(logger, group.GroupName, descriptor.Name, ex);
-                }
-                finally
-                {
-                    cts.Cancel();
-                    if (args.Lease is not null)
-                    {
-                        await args.Lease.DisposeAsync();
-                        Log.LeaseReleased(logger, descriptor.LeaseName);
-                    }
+                    break;
                 }
             }
 
@@ -147,6 +101,66 @@ internal partial class PipelineHostedService(
             Log.WaitingForNextRun(logger, group.GroupName, group.Recurring.Value);
             await Task.Delay(group.Recurring.Value, cancellationToken);
         }
+    }
+
+    private async Task<bool> DispatchPipeline(PipelineGroup group, PipelineDescriptor descriptor, CancellationToken cancellationToken)
+    {
+        var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var args = new PipelineArgs()
+        {
+            Descriptor = descriptor,
+        };
+
+        try
+        {
+            if (!await IsPipelineEnabled(group, cancellationToken))
+            {
+                Log.PipelineDisabled(logger, group.GroupName, descriptor.Name);
+                return true;
+            }
+
+            if (!string.IsNullOrEmpty(descriptor.LeaseName))
+            {
+                var lease = await leaseService.TryAcquireNonBlocking(descriptor.LeaseName, cancellationToken);
+                if (lease is null)
+                {
+                    Log.LeaseUnavailable(logger, descriptor.LeaseName);
+                    return true;
+                }
+
+                args.Lease = lease;
+                Log.LeaseAcquired(logger, descriptor.LeaseName);
+            }
+
+            Log.PipelineStarting(logger, group.GroupName, descriptor.Name);
+            var pipelineTasks = BuildPipeline([], args, descriptor.Source, null, cts);
+            var tasks = pipelineTasks.Select(task => Task.Run(async () => await task())).ToList();
+            await Task.WhenAll(tasks);
+            Log.PipelineCompleted(logger, group.GroupName, descriptor.Name);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Log.FailedToBuildPipeline(logger, ex);
+        }
+        catch (OperationCanceledException)
+        {
+            Log.PipelineCanceled(logger, group.GroupName, descriptor.Name);
+        }
+        catch (Exception ex)
+        {
+            Log.PipelineFailed(logger, group.GroupName, descriptor.Name, ex);
+        }
+        finally
+        {
+            await cts.CancelAsync();
+            if (args.Lease is not null)
+            {
+                await args.Lease.DisposeAsync();
+                Log.LeaseReleased(logger, descriptor.LeaseName);
+            }
+        }
+
+        return false;
     }
 
     private async Task<bool> IsPipelineEnabled(PipelineGroup group, CancellationToken cancellationToken)
@@ -202,7 +216,6 @@ internal partial class PipelineHostedService(
             {
                 var funcType = func.GetType();
                 var genericArgs = funcType.GetGenericArguments();
-                var inboundType = genericArgs[0];
                 var outboundType = genericArgs[1];
 
                 var method = GetPipelineSegmentRunMethod(func);

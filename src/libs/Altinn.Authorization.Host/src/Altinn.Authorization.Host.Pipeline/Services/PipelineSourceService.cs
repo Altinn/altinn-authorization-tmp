@@ -29,7 +29,7 @@ internal partial class PipelineSourceService(ILogger<PipelineSourceService> logg
         }
         finally
         {
-            cancellationTokenSource.Cancel();
+            await cancellationTokenSource.CancelAsync();
             outbound.CompleteAdding();
         }
     }
@@ -133,7 +133,6 @@ internal partial class PipelineSourceService(ILogger<PipelineSourceService> logg
         internal static partial void StreamingFailed(ILogger logger, string pipeline, string source, Exception ex);
     }
 }
-
 
 /// <summary>
 /// Context provided to pipeline source functions.

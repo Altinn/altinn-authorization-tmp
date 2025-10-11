@@ -73,5 +73,5 @@ public static class ServiceCollectionExtensions
         return registry;
     }
 
-    private record PipelineMarker { }
+    private sealed record PipelineMarker { }
 }
