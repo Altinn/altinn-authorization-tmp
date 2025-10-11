@@ -2,6 +2,7 @@ using Altinn.Authorization.Host.Pipeline.HostedServices;
 using Altinn.Authorization.Host.Pipeline.Services;
 using Altinn.Authorization.Host.Pipeline.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
 namespace Altinn.Authorization.Host.Pipeline.Extensions;
@@ -15,13 +16,17 @@ public static class ServiceCollectionExtensions
     /// Adds pipeline telemetry to the OpenTelemetry tracer provider.
     /// </summary>
     public static TracerProviderBuilder AddPipeline(this TracerProviderBuilder builder) =>
-        builder.AddSource(PipelineTelemetry.ActivitySource.Name);
+        builder.AddSource(PipelineTelemetry.MeterName);
+
+    public static MeterProviderBuilder AddPipeline(this MeterProviderBuilder builder) =>
+        builder.AddMeter(PipelineTelemetry.MeterName);
 
     /// <summary>
     /// Configures OpenTelemetry for pipeline telemetry.
     /// </summary>
     public static IServiceCollection AddPipelinesOtel(this IServiceCollection services)
     {
+        services.ConfigureOpenTelemetryMeterProvider(otel => otel.AddPipeline());
         services.ConfigureOpenTelemetryTracerProvider(otel => otel.AddPipeline());
         return services;
     }

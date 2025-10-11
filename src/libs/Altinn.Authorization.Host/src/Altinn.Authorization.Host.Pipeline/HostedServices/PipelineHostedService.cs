@@ -10,31 +10,8 @@ using Microsoft.FeatureManagement;
 namespace Altinn.Authorization.Host.Pipeline.HostedServices;
 
 /// <summary>
-/// Hosted background service responsible for managing and executing registered data pipelines.
-///
-/// <para>
-/// The <see cref="PipelineHostedService"/> continuously monitors and executes pipeline groups defined in the
-/// <see cref="IPipelineRegistry"/>. Each group can contain one or more pipelines (defined by <see cref="IPipelineDescriptor"/>)
-/// and may be scheduled to run periodically or on-demand. This service supports:
-/// </para>
-///
-/// <list type="bullet">
-/// <item><description>Feature flag control via <see cref="FeatureManager"/> (enabling or disabling entire pipeline groups).</description></item>
-/// <item><description>Distributed lease coordination using <see cref="ILeaseService"/> to avoid concurrent runs.</description></item>
-/// <item><description>Dynamic runtime construction of pipelines using <see cref="PipelineSourceService"/>, <see cref="PipelineSegmentService"/>, and <see cref="PipelineSinkService"/>.</description></item>
-/// <item><description>Graceful cancellation and resource cleanup during application shutdown.</description></item>
-/// </list>
-///
-/// <para>
-/// Each pipeline consists of a <em>source</em> (data producer), zero or more <em>segments</em> (transformers),
-/// and a <em>sink</em> (consumer). The service builds and runs each pipeline dynamically using reflection
-/// and generics, based on its registered definition.
-/// </para>
+/// Hosted service that orchestrates pipeline execution with support for recurring schedules, distributed leases, and feature flags.
 /// </summary>
-/// <remarks>
-/// This service is registered as a hosted background service and starts automatically with the application.
-/// It continues executing configured pipelines until cancellation or application shutdown.
-/// </remarks>
 internal partial class PipelineHostedService(
     ILogger<PipelineHostedService> logger,
     ILeaseService leaseService,
@@ -45,13 +22,18 @@ internal partial class PipelineHostedService(
     IPipelineRegistry registry
 ) : IHostedService
 {
+    private readonly CancellationTokenSource _stopCts = new();
+
     internal List<Task> DispatchedPipelineGroups { get; set; } = [];
 
-    private static readonly MethodInfo _pipelineSourceRunMethodInfo = typeof(PipelineSourceService).GetMethod(nameof(PipelineSourceService.Run))!;
-    private static readonly MethodInfo _pipelineSegmentRunMethodInfo = typeof(PipelineSegmentService).GetMethod(nameof(PipelineSegmentService.Run))!;
-    private static readonly MethodInfo _pipelineSinkRunMethodInfo = typeof(PipelineSinkService).GetMethod(nameof(PipelineSinkService.Run))!;
+    private static readonly MethodInfo _pipelineSourceRunMethodInfo = typeof(PipelineSourceService).GetMethod(nameof(PipelineSourceService.Run));
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    private static readonly MethodInfo _pipelineSegmentRunMethodInfo = typeof(PipelineSegmentService).GetMethod(nameof(PipelineSegmentService.Run));
+
+    private static readonly MethodInfo _pipelineSinkRunMethodInfo = typeof(PipelineSinkService).GetMethod(nameof(PipelineSinkService.Run));
+
+    /// <inheritdoc/>
+    public Task StartAsync(CancellationToken _)
     {
         Log.HostedServiceStarting(logger);
 
@@ -66,7 +48,7 @@ internal partial class PipelineHostedService(
             try
             {
                 Log.PipelineGroupRegistered(logger, group.GroupName, group.Builders.Count, group.Recurring?.ToString() ?? "none");
-                DispatchedPipelineGroups.Add(DispatchPipelines(group, cancellationToken));
+                DispatchedPipelineGroups.Add(DispatchPipelines(group, _stopCts.Token));
             }
             catch (Exception ex)
             {
@@ -77,12 +59,14 @@ internal partial class PipelineHostedService(
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         Log.HostedServiceStopping(logger);
 
         try
         {
+            _stopCts.Cancel();
             await Task.WhenAll(DispatchedPipelineGroups);
         }
         catch (Exception ex)
@@ -97,37 +81,39 @@ internal partial class PipelineHostedService(
         {
             foreach (var descriptor in group.Builders)
             {
-                if (!await IsPipelineEnabled(group, cancellationToken))
+                var args = new PipelineArgs()
                 {
-                    Log.PipelineDisabled(logger, group.GroupName, descriptor.Name ?? "(unnamed)");
-                    continue;
-                }
-
-                var state = new PipelineState();
-
-                if (!string.IsNullOrEmpty(descriptor.LeaseName))
-                {
-                    var lease = await leaseService.TryAcquireNonBlocking(descriptor.LeaseName, cancellationToken);
-                    if (lease is null)
-                    {
-                        Log.LeaseUnavailable(logger, descriptor.LeaseName);
-                        continue;
-                    }
-
-                    state.Lease = lease;
-                    Log.LeaseAcquired(logger, descriptor.LeaseName);
-                }
+                    Descriptor = descriptor,
+                };
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
                 try
                 {
-                    Log.PipelineStarting(logger, group.GroupName, descriptor.Name ?? "(unnamed)");
-                    var pipelineTasks = BuildPipeline([], descriptor, state, descriptor.Source, null, cts);
-                    var jobTasks = pipelineTasks.Select(taskFactory => taskFactory()).ToList();
+                    if (!await IsPipelineEnabled(group, cancellationToken))
+                    {
+                        Log.PipelineDisabled(logger, group.GroupName, descriptor.Name);
+                        break;
+                    }
 
-                    await Task.WhenAll(jobTasks);
-                    Log.PipelineCompleted(logger, group.GroupName, descriptor.Name ?? "(unnamed)");
+                    if (!string.IsNullOrEmpty(descriptor.LeaseName))
+                    {
+                        var lease = await leaseService.TryAcquireNonBlocking(descriptor.LeaseName, cancellationToken);
+                        if (lease is null)
+                        {
+                            Log.LeaseUnavailable(logger, descriptor.LeaseName);
+                            break;
+                        }
+
+                        args.Lease = lease;
+                        Log.LeaseAcquired(logger, descriptor.LeaseName);
+                    }
+
+                    Log.PipelineStarting(logger, group.GroupName, descriptor.Name);
+                    var pipelineTasks = BuildPipeline([], args, descriptor.Source, null, cts);
+                    var tasks = pipelineTasks.Select(task => Task.Run(async () => await task())).ToList();
+                    await Task.WhenAll(tasks);
+                    Log.PipelineCompleted(logger, group.GroupName, descriptor.Name);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -135,24 +121,24 @@ internal partial class PipelineHostedService(
                 }
                 catch (OperationCanceledException)
                 {
-                    Log.PipelineCanceled(logger, group.GroupName, descriptor.Name ?? "(unnamed)");
+                    Log.PipelineCanceled(logger, group.GroupName, descriptor.Name);
                 }
                 catch (Exception ex)
                 {
-                    Log.PipelineFailed(logger, group.GroupName, descriptor.Name ?? "(unnamed)", ex);
+                    Log.PipelineFailed(logger, group.GroupName, descriptor.Name, ex);
                 }
                 finally
                 {
                     cts.Cancel();
-                    if (state.Lease is not null)
+                    if (args.Lease is not null)
                     {
-                        await state.Lease.DisposeAsync();
-                        Log.LeaseReleased(logger, descriptor.LeaseName ?? "(none)");
+                        await args.Lease.DisposeAsync();
+                        Log.LeaseReleased(logger, descriptor.LeaseName);
                     }
                 }
             }
 
-            // If this group should not recur, exit the loop
+            // If this group is not specified recurring. exit.
             if (group.Recurring is null)
             {
                 return;
@@ -176,8 +162,7 @@ internal partial class PipelineHostedService(
 
     public List<Func<Task>> BuildPipeline(
         List<Func<Task>> jobs,
-        IPipelineDescriptor descriptor,
-        PipelineState state,
+        PipelineArgs args,
         object? stage,
         object? inbound,
         CancellationTokenSource cts)
@@ -188,16 +173,30 @@ internal partial class PipelineHostedService(
             var genericArgs = funcType.GetGenericArguments();
             var outboundType = genericArgs[0];
 
-            var method = GetPipelineSourceRunMethod(sourceBuilder.Func, outboundType);
+            var method = GetPipelineSourceRunMethod(outboundType);
             var outbound = GetPipelineOutbound(outboundType);
 
-            jobs.Add(() => (Task)method.Invoke(pipelineSourceJob, [descriptor, state, sourceBuilder.Func, outbound, cts])!);
-            return BuildPipeline(jobs, descriptor, state, sourceBuilder.Segment, outbound, cts);
+            var newArgs = new PipelineArgs()
+            {
+                Descriptor = args.Descriptor,
+                Lease = args.Lease,
+                Name = sourceBuilder.Name,
+            };
+
+            jobs.Add(() => (Task)method.Invoke(pipelineSourceJob, [newArgs, sourceBuilder.Func, outbound, cts]!));
+            return BuildPipeline(jobs, args, sourceBuilder.Next, outbound, cts);
         }
 
         if (IsTypePipelineSegmentBuilder(stage))
         {
-            var (func, segment, sink) = GetSegmentBuilderProperties(stage);
+            var (name, func, segment, sink) = GetSegmentBuilderProperties(stage);
+
+            var newArgs = new PipelineArgs()
+            {
+                Descriptor = args.Descriptor,
+                Lease = args.Lease,
+                Name = name,
+            };
 
             if (segment is not null)
             {
@@ -209,8 +208,8 @@ internal partial class PipelineHostedService(
                 var method = GetPipelineSegmentRunMethod(func);
                 var outbound = GetPipelineOutbound(outboundType);
 
-                jobs.Add(() => (Task)method.Invoke(pipelineSegmentJob, [descriptor, state, func, inbound, outbound])!);
-                return BuildPipeline(jobs, descriptor, state, segment, outbound, cts);
+                jobs.Add(() => (Task)method.Invoke(pipelineSegmentJob, [newArgs, func, inbound, outbound]!));
+                return BuildPipeline(jobs, args, segment, outbound, cts);
             }
             else if (sink is not null)
             {
@@ -219,7 +218,7 @@ internal partial class PipelineHostedService(
                 var inboundType = genericArgs[0];
 
                 var method = GetPipelineSinkRunMethod(inboundType);
-                jobs.Add(() => (Task)method.Invoke(pipelineSinkJob, [descriptor, state, inbound, func])!);
+                jobs.Add(() => (Task)method.Invoke(pipelineSinkJob, [newArgs, func, inbound]!));
             }
             else
             {
@@ -230,7 +229,7 @@ internal partial class PipelineHostedService(
         return jobs;
     }
 
-    private static MethodInfo GetPipelineSourceRunMethod(object func, Type type) =>
+    private static MethodInfo GetPipelineSourceRunMethod(Type type) =>
         _pipelineSourceRunMethodInfo.MakeGenericMethod(type);
 
     private static MethodInfo GetPipelineSegmentRunMethod(object func)
@@ -246,11 +245,12 @@ internal partial class PipelineHostedService(
     private static MethodInfo GetPipelineSinkRunMethod(Type inboundType) =>
         _pipelineSinkRunMethodInfo.MakeGenericMethod(inboundType);
 
-    private static object GetPipelineOutbound(Type type)
+    private static object GetPipelineOutbound(Type type, int capacity = 3)
     {
         var messageType = typeof(PipelineMessage<>).MakeGenericType(type);
         var collectionType = typeof(BlockingCollection<>).MakeGenericType(messageType);
-        return Activator.CreateInstance(collectionType)!;
+        var result = Activator.CreateInstance(collectionType, capacity)!;
+        return result;
     }
 
     private static bool IsTypePipelineSegmentBuilder(object? currentStage) =>
@@ -258,16 +258,18 @@ internal partial class PipelineHostedService(
         currentStage.GetType().IsGenericType &&
         currentStage.GetType().GetGenericTypeDefinition() == typeof(PipelineSegmentBuilder<>);
 
-    private static (object? Func, object? Segment, object? Sink) GetSegmentBuilderProperties(object stage)
+    private static (string Name, object? Func, object? Segment, object? Sink) GetSegmentBuilderProperties(object stage)
     {
         var type = stage.GetType();
         var flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
 
+        var nameProp = type.GetProperty(nameof(PipelineSegmentBuilder<object>.Name), flags);
         var funcProp = type.GetProperty(nameof(PipelineSegmentBuilder<object>.Func), flags);
         var segmentProp = type.GetProperty(nameof(PipelineSegmentBuilder<object>.Segment), flags);
         var sinkProp = type.GetProperty(nameof(PipelineSegmentBuilder<object>.Sink), flags);
 
         return (
+            nameProp?.GetValue(stage) as string,
             funcProp?.GetValue(stage),
             segmentProp?.GetValue(stage),
             sinkProp?.GetValue(stage)

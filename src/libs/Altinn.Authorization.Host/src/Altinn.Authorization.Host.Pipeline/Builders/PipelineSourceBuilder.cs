@@ -5,17 +5,18 @@ namespace Altinn.Authorization.Host.Pipeline.Builders;
 internal class PipelineSourceBuilder(PipelineGroup descriptor) : ISourceBuilder
 {
     internal string Name { get; private set; }
-    
+
     internal object Func { get; private set; }
-    
-    internal object Segment { get; private set; }
+
+    internal object Next { get; private set; }
 
     /// <inheritdoc/>
-    public ISegmentBuilder<TOut> AddSource<TOut>(PipelineSource<TOut> source)
+    public ISegmentBuilder<TOut> AddSource<TOut>(string name, PipelineSource<TOut> source)
     {
         var segment = new PipelineSegmentBuilder<TOut>(descriptor);
+        Name = name;
         Func = source;
-        Segment = segment;
+        Next = segment;
         return segment;
     }
 }
@@ -33,5 +34,5 @@ public interface ISourceBuilder
     /// <typeparam name="TOut">The output message type.</typeparam>
     /// <param name="source">Source function: yields messages asynchronously.</param>
     /// <returns>Builder to configure the next stage.</returns>
-    ISegmentBuilder<TOut> AddSource<TOut>(PipelineSource<TOut> source);
+    ISegmentBuilder<TOut> AddSource<TOut>(string name, PipelineSource<TOut> source);
 }

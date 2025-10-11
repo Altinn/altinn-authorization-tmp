@@ -14,4 +14,5 @@ public record PipelineMessage<T>(
     ActivityContext? ActivityContext,
     CancellationTokenSource CancellationTokenSource)
 {
+    public ulong Sequence { get; init; }
 }

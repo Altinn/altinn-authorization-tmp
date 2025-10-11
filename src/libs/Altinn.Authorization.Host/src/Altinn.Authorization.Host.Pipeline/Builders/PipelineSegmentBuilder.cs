@@ -2,7 +2,9 @@ using Altinn.Authorization.Host.Pipeline.Services;
 
 namespace Altinn.Authorization.Host.Pipeline.Builders;
 
-internal class PipelineSegmentBuilder<TIn>(PipelineGroup descriptor) : ISegmentBuilder<TIn>
+internal class PipelineSegmentBuilder<TIn>(
+    PipelineGroup descriptor
+    ) : ISegmentBuilder<TIn>
 {
     internal string Name { get; private set; }
     
@@ -13,18 +15,22 @@ internal class PipelineSegmentBuilder<TIn>(PipelineGroup descriptor) : ISegmentB
     internal object? Sink { get; private set; }
 
     /// <inheritdoc/>
-    public ISegmentBuilder<TOut> AddSegment<TOut>(PipelineSegment<TIn, TOut> func)
+    public ISegmentBuilder<TOut> AddSegment<TOut>(string name, PipelineSegment<TIn, TOut> func)
     {
         var segment = new PipelineSegmentBuilder<TOut>(descriptor);
+
+        Name = name;
         Func = func;
         Segment = segment;
         return segment;
     }
 
     /// <inheritdoc/>
-    public ISinkBuilder<TIn> AddSink(PipelineSink<TIn> func)
+    public ISinkBuilder<TIn> AddSink(string name, PipelineSink<TIn> func)
     {
         var sink = new PipelineSinkBuilder<TIn>(descriptor);
+
+        Name = name;
         Func = func;
         Sink = sink;
         return sink;
@@ -43,15 +49,17 @@ public interface ISegmentBuilder<TIn>
     /// Segments transform messages and are retried up to 3 times on failure.
     /// </summary>
     /// <typeparam name="TOut">The output message type.</typeparam>
+    /// <param name="name">Name of the next segment.</param>
     /// <param name="segment">Transform function: receives <typeparamref name="TIn"/>, returns <typeparamref name="TOut"/>.</param>
     /// <returns>Builder for the next stage.</returns>
-    ISegmentBuilder<TOut> AddSegment<TOut>(PipelineSegment<TIn, TOut> segment);
+    ISegmentBuilder<TOut> AddSegment<TOut>(string name, PipelineSegment<TIn, TOut> segment);
 
     /// <summary>
     /// Adds the terminal sink stage.
     /// Sinks perform final processing (e.g., database writes, API calls) and are retried up to 3 times on failure.
     /// </summary>
+    /// <param name="name">Name of the sink.</param>
     /// <param name="sink">Sink function: consumes <typeparamref name="TIn"/> and performs final processing.</param>
     /// <returns>Builder to complete pipeline configuration.</returns>
-    ISinkBuilder<TIn> AddSink(PipelineSink<TIn> sink);
+    ISinkBuilder<TIn> AddSink(string name, PipelineSink<TIn> sink);
 }
