@@ -28,7 +28,7 @@ internal class PipelineSegmentBuilder<TIn>(
     /// <inheritdoc/>
     public ISinkBuilder AddSink(string name, PipelineSink<TIn> sink)
     {
-        var builder = new PipelineSinkBuilder<TIn>(descriptor);
+        var builder = new PipelineSinkBuilder(descriptor);
 
         Name = name;
         Func = sink;
