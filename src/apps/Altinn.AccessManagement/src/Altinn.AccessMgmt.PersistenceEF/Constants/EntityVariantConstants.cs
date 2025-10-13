@@ -39,7 +39,7 @@ public static class EntityVariantConstants
     /// Represents the entity variant for "Virksomhet drevet i fellesskap" (VIFE).
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> c4177195-668d-401c-9a2b-1bbcf3c02d37  
+    /// - <c>Id:</c> e7ed50fc-65c9-442b-973c-89931ff5aeb6  
     /// - <c>Name:</c> "VIFE"  
     /// - <c>Description:</c> "Virksomhet drevet i fellesskap, jf. mval § 12, 4. ledd"  
     /// - <c>TypeId:</c> References <see cref="EntityTypeConstants.Organisation"/>  
@@ -47,7 +47,7 @@ public static class EntityVariantConstants
     ///   - EN: "VIFE" / "Business carried out jointly, cf. VAT Act § 12, fourth paragraph."  
     ///   - NN: "VIFE" / "Verksemd driven i fellesskap, jf. mval § 12, 4. ledd"  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> VIFE { get; } = new ConstantDefinition<EntityVariant>("c4177195-668d-401c-9a2b-1bbcf3c02d37")
+    public static ConstantDefinition<EntityVariant> VIFE { get; } = new ConstantDefinition<EntityVariant>("e7ed50fc-65c9-442b-973c-89931ff5aeb6")
     {
         Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "VIFE", Description = "Virksomhet drevet i fellesskap, jf mval § 12, 4.le" },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "VIFE"), KeyValuePair.Create("Description", "Business carried out jointly, cf. VAT Act § 12, fourth paragraph.")),
@@ -58,7 +58,7 @@ public static class EntityVariantConstants
     /// Represents the entity variant for "Indre selskap" (IS).
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> baa7abe6-1246-4fe2-ada6-97e548e3dbaf  
+    /// - <c>Id:</c> 6dbc447a-3306-4fd0-a7cf-fbd725bbe170  
     /// - <c>Name:</c> "IS"  
     /// - <c>Description:</c> "Et samarbeidsarrangement der en eller flere aktører driver næringsvirksomhet for felles regning og risiko."  
     /// - <c>TypeId:</c> References <see cref="EntityTypeConstants.Organisation"/>  
@@ -66,7 +66,7 @@ public static class EntityVariantConstants
     ///   - EN: "IS" / "A cooperative arrangement where one or more parties conduct business activities for joint account and risk."  
     ///   - NN: "IS" / "Eit samarbeidsopplegg der ein eller fleire aktørar driv næringsverksemd for felles rekning og risiko."  
     /// </remarks>
-    public static ConstantDefinition<EntityVariant> IS { get; } = new ConstantDefinition<EntityVariant>("baa7abe6-1246-4fe2-ada6-97e548e3dbaf")
+    public static ConstantDefinition<EntityVariant> IS { get; } = new ConstantDefinition<EntityVariant>("6dbc447a-3306-4fd0-a7cf-fbd725bbe170")
     {
         Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "IS", Description = "Et samarbeidsarrangement der en eller flere aktører driver næringsvirksomhet for felles regning og risiko." },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "IS"), KeyValuePair.Create("Description", "A cooperative arrangement where one or more parties conduct business activities for joint account and risk.")),
