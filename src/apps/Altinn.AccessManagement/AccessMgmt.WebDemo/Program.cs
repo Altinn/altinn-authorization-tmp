@@ -11,11 +11,12 @@ using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Options;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+builder.Services.AddMudServices();
 
 builder.Services.AddScoped<ITranslationService, TranslationService>();
 builder.Services.AddScoped<IAuditAccessor, AuditAccessor>();

@@ -1,0 +1,41 @@
+﻿@page "/entities"
+@using Altinn.AccessMgmt.Core.Services.Contracts
+@using Altinn.AccessMgmt.PersistenceEF.Contexts
+@using Altinn.AccessMgmt.PersistenceEF.Models
+@using Microsoft.EntityFrameworkCore
+@inject IEntityService entityService
+@inject AppDbContext db
+@inject NavigationManager nav
+
+@if(Entities != null && Entities.Any())
+{
+    <h2>Enheter</h2>
+
+    <MudDataGrid T="Entity" Items="Entities" RowClick="EntityRowClickEvent" Hover Filterable RowClass="cursor-pointer">
+        <Columns>
+            <PropertyColumn Property="x => x.Name" Title="Navn" />
+            <PropertyColumn Property="x => x.RefId" Title="Referanse" />
+            <PropertyColumn Property="x => x.Type.Name" Title="Type" />
+            <PropertyColumn Property="x => x.Variant.Name" Title="Variant" />
+        </Columns>
+    </MudDataGrid>
+}
+
+
+@code {
+
+    public List<Entity> Entities { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Entities = await db.Entities.AsNoTracking().Include(t => t.Type).Include(t => t.Variant).ToListAsync();
+    }
+
+    private void EntityRowClickEvent(DataGridRowClickEventArgs<Entity> tableRowClickEventArgs)
+    {
+        if (tableRowClickEventArgs != null && tableRowClickEventArgs.Item != null)
+        {
+            nav.NavigateTo($"/entity/{tableRowClickEventArgs.Item.Id}");
+        }
+    }
+}

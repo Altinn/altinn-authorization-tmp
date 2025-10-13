@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MudBlazor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\src\Altinn.AccessMgmt.Core\Altinn.AccessMgmt.Core.csproj" />
   </ItemGroup>
 

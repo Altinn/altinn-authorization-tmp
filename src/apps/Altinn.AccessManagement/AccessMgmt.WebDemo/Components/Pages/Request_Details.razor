@@ -8,86 +8,149 @@
 @inject IEntityService entityService
 @inject IAssignmentService assignmentService
 @inject AppDbContext dbContext;
+@inject NavigationManager nav;
 
 @if(Request != null)
 {
-    <h3>Request</h3>
+    <MudGrid >
+       <MudItem xs="12">
 
-    <dl>
-        <dt>Status</dt>
-        <dd>@Request.Status.Name</dd>
+            <h3>Info</h3>
 
-        <dt>By</dt>
-        <dd>
-            <a href="/entity/@Request.RequestedBy.Id">
-                @Request.RequestedBy.Name
-            </a>
-        </dd>
+            <p>
+                @if (Request.RequestedById.Equals(Request.ToId))
+                {
+                    <strong>@(Request.RequestedBy.Name)</strong><span> har bedt om </span>
+                }
+                else
+                {
+                    <strong>@(Request.RequestedBy.Name)</strong><span> har på vegne av </span><strong>@(Request.To.Name)</strong><span> bedt om </span>
+                }
 
-        <dt>From</dt>
-        <dd>
-            <a href="/entity/@Request.From.Id">
-                @Request.From.Name
-            </a>
-        </dd>
+                <strong>@Request.Role.Name</strong><span> rollen hos </span><strong>@Request.From.Name</strong>
 
-        <dt>To</dt>
-        <dd>
-            <a href="/entity/@Request.To.Id">
-                @Request.To.Name
-            </a>
-        </dd>
+                @if (Packages.Any())
+                {
+                    <span> samt </span><strong>@Packages.Count()</strong><span> pakker</span>
+                }
 
-        <dt>Role</dt>
-        <dd>@Request.Role.Name</dd>
+                @if (Resources.Any())
+                {
+                    <span> og </span><strong>@Resources.Count()</strong><span> ressurser</span>
+                }
+            </p>
 
-        @if (Request.ViaId.HasValue)
+            <MudDataGrid T="Request" Items="@([Request])" Dense>
+                <Columns>
+                    <TemplateColumn Title="Status">
+                        <CellTemplate>
+                            <MudChip Color="Color.Success" Variant="Variant.Outlined">@context.Item.Status.Name</MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Opprettet av">
+                        <CellTemplate>
+                            <a href="/entity/@context.Item.RequestedBy.Id">
+                                <MudStack Row AlignItems="AlignItems.Center">
+                                    <MudAvatar Size="Size.Small" Color="Color.Primary" Square=@(context.Item.RequestedBy.Type?.Name != "Person")>@context.Item.RequestedBy.Name.First()</MudAvatar>
+                                    <h4>@context.Item.RequestedBy.Name</h4>
+                                </MudStack>
+                            </a>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Tilgang fra">
+                        <CellTemplate>
+                            <a href="/entity/@context.Item.From.Id">
+                                <MudStack Row AlignItems="AlignItems.Center">
+                                    <MudAvatar Size="Size.Small" Color="Color.Primary" Square=@(context.Item.From.Type?.Name != "Person")>@context.Item.From.Name.First()</MudAvatar>
+                                    <h4>@context.Item.From.Name</h4>
+                                </MudStack>
+                            </a>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Tilgang via">
+                        <CellTemplate>
+                            @if(context.Item.Via != null && context.Item.ViaId.HasValue)
+                            {
+                                <a href="/entity/@context.Item.ViaId">
+                                    <MudStack Row AlignItems="AlignItems.Center">
+                                        <MudAvatar Size="Size.Small" Color="Color.Primary" Square=@(context.Item.Via?.Type?.Name != "Person")>@context.Item.Via?.Name.First()</MudAvatar>
+                                        <h4>@context.Item.Via?.Name</h4>
+                                    </MudStack>
+                                </a>
+                            }
+                            else
+                            {
+                                <em>&ndash;</em>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Tilgang til">
+                        <CellTemplate>
+                            <a href="/entity/@context.Item.To.Id">
+                                <MudStack Row AlignItems="AlignItems.Center">
+                                    <MudAvatar Size="Size.Small" Color="Color.Primary" Square=@(context.Item.To.Type?.Name != "Person")>@context.Item.To.Name.First()</MudAvatar>
+                                    <h4>@context.Item.To.Name</h4>
+                                </MudStack>
+                            </a>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Rolle">
+                        <CellTemplate>
+                            <MudChip Color="Color.Info">@context.Item.Role.Name</MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+            </MudDataGrid>
+       </MudItem> 
+
+        @if(Packages != null && Packages.Any())
         {
-            <dt>Via</dt>
-            <dd>
-                <a href="/entity/@Request.Via?.Id">
-                    @Request.Via?.Name
-                </a>
-            </dd>
+            <MudItem xs="12" xl="6">
+                <h3>Packages</h3>
+                <MudDataGrid T="RequestPackage" Items="Packages" Dense>
+                    <Columns>
+                        <PropertyColumn Property="x => x.Package.Area.Name" Title="Area" />
+                            <TemplateColumn Title="Name">
+                                <CellTemplate>
+                                    <MudLink Href=@($"package/{context.Item.PackageId}")>
+                                        @context.Item.Package.Name
+                                    </MudLink>
+                                </CellTemplate>
+                            </TemplateColumn>
+                        <TemplateColumn Title="Status">
+                            <CellTemplate>
+                                <MudChip Color="Color.Success" Variant="Variant.Outlined">@context.Item.Status.Name</MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Action">
+                            <CellTemplate>
+                                <MudButton Color="Color.Primary">Godkjenn</MudButton>
+                                <MudButton Color="Color.Error">Avvis</MudButton>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </MudDataGrid>
+            </MudItem>
         }
 
-        @if (Request.ViaRoleId.HasValue)
-        {
-            <dt>Via Role</dt>
-            <dd>@Request.ViaRole?.Name</dd>
-        }
 
-    </dl>
-
-    <h4>Packages</h4>
-    @if(Packages != null)
-    {
-        <dl>
-            @foreach(var package in Packages)
+        <MudItem xs="12" xl="6">
+            <h4>Resources</h4>
+            @if(Resources != null)
             {
-                <dt>
-                    <a href="/package/@package.Package.Id">@package.Package.Name</a>
-                </dt>
-                <dd>@package.Status.Name</dd>
+                <dl>
+                    @foreach (var resource in Resources)
+                    {
+                        <dt>
+                            <a href="/resource/@resource.Resource.Id">@resource.Resource.Name</a>
+                        </dt>
+                        <dd>@resource.Status.Name</dd>
+                    }
+                </dl>
             }
-        </dl>
-    }
+        </MudItem>
 
-
-    <h4>Resources</h4>
-    @if(Resources != null)
-    {
-        <dl>
-            @foreach (var resource in Resources)
-            {
-                <dt>
-                    <a href="/resource/@resource.Resource.Id">@resource.Resource.Name</a>
-                </dt>
-                <dd>@resource.Status.Name</dd>
-            }
-        </dl>
-    }
-
+    </MudGrid>
 
 }
 
@@ -109,7 +172,35 @@
         Packages = await requestService.GetRequestPackages(Request.Id);
         Resources = await requestService.GetRequestResources(Request.Id);
         Messages = await requestService.GetRequestMessages(Request.Id);
-
     }
 
+    private string GetInfoText()
+    {
+        string result = "";
+
+        if (Request.RequestedById.Equals(Request.ToId))
+        {
+            result += $"{Request.RequestedBy.Name} har bedt om ";
+        }
+        else
+        {
+            result += $"{Request.RequestedBy.Name} har på vegne av {Request.To.Name} bedt om ";
+        }
+
+        result += $"{Request.Role.Name} rollen hos {Request.From.Name}";
+
+        if (Packages.Any())
+        {
+            result += $" samt {Packages.Count()} pakker";
+        }
+
+        if (Resources.Any())
+        {
+            result += $" og {Resources.Count()} ressurser";
+        }
+
+        result += ".";
+
+        return result;
+    }
 }

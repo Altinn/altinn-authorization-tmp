@@ -4,47 +4,130 @@
 @using Altinn.AccessMgmt.PersistenceEF.Contexts
 @using Altinn.AccessMgmt.PersistenceEF.Models
 @using Microsoft.EntityFrameworkCore
+@using Altinn.AccessMgmt.PersistenceEF.Extensions
 @inject IRequestService requestService
 @inject IEntityService entityService
 @inject IAssignmentService assignmentService
 @inject AppDbContext dbContext;
+@inject NavigationManager nav;
 
 @if(Entity != null)
 {
-    <h3>@Entity.Name (@Entity.RefId)</h3>
-    <em>@Entity.Type.Name - @Entity.Variant.Name</em>
+    <MudGrid>
 
-    @if(IncommingRequests != null)
-    {
-        <h4>Inkommende forespørsler</h4>
-        <ul>
-            @foreach(var request in IncommingRequests)
-            {
-                <li>
-                    <a href="/request/@request.Id">
-                        @request.From.Name
-                    </a>
-                </li>
-            }
-        </ul>
-    }
+        <MudItem xs="12">
+            <MudStack Row AlignItems="AlignItems.Center">
+                <MudAvatar Size="Size.Large" Color="Color.Primary" Square=@(Entity.Type?.Name != "Person")>@Entity.Name.First()</MudAvatar>
+                <MudStack Justify="Justify.SpaceAround" Spacing="0">
+                    <h2>@Entity.Name (@Entity.RefId)</h2>
+                    <p>@Entity.Type?.Name @(Entity.Type?.Name == Entity.Variant?.Name ? "" : $"({Entity.Variant?.Name})")</p>
+                </MudStack>
+            </MudStack>
+        </MudItem>
 
-    @if (OutgoingRequests != null)
-    {
-        <h4>Utgående forespørsler</h4>
-        <ul>
-            @foreach (var request in OutgoingRequests)
-            {
-                <li>
-                    <a href="/request/@request.Id">
-                        @request.To.Name
-                    </a>
-                </li>
-            }
-        </ul>
-    }
+        @if(Connections != null && Connections.Any())
+        {
+            <MudItem xs="12" xl="6">
+                <h2>Connections</h2>
 
+                <MudDataGrid Items="Connections.DistinctBy(t => t.FromId).DistinctBy(t => t.RoleId).DistinctBy(t => t.ToId)" Hover>
+                    <Columns>
+                        <TemplateColumn Title="Fra">
+                            <CellTemplate>
+                                <a href="/entity/@context.Item.From.Id">
+                                    <MudStack Row AlignItems="AlignItems.Center">
+                                        <MudAvatar Size="Size.Small" Color="Color.Primary" Square=@(context.Item.From.Type?.Name != "Person")>@context.Item.From.Name.First()</MudAvatar>
+                                        <h4>@context.Item.From.Name</h4>
+                                    </MudStack>
+                                </a>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Rolle">
+                            <CellTemplate>
+                                <MudChip Color="Color.Info">@context.Item.Role.Name</MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Til">
+                            <CellTemplate>
+                                <a href="/entity/@context.Item.To.Id">
+                                    <MudStack Row AlignItems="AlignItems.Center">
+                                        <MudAvatar Size="Size.Small" Color="Color.Primary" Square=@(context.Item.To.Type?.Name != "Person")>@context.Item.To.Name.First()</MudAvatar>
+                                        <h4>@context.Item.To.Name</h4>
+                                    </MudStack>
+                                </a>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </MudDataGrid>
 
+            </MudItem>
+        }
+
+        @if (Requests != null && Requests.Any())
+        {
+            <MudItem xs="12" xl="6">
+
+            <h2>Requests</h2>
+
+                <MudDataGrid T="Request" Items="@Requests" RowClick="RequestRowClickEvent" Hover Filterable RowClass="cursor-pointer">
+                    <Columns>
+                        <TemplateColumn Title="Status">
+                            <CellTemplate>
+                                <MudChip Color="Color.Success" Variant="Variant.Outlined">@context.Item.Status.Name</MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Opprettet av">
+                            <CellTemplate>
+                                <MudStack Row AlignItems="AlignItems.Center">
+                                    <MudAvatar Size="Size.Small" Color="Color.Primary" Square=@(context.Item.RequestedBy.Type?.Name != "Person")>@context.Item.RequestedBy.Name.First()</MudAvatar>
+                                    <h4>@context.Item.RequestedBy.Name</h4>
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Tilgang fra">
+                            <CellTemplate>
+                                <MudStack Row AlignItems="AlignItems.Center">
+                                    <MudAvatar Size="Size.Small" Color="Color.Primary" Square=@(context.Item.From.Type?.Name != "Person")>@context.Item.From.Name.First()</MudAvatar>
+                                    <h4>@context.Item.From.Name</h4>
+                                </MudStack> 
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Tilgang via">
+                            <CellTemplate>
+                                @if (context.Item.Via != null && context.Item.ViaId.HasValue)
+                                {
+                                    <a href="/entity/@context.Item.ViaId">
+                                        <MudStack Row AlignItems="AlignItems.Center">
+                                            <MudAvatar Size="Size.Small" Color="Color.Primary" Square=@(context.Item.Via?.Type?.Name != "Person")>@context.Item.Via?.Name.First()</MudAvatar>
+                                            <h4>@context.Item.Via?.Name</h4>
+                                        </MudStack>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <em>&ndash;</em>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Tilgang til">
+                            <CellTemplate>
+                                <MudStack Row AlignItems="AlignItems.Center">
+                                    <MudAvatar Size="Size.Small" Color="Color.Primary" Square=@(context.Item.To.Type?.Name != "Person")>@context.Item.To.Name.First()</MudAvatar>
+                                    <h4>@context.Item.To.Name</h4>
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Rolle">
+                            <CellTemplate>
+                                <MudChip Color="Color.Info">@context.Item.Role.Name</MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </MudDataGrid>
+
+            </MudItem>
+        }
+    </MudGrid>
 }
 
 @code {
@@ -52,15 +135,25 @@
     [Parameter] public string id { get; set; }
 
     public Entity Entity { get; set; }
-    public IEnumerable<Request> IncommingRequests { get; set; }
-    public IEnumerable<Request> OutgoingRequests { get; set; }
+    public List<Connection> Connections { get; set; } = new List<Connection>();
+    public List<Request> Requests { get; set; } = new List<Request>();
 
     protected async override Task OnParametersSetAsync()
     {
         Entity = await entityService.GetEntity(Guid.Parse(id), new CancellationToken());
-        IncommingRequests = await requestService.GetAllRequests(null, Entity.Id, null);
-        OutgoingRequests = await requestService.GetAllRequests(Entity.Id, null, null);
 
+        Connections = await dbContext.Connections.AsNoTracking().IncludeExtendedEntities().Include(t => t.Role).Where(t => t.FromId == Entity.Id || t.ToId == Entity.Id).ToListAsync();
+        
+        Requests = new List<Request>();
+        Requests.AddRange(await requestService.GetAllRequests(null, Entity.Id, null));
+        Requests.AddRange(await requestService.GetAllRequests(Entity.Id, null, null));
     }
 
+    private void RequestRowClickEvent(DataGridRowClickEventArgs<Request> tableRowClickEventArgs)
+    {
+        if(tableRowClickEventArgs != null && tableRowClickEventArgs.Item != null)
+        {            
+            nav.NavigateTo($"/request/{tableRowClickEventArgs.Item.Id}", forceLoad: true);
+        }
+    }
 }

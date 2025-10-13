@@ -212,7 +212,7 @@ public class RequestService(
 
     public async Task<IEnumerable<RequestPackage>> GetRequestPackages(Guid requestId)
     {
-        return await Db.RequestPackages.Where(t => t.RequestId == requestId).ToListAsync();
+        return await Db.RequestPackages.Include(t => t.Request).Include(t => t.Package).ThenInclude(t => t.Area).Where(t => t.RequestId == requestId).ToListAsync();
     }
 
     public async Task<IEnumerable<RequestResource>> GetRequestResources(Guid requestId)
@@ -227,12 +227,12 @@ public class RequestService(
             return Enumerable.Empty<Request>();
         }
 
-        var q = Db.Requests.Where(t => t.StatusId == statusOpen);
-        q.WhereIf(fromId.HasValue, t => t.FromId == fromId.Value);
-        q.WhereIf(toId.HasValue, t => t.ToId == toId.Value);
-        q.WhereIf(viaId.HasValue, t => t.ViaId == viaId.Value);
-
-        return await q.ToListAsync();
+        return await Db.Requests
+            .Where(t => t.StatusId == statusOpen)
+            .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
+            .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
+            .WhereIf(viaId.HasValue, t => t.ViaId == viaId.Value)
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<Request>> GetAllRequests(Guid? fromId, Guid? toId, Guid? viaId)
@@ -242,11 +242,11 @@ public class RequestService(
             return Enumerable.Empty<Request>();
         }
 
-        var q = Db.Requests.WhereIf(fromId.HasValue, t => t.FromId == fromId.Value);
-        q.WhereIf(toId.HasValue, t => t.ToId == toId.Value);
-        q.WhereIf(viaId.HasValue, t => t.ViaId == viaId.Value);
-
-        return await q.ToListAsync();
+        return await Db.Requests
+            .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
+            .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
+            .WhereIf(viaId.HasValue, t => t.ViaId == viaId.Value)
+            .ToListAsync();
     }
 
     public async Task<bool> RejectRequest(Guid requestId)
@@ -303,7 +303,11 @@ public class RequestService(
 
     public async Task<Request> GetRequest(Guid id)
     {
-        return await Db.Requests.SingleAsync(t => t.Id == id);
+        return await Db.Requests
+            .Include(t => t.From).ThenInclude(t => t.Type)
+            .Include(t => t.To).ThenInclude(t => t.Type)
+            .Include(t => t.Via).ThenInclude(t => t.Type)
+            .SingleAsync(t => t.Id == id);
     }
 
     public async Task<IEnumerable<RequestMessage>> GetRequestMessages(Guid requestId)
