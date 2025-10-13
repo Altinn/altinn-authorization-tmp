@@ -36,6 +36,82 @@ public static class EntityVariantConstants
         => ConstantLookup.AllTranslations<EntityVariant>(typeof(EntityVariantConstants));
 
     /// <summary>
+    /// Represents the entity variant for "Frivillig registrert utleiebygg." (UTBG).
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 99a54a28-52d3-4608-9298-94081bb3f3d2
+    /// - <c>Name:</c> "UTBG"
+    /// - <c>Description:</c> "Frivillig registrert utleiebygg."
+    /// - <c>TypeId:</c> References <see cref="EntityTypeConstants.Organisation"/>  
+    /// - <c>Translations:</c>  
+    ///   - EN: "UTBG" / "Voluntarily registered rental building."  
+    ///   - NN: "UTBG" / "Frivillig registrert utleigebygg."
+    /// </remarks>
+    public static ConstantDefinition<EntityVariant> UTBG { get; } = new ConstantDefinition<EntityVariant>("99a54a28-52d3-4608-9298-94081bb3f3d2")
+    {
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "UTBG", Description = "Frivillig registrert utleiebygg." },
+        EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTBG"), KeyValuePair.Create("Description", "Voluntarily registered rental building.")),
+        NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTBG"), KeyValuePair.Create("Description", "Frivillig registrert utleigebygg.")),
+    };
+    
+    /// <summary>
+    /// Represents the entity variant for "Enkeltpersoner som registreres i Revisorregisteret." (REV).
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 2d9371de-576b-42fc-94b9-7e80b2467982
+    /// - <c>Name:</c> "REV"  
+    /// - <c>Description:</c> "Enkeltpersoner som registreres i Revisorregisteret."
+    /// - <c>TypeId:</c> References <see cref="EntityTypeConstants.Organisation"/>  
+    /// - <c>Translations:</c>  
+    ///   - EN: "REV" / "Individuals who are registered in the Register of Auditors."  
+    ///   - NN: "REV" / "Einskildpersonar som blir registrerte i Revisorregisteret."  
+    /// </remarks>
+    public static ConstantDefinition<EntityVariant> REV { get; } = new ConstantDefinition<EntityVariant>("2d9371de-576b-42fc-94b9-7e80b2467982")
+    {
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "REV", Description = "Enkeltpersoner som registreres i Revisorregisteret." },
+        EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "REV"), KeyValuePair.Create("Description", "Individuals who are registered in the Register of Auditors.")),
+        NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "REV"), KeyValuePair.Create("Description", "Einskildpersonar som blir registrerte i Revisorregisteret.")),
+    };
+
+    /// <summary>
+    /// Represents the entity variant for "Norskkontrollert utenlandsk selskap" (NOKUS).
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 6cfce90e-1d84-48b6-ba32-cc4c6f81ae04  
+    /// - <c>Name:</c> "NOKUS"  
+    /// - <c>Description:</c> "Norskkontrollert utenlandsk selskap."
+    /// - <c>TypeId:</c> References <see cref="EntityTypeConstants.Organisation"/>  
+    /// - <c>Translations:</c>  
+    ///   - EN: "NOKUS" / "Norwegian-controlled foreign company."  
+    ///   - NN: "NOKUS" / "Norskkontrollert utlendsk selskap."  
+    /// </remarks>
+    public static ConstantDefinition<EntityVariant> NOKUS { get; } = new ConstantDefinition<EntityVariant>("6cfce90e-1d84-48b6-ba32-cc4c6f81ae04")
+    {
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "NOKUS", Description = "Norskkontrollert utenlandsk selskap." },
+        EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "NOKUS"), KeyValuePair.Create("Description", "Norwegian-controlled foreign company")),
+        NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "NOKUS"), KeyValuePair.Create("Description", "Norskkontrollert utlendsk selskap.")),
+    };
+
+    /// <summary>
+    /// Represents the entity variant for "Virksomhet drevet i fellesskap" (VIFE).
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 6301535b-0734-4024-8ca1-d0a6a6efadf5  
+    /// - <c>Name:</c> "UTLANS"  
+    /// - <c>Description:</c> "Utenlandsk ansvarlig selskap."
+    /// - <c>TypeId:</c> References <see cref="EntityTypeConstants.Organisation"/>  
+    /// - <c>Translations:</c>  
+    ///   - EN: "VIFE" / "Foreign general partnership (or foreign unlimited partnership, depending on legal context)"  
+    ///   - NN: "VIFE" / "Utlendsk ansvarleg selskap."  
+    /// </remarks>
+    public static ConstantDefinition<EntityVariant> UTLANS { get; } = new ConstantDefinition<EntityVariant>("6301535b-0734-4024-8ca1-d0a6a6efadf5")
+    {
+        Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "UTLANS", Description = "Utenlandsk ansvarlig selskap." },
+        EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTLANS"), KeyValuePair.Create("Description", "Foreign general partnership (or foreign unlimited partnership, depending on legal context)")),
+        NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTLANS"), KeyValuePair.Create("Description", "Utlendsk ansvarleg selskap.")),
+    };
+
+    /// <summary>
     /// Represents the entity variant for "Virksomhet drevet i fellesskap" (VIFE).
     /// </summary>
     /// <remarks>
