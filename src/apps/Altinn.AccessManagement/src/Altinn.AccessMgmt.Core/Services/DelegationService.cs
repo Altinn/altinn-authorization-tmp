@@ -183,7 +183,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
     private async Task<int> RevokeClientDelegations(ImportClientDelegationRequestDto request, Entity client, Entity facilitator, AuditValues audit, CancellationToken cancellationToken = default)
     {
         int packagesRevoked = 0;
-
+        
         // Find Agent Role
         try
         {
@@ -230,8 +230,8 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
                             // Find Agent Entity
                             var agent = await entityService.GetEntity(request.AgentId, cancellationToken) ?? throw new Exception(string.Format("Could not find party '{0}'", request.AgentId));
 
-                            // Find or Create Agent Assignment
-                            agentAssignment = await GetOrCreateAssignment(facilitator, agent, agentRole, audit, cancellationToken) ?? throw new Exception(string.Format("Could not find or create assignment '{0}' - {1} - {2}", facilitator.Name, agentRole.Code, agent.Name));
+                            // Find the Agent Assignment
+                            agentAssignment = await assignmentService.GetAssignment(facilitator.Id, agent.Id, agentRole.Id, cancellationToken);
                             if (agentAssignment == null)
                             {
                                 return 0;
@@ -268,7 +268,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
     private async Task<bool> RevokeDelegationPackage(Guid delegationId, Guid packageId, AuditValues audit, CancellationToken cancellationToken = default)
     {
         var delegationPackage = await db.DelegationPackages
-            .AsNoTracking()
+            .AsTracking()
             .Where(t => t.DelegationId == delegationId && t.PackageId == packageId)
             .FirstOrDefaultAsync(cancellationToken);
 
