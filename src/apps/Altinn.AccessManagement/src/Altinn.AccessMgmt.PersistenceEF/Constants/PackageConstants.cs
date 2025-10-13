@@ -2936,7 +2936,7 @@ public static class PackageConstants
         {
             Name = "Lønn med personopplysninger av særlig kategori",
             Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til lønn og refusjon som inkluderer personopplysninger av særlig kategori. Denne fullmakten kan gi bruker tilgang til sensitive personopplysninger om ansatte, for eksempel knyttet til informasjon om ansattes sykefravær, foreldrepenger, pleiepenger eller lignende opplysninger. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            Urn = "altinn:accesspackage:lonn-personopplysinger-saerlig-kategori",
+            Urn = "urn:altinn:accesspackage:lonn-personopplysinger-saerlig-kategori",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
