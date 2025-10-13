@@ -26,7 +26,7 @@ public static class EntityVariantConstants
     /// <summary>
     /// Get all constants as a read-only collection.
     /// </summary>
-    public static IReadOnlyCollection<ConstantDefinition<EntityVariant>> AllEntities() 
+    public static IReadOnlyCollection<ConstantDefinition<EntityVariant>> AllEntities()
         => ConstantLookup.AllEntities<EntityVariant>(typeof(EntityVariantConstants));
 
     /// <summary>
@@ -53,7 +53,7 @@ public static class EntityVariantConstants
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTBG"), KeyValuePair.Create("Description", "Voluntarily registered rental building.")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTBG"), KeyValuePair.Create("Description", "Frivillig registrert utleigebygg.")),
     };
-    
+
     /// <summary>
     /// Represents the entity variant for "Enkeltpersoner som registreres i Revisorregisteret." (REV).
     /// </summary>
@@ -101,13 +101,13 @@ public static class EntityVariantConstants
     /// - <c>Description:</c> "Utenlandsk ansvarlig selskap."
     /// - <c>TypeId:</c> References <see cref="EntityTypeConstants.Organisation"/>  
     /// - <c>Translations:</c>  
-    ///   - EN: "VIFE" / "Foreign general partnership (or foreign unlimited partnership, depending on legal context)"  
+    ///   - EN: "VIFE" / "Foreign general partnership (or foreign unlimited partnership, depending on legal context)."  
     ///   - NN: "VIFE" / "Utlendsk ansvarleg selskap."  
     /// </remarks>
     public static ConstantDefinition<EntityVariant> UTLANS { get; } = new ConstantDefinition<EntityVariant>("6301535b-0734-4024-8ca1-d0a6a6efadf5")
     {
         Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "UTLANS", Description = "Utenlandsk ansvarlig selskap." },
-        EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTLANS"), KeyValuePair.Create("Description", "Foreign general partnership (or foreign unlimited partnership, depending on legal context)")),
+        EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTLANS"), KeyValuePair.Create("Description", "Foreign general partnership (or foreign unlimited partnership, depending on legal context).")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTLANS"), KeyValuePair.Create("Description", "Utlendsk ansvarleg selskap.")),
     };
 
@@ -129,7 +129,7 @@ public static class EntityVariantConstants
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "VIFE"), KeyValuePair.Create("Description", "Business carried out jointly, cf. VAT Act § 12, fourth paragraph.")),
         NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "VIFE"), KeyValuePair.Create("Description", "Verksemd driven i fellesskap, jf. mval § 12, 4. ledd")),
     };
-        
+
     /// <summary>
     /// Represents the entity variant for "Indre selskap" (IS).
     /// </summary>
