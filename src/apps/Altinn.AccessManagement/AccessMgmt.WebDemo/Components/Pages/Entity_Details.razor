@@ -30,7 +30,7 @@
             <MudItem xs="12" xl="6">
                 <h2>Connections</h2>
 
-                <MudDataGrid Items="Connections.DistinctBy(t => t.FromId).DistinctBy(t => t.RoleId).DistinctBy(t => t.ToId)" Hover>
+                <MudDataGrid Items="Connections.DistinctBy(t => t.FromId).DistinctBy(t => t.RoleId).DistinctBy(t => t.ToId)" Hover Dense>
                     <Columns>
                         <TemplateColumn Title="Fra">
                             <CellTemplate>
@@ -69,7 +69,7 @@
 
             <h2>Requests</h2>
 
-                <MudDataGrid T="Request" Items="@Requests" RowClick="RequestRowClickEvent" Hover Filterable RowClass="cursor-pointer">
+                <MudDataGrid T="Request" Items="@Requests" RowClick="RequestRowClickEvent" Hover Filterable RowClass="cursor-pointer" Dense>
                     <Columns>
                         <TemplateColumn Title="Status">
                             <CellTemplate>

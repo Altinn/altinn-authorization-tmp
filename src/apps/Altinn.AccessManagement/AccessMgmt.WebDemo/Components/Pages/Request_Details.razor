@@ -13,7 +13,8 @@
 @if(Request != null)
 {
     <MudGrid >
-       <MudItem xs="12">
+
+        <MudItem xs="12">
 
             <h3>Info</h3>
 
@@ -103,53 +104,61 @@
             </MudDataGrid>
        </MudItem> 
 
-        @if(Packages != null && Packages.Any())
-        {
-            <MudItem xs="12" xl="6">
-                <h3>Packages</h3>
-                <MudDataGrid T="RequestPackage" Items="Packages" Dense>
-                    <Columns>
-                        <PropertyColumn Property="x => x.Package.Area.Name" Title="Area" />
-                            <TemplateColumn Title="Name">
-                                <CellTemplate>
-                                    <MudLink Href=@($"package/{context.Item.PackageId}")>
-                                        @context.Item.Package.Name
-                                    </MudLink>
-                                </CellTemplate>
-                            </TemplateColumn>
-                        <TemplateColumn Title="Status">
-                            <CellTemplate>
-                                <MudChip Color="Color.Success" Variant="Variant.Outlined">@context.Item.Status.Name</MudChip>
-                            </CellTemplate>
-                        </TemplateColumn>
-                        <TemplateColumn Title="Action">
-                            <CellTemplate>
-                                <MudButton Color="Color.Primary">Godkjenn</MudButton>
-                                <MudButton Color="Color.Error">Avvis</MudButton>
-                            </CellTemplate>
-                        </TemplateColumn>
-                    </Columns>
-                </MudDataGrid>
-            </MudItem>
-        }
-
-
         <MudItem xs="12" xl="6">
-            <h4>Resources</h4>
-            @if(Resources != null)
-            {
-                <dl>
-                    @foreach (var resource in Resources)
-                    {
-                        <dt>
-                            <a href="/resource/@resource.Resource.Id">@resource.Resource.Name</a>
-                        </dt>
-                        <dd>@resource.Status.Name</dd>
-                    }
-                </dl>
-            }
+            <h3>Packages</h3>
+            <MudDataGrid T="RequestPackage" Items="Packages" Dense>
+                <Columns>
+                    <PropertyColumn Property="x => x.Package.Area.Name" Title="Område" />
+                        <TemplateColumn Title="Navn">
+                            <CellTemplate>
+                                <MudLink Href=@($"package/{context.Item.PackageId}")>
+                                    @context.Item.Package.Name
+                                </MudLink>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    <TemplateColumn Title="Status">
+                        <CellTemplate>
+                            <MudChip Color="Color.Success" Variant="Variant.Outlined">@context.Item.Status.Name</MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title="Handlinger">
+                        <CellTemplate>
+                            <MudButton Color="Color.Primary" OnClick="(() => ApprovePackage(context.Item.PackageId))">Godkjenn</MudButton>
+                            <MudButton Color="Color.Error">Avvis</MudButton>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+            </MudDataGrid>
         </MudItem>
 
+        <MudItem xs="12" xl="6">
+            <h3>Ressurser</h3>
+            <MudDataGrid T="RequestResource" Items="Resources" Dense>
+                <Columns>
+                    <TemplateColumn Title="Status">
+                        <CellTemplate>
+                            <MudChip Color="Color.Success" Variant="Variant.Outlined">@context.Item.Status.Name</MudChip>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.Resource.Provider.Name" Title="Tjenesteeier" />
+                    <TemplateColumn Title="Navn">
+                        <CellTemplate>
+                            <MudLink Href=@($"resource/{context.Item.ResourceId}")>
+                                @context.Item.Resource.Name
+                            </MudLink>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <PropertyColumn Property="x => x.Resource.Description" Title="Beskrivelse" />
+                    <TemplateColumn Title="Handlinger">
+                        <CellTemplate>
+                            <MudButton Color="Color.Primary" OnClick="(() => ApproveResource(context.Item.ResourceId))">Godkjenn</MudButton>
+                            <MudButton Color="Color.Error">Avvis</MudButton>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+            </MudDataGrid>
+        </MudItem>
+       
     </MudGrid>
 
 }
@@ -172,6 +181,17 @@
         Packages = await requestService.GetRequestPackages(Request.Id);
         Resources = await requestService.GetRequestResources(Request.Id);
         Messages = await requestService.GetRequestMessages(Request.Id);
+    }
+
+
+    private async Task ApprovePackage(Guid packageId)
+    {
+        await requestService.AcceptRequestPackage(Request.Id, packageId);
+    }
+
+    private async Task ApproveResource(Guid resourceId)
+    {
+        await requestService.AcceptRequestResource(Request.Id, resourceId);
     }
 
     private string GetInfoText()
