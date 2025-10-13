@@ -108,7 +108,7 @@ public static class EntityVariantConstants
     {
         Entity = new EntityVariant() { TypeId = EntityTypeConstants.Organisation, Name = "UTLANS", Description = "Utenlandsk ansvarlig selskap." },
         EN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTLANS"), KeyValuePair.Create("Description", "Foreign general partnership (or foreign unlimited partnership, depending on legal context).")),
-        NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTLANS"), KeyValuePair.Create("Description", "Utlandsk ansvarleg selskap.")),
+        NN = TranslationEntryList.Create(KeyValuePair.Create("Name", "UTLANS"), KeyValuePair.Create("Description", "Utanlandsk ansvarleg selskap.")),
     };
 
     /// <summary>
