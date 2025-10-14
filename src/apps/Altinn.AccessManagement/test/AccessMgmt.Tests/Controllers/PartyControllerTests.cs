@@ -72,7 +72,7 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
                 }),
                 Headers =
                 {
-                    { "PlatformAccessToken", PrincipalUtil.GetAccessToken("ttd", "authentication") } // Invalid issuer
+                    { "PlatformAccessToken", PrincipalUtil.GetAccessToken("ttd", "authentication") } // Invalid issuer for this endpoint
                 }
             };
 
@@ -94,7 +94,7 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
                 }),
                 Headers =
                 {
-                    { "PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "unittest") } // Invalid app claim
+                    { "PlatformAccessToken", PrincipalUtil.GetAccessToken("platform", "unittest") } // Valid issuer, but invalid app claim for this endpoint
                 }
             };
 
@@ -110,7 +110,7 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
                 Content = JsonContent.Create(new PartyBaseDto
                 {
                     PartyUuid = Guid.NewGuid(),
-                    EntityType = "Organization", // Unsupported
+                    EntityType = "Organization", // Invalid entity type (at this time only allows for creating type: SystemUser)
                     EntityVariantType = "StandardSystem",
                     DisplayName = "Test User"
                 }),
@@ -137,7 +137,7 @@ namespace Altinn.AccessManagement.Api.Internal.IntegrationTests.Controllers
                 {
                     PartyUuid = Guid.NewGuid(),
                     EntityType = "Systembruker",
-                    EntityVariantType = "BEDR", // Invalid variant
+                    EntityVariantType = "BEDR", // Invalid variant type for SystemUser
                     DisplayName = "Test User"
                 }),
                 Headers =
