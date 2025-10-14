@@ -31,7 +31,7 @@
         public string PersonId { get; set; }
 
         /// <summary>
-        /// Type of party
+        /// The partyType of the party
         /// </summary>
         public Guid PartyType { get; set; }
     }

@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Definitions;
@@ -94,9 +93,6 @@ public static partial class DbAccessHostExtensions
         builder.Services.AddSingleton<DbDataMigrationService>();
         builder.Services.AddSingleton<MockDataService>();
 
-        // Core interfaces & implementations
-        builder.Services.AddSingleton<IAmPartyRepository, AMPartyService>();
-
         builder.Services.Add(Marker.ServiceDescriptor);
 
         return builder;
@@ -126,6 +122,19 @@ public static partial class DbAccessHostExtensions
     };
 
     /// <summary>
+    /// Add definitions to the database definition registry
+    /// </summary>
+    /// <param name="host">The application host.</param>
+    /// <returns></returns>
+    public static async Task<IHost> DefineAccessMgmtDbModels(this IHost host)
+    {
+        // Add definitions to the database definition registry
+        DefineAllModels(host.Services);
+
+        return host;
+    }
+
+    /// <summary>
     /// Initializes and applies database migrations and data ingestion processes.
     /// </summary>
     /// <param name="host">The application host.</param>
@@ -140,8 +149,8 @@ public static partial class DbAccessHostExtensions
             return host;
         }
 
-        // Add definitions to the database definition registry
-        DefineAllModels(host.Services);
+        //// Add definitions to the database definition registry
+        //// DefineAllModels(host.Services); Moved
 
         var migration = host.Services.GetRequiredService<DbSchemaMigrationService>();
         migration.GenerateAll();

@@ -1,5 +1,4 @@
 ﻿using Altinn.AccessManagement.Core.Models.Party;
-using Altinn.AccessManagement.Core.Models.Register;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Models;
@@ -65,6 +64,37 @@ namespace Altinn.AccessMgmt.Persistence.Services
             }
 
             ExtEntityLookup extEntityLookup = res.First();
+            Guid partyType = extEntityLookup.Entity.TypeId;
+            string personId = null;
+            string organizationId = null;
+            
+            if (partyType == Guid.Parse("bfe09e70-e868-44b3-8d81-dfe0e13e058a"))
+            {
+                personId = extEntityLookup.Entity.RefId;
+            }
+
+            if (partyType == Guid.Parse("8c216e2f-afdd-4234-9ba2-691c727bb33d"))
+            {
+                organizationId = extEntityLookup.Entity.RefId;
+            }
+
+            return new MinimalParty()
+            {
+                Name = extEntityLookup.Entity.Name,
+                PartyUuid = extEntityLookup.Entity.Id,
+                PartyId = partyId,
+                PersonId = personId,
+                OrganizationId = organizationId,
+                PartyType = partyType
+            };
+        }
+
+            if (res.Count() > 1)
+            {
+                throw new InvalidOperationException("Multiple matches found for the given criteria.Should never happen.");
+            }
+
+            ExtEntityLookup extEntityLookup = res.First();
             
             return new MinimalParty()
             {
@@ -120,6 +150,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
             {
                 PartyUuid = partyUuid,
                 Name = parties.First().Entity.Name,
+                PartyType = parties.First().Entity.TypeId
             };
 
             if (res.TryGetValue("OrganizationIdentifier", out string orgNo))
@@ -140,7 +171,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
             return party;
         }
 
-        public async Task<MinimalParty> GetByUserId(int userId, CancellationToken cancellationToken)
+        public async Task<MinimalParty> GetByUserId(int userId, CancellationToken cancellationToken = default)
         {
             GenericFilterBuilder<EntityLookup> filter = entityLookupRepository.CreateFilterBuilder();
             filter.Equal(t => t.Key, "UserId");
@@ -159,12 +190,20 @@ namespace Altinn.AccessMgmt.Persistence.Services
             }
 
             ExtEntityLookup extEntityLookup = res.First();
-
+            Guid partyType = extEntityLookup.Entity.TypeId;
+            string personId = null;
+            
+            if (partyType == Guid.Parse("bfe09e70-e868-44b3-8d81-dfe0e13e058a")) 
+            {
+                personId = extEntityLookup.Entity.RefId;
+            }
+            
             return new MinimalParty()
             {
                 Name = extEntityLookup.Entity.Name,
                 PartyUuid = extEntityLookup.Entity.Id,
-                PartyType = extEntityLookup.Entity.TypeId
+                PersonId = personId,
+                PartyType = partyType
             };
         }
     }

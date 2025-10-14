@@ -275,6 +275,22 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         }
 
         [Fact]
+        public async Task PDP_Decision_ResourceRegistry_RequestConsent_ValidAccessList_Ver2()
+        {
+            string testCase = "AltinnResourceRegistry_RequestConsent_ValidAccessList_Ver2";
+            HttpClient client = GetTestClient();
+
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
+        [Fact]
         public async Task PDP_Decision_ResourceRegistry_RequestConsent_InValidAccessList()
         {
             string testCase = "AltinnResourceRegistry_RequestConsent_InValidAccessList";
@@ -299,6 +315,49 @@ namespace Altinn.Platform.Authorization.IntegrationTests
         public async Task PDP_Decision_ResourceRegistry_RequestConsent_ValidPartyType()
         {
             string testCase = "AltinnResourceRegistry_RequestConsent_ValidPartyType";
+            HttpClient client = GetTestClient();
+
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
+        /// <summary>
+        /// This scenario uses a resource that only requires that it is an organization that is requesting consent.
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task PDP_Decision_ResourceRegistry_RequestConsent_SKE_Skattegrunnlag_ValidPartyType()
+        {
+            string testCase = "AltinnResourceRegistry_RequestConsent_ValidPartyType_Ver3";
+            HttpClient client = GetTestClient();
+
+            HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
+            XacmlJsonResponse expected = TestSetupUtil.ReadExpectedJsonProfileResponse(testCase);
+
+            // Act
+            XacmlJsonResponse contextResponse = await TestSetupUtil.GetXacmlJsonProfileContextResponseAsync(client, httpRequestMessage);
+
+            // Assert
+            AssertionUtil.AssertEqual(expected, contextResponse);
+        }
+
+
+        /// <summary>
+        /// This scenario uses a resource that only requires that it is an organization that is requesting consent.
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task PDP_Decision_ResourceRegistry_RequestConsent_ValidPartyType_Ver2()
+        {
+            string testCase = "AltinnResourceRegistry_RequestConsent_ValidPartyType_Ver2";
             HttpClient client = GetTestClient();
 
             HttpRequestMessage httpRequestMessage = TestSetupUtil.CreateJsonProfileXacmlRequest(testCase);
