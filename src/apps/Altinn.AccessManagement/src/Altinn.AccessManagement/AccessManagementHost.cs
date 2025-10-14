@@ -12,10 +12,9 @@ using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Persistence.Extensions;
+using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Persistence.Extensions;
-using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
-using Altinn.Authorization.AccessManagement;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.Host;
 using Altinn.Authorization.Host.Database;
@@ -35,9 +34,6 @@ using Altinn.Common.PEP.Interfaces;
 using AltinnCore.Authentication.JwtCookie;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -74,22 +70,6 @@ internal static partial class AccessManagementHost
 
         builder.ConfigureLibsIntegrations();
         builder.ConfigureAppsettings();
-        builder.AddAltinnDatabase(opt =>
-        {
-            var adminConnectionStringFmt = builder.Configuration.GetValue<string>("PostgreSQLSettings:AdminConnectionString");
-            var adminConnectionStringPwd = builder.Configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbAdminPwd");
-            var connectionStringFmt = builder.Configuration.GetValue<string>("PostgreSQLSettings:ConnectionString");
-            var connectionStringPwd = builder.Configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbPwd");
-            var appsettings = new AccessManagementAppsettings(builder.Configuration);
-            if (string.IsNullOrEmpty(connectionStringFmt) || string.IsNullOrEmpty(adminConnectionStringFmt))
-            {
-                Log.PgsqlMissingConnectionString(Logger);
-                opt.Enabled = false;
-            }
-
-            opt.AppSource = new(string.Format(connectionStringFmt, connectionStringPwd));
-            opt.MigrationSource = new(string.Format(adminConnectionStringFmt, adminConnectionStringPwd));
-        });
 
         if (!builder.Environment.IsDevelopment())
         {
@@ -103,7 +83,24 @@ internal static partial class AccessManagementHost
             }
         }
 
-        //// builder.ConfigureEF();
+        var connectionStrings = GetConnectionStrings(builder.Configuration);
+
+        builder.AddAltinnDatabase(opt =>
+        {
+            opt.Enabled = connectionStrings.Valid;
+            opt.AppSource = new(connectionStrings.AppSource);
+            opt.MigrationSource = new(connectionStrings.MigrationSource);
+        });
+
+        builder.Services.AddAccessManagementDatabase(options =>
+        {
+            var appsettings = new AccessManagementAppsettings(builder.Configuration);
+            options.AppConnectionString = connectionStrings.AppSource;
+            options.MigrationConnectionString = connectionStrings.MigrationSource;
+            options.Source = appsettings.RunInitOnly ? SourceType.Migration : SourceType.App; 
+        });
+
+        builder.Services.AddAccessMgmtCore();
 
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
@@ -118,27 +115,22 @@ internal static partial class AccessManagementHost
         return builder.Build();
     }
 
-    private static WebApplicationBuilder ConfigureEF(this WebApplicationBuilder builder)
+    private static (string AppSource, string MigrationSource, bool Valid) GetConnectionStrings(ConfigurationManager configuration)
     {
-        //// builder.Services.Replace(ServiceDescriptor.Singleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>());
-        //// builder.Services.AddSingleton<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
+        var adminConnectionStringFmt = configuration.GetValue<string>("PostgreSQLSettings:AdminConnectionString");
+        var connectionStringFmt = configuration.GetValue<string>("PostgreSQLSettings:ConnectionString");
 
-        //// builder.Services.AddScoped<IAuditContextProvider, HttpContextAuditContextProvider>();
-        //// builder.Services.AddScoped<AuditConnectionInterceptor>();
-        builder.Services.AddScoped<ReadOnlyInterceptor>();
-
-        builder.Services.AddDbContext<AppDbContext>((sp, options) =>
+        if (string.IsNullOrEmpty(connectionStringFmt) || string.IsNullOrEmpty(adminConnectionStringFmt))
         {
-            //// var readonlyInterceptor = sp.GetRequiredService<ReadOnlyInterceptor>();
-            //// var auditInterceptior = sp.GetRequiredService<AuditConnectionInterceptor>();
-            options.UseNpgsql(builder.Configuration["Database:Postgres:AppConnectionString"])
-            //// .AddInterceptors(readonlyInterceptor)
-            //// .EnableSensitiveDataLogging()
-            //// .AddInterceptors(auditInterceptior)
-            .ReplaceService<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
-        });
-
-        return builder;
+            Log.PgsqlMissingConnectionString(Logger);
+            return (connectionStringFmt, adminConnectionStringFmt, false);
+        }
+        else
+        {
+            var adminConnectionStringPwd = configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbAdminPwd");
+            var connectionStringPwd = configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbPwd");
+            return (string.Format(connectionStringFmt, connectionStringPwd), string.Format(adminConnectionStringFmt, adminConnectionStringPwd), true);
+        }
     }
 
     private static WebApplicationBuilder ConfigureAccessManagementPersistence(this WebApplicationBuilder builder)
@@ -153,10 +145,17 @@ internal static partial class AccessManagementHost
 
     private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
     {
-        builder.Services.AddHostedService<RegisterHostedService>();
+        builder.Services.AddHostedService<Authorization.AccessManagement.RegisterHostedService>();
         builder.Services.AddSingleton<IPartySyncService, PartySyncService>();
         builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
         builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
+
+        // builder.Services.AddHostedService<AltinnRoleHostedService>();
+        // builder.Services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
+        // builder.Services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
+        // builder.Services.AddSingleton<IAltinnBankruptcyEstateRoleSyncService, AltinnBankruptcyEstateRoleSyncService>();
+        // builder.Services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
+
         return builder;
     }
 
@@ -329,6 +328,8 @@ internal static partial class AccessManagementHost
             .AddPolicy(AuthzConstants.POLICY_CONSENTREQUEST_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_CONSENTREQUEST_ORG, AuthzConstants.SCOPE_CONSENTREQUEST_READ, AuthzConstants.SCOPE_CONSENTREQUEST_WRITE])))
             .AddPolicy(AuthzConstants.POLICY_CLIENTDELEGATION_READ, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("read", "altinn_client_administration")))
             .AddPolicy(AuthzConstants.POLICY_CLIENTDELEGATION_WRITE, policy => policy.Requirements.Add(new EndUserResourceAccessRequirement("write", "altinn_client_administration")))
+            .AddPolicy(AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ])))
+            .AddPolicy(AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER, AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE])))
             .AddPolicy(AuthzConstants.SCOPE_PORTAL_ENDUSER, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.SCOPE_PORTAL_ENDUSER])));
 
         builder.Services.AddScoped<IAuthorizationHandler, AccessTokenHandler>();

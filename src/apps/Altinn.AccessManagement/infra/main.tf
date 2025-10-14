@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.37.0"
+      version = "4.46.0"
     }
     static = {
       source  = "tiwood/static"
@@ -58,12 +58,6 @@ resource "static_data" "static" {
   lifecycle {
     ignore_changes = [data]
   }
-}
-
-data "azurerm_private_dns_zone" "postgres" {
-  name                = "privatelink.postgres.database.azure.com"
-  resource_group_name = "rg${local.hub_suffix}"
-  provider            = azurerm.hub
 }
 
 data "azurerm_subnet" "postgres" {
@@ -211,6 +205,18 @@ module "appsettings" {
 
   feature_flags = [
     {
+      name        = "AccessMgmt.Core.HostedServices.RegisterSync"
+      description = "(EF) Specifies if the resource register data should streamed from resource register service to access management database."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.ResourceRegistrySync"
+      description = "(EF) Specifies if the register data should streamed from register service to access management database."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessManagement.HostedServices.ResourceRegistrySync"
       description = "Specifies if the resource register data should streamed from resource register service to access management database."
       label       = "${lower(var.environment)}-access-management"
@@ -219,6 +225,30 @@ module "appsettings" {
     {
       name        = "AccessManagement.HostedServices.RegisterSync"
       description = "Specifies if the register data should streamed from register service to access management database."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.HostedServices.AllAltinnRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.HostedServices.AltinnClientRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.HostedServices.AltinnAdminRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessManagement.HostedServices.AltinnBancruptcyEstateRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },
@@ -260,9 +290,8 @@ module "postgres_server" {
 
   hub_suffix = local.hub_suffix
 
-  subnet_id           = data.azurerm_subnet.postgres.id
-  private_dns_zone_id = data.azurerm_private_dns_zone.postgres.id
-  postgres_version    = "16"
+  subnet_id        = data.azurerm_subnet.postgres.id
+  postgres_version = "16"
   configurations = {
     "azure.extensions" : "HSTORE"
   }

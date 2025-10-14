@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Altinn.Authorization.ABAC.Constants;
 using Altinn.Authorization.ABAC.Xacml;
 using Altinn.Authorization.Models;
+using Altinn.Authorization.Models.Register;
 using Altinn.Platform.Authorization.Configuration;
 using Altinn.Platform.Authorization.Constants;
 using Altinn.Platform.Authorization.Models;
@@ -14,9 +15,12 @@ using Altinn.Platform.Authorization.Repositories.Interface;
 using Altinn.Platform.Authorization.Services.Interface;
 using Altinn.Platform.Authorization.Services.Interfaces;
 using Altinn.Platform.Profile.Models;
+using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Altinn.Platform.Storage.Interface.Models;
+using Altinn.ResourceRegistry.Models;
 using Authorization.Platform.Authorization.Models;
+using CommunityToolkit.Diagnostics;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
@@ -50,6 +54,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         protected readonly IPolicyRetrievalPoint _prp;
         protected readonly IAccessManagementWrapper _accessManagementWrapper;
         protected readonly IFeatureManager _featureManager;
+        protected readonly IResourceRegistry _resourceRegistry;
 #pragma warning restore SA1401 // Fields should be private
 #pragma warning restore SA1600 // Elements should be documented
 
@@ -68,7 +73,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <param name="accessManagementWrapper">accessmanagement pip api wrapper</param>
         /// <param name="featureManager">Feature manager</param>
         public ContextHandler(
-            IInstanceMetadataRepository policyInformationRepository, IRoles rolesWrapper, IOedRoleAssignmentWrapper oedRolesWrapper, IParties partiesWrapper, IProfile profileWrapper, IMemoryCache memoryCache, IOptions<GeneralSettings> settings, IRegisterService registerService, IPolicyRetrievalPoint prp, IAccessManagementWrapper accessManagementWrapper, IFeatureManager featureManager)
+            IInstanceMetadataRepository policyInformationRepository, IRoles rolesWrapper, IOedRoleAssignmentWrapper oedRolesWrapper, IParties partiesWrapper, IProfile profileWrapper, IMemoryCache memoryCache, IOptions<GeneralSettings> settings, IRegisterService registerService, IPolicyRetrievalPoint prp, IAccessManagementWrapper accessManagementWrapper, IFeatureManager featureManager, IResourceRegistry resourceRegistry)
         {
             _policyInformationRepository = policyInformationRepository;
             _rolesWrapper = rolesWrapper;
@@ -81,6 +86,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             _prp = prp;
             _accessManagementWrapper = accessManagementWrapper;
             _featureManager = featureManager;
+            _resourceRegistry = resourceRegistry;
         }
 
         /// <inheritdoc/>
@@ -146,7 +152,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 }
             }
 
-            await EnrichSubjectAttributes(request, resourceAttributes, isExternalRequest);
+            await EnrichSubjectAttributes(request, resourceAttributes, isExternalRequest, cancellationToken);
         }
 
         private static bool IsResourceComplete(XacmlResourceAttributes resourceAttributes)
@@ -238,6 +244,8 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <returns>XacmlResourceAttributes</returns>
         protected XacmlResourceAttributes GetResourceAttributeValues(XacmlContextAttributes resourceContextAttributes)
         {
+            Guard.IsNotNull(resourceContextAttributes);
+
             XacmlResourceAttributes resourceAttributes = new XacmlResourceAttributes();
 
             foreach (XacmlAttribute attribute in resourceContextAttributes.Attributes)
@@ -367,15 +375,21 @@ namespace Altinn.Platform.Authorization.Services.Implementation
         /// <param name="request">The original Xacml Context Request</param>
         /// <param name="resourceAttr">The resource reportee attributes</param>
         /// <param name="isExternalRequest">Used to enforce stricter requirements</param>
-        protected async Task EnrichSubjectAttributes(XacmlContextRequest request, XacmlResourceAttributes resourceAttr, bool isExternalRequest)
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+        protected async Task EnrichSubjectAttributes(XacmlContextRequest request, XacmlResourceAttributes resourceAttr, bool isExternalRequest, CancellationToken cancellationToken)
         {
             XacmlContextAttributes subjectContextAttributes = request.GetSubjectAttributes();
+
+            Guard.IsNotNull(subjectContextAttributes);
+            Guard.IsNotNull(subjectContextAttributes.Attributes, $"Subject attributes missing");
+            Guard.IsNotEmpty(subjectContextAttributes.Attributes, $"Subject attributes empty");
 
             int subjectUserId = 0;
             int.TryParse(resourceAttr.ResourcePartyValue, out int resourcePartyId);
             string subjectSsn = string.Empty;
             string subjectOrgnNo = string.Empty;
             Guid subjectSystemUser = Guid.Empty;
+            Guid subjectPartyUuid = Guid.Empty;
             bool foundLegacyOrgNoAttribute = false;
 
             if (subjectContextAttributes.Attributes.Any(a => a.AttributeId.OriginalString.Equals(XacmlRequestAttribute.SystemUserIdAttribute)) && subjectContextAttributes.Attributes.Count > 1)
@@ -409,6 +423,11 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 if (xacmlAttribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.OrganizationNumberAttribute))
                 {
                     subjectOrgnNo = xacmlAttribute.AttributeValues.First().Value;
+                }
+
+                if (xacmlAttribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.PartyUuidAttribute))
+                {
+                    subjectPartyUuid = Guid.Parse(xacmlAttribute.AttributeValues.First().Value);
                 }
 
                 if (xacmlAttribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.SystemUserIdAttribute) && !Guid.TryParse(xacmlAttribute.AttributeValues.First().Value, out subjectSystemUser))
@@ -478,6 +497,45 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 }
 
                 await AddAccessPackageAttributes(subjectContextAttributes, subjectSystemUser, resourceAttr.PartyUuid);
+            }
+
+            // Enrich with party type if rule defines that and request only contains resource id. This is special handling for consent. Before opening more widely this needs more consideration.
+            if (policySubjectAttributes.ContainsKey(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyTypeAttribute)
+                && resourceAttr.InstanceValue == null && resourceAttr.ResourceInstanceValue == null && resourceAttr.AppValue == null && !string.IsNullOrEmpty(resourceAttr.ResourceRegistryId)
+                && string.IsNullOrEmpty(resourceAttr.ResourcePartyValue))
+            {
+                if (subjectPartyUuid == Guid.Empty && !string.IsNullOrEmpty(subjectOrgnNo))
+                {
+                    Party party = await _registerService.PartyLookup(subjectOrgnNo, null);
+                    subjectContextAttributes.Attributes.Add(GetPartyTypeAttribute(party.PartyTypeName));
+                }
+                else if (subjectPartyUuid != Guid.Empty)
+                {
+                    List<Party> partyList = await _registerService.GetPartiesAsync([subjectPartyUuid], false, cancellationToken);
+                    subjectContextAttributes.Attributes.Add(GetPartyTypeAttribute(partyList[0].PartyTypeName));
+                }
+            }
+
+            // Enrich with access lists if rule defines that and request only contains resource id. Before opening more widely this needs more consideration.
+            if (policySubjectAttributes.ContainsKey(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessListAttribute)
+                && resourceAttr.InstanceValue == null && resourceAttr.ResourceInstanceValue == null && resourceAttr.AppValue == null && !string.IsNullOrEmpty(resourceAttr.ResourceRegistryId)
+                && string.IsNullOrEmpty(resourceAttr.ResourcePartyValue))
+            {
+                if (subjectPartyUuid == Guid.Empty && !string.IsNullOrEmpty(subjectOrgnNo))
+                {
+                    Party party = await _registerService.PartyLookup(subjectOrgnNo, null);
+                    subjectPartyUuid = party.PartyUuid.HasValue ? party.PartyUuid.Value : Guid.Empty;
+                }
+
+                if (subjectPartyUuid != Guid.Empty)
+                {
+                    PartyUrn.PartyUuid partyUrn = PartyUrn.PartyUuid.Create(subjectPartyUuid);
+                    IEnumerable<AccessListInfoDto> memberShip = await _resourceRegistry.GetMembershipsForParty(partyUrn, cancellationToken);
+                    if (memberShip != null && memberShip.Count() > 0)
+                    {
+                        subjectContextAttributes.Attributes.Add(GetAccessListAttributes(memberShip));
+                    }
+                }
             }
 
             // Further enrichment of roles can/must be skipped if no subject userId or resource partyId exists
@@ -589,6 +647,43 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             foreach (OedRoleAssignment oedRoleAssignment in oedRoleAssignments)
             {
                 attribute.AttributeValues.Add(new XacmlAttributeValue(new Uri(XacmlConstants.DataTypes.XMLString), oedRoleAssignment.OedRoleCode));
+            }
+
+            return attribute;
+        }
+
+        /// <summary>
+        /// Gets a XacmlAtribute model for the list of accessList memberships
+        /// </summary>
+        /// <param name="accessListMemberships">a list of accesslist memberships</param>
+        /// <returns></returns>
+        protected XacmlAttribute GetAccessListAttributes(IEnumerable<AccessListInfoDto> accessListMemberships)
+        {
+            XacmlAttribute attribute = new XacmlAttribute(new Uri(XacmlRequestAttribute.AccessListAttribute), false);
+            foreach (AccessListInfoDto memberShip in accessListMemberships)
+            {
+                attribute.AttributeValues.Add(new XacmlAttributeValue(new Uri(XacmlConstants.DataTypes.XMLString), memberShip.Urn.ValueSpan.ToString()));
+            }
+
+            return attribute;
+        }
+
+        /// <summary>
+        /// Gets a XacmlAttribute model for a list of party ids
+        /// </summary>
+        /// <param name="partyType">The partyType</param>
+        /// <returns>XacmlAttribute</returns>
+        protected XacmlAttribute GetPartyTypeAttribute(PartyType partyType)
+        {
+            XacmlAttribute attribute = new XacmlAttribute(new Uri(XacmlRequestAttribute.PartyTypeAttribute), false);
+           
+            if (partyType == PartyType.Organisation)
+            {
+                attribute.AttributeValues.Add(new XacmlAttributeValue(new Uri(XacmlConstants.DataTypes.XMLString), XacmlRequestAttribute.PartyTypeOrganizationValue));
+            }
+            else if (partyType == PartyType.Person)
+            {
+                attribute.AttributeValues.Add(new XacmlAttributeValue(new Uri(XacmlConstants.DataTypes.XMLString), XacmlRequestAttribute.PartyTypePersonValue));
             }
 
             return attribute;

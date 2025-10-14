@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Persistence.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -14,11 +15,16 @@ WebApplication app = AccessManagementHost.Create(args);
 using var scope = app.Services.CreateScope();
 var appsettings = scope.ServiceProvider.GetRequiredService<IOptions<AccessManagementAppsettings>>().Value;
 var featureManager = scope.ServiceProvider.GetRequiredService<FeatureManager>();
-await Init();
+await app.DefineAccessMgmtDbModels();
 
 if (appsettings.RunInitOnly)
 {
+    await Init();
     return;
+}
+else if (appsettings.RunIntegrationTests)
+{
+    await Init();
 }
 
 app.AddDefaultAltinnMiddleware(errorHandlingPath: "/accessmanagement/api/v1/error");
@@ -36,6 +42,7 @@ if (app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseDbAudit();
+app.UseEfAudit();
 
 app.MapControllers();
 app.MapDefaultAltinnEndpoints();

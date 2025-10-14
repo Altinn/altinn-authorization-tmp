@@ -6,32 +6,26 @@ namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 public class AccessPackageDto
 {
     /// <summary>
-    /// CompactPackageDto
+    /// Package Id
     /// </summary>
-    public class Compact
-    {
-        /// <summary>
-        /// Package Id
-        /// </summary>
-        public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-        /// <summary>
-        /// Package Urn
-        /// </summary>
-        public required string Urn { get; set; }
+    /// <summary>
+    /// Package Urn
+    /// </summary>
+    public required string Urn { get; set; }
 
-        /// <summary>
-        /// Package AreaId
-        /// </summary>
-        public Guid AreaId { get; set; }
-    }
+    /// <summary>
+    /// Package AreaId
+    /// </summary>
+    public Guid AreaId { get; set; }
 
     public class Check
     {
         /// <summary>
         /// Package the delegation check is regarding
         /// </summary>
-        public required Compact Package { get; set; }
+        public required AccessPackageDto Package { get; set; }
 
         /// <summary>
         /// Result of the delegation check.

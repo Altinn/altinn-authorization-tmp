@@ -1,4 +1,5 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Models;
 
@@ -10,7 +11,7 @@ public class ResourcePermission
     /// <summary>
     /// Resource the permissions are for
     /// </summary>
-    public CompactResource Resource { get; set; }
+    public Resource Resource { get; set; }
 
     /// <summary>
     /// Parties with permissions

@@ -16,10 +16,10 @@ public class AreaGroupConfiguration : IEntityTypeConfiguration<AreaGroup>
 
         builder.HasKey(p => p.Id);
 
-        builder.Property(t => t.Name).IsRequired().Translate();
-        builder.Property(t => t.Description).IsRequired().Translate();
-        builder.Property(t => t.Urn).IsRequired();
-        builder.PropertyWithReference(navKey: t => t.EntityType, foreignKey: t => t.EntityTypeId, principalKey: t => t.Id);
+        builder.Property(t => t.Name).IsRequired();
+        builder.Property(t => t.Description).IsRequired();
+        builder.Property(t => t.Urn);
+        builder.PropertyWithReference(navKey: t => t.EntityType, foreignKey: t => t.EntityTypeId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Restrict);
 
         builder.HasIndex(t => t.Name).IsUnique();
     }

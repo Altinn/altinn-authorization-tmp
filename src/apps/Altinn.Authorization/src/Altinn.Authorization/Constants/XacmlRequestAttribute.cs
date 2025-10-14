@@ -41,6 +41,21 @@ namespace Altinn.Platform.Authorization.Constants
         public const string PartyAttribute = "urn:altinn:partyid";
 
         /// <summary>
+        /// xacml string that represents party type
+        /// </summary>
+        public const string PartyTypeAttribute = "urn:altinn:partytype";
+
+        /// <summary>
+        /// xacml string that represents party type organization value
+        /// </summary>
+        public const string PartyTypeOrganizationValue = "organization";
+
+        /// <summary>
+        /// xacml string that represents party type person value
+        /// </summary>
+        public const string PartyTypePersonValue = "person";
+
+        /// <summary>
         /// xacml string that represents party uuid
         /// </summary>
         public const string PartyUuidAttribute = "urn:altinn:party:uuid";
@@ -99,5 +114,10 @@ namespace Altinn.Platform.Authorization.Constants
         /// xacml attribute urn prefix that represents system user id
         /// </summary>
         public const string SystemUserIdAttribute = "urn:altinn:systemuser:uuid";
+
+        /// <summary>
+        /// xacml attribute urn prefix that represents the access list
+        /// </summary>
+        public const string AccessListAttribute = "urn:altinn:access-list";
     }
 }

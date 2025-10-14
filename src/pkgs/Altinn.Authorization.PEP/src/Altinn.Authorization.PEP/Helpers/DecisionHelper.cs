@@ -98,7 +98,7 @@ namespace Altinn.Common.PEP.Helpers
         /// <param name="user">Claims principal user.</param>
         /// <param name="actionType">Policy action type i.e. read, write, delete, instantiate.</param>
         /// <returns>The decision request.</returns>
-        public static XacmlJsonRequestRoot CreateDecisionRequestForResourceRegistryResource(string resource, Guid resourcePartyUuid, ClaimsPrincipal user, string actionType)
+        public static XacmlJsonRequestRoot CreateDecisionRequestForResourceRegistryResource(string resource, Guid? resourcePartyUuid, ClaimsPrincipal user, string actionType)
         {
             XacmlJsonRequest request = new()
             {
@@ -240,6 +240,11 @@ namespace Altinn.Common.PEP.Helpers
                     // Set by Altinn authentication this format
                     legacyOrganizationNumberAttibute = CreateXacmlJsonAttribute(AltinnXacmlUrns.OrganizationNumber, claim.Value, DefaultType, claim.Issuer);
                     organizationNumberAttribute = CreateXacmlJsonAttribute(AltinnXacmlUrns.OrganizationNumberAttribute, claim.Value, DefaultType, claim.Issuer);
+                }
+                else if (IsConsumerClaim(claim.Type))
+                {
+                    string orgNumberFromConsumerClaim = GetConsumerParty(claim);
+                    organizationNumberAttribute = CreateXacmlJsonAttribute(AltinnXacmlUrns.OrganizationNumberAttribute, orgNumberFromConsumerClaim, DefaultType, claim.Issuer);
                 }
                 else if (IsScopeClaim(claim.Type))
                 {
@@ -413,6 +418,11 @@ namespace Altinn.Common.PEP.Helpers
             return name.Equals("urn:altinn:orgNumber");
         }
 
+        private static bool IsConsumerClaim(string name)
+        {
+            return name.Equals("consumer");
+        }
+
         private static bool IsScopeClaim(string name)
         {
             return name.Equals("scope");
@@ -489,6 +499,27 @@ namespace Altinn.Common.PEP.Helpers
             return ValidateDecisionResult(results.First(), user);
         }
 
+
+        /// <summary>
+        /// Validate the response from PDP but do not check obligations like authentication level. Use with casution.
+        /// </summary>
+        /// <param name="results">The response to validate</param>
+        /// <param name="user">The <see cref="ClaimsPrincipal"/></param>
+        /// <returns>true or false, valid or not</returns>
+        public static bool ValidatePdpDecisionWithoutObligationCheck(List<XacmlJsonResult> results, ClaimsPrincipal user)
+        {
+            ArgumentNullException.ThrowIfNull(results, nameof(results));
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
+
+            // We request one thing and then only want one result
+            if (results.Count != 1)
+            {
+                return false;
+            }
+
+            return ValidateDecisionResultWithoutObligationsCheck(results.First(), user);
+        }
+
         /// <summary>
         /// Validate the response from PDP
         /// </summary>
@@ -533,7 +564,7 @@ namespace Altinn.Common.PEP.Helpers
                 if (attributeMinLvAuth != null)
                 {
                     string minAuthenticationLevel = attributeMinLvAuth.Value;
-                    string usersAuthenticationLevel = user.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:authlevel")).Value;
+                    string usersAuthenticationLevel = user.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:authlevel"))?.Value;
 
                     // Checks that the user meets the minimum authentication level
                     if (Convert.ToInt32(usersAuthenticationLevel) < Convert.ToInt32(minAuthenticationLevel))
@@ -553,6 +584,23 @@ namespace Altinn.Common.PEP.Helpers
                         return false;
                     }
                 }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validate the response from PDP wihtout obligation check
+        /// </summary>
+        /// <param name="result">The response to validate</param>
+        /// <param name="user">The <see cref="ClaimsPrincipal"/></param>
+        /// <returns>true or false, valid or not</returns>
+        public static bool ValidateDecisionResultWithoutObligationsCheck(XacmlJsonResult result, ClaimsPrincipal user)
+        {
+            // Checks that the result is nothing else than "permit"
+            if (!result.Decision.Equals(XacmlContextDecision.Permit.ToString()))
+            {
+                return false;
             }
 
             return true;
@@ -582,7 +630,7 @@ namespace Altinn.Common.PEP.Helpers
                 if (attributeMinLvAuth != null)
                 {
                     string minAuthenticationLevel = attributeMinLvAuth.Value;
-                    string usersAuthenticationLevel = user.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:authlevel")).Value;
+                    string usersAuthenticationLevel = user.Claims.FirstOrDefault(c => c.Type.Equals("urn:altinn:authlevel"))?.Value;
 
                     // Checks that the user meets the minimum authentication level
                     if (Convert.ToInt32(usersAuthenticationLevel) < Convert.ToInt32(minAuthenticationLevel))
@@ -638,6 +686,79 @@ namespace Altinn.Common.PEP.Helpers
             }
 
             return null;
+        }
+
+        private static string? GetConsumerParty(Claim consumerClaim)
+        {
+            string? consumerJson = consumerClaim.Value;
+            if (string.IsNullOrWhiteSpace(consumerJson))
+            {
+                return null;
+            }
+
+            try
+            {
+                using var doc = JsonDocument.Parse(consumerJson);
+                return GetOrg(doc);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Return supplier party from the claims principal.
+        /// </summary>
+        private static string? GetSupplierParty(Claim supplierClaim)
+        {
+            string? consumerJson = supplierClaim.Value;
+            if (string.IsNullOrWhiteSpace(consumerJson))
+            {
+                return null;
+            }
+
+            try
+            {
+                using JsonDocument doc = JsonDocument.Parse(consumerJson);
+                return GetOrg(doc);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        private static string? GetOrg(JsonDocument doc)
+        {
+            var root = doc.RootElement;
+
+            if (!root.TryGetProperty("ID", out var idElement) ||
+                !root.TryGetProperty("authority", out var authorityElement))
+            {
+                return null;
+            }
+
+            var consumerAuthority = authorityElement.GetString();
+            if (!string.Equals(consumerAuthority, "iso6523-actorid-upis", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            var consumerId = idElement.GetString();
+            if (string.IsNullOrEmpty(consumerId) || !consumerId.Contains(':'))
+            {
+                return null;
+            }
+
+            var parts = consumerId.Split(':');
+            if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[1]))
+            {
+                return null;
+            }
+
+            var organisationNumber = parts[1];
+            return organisationNumber;
         }
     }
 }

@@ -1,11 +1,12 @@
 ﻿using Altinn.AccessManagement.HostedServices.Contracts;
+using Altinn.AccessManagement.HostedServices.Leases;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Helpers;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Data;
 using Altinn.AccessMgmt.Persistence.Models;
 using Altinn.AccessMgmt.Persistence.Repositories.Contracts;
-using Altinn.Authorization.AccessManagement.HostedServices;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Microsoft.FeatureManagement;
@@ -16,17 +17,15 @@ namespace Altinn.AccessManagement.HostedServices.Services;
 public class RoleSyncService : BaseSyncService, IRoleSyncService
 {
     public RoleSyncService(
-        IAltinnLease lease,
         IAltinnRegister register,
         ILogger<RoleSyncService> logger,
-        IFeatureManager featureManager,
         IIngestService ingestService,
         IRoleRepository roleRepository,
         IProviderRepository providerRepository,
         IAssignmentRepository assignmentRepository,
         IEntityRepository entityRepository,
         IEntityTypeRepository entityTypeRepository
-    ) : base(lease, featureManager, register)
+    )
     {
         _register = register;
         _logger = logger;
@@ -48,7 +47,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     private readonly IIngestService _ingestService;
 
     /// <inheritdoc />
-    public async Task SyncRoles(LeaseResult<RegisterLease> ls, CancellationToken cancellationToken)
+    public async Task SyncRoles(ILease lease, CancellationToken cancellationToken)
     {
         var batchData = new List<Assignment>();
         Guid batchId = Guid.CreateVersion7();
@@ -61,8 +60,11 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
         OrgType = (await _entityTypeRepository.Get(t => t.Name, "Organisasjon")).FirstOrDefault();
         Provider = (await _providerRepository.Get(t => t.Code, "ccr")).FirstOrDefault();
+        Roles = (await _roleRepository.Get()).ToList();
 
-        await foreach (var page in await _register.StreamRoles([], ls.Data?.RoleStreamNextPageLink, cancellationToken))
+        var leaseData = await lease.Get<RegisterLease>(cancellationToken);
+
+        await foreach (var page in await _register.StreamRoles([], leaseData.RoleStreamNextPageLink, cancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -122,9 +124,11 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 return;
             }
 
-            await UpdateLease(ls, data => data.RoleStreamNextPageLink = page.Content.Links.Next, cancellationToken);
 
-            await Flush(batchId);
+            leaseData.RoleStreamNextPageLink = page.Content.Links.Next;
+            await lease.Update(leaseData, cancellationToken);
+
+            //// await Flush(batchId);
 
             async Task Flush(Guid batchId)
             {

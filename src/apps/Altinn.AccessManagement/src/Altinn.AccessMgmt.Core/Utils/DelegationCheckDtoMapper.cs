@@ -1,5 +1,4 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Queries.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Utils;
@@ -16,7 +15,7 @@ public partial class DtoMapper
             var firstPackage = group.First();
             return new AccessPackageDto.Check
             {
-                Package = new AccessPackageDto.Compact
+                Package = new AccessPackageDto
                 {
                     Id = firstPackage.Package.Id,
                     Urn = firstPackage.Package.Urn,
