@@ -119,7 +119,7 @@ public class RoleService: IRoleService
 
         if (rolePackages == null || rolePackages.Count == 0)
         {
-            var role = await db.Roles.AsNoTracking().SingleAsync(t => t.Id == id, cancellationToken);
+            var role = await Db.Roles.AsNoTracking().SingleAsync(t => t.Id == id, cancellationToken);
             if (role == null)
             {
                 return null;
