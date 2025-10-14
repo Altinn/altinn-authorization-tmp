@@ -249,7 +249,7 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
             .Where(a => a.ToId == toId)
             .ToListAsync(cancellationToken);
 
-        if (assignments is null)
+        if (assignments.Count() == 0)
         {
             return Problems.MissingConnection;
         }
