@@ -32,32 +32,51 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEntityService, EntityService>();
 
         AddJobs(services);
+        
+        services.AddResourceRegistryPipeline();
         return services;
     }
 
-    private static void AddPipelines(IServiceCollection services)
+    private static void AddResourceRegistryPipeline(this IServiceCollection services)
     {
+        services.AddPipelinesOtel();
         services.AddPipelines(descriptor =>
         {
             descriptor
-                .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesResourceRegistrySync)
+                // .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesResourceRegistrySync)
                 .WithGroupName("Resource Registry Import")
                 .WithRecurring(TimeSpan.FromMinutes(2))
                 .AddPipeline("Extract Service Owners")
-                    .WithLease(ResourceRegistryPipelines.ServiceOwners.LeaseName)
+                    .WithLease(ResourceRegistryPipelines.ServiceOwnerJobs.LeaseName)
                     .WithServiceScope(sp => sp.CreateEFScope(SystemEntityConstants.ResourceRegistryImportSystem))
                     .WithStages()
-                        .AddSource("Extract", ResourceRegistryPipelines.ServiceOwners.Stream)
-                        .AddSegment("Transform", ResourceRegistryPipelines.ServiceOwners.Transform)
-                        .AddSink("Load", ResourceRegistryPipelines.ServiceOwners.Load)
+                        .AddSource("Extract", ResourceRegistryPipelines.ServiceOwnerJobs.Extract)
+                        .AddSegment("Transform", ResourceRegistryPipelines.ServiceOwnerJobs.Transform)
+                        .AddSink("Load", ResourceRegistryPipelines.ServiceOwnerJobs.Load)
                         .Build()
                 .AddPipeline("Extract Resources")
-                    .WithLease(ResourceRegistryPipelines.Resources.LeaseName)
+                    .WithLease(ResourceRegistryPipelines.ResourceJobs.LeaseName)
                     .WithServiceScope(sp => sp.CreateEFScope(SystemEntityConstants.ResourceRegistryImportSystem))
                     .WithStages()
-                        .AddSource("Extract", ResourceRegistryPipelines.Resources.Stream)
-                        .AddSegment("Transform", ResourceRegistryPipelines.Resources.Transform)
-                        .AddSink("Load", ResourceRegistryPipelines.Resources.Load)
+                        .AddSource("Extract", ResourceRegistryPipelines.ResourceJobs.Extract)
+                        .AddSegment("Transform", ResourceRegistryPipelines.ResourceJobs.Transform)
+                        .AddSink("Load", ResourceRegistryPipelines.ResourceJobs.Load)
+                        .Build()
+                .AddPipeline("Extract Package Resources")
+                    .WithLease(ResourceRegistryPipelines.PackageResourceJobs.LeaseName)
+                    .WithServiceScope(sp => sp.CreateEFScope(SystemEntityConstants.ResourceRegistryImportSystem))
+                    .WithStages()
+                        .AddSource("Extract", ResourceRegistryPipelines.UpdatedResourceJobs.Extract)
+                        .AddSegment("Transform", ResourceRegistryPipelines.PackageResourceJobs.Transform)
+                        .AddSink("Load", ResourceRegistryPipelines.PackageResourceJobs.Load)
+                        .Build()
+                .AddPipeline("Extract Role Resources")
+                    .WithLease(ResourceRegistryPipelines.RoleResourceJobs.LeaseName)
+                    .WithServiceScope(sp => sp.CreateEFScope(SystemEntityConstants.ResourceRegistryImportSystem))
+                    .WithStages()
+                        .AddSource("Extract", ResourceRegistryPipelines.UpdatedResourceJobs.Extract)
+                        .AddSegment("Transform", ResourceRegistryPipelines.RoleResourceJobs.Transform)
+                        .AddSink("Load", ResourceRegistryPipelines.RoleResourceJobs.Load)
                         .Build();
         });
     }

@@ -38,10 +38,16 @@ internal partial class PipelineSinkService(
         BlockingCollection<PipelineMessage<TIn>> inbound)
     {
         using var serviceScope = args.Descriptor.ServiceScope?.Invoke(serviceProvider) ?? serviceProvider.CreateScope();
+        var inFailingState = false;
         foreach (var data in inbound.GetConsumingEnumerable())
         {
             using var activity = PipelineTelemetry.ActivitySource.StartActivity($"Pipeline Sink: {args.Name}", ActivityKind.Internal, data.ActivityContext ?? default);
             activity.SetSequence(data.Sequence);
+            if (inFailingState)
+            {
+                activity.RecordFaultyState();
+                continue;
+            }
 
             try
             {
@@ -56,19 +62,20 @@ internal partial class PipelineSinkService(
                 await DispatchSegment(data.Sequence, args, func, ctx);
                 Log.SinkMessageCompleted(logger, args.Descriptor.Name, args.Name, data.Sequence);
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex) // Should only occur if segment fails to process the same data repeatedly.
             {
-                // Should only occur if sink fails to process the same data repeatedly
-                activity?.AddException(ex);
                 await data.CancellationTokenSource.CancelAsync();
-                Log.SinkMessageAborted(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);
-                return;
-            }
-            catch (Exception ex)
-            {
                 activity?.AddException(ex);
-                Log.SinkUnhandledError(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);
-                throw;
+                if (ex is InvalidOperationException)
+                {
+                    Log.SinkMessageAborted(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);
+                }
+                else
+                {
+                    Log.SinkUnhandledError(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);
+                }
+
+                inFailingState = true;
             }
         }
     }
