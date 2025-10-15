@@ -68,5 +68,5 @@ public class CompactEntityDto
     /// <summary>
     /// DeletedAt
     /// </summary>
-    public DateOnly? DeletedAt { get; set; }
+    public DateTimeOffset? DeletedAt { get; set; }
 }
