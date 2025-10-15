@@ -50,7 +50,7 @@ public class BaseEntity : BaseAudit, IEntityId, IEntityName
 
     public string? PersonIdentifier { get; set; }
 
-    public DateOnly DateOfBirth { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
 
-    public DateTimeOffset DeletedAt { get; set; }
+    public DateTimeOffset? DeletedAt { get; set; }
 }
