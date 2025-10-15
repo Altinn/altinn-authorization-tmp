@@ -263,7 +263,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     {
         ValidationErrorBuilder errors = default;
 
-        var fromEntity = await db.Entities.SingleAsync(t => t.Id == fromEntityId, cancellationToken);
+        var fromEntity = await db.Entities.FirstOrDefaultAsync(t => t.Id == fromEntityId, cancellationToken);
         var toEntity = await db.Entities.FirstOrDefaultAsync(t => t.Id == toEntityId, cancellationToken);
         
         if (toEntity is null || fromEntity is null)
