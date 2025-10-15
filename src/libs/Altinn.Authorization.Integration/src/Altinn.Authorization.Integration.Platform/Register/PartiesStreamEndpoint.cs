@@ -17,6 +17,8 @@ public partial class AltinnRegisterClient
         "deleted",
         "deleted-at",
         "user",
+        "person.date-of-birth",
+        "person.date-of-death",
         "sysuser",
         "org.type",
     ];
