@@ -26,11 +26,6 @@ public class CompactEntityDto
     public string Variant { get; set; }
 
     /// <summary>
-    /// Values from entityLoookup
-    /// </summary>
-    public Dictionary<string,string> KeyValues { get; set; }
-
-    /// <summary>
     /// Parent
     /// </summary>
     public CompactEntityDto Parent { get; set; }
@@ -39,4 +34,34 @@ public class CompactEntityDto
     /// Children
     /// </summary>
     public List<CompactEntityDto> Children { get; set; }
+
+    /// <summary>
+    /// PartyId
+    /// </summary>
+    public int? PartyId { get; set; }
+
+    /// <summary>
+    /// UserId
+    /// </summary>
+    public int? UserId { get; set; }
+
+    /// <summary>
+    /// OrganizationIdentifier
+    /// </summary>
+    public string OrganizationIdentifier { get; set; }
+
+    /// <summary>
+    /// PersonIdentifier
+    /// </summary>
+    public string PersonIdentifier { get; set; }
+
+    /// <summary>
+    /// DateOfBirth
+    /// </summary>
+    public DateOnly DateOfBirth { get; set; }
+
+    /// <summary>
+    /// DeletedAt
+    /// </summary>
+    public DateOnly DeletedAt { get; set; }
 }
