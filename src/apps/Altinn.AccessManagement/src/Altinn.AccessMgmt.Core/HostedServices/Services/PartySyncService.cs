@@ -156,6 +156,11 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             result.Add(NewEntityLookup("Username", username));
         }
 
+        if (party.DeletedAt.HasValue)
+        {
+            result.Add(NewEntityLookup("DeletedAt", party.DeletedAt.Value.UtcDateTime.ToString()));
+        }
+
         return result;
 
         EntityLookup NewEntityLookup(string key, string value)

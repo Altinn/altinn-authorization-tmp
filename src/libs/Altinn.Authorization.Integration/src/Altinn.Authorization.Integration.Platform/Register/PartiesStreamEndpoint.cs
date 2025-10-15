@@ -15,6 +15,7 @@ public partial class AltinnRegisterClient
         "type",
         "display-name",
         "deleted",
+        "deleted-at",
         "user",
         "sysuser",
         "org.type",
