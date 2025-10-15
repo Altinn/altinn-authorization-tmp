@@ -65,8 +65,8 @@ tests {
     expect(data).to.have.property('type', 'https://tools.ietf.org/html/rfc9110#section-15.5.1');
     expect(data).to.have.property('title', 'Bad Request');
     expect(data).to.have.property('status', 400);
-    expect(data).to.have.property('detail', 'Missing rightholder');
-    expect(data).to.have.property('code', 'AM-00020');
+    expect(data).to.have.property('detail', 'Operation can not be completed, because it requires an existing connection between the parties.');
+    expect(data).to.have.property('code', 'AM-00022');
     
   });
 }
