@@ -146,9 +146,9 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             result.Add(NewEntityLookup("PartyId", party.PartyId.ToString()));
         }
 
-        if (party.User.Value?.UserIds.Value is { } userIds)
+        if (party.User.Value?.UserId.Value is { } userId)
         {
-            result.AddRange(userIds.Where(ids => ids > 0).Select(userId => NewEntityLookup("UserId", userId.ToString())));
+            result.Add(NewEntityLookup("UserId", userId.ToString()));
         }
 
         if (party.User.Value?.Username.Value is { } username && !string.IsNullOrEmpty(username))
@@ -243,7 +243,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             Id = selfIdentifiedUser.Uuid,
             Name = selfIdentifiedUser.DisplayName.Value,
             RefId = selfIdentifiedUser.User.Value.Username.Value,
-            TypeId = EntityTypeConstants.Person,
+            TypeId = EntityTypeConstants.SelfIdentified,
             VariantId = EntityVariantConstants.SI
         };
 
