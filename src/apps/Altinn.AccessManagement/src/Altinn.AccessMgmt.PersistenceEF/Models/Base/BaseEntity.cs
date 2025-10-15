@@ -40,9 +40,9 @@ public class BaseEntity : BaseAudit, IEntityId, IEntityName
     /// </summary>
     public Guid? ParentId { get; set; }
 
-    public uint? PartyId { get; set; }
+    public int? PartyId { get; set; }
 
-    public uint? UserId { get; set; }
+    public int? UserId { get; set; }
 
     public string? Username { get; set; }
 
