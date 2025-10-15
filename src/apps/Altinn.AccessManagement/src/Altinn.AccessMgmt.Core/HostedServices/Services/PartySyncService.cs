@@ -289,7 +289,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             Name = party.DisplayName.ToString(),
             DeletedAt = party?.DeletedAt.HasValue == true ? party.DeletedAt.Value : null,
             PartyId = party?.PartyId.HasValue == true ? Convert.ToInt32(party.PartyId.Value) : null,
-            UserId = party?.User.Value?.UserId.HasValue == true ? Convert.ToInt32(party.PartyId.Value) : null,
+            UserId = party?.User.Value?.UserId.HasValue == true ? Convert.ToInt32(party.User.Value.UserId.Value) : null,
             Username = party?.User.Value?.Username.HasValue == true ? party.User.Value.Username.ToString() : null,
         };
 
