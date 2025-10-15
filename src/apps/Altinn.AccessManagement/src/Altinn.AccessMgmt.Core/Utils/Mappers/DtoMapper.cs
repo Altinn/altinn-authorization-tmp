@@ -101,15 +101,15 @@ public partial class DtoMapper
     {
         if (compactEntity is { })
         {
-            var types = EntityTypeConstants.AllEntities();
-            var variants = EntityVariantConstants.AllEntities();
-            
+            EntityTypeConstants.TryGetById(compactEntity.TypeId, out var type);
+            EntityVariantConstants.TryGetById(compactEntity.VariantId, out var variant);
+
             return new CompactEntityDto()
             {
                 Id = compactEntity.Id,
                 Name = compactEntity?.Name,
-                Type = types.FirstOrDefault(t => t.Id == compactEntity.TypeId).Entity.Name,
-                Variant = variants.FirstOrDefault(t => t.Id == compactEntity.VariantId).Entity.Name,
+                Type = type.Entity.Name,
+                Variant = variant.Entity.Name,
                 Parent = isConvertingParent ? null : Convert(compactEntity.Parent, true),
                 Children = null,
                 DateOfBirth = compactEntity.DateOfBirth,
