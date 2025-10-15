@@ -8,7 +8,6 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
-using Altinn.Authorization.ModelUtils;
 using Altinn.Register.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -177,14 +176,14 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
     private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapPerson(Person person)
     {
-        var entity = new Entity()
+        var entity = CreateEntity(person, e =>
         {
-            Id = person.Uuid,
-            Name = person.DisplayName.ToString(),
-            RefId = person.PersonIdentifier.ToString(),
-            TypeId = EntityTypeConstants.Person,
-            VariantId = EntityVariantConstants.Person,
-        };
+            e.DateOfBirth = person.DateOfBirth.Value;
+            e.RefId = person.PersonIdentifier.ToString();
+            e.PersonIdentifier = person.PersonIdentifier.ToString();
+            e.TypeId = EntityTypeConstants.Person;
+            e.VariantId = EntityVariantConstants.Person;
+        });
 
         List<EntityLookup> entityLookups = [
             new()
@@ -213,14 +212,13 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             throw new InvalidDataException($"Invalid Unit Type {organization.UnitType}");
         }
 
-        var entity = new Entity()
+        var entity = CreateEntity(organization, o =>
         {
-            Id = organization.Uuid,
-            Name = organization.DisplayName.ToString(),
-            RefId = organization.OrganizationIdentifier.ToString(),
-            TypeId = EntityTypeConstants.Organisation,
-            VariantId = variant,
-        };
+            o.RefId = organization.OrganizationIdentifier.ToString();
+            o.OrganizationIdentifier = organization.OrganizationIdentifier.ToString();
+            o.VariantId = variant;
+            o.TypeId = EntityTypeConstants.Organisation;
+        });
 
         List<EntityLookup> entityLookups = [
             new EntityLookup()
@@ -238,14 +236,12 @@ public class PartySyncService : BaseSyncService, IPartySyncService
 
     private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapSelfIdentifiedUser(SelfIdentifiedUser selfIdentifiedUser)
     {
-        var entity = new Entity()
+        var entity = CreateEntity(selfIdentifiedUser, s =>
         {
-            Id = selfIdentifiedUser.Uuid,
-            Name = selfIdentifiedUser.DisplayName.Value,
-            RefId = selfIdentifiedUser.User.Value.Username.Value,
-            TypeId = EntityTypeConstants.SelfIdentified,
-            VariantId = EntityVariantConstants.SI
-        };
+            s.RefId = selfIdentifiedUser.User.Value.Username.Value;
+            s.TypeId = EntityTypeConstants.SelfIdentified;
+            s.VariantId = EntityVariantConstants.SI;
+        });
 
         List<EntityLookup> entityLookups = [];
         entityLookups.AddRange(AddDefaultEntityLookups(selfIdentifiedUser));
@@ -262,31 +258,42 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             _ => throw new InvalidDataException($"Missing mapping for system type {systemUser.SystemUserType}")
         };
 
-        var entity = new Entity()
+        var entity = CreateEntity(systemUser, s =>
         {
-            Id = systemUser.Uuid,
-            Name = systemUser.DisplayName.ToString(),
-            RefId = systemUser.Uuid.ToString(),
-            TypeId = EntityTypeConstants.SystemUser,
-            VariantId = systemTypeVariant
-        };
-
+            s.RefId = systemUser.Uuid.ToString();
+            s.TypeId = EntityTypeConstants.SystemUser;
+            s.VariantId = systemTypeVariant;
+        });
         return (entity, []);
     }
 
     private (Entity Entity, IEnumerable<EntityLookup> EntityLookups) MapEnterpriseUser(EnterpriseUser enterpriseUser)
     {
-        var entity = new Entity()
+        var entity = CreateEntity(enterpriseUser, e =>
         {
-            Id = enterpriseUser.Uuid,
-            Name = enterpriseUser.DisplayName.ToString(),
-            RefId = enterpriseUser.User.Value.Username.Value,
-            TypeId = EntityTypeConstants.EnterpriseUser,
-            VariantId = EntityVariantConstants.EnterpriseUser,
-        };
+            e.RefId = enterpriseUser.User.Value.Username.Value;
+            e.TypeId = EntityTypeConstants.EnterpriseUser;
+            e.VariantId = EntityVariantConstants.EnterpriseUser;
+        });
 
         List<EntityLookup> entityLookups = [];
         entityLookups.AddRange(AddDefaultEntityLookups(enterpriseUser));
         return (entity, entityLookups);
+    }
+
+    private Entity CreateEntity(Party party, Action<Entity> configureEntity)
+    {
+        var entity = new Entity()
+        {
+            Id = party.Uuid,
+            Name = party.DisplayName.ToString(),
+            DeletedAt = party.DeletedAt.Value,
+            PartyId = party.PartyId.Value,
+            Username = party?.User.Value?.Username.Value,
+            UserId = party?.User.Value?.UserId.Value,
+        };
+
+        configureEntity(entity);
+        return entity;
     }
 }
