@@ -1,21 +1,17 @@
-﻿using System.Runtime.Serialization;
-using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+﻿using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
-using Altinn.AccessMgmt.PersistenceEF.Migrations;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Lease;
 using Altinn.Authorization.Integration.Platform.Register;
 using Altinn.Authorization.ModelUtils;
 using Altinn.Register.Contracts;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Client;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services;
 

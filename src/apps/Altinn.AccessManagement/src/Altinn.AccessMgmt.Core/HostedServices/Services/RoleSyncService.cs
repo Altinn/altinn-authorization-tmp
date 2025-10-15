@@ -128,20 +128,22 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     private async Task RemoveAssignments(AppDbContextFactory dbContextFactory, List<Assignment> relations, CancellationToken cancellationToken = default)
     {
         using var dbContext = dbContextFactory.CreateDbContext();
+        var relationsFrom = relations
+            .Select(r => r.FromId)
+            .ToList();
+
+        var entities = await dbContext.Assignments
+            .AsTracking()
+            .Where(e => relationsFrom.Contains(e.FromId))
+            .ToListAsync(cancellationToken: cancellationToken);
+
         var relationSet = relations
             .Select(r => (r.FromId, r.ToId, r.RoleId))
             .ToHashSet();
 
-        var entities = dbContext.Assignments
-            .AsTracking()
-            .AsEnumerable()
+        entities = entities
             .Where(e => relationSet.Contains((e.FromId, e.ToId, e.RoleId)))
             .ToList();
-
-        if (entities.Any())
-        {
-            Console.WriteLine("kake");
-        }
 
         dbContext.RemoveRange(entities);
         await dbContext.SaveChangesAsync(cancellationToken);
