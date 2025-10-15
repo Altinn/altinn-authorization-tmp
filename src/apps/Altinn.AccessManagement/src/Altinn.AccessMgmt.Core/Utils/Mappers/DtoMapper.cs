@@ -117,7 +117,8 @@ public partial class DtoMapper
                 OrganizationIdentifier = compactEntity.OrganizationIdentifier,
                 PartyId = compactEntity.PartyId,
                 PersonIdentifier = compactEntity.PersonIdentifier,
-                UserId = compactEntity.UserId,                
+                UserId = compactEntity.UserId, 
+                Username = compactEntity.Username
             };
         }
 

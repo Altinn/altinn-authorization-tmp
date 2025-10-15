@@ -46,22 +46,27 @@ public class CompactEntityDto
     public int? UserId { get; set; }
 
     /// <summary>
+    /// Username
+    /// </summary>
+    public string? Username { get; set; }
+
+    /// <summary>
     /// OrganizationIdentifier
     /// </summary>
-    public string OrganizationIdentifier { get; set; }
+    public string? OrganizationIdentifier { get; set; }
 
     /// <summary>
     /// PersonIdentifier
     /// </summary>
-    public string PersonIdentifier { get; set; }
+    public string? PersonIdentifier { get; set; }
 
     /// <summary>
     /// DateOfBirth
     /// </summary>
-    public DateOnly DateOfBirth { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
 
     /// <summary>
     /// DeletedAt
     /// </summary>
-    public DateOnly DeletedAt { get; set; }
+    public DateOnly? DeletedAt { get; set; }
 }

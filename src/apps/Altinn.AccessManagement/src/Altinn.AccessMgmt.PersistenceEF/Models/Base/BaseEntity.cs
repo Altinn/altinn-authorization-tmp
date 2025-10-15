@@ -44,11 +44,11 @@ public class BaseEntity : BaseAudit, IEntityId, IEntityName
 
     public int? UserId { get; set; }
 
-    public string Username { get; set; }
+    public string? Username { get; set; }
 
-    public string OrganizationIdentifier { get; set; }
+    public string? OrganizationIdentifier { get; set; }
 
-    public string PersonIdentifier { get; set; }
+    public string? PersonIdentifier { get; set; }
 
     public DateOnly DateOfBirth { get; set; }
 
