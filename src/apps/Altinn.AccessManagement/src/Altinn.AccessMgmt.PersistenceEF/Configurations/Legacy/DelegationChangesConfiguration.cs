@@ -1,6 +1,5 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
-using Altinn.AccessMgmt.PersistenceEF.Models.Legacy.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,7 +14,6 @@ public class DelegationChangesConfiguration : IEntityTypeConfiguration<Delegatio
         builder.HasKey(p => p.DelegationChangeId);
 
         builder.Property(x => x.DelegationChangeId).HasColumnName("delegationchangeid").IsRequired();
-        //builder.PropertyWithReference(navKey: t => t.AltinnApp, foreignKey: t => t.AltinnAppId, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Restrict);
 
         builder.ConfigureLeagacyCommonChanges();
     }
