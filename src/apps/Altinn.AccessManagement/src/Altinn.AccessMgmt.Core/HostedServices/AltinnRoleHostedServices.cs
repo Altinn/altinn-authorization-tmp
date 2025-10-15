@@ -16,9 +16,9 @@ namespace Altinn.AccessMgmt.Core.HostedServices
         IFeatureManager featureManager,
         ILogger<AltinnRoleHostedService> logger,
         IAllAltinnRoleSyncService allAltinnRoleSyncService,
-        IAltinnClientRoleSyncService altinnClientRoleSyncService ////,
+        IAltinnClientRoleSyncService altinnClientRoleSyncService,
         //// IAltinnBankruptcyEstateRoleSyncService altinnBankruptcyEstateRoleSyncService,
-        //// IAltinnAdminRoleSyncService altinnAdminRoleSyncService
+        IAltinnAdminRoleSyncService altinnAdminRoleSyncService
         ) : IHostedService, IDisposable
     {
         private readonly ILeaseService _leaseService = leaseService;
@@ -27,7 +27,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
         private readonly IAllAltinnRoleSyncService _allAltinnRoleSyncService = allAltinnRoleSyncService;
         private readonly IAltinnClientRoleSyncService _altinnClientRoleSyncService = altinnClientRoleSyncService;
         //// private readonly IAltinnBankruptcyEstateRoleSyncService _altinnBankruptcyEstateRoleSyncService = altinnBankruptcyEstateRoleSyncService;
-        //// private readonly IAltinnAdminRoleSyncService _altinnAdminRoleSyncService = altinnAdminRoleSyncService;
+        private readonly IAltinnAdminRoleSyncService _altinnAdminRoleSyncService = altinnAdminRoleSyncService;
         private Timer _timer = null;
         private readonly CancellationTokenSource _stop = new();
         private int _isRunning = 0;
@@ -96,7 +96,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
                         return;
                     }
 
-                    //await SyncAltinnAdminRoles(lease, cancellationToken);
+                    await SyncAltinnAdminRoles(lease, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -123,6 +123,18 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             try
             {
                 await _altinnClientRoleSyncService.SyncClientRoles(lease, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.SyncError(_logger, ex);
+            }
+        }
+
+        private async Task SyncAltinnAdminRoles(ILease lease, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _altinnAdminRoleSyncService.SyncAdminRoles(lease, cancellationToken);
             }
             catch (Exception ex)
             {

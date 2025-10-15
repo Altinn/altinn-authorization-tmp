@@ -115,7 +115,11 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
             return 0;
         }
 
-        db.Remove(existingAssignmentPackages);
+        foreach (var item in existingAssignmentPackages)
+        {
+            db.Remove(item);
+        }
+        
         return await db.SaveChangesAsync(values, cancellationToken);
     }
 
