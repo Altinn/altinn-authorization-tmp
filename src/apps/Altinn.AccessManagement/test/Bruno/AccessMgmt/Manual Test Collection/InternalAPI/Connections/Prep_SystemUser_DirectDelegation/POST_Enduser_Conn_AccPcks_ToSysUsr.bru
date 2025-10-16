@@ -1,11 +1,11 @@
 meta {
-  name: GET_Internal_Conn_AccPcks_ToSystemUser
+  name: POST_Enduser_Conn_AccPcks_ToSysUsr
   type: http
   seq: 2
 }
 
-get {
-  url: {{baseUrl}}/accessmanagement/api/v1/internal/connections/accesspackages?party={{party}}&to={{systemUser}}
+post {
+  url: {{baseUrl}}/accessmanagement/api/v1/internal/connections/accesspackages?party={{party}}&to={{systemUser}}&package={{package}}
   body: json
   auth: inherit
 }
@@ -13,6 +13,7 @@ get {
 params:query {
   party: {{party}}
   to: {{systemUser}}
+  package: {{package}}
 }
 
 headers {
@@ -23,10 +24,11 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "GET_Internal_Conn_AccPcks_ToSystemUser");
+  bru.setVar("requestName", "POST_Enduser_Conn_AccPcks_ToSysUsr");
   
   bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
   bru.setVar("systemUser", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
+  bru.setVar("package", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.directPackageToDelegate);
   
   var getTokenParameters = {
     auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
@@ -41,20 +43,19 @@ script:pre-request {
   bru.setVar("bearerToken", token);
 }
 
+script:post-response {
+  const data = res.getBody();
+  const packageId = data.packageId;
+  bru.setEnvVar("packageId", packageId)
+}
+
 tests {
   
   test(bru.getVar("requestName"), function() {
-    const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
-    const body = res.getBody();
+    const data = res.getBody();
     
     expect(res.status).to.equal(200);
-    expect(body).to.have.property('data').that.is.an('array').that.is.not.empty;
-  
-    body.data.forEach(record => {
-      record.permissions.forEach(permission => {
-        expect(permission.from.id).to.equal(testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-        expect(permission.to.id).to.equal(testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
-      });
-    });
+    assert.isOk(data, "Expected response body to return created assignment package");
+    
   });
 }
