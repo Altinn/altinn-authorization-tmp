@@ -518,7 +518,8 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
                     DelegationId = delegationId,
                     PackageId = packageId,
                     AssignmentPackageId = assignmentPackageId.HasValue ? assignmentPackageId.Value : null,
-                    RolePackageId = rolePackageId.HasValue ? rolePackageId.Value : null
+                    RolePackageId = rolePackageId.HasValue ? rolePackageId.Value : null,
+                    Audit_ValidFrom = audit?.ValidFrom ?? DateTime.UtcNow
                 },
                 cancellationToken
             );
@@ -560,7 +561,8 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
                 {
                     FromId = from.Id,
                     ToId = to.Id,
-                    FacilitatorId = facilitator.Id
+                    FacilitatorId = facilitator.Id,
+                    Audit_ValidFrom = audit?.ValidFrom ?? DateTimeOffset.UtcNow
                 },
                 cancellationToken
             );

@@ -107,7 +107,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             if (deleteAssignment is { })
                             {
                                 appDbContext.Remove(deleteAssignment);
-                                await appDbContext.SaveChangesAsync(cancellationToken);
+                                await appDbContext.SaveChangesAsync(assignment.Options, cancellationToken);
                             }
                         }
 
@@ -170,7 +170,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     Id = Guid.CreateVersion7(),
                     FromId = model.FromPartyUuid,
                     ToId = model.ToUserPartyUuid.Value,
-                    RoleId = role.Id
+                    RoleId = role.Id,
+                    Audit_ValidFrom = model.DelegationChangeDateTime?.UtcDateTime ?? DateTime.UtcNow
                 };
                 
                 AuditValues options = new AuditValues(model.PerformedByPartyUuid ?? model.PerformedByUserUuid ?? SystemEntityConstants.Altinn2RoleImportSystem, SystemEntityConstants.Altinn2RoleImportSystem, batchId, model.DelegationChangeDateTime ?? DateTimeOffset.UtcNow);
@@ -194,7 +195,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 return cached;
             }
 
-            var role = await dbContext.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == roleIdentifier, cancellationToken);
+            var role = await dbContext.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == roleIdentifier, cancellationToken);
 
             if (role == null)
             {

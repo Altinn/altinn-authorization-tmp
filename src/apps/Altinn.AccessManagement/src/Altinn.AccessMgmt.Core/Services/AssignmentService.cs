@@ -40,6 +40,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
                 FromId = fromId,
                 ToId = toId,
                 RoleId = RoleConstants.Rightholder,
+                Audit_ValidFrom = values?.ValidFrom ?? DateTimeOffset.UtcNow,
             };
             await db.Assignments.AddAsync(assignment, cancellationToken);
             await db.SaveChangesAsync(values, cancellationToken);
@@ -69,6 +70,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
             {
                 AssignmentId = assignment.Id,
                 PackageId = packageId,
+                Audit_ValidFrom = values?.ValidFrom ?? DateTimeOffset.UtcNow,
             };
 
             await db.AssignmentPackages.AddAsync(newAssignmentPackage, cancellationToken);
@@ -588,6 +590,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
             FromId = fromEntityId,
             ToId = toEntityId,
             RoleId = role.Id,
+            Audit_ValidFrom = audit?.ValidFrom ?? DateTimeOffset.UtcNow,
         };
         
         await db.Assignments.AddAsync(assignment, cancellationToken);
