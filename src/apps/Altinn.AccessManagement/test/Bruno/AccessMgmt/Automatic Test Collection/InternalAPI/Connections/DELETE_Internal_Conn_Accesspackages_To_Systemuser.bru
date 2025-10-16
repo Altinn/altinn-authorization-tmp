@@ -1,23 +1,23 @@
 meta {
-  name: GET_Internal_Conn_Get_SystemUser
+  name: DELETE_Internal_Conn_Accesspackages_To_Systemuser
   type: http
-  seq: 2
+  seq: 7
 }
 
-get {
-  url: {{baseUrl}}/accessmanagement/api/v1/internal/connections?party={{from}}&to={{to}}
-  body: json
+delete {
+  url: {{baseUrl}}/accessmanagement/api/v1/Internal/connections/accesspackages?party={{from}}&to={{to}}&package={{package}}
+  body: none
   auth: inherit
 }
 
 params:query {
   party: {{from}}
   to: {{to}}
+  package: {{package}}
 }
 
 headers {
   Accept: application/json
-  Content-Type: application/json
 }
 
 script:pre-request {
@@ -26,6 +26,7 @@ script:pre-request {
   
   bru.setVar("from", testdata.internal_conn_org.partyuuid);
   bru.setVar("to", testdata.internal_conn_org.systemuser.partyuuid);
+  bru.setVar("package", testdata.internal_conn_org.package_to_delegate);
   
   var getTokenParameters = {
     auth_userId: testdata.internal_conn_org.dagligleder.userid,
@@ -41,16 +42,10 @@ script:pre-request {
 }
 
 tests {
-  const body = res.getBody();
-  const testdata = require(`./Testdata/enduser/${bru.getEnvVar("tokenEnv")}.json`);
-  
-  test("GET Internal Connections SystemUser: added", function() {
-    const role = body.data[0].roles.find(roles => roles.code === 'rettighetshaver');
-    assert.isOk(role, `Rettighetshaver`);
+  test("DELETE internal connections accesspackage to systemuser", function() {
     
-      var packageId = bru.getEnvVar("packageId");
-      expect(res.status).to.equal(200);
-      expect(body.data[0].party).to.have.property('id', testdata.internal_conn_org.systemuser.partyuuid);
-    });
-  
+    const testdata = require(`./Testdata/enduser/${bru.getEnvVar("tokenEnv")}.json`); 
+    const data = res.getBody();
+    expect(res.status).to.equal(204);
+  });
 }
