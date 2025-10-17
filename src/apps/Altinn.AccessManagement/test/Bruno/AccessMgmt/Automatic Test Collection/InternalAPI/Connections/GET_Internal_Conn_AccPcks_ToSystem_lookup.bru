@@ -1,18 +1,17 @@
 meta {
-  name: GET_Internal_Conn_AccPcks_ToSystemUser
+  name: GET_Internal_Conn_AccPcks_ToSystem_lookup
   type: http
-  seq: 3
+  seq: 4
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/internal/connections/accesspackages?party={{party}}&to={{systemUser}}
+  url: {{baseUrl}}/accessmanagement/api/v1/internal/connections/accesspackages?party={{party}}
   body: json
   auth: inherit
 }
 
 params:query {
   party: {{party}}
-  to: {{systemUser}}
 }
 
 headers {
@@ -42,19 +41,10 @@ script:pre-request {
 }
 
 tests {
-  
-  test(bru.getVar("requestName"), function() {
-    const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
-    const body = res.getBody();
-    
-    expect(res.status).to.equal(200);
-    expect(body).to.have.property('data').that.is.an('array').that.is.not.empty;
-  
-    body.data.forEach(record => {
-      record.permissions.forEach(permission => {
-        expect(permission.from.id).to.equal(testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-        expect(permission.to.id).to.equal(testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.systemuser.partyUuid);
-      });
-    });
+  test("Internal Connections endpoint should return an empty result when looking up an access package for a party", function() {
+  const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
+     const body = res.getBody();
+      expect(res.status).to.equal(200);
+      expect(body).to.have.property('data').that.is.an('array').that.is.empty;
   });
 }
