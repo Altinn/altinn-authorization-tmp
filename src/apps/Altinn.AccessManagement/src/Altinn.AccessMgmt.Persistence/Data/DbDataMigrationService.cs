@@ -116,13 +116,13 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Area>(dataKey, string.Empty, 6);
         }
 
-        if (migrationService.NeedMigration<Package>(dataKey, 10))
+        if (migrationService.NeedMigration<Package>(dataKey, 11))
         {
             await IngestPackage(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<Package>(dataKey, string.Empty, 10);
         }
 
-        if (migrationService.NeedMigration<RolePackage>(dataKey, 9))
+        if (migrationService.NeedMigration<RolePackage>(dataKey, 10))
         {
             await IngestRolePackage(options: options, cancellationToken: cancellationToken);
             await migrationService.LogMigration<RolePackage>(dataKey, string.Empty, 9);
@@ -1695,6 +1695,7 @@ public class DbDataMigrationService(
             new Package() { Id = Guid.Parse("08ec673d-9126-4ed0-ae75-7ceec8633c77"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_personale, Urn = "urn:altinn:accesspackage:sykefravaer", Name = "Sykefravær", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til sykefravær. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("71a2bd47-e885-49c7-8a58-7ef4bd936f41"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_personale, Urn = "urn:altinn:accesspackage:permisjon", Name = "Permisjon", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til permisjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("7c6d02b0-e0e9-45d6-b357-f2e929995475"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_personale, Urn = "urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori", Name = "Lønn med personopplysninger av særlig kategori", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til lønn og refusjon som inkluderer personopplysninger av særlig kategori. Denne fullmakten kan gi bruker tilgang til sensitive personopplysninger om ansatte, for eksempel knyttet til informasjon om ansattes sykefravær, foreldrepenger, pleiepenger eller lignende opplysninger. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
+            new Package() { Id = Guid.Parse("9a77a754-616d-49d6-a4d2-154157e2e7b1"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_personale, Urn = "urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori", Name = "Sykefravær med personopplysninger av særlig kategori", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til sykefravær som inkluderer personopplysninger av særlig kategori. Denne fullmakten kan gi bruker tilgang til sensitive personopplysninger om ansatte, for eksempel knyttet til informasjon om ansattes sykefravær. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("5eb07bdc-5c3c-4c85-add3-5405b214b8a3"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_miljo_ulykke_og_sikkerhet, Urn = "urn:altinn:accesspackage:renovasjon", Name = "Renovasjon", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til renovasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("04c5a001-5249-4765-ae8e-58617c404223"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_miljo_ulykke_og_sikkerhet, Urn = "urn:altinn:accesspackage:miljorydding-miljorensing-og-lignende", Name = "Miljørydding, miljørensing og lignende", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til miljørydding, miljørensing og lignende. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
             new Package() { Id = Guid.Parse("bacc9294-56fd-457f-930e-59ee4a7a3894"), ProviderId = provider, EntityTypeId = orgEntityType, AreaId = area_miljo_ulykke_og_sikkerhet, Urn = "urn:altinn:accesspackage:baerekraft", Name = "Bærekraft", Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til tiltak og rapportering på bærekraft. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.", IsDelegable = true, HasResources = true, IsAssignable = true },
@@ -3014,6 +3015,17 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            //new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            //new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            
+            urn:altinn:external-role:ccr:innehaver
         };
 
         await ingestService.IngestAndMergeData(rolePackages, options: options, matchColumns: ["RoleId", "PackageId", "EntityVariantId"], cancellationToken);

@@ -2947,6 +2947,31 @@ public static class PackageConstants
     };
 
     /// <summary>
+    /// Represents the 'Sykefravær med personopplysninger av særlig kategori' access package.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 9a77a754-616d-49d6-a4d2-154157e2e7b1
+    /// - <c>URN:</c> altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori
+    /// - <c>Provider:</c> Altinn3
+    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester knyttet til sykefravær som inkluderer personopplysninger av særlig kategori. Denne fullmakten kan gi bruker tilgang til sensitive personopplysninger om ansatte, for eksempel knyttet til informasjon om ansattes sykefravær. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
+    /// </remarks>
+    public static ConstantDefinition<Package> SickLeaveSpecialCategory { get; } = new ConstantDefinition<Package>("9a77a754-616d-49d6-a4d2-154157e2e7b1")
+    {
+        Entity = new()
+        {
+            Name = "Sykefravær med personopplysninger av særlig kategori",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til sykefravær som inkluderer personopplysninger av særlig kategori. Denne fullmakten kan gi bruker tilgang til sensitive personopplysninger om ansatte, for eksempel knyttet til informasjon om ansattes sykefravær. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori",
+            IsDelegable = true,
+            HasResources = true,
+            IsAssignable = true,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.Personnel,
+        },
+    };
+
+    /// <summary>
     /// Represents the 'Sykefravær' access package.
     /// </summary>
     /// <remarks>
