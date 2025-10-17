@@ -17,7 +17,7 @@ public class BaseAudit
         Audit_ChangedBy = values.ChangedBy;
         Audit_ChangedBySystem = values.ChangedBySystem;
         Audit_ChangeOperation = values.OperationId;
-        Audit_ValidFrom = DateTimeOffset.UtcNow;
+        Audit_ValidFrom = values.ValidFrom ?? DateTimeOffset.UtcNow;
     }
 
     public void SetAuditValues(Guid changedBy, Guid changedBySystem)

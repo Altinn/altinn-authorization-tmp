@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAccessMgmtCore(this IServiceCollection services)
     {
         services.AddHostedService<RegisterHostedService>();
+        services.AddHostedService<AltinnRoleHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
         services.AddScoped<IPartyService, PartyService>();
@@ -38,5 +39,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPartySyncService, PartySyncService>();
         services.AddSingleton<IRoleSyncService, RoleSyncService>();
         services.AddSingleton<IResourceSyncService, ResourceSyncService>();
+        services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
+        services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
+        services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
     }
 }

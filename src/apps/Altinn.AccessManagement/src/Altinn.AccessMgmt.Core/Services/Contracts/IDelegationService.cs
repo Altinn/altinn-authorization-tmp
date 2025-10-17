@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 
@@ -41,6 +42,18 @@ public interface IDelegationService
     /// Create a delegation and required assignments for system agent flow
     /// </summary>
     Task<IEnumerable<CreateDelegationResponseDto>> CreateClientDelegation(CreateSystemDelegationRequestDto request, Guid facilitatorPartyId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Create a delegation and required assignments for imported clint roles from A2
+    /// </summary>
+    /// <returns></returns>
+    Task<IEnumerable<CreateDelegationResponseDto>> ImportClientDelegation(ImportClientDelegationRequestDto request, AuditValues audit, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Revokes a client delegation
+    /// </summary>
+    /// <returns></returns>
+    Task<int> RevokeClientDelegation(ImportClientDelegationRequestDto request, AuditValues audit, CancellationToken cancellationToken);
 
     /// <summary>
     /// Deletes a delegation of the given id if found.
