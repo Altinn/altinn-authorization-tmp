@@ -179,6 +179,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         var entity = CreateEntity(person, e =>
         {
             e.DateOfBirth = person.DateOfBirth.HasValue ? person.DateOfBirth.Value : null;
+            e.DateOfDeath = person.DateOfDeath.HasValue ? person.DateOfDeath.Value : null;
             e.RefId = person.PersonIdentifier.ToString();
             e.PersonIdentifier = person.PersonIdentifier.ToString();
             e.TypeId = EntityTypeConstants.Person;
@@ -291,6 +292,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             PartyId = party?.PartyId.HasValue == true ? Convert.ToInt32(party.PartyId.Value) : null,
             UserId = party?.User.Value?.UserId.HasValue == true ? Convert.ToInt32(party.User.Value.UserId.Value) : null,
             Username = party?.User.Value?.Username.HasValue == true ? party.User.Value.Username.ToString() : null,
+            IsDeleted = party?.IsDeleted.HasValue == true ? party.IsDeleted.Value : false,
         };
 
         configureEntity(entity);
