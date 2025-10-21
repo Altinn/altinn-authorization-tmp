@@ -18,5 +18,5 @@ internal class RegisterLease()
     /// <summary>
     /// Specifies if current newest data has been written.
     /// </summary>
-    public bool IsTanked { get; set; }
+    public bool IsDbTanked { get; set; }
 }

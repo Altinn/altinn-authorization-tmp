@@ -49,7 +49,7 @@ public partial class RegisterHostedService(
 
     public async Task EnsureResourceRegistryIsTanked(CancellationToken cancellationToken)
     {
-        var isTanked = false;
+        var isDbTanked = false;
         do
         {
             if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesResourceRegistrySync, cancellationToken))
@@ -60,24 +60,25 @@ public partial class RegisterHostedService(
                     var data = await lease.Get<RegisterLease>(cancellationToken);
                     if (data is { })
                     {
-                        if (!data.IsTanked)
+                        if (!data.IsDbTanked)
                         {
                             await partySyncService.SyncParty(lease, cancellationToken);
                             await roleSyncService.SyncRoles(lease, cancellationToken);
-                            data.IsTanked = true;
+                            data = await lease.Get<RegisterLease>(cancellationToken);
+                            data.IsDbTanked = true;
                             await lease.Update(data, cancellationToken);
                         }
 
-                        isTanked = data.IsTanked;
+                        isDbTanked = data.IsDbTanked;
                     }
                 }
             }
             else
             {
-                isTanked = true;
+                isDbTanked = true;
             }
         }
-        while (!isTanked);
+        while (!isDbTanked);
     }  
 
     /// <summary>
