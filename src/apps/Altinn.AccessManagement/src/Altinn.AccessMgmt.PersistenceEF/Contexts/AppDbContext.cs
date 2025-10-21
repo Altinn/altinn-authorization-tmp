@@ -26,6 +26,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     #region Legacy
 
     public DbSet<DelegationChanges> LegacyDelegationChanges { get; set; }
+    public DbSet<ResourceRegistryDelegationChanges> LegacyResourceRegistryDelegationChanges { get; set; }
+    public DbSet<InstanceDelegationChanges> LegacyInstanceDelegationChanges { get; set; }
 
     #endregion
 

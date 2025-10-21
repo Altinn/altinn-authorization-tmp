@@ -13,7 +13,7 @@ public class BaseInstanceDelegationChanges : CommonDelegationChanges
     /// <summary>
     /// Gets or sets the delegation change id
     /// </summary>
-    public int DelegationChangeId { get; set; }
+    public int InstanceDelegationChangeId { get; set; }
 
     /// <summary>
     /// Gets or sets the resource id.
@@ -24,4 +24,9 @@ public class BaseInstanceDelegationChanges : CommonDelegationChanges
     /// Gets or sets the resource instance id.
     /// </summary>
     public string? InstanceId { get; set; }
+
+    public string InstanceDelegationMode { get; set; }
+
+    public string ToType { get; set; }
+    public string FromType { get; set; }
 }

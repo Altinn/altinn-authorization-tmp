@@ -62,7 +62,7 @@ public static class LeagacyBuilderExtensions
         builder.PropertyWithReference(navKey: t => t.From, foreignKey: t => t.FromUuid, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Restrict, required: false);
         builder.PropertyWithReference(navKey: t => t.To, foreignKey: t => t.ToUuid, principalKey: t => t.Id, deleteBehavior: DeleteBehavior.Restrict, required: false);
 
-        builder.Property(x => x.DelegationChangeType).HasColumnName("delegationchangetype").IsRequired(); //.HasColumnType<DelegationChangeType>("delegation.delegationchangetype").IsRequired();
+        builder.Property(x => x.DelegationChangeType).HasColumnName("delegationchangetype").IsRequired().HasConversion<string>(); //.HasColumnType<DelegationChangeType>("delegation.delegationchangetype").IsRequired();
         builder.Property(x => x.Created).HasColumnName("created");
 
         builder.Property(x => x.OfferedByPartyId).HasColumnName("offeredbypartyid");
@@ -73,16 +73,16 @@ public static class LeagacyBuilderExtensions
         builder.Property(x => x.PerformedByUserId).HasColumnName("performedbyuserid");
         //builder.Property(x => x.PerformedByPartyId).HasColumnName("performedbypartyid");
         builder.Property(x => x.PerformedByUuid).HasColumnName("performedbyuuid");
-        builder.Property(x => x.PerformedByUuidType).HasColumnName("performedbytype");//.HasColumnType<UuidType>("uuidtype");
+        builder.Property(x => x.PerformedByUuidType).HasColumnName("performedbytype").HasConversion<string>();//.HasColumnType<UuidType>("uuidtype");
 
         builder.Property(x => x.BlobStoragePolicyPath).HasColumnName("blobstoragepolicypath");
         builder.Property(x => x.BlobStorageVersionId).HasColumnName("blobstorageversionid");
 
         builder.Property(x => x.FromUuid).HasColumnName("fromuuid");
-        builder.Property(x => x.FromUuidType).HasColumnName("fromtype");//.HasColumnType<UuidType>("uuidtype");
+        builder.Property(x => x.FromUuidType).HasColumnName("fromtype").HasConversion<string>();//.HasColumnType<UuidType>("uuidtype");
 
         builder.Property(x => x.ToUuid).HasColumnName("touuid");
-        builder.Property(x => x.ToUuidType).HasColumnName("totype");//.HasColumnType<UuidType>("uuidtype");
+        builder.Property(x => x.ToUuidType).HasColumnName("totype").HasConversion<string>();//.HasColumnType<UuidType>("uuidtype");
 
         return builder;
     }
