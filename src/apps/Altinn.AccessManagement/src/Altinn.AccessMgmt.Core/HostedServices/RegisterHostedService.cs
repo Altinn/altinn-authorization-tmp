@@ -1,6 +1,8 @@
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
 using Altinn.Authorization.Host.Lease;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
@@ -44,6 +46,39 @@ public partial class RegisterHostedService(
 
         return Task.CompletedTask;
     }
+
+    public async Task EnsureResourceRegistryIsTanked(CancellationToken cancellationToken)
+    {
+        var isTanked = false;
+        do
+        {
+            if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesResourceRegistrySync, cancellationToken))
+            {
+                await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_resource_registry_sync", cancellationToken);
+                if (lease is { })
+                {
+                    var data = await lease.Get<RegisterLease>(cancellationToken);
+                    if (data is { })
+                    {
+                        if (!data.IsTanked)
+                        {
+                            await partySyncService.SyncParty(lease, cancellationToken);
+                            await roleSyncService.SyncRoles(lease, cancellationToken);
+                            data.IsTanked = true;
+                            await lease.Update(data, cancellationToken);
+                        }
+
+                        isTanked = data.IsTanked;
+                    }
+                }
+            }
+            else
+            {
+                isTanked = true;
+            }
+        }
+        while (!isTanked);
+    }  
 
     /// <summary>
     /// Dispatches the register synchronization process in a separate task.

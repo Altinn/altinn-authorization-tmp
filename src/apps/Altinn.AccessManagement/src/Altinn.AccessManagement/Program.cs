@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
+using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -60,6 +61,16 @@ async Task Init()
         bool generateBasicData = await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbWithBasicData);
         await app.UseAccessMgmtDb(generateBasicData);
     }
+
+    using var cts = new CancellationTokenSource();
+
+    AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+    {
+        cts.Cancel();
+    };
+
+    var registerImport = scope.ServiceProvider.GetRequiredService<RegisterHostedService>();
+    await registerImport.EnsureResourceRegistryIsTanked(cts.Token);
 }
 
 /// <summary>
