@@ -48,16 +48,7 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetConnections(
         [FromQuery] ConnectionInput connection,
-        [FromQuery] IEnumerable<string>? roles,
-        [FromQuery] IEnumerable<string>? packages,
-        [FromQuery] IEnumerable<string>? resources,
-        [FromQuery] IEnumerable<string>? instances,
-        [FromQuery] IEnumerable<string>? serviceOwners,
         [FromQuery, FromHeader] PagingInput paging,
-        [FromQuery] bool includeInactiveConnections = true,
-        [FromQuery] bool includeClientConnections = true,
-        [FromQuery] bool includeKeyRoleConnections = true,
-        [FromQuery] bool includeSubConnections = true,
         CancellationToken cancellationToken = default)
     {
         if (EnduserValidationRules.EnduserReadConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
@@ -69,7 +60,6 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
         _ = Guid.TryParse(connection.Party, out var partyUuid);
 
-        // ToDo: Implement filtering based on the additional parameters
         var result = await ConnectionService.Get(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
