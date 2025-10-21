@@ -47,9 +47,9 @@ public partial class RegisterHostedService(
         return Task.CompletedTask;
     }
 
-    public async Task EnsureResourceRegistryIsTanked(CancellationToken cancellationToken)
+    public async Task EnsureDbIsIngestWithRegisterData(CancellationToken cancellationToken)
     {
-        var isDbTanked = false;
+        var isDbIngested = false;
         do
         {
             if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesResourceRegistrySync, cancellationToken))
@@ -60,25 +60,25 @@ public partial class RegisterHostedService(
                     var data = await lease.Get<RegisterLease>(cancellationToken);
                     if (data is { })
                     {
-                        if (!data.IsDbTanked)
+                        if (!data.IsDbIngested)
                         {
                             await partySyncService.SyncParty(lease, cancellationToken);
                             await roleSyncService.SyncRoles(lease, cancellationToken);
                             data = await lease.Get<RegisterLease>(cancellationToken);
-                            data.IsDbTanked = true;
+                            data.IsDbIngested = true;
                             await lease.Update(data, cancellationToken);
                         }
 
-                        isDbTanked = data.IsDbTanked;
+                        isDbIngested = data.IsDbIngested;
                     }
                 }
             }
             else
             {
-                isDbTanked = true;
+                isDbIngested = true;
             }
         }
-        while (!isDbTanked);
+        while (!isDbIngested);
     }  
 
     /// <summary>

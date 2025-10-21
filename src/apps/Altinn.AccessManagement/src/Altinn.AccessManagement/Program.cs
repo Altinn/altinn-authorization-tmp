@@ -70,7 +70,7 @@ async Task Init()
     };
 
     var registerImport = scope.ServiceProvider.GetRequiredService<RegisterHostedService>();
-    await registerImport.EnsureResourceRegistryIsTanked(cts.Token);
+    await registerImport.EnsureDbIsIngestWithRegisterData(cts.Token);
 }
 
 /// <summary>
