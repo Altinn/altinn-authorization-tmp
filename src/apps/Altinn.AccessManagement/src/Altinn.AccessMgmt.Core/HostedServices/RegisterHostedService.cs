@@ -52,9 +52,9 @@ public partial class RegisterHostedService(
         var isDbIngested = false;
         do
         {
-            if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesResourceRegistrySync, cancellationToken))
+            if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesRegisterSync, cancellationToken))
             {
-                await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_resource_registry_sync", cancellationToken);
+                await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_register_sync", cancellationToken);
                 if (lease is { })
                 {
                     var data = await lease.Get<RegisterLease>(cancellationToken);
@@ -62,8 +62,13 @@ public partial class RegisterHostedService(
                     {
                         if (!data.IsDbIngested)
                         {
-                            await partySyncService.SyncParty(lease, cancellationToken);
-                            await roleSyncService.SyncRoles(lease, cancellationToken);
+                            data.PartyStreamNextPageLink = null;
+                            data.RoleStreamNextPageLink = null;
+                            await lease.Update(data, cancellationToken);
+
+                            await partySyncService.SyncParty(lease, true, cancellationToken);
+                            await roleSyncService.SyncRoles(lease, true, cancellationToken);
+
                             data = await lease.Get<RegisterLease>(cancellationToken);
                             data.IsDbIngested = true;
                             await lease.Update(data, cancellationToken);
@@ -79,7 +84,7 @@ public partial class RegisterHostedService(
             }
         }
         while (!isDbIngested);
-    }  
+    }
 
     /// <summary>
     /// Dispatches the register synchronization process in a separate task.
@@ -130,7 +135,7 @@ public partial class RegisterHostedService(
     {
         try
         {
-            await roleSyncService.SyncRoles(lease, cancellationToken);
+            await roleSyncService.SyncRoles(lease, false, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -155,11 +160,11 @@ public partial class RegisterHostedService(
     {
         try
         {
-            await partySyncService.SyncParty(lease, cancellationToken);
+            await partySyncService.SyncParty(lease, false, cancellationToken);
         }
         catch (Exception ex)
         {
-            Log.SyncError(_logger, ex);   
+            Log.SyncError(_logger, ex);
         }
     }
 

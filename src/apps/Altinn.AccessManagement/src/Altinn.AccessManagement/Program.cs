@@ -63,10 +63,16 @@ async Task Init()
     }
 
     using var cts = new CancellationTokenSource();
-
     AppDomain.CurrentDomain.ProcessExit += (s, e) =>
     {
-        cts.Cancel();
+        try
+        {
+            cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Terminated by itself.
+        }
     };
 
     var registerImport = scope.ServiceProvider.GetRequiredService<RegisterHostedService>();
