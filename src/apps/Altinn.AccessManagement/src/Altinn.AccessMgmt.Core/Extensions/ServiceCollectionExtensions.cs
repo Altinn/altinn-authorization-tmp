@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddHostedService<RegisterHostedService>();
         services.AddHostedService<AltinnRoleHostedService>();
+        services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
         services.AddScoped<IPartyService, PartyService>();

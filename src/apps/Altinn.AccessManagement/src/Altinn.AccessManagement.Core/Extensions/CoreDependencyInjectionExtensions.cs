@@ -1,5 +1,4 @@
 using Altinn.AccessManagement.Core.Asserters;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Resolvers;
 using Altinn.AccessManagement.Core.Services;
@@ -50,7 +49,7 @@ public static class CoreDependencyInjectionExtensions
         builder.Services.AddSingleton<IAccessTokenGenerator, AccessTokenGenerator>();
         builder.Services.AddTransient<ISigningCredentialsResolver, SigningCredentialsResolver>();
 
-        builder.Services.AddSingleton<ISingleRightsService, SingleRightsService>();
+        builder.Services.AddScoped<ISingleRightsService, SingleRightsService>();
         builder.Services.AddSingleton<IUserProfileLookupService, UserProfileLookupService>();
         builder.Services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesService>();
         builder.Services.AddSingleton<IAltinn2RightsService, Altinn2RightsService>();
