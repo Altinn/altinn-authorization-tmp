@@ -15,7 +15,7 @@ public interface IAssignmentService
     /// Removes packages from the assignment between the two parties.
     /// </summary>
     /// <returns></returns>
-    Task<int> RevokeAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, CancellationToken cancellationToken = default);
+    Task<int> RevokeAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Add packages to an assignment (creates the assignment if it does not exist) between the two parties.

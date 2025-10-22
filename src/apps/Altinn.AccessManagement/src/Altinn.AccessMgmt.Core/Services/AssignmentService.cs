@@ -8,6 +8,7 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -83,7 +84,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     }
 
     /// <inheritdoc/>
-    public async Task<int> RevokeAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, CancellationToken cancellationToken = default)
+    public async Task<int> RevokeAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default)
     {
         var packageIds = await db.Packages
             .AsNoTracking()
@@ -110,6 +111,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
             .AsTracking()
             .Where(a => a.AssignmentId == assignment.Id)
             .Where(a => packageIds.Contains(a.PackageId))
+            .Where(a => !onlyRemoveA2Packages || a.Package.Audit_ChangedBySystem.Equals(AuditDefaults.Altinn2RoleImportSystem))
             .ToListAsync(cancellationToken);
 
         if (existingAssignmentPackages.Count == 0)

@@ -53,7 +53,7 @@ public interface IDelegationService
     /// Revokes a client delegation
     /// </summary>
     /// <returns></returns>
-    Task<int> RevokeClientDelegation(ImportClientDelegationRequestDto request, AuditValues audit, CancellationToken cancellationToken);
+    Task<int> RevokeClientDelegation(ImportClientDelegationRequestDto request, AuditValues audit, bool onlyRemoveA2 = true, CancellationToken cancellationToken);
 
     /// <summary>
     /// Deletes a delegation of the given id if found.
