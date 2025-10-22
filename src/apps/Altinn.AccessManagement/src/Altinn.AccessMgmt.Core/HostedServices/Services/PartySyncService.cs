@@ -41,10 +41,10 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     {
         var options = new AuditValues(SystemEntityConstants.RegisterImportSystem);
         var leaseData = await lease.Get<RegisterLease>(cancellationToken);
-        // if (isInit == false && leaseData.IsDbIngested == false)
-        // {
-        //     return;
-        // }
+        if (isInit == false && leaseData.IsDbIngested == false)
+        {
+            return;
+        }
 
         var seen = new HashSet<string>();
         var ingestEntities = new List<Entity>();
@@ -85,14 +85,14 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 ingestEntitiesLookup.AddRange(data.EntityLookups);
             }
 
-            var numFlushed = await Flush();
+            var flushed = await Flush();
 
             if (string.IsNullOrEmpty(page?.Content?.Links?.Next))
             {
                 return;
             }
 
-            if (numFlushed > 0)
+            if (flushed > 0)
             {
                 leaseData.PartyStreamNextPageLink = page.Content.Links.Next;
                 await lease.Update(leaseData, cancellationToken);
