@@ -52,17 +52,19 @@ on:
                 default: 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeClientDelegations.js'
                 type: choice
                 options:
-                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeClientDelegations.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRoleDagl.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRoleDaglDeny.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorizeRolePriv.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/getClientDelegations.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForSystemUsers.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForUser.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForUserPartyId.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/getAuthorizedPartiesForOrganization.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/getRightHolders.js'
-                - 'src/apps/Altinn.Authorization/test/K6/performance/postConsent.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorize/pdpAuthorizeClientDelegations.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorize/pdpAuthorizeRoleDagl.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorize/pdpAuthorizeRoleDaglDeny.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/pdpAuthorize/pdpAuthorizeRolePriv.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/clientDelegations/getClientDelegations.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/authorizedParties/getAuthorizedPartiesForSystemUsers.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/authorizedParties/getAuthorizedPartiesForUser.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/authorizedParties/getAuthorizedPartiesForUserPartyId.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/authorizedParties/getAuthorizedPartiesForOrganization.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/rightHolders/getRightHolders.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/consent/postConsent.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/connections/getConnections.js'
+                - 'src/apps/Altinn.Authorization/test/K6/performance/connections/getConnectionsAccessPackages.js'
     workflow_call:
       inputs:
             apiVersion:

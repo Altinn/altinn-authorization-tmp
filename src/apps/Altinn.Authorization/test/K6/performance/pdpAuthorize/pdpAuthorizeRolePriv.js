@@ -1,16 +1,22 @@
 import http from 'k6/http';
 import exec from 'k6/execution';
 import { SharedArray } from "k6/data";
-import { expect, randomIntBetween, URL, describe } from "./common/testimports.js";
-import { postAuthorizeUrl } from './common/config.js';
-import { buildPrivAuthorizeBody } from './testData/buildAuthorizeBody.js';
-import { buildOptions, getAuthorizeParams, getActionLabelAndExpectedResponse, getAuthorizeClientToken, readCsv } from "./commonFunctions.js";
+import { expect, randomIntBetween, URL, describe } from "../common/testimports.js";
+import { postAuthorizeUrl } from '../common/config.js';
+import { buildPrivAuthorizeBody } from '../testData/buildAuthorizeBody.js';
+import { 
+  buildOptions, 
+  getAuthorizeParams, 
+  getActionLabelAndExpectedResponse, 
+  getAuthorizeClientToken, 
+  readCsv 
+} from "../common/commonFunctions.js";
 
 // resource with read/write for PRIV and DAGL
 const resource = "ttd-dialogporten-performance-test-02";
 const noOfClientsPerVu = 50;
 
-const daglFilename = `./testData/OrgsDagl.csv`;
+const daglFilename = import.meta.resolve(`../testData/OrgsDagl.csv`);
 export const dagl = new SharedArray('dagl', function () {
   return readCsv(daglFilename);
 });
