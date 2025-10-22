@@ -10,10 +10,10 @@ public static class AccessMgmtFeatureFlags
     /// <summary>
     /// Specifies if the register data should streamed from register service to access management database
     /// </summary>
-    public const string HostedServicesResourceRegistrySync = $"AccessMgmt.Core.HostedServices.ResourceRegistrySync";
+    public const string HostedServicesRegisterSyncImport = $"AccessMgmt.Core.HostedServices.RegisterSync.Import";
 
     /// <summary>
     /// Specifies if the register data should streamed from register service to access management database
     /// </summary>
-    public const string HostedServicesResourceRegistrySyncImport = $"AccessMgmt.Core.HostedServices.ResourceRegistrySync.Import";
+    public const string HostedServicesResourceRegistrySync = $"AccessMgmt.Core.HostedServices.ResourceRegistrySync";
 }
