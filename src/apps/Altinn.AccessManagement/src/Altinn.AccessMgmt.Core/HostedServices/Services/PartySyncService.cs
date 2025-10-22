@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+﻿using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -21,6 +20,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     private readonly IAltinnRegister _register;
     private readonly IServiceProvider _serviceProvider;
     private readonly int _bulkSize = 10_000;
+    private readonly List<string> _supportedEntityTypes = ["person", "organization"];
 
     /// <summary>
     /// PartySyncService Constructor
@@ -74,7 +74,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             {
                 try
                 {
-                    if (item.PartyType.Equals("self-identified-user", StringComparison.OrdinalIgnoreCase))
+                    if (!_supportedEntityTypes.Any(e => e.Equals(item.PartyType, StringComparison.InvariantCultureIgnoreCase)))
                     {
                         continue;
                     }
@@ -160,6 +160,11 @@ public class PartySyncService : BaseSyncService, IPartySyncService
                 RefId = model.PersonIdentifier,
                 TypeId = EntityTypeConstants.Person,
                 VariantId = EntityVariantConstants.Person,
+                DateOfBirth = DateOnly.Parse(model.DateOfBirth),
+                PartyId = model.PartyId,
+                PersonIdentifier = model.PersonIdentifier,
+                UserId = model.User.UserId,
+                OrganizationIdentifier = model.OrganizationIdentifier,
             };
         }
         else if (model.PartyType.Equals("organization", StringComparison.OrdinalIgnoreCase))

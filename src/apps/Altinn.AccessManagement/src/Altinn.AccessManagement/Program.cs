@@ -15,11 +15,16 @@ WebApplication app = AccessManagementHost.Create(args);
 using var scope = app.Services.CreateScope();
 var appsettings = scope.ServiceProvider.GetRequiredService<IOptions<AccessManagementAppsettings>>().Value;
 var featureManager = scope.ServiceProvider.GetRequiredService<FeatureManager>();
-await Init();
+await app.DefineAccessMgmtDbModels();
 
 if (appsettings.RunInitOnly)
 {
+    await Init();
     return;
+}
+else if (appsettings.RunIntegrationTests)
+{
+    await Init();
 }
 
 app.AddDefaultAltinnMiddleware(errorHandlingPath: "/accessmanagement/api/v1/error");
@@ -46,9 +51,6 @@ await app.RunAsync();
 
 async Task Init()
 {
-    // Add definitions to the database definition registry
-    await app.DefineAccessMgmtDbModels();
-
     if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbEf))
     {
         await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();

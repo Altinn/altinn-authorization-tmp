@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251002125653_AddView")]
-    partial class AddView
+    [Migration("20251015162311_EntityMetaProperties")]
+    partial class EntityMetaProperties
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -788,13 +788,33 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date")
+                        .HasColumnName("dateofbirth");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deletedat");
+
                     b.Property<string>("Name")
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("OrganizationIdentifier")
+                        .HasColumnType("text")
+                        .HasColumnName("organizationidentifier");
+
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("uuid")
                         .HasColumnName("parentid");
+
+                    b.Property<int?>("PartyId")
+                        .HasColumnType("integer")
+                        .HasColumnName("partyid");
+
+                    b.Property<string>("PersonIdentifier")
+                        .HasColumnType("text")
+                        .HasColumnName("personidentifier");
 
                     b.Property<string>("RefId")
                         .HasColumnType("text")
@@ -803,6 +823,14 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<Guid>("TypeId")
                         .HasColumnType("uuid")
                         .HasColumnName("typeid");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("userid");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("text")
+                        .HasColumnName("username");
 
                     b.Property<Guid>("VariantId")
                         .HasColumnType("uuid")
@@ -1949,14 +1977,34 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date")
+                        .HasColumnName("dateofbirth");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deletedat");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("OrganizationIdentifier")
+                        .HasColumnType("text")
+                        .HasColumnName("organizationidentifier");
+
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("uuid")
                         .HasColumnName("parentid");
+
+                    b.Property<int?>("PartyId")
+                        .HasColumnType("integer")
+                        .HasColumnName("partyid");
+
+                    b.Property<string>("PersonIdentifier")
+                        .HasColumnType("text")
+                        .HasColumnName("personidentifier");
 
                     b.Property<string>("RefId")
                         .HasColumnType("text")
@@ -1965,6 +2013,14 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<Guid>("TypeId")
                         .HasColumnType("uuid")
                         .HasColumnName("typeid");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("userid");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("text")
+                        .HasColumnName("username");
 
                     b.Property<Guid>("VariantId")
                         .HasColumnType("uuid")
@@ -2847,103 +2903,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.ToTable("roleresource", "dbo");
 
                     b.HasAnnotation("EnableAudit", true);
-                });
-
-            modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Queries.Models.PackageDelegationCheckRow", b =>
-                {
-                    b.Property<Guid>("AreaId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("areaid");
-
-                    b.Property<bool?>("CanDelegate")
-                        .HasColumnType("boolean")
-                        .HasColumnName("candelegate");
-
-                    b.Property<Guid?>("FromId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("fromid");
-
-                    b.Property<string>("FromName")
-                        .HasColumnType("text")
-                        .HasColumnName("fromname");
-
-                    b.Property<bool?>("HasAccess")
-                        .HasColumnType("boolean")
-                        .HasColumnName("hasaccess");
-
-                    b.Property<bool>("IsAssignable")
-                        .HasColumnType("boolean")
-                        .HasColumnName("isassignable");
-
-                    b.Property<bool?>("IsAssignmentPackage")
-                        .HasColumnType("boolean")
-                        .HasColumnName("isassignmentpackage");
-
-                    b.Property<bool>("IsDelegable")
-                        .HasColumnType("boolean")
-                        .HasColumnName("isdelegable");
-
-                    b.Property<bool?>("IsKeyRolePackage")
-                        .HasColumnType("boolean")
-                        .HasColumnName("iskeyrolepackage");
-
-                    b.Property<bool?>("IsMainAdminPackage")
-                        .HasColumnType("boolean")
-                        .HasColumnName("ismainadminpackage");
-
-                    b.Property<bool?>("IsMainUnitPackage")
-                        .HasColumnType("boolean")
-                        .HasColumnName("ismainunitpackage");
-
-                    b.Property<bool?>("IsRolePackage")
-                        .HasColumnType("boolean")
-                        .HasColumnName("isrolepackage");
-
-                    b.Property<Guid>("PackageId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("packageid");
-
-                    b.Property<string>("PackageUrn")
-                        .HasColumnType("text")
-                        .HasColumnName("packageurn");
-
-                    b.Property<string>("Reason")
-                        .HasColumnType("text")
-                        .HasColumnName("reason");
-
-                    b.Property<Guid?>("RoleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("roleid");
-
-                    b.Property<string>("RoleUrn")
-                        .HasColumnType("text")
-                        .HasColumnName("roleurn");
-
-                    b.Property<Guid?>("ToId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("toid");
-
-                    b.Property<string>("ToName")
-                        .HasColumnType("text")
-                        .HasColumnName("toname");
-
-                    b.Property<Guid?>("ViaId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("viaid");
-
-                    b.Property<string>("ViaName")
-                        .HasColumnType("text")
-                        .HasColumnName("vianame");
-
-                    b.Property<Guid?>("ViaRoleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("viaroleid");
-
-                    b.Property<string>("ViaRoleUrn")
-                        .HasColumnType("text")
-                        .HasColumnName("viaroleurn");
-
-                    b.ToTable("packagedelegationchecks", (string)null);
                 });
 
             modelBuilder.Entity("Altinn.AccessMgmt.PersistenceEF.Utils.TranslationEntry", b =>
