@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -168,7 +169,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
     }
 
     /// <inheritdoc />
-    public async Task<int> RevokeClientDelegation(ImportClientDelegationRequestDto request, AuditValues audit, CancellationToken cancellationToken = default)
+    public async Task<int> RevokeClientDelegation(ImportClientDelegationRequestDto request, AuditValues audit, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default)
     {
         // Find Facilitator
         var facilitator = await entityService.GetEntity(request.Facilitator.Value, cancellationToken) ?? throw new Exception(string.Format("Party not found '{0}' for facilitator", request.Facilitator.Value));
@@ -177,10 +178,10 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         var client = await entityService.GetEntity(request.ClientId, cancellationToken) ?? throw new Exception(string.Format("Party not found '{0}' for client", request.ClientId));
 
         // Create Delegation and DelegationPackage(s)
-        return await RevokeClientDelegations(request, client, facilitator, audit, cancellationToken);
+        return await RevokeClientDelegations(request, client, facilitator, audit, onlyRemoveA2Packages, cancellationToken);
     }
 
-    private async Task<int> RevokeClientDelegations(ImportClientDelegationRequestDto request, Entity client, Entity facilitator, AuditValues audit, CancellationToken cancellationToken = default)
+    private async Task<int> RevokeClientDelegations(ImportClientDelegationRequestDto request, Entity client, Entity facilitator, AuditValues audit, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default)
     {
         int packagesRevoked = 0;
         
@@ -238,7 +239,6 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
                             }
                         }
 
-                        // Find Delegation
                         delegation = await GetDelegation(clientAssignment, agentAssignment, facilitator);
                         if (delegation == null)
                         {
@@ -247,7 +247,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
                     }
 
                     // Revoke DelegationPackage
-                    var revoked = await RevokeDelegationPackage(delegation.Id, package.Id, audit, cancellationToken);
+                    var revoked = await RevokeDelegationPackage(delegation.Id, package.Id, audit, onlyRemoveA2Packages, cancellationToken);
 
                     if (revoked)
                     {
@@ -255,6 +255,14 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
                     }
                 }
 
+                // if no packages left remove delegation
+                var remainingPackages = await db.DelegationPackages.AsNoTracking().Where(t => t.DelegationId == delegation.Id).ToListAsync(cancellationToken);
+                if (remainingPackages.Count == 0)
+                {
+                    db.Delegations.Attach(delegation);
+                    db.Delegations.Remove(delegation);
+                    await db.SaveChangesAsync(audit, cancellationToken);
+                }
             }
         }
         catch (Exception ex)
@@ -265,11 +273,12 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         return packagesRevoked;
     }
 
-    private async Task<bool> RevokeDelegationPackage(Guid delegationId, Guid packageId, AuditValues audit, CancellationToken cancellationToken = default)
+    private async Task<bool> RevokeDelegationPackage(Guid delegationId, Guid packageId, AuditValues audit, bool onlyRemoveA2, CancellationToken cancellationToken = default)
     {
         var delegationPackage = await db.DelegationPackages
             .AsTracking()
             .Where(t => t.DelegationId == delegationId && t.PackageId == packageId)
+            .Where(t => !onlyRemoveA2 || t.Audit_ChangedBySystem.Equals(AuditDefaults.Altinn2RoleImportSystem)) // Remove only A2 packages if flag is set
             .FirstOrDefaultAsync(cancellationToken);
 
         if (delegationPackage != null)

@@ -76,7 +76,7 @@ namespace Altinn.AccessManagement.HostedServices.Services
                         if (item.DelegationAction == DelegationAction.Revoke)
                         {
                             // If the action is Revoke, we should delete the delegation
-                            int deleted = await _delegationService.RevokeClientDelegation(delegationData, audit, cancellationToken);
+                            int deleted = await _delegationService.RevokeClientDelegation(delegationData, audit, true, cancellationToken);
                             if (deleted <= 0)
                             {
                                 _logger.LogWarning(

@@ -92,10 +92,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                         if (item.DelegationAction == DelegationAction.Delegate)
                         {
-                            if (item.ToUserType != UserType.EnterpriseIdentified)
-                            {
-                                batchData.Add(assignment.Assignment);
-                            }
+                            batchData.Add(assignment.Assignment);
                         }
                         else
                         {

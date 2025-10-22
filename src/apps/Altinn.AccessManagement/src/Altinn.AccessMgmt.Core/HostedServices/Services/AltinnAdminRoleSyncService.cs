@@ -90,6 +90,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 item.FromPartyUuid,
                                 packageUrns,
                                 values,
+                                true,
                                 cancellationToken);
 
                             if (revokes == 0)
