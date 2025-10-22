@@ -17,7 +17,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -785,13 +785,41 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("audit_deletedbysystem");
 
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date")
+                        .HasColumnName("dateofbirth");
+
+                    b.Property<DateOnly?>("DateOfDeath")
+                        .HasColumnType("date")
+                        .HasColumnName("dateofdeath");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deletedat");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("isdeleted");
+
                     b.Property<string>("Name")
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("OrganizationIdentifier")
+                        .HasColumnType("text")
+                        .HasColumnName("organizationidentifier");
+
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("uuid")
                         .HasColumnName("parentid");
+
+                    b.Property<int?>("PartyId")
+                        .HasColumnType("integer")
+                        .HasColumnName("partyid");
+
+                    b.Property<string>("PersonIdentifier")
+                        .HasColumnType("text")
+                        .HasColumnName("personidentifier");
 
                     b.Property<string>("RefId")
                         .HasColumnType("text")
@@ -800,6 +828,14 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<Guid>("TypeId")
                         .HasColumnType("uuid")
                         .HasColumnName("typeid");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("userid");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("text")
+                        .HasColumnName("username");
 
                     b.Property<Guid>("VariantId")
                         .HasColumnType("uuid")
@@ -1946,14 +1982,42 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("audit_validfrom");
 
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date")
+                        .HasColumnName("dateofbirth");
+
+                    b.Property<DateOnly?>("DateOfDeath")
+                        .HasColumnType("date")
+                        .HasColumnName("dateofdeath");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deletedat");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("isdeleted");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<string>("OrganizationIdentifier")
+                        .HasColumnType("text")
+                        .HasColumnName("organizationidentifier");
+
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("uuid")
                         .HasColumnName("parentid");
+
+                    b.Property<int?>("PartyId")
+                        .HasColumnType("integer")
+                        .HasColumnName("partyid");
+
+                    b.Property<string>("PersonIdentifier")
+                        .HasColumnType("text")
+                        .HasColumnName("personidentifier");
 
                     b.Property<string>("RefId")
                         .HasColumnType("text")
@@ -1962,6 +2026,14 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<Guid>("TypeId")
                         .HasColumnType("uuid")
                         .HasColumnName("typeid");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("userid");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("text")
+                        .HasColumnName("username");
 
                     b.Property<Guid>("VariantId")
                         .HasColumnType("uuid")

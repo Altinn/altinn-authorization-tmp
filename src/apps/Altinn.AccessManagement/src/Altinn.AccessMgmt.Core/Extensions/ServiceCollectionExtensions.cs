@@ -1,4 +1,5 @@
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
+using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
@@ -18,6 +19,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAccessMgmtCore(this IServiceCollection services)
     {
         services.AddHostedService<RegisterHostedService>();
+        services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
         services.AddScoped<IPartyService, PartyService>();
@@ -27,6 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDelegationService, DelegationService>();
         services.AddScoped<IResourceService, ResourceService>();
         services.AddScoped<IEntityService, EntityService>();
+        services.AddScoped<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
 
         services.AddScoped<IAmPartyRepository, AMPartyService>();
         services.AddScoped<IEntityService, EntityService>();
