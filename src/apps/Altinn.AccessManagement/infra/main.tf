@@ -211,6 +211,12 @@ module "appsettings" {
       value       = false
     },
     {
+      name        = "AccessMgmt.Core.HostedServices.ResourceRegistrySync.Import"
+      description = "(EF) Specifies if the register data do the initial ingest."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessMgmt.Core.HostedServices.ResourceRegistrySync"
       description = "(EF) Specifies if the register data should streamed from register service to access management database."
       label       = "${lower(var.environment)}-access-management"
