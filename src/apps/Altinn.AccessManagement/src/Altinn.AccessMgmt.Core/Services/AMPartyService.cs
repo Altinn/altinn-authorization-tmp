@@ -25,14 +25,41 @@ public class AMPartyService(IEntityService entityService) : IAmPartyRepository
         {
             Name = entity.Name,
             PartyUuid = entity.Id,
-            OrganizationId = entity.RefId
+            PartyId = entity.PartyId ?? 0,
+            OrganizationId = entity.RefId,
+            PartyType = entity.TypeId
         };
     }
 
     /// <inheritdoc />
-    public Task<MinimalParty> GetByPartyId(int partyId, CancellationToken cancellationToken = default)
+    public async Task<MinimalParty> GetByPartyId(int partyId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var entity = await entityService.GetByPartyId(partyId.ToString(), cancellationToken: cancellationToken);
+
+        if (entity == null)
+        {
+            return null;
+        }
+
+        var party = new MinimalParty()
+        {
+            Name = entity.Name,
+            PartyUuid = entity.Id,
+            PartyId = partyId,
+            PartyType = entity.TypeId
+        };
+
+        if (entity.Type.Id == EntityTypeConstants.Organisation)
+        {
+            party.OrganizationId = entity.RefId;
+        }
+
+        if (entity.Type.Id == EntityTypeConstants.Person)
+        {
+            party.PersonId = entity.RefId;
+        }
+
+        return party;
     }
 
     /// <inheritdoc />
@@ -49,8 +76,35 @@ public class AMPartyService(IEntityService entityService) : IAmPartyRepository
         {
             Name = entity.Name,
             PartyUuid = entity.Id,
-            OrganizationId = entity.RefId
+            PartyId = entity.PartyId ?? 0,
+            PersonId = entity.RefId,
+            PartyType = entity.TypeId
         };
+    }
+
+    public async Task<MinimalParty> GetByUserId(int userId, CancellationToken cancellationToken = default)
+    {
+        var entity = await entityService.GetByUserId(userId.ToString(), cancellationToken: cancellationToken);
+
+        if (entity == null)
+        {
+            return null;
+        }
+
+        var party = new MinimalParty()
+        {
+            Name = entity.Name,
+            PartyUuid = entity.Id,
+            PartyId = entity.PartyId ?? 0,
+            PartyType = entity.TypeId
+        };
+
+        if (entity.Type.Id == EntityTypeConstants.Person.Id)
+        {
+            party.PersonId = entity.RefId;
+        }
+
+        return party;
     }
 
     /// <inheritdoc />
@@ -66,15 +120,17 @@ public class AMPartyService(IEntityService entityService) : IAmPartyRepository
         var party = new MinimalParty()
         {
             Name = entity.Name,
-            PartyUuid = entity.Id
+            PartyUuid = entity.Id,
+            PartyId = entity.PartyId ?? 0,
+            PartyType = entity.TypeId
         };
 
-        if (entity.Type.Id == EntityTypeConstants.Organisation.Id)
+        if (entity.Type.Id == EntityTypeConstants.Organisation)
         {
             party.OrganizationId = entity.RefId;
         }
 
-        if (entity.Type.Id == EntityTypeConstants.Person.Id)
+        if (entity.Type.Id == EntityTypeConstants.Person)
         {
             party.PersonId = entity.RefId;
         }

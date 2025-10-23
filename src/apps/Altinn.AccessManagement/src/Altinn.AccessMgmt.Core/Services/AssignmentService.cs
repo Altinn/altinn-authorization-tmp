@@ -149,7 +149,9 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, Guid roleId, CancellationToken cancellationToken = default)
     {
-        var result = await db.Assignments.AsNoTracking().Where(t => t.FromId == fromId && t.ToId == toId && t.RoleId == roleId).ToListAsync(cancellationToken);
+        var result = await db.Assignments.AsNoTracking()
+            .Where(t => t.FromId == fromId && t.ToId == toId && t.RoleId == roleId)
+            .ToListAsync(cancellationToken);
         if (result == null || !result.Any())
         {
             return null;
@@ -161,7 +163,10 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     /// <inheritdoc/>
     public async Task<Assignment> GetAssignment(Guid fromId, Guid toId, string roleCode, CancellationToken cancellationToken = default)
     {
-        var roleResult = await db.Roles.AsNoTracking().Where(t => t.Code == roleCode).ToListAsync(cancellationToken);
+        var roleResult = await db.Roles.AsNoTracking()
+            .Where(t => t.Code == roleCode)
+            .ToListAsync(cancellationToken);
+
         if (roleResult == null || !roleResult.Any())
         {
             return null;
@@ -187,11 +192,17 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         var assignment = await db.Assignments.SingleAsync(t => t.Id == assignmentId, cancellationToken);
         var package = await db.Packages.SingleAsync(t => t.Id == packageId, cancellationToken);
 
-        var userAssignments = await db.Assignments.AsNoTracking().Where(t => t.FromId == assignment.FromId && t.ToId == userId).ToListAsync(cancellationToken);
+        var userAssignments = await db.Assignments.AsNoTracking()
+            .Where(t => t.FromId == assignment.FromId && t.ToId == userId)
+            .ToListAsync(cancellationToken);
 
         bool hasPackage = false;
 
-        var assignmentMatches = await db.AssignmentPackages.AsNoTracking().Where(t => t.PackageId == packageId && userAssignments.Select(t => t.Id).Contains(t.AssignmentId)).ToListAsync(cancellationToken);
+        var assignmentMatches = await db.AssignmentPackages.AsNoTracking()
+            .Where(t => t.PackageId == packageId && userAssignments.Select(t => t.Id)
+            .Contains(t.AssignmentId))
+            .ToListAsync(cancellationToken);
+
         if (assignmentMatches != null && assignmentMatches.Any())
         {
             hasPackage = true;
@@ -199,7 +210,12 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
 
         if (!hasPackage)
         {
-            var roleMatches = await db.RolePackages.AsNoTracking().Where(t => t.PackageId == packageId && userAssignments.Select(t => t.RoleId).Distinct().Contains(t.RoleId)).ToListAsync(cancellationToken);
+            var roleMatches = await db.RolePackages.AsNoTracking()
+                .Where(t => t.PackageId == packageId && userAssignments.Select(t => t.RoleId)
+                .Distinct()
+                .Contains(t.RoleId))
+                .ToListAsync(cancellationToken);
+
             if (roleMatches != null && roleMatches.Any())
             {
                 hasPackage = true;
@@ -248,10 +264,13 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     {
         ValidationErrorBuilder errors = default;
 
-        var fromEntity = await db.Entities.SingleAsync(t => t.Id == fromEntityId, cancellationToken);
-        var toEntity = await db.Entities.SingleAsync(t => t.Id == toEntityId, cancellationToken);
-        ValidatePartyIsNotNull(fromEntityId, fromEntity, ref errors, "$QUERY/party");
-        ValidatePartyIsNotNull(toEntityId, toEntity, ref errors, "$QUERY/to");
+        var fromEntity = await db.Entities.FirstOrDefaultAsync(t => t.Id == fromEntityId, cancellationToken);
+        var toEntity = await db.Entities.FirstOrDefaultAsync(t => t.Id == toEntityId, cancellationToken);
+        
+        if (toEntity is null || fromEntity is null)
+        {
+            return null;
+        }
 
         var roleResult = await db.Roles.AsNoTracking().Where(t => t.Code == roleCode).ToListAsync(cancellationToken);
         if (roleResult == null || !roleResult.Any() || roleResult.Count > 1)
@@ -330,19 +349,26 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
 
             if (!cascade)
             {
-                var packages = await db.AssignmentPackages.AsNoTracking().Where(t => t.AssignmentId == existingAssignment.Id).ToListAsync(cancellationToken);
+                var packages = await db.AssignmentPackages.AsNoTracking()
+                    .Where(t => t.AssignmentId == existingAssignment.Id)
+                    .ToListAsync(cancellationToken);
+
                 if (packages != null && packages.Any())
                 {
                     errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("packages", string.Join(",", packages.Select(p => p.Id.ToString())))]);
                 }
 
-                var delegationsFromAssingment = await db.Delegations.AsNoTracking().Where(t => t.FromId == existingAssignment.Id).ToListAsync(cancellationToken);
+                var delegationsFromAssingment = await db.Delegations.AsNoTracking()
+                    .Where(t => t.FromId == existingAssignment.Id)
+                    .ToListAsync(cancellationToken);
                 if (delegationsFromAssingment != null && delegationsFromAssingment.Any())
                 {
                     errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsFromAssingment.Select(p => p.Id.ToString())))]);
                 }
 
-                var delegationsToAssignment = await db.Delegations.AsNoTracking().Where(t => t.ToId == existingAssignment.Id).ToListAsync(cancellationToken);
+                var delegationsToAssignment = await db.Delegations.AsNoTracking()
+                    .Where(t => t.ToId == existingAssignment.Id)
+                    .ToListAsync(cancellationToken);
                 if (delegationsToAssignment != null && delegationsToAssignment.Any())
                 {
                     errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsFromAssingment.Select(p => p.Id.ToString())))]);

@@ -11,8 +11,6 @@ namespace Altinn.AccessMgmt.PersistenceEF.Constants;
 /// </summary>
 public static class PackageConstants
 {
-
-
     /// <summary>
     /// Try to get <see cref="Package"/> by name.
     /// </summary>
@@ -29,7 +27,38 @@ public static class PackageConstants
     /// Try to get <see cref="Role"/> by Urn.
     /// </summary>
     public static bool TryGetByUrn(string urn, [NotNullWhen(true)] out ConstantDefinition<Package>? result)
-        => ConstantLookup.TryGetByUrn(typeof(PackageConstants), urn, out result);
+    {
+        if (string.IsNullOrEmpty(urn))
+        {
+            result = null;
+            return false;
+        }
+
+        urn = urn.ToLowerInvariant();
+
+        // Case 1: already a full URN
+        if (ConstantLookup.TryGetByUrn(typeof(PackageConstants), urn, out result))
+        {
+            return true;
+        }
+
+        // Case 2: Suffix only with ':'
+        if (urn.StartsWith(':') && urn.Split(':').Length == 1)
+        {
+            if (ConstantLookup.TryGetByUrn(typeof(PackageConstants), $"urn:altinn:accesspackage{urn}", out result))
+            {
+                return true;
+            }
+        }
+
+        // Case 3: Suffix only without ':'
+        if (ConstantLookup.TryGetByUrn(typeof(PackageConstants), $"urn:altinn:accesspackage:{urn}", out result))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Get all constants as a read-only collection.
@@ -2023,7 +2052,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 5a642040-46cf-4466-b671-115a022e3048
-    /// - <c>URN:</c> urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori
+    /// - <c>URN:</c> urn:altinn:accesspackage:helsetjenester-personopplysninger-saerlig-kategori
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester knyttet til sykehus, lege, tannlege og hjemmesykepleie,fysioterapi, ambulanse og lignende, som er av særlig kategori. Denne fullmakten kan gi bruker tilgang til sensitive personopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
     /// </remarks>
@@ -2033,7 +2062,7 @@ public static class PackageConstants
         {
             Name = "Helsetjenester med personopplysninger av særlig kategori",
             Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til sykehus, lege, tannlege og hjemmesykepleie,fysioterapi, ambulanse og lignende, som er av særlig kategori. Denne fullmakten kan gi bruker tilgang til sensitive personopplysninger om personer det rapporteres om. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            Urn = "urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori",
+            Urn = "urn:altinn:accesspackage:helsetjenester-personopplysninger-saerlig-kategori",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
@@ -2897,9 +2926,9 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 7c6d02b0-e0e9-45d6-b357-f2e929995475
-    /// - <c>URN:</c> altinn:accesspackage:lonn-personopplysinger-saerlig-kategori
+    /// - <c>URN:</c> altinn:accesspackage:lonn-personopplysninger-saerlig-kategori
     /// - <c>Provider:</c> Altinn3
-    /// - <c>Description:</c> DenneDenne tilgangspakken gir fullmakter til tjenester knyttet til lønn og refusjon som inkluderer personopplysninger av særlig kategori. Denne fullmakten kan gi bruker tilgang til sensitive personopplysninger om ansatte, for eksempel knyttet til informasjon om ansattes sykefravær, foreldrepenger, pleiepenger eller lignende opplysninger. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
+    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester knyttet til lønn og refusjon som inkluderer personopplysninger av særlig kategori. Denne fullmakten kan gi bruker tilgang til sensitive personopplysninger om ansatte, for eksempel knyttet til informasjon om ansattes sykefravær, foreldrepenger, pleiepenger eller lignende opplysninger. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
     /// </remarks>
     public static ConstantDefinition<Package> SalarySpecialCategory { get; } = new ConstantDefinition<Package>("7c6d02b0-e0e9-45d6-b357-f2e929995475")
     {
@@ -2907,7 +2936,7 @@ public static class PackageConstants
         {
             Name = "Lønn med personopplysninger av særlig kategori",
             Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til lønn og refusjon som inkluderer personopplysninger av særlig kategori. Denne fullmakten kan gi bruker tilgang til sensitive personopplysninger om ansatte, for eksempel knyttet til informasjon om ansattes sykefravær, foreldrepenger, pleiepenger eller lignende opplysninger. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            Urn = "altinn:accesspackage:lonn-personopplysinger-saerlig-kategori",
+            Urn = "urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,

@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,9 +13,9 @@ public class PackageService : IPackageService
 {
     public AppDbContext DbContext { get; set; }
 
-    public PackageService(AppDbContextFactory dbContextFactory)
+    public PackageService(AppDbContext appDbContext)
     {
-        DbContext = dbContextFactory.CreateDbContext();
+        DbContext = appDbContext;
     }
 
     /// <inheritdoc/>
@@ -65,9 +66,15 @@ public class PackageService : IPackageService
         var packages = await DbContext.Packages.AsNoTracking().ToListAsync(cancellationToken);
 
         var result = new List<PackageDto>();
+        var packageResources = await DbContext.PackageResources.AsNoTracking()
+            .Include(t => t.Resource)
+            .Include(t => t.Resource).ThenInclude(t => t.Provider)
+            .Include(t => t.Resource).ThenInclude(t => t.Type)
+            .ToListAsync(cancellationToken);
+
         foreach (var package in packages)
         {
-            result.Add(DtoMapper.Convert(package, areas.First(t => t.Id == package.AreaId), await DbContext.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken)));
+            result.Add(DtoMapper.Convert(package, areas.First(t => t.Id == package.AreaId), packageResources.Where(t => t.PackageId == package.Id).Select(t => t.Resource)));
         }
 
         return result;
@@ -104,7 +111,7 @@ public class PackageService : IPackageService
             return null;
         }
 
-        var resources = await DbContext.PackageResources.AsNoTracking().Where(t => t.PackageId == package.Id).Include(t => t.Resource).Select(t => t.Resource).ToListAsync(cancellationToken);
+        var resources = await GetDbPackageResources(id, cancellationToken);
 
         return DtoMapper.Convert(package, package.Area, resources);
     }
@@ -170,6 +177,16 @@ public class PackageService : IPackageService
     /// <inheritdoc/>
     public async Task<IEnumerable<ResourceDto>> GetPackageResources(Guid packageId, CancellationToken cancellationToken = default)
     {
-        return (await DbContext.PackageResources.AsNoTracking().Where(t => t.PackageId == packageId).Select(t => t.Resource).ToListAsync()).Select(DtoMapper.Convert);
+        return (await GetDbPackageResources(packageId, cancellationToken)).Select(DtoMapper.Convert);
+    }
+
+    private async Task<List<Resource>> GetDbPackageResources(Guid packageId, CancellationToken cancellationToken = default)
+    {
+        return await DbContext.PackageResources.AsNoTracking()
+            .Where(t => t.PackageId == packageId)
+            .Include(t => t.Resource)
+            .Include(t => t.Resource).ThenInclude(t => t.Provider)
+            .Include(t => t.Resource).ThenInclude(t => t.Type)
+            .Select(t => t.Resource).ToListAsync(cancellationToken);
     }
 }

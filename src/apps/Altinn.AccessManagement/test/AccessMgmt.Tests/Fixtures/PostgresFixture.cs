@@ -121,7 +121,7 @@ public static class PostgresServer
                 	IF NOT EXISTS (SELECT * FROM pg_user WHERE usename IN ('{DbUserName}', '{DbAdminName}')) THEN
                 		CREATE USER {DbUserName} WITH PASSWORD '{DbPassword}';
                 		CREATE USER {DbAdminName} WITH PASSWORD '{DbPassword}';
-                		ALTER ROLE {DbUserName} LOGIN INHERIT;
+                		ALTER ROLE {DbUserName} LOGIN SUPERUSER INHERIT;
                 		ALTER ROLE {DbAdminName} LOGIN SUPERUSER INHERIT;
                 	END IF;
                 END
@@ -218,8 +218,12 @@ public class PostgresDatabase(string dbname, string connectionString) : IOptions
         Username = PostgresServer.DbAdminName,
         Password = PostgresServer.DbPassword,
         IncludeErrorDetail = true,
-        Pooling = false,      // or "false" to disable pooling entirely
-        ConnectionIdleLifetime = 30,  // (optional) return idle connections quickly
+        // Pooling enabled (remove previous Pooling = false)
+        Pooling = true,
+        ConnectionIdleLifetime = 30,
+        MinPoolSize = 0,
+        MaxPoolSize = 50,
+        ConnectionPruningInterval = 15,
     };
 
     /// <summary>
@@ -232,8 +236,11 @@ public class PostgresDatabase(string dbname, string connectionString) : IOptions
         Username = PostgresServer.DbUserName,
         Password = PostgresServer.DbPassword,
         IncludeErrorDetail = true,
-        Pooling = false,      // or "false" to disable pooling entirely
-        ConnectionIdleLifetime = 30,  // (optional) return idle connections quickly
+        Pooling = true,
+        ConnectionIdleLifetime = 30,
+        MinPoolSize = 0,
+        MaxPoolSize = 50,
+        ConnectionPruningInterval = 15,
     };
 
     /// <summary>

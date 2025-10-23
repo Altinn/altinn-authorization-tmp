@@ -1,4 +1,4 @@
-﻿using Altinn.AccessMgmt.Core.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
@@ -97,22 +97,103 @@ public partial class DtoMapper
         });
     }
 
-    public static CompactEntityDto Convert(Entity compactEntity)
+    public static CompactEntityDto Convert(Entity compactEntity, bool isConvertingParent = false)
     {
         if (compactEntity is { })
         {
+            EntityTypeConstants.TryGetById(compactEntity.TypeId, out var type);
+            EntityVariantConstants.TryGetById(compactEntity.VariantId, out var variant);
+
             return new CompactEntityDto()
             {
                 Id = compactEntity.Id,
-                Name = compactEntity.Name,
-                Type = compactEntity.Type.Name,
-                Variant = compactEntity.Variant.Name,
-                Parent = Convert(compactEntity.Parent),
-                Children = null
+                Name = compactEntity?.Name,
+                Type = type.Entity.Name,
+                Variant = variant.Entity.Name,
+                Parent = isConvertingParent ? null : Convert(compactEntity.Parent, true),
+                Children = null,
+                KeyValues = GetFakeKeyValues(compactEntity),
+                DateOfBirth = compactEntity.DateOfBirth,
+                DeletedAt = compactEntity.DeletedAt,
+                OrganizationIdentifier = compactEntity.OrganizationIdentifier,
+                PartyId = compactEntity.PartyId,
+                PersonIdentifier = compactEntity.PersonIdentifier,
+                UserId = compactEntity.UserId, 
+                Username = compactEntity.Username
             };
         }
 
         return null;
+    }
+
+    private static Dictionary<string, string> GetFakeKeyValues(Entity entity)
+    {
+        var result = new Dictionary<string, string>();
+
+        if (entity.TypeId.Equals(EntityTypeConstants.Organisation))
+        {
+            result.Add("OrganizationIdentifier", entity.RefId);
+        }
+
+        if (entity.TypeId.Equals(EntityTypeConstants.Person))
+        {
+            result.Add("PersonIdentifier", entity.RefId);
+            if (!string.IsNullOrEmpty(entity.RefId) && entity.RefId.Length >= 6)
+            {
+                result.Add("DateOfBirth", CalculateDateOfBirth(entity.RefId).Value.ToString("yyyy-MM-dd"));
+            }
+        }
+
+        return result;
+    }
+
+    private static DateOnly? CalculateDateOfBirth(string personIdentifier)
+    {
+        var s = personIdentifier.AsSpan();
+        var d1 = s[0] - '0';
+        var d2 = s[1] - '0';
+        var m1 = s[2] - '0';
+        var m2 = s[3] - '0';
+        var y1 = s[4] - '0';
+        var y2 = s[5] - '0';
+        var i1 = s[6] - '0';
+        var i2 = s[7] - '0';
+        var i3 = s[8] - '0';
+
+        var dayComponent = (d1 * 10) + d2;
+        var monthComponent = (m1 * 10) + m2;
+        var yearComponent = (y1 * 10) + y2;
+        var individualComponent = (i1 * 100) + (i2 * 10) + i3;
+
+        if (monthComponent >= 80)
+        {
+            // Test person
+            monthComponent -= 80;
+        }
+
+        if (dayComponent >= 40)
+        {
+            // D-number
+            dayComponent -= 40;
+        }
+
+        var year = individualComponent switch
+        {
+            >= 500 and < 750 when yearComponent > 54 => 1800 + yearComponent,
+            >= 900 when yearComponent > 39 => 1900 + yearComponent,
+            >= 500 when yearComponent < 40 => 2000 + yearComponent,
+            _ => 1900 + yearComponent,
+        };
+
+        try
+        {
+            return new DateOnly(year, monthComponent, dayComponent);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            // Invalid date of birth
+            return null;
+        }
     }
 
     public static CompactRoleDto ConvertCompactRole(Role role)
