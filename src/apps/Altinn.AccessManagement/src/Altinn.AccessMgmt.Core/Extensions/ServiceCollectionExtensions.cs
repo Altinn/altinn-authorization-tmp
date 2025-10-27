@@ -29,6 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDelegationService, DelegationService>();
         services.AddScoped<IResourceService, ResourceService>();
         services.AddScoped<IEntityService, EntityService>();
+        services.AddScoped<IAmPartyRepository, AMPartyService>();
         services.AddScoped<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
 
         if (configuration.GetValue<bool>("FeatureManagement:AccessMgmt.Core.Services.AuthorizedParties.EfEnabled"))
@@ -39,9 +40,6 @@ public static class ServiceCollectionExtensions
         {
             services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesService>();
         }
-
-        services.AddScoped<IAmPartyRepository, AMPartyService>();
-        services.AddScoped<IEntityService, EntityService>();
 
         AddJobs(services);
         return services;
