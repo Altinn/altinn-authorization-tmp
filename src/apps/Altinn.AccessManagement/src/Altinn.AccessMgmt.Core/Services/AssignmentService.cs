@@ -23,7 +23,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     {
         var packageIds = await db.Packages
             .AsNoTracking()
-            .Where(p => packageUrns.Contains(p.Urn))
+            .Where(p => packageUrns.Contains(p.Urn, StringComparer.InvariantCultureIgnoreCase))
             .Select(p => p.Id)
             .ToListAsync(cancellationToken);
 
@@ -88,7 +88,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     {
         var packageIds = await db.Packages
             .AsNoTracking()
-            .Where(p => packageUrns.Contains(p.Urn))
+            .Where(p => packageUrns.Contains(p.Urn, StringComparer.InvariantCultureIgnoreCase))
             .Select(p => p.Id)
             .ToListAsync(cancellationToken);
 

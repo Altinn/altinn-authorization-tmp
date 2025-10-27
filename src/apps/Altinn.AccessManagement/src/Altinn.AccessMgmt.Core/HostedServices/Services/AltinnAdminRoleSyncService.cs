@@ -141,7 +141,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         {
             List<string> packages = new List<string>();
 
-            switch (roleTypeCode)
+            switch (roleTypeCode.ToUpper())
             {
                 case "ADMAI":
                     packages.Add("urn:altinn:accesspackage:tilgangsstyrer");

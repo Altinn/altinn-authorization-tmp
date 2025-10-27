@@ -185,14 +185,15 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
         private async Task<Role> GetRole(AppDbContext dbContext, string roleCode, CancellationToken cancellationToken)
         {
-            string roleIdentifier = $"urn:altinn:rolecode:{roleCode}";
+            string roleIdentifier = $"urn:altinn:rolecode:{roleCode.ToLower()}";
 
             if (Roles.TryGetValue(roleIdentifier, out var cached))
             {
                 return cached;
             }
 
-            var role = await dbContext.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Urn == roleIdentifier, cancellationToken);
+            var role = await dbContext.Roles.AsNoTracking()
+                .FirstOrDefaultAsync(r => string.Equals(r.Urn, roleIdentifier, StringComparison.InvariantCultureIgnoreCase), cancellationToken);
 
             if (role == null)
             {

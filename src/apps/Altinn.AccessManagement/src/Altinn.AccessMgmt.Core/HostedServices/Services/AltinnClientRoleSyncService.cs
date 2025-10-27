@@ -141,7 +141,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         {
             string urn = string.Empty;
             string clientRoleCode = string.Empty;
-            switch (roleTypeCode)
+            switch (roleTypeCode.ToUpper())
             {
                 case "A0237":
                     urn = "urn:altinn:accesspackage:ansvarlig-revisor";

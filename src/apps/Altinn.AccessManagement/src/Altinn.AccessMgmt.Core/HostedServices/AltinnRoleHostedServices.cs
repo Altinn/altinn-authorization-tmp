@@ -75,18 +75,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
                     }
 
                     await SyncAltinnClientRoles(lease, cancellationToken);
-                }
-
-                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAltinnBancruptcyEstateRoleSync))
-                {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_altinnbancruptcyestaterole_sync", cancellationToken);
-                    if (lease is null || cancellationToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    //await SyncAltinnBancruptcyEstateRoles(lease, cancellationToken);
-                }
+                }               
 
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAltinnAdminRoleSync))
                 {
