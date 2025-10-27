@@ -52,7 +52,7 @@ public partial class RegisterHostedService(
         var isDbIngested = false;
         do
         {
-            if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesRegisterSync, cancellationToken))
+            if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesRegisterSyncImport, cancellationToken))
             {
                 await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_register_sync", cancellationToken);
                 if (lease is { })
@@ -62,10 +62,6 @@ public partial class RegisterHostedService(
                     {
                         if (!data.IsDbIngested)
                         {
-                            data.PartyStreamNextPageLink = null;
-                            data.RoleStreamNextPageLink = null;
-                            await lease.Update(data, cancellationToken);
-
                             await partySyncService.SyncParty(lease, true, cancellationToken);
                             await roleSyncService.SyncRoles(lease, true, cancellationToken);
 
@@ -76,6 +72,10 @@ public partial class RegisterHostedService(
 
                         isDbIngested = data.IsDbIngested;
                     }
+                }
+                else
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
                 }
             }
             else
@@ -103,7 +103,7 @@ public partial class RegisterHostedService(
             if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesResourceRegistrySync, cancellationToken))
             {
                 await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_resource_registry_sync", cancellationToken);
-                if (cancellationToken.IsCancellationRequested)
+                if (lease is null || cancellationToken.IsCancellationRequested)
                 {
                     return;
                 }
@@ -114,6 +114,11 @@ public partial class RegisterHostedService(
             if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesRegisterSync))
             {
                 await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_register_sync", cancellationToken);
+
+                if (lease is null || cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
 
                 await SyncRegisterParty(lease, cancellationToken);
                 await SyncRegisterRoles(lease, cancellationToken);

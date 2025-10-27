@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using Altinn.Authorization.Host.Lease.Telemetry;
@@ -92,6 +93,13 @@ internal sealed partial class StorageAccountLease : ILease
             var content = JsonSerializer.Serialize(data);
             var options = new BlobUploadOptions()
             {
+                HttpHeaders = new BlobHttpHeaders
+                {
+                    ContentType = MediaTypeNames.Application.Json,
+                    CacheControl = "no-cache, no-store, must-revalidate",
+                    ContentDisposition = "inline",
+                    ContentEncoding = "utf-8",
+                },
                 Conditions = new()
                 {
                     LeaseId = BlobLease.LeaseId,
