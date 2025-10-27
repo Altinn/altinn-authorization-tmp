@@ -92,7 +92,6 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
             .Select(p => p.Id)
             .ToListAsync(cancellationToken);
 
-        // var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
         var assignment = await db.Assignments
             .AsNoTracking()
             .Include(a => a.From)
