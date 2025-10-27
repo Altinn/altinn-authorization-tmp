@@ -81,8 +81,8 @@ tests {
     
   });
   
-  test(requestName + "|Mainunit AuthorizedInstances not inheirited to subunits", function() {  
-    // Test that auny authorized instances on main units does not exists on any subunits
+  test(requestName + "|Mainunit AuthorizedInstances not inherited to subunits", function() {  
+    // Test that any authorized instances on main units does not exist on any subunits
     body.forEach((party, partyIndex) => {
       const parentInstances = party.authorizedInstances || [];
   

@@ -432,7 +432,6 @@ public class AuthorizedPartiesServiceEf(
         }
     }
 
-    // ToDo: Unused as long as we still are to get Party info from Register.
     private static AuthorizedParty BuildAuthorizedPartyFromEntity(Entity entity, bool onlyHierarchyElement = false)
     {
         var party = new AuthorizedParty

@@ -76,8 +76,8 @@ tests {
     assert.isOk(subunitDelegation, `InstanceId ${testdata.instances.sub2p.instanceId} not found in AuthorizedInstances on Subunit having delegated the instance`);
   });
   
-  test(requestName + "|Mainunit_AuthorizedInstances_not_inheirited_to_subunits", function() {  
-    // Test that auny authorized instances on main units does not exists on any subunits
+  test(requestName + "|Mainunit_AuthorizedInstances_not_inherited_to_subunits", function() {  
+    // Test that any authorized instances on main units does not exist on any subunits
     body.forEach((party, partyIndex) => {
       const parentInstances = party.authorizedInstances || [];
   
