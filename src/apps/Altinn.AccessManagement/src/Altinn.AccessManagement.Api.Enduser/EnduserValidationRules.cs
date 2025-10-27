@@ -80,11 +80,11 @@ public static class EnduserValidationRules
 
         return (ref ValidationErrorBuilder errors) =>
      {
-        foreach (var result in results)
-        {
-            result(ref errors);
-        }
-    };
+         foreach (var result in results)
+         {
+             result(ref errors);
+         }
+     };
     };
 
     /// <summary>
@@ -107,11 +107,11 @@ public static class EnduserValidationRules
         {
             return (ref ValidationErrorBuilder errors) =>
          {
-        foreach (var result in results)
-        {
-            result(ref errors);
-        }
-    };
+             foreach (var result in results)
+             {
+                 result(ref errors);
+             }
+         };
         }
 
         return null;
@@ -127,10 +127,10 @@ public static class EnduserValidationRules
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
     public static ValidationProblemInstance EnduserAddConnectionWithoutPersonInput(string party, string from, string to) => Validate(
-    QueryParameters.Party(party),
-    QueryParameters.PartyFrom(from),
-    QueryParameters.PartyTo(to),
-    QueryParameters.EnduserAddCombination(party, from, to)
+        QueryParameters.Party(party),
+        QueryParameters.PartyFrom(from),
+        QueryParameters.PartyTo(to),
+        QueryParameters.EnduserAddCombination(party, from, to)
     );
 
     /// <summary>
@@ -142,9 +142,9 @@ public static class EnduserValidationRules
     /// <param name="from">The UUID of the delegating (from) party</param>
     /// <param name="to">Optional target UUID (ignored if person body present)</param>
     public static ValidationProblemInstance EnduserAddConnectionWithPersonInput(string party, string from, string to) => Validate(
-    QueryParameters.Party(party),
-    QueryParameters.PartyFrom(from),
-    QueryParameters.EnduserAddCombinationWithPersonInput(party, from, to)
+        QueryParameters.Party(party),
+        QueryParameters.PartyFrom(from),
+        QueryParameters.EnduserAddCombinationWithPersonInput(party, from, to)
     );
 
     /// <summary>
@@ -159,11 +159,11 @@ public static class EnduserValidationRules
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
     public static ValidationProblemInstance EnduserAddConnectionPackage(string party, string from, string to, Guid? packageId, string packageUrn) => Validate(
-    QueryParameters.Party(party),
-    QueryParameters.PartyFrom(from),
-    QueryParameters.PartyTo(to),
-    QueryParameters.PackageReference(packageId, packageUrn),
-    QueryParameters.EnduserAddCombination(party, from, to)
+        QueryParameters.Party(party),
+        QueryParameters.PartyFrom(from),
+        QueryParameters.PartyTo(to),
+        QueryParameters.PackageReference(packageId, packageUrn),
+        QueryParameters.EnduserAddCombination(party, from, to)
     );
 
     /// <summary>
@@ -176,12 +176,12 @@ public static class EnduserValidationRules
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
     public static ValidationProblemInstance EnduserReadConnection(string party, string from, string to) => Validate(
-    QueryParameters.Party(party),
-    QueryParameters.EnduserReadInputCombination(party, from, to),
-    Any(
-    QueryParameters.PartyFrom(from),
-    QueryParameters.PartyTo(to)
-    )
+        QueryParameters.Party(party),
+        QueryParameters.EnduserReadInputCombination(party, from, to),
+        Any(
+            QueryParameters.PartyFrom(from),
+            QueryParameters.PartyTo(to)
+        )
     );
 
     /// <summary>
@@ -194,10 +194,10 @@ public static class EnduserValidationRules
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
     public static ValidationProblemInstance EnduserRemoveConnection(string party, string from, string to) => Validate(
-    QueryParameters.Party(party),
-    QueryParameters.PartyFrom(from),
-    QueryParameters.PartyTo(to),
-    QueryParameters.EnduserRemoveCombination(party, from, to)
+        QueryParameters.Party(party),
+        QueryParameters.PartyFrom(from),
+        QueryParameters.PartyTo(to),
+        QueryParameters.EnduserRemoveCombination(party, from, to)
     );
 
     /// <summary>
@@ -212,11 +212,11 @@ public static class EnduserValidationRules
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
     public static ValidationProblemInstance EnduserRemoveConnectionPacakge(string party, string from, string to, Guid? packageId, string packageUrn) => Validate(
-    QueryParameters.Party(party),
-    QueryParameters.PartyFrom(from),
-    QueryParameters.PartyTo(to),
-    QueryParameters.PackageReference(packageId, packageUrn),
-    QueryParameters.EnduserRemoveCombination(party, from, to)
+        QueryParameters.Party(party),
+        QueryParameters.PartyFrom(from),
+        QueryParameters.PartyTo(to),
+        QueryParameters.PackageReference(packageId, packageUrn),
+        QueryParameters.EnduserRemoveCombination(party, from, to)
     );
 
     /// <summary>
@@ -255,8 +255,8 @@ public static class EnduserValidationRules
             {
                 return (ref ValidationErrorBuilder errors) =>
          {
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "must match the 'party' UUID.")]);
-        };
+             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "must match the 'party' UUID.")]);
+         };
             }
 
             return null;
@@ -327,9 +327,9 @@ public static class EnduserValidationRules
 
             return (ref ValidationErrorBuilder errors) =>
      {
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "Either the 'from' UUID or the 'to' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/to", [new("to", "Either the 'to' UUID or the 'from' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
-        };
+         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "Either the 'from' UUID or the 'to' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
+         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/to", [new("to", "Either the 'to' UUID or the 'from' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
+     };
         };
 
         /// <summary>
@@ -363,9 +363,9 @@ public static class EnduserValidationRules
             {
                 return (ref ValidationErrorBuilder errors) =>
          {
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "Either the 'from' UUID or the 'to' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/to", [new("to", "Either the 'to' UUID or the 'from' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
-        };
+             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "Either the 'from' UUID or the 'to' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
+             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/to", [new("to", "Either the 'to' UUID or the 'from' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
+         };
             }
 
             return null;
@@ -434,24 +434,24 @@ public static class EnduserValidationRules
             {
                 return (ref ValidationErrorBuilder errors) =>
          {
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Provide either a package URN or a package ID, not both.")]);
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Provide either a package URN or a package ID, not both.")]);
-        };
+             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Provide either a package URN or a package ID, not both.")]);
+             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Provide either a package URN or a package ID, not both.")]);
+         };
             }
 
             if (packageId.HasValue && packageId.Value == Guid.Empty)
             {
                 return (ref ValidationErrorBuilder errors) =>
          {
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", $"The provided package ID '{packageId}' is an empty UUID, which is invalid.")]);
-        };
+             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", $"The provided package ID '{packageId}' is an empty UUID, which is invalid.")]);
+         };
             }
 
             return (ref ValidationErrorBuilder errors) =>
      {
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Either a package URN or a package ID must be provided.")]);
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Either a package URN or a package ID must be provided.")]);
-        };
+         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Either a package URN or a package ID must be provided.")]);
+         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Either a package URN or a package ID must be provided.")]);
+     };
         };
     }
 }
