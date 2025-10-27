@@ -79,12 +79,12 @@ public static class EnduserValidationRules
         }
 
         return (ref ValidationErrorBuilder errors) =>
-     {
-         foreach (var result in results)
-         {
-             result(ref errors);
-         }
-     };
+        {
+            foreach (var result in results)
+            {
+                result(ref errors);
+            }
+        };
     };
 
     /// <summary>
@@ -106,12 +106,12 @@ public static class EnduserValidationRules
         if (results.Count == funcs.Length)
         {
             return (ref ValidationErrorBuilder errors) =>
-         {
-             foreach (var result in results)
-             {
-                 result(ref errors);
-             }
-         };
+            {
+                foreach (var result in results)
+                {
+                    result(ref errors);
+                }
+            };
         }
 
         return null;
@@ -236,27 +236,27 @@ public static class EnduserValidationRules
             if (!Guid.TryParse(party, out var partyUuid) || partyUuid == Guid.Empty)
             {
                 return (ref ValidationErrorBuilder errors) =>
-         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("party", $"Paramater is not a valid a UUID.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("party", $"Paramater is not a valid a UUID.")]);
             }
 
             if (!Guid.TryParse(from, out var fromUuid) || fromUuid == Guid.Empty)
             {
                 return (ref ValidationErrorBuilder errors) =>
-         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("from", $"Parameter is not a valid UUID.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("from", $"Parameter is not a valid UUID.")]);
             }
 
             if (!Guid.TryParse(to, out var toUuid) || toUuid == Guid.Empty)
             {
                 return (ref ValidationErrorBuilder errors) =>
-         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("to", $"Parameter is not a valid UUID.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("to", $"Parameter is not a valid UUID.")]);
             }
 
             if (partyUuid != fromUuid)
             {
                 return (ref ValidationErrorBuilder errors) =>
-         {
-             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "must match the 'party' UUID.")]);
-         };
+                {
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "must match the 'party' UUID.")]);
+                };
             }
 
             return null;
@@ -271,25 +271,25 @@ public static class EnduserValidationRules
             if (!Guid.TryParse(party, out var partyUuid) || partyUuid == Guid.Empty)
             {
                 return (ref ValidationErrorBuilder errors) =>
-         errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/party", [new("party", "Parameter is not a valid UUID.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/party", [new("party", "Parameter is not a valid UUID.")]);
             }
 
             if (!Guid.TryParse(from, out var fromUuid) || fromUuid == Guid.Empty)
             {
                 return (ref ValidationErrorBuilder errors) =>
-         errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/from", [new("from", "Parameter is not a valid UUID.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/from", [new("from", "Parameter is not a valid UUID.")]);
             }
 
             if (!string.IsNullOrWhiteSpace(to) && (!Guid.TryParse(to, out var toUuid) || toUuid == Guid.Empty))
             {
                 return (ref ValidationErrorBuilder errors) =>
-         errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/to", [new("to", "Optional 'to' parameter must be a valid UUID when supplied.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/to", [new("to", "Optional 'to' parameter must be a valid UUID when supplied.")]);
             }
 
             if (partyUuid != fromUuid)
             {
                 return (ref ValidationErrorBuilder errors) =>
-         errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/from", [new("from", "must match the 'party' UUID.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/from", [new("from", "must match the 'party' UUID.")]);
             }
 
             return null;
@@ -312,7 +312,7 @@ public static class EnduserValidationRules
             if (!Guid.TryParse(party, out var partyUuid))
             {
                 return (ref ValidationErrorBuilder errors) =>
-         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("party", $"The 'party' parameter is not valid.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("party", $"The 'party' parameter is not valid.")]);
             }
 
             if (!string.IsNullOrEmpty(from) && Guid.TryParse(from, out var fromUuid) && fromUuid == partyUuid)
@@ -344,28 +344,28 @@ public static class EnduserValidationRules
             if (!Guid.TryParse(party, out var partyUuid))
             {
                 return (ref ValidationErrorBuilder errors) =>
-         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("party", $"The 'party' parameter is not valid.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/party", [new("party", $"The 'party' parameter is not valid.")]);
             }
 
             if (!Guid.TryParse(from, out var fromUuid) || fromUuid == Guid.Empty)
             {
                 return (ref ValidationErrorBuilder errors) =>
-         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", $"Parameter is not a valid UUID.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", $"Parameter is not a valid UUID.")]);
             }
 
             if (!Guid.TryParse(to, out var toUuid) || toUuid == Guid.Empty)
             {
                 return (ref ValidationErrorBuilder errors) =>
-         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/to", [new("to", $"Parameter is not a valid UUID.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/to", [new("to", $"Parameter is not a valid UUID.")]);
             }
 
             if (partyUuid != fromUuid && partyUuid != toUuid)
             {
                 return (ref ValidationErrorBuilder errors) =>
-         {
-             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "Either the 'from' UUID or the 'to' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
-             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/to", [new("to", "Either the 'to' UUID or the 'from' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
-         };
+                {
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "Either the 'from' UUID or the 'to' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/to", [new("to", "Either the 'to' UUID or the 'from' UUID must match the 'party' UUID. Neither matches the 'party' UUID.")]);
+                };
             }
 
             return null;
@@ -397,7 +397,7 @@ public static class EnduserValidationRules
             }
 
             return (ref ValidationErrorBuilder errors) =>
-     errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("party", $"Given party of combination of parties must be a valid UUID or one of {ParamKeywordsToString}.")]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("party", $"Given party of combination of parties must be a valid UUID or one of {ParamKeywordsToString}.")]);
         };
 
         /// <summary>
@@ -433,25 +433,25 @@ public static class EnduserValidationRules
             if (packageId.HasValue && !string.IsNullOrEmpty(packageUrn))
             {
                 return (ref ValidationErrorBuilder errors) =>
-         {
-             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Provide either a package URN or a package ID, not both.")]);
-             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Provide either a package URN or a package ID, not both.")]);
-         };
+                {
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Provide either a package URN or a package ID, not both.")]);
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Provide either a package URN or a package ID, not both.")]);
+                };
             }
 
             if (packageId.HasValue && packageId.Value == Guid.Empty)
             {
                 return (ref ValidationErrorBuilder errors) =>
-         {
-             errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", $"The provided package ID '{packageId}' is an empty UUID, which is invalid.")]);
-         };
+                {
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", $"The provided package ID '{packageId}' is an empty UUID, which is invalid.")]);
+                };
             }
 
             return (ref ValidationErrorBuilder errors) =>
-     {
-         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Either a package URN or a package ID must be provided.")]);
-         errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Either a package URN or a package ID must be provided.")]);
-     };
+            {
+                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Either a package URN or a package ID must be provided.")]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Either a package URN or a package ID must be provided.")]);
+            };
         };
     }
 }
