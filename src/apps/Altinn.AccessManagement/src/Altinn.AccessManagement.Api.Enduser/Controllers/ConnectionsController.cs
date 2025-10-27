@@ -1,13 +1,17 @@
 using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
+using Altinn.AccessManagement.Core; // TooManyFailedLookupsException
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Helpers;
+using Altinn.AccessManagement.Core.Models; // for PaginatedResult
+using Altinn.AccessManagement.Core.Models.Profile;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
+using Altinn.AccessMgmt.PersistenceEF.Utils; // AuditDefaults
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
@@ -23,9 +27,13 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [Route("accessmanagement/api/v1/enduser/connections")]
 [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-public class ConnectionsController(IConnectionService connectionService) : ControllerBase
+public class ConnectionsController(IConnectionService connectionService, IUserProfileLookupService userProfileLookupService, IEntityService entityService) : ControllerBase
 {
     private IConnectionService ConnectionService { get; } = connectionService;
+
+    private IUserProfileLookupService UserProfileLookupService { get; } = userProfileLookupService;
+
+    private IEntityService EntityService { get; } = entityService;
 
     private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
     {
@@ -79,17 +87,88 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> AddAssignment([FromQuery] ConnectionInput connection, [FromBody] PersonInput person, CancellationToken cancellationToken = default)
     {
-        if (EnduserValidationRules.EnduserAddConnection(connection.Party, connection.From, connection.To) is var problem && problem is { })
+        bool hasPersonInputIdentifiers = person is { } && !string.IsNullOrWhiteSpace(person.PersonIdentifier) && !string.IsNullOrWhiteSpace(person.LastName);
+
+        var validationProblem = hasPersonInputIdentifiers
+            ? EnduserValidationRules.EnduserAddConnectionWithPersonInput(connection.Party, connection.From, connection.To)
+            : EnduserValidationRules.EnduserAddConnectionWithoutPersonInput(connection.Party, connection.From, connection.To);
+
+        if (validationProblem is { })
         {
-            return problem.ToActionResult();
+            return validationProblem.ToActionResult();
         }
 
         Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid); // ToDo: to-uuid param only to be allowed when not adding a person
+        Guid.TryParse(connection.To, out var providedToUuid);
 
-        // ToDo: Implement adding by person details when person input is provided
+        Guid toUuid = Guid.Empty;
+
+        if (!hasPersonInputIdentifiers)
+        {
+            // Ensure provided 'to' is not a person entity
+            var entity = await EntityService.GetEntity(providedToUuid, cancellationToken);
+            if (entity == null)
+            {
+                return Problems.PartyNotFound.ToActionResult();
+            }
+
+            if (entity.TypeId == EntityTypeConstants.Person.Id)
+            {
+                return Problems.MissingRightHolder.ToActionResult();
+            }
+
+            toUuid = providedToUuid;
+        }
+        else
+        {
+            int authUserId = AuthenticationHelper.GetUserId(HttpContext);
+
+            string identifier = person.PersonIdentifier.Trim();
+            string lastName = person.LastName.Trim();
+
+            bool looksNumeric11 = identifier.Length == 11 && identifier.All(char.IsDigit);
+            bool treatAsSsn = false;
+
+            if (looksNumeric11)
+            {
+                treatAsSsn = true;
+            }
+
+            UserProfileLookup lookup = new();
+            if (treatAsSsn)
+            {
+                lookup.Ssn = identifier;
+            }
+            else
+            {
+                lookup.Username = identifier;
+            }
+
+            try
+            {
+                var profile = await UserProfileLookupService.GetUserProfile(authUserId, lookup, lastName);
+                if (profile == null)
+                {
+                    return Problems.InvalidPersonIdentifier.ToActionResult();
+                }
+
+                Guid? resolvedUuid = profile.UserUuid != Guid.Empty ? profile.UserUuid : profile.Party?.PartyUuid;
+                if (!resolvedUuid.HasValue || resolvedUuid.Value == Guid.Empty)
+                {
+                    return Problems.PartyNotFound.ToActionResult();
+                }
+
+                toUuid = resolvedUuid.Value;
+            }
+            catch (TooManyFailedLookupsException)
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests, Problems.InvalidPersonIdentifier.ToProblemDetails());
+            }
+        }
+
         var result = await ConnectionService.AddAssignment(fromUuid, toUuid, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
