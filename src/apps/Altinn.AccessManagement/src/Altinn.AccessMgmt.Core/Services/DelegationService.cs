@@ -331,8 +331,6 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
             Delegation delegation = null;
             foreach (var package in rp.Value)
             {
-                // var filter = connectionPackageRepository.CreateFilterBuilder(); // not used?
-
                 // TODO: Add "&& t.CanAssign" when data is ready
                 var clientPackage = clientPackages.FirstOrDefault(t => t.PackageId == package.Id);
                 if (clientPackage == null)
