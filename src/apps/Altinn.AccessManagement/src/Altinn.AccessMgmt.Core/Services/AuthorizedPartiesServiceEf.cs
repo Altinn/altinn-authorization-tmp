@@ -98,7 +98,7 @@ public class AuthorizedPartiesServiceEf(
 
     public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByPartyUuid(string subjectPartyUuid, bool includeAltinn2, bool includeAltinn3, CancellationToken cancellationToken)
     {
-        if (Guid.TryParse(subjectPartyUuid, out Guid partyUuid))
+        if (!Guid.TryParse(subjectPartyUuid, out Guid partyUuid))
         {
             throw new ArgumentException(message: $"Not a well-formed uuid: {subjectPartyUuid}", paramName: nameof(subjectPartyUuid));
         }
@@ -116,7 +116,7 @@ public class AuthorizedPartiesServiceEf(
 
     public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByPartyId(string subjectPartyId, bool includeAltinn2, bool includeAltinn3, CancellationToken cancellationToken)
     {
-        if (int.TryParse(subjectPartyId, out int partyId))
+        if (!int.TryParse(subjectPartyId, out int partyId))
         {
             throw new ArgumentException(message: $"Not a valid integer: {subjectPartyId}", paramName: nameof(subjectPartyId));
         }
@@ -126,7 +126,7 @@ public class AuthorizedPartiesServiceEf(
 
     public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByUserId(string subjectUserId, bool includeAltinn2, bool includeAltinn3, CancellationToken cancellationToken)
     {
-        if (int.TryParse(subjectUserId, out int userId))
+        if (!int.TryParse(subjectUserId, out int userId))
         {
             throw new ArgumentException(message: $"Not a valid integer: {subjectUserId}", paramName: nameof(subjectUserId));
         }
