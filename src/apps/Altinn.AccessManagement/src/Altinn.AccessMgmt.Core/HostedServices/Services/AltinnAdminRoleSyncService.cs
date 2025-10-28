@@ -86,8 +86,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             }
 
                             int revokes = await assignmentService.RevokeAssignmentPackages(
-                                item.ToUserPartyUuid.Value,
                                 item.FromPartyUuid,
+                                item.ToUserPartyUuid.Value,
                                 packageUrns,
                                 values,
                                 true,
