@@ -51,9 +51,9 @@ public interface IConnectionService
     /// <summary>
     /// Retrieves the roles associated with a given entity.
     /// </summary>
-    /// <param name="party">The user making the request.</param>
-    /// <param name="fromId">The ID of the entity being impersonated or the entity from which roles are received.</param>
-    /// <param name="toId">The ID of the entity being impersonated or the entity for which roles are issued.</param>
+    /// <param name="party">The user is operating on behalf of.</param>
+    /// <param name="fromId">ID of the entity from which the assignment originates.</param>
+    /// <param name="toId">ID of the entity to which the assignment was made.</param>
     /// <param name="configureConnections">A delegate used to configure connection behavior.</param>
     /// <param name="cancellationToken">A token used to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a collection of role permissions.</returns>

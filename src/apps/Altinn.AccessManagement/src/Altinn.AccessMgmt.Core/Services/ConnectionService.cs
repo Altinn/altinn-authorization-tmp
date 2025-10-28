@@ -483,6 +483,11 @@ public partial class ConnectionService(
     /// <inheritdoc/>
     public async Task<Result<IEnumerable<RolePermissionDto>>> GetRoles(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken)
     {
+        if (!fromId.HasValue && !toId.HasValue)
+        {
+            return Problems.PartyNotFound;
+        }
+
         var filter = new ConnectionQueryFilter()
         {
             FromIds = fromId.HasValue ? [fromId.Value] : null,
