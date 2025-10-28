@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Queries;
 
@@ -268,46 +269,45 @@ public class ConnectionQuery(AppDbContext db)
 
         if (filter.IncludeDelegation)
         {
-            var delegation = (roleSet is not null && !roleSet.Contains(Guid.Empty))
-       ? db.Delegations.Where(_ => false).Select(_ => new BaseConnectionRow()) // tomt
-       : db.Delegations
-           .Join(db.Assignments, d => d.FromId, a => a.Id, (d, fromAss) => new { d, fromAss })
-           .Join(db.Assignments, x => x.d.ToId, a => a.Id, (x, toAss) => new { x.d, x.fromAss, toAss })
-           .Select(x => new BaseConnectionRow
-           {
-               FromId = x.fromAss.FromId,
-               ToId = x.toAss.ToId,
-               RoleId = Guid.Empty,
-               AssignmentId = null,
-               DelegationId = x.d.Id,
-               ViaId = null,
-               ViaRoleId = null,
-           })
-            .WhereMatchIfSet(toSet, x => x.ToId)
-            .WhereMatchIfSet(fromSet, x => x.FromId);
-            
+            var delegation = db.Delegations
+                .Join(db.Assignments, d => d.FromId, a => a.Id, (d, fromAss) => new { d, fromAss })
+                .Join(db.Assignments, x => x.d.ToId, a => a.Id, (x, toAss) => new { x.d, x.fromAss, toAss })
+                .WhereMatchIfSet(toSet, x => x.toAss.ToId)
+                .WhereMatchIfSet(fromSet, x => x.fromAss.FromId)
+                //// Filter for Roles ??
+                .Select(x => new BaseConnectionRow
+                {
+                    FromId = x.fromAss.FromId,
+                    ToId = x.toAss.ToId,
+                    RoleId = Guid.Empty, // delegasjoner har ikke direkte rolle
+                    AssignmentId = null,
+                    DelegationId = x.d.Id,
+                    ViaId = x.d.FacilitatorId,
+                    ViaRoleId = null
+                });
+
             queries.Add(delegation);
 
             if (filter.IncludeKeyRole)
             {
                 var delegationKeyRoles = db.Delegations
-                .Join(db.Assignments, d => d.FromId, a => a.Id, (d, fromAss) => new { d, fromAss })
-                .Join(db.Assignments, x => x.d.ToId, a => a.Id, (x, toAss) => new { x.d, x.fromAss, toAss })
-                .Join(db.Roles, r => Guid.Empty, r => r.Id, (x, r) => new { x.fromAss, x.toAss, r }) // NB: Guid.Empty som placeholder
-                .Where(x => x.r.IsKeyRole)
-                .Join(db.Assignments, x => x.fromAss.FromId, a => a.ToId, (x, fromAss) => new BaseConnectionRow
-                {
-                    FromId = fromAss.FromId,
-                    ToId = x.toAss.ToId,
-                    RoleId = x.r.Id,
-                    AssignmentId = fromAss.Id,
-                    DelegationId = x.fromAss.Id,
-                    ViaId = null,
-                    ViaRoleId = null
-                })
-                .WhereMatchIfSet(toSet, x => x.ToId)
-                .WhereMatchIfSet(fromSet, x => x.FromId)
-                .WhereMatchIfSet(roleSet, x => x.RoleId);
+                    .Join(db.Assignments, d => d.FromId, a => a.Id, (d, fromAss) => new { d, fromAss })
+                    .Join(db.Assignments, x => x.d.ToId, a => a.Id, (x, toAss) => new { x.d, x.fromAss, toAss })
+                    .Join(db.Roles, _ => true, r => r.IsKeyRole, (x, r) => new { x.fromAss, x.toAss, r }) // matcher alle key roles
+                    .Join(db.Assignments, x => x.fromAss.FromId, a => a.ToId, (x, fromAss) => new { x, fromAss })
+                    .WhereMatchIfSet(toSet, x => x.x.toAss.ToId)
+                    .WhereMatchIfSet(fromSet, x => x.fromAss.FromId)
+                    .WhereMatchIfSet(roleSet, x => x.x.r.Id)
+                    .Select(x => new BaseConnectionRow
+                    {
+                        FromId = x.fromAss.FromId,
+                        ToId = x.x.toAss.ToId,
+                        RoleId = x.x.r.Id,
+                        AssignmentId = x.fromAss.Id,
+                        DelegationId = x.x.fromAss.Id,
+                        ViaId = null,
+                        ViaRoleId = null
+                    });
 
                 queries.Add(delegationKeyRoles);
             }
@@ -531,29 +531,50 @@ public class ConnectionQuery(AppDbContext db)
 
     public async Task<List<EnrichedConnectionRow>> GetConnectionsAsync(ConnectionQueryFilter filter, CancellationToken ct = default)
     {
-        var baseQuery = BuildBaseQuery(db, filter);
-        var query = filter.EnrichEntities || filter.ExcludeDeleted ? EnrichEntities(db, filter, baseQuery) : baseQuery;
-        var data = await query.AsNoTracking().ToListAsync(ct);
-        var result = data.Select(Convert.ToDtoEmpty).ToList();
-
-        if (filter.IncludePackages || filter.EnrichPackageResources)
+        try
         {
-            var pkgs = await LoadPackagesByKeyAsync(db, baseQuery, filter, ct);
-            if (filter.EnrichPackageResources)
+            var baseQuery = BuildBaseQuery(db, filter);
+            var query = filter.EnrichEntities || filter.ExcludeDeleted ? EnrichEntities(db, filter, baseQuery) : baseQuery;
+            var data = await query.AsNoTracking().ToListAsync(ct);
+            var result = data.Select(Convert.ToDtoEmpty).ToList();
+
+            try
             {
-                await EnrichPackageResourcesAsync(db, pkgs, filter, ct);
+                if (filter.IncludePackages || filter.EnrichPackageResources)
+                {
+                    var pkgs = await LoadPackagesByKeyAsync(db, baseQuery, filter, ct);
+                    if (filter.EnrichPackageResources)
+                    {
+                        await EnrichPackageResourcesAsync(db, pkgs, filter, ct);
+                    }
+
+                    result = Attach(result, pkgs, p => p.Id, (dto, list) => dto.Packages = list);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to include packages", ex);
             }
 
-            result = Attach(result, pkgs, p => p.Id, (dto, list) => dto.Packages = list);
-        }
+            try
+            {
+                if (filter.IncludeResource)
+                {
+                    var res = await LoadResourcesByKeyAsync(db, baseQuery, filter, ct);
+                    result = Attach(result, res, r => r.Id, (dto, list) => dto.Resources = list);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to include resources", ex);
+            }
 
-        if (filter.IncludeResource)
+            return result;
+        } 
+        catch (Exception ex)
         {
-            var res = await LoadResourcesByKeyAsync(db, baseQuery, filter, ct);
-            result = Attach(result, res, r => r.Id, (dto, list) => dto.Resources = list);
+            throw new Exception($"Failed to GetConnections with filter: {JsonSerializer.Serialize(filter)}", ex);
         }
-
-        return result;
     }
 }
 
