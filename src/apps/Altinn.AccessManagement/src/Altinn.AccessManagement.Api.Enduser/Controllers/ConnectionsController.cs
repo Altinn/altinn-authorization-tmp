@@ -282,9 +282,7 @@ public class ConnectionsController(IConnectionService connectionService) : Contr
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
         _ = Guid.TryParse(connection.Party, out var partyUuid);
 
-        ////var result = await ConnectionService.GetRoles(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken); ToDo: Implement when role service is ready
-
-        var result = await Task.FromResult(new Result<IEnumerable<RolePermissionDto>>(Enumerable.Empty<RolePermissionDto>()));
+        var result = await ConnectionService.GetRoles(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

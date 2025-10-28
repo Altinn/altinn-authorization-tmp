@@ -51,6 +51,17 @@ public interface IConnectionService
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="partyUuid"></param>
+    /// <param name="value1"></param>
+    /// <param name="value2"></param>
+    /// <param name="configureConnections"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<Result<IEnumerable<RolePermissionDto>>> GetRoles(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="party"></param>
     /// <param name="fromId"></param>
     /// <param name="toId"></param>
