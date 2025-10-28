@@ -126,7 +126,7 @@ public static class EnduserValidationRules
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
-    public static ValidationProblemInstance EnduserAddConnectionWithoutPersonInput(string party, string from, string to) => Validate(
+    public static ValidationProblemInstance EnduserAddAssignmentWithoutPersonInput(string party, string from, string to) => Validate(
         QueryParameters.Party(party),
         QueryParameters.PartyFrom(from),
         QueryParameters.PartyTo(to),
@@ -141,9 +141,13 @@ public static class EnduserValidationRules
     /// <param name="party">The UUID of the acting party</param>
     /// <param name="from">The UUID of the delegating (from) party</param>
     /// <param name="to">Optional target UUID (ignored if person body present)</param>
-    public static ValidationProblemInstance EnduserAddConnectionWithPersonInput(string party, string from, string to) => Validate(
+    /// <param name="personIdentifier">The identifier of person receiving a new connection</param>
+    /// <param name="lastName">The identifier of person receiving a new connection</param>
+    public static ValidationProblemInstance EnduserAddAssignmentWithPersonInput(string party, string from, string to, string personIdentifier, string lastName) => Validate(
         QueryParameters.Party(party),
         QueryParameters.PartyFrom(from),
+        QueryParameters.PersonIdentifier(personIdentifier),
+        QueryParameters.PersonLastName(lastName),
         QueryParameters.EnduserAddCombinationWithPersonInput(party, from, to)
     );
 
@@ -452,6 +456,44 @@ public static class EnduserValidationRules
                 errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Either a package URN or a package ID must be provided.")]);
                 errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Either a package URN or a package ID must be provided.")]);
             };
+        };
+
+        /// <summary>
+        /// Validates person identifier field (presence + basic format).
+        /// <param name="personIdentifier">Either username or SSN of a person.</param>
+        /// </summary>
+        internal static RuleExpression PersonIdentifier(string personIdentifier) => () =>
+        {
+            var trimmed = personIdentifier?.Trim();
+            if (string.IsNullOrEmpty(trimmed))
+            {
+                return (ref ValidationErrorBuilder errors) =>
+                 errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", "PersonIdentifier is required when providing person details.")]);
+            }
+
+            // If 11 chars, must be all digits (potential SSN format).
+            if (trimmed.Length == 11 && !trimmed.All(char.IsDigit))
+            {
+                return (ref ValidationErrorBuilder errors) =>
+                 errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", "PersonIdentifier must be numeric when11 characters (expected national identity number format).")]);
+            }
+
+            return null;
+        };
+
+        /// <summary>
+        /// Validates person last name field (required, non-empty).
+        /// <param name="personLastName">Last name of a person</param>
+        /// </summary>
+        internal static RuleExpression PersonLastName(string personLastName) => () =>
+        {
+            if (string.IsNullOrWhiteSpace(personLastName))
+            {
+                return (ref ValidationErrorBuilder errors) =>
+                 errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/lastName", [new("lastName", "LastName is required when providing person details.")]);
+            }
+
+            return null;
         };
     }
 }

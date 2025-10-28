@@ -93,8 +93,8 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         bool hasPersonInputIdentifiers = person is { } && !string.IsNullOrWhiteSpace(person.PersonIdentifier) && !string.IsNullOrWhiteSpace(person.LastName);
 
         var validationProblem = hasPersonInputIdentifiers
-            ? EnduserValidationRules.EnduserAddConnectionWithPersonInput(connection.Party, connection.From, connection.To)
-            : EnduserValidationRules.EnduserAddConnectionWithoutPersonInput(connection.Party, connection.From, connection.To);
+            ? EnduserValidationRules.EnduserAddAssignmentWithPersonInput(connection.Party, connection.From, connection.To, person.PersonIdentifier, person.LastName)
+            : EnduserValidationRules.EnduserAddAssignmentWithoutPersonInput(connection.Party, connection.From, connection.To);
 
         if (validationProblem is { })
         {
@@ -102,14 +102,14 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         }
 
         Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var providedToUuid);
+        Guid.TryParse(connection.To, out var connectionInputToUuid);
 
         Guid toUuid = Guid.Empty;
 
         if (!hasPersonInputIdentifiers)
         {
             // Ensure provided 'to' is not a person entity
-            var entity = await EntityService.GetEntity(providedToUuid, cancellationToken);
+            var entity = await EntityService.GetEntity(connectionInputToUuid, cancellationToken);
             if (entity == null)
             {
                 return Problems.PartyNotFound.ToActionResult();
@@ -117,10 +117,10 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
 
             if (entity.TypeId == EntityTypeConstants.Person.Id)
             {
-                return Problems.MissingRightHolder.ToActionResult();
+                return Problems.PersonInputRequiredForPersonAssignment.ToActionResult();
             }
 
-            toUuid = providedToUuid;
+            toUuid = connectionInputToUuid;
         }
         else
         {
