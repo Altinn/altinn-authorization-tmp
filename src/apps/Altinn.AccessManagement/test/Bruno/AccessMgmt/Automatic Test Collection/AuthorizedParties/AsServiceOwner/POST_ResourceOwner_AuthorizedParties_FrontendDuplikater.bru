@@ -1,17 +1,17 @@
 meta {
-  name: POST_ResourceOwner_AuthorizedParties_Dagl_Regn
+  name: POST_ResourceOwner_AuthorizedParties_FrontendDuplikater
   type: http
   seq: 2
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true
+  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=false&includeAltinn3=true
   body: json
   auth: inherit
 }
 
 params:query {
-  includeAltinn2: true
+  includeAltinn2: false
   includeAltinn3: true
 }
 
@@ -23,7 +23,7 @@ headers {
 body:json {
   {
     "type": "urn:altinn:person:identifier-no",
-    "value": "14877296726"
+    "value": "20838198385"
   }
 }
 
@@ -31,7 +31,7 @@ script:pre-request {
   const testdata = require(`./Testdata/maskinportenschema/${bru.getEnvVar("tokenEnv")}testdata.json`);
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   
-  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_Dagl_Regn");
+  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_FrontendDuplikater");
   
   var getTokenParameters = {
     auth_org: testdata.digdir.partyid,
@@ -145,4 +145,5 @@ tests {
     expect(duplicates.length, `Duplicate partyUuid(s) found: ${duplicates.join(', ')}`).to.equal(0);
   
   });
+  
 }
