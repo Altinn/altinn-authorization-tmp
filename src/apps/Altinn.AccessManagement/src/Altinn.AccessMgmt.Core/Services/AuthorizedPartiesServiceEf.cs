@@ -348,7 +348,7 @@ public class AuthorizedPartiesServiceEf(
         // Add all subunits to their top-level organization and to the dictionary
         foreach (var subunit in subunits)
         {
-            // Need to check whether subunit already exists (may have been added through a direct ubunit access). If exists, just continue.
+            // Need to check whether subunit already exists (may have been added through a direct subunit access). If exists, just continue.
             if (!allPartiesDict.TryGetValue(subunit.Id, out AuthorizedParty _))
             {
                 var subunitAuthParty = BuildAuthorizedPartyFromEntity(subunit);
