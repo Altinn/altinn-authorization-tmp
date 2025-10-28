@@ -29,8 +29,7 @@ public class ConnectionQuery(AppDbContext db)
             }
             else
             {
-                var query = baseQuery;
-                var data = await query.AsNoTracking().ToListAsync(ct);
+                var data = await baseQuery.AsNoTracking().ToListAsync(ct);
                 result = data.Select(ToDtoEmpty).ToList();
             }
 
