@@ -98,7 +98,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
             Assert.Single(consentInfo.ConsentRights);
             Assert.Single(consentInfo.ConsentRights[0].Metadata);
-            Assert.Equal($"https://am.ui.localhost/accessmanagement/ui/consent/request?id={requestID}", consentInfo.ViewUri);
+            Assert.Equal($"https://am.ui.localhost/accessmanagement/ui/consent/request?id={requestID}&DONTCHOOSEREPORTEE=true", consentInfo.ViewUri);
             Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
             Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
             Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
