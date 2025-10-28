@@ -19,9 +19,20 @@ public class ConnectionQuery(AppDbContext db)
         try
         {
             var baseQuery = BuildBaseQuery(db, filter);
-            var query = filter.EnrichEntities || filter.ExcludeDeleted ? EnrichEntities(filter, baseQuery) : baseQuery;
-            var data = await query.AsNoTracking().ToListAsync(ct);
-            var result = data.Select(ToDtoEmpty).ToList();
+            List<ConnectionQueryExtendedRecord> result;
+            
+            if (filter.EnrichEntities || filter.ExcludeDeleted)
+            {
+                var query = EnrichEntities(filter, baseQuery);
+                var data = await query.AsNoTracking().ToListAsync(ct);
+                result = data.Select(ToDtoEmpty).ToList();
+            }
+            else
+            {
+                var query = baseQuery;
+                var data = await query.AsNoTracking().ToListAsync(ct);
+                result = data.Select(ToDtoEmpty).ToList();
+            }
 
             try
             {
