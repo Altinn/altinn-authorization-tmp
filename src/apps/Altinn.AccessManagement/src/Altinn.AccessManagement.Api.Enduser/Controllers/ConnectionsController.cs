@@ -1,5 +1,5 @@
-using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
+using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core; // TooManyFailedLookupsException
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
@@ -9,6 +9,7 @@ using Altinn.AccessManagement.Core.Models.Profile;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Utils; // AuditDefaults
@@ -17,6 +18,7 @@ using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
@@ -92,13 +94,16 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     {
         bool hasPersonInputIdentifiers = person is { } && !string.IsNullOrWhiteSpace(person.PersonIdentifier) && !string.IsNullOrWhiteSpace(person.LastName);
 
-        var validationProblem = hasPersonInputIdentifiers
-            ? EnduserValidationRules.EnduserAddAssignmentWithPersonInput(connection.Party, connection.From, connection.To, person.PersonIdentifier, person.LastName)
-            : EnduserValidationRules.EnduserAddAssignmentWithoutPersonInput(connection.Party, connection.From, connection.To);
+        var validationErrors = hasPersonInputIdentifiers
+            ? ValidationComposer.Validate(
+                AddAssignmentValidation.ValidateConnectionInputIfPersonInputPresent(connection.Party, connection.From, connection.To),
+                AddAssignmentValidation.ValidatePersonInput(person.PersonIdentifier, person.LastName))
+            : ValidationComposer.Validate(
+                AddAssignmentValidation.ValidateConnectionInputIfPersonInputNotPresent(connection.Party, connection.From, connection.To));
 
-        if (validationProblem is { })
+        if (validationErrors is { })
         {
-            return validationProblem.ToActionResult();
+            return validationErrors.ToActionResult();
         }
 
         Guid.TryParse(connection.From, out var fromUuid);
