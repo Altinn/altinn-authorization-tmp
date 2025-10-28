@@ -58,7 +58,7 @@ public static partial class AltinnAuthorizationHost
 
             cfg.ConfigureRefresh(refresh =>
             {
-                refresh.Register("Sentinel", refreshAll: true);
+                refresh.RegisterAll();
             });
 
             foreach (var label in options.AppKeyValueLabels)

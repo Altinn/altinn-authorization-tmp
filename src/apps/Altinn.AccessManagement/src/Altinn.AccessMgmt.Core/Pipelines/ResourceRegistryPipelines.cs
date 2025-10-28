@@ -1,11 +1,9 @@
 using System.Diagnostics;
 using System.Net;
 using System.Runtime.CompilerServices;
-using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Pipeline.Services;
 using Altinn.Authorization.Integration.Platform.ResourceRegistry;
 using Microsoft.EntityFrameworkCore;
@@ -22,14 +20,24 @@ internal static class ResourceRegistryPipelines
     {
         internal const string LeaseName = "resource_registry_pipeline_service_owners";
 
+        /// <summary>
+        /// Extracts service owners from resource registry
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="InvalidOperationException"></exception>
         internal static async IAsyncEnumerable<IDictionary<string, ServiceOwner>> Extract(PipelineSourceContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var resourceRegistry = context.Services.ServiceProvider.GetRequiredService<IAltinnResourceRegistry>();
             var result = await resourceRegistry.GetServiceOwners(cancellationToken);
+            var activity = Activity.Current;
+
             if (result.IsProblem)
             {
                 throw new InvalidOperationException(result.ProblemDetails.Detail);
             }
+
+            activity.SetTag("service_owner_count", result.Content.Orgs.Count);
 
             yield return result.Content.Orgs;
             yield break;
@@ -56,10 +64,7 @@ internal static class ResourceRegistryPipelines
 
         internal static async Task Load(PipelineSinkContext<List<Provider>> context)
         {
-            var ingest = context.Services.ServiceProvider.GetRequiredService<IIngestService>();
-            var audit = context.Services.ServiceProvider.GetRequiredService<IAuditAccessor>().AuditValues;
-
-            await ingest.IngestAndMergeData(context.Data, audit, ["Id"], CancellationToken.None);
+            await PipelineUtils.Flush(context.Services, context.Data, ["id"]);
         }
     }
 
@@ -89,11 +94,7 @@ internal static class ResourceRegistryPipelines
 
             await foreach (var page in await resourceRegistry.StreamResources(lease.UpdatedAt, lease.NextPage, cancellationToken))
             {
-                if (page.IsProblem)
-                {
-                    throw new InvalidOperationException(page.ProblemDetails.Detail);
-                }
-
+                PipelineUtils.EnsureSuccess(page);
                 foreach (var updatedResource in page.Content.Data)
                 {
                     var identifier = updatedResource.ResourceUrn.Split(':').Last();
@@ -115,7 +116,6 @@ internal static class ResourceRegistryPipelines
                     {
                         throw new InvalidOperationException($"Couldn't find resource '{identifier}' in stream in list of resources.");
                     }
-
                 }
 
                 yield return (
@@ -263,23 +263,15 @@ internal static class ResourceRegistryPipelines
 
         public static async Task Load(PipelineSinkContext<(List<Resource> Resources, string NextPage, DateTime UpdatedAt)> context)
         {
-            var activity = Activity.Current;
-            activity?.SetTag("next_page", context.Data.NextPage);
-            activity?.SetTag("updated_at", context.Data.UpdatedAt);
-
-            var ingest = context.Services.ServiceProvider.GetRequiredService<IIngestService>();
-            var audit = context.Services.ServiceProvider.GetRequiredService<IAuditAccessor>().AuditValues;
-
-            var ingested = await ingest.IngestAndMergeData(context.Data.Resources, audit, ["refid"], CancellationToken.None);
-            activity.SetTag("ingest", ingested);
-
-            await context.Lease.Update(new Lease()
+            var merged = await PipelineUtils.Flush(context.Services, context.Data.Resources, ["refid"]);
+            if (merged > 0)
             {
-                NextPage = context.Data.NextPage,
-                UpdatedAt = context.Data.UpdatedAt,
-            });
-
-            return;
+                await context.Lease.Update(new Lease()
+                {
+                    NextPage = context.Data.NextPage,
+                    UpdatedAt = context.Data.UpdatedAt,
+                });
+            }
         }
 
         internal class Lease
@@ -299,11 +291,7 @@ internal static class ResourceRegistryPipelines
 
             await foreach (var page in await resourceRegistry.StreamResources(lease.UpdatedAt, lease.NextPage, cancellationToken))
             {
-                if (page.IsProblem)
-                {
-                    throw new InvalidOperationException(page.ProblemDetails.Detail);
-                }
-
+                PipelineUtils.EnsureSuccess(page);
                 yield return (
                     page.Content.Data.ToList(),
                     page.Content?.Links?.Next,
@@ -466,11 +454,6 @@ internal static class ResourceRegistryPipelines
 
         internal static async Task Load(PipelineSinkContext<(List<RoleResourceOperation> Resources, string NextPage, DateTime UpdatedAt)> context)
         {
-            Activity.Current?.SetTag("next_page", context.Data.NextPage);
-            Activity.Current?.SetTag("updated_at", context.Data.UpdatedAt);
-
-            var ingest = context.Services.ServiceProvider.GetRequiredService<IIngestService>();
-            var audit = context.Services.ServiceProvider.GetRequiredService<IAuditAccessor>().AuditValues;
             var db = context.Services.ServiceProvider.GetRequiredService<AppDbContextFactory>().CreateDbContext();
 
             var add = new List<RoleResource>();
@@ -505,16 +488,7 @@ internal static class ResourceRegistryPipelines
             async Task Flush()
             {
                 await Task.WhenAll(
-                    Task.Run(async () =>
-                    {
-                        if (add.Count > 0)
-                        {
-                            var batchId = Guid.NewGuid();
-                            Activity.Current?.AddTag("batch_id", batchId);
-                            await ingest.IngestTempData(add, batchId);
-                            await ingest.MergeTempData<RoleResource>(batchId, audit, ["roleid", "resourceid"]);
-                        }
-                    }),
+                    Task.Run(async () => await PipelineUtils.Flush(context.Services, add, ["roleid", "resourceid"])),
                     Task.Run(async () =>
                     {
                         if (remove.Count > 0)
@@ -657,8 +631,6 @@ internal static class ResourceRegistryPipelines
             Activity.Current?.SetTag("next_page", context.Data.NextPage);
             Activity.Current?.SetTag("updated_at", context.Data.UpdatedAt);
 
-            var ingest = context.Services.ServiceProvider.GetRequiredService<IIngestService>();
-            var audit = context.Services.ServiceProvider.GetRequiredService<IAuditAccessor>().AuditValues;
             var db = context.Services.ServiceProvider.GetRequiredService<AppDbContextFactory>().CreateDbContext();
 
             var add = new List<PackageResource>();
@@ -693,16 +665,7 @@ internal static class ResourceRegistryPipelines
             async Task Flush()
             {
                 await Task.WhenAll(
-                    Task.Run(async () =>
-                    {
-                        if (add.Count > 0)
-                        {
-                            var batchId = Guid.NewGuid();
-                            Activity.Current?.AddTag("batch_id", batchId);
-                            await ingest.IngestTempData(add, batchId);
-                            await ingest.MergeTempData<PackageResource>(batchId, audit, ["packageid", "resourceid"]);
-                        }
-                    }),
+                    Task.Run(async () => await PipelineUtils.Flush(context.Services, add, ["packageid", "resourceid"])),
                     Task.Run(async () =>
                     {
                         if (remove.Count > 0)

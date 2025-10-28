@@ -65,13 +65,14 @@ internal partial class PipelineSinkService(
             catch (Exception ex) // Should only occur if segment fails to process the same data repeatedly.
             {
                 await data.CancellationTokenSource.CancelAsync();
-                activity?.AddException(ex);
+                activity?.SetTag("cancellation_requested", true);
                 if (ex is InvalidOperationException)
                 {
                     Log.SinkMessageAborted(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);
                 }
                 else
                 {
+                    activity?.AddException(ex);
                     Log.SinkUnhandledError(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);
                 }
 
@@ -97,12 +98,14 @@ internal partial class PipelineSinkService(
             }
             catch (Exception ex)
             {
+                var activity = Activity.Current;
+                activity.AddException(ex);
                 Log.SinkAttemptFailed(logger, args.Descriptor.Name, args.Name, attempt, maxAttempts, ex);
 
                 if (attempt >= maxAttempts)
                 {
                     Log.SinkRetriesExhausted(logger, args.Descriptor.Name, args.Name, maxAttempts, sequence, typeof(TIn).Name, ex);
-                    Activity.Current?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                     PipelineTelemetry.RecordSinkFailure(args);
                     throw new InvalidOperationException($"Sink failed after {maxAttempts} attempts.", ex);
                 }

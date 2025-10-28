@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+﻿using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
