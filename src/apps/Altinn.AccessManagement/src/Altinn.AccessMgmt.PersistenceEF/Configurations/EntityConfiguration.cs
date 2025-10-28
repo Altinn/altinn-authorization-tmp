@@ -33,6 +33,14 @@ public class EntityConfiguration : IEntityTypeConfiguration<Entity>
         builder.PropertyWithReference(navKey: t => t.Parent, foreignKey: t => t.ParentId, principalKey: t => t.Id, required: false, deleteBehavior: DeleteBehavior.Restrict);
 
         builder.HasIndex(["Name", "RefId", "TypeId", "VariantId"]).IsUnique();
+
+        builder.HasIndex(e => e.PartyId).HasFilter("PartyId IS NOT NULL").IncludeProperties(["Id"]);
+        builder.HasIndex(e => e.UserId).HasFilter("UserId IS NOT NULL").IncludeProperties(["Id"]);
+        builder.HasIndex(e => e.OrganizationIdentifier).HasFilter("OrganizationIdentifier IS NOT NULL").IncludeProperties(["Id"]);
+        builder.HasIndex(e => e.PersonIdentifier).HasFilter("PersonIdentifier IS NOT NULL").IncludeProperties(["Id"]);
+        builder.HasIndex(e => e.IsDeleted).HasFilter("IsDeleted = true").IncludeProperties(["Id", "DeletedAt"]);
+        builder.HasIndex(e => e.DateOfBirth).HasFilter("DateOfBirth IS NOT NULL").IncludeProperties(["Id"]);
+        builder.HasIndex(e => e.DateOfDeath).HasFilter("DateOfDeath IS NOT NULL").IncludeProperties(["Id"]);
     }
 }
 
