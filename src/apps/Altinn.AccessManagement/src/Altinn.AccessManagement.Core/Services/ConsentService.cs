@@ -837,7 +837,7 @@ namespace Altinn.AccessManagement.Core.Services
         /// </summary>
         private string GetConsentViewUri(Guid requesteId)
         {
-            return $"https://am.ui.{_generalSettings.Hostname}/accessmanagement/ui/consent/request?id={requesteId}";
+            return $"https://am.ui.{_generalSettings.Hostname}/accessmanagement/ui/consent/request?id={requesteId}&DONTCHOOSEREPORTEE=true";
         }
 
         public static bool IsValidUrl(string url)
