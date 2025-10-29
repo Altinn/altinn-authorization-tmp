@@ -7,6 +7,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Validation;
 
 /// <summary>
 /// A utility class that provides methods for validating data using a series of rules.
+/// Internal implementation detail of the Enduser API.
 /// </summary>
 internal static class AddAssignmentValidation
 {
