@@ -126,29 +126,11 @@ public static class EnduserValidationRules
     /// <returns>
     /// A <see cref="ValidationProblemInstance"/> with validation errors if any.
     /// </returns>
-    public static ValidationProblemInstance EnduserAddAssignmentWithoutPersonInput(string party, string from, string to) => Validate(
+    public static ValidationProblemInstance EnduserAddConnection(string party, string from, string to) => Validate(
         QueryParameters.Party(party),
         QueryParameters.PartyFrom(from),
         QueryParameters.PartyTo(to),
         QueryParameters.EnduserAddCombination(party, from, to)
-    );
-
-    /// <summary>
-    /// Validates the default query parameters for an end user.
-    /// Variant for adding connection when person details (identifier + lastname) are supplied in body.
-    /// 'to' query parameter becomes optional (validated only if supplied) and is ignored for the actual person lookup.
-    /// </summary>
-    /// <param name="party">The UUID of the acting party</param>
-    /// <param name="from">The UUID of the delegating (from) party</param>
-    /// <param name="to">Optional target UUID (ignored if person body present)</param>
-    /// <param name="personIdentifier">The identifier of person receiving a new connection</param>
-    /// <param name="lastName">The identifier of person receiving a new connection</param>
-    public static ValidationProblemInstance EnduserAddAssignmentWithPersonInput(string party, string from, string to, string personIdentifier, string lastName) => Validate(
-        QueryParameters.Party(party),
-        QueryParameters.PartyFrom(from),
-        QueryParameters.PersonIdentifier(personIdentifier),
-        QueryParameters.PersonLastName(lastName),
-        QueryParameters.EnduserAddCombinationWithPersonInput(party, from, to)
     );
 
     /// <summary>
@@ -261,39 +243,6 @@ public static class EnduserValidationRules
                 {
                     errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/from", [new("from", "must match the 'party' UUID.")]);
                 };
-            }
-
-            return null;
-        };
-
-        /// <summary>
-        /// Validates combination of input parameters when PersonInput has been provided
-        /// 'to' optional (validate if supplied) and 'party' must still equal 'from'.
-        /// </summary>
-        internal static RuleExpression EnduserAddCombinationWithPersonInput(string party, string from, string to) => () =>
-        {
-            if (!Guid.TryParse(party, out var partyUuid) || partyUuid == Guid.Empty)
-            {
-                return (ref ValidationErrorBuilder errors) =>
-                    errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/party", [new("party", "Parameter is not a valid UUID.")]);
-            }
-
-            if (!Guid.TryParse(from, out var fromUuid) || fromUuid == Guid.Empty)
-            {
-                return (ref ValidationErrorBuilder errors) =>
-                    errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/from", [new("from", "Parameter is not a valid UUID.")]);
-            }
-
-            if (!string.IsNullOrWhiteSpace(to) && (!Guid.TryParse(to, out var toUuid) || toUuid == Guid.Empty))
-            {
-                return (ref ValidationErrorBuilder errors) =>
-                    errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/to", [new("to", "Optional 'to' parameter must be a valid UUID when supplied.")]);
-            }
-
-            if (partyUuid != fromUuid)
-            {
-                return (ref ValidationErrorBuilder errors) =>
-                    errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/from", [new("from", "must match the 'party' UUID.")]);
             }
 
             return null;
@@ -456,44 +405,6 @@ public static class EnduserValidationRules
                 errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackageId}", [new("package", "Either a package URN or a package ID must be provided.")]);
                 errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramNamePackage}", [new("package", "Either a package URN or a package ID must be provided.")]);
             };
-        };
-
-        /// <summary>
-        /// Validates person identifier field (presence + basic format).
-        /// <param name="personIdentifier">Either username or SSN of a person.</param>
-        /// </summary>
-        internal static RuleExpression PersonIdentifier(string personIdentifier) => () =>
-        {
-            var trimmed = personIdentifier?.Trim();
-            if (string.IsNullOrEmpty(trimmed))
-            {
-                return (ref ValidationErrorBuilder errors) =>
-                 errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", "PersonIdentifier is required when providing person details.")]);
-            }
-
-            // If 11 chars, must be all digits (potential SSN format).
-            if (trimmed.Length == 11 && !trimmed.All(char.IsDigit))
-            {
-                return (ref ValidationErrorBuilder errors) =>
-                 errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", "PersonIdentifier must be numeric when11 characters (expected national identity number format).")]);
-            }
-
-            return null;
-        };
-
-        /// <summary>
-        /// Validates person last name field (required, non-empty).
-        /// <param name="personLastName">Last name of a person</param>
-        /// </summary>
-        internal static RuleExpression PersonLastName(string personLastName) => () =>
-        {
-            if (string.IsNullOrWhiteSpace(personLastName))
-            {
-                return (ref ValidationErrorBuilder errors) =>
-                 errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/lastName", [new("lastName", "LastName is required when providing person details.")]);
-            }
-
-            return null;
         };
     }
 }
