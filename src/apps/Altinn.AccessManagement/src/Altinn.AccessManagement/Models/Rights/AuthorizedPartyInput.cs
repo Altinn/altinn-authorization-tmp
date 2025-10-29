@@ -1,5 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using Altinn.AccessManagement.Utilities;
+using Altinn.AccessMgmt.Core.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Models;

@@ -42,6 +42,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils
                                              !string.IsNullOrWhiteSpace(person.PersonIdentifier) &&
                                              !string.IsNullOrWhiteSpace(person.LastName);
 
+            // Path: If no person input provided, resolve directly to ConnectionInput 'to' UUID
             if (!hasPersonInputIdentifiers)
             {
                 var entity = await _entityService.GetEntity(connectionInputToUuid, cancellationToken);
