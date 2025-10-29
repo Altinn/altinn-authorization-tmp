@@ -114,7 +114,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 continue;
                             }
 
-                            List<AssignmentPackageDto> adds = await assignmentService.ImportAssignmentPackagesPackages(item.FromPartyUuid, item.ToUserPartyUuid.Value, packageUrns, values, cancellationToken);
+                            List<AssignmentPackageDto> adds = await assignmentService.ImportAssignmentPackages(item.FromPartyUuid, item.ToUserPartyUuid.Value, packageUrns, values, cancellationToken);
                             if (adds.Count == 0)
                             {
                                 _logger.LogWarning(
