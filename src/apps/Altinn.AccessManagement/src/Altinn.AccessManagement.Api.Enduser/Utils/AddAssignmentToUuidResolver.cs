@@ -13,7 +13,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils
 {
     /// <summary>
     /// Resolves the target (to) UUID for AddAssignment based on either:
-    /// - Provided 'to' UUID referencing a non-person entity
+    /// - Provided 'to' UUID from ConnectionInput referencing a non-person entity
     /// - PersonInput (identifier + last name) resolved via profile lookup
     /// </summary>
     internal sealed class AddAssignmentToUuidResolver
@@ -42,7 +42,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils
                                              !string.IsNullOrWhiteSpace(person.PersonIdentifier) &&
                                              !string.IsNullOrWhiteSpace(person.LastName);
 
-            // Path: If no person input provided, resolve directly to ConnectionInput 'to' UUID
+            // Path: If PersonInput is not provided, resolve directly to ConnectionInput 'to' UUID
             if (!hasPersonInputIdentifiers)
             {
                 var entity = await _entityService.GetEntity(connectionInputToUuid, cancellationToken);
@@ -59,6 +59,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils
                 return new ResolveToUuidResult(connectionInputToUuid, null);
             }
 
+            // Path: If PersonInput is provided, we resolve 'to' UUID from ProfileLookupService
             int authUserId = AuthenticationHelper.GetUserId(httpContext);
 
             string identifier = person!.PersonIdentifier.Trim();

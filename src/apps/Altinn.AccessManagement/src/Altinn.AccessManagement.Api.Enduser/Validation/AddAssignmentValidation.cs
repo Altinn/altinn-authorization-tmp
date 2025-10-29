@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.Core.Utils.Models;
+﻿using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.Authorization.ProblemDetails;
 
@@ -88,20 +89,22 @@ public static class AddAssignmentValidation
         if (string.IsNullOrEmpty(trimmed))
         {
             return (ref ValidationErrorBuilder errors) =>
-             errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", "PersonIdentifier is required when providing person details.")]);
+             errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", "PersonIdentifier is required when providing PersonInput details.")]);
         }
 
-        // If 11 chars, must be all digits (potential SSN format).
-        if (trimmed.Length == 11 && !trimmed.All(char.IsDigit))
+        if (trimmed.Length == 11 && trimmed.All(char.IsDigit))
         {
-            return (ref ValidationErrorBuilder errors) =>   
-             errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", "PersonIdentifier must be numeric when11 characters (expected national identity number format).")]);
+            if (!ValidSSNUtil.IsValidSSN(trimmed))
+            {
+                return (ref ValidationErrorBuilder errors) =>
+                 errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", "PersonIdentifier with national identity number format is not a valid national identity number.")]);
+            }
         }
 
         if (string.IsNullOrWhiteSpace(personLastName))
         {
             return (ref ValidationErrorBuilder errors) =>
-             errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/lastName", [new("lastName", "LastName is required when providing person details.")]);
+             errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/lastName", [new("lastName", "LastName is required when providing PersonInput details.")]);
         }
 
         return null;
