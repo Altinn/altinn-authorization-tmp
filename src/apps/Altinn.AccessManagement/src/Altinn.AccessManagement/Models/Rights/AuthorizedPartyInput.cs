@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.Core.Utils;
+using Altinn.AccessManagement.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Models;

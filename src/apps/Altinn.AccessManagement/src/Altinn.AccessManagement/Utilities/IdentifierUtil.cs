@@ -1,6 +1,6 @@
 ﻿using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
-using static Altinn.AccessMgmt.Core.Utils.ValidSSNUtil;
+using Altinn.AccessMgmt.Core.Utils;
 
 namespace Altinn.AccessManagement.Utilities;
 
@@ -112,7 +112,7 @@ public static class IdentifierUtil
                 throw new ArgumentException($"When using the '{PersonHeaderTrigger}' path parameter the national identity number must be provided as a request header value: '{PersonHeader}'");
             }
 
-            if (!IsValidSSN(context.Request.Headers[PersonHeader]))
+            if (!ValidSSNUtil.IsValidSSN(context.Request.Headers[PersonHeader]))
             {
                 throw new ArgumentException($"The request header '{PersonHeader}' does not provide a well-formed national identity number value: '{context.Request.Headers[PersonHeader]}'");
             }

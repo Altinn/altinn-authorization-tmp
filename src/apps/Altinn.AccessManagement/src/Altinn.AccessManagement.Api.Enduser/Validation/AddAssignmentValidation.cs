@@ -8,7 +8,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Validation;
 /// <summary>
 /// A utility class that provides methods for validating data using a series of rules.
 /// </summary>
-public static class AddAssignmentValidation
+internal static class AddAssignmentValidation
 {
     /// <summary>
     /// Validates combination of input parameters when PersonInput has not been provided

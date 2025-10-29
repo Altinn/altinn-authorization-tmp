@@ -110,7 +110,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         Guid.TryParse(connection.To, out var connectionInputToUuid);
 
         var resolver = new AddAssignmentToUuidResolver(EntityService, UserProfileLookupService);
-        var resolveResult = await resolver.Resolve(connectionInputToUuid, person, HttpContext, cancellationToken);
+        var resolveResult = await resolver.ResolveAsync(connectionInputToUuid, person, HttpContext, cancellationToken);
         if (!resolveResult.Success)
         {
             return resolveResult.ErrorResult!;
