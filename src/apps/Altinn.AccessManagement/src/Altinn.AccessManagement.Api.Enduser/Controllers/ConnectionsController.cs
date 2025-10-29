@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
 using System.Net.Mime;
+using Altinn.AccessManagement.Api.Enduser.Utils; // Added
 
 namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 
@@ -92,7 +93,9 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> AddAssignment([FromQuery] ConnectionInput connection, [FromBody] PersonInput person, CancellationToken cancellationToken = default)
     {
-        bool hasPersonInputIdentifiers = person is { } && !string.IsNullOrWhiteSpace(person.PersonIdentifier) && !string.IsNullOrWhiteSpace(person.LastName);
+        bool hasPersonInputIdentifiers = person is { } &&
+                                         !string.IsNullOrWhiteSpace(person.PersonIdentifier) &&
+                                         !string.IsNullOrWhiteSpace(person.LastName);
 
         var validationErrors = hasPersonInputIdentifiers
             ? ValidationComposer.Validate(
@@ -109,70 +112,14 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var connectionInputToUuid);
 
-        Guid toUuid = Guid.Empty;
-
-        if (!hasPersonInputIdentifiers)
+        var resolver = new AddAssignmentToUuidResolver(EntityService, UserProfileLookupService);
+        var resolveResult = await resolver.Resolve(connectionInputToUuid, person, HttpContext, cancellationToken);
+        if (!resolveResult.Success)
         {
-            // Ensure provided 'to' is not a person entity
-            var entity = await EntityService.GetEntity(connectionInputToUuid, cancellationToken);
-            if (entity == null)
-            {
-                return Problems.PartyNotFound.ToActionResult();
-            }
-
-            if (entity.TypeId == EntityTypeConstants.Person.Id)
-            {
-                return Problems.PersonInputRequiredForPersonAssignment.ToActionResult();
-            }
-
-            toUuid = connectionInputToUuid;
+            return resolveResult.ErrorResult!;
         }
-        else
-        {
-            int authUserId = AuthenticationHelper.GetUserId(HttpContext);
 
-            string identifier = person.PersonIdentifier.Trim();
-            string lastName = person.LastName.Trim();
-
-            bool looksNumeric11 = identifier.Length == 11 && identifier.All(char.IsDigit);
-            bool treatAsSsn = false;
-
-            if (looksNumeric11)
-            {
-                treatAsSsn = true;
-            }
-
-            UserProfileLookup lookup = new();
-            if (treatAsSsn)
-            {
-                lookup.Ssn = identifier;
-            }
-            else
-            {
-                lookup.Username = identifier;
-            }
-
-            try
-            {
-                var profile = await UserProfileLookupService.GetUserProfile(authUserId, lookup, lastName);
-                if (profile == null)
-                {
-                    return Problems.InvalidPersonIdentifier.ToActionResult();
-                }
-
-                Guid? resolvedUuid = profile.UserUuid != Guid.Empty ? profile.UserUuid : profile.Party?.PartyUuid;
-                if (!resolvedUuid.HasValue || resolvedUuid.Value == Guid.Empty)
-                {
-                    return Problems.PartyNotFound.ToActionResult();
-                }
-
-                toUuid = resolvedUuid.Value;
-            }
-            catch (TooManyFailedLookupsException)
-            {
-                return StatusCode(StatusCodes.Status429TooManyRequests, Problems.InvalidPersonIdentifier.ToProblemDetails());
-            }
-        }
+        Guid toUuid = resolveResult.ToUuid;
 
         var result = await ConnectionService.AddAssignment(fromUuid, toUuid, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
