@@ -2042,42 +2042,22 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.HasKey("Id")
                         .HasName("pk_entity");
 
-                    b.HasIndex("DateOfBirth")
-                        .HasDatabaseName("ix_entity_dateofbirth")
-                        .HasFilter("DateOfBirth IS NOT NULL");
-
-                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("DateOfBirth"), new[] { "Id" });
-
-                    b.HasIndex("DateOfDeath")
-                        .HasDatabaseName("ix_entity_dateofdeath")
-                        .HasFilter("DateOfDeath IS NOT NULL");
-
-                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("DateOfDeath"), new[] { "Id" });
-
-                    b.HasIndex("IsDeleted")
-                        .HasDatabaseName("ix_entity_isdeleted")
-                        .HasFilter("IsDeleted = true");
-
-                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("IsDeleted"), new[] { "Id", "DeletedAt" });
-
                     b.HasIndex("OrganizationIdentifier")
+                        .IsUnique()
                         .HasDatabaseName("ix_entity_organizationidentifier")
-                        .HasFilter("OrganizationIdentifier IS NOT NULL");
+                        .HasFilter("OrganizationIdentifier IS NOT NULL")
+                        .HasAnnotation("Npgsql:CreatedConcurrently", true);
 
                     NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("OrganizationIdentifier"), new[] { "Id" });
 
                     b.HasIndex("ParentId")
                         .HasDatabaseName("ix_entity_parentid");
 
-                    b.HasIndex("PartyId")
-                        .HasDatabaseName("ix_entity_partyid")
-                        .HasFilter("PartyId IS NOT NULL");
-
-                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("PartyId"), new[] { "Id" });
-
                     b.HasIndex("PersonIdentifier")
+                        .IsUnique()
                         .HasDatabaseName("ix_entity_personidentifier")
-                        .HasFilter("PersonIdentifier IS NOT NULL");
+                        .HasFilter("PersonIdentifier IS NOT NULL")
+                        .HasAnnotation("Npgsql:CreatedConcurrently", true);
 
                     NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("PersonIdentifier"), new[] { "Id" });
 
@@ -2085,10 +2065,20 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasDatabaseName("ix_entity_typeid");
 
                     b.HasIndex("UserId")
+                        .IsUnique()
                         .HasDatabaseName("ix_entity_userid")
-                        .HasFilter("UserId IS NOT NULL");
+                        .HasFilter("UserId IS NOT NULL")
+                        .HasAnnotation("Npgsql:CreatedConcurrently", true);
 
                     NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("UserId"), new[] { "Id" });
+
+                    b.HasIndex("Username")
+                        .IsUnique()
+                        .HasDatabaseName("ix_entity_username")
+                        .HasFilter("Username IS NOT NULL")
+                        .HasAnnotation("Npgsql:CreatedConcurrently", true);
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("Username"), new[] { "Id" });
 
                     b.HasIndex("VariantId")
                         .HasDatabaseName("ix_entity_variantid");

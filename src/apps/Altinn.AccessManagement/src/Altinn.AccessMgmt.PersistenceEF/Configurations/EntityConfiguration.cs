@@ -21,6 +21,7 @@ public class EntityConfiguration : IEntityTypeConfiguration<Entity>
 
         builder.Property(t => t.PartyId).IsRequired(false);
         builder.Property(t => t.UserId).IsRequired(false);
+        builder.Property(t => t.Username).IsRequired(false);
         builder.Property(t => t.OrganizationIdentifier).IsRequired(false);
         builder.Property(t => t.PersonIdentifier).IsRequired(false);
         builder.Property(t => t.DateOfBirth).IsRequired(false);
@@ -34,13 +35,10 @@ public class EntityConfiguration : IEntityTypeConfiguration<Entity>
 
         builder.HasIndex(["Name", "RefId", "TypeId", "VariantId"]).IsUnique();
 
-        builder.HasIndex(e => e.PartyId).HasFilter("PartyId IS NOT NULL").IncludeProperties(["Id"]);
-        builder.HasIndex(e => e.UserId).HasFilter("UserId IS NOT NULL").IncludeProperties(["Id"]);
-        builder.HasIndex(e => e.OrganizationIdentifier).HasFilter("OrganizationIdentifier IS NOT NULL").IncludeProperties(["Id"]);
-        builder.HasIndex(e => e.PersonIdentifier).HasFilter("PersonIdentifier IS NOT NULL").IncludeProperties(["Id"]);
-        builder.HasIndex(e => e.IsDeleted).HasFilter("IsDeleted = true").IncludeProperties(["Id", "DeletedAt"]);
-        builder.HasIndex(e => e.DateOfBirth).HasFilter("DateOfBirth IS NOT NULL").IncludeProperties(["Id"]);
-        builder.HasIndex(e => e.DateOfDeath).HasFilter("DateOfDeath IS NOT NULL").IncludeProperties(["Id"]);
+        builder.HasIndex(e => e.UserId).HasFilter("UserId IS NOT NULL").IncludeProperties(["Id"]).IsUnique().IsCreatedConcurrently();
+        builder.HasIndex(e => e.Username).HasFilter("Username IS NOT NULL").IncludeProperties(["Id"]).IsUnique().IsCreatedConcurrently();
+        builder.HasIndex(e => e.OrganizationIdentifier).HasFilter("OrganizationIdentifier IS NOT NULL").IncludeProperties(["Id"]).IsUnique().IsCreatedConcurrently();
+        builder.HasIndex(e => e.PersonIdentifier).HasFilter("PersonIdentifier IS NOT NULL").IncludeProperties(["Id"]).IsUnique().IsCreatedConcurrently();
     }
 }
 
