@@ -507,11 +507,11 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     }
                 }
 
-                if (await _featureManager.IsEnabledAsync(FeatureFlags.SystemUserAccessPackageAuthorization, cancellationToken) && subjectSystemUser != Guid.Empty)
+                if (await _featureManager.IsEnabledAsync(FeatureFlags.SystemUserAccessPackageAuthorization) && subjectSystemUser != Guid.Empty)
                 {
                     await AddAccessPackageAttributes(subjectContextAttributes, subjectSystemUser, resourceAttr.PartyUuid);
                 }
-                else if (await _featureManager.IsEnabledAsync(FeatureFlags.UserAccessPackageAuthorization, cancellationToken) && subjectPartyUuid != Guid.Empty)
+                else if (await _featureManager.IsEnabledAsync(FeatureFlags.UserAccessPackageAuthorization) && subjectPartyUuid != Guid.Empty)
                 {
                     await AddAccessPackageAttributes(subjectContextAttributes, subjectPartyUuid, resourceAttr.PartyUuid);
                 }
