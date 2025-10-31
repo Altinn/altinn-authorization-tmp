@@ -120,7 +120,7 @@ run-name: ${{ inputs.tag }} ${{ inputs.vus }}/${{ inputs.duration }}/${{ inputs.
 jobs:
   k6-performance:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: test
     steps:
     - name: Checkout code
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
