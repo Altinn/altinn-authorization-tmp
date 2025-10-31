@@ -425,9 +425,9 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     subjectOrgnNo = xacmlAttribute.AttributeValues.First().Value;
                 }
 
-                if (xacmlAttribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.PartyUuidAttribute))
+                if (xacmlAttribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.PartyUuidAttribute) && !Guid.TryParse(xacmlAttribute.AttributeValues.First().Value, out subjectPartyUuid))
                 {
-                    subjectPartyUuid = Guid.Parse(xacmlAttribute.AttributeValues.First().Value);
+                    throw new ArgumentException($"{XacmlRequestAttribute.PartyUuidAttribute}: Not a valid uuid");
                 }
 
                 if (xacmlAttribute.AttributeId.OriginalString.Equals(XacmlRequestAttribute.SystemUserIdAttribute) && !Guid.TryParse(xacmlAttribute.AttributeValues.First().Value, out subjectSystemUser))
@@ -457,11 +457,21 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                 if (subjectProfile != null)
                 {
                     subjectUserId = subjectProfile.UserId;
+                    subjectPartyUuid = subjectProfile.Party.PartyUuid.HasValue ? subjectProfile.Party.PartyUuid.Value : Guid.Empty;
                     subjectContextAttributes.Attributes.Add(GetUserIdAttribute(subjectUserId));
                 }
                 else
                 {
                     throw new ArgumentException("Invalid person-id");
+                }
+            }
+            else if (subjectUserId != 0)
+            {
+                UserProfile subjectProfile = await GetUserProfileByUserId(subjectUserId);
+                if (subjectProfile != null)
+                {
+                    subjectSsn = subjectProfile.Party.PartyTypeName == PartyType.Person ? subjectProfile.Party.SSN : null;
+                    subjectPartyUuid = subjectProfile.Party.PartyUuid.HasValue ? subjectProfile.Party.PartyUuid.Value : Guid.Empty;
                 }
             }
 
@@ -480,7 +490,8 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             // Get all subject attribute types used in the policy
             IDictionary<string, ICollection<string>> policySubjectAttributes = xacmlPolicy.GetAttributeDictionaryByCategory(XacmlConstants.MatchAttributeCategory.Subject);
 
-            if (await _featureManager.IsEnabledAsync(FeatureFlags.SystemUserAccessPackageAuthorization) && policySubjectAttributes.ContainsKey(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessPackageAttribute) && subjectSystemUser != Guid.Empty)
+            // Enrich with access package attributes if policy contains rules for access packages and request has a specified resource party id
+            if (policySubjectAttributes.ContainsKey(AltinnXacmlConstants.MatchAttributeIdentifiers.AccessPackageAttribute) && resourcePartyId != 0)
             {
                 if (resourceAttr.PartyUuid == Guid.Empty)
                 {
@@ -496,7 +507,14 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     }
                 }
 
-                await AddAccessPackageAttributes(subjectContextAttributes, subjectSystemUser, resourceAttr.PartyUuid);
+                if (await _featureManager.IsEnabledAsync(FeatureFlags.SystemUserAccessPackageAuthorization) && subjectSystemUser != Guid.Empty)
+                {
+                    await AddAccessPackageAttributes(subjectContextAttributes, subjectSystemUser, resourceAttr.PartyUuid);
+                }
+                else if (await _featureManager.IsEnabledAsync(FeatureFlags.UserAccessPackageAuthorization) && subjectPartyUuid != Guid.Empty)
+                {
+                    await AddAccessPackageAttributes(subjectContextAttributes, subjectPartyUuid, resourceAttr.PartyUuid);
+                }
             }
 
             // Enrich with party type if rule defines that and request only contains resource id. This is special handling for consent. Before opening more widely this needs more consideration.
