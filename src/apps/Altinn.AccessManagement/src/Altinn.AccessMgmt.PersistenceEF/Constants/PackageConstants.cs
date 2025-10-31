@@ -583,7 +583,7 @@ public static class PackageConstants
         Entity = new()
         {
             Name = "Tilskudd, støtte og erstatning",
-            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til å søke tilskudd, støtte og erstatning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til å søke og rapportere på tilskudd, støtte og erstatning. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
             Urn = "urn:altinn:accesspackage:tilskudd-stotte-erstatning",
             IsDelegable = true,
             HasResources = true,
