@@ -453,7 +453,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
 
             if (!string.IsNullOrEmpty(subjectSsn))
             {
-                UserProfile subjectProfile = await GetUserProfileByPersonId(subjectSsn);
+                UserProfile subjectProfile = await GetUserProfileByPersonId(subjectSsn, cancellationToken);
                 if (subjectProfile != null)
                 {
                     subjectUserId = subjectProfile.UserId;
@@ -467,7 +467,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             }
             else if (subjectUserId != 0)
             {
-                UserProfile subjectProfile = await GetUserProfileByUserId(subjectUserId);
+                UserProfile subjectProfile = await GetUserProfileByUserId(subjectUserId, cancellationToken);
                 if (subjectProfile != null)
                 {
                     subjectSsn = subjectProfile.Party.PartyTypeName == PartyType.Person ? subjectProfile.Party.SSN : null;
@@ -477,7 +477,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
 
             if (isExternalRequest && !string.IsNullOrEmpty(subjectOrgnNo))
             {
-                Party party = await _registerService.PartyLookup(subjectOrgnNo, null);
+                Party party = await _registerService.PartyLookup(subjectOrgnNo, null, cancellationToken);
                 subjectContextAttributes.Attributes.Add(GetPartyIdsAttribute(new List<int> { party.PartyId }));
             }
 
@@ -495,7 +495,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             {
                 if (resourceAttr.PartyUuid == Guid.Empty)
                 {
-                    List<Party> party = await _registerService.GetPartiesAsync(new List<int> { resourcePartyId });
+                    List<Party> party = await _registerService.GetPartiesAsync(new List<int> { resourcePartyId }, cancellationToken: cancellationToken);
 
                     if (party.Count == 1 && party[0].PartyUuid.HasValue)
                     {
@@ -507,11 +507,11 @@ namespace Altinn.Platform.Authorization.Services.Implementation
                     }
                 }
 
-                if (await _featureManager.IsEnabledAsync(FeatureFlags.SystemUserAccessPackageAuthorization) && subjectSystemUser != Guid.Empty)
+                if (await _featureManager.IsEnabledAsync(FeatureFlags.SystemUserAccessPackageAuthorization, cancellationToken) && subjectSystemUser != Guid.Empty)
                 {
                     await AddAccessPackageAttributes(subjectContextAttributes, subjectSystemUser, resourceAttr.PartyUuid);
                 }
-                else if (await _featureManager.IsEnabledAsync(FeatureFlags.UserAccessPackageAuthorization) && subjectPartyUuid != Guid.Empty)
+                else if (await _featureManager.IsEnabledAsync(FeatureFlags.UserAccessPackageAuthorization, cancellationToken) && subjectPartyUuid != Guid.Empty)
                 {
                     await AddAccessPackageAttributes(subjectContextAttributes, subjectPartyUuid, resourceAttr.PartyUuid);
                 }
@@ -524,7 +524,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             {
                 if (subjectPartyUuid == Guid.Empty && !string.IsNullOrEmpty(subjectOrgnNo))
                 {
-                    Party party = await _registerService.PartyLookup(subjectOrgnNo, null);
+                    Party party = await _registerService.PartyLookup(subjectOrgnNo, null, cancellationToken);
                     subjectContextAttributes.Attributes.Add(GetPartyTypeAttribute(party.PartyTypeName));
                 }
                 else if (subjectPartyUuid != Guid.Empty)
@@ -541,7 +541,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             {
                 if (subjectPartyUuid == Guid.Empty && !string.IsNullOrEmpty(subjectOrgnNo))
                 {
-                    Party party = await _registerService.PartyLookup(subjectOrgnNo, null);
+                    Party party = await _registerService.PartyLookup(subjectOrgnNo, null, cancellationToken);
                     subjectPartyUuid = party.PartyUuid.HasValue ? party.PartyUuid.Value : Guid.Empty;
                 }
 
@@ -566,7 +566,7 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             {
                 if (string.IsNullOrEmpty(subjectSsn))
                 {
-                    subjectSsn = await GetPersonIdForUser(subjectUserId);
+                    subjectSsn = await GetPersonIdForUser(subjectUserId, cancellationToken);
                 }
 
                 string resourceSsn = await GetSSnForParty(resourcePartyId);
