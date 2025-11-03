@@ -42,7 +42,7 @@ script:pre-request {
 }
 
 tests {
-  const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   const body = res.getBody();
   const requestName = bru.getVar("requestName");
   
@@ -138,6 +138,17 @@ tests {
   
     // Step 3: Assert no duplicates
     expect(duplicates.length, `Duplicate partyUuid(s) found: ${duplicates.join(', ')}`).to.equal(0);
+  
+  });
+  
+  test(requestName + "|Find expected AuthorizedParty and AuthorizedAccessPackages", function() {  
+    // Test that the expected party exists in the response with the expected packages
+    
+    const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
+    const targetParty = allParties.find(party => party.partyUuid === testdata.a2BrunoSIUser.partyUuid);
+  
+    assert.exists(targetParty, 'Party with partyUuid '+testdata.a2BrunoSIUser.partyUuid+' should exist');
+    assert.includeMembers(targetParty.authorizedRoles, ["SELN"]);
   
   });
 }
