@@ -429,7 +429,8 @@ public class ConnectionQuery(AppDbContext db)
             var mapped = g.Select(z => new ConnectionQueryResource
             {
                 Id = z.Resource.Id,
-                Name = z.Resource.Name
+                Name = z.Resource.Name,
+                RefId = z.Resource.RefId,
             }).DistinctBy(p => p.Id);
 
             index.AddRange(g.Key, mapped);
