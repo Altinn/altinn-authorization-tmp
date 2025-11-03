@@ -1,10 +1,8 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
+﻿using System.Text.Json;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
-using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
-using System.Text.Json;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 
@@ -94,6 +92,7 @@ public class ConnectionQuery(AppDbContext db)
                 ViaId = null,
                 ViaRoleId = null,
                 DelegationId = null,
+                Reason = ConnectionReason.Assignment,
             };
 
         direct = direct.AsNoTracking()
@@ -119,6 +118,7 @@ public class ConnectionQuery(AppDbContext db)
                     RoleId = assignment.RoleId,
                     ViaRoleId = null,
                     DelegationId = null,
+                    Reason = ConnectionReason.KeyRole,
                 };
 
             directKeyRole = directKeyRole.AsNoTracking()
@@ -145,6 +145,7 @@ public class ConnectionQuery(AppDbContext db)
                 ViaId = assignment.FromId,
                 ViaRoleId = null,
                 DelegationId = null,
+                Reason = ConnectionReason.Hierarchy,
             };
 
         children = children
@@ -171,6 +172,7 @@ public class ConnectionQuery(AppDbContext db)
                     ViaId = assignment.FromId,
                     ViaRoleId = null,
                     DelegationId = null,
+                    Reason = ConnectionReason.KeyRole,
                 };
 
             childrenKeyRole = childrenKeyRole
@@ -197,6 +199,7 @@ public class ConnectionQuery(AppDbContext db)
                 ViaId = null,
                 ViaRoleId = null,
                 DelegationId = null,
+                Reason = ConnectionReason.RoleMap,
             };
 
         roleMaps = roleMaps
@@ -223,6 +226,7 @@ public class ConnectionQuery(AppDbContext db)
                     ViaId = null,
                     ViaRoleId = null,
                     DelegationId = null,
+                    Reason = ConnectionReason.KeyRole,
                 };
 
             queries.Add(roleMapKeyRoles);
@@ -247,6 +251,7 @@ public class ConnectionQuery(AppDbContext db)
                     ViaRoleId = null,
                     AssignmentId = null,
                     RoleId = Guid.Empty,
+                    Reason = ConnectionReason.Delegation,
                 };
 
             delegations = delegations
@@ -274,6 +279,7 @@ public class ConnectionQuery(AppDbContext db)
                         ViaRoleId = null,
                         AssignmentId = null,
                         RoleId = Guid.Empty,
+                        Reason = ConnectionReason.KeyRole,
                     };
 
                 queries.Add(delegationKeyRoles);
@@ -319,6 +325,7 @@ public class ConnectionQuery(AppDbContext db)
                 Role = x.r,
                 Via = x.via,
                 ViaRole = x.viaRole,
+                Reason = x.c.Reason,
             });
 
         return query;
@@ -366,7 +373,9 @@ public class ConnectionQuery(AppDbContext db)
             var mapped = g.Select(z => new ConnectionQueryPackage
             {
                 Id = z.Package.Id,
-                Name = z.Package.Name
+                Name = z.Package.Name,
+                AreaId = z.Package.AreaId,
+                Urn = z.Package.Urn
             }).DistinctBy(p => p.Id);
 
             index.AddRange(g.Key, mapped);
@@ -512,7 +521,8 @@ public class ConnectionQuery(AppDbContext db)
         To = x.To,
         Role = x.Role,
         Via = x.Via,
-        ViaRole = x.ViaRole
+        ViaRole = x.ViaRole,
+        Reason = x.Reason,
     };
 
     private static ConnectionQueryExtendedRecord ToDtoEmpty(ConnectionQueryBaseRecord x) => new()
@@ -523,7 +533,8 @@ public class ConnectionQuery(AppDbContext db)
         AssignmentId = x.AssignmentId,
         DelegationId = x.DelegationId,
         ViaId = x.ViaId,
-        ViaRoleId = x.ViaRoleId
+        ViaRoleId = x.ViaRoleId,
+        Reason = x.Reason
     };
 }
 
