@@ -344,7 +344,9 @@ public class ConnectionQuery(AppDbContext db)
             var mapped = g.Select(z => new ConnectionQueryPackage
             {
                 Id = z.Package.Id,
-                Name = z.Package.Name
+                Name = z.Package.Name,
+                AreaId = z.Package.AreaId,
+                Urn = z.Package.Urn
             }).DistinctBy(p => p.Id);
 
             index.AddRange(g.Key, mapped);

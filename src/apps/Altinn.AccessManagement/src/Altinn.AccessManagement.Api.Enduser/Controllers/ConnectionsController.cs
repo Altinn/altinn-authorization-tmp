@@ -118,7 +118,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
 
         Guid toUuid = resolveResult.ToUuid;
 
-        var result = await ConnectionService.AddAssignment(fromUuid, toUuid, ConfigureConnections, cancellationToken);
+        var result = await ConnectionService.AddRightholder(fromUuid, toUuid, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();

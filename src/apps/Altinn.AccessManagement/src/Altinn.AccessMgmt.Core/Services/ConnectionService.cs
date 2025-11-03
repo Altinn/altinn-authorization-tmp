@@ -12,6 +12,7 @@ using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+using Altinn.Authorization.ABAC.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -24,11 +25,12 @@ public partial class ConnectionService(
     ConnectionQuery connectionQuery,
     IAuditAccessor auditAccessor) : IConnectionService
 {
-    public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public async Task<Result<IEnumerable<ConnectionDto>>> Get(Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnections);
-        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
-        var problem = ValidateReadOpInput(fromId, from, toId, to, options);
+        var (from, to) = await GetFromAndToEntities(options.FromId, options.ToId, cancellationToken);
+        var problem = ValidateReadOpInput(options.FromId, from, options.ToId, to, options);
         if (problem is { })
         {
             if (problem.ErrorCode == Problems.PartyNotFound.ErrorCode)
@@ -39,25 +41,30 @@ public partial class ConnectionService(
             return problem;
         }
 
-        if (party == from?.Id)
-        {
-            var result = await GetConnectionsToOthers(party, to?.Id, null, configureConnections, cancellationToken);
-            return result.ToList();
-        }
+        var connections = await connectionQuery.GetConnectionsAsync(
+            new ConnectionQueryFilter()
+            {
+                FromIds = options.FromId.HasValue ? [options.FromId.Value] : null,
+                ToIds = options.ToId.HasValue ? [options.ToId.Value] : null,
+                EnrichEntities = true,
+                IncludeKeyRole = true,
+                IncludePackages = true,
+                IncludeResource = true,
+                EnrichPackageResources = false,
+                ExcludeDeleted = false,
+                IncludeDelegation = true,
+            },
+            cancellationToken
+        );
 
-        if (party == to?.Id)
-        {
-            var result = await GetConnectionsFromOthers(party, from?.Id, null, configureConnections, cancellationToken);
-            return result.ToList();
-        }
-
-        return new List<ConnectionDto>();
+        return DtoMapper.Convert(connections).ToList();
     }
 
-    public async Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public async Task<Result<AssignmentDto>> AddRightholder(Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnections);
-        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        var (from, to) = await GetFromAndToEntities(options.FromId, options.ToId, cancellationToken);
         var problem = ValidateWriteOpInput(from, to, options);
         if (problem is { })
         {
@@ -78,8 +85,8 @@ public partial class ConnectionService(
 
         var assignment = new Assignment()
         {
-            FromId = fromId,
-            ToId = toId,
+            FromId = from.Id,
+            ToId = to.Id,
             RoleId = RoleConstants.Rightholder,
         };
 
@@ -89,10 +96,22 @@ public partial class ConnectionService(
         return DtoMapper.Convert(assignment);
     }
 
-    public async Task<ValidationProblemInstance> RemoveAssignment(Guid fromId, Guid toId, bool cascade = false, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public async Task<ValidationProblemInstance> RemoveAssignment(Action<ConnectionOptions> configureConnections, bool cascade = false, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(configureConnections);
         var options = new ConnectionOptions(configureConnections);
-        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
+        if (!options.FromId.HasValue)
+        {
+            throw new ArgumentNullException(nameof(configureConnections), $"Parameter {nameof(options.FromId)} must be provided.");
+        }
+
+        if (!options.ToId.HasValue)
+        {
+            throw new ArgumentNullException(nameof(configureConnections), $"Parameter {nameof(options.ToId)} must be provided.");
+        }
+
+        var (from, to) = await GetFromAndToEntities(options.FromId, options.ToId, cancellationToken);
         var problem = ValidateWriteOpInput(from, to, options);
         if (problem is { })
         {
@@ -101,8 +120,8 @@ public partial class ConnectionService(
 
         var existingAssignment = await dbContext.Assignments
             .AsTracking()
-            .Where(e => e.FromId == fromId)
-            .Where(e => e.ToId == toId)
+            .Where(e => e.FromId == from.Id)
+            .Where(e => e.ToId == to.Id)
             .Where(e => e.RoleId == RoleConstants.Rightholder)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -125,7 +144,7 @@ public partial class ConnectionService(
 
             var delegationsTo = await dbContext.Delegations
                 .AsNoTracking()
-                .Where(p => p.ToId == toId)
+                .Where(p => p.ToId == to.Id)
                 .ToListAsync(cancellationToken);
 
             problem = ValidationComposer.Validate(
@@ -145,11 +164,12 @@ public partial class ConnectionService(
         return null;
     }
 
+    /// <inheritdoc/>
     public async Task<Result<IEnumerable<PackagePermissionDto>>> GetPackages(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnections);
-        var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
-        var problem = ValidateReadOpInput(fromId, from, toId, to, options);
+        var (from, to) = await GetFromAndToEntities(options.FromId, options.ToId, cancellationToken);
+        var problem = ValidateReadOpInput(options.FromId, from, options.ToId, to, options);
         if (problem is { })
         {
             if (problem.ErrorCode == Problems.PartyNotFound.ErrorCode)
@@ -160,19 +180,23 @@ public partial class ConnectionService(
             return problem;
         }
 
-        if (party == from?.Id)
-        {
-            var result = await GetPackagePermissionsToOthers(party, to?.Id, null, configureConnections, cancellationToken);
-            return result.ToList();
-        }
+        var connections = await connectionQuery.GetConnectionsAsync(
+            new ConnectionQueryFilter()
+            {
+                FromIds = options.FromId.HasValue ? [options.FromId.Value] : null,
+                ToIds = options.ToId.HasValue ? [options.ToId.Value] : null,
+                EnrichEntities = true,
+                IncludeKeyRole = false,
+                IncludePackages = true,
+                IncludeResource = false,
+                EnrichPackageResources = false,
+                ExcludeDeleted = false,
+                IncludeDelegation = true,
+            },
+            cancellationToken
+        );
 
-        if (party == to?.Id)
-        {
-            var result = await GetPackagePermissionsFromOthers(party, from?.Id, null, configureConnections, cancellationToken);
-            return result.ToList();
-        }
-
-        return new List<PackagePermissionDto>();
+        return DtoMapper.Convert(connections).ToList();
     }
 
     public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
@@ -386,7 +410,7 @@ public partial class ConnectionService(
     {
         if (fromId is null && toId is null)
         {
-            throw new UnreachableException();
+            throw new ArgumentException($"At least '{nameof(fromId)}' or ''{nameof(toId)}'' must be provided.");
         }
 
         var entities = await dbContext.Entities
@@ -882,6 +906,12 @@ public sealed class ConnectionOptions
             configureConnectionService(this);
         }
     }
+
+    public Guid PartyId { get; set; }
+
+    public Guid? FromId { get; set; }
+
+    public Guid? ToId { get; set; }
 
     public IEnumerable<Guid> AllowedWriteFromEntityTypes { get; set; } = [];
 

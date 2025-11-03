@@ -1,4 +1,6 @@
-﻿namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+﻿using System.Security.Cryptography.X509Certificates;
+
+namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 
 /// <summary>
 /// Base row for ConnectionQuery
@@ -39,6 +41,11 @@ public class ConnectionQueryBaseRecord
     /// Connection Delegation Via Role Identity
     /// </summary>
     public Guid? ViaRoleId { get; init; }
+
+    /// <summary>
+    /// Connection reason
+    /// </summary>
+    public string Reason { get; set; }
 
     /// <summary>
     /// Connection Composite Key

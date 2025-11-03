@@ -41,7 +41,7 @@ public static class QueryableExtensions
         var body = Expression.Call(
             typeof(Enumerable),
             nameof(Enumerable.Contains),
-            new[] { typeof(Guid) },
+            [typeof(Guid)],
             Expression.Constant(ids),
             selector.Body
         );

@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Utils;
@@ -207,6 +208,21 @@ public partial class DtoMapper
                 Id = role.Id,
                 Children = null,
                 Code = role.Code
+            };
+        }
+
+        return null;
+    }
+
+    public static PackageDto ConvertCompactPackage(ConnectionQueryPackage package)
+    {
+        if (package is { })
+        {
+            return new PackageDto()
+            {
+                Id = package.Id,
+                
+                Urn = package.Urn,
             };
         }
 
