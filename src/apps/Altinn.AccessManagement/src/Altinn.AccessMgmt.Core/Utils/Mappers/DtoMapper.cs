@@ -97,19 +97,31 @@ public partial class DtoMapper
         });
     }
 
-    public static CompactEntityDto Convert(Entity compactEntity, bool isConvertingParent = false)
+    public static CompactEntityDto Convert(Entity entity, bool isConvertingParent = false)
     {
-        if (compactEntity is { })
+        if (entity is { })
         {
+            EntityTypeConstants.TryGetById(entity.TypeId, out var type);
+            EntityVariantConstants.TryGetById(entity.VariantId, out var variant);
+
             return new CompactEntityDto()
             {
-                Id = compactEntity.Id,
-                Name = compactEntity?.Name,
-                Type = compactEntity?.Type?.Name,
-                Variant = compactEntity?.Variant?.Name,
-                KeyValues = GetFakeKeyValues(compactEntity),
-                Parent = isConvertingParent ? null : Convert(compactEntity.Parent, true),
-                Children = null
+                Id = entity.Id,
+                Name = entity?.Name,
+                Type = type.Entity.Name,
+                Variant = variant.Entity.Name,
+                Parent = isConvertingParent ? null : Convert(entity.Parent, true),
+                Children = null,
+                KeyValues = GetFakeKeyValues(entity),
+                DateOfBirth = entity.DateOfBirth,
+                DateOfDeath = entity.DateOfDeath,
+                IsDeleted = entity.IsDeleted,
+                DeletedAt = entity.DeletedAt,
+                OrganizationIdentifier = entity.OrganizationIdentifier,
+                PartyId = entity.PartyId,
+                PersonIdentifier = entity.PersonIdentifier,
+                UserId = entity.UserId, 
+                Username = entity.Username
             };
         }
 

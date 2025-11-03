@@ -80,7 +80,7 @@ public static class Problems
     = _factory.Create(16, HttpStatusCode.BadRequest, $"Consent with id already exist");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
-    public static ProblemDescriptor UnsuportedEntityType { get; }
+    public static ProblemDescriptor UnsupportedEntityType { get; }
     = _factory.Create(17, HttpStatusCode.BadRequest, $"The Entitytype is not supported");
 
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
@@ -97,5 +97,17 @@ public static class Problems
     
     /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
     public static ProblemDescriptor ConnectionEntitiesDoNotExist { get; }  
-    = _factory.Create(21, HttpStatusCode.BadRequest, "Entities from and to do not exists.");
+    = _factory.Create(21, HttpStatusCode.BadRequest, "From and to parties do not exists.");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor MissingConnection { get; }
+    = _factory.Create(22, HttpStatusCode.BadRequest, "Operation can not be completed, because it requires an existing connection between the parties.");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor PartyNotFound { get; }
+    = _factory.Create(23, HttpStatusCode.BadRequest, $"The provided identifier cannot be found as a valid party for the operation.");
+
+    /// <summary>Gets a <see cref="ProblemDescriptor"/>.</summary>
+    public static ProblemDescriptor PersonInputRequiredForPersonAssignment { get; }
+    = _factory.Create(24, HttpStatusCode.BadRequest, "Target party is a person. Use the PersonInput request body with personIdentifier and lastName instead of a 'to' party id in ConnectionInput to add the assignment.");
 }

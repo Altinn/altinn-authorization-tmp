@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System.ComponentModel.DataAnnotations;
-using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Helpers.Extensions;
@@ -8,10 +7,10 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessManagement.Utilities;
+using Altinn.AccessMgmt.Core.Utils;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.FeatureManagement.Mvc;
 
 namespace Altinn.AccessManagement.Controllers
 {
@@ -185,13 +184,14 @@ namespace Altinn.AccessManagement.Controllers
         {
             int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
             int authenticationLevel = AuthenticationHelper.GetUserAuthenticationLevel(HttpContext);
+            Guid authenticatedUserPartyUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
 
             try
             {
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(party, HttpContext);
                 DelegationLookup internalDelegation = _mapper.Map<DelegationLookup>(delegation);
                 internalDelegation.From = reportee.SingleToList();
-                DelegationActionResult response = await _delegation.DelegateMaskinportenSchema(authenticatedUserId, authenticationLevel, internalDelegation, cancellationToken);
+                DelegationActionResult response = await _delegation.DelegateMaskinportenSchema(authenticatedUserId, authenticatedUserPartyUuid, authenticationLevel, internalDelegation, cancellationToken);
 
                 if (!response.IsValid)
                 {
@@ -271,13 +271,14 @@ namespace Altinn.AccessManagement.Controllers
         public async Task<ActionResult> RevokeOfferedMaskinportenScopeDelegation([FromRoute] string party, [FromBody] RevokeOfferedDelegationExternal delegation, CancellationToken cancellationToken)
         {
             int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
+            Guid authenticatedUserPartyUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
 
             try
             {
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(party, HttpContext);
                 DelegationLookup internalDelegation = _mapper.Map<DelegationLookup>(delegation);
                 internalDelegation.From = reportee.SingleToList();
-                DelegationActionResult response = await _delegation.RevokeMaskinportenSchemaDelegation(authenticatedUserId, internalDelegation, cancellationToken);
+                DelegationActionResult response = await _delegation.RevokeMaskinportenSchemaDelegation(authenticatedUserId, authenticatedUserPartyUuid, internalDelegation, cancellationToken);
 
                 if (!response.IsValid)
                 {
@@ -355,13 +356,14 @@ namespace Altinn.AccessManagement.Controllers
         public async Task<ActionResult> RevokeReceivedMaskinportenScopeDelegation([FromRoute] string party, [FromBody] RevokeReceivedDelegationExternal delegation, CancellationToken cancellationToken)
         {
             int authenticatedUserId = AuthenticationHelper.GetUserId(HttpContext);
+            Guid authenticatedUserPartyUuid = AuthenticationHelper.GetPartyUuid(HttpContext);
 
             try
             {
                 AttributeMatch reportee = IdentifierUtil.GetIdentifierAsAttributeMatch(party, HttpContext);
                 DelegationLookup internalDelegation = _mapper.Map<DelegationLookup>(delegation);
                 internalDelegation.To = reportee.SingleToList();
-                DelegationActionResult response = await _delegation.RevokeMaskinportenSchemaDelegation(authenticatedUserId, internalDelegation, cancellationToken);
+                DelegationActionResult response = await _delegation.RevokeMaskinportenSchemaDelegation(authenticatedUserId, authenticatedUserPartyUuid, internalDelegation, cancellationToken);
 
                 if (!response.IsValid)
                 {

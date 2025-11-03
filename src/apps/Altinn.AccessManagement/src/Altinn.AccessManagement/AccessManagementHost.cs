@@ -6,8 +6,6 @@ using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
 using Altinn.AccessManagement.Health;
-using Altinn.AccessManagement.HostedServices.Contracts;
-using Altinn.AccessManagement.HostedServices.Services;
 using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
@@ -100,7 +98,7 @@ internal static partial class AccessManagementHost
             options.Source = appsettings.RunInitOnly ? SourceType.Migration : SourceType.App; 
         });
 
-        builder.Services.AddAccessMgmtCore();
+        builder.Services.AddAccessMgmtCore(builder.Configuration);
 
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
@@ -108,7 +106,6 @@ internal static partial class AccessManagementHost
         builder.ConfigureOpenAPI();
         builder.ConfigureAuthorization();
         builder.ConfigureAccessManagementPersistence();
-        builder.ConfigureHostedServices();
         builder.AddAccessManagementEnduser();
         builder.AddAccessManagementInternal();
 
@@ -139,22 +136,6 @@ internal static partial class AccessManagementHost
         {
             builder.Configuration.GetSection("AccessMgmtPersistenceOptions").Bind(opts);
         });
-
-        return builder;
-    }
-
-    private static WebApplicationBuilder ConfigureHostedServices(this WebApplicationBuilder builder)
-    {
-        builder.Services.AddHostedService<Authorization.AccessManagement.RegisterHostedService>();
-        builder.Services.AddSingleton<IPartySyncService, PartySyncService>();
-        builder.Services.AddSingleton<IRoleSyncService, RoleSyncService>();
-        builder.Services.AddSingleton<IResourceSyncService, ResourceSyncService>();
-
-        // builder.Services.AddHostedService<AltinnRoleHostedService>();
-        // builder.Services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
-        // builder.Services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
-        // builder.Services.AddSingleton<IAltinnBankruptcyEstateRoleSyncService, AltinnBankruptcyEstateRoleSyncService>();
-        // builder.Services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
 
         return builder;
     }
