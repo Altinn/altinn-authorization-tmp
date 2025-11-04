@@ -56,6 +56,14 @@ public interface IRoleService
     Task<IEnumerable<RoleDto>> GetByProvider(Guid providerId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Get permissions (packages and resources) given
+    /// </summary>
+    /// <param name="roleId">Role (daglig-leder)</param>
+    /// <param name="variantId">Variant (ASA)</param>
+    /// <returns></returns>
+    Task<IEnumerable<RoleVariantPrivilegeDto>> GetPrivileges(Guid? roleId = null, Guid? variantId = null);
+
+    /// <summary>
     /// Get packages for role
     /// </summary>
     /// <param name="id">Role identity</param>
