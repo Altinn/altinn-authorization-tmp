@@ -33,7 +33,7 @@ internal static class AddAssignmentValidation
              errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", ValidationMessageTexts.PersonIdentifierRequired)]);
         }
 
-        if (trimmed.Length == 11 && trimmed.All(char.IsDigit) && !ValidNINUtil.IsValidNIN(trimmed))
+        if (trimmed.Length == 11 && trimmed.All(char.IsDigit) && !ValidPIDUtil.IsValidPID(trimmed))
         {
             return (ref ValidationErrorBuilder errors) =>
              errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", ValidationMessageTexts.PersonIdentifierInvalidNin)]);

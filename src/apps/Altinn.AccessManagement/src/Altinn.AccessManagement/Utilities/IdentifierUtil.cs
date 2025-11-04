@@ -112,7 +112,7 @@ public static class IdentifierUtil
                 throw new ArgumentException($"When using the '{PersonHeaderTrigger}' path parameter the national identity number must be provided as a request header value: '{PersonHeader}'");
             }
 
-            if (!ValidNINUtil.IsValidNIN(context.Request.Headers[PersonHeader]))
+            if (!ValidPIDUtil.IsValidPID(context.Request.Headers[PersonHeader]))
             {
                 throw new ArgumentException($"The request header '{PersonHeader}' does not provide a well-formed national identity number value: '{context.Request.Headers[PersonHeader]}'");
             }

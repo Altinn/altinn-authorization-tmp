@@ -1,15 +1,15 @@
 ﻿namespace Altinn.AccessMgmt.Core.Utils;
 
 /// <summary>
-/// Utility class for working with Norwegian national identification numbers (NIN)
+/// Utility class for working with Personal Identifiers (PID) in the format of Norwegian national identification numbers
 /// </summary>
-public static class ValidNINUtil
+public static class ValidPIDUtil
 {
     /// <summary>
-    /// Validates that a given national identification number is valid.
+    /// Validates that a given Personal Identifier (PID) is valid.
     /// </summary>
-    /// <param name="nin">
-    /// National identification number to validate
+    /// <param name="pid">
+    /// Personal Identifier (PID) to validate
     /// </param>
     /// <returns>
     /// true if valid, false otherwise.
@@ -17,13 +17,13 @@ public static class ValidNINUtil
     /// <remarks>
     /// Validates length, numeric and modulus 11.
     /// </remarks>
-    public static bool IsValidNIN(string nin)
+    public static bool IsValidPID(string pid)
     {
         int[] weightDigit10 = { 3, 7, 6, 1, 8, 9, 4, 5, 2 };
         int[] weightDigit11 = { 5, 4, 3, 2, 7, 6, 5, 4, 3, 2 };
 
         // Validation only done for 11 digit numbers
-        if (nin.Length == 11)
+        if (pid.Length == 11)
         {
             try
             {
@@ -36,7 +36,7 @@ public static class ValidNINUtil
                 // Calculate control digits
                 for (int i = 0; i < 9; i++)
                 {
-                    currentDigit = int.Parse(nin.Substring(i, 1));
+                    currentDigit = int.Parse(pid.Substring(i, 1));
                     sumCtrlDigit10 += currentDigit * weightDigit10[i];
                     sumCtrlDigit11 += currentDigit * weightDigit11[i];
                 }
@@ -55,8 +55,8 @@ public static class ValidNINUtil
                 }
 
                 // Validate control digits in ssn
-                bool digit10Valid = ctrlDigit10 == int.Parse(nin.Substring(9, 1));
-                bool digit11Valid = ctrlDigit11 == int.Parse(nin.Substring(10, 1));
+                bool digit10Valid = ctrlDigit10 == int.Parse(pid.Substring(9, 1));
+                bool digit11Valid = ctrlDigit11 == int.Parse(pid.Substring(10, 1));
                 return digit10Valid && digit11Valid;
             }
             catch
