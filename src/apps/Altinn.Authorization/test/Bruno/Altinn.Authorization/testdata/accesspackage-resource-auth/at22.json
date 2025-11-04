@@ -1,7 +1,7 @@
 {
   "env": "at22",
   "resources": {
-    "clientDelgResourceId": "devtest_gar_bruno_client_resource"
+    "revisorattestererPckgResourceId": "devtest_gar_bruno_direct_resource"
   },
   "REGN_ULASTELIG_RETTFERDIG_TIGER": {
     "name": "ULASTELIG RETTFERDIG TIGER AS",
