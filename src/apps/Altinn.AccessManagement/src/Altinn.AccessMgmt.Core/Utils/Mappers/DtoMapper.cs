@@ -121,7 +121,7 @@ public partial class DtoMapper
                 OrganizationIdentifier = entity.OrganizationIdentifier,
                 PartyId = entity.PartyId,
                 PersonIdentifier = entity.PersonIdentifier,
-                UserId = entity.UserId, 
+                UserId = entity.UserId,
                 Username = entity.Username
             };
         }
@@ -214,15 +214,15 @@ public partial class DtoMapper
         return null;
     }
 
-    public static PackageDto ConvertCompactPackage(ConnectionQueryPackage package)
+    public static CompactPackageDto ConvertCompactPackage(ConnectionQueryPackage package)
     {
         if (package is { })
         {
-            return new PackageDto()
+            return new CompactPackageDto()
             {
                 Id = package.Id,
-                
                 Urn = package.Urn,
+                AreaId = package.AreaId,
             };
         }
 
