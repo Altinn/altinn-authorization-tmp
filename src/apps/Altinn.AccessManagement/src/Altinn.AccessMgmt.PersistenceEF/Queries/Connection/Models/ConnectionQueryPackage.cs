@@ -21,7 +21,7 @@ public sealed class ConnectionQueryPackage
     public Guid AreaId { get; init; }
 
     /// <summary>
-    /// Urns
+    /// Urn
     /// </summary>
     public string Urn { get; init; } = string.Empty;
 
