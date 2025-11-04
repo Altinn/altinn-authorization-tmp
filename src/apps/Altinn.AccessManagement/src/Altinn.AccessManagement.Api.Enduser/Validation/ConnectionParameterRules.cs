@@ -10,11 +10,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Validation;
 /// </summary>
 internal static class ConnectionParameterRules
 {
-    private static readonly HashSet<string> ParamKeywords = new(StringComparer.InvariantCultureIgnoreCase)
-    {
-        "me", "all"
-    };
-
     /// <summary>
     /// Validates a party-like parameter (GUID or allowed keyword). Rejects Guid.Empty. Trims input before checks.
     /// </summary>
@@ -25,11 +20,6 @@ internal static class ConnectionParameterRules
         if (!string.IsNullOrWhiteSpace(trimmed))
         {
             if (Guid.TryParse(trimmed, out var parsed) && parsed != Guid.Empty)
-            {
-                return null;
-            }
-
-            if (ParamKeywords.Contains(trimmed))
             {
                 return null;
             }
