@@ -1,11 +1,11 @@
 meta {
-  name: POST_ResourceOwner_AuthorizedParties_FrontendDuplikater
+  name: GET_AuthorizedParties_SIUser
   type: http
-  seq: 2
+  seq: 4
 }
 
-post {
-  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/authorizedparties?includeAltinn2=true&includeAltinn3=true
   body: json
   auth: inherit
 }
@@ -20,33 +20,29 @@ headers {
   Accept: application/json
 }
 
-body:json {
-  {
-    "type": "urn:altinn:person:identifier-no",
-    "value": "20838198385"
-  }
-}
-
 script:pre-request {
-  const testdata = require(`./Testdata/maskinportenschema/${bru.getEnvVar("tokenEnv")}testdata.json`);
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_FrontendDuplikater");
+  bru.setVar("requestName", "GET_AuthorizedParties_SIUser");
   
   var getTokenParameters = {
-    auth_org: testdata.digdir.partyid,
-    auth_orgNo: testdata.digdir.orgno,
-    scope: sharedtestdata.scopes.k6Read,
-    auth_tokenType: sharedtestdata.authTokenType.enterprise,
-    auth_scopes: sharedtestdata.auth_scopes.authorizedPartiesResourceOwner
+    auth_userId: testdata.a2BrunoSIUser.userId,
+    auth_partyId: testdata.a2BrunoSIUser.partyId,
+    auth_partyUuid: testdata.a2BrunoSIUser.partyUuid,
+    auth_username: testdata.a2BrunoSIUser.username,
+    auth_ssn: "",
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_tokenLvl: 1,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
-  bru.setVar("bearerToken",  token);
+  bru.setVar("bearerToken", token);
 }
 
 tests {
-  const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   const body = res.getBody();
   const requestName = bru.getVar("requestName");
   
@@ -54,7 +50,7 @@ tests {
     expect(res.status).to.equal(200);
   });
   
-  test(requestName + "|Inherits all mainunit accesses on subunits", function() {  
+  test(requestName + "|Inheirits all mainunit accesses on subunits", function() {  
     // Test that all authorized rights on main units also exists on all subunits
     body.forEach((party, partyIndex) => {
       if (party.subunits && party.subunits.length > 0) {
@@ -87,7 +83,7 @@ tests {
     
   });
   
-  test(requestName + "|Mainunit AuthorizedInstances not inheirited to subunits", function() {  
+  test(requestName + "|Mainunit AuthorizedInstances not inherited to subunits", function() {  
     // Test that any authorized instances on main units does not exist on any subunits
     body.forEach((party, partyIndex) => {
       const parentInstances = party.authorizedInstances || [];
@@ -145,4 +141,14 @@ tests {
   
   });
   
+  test(requestName + "|Find expected AuthorizedParty and AuthorizedAccessPackages", function() {  
+    // Test that the expected party exists in the response with the expected packages
+    
+    const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
+    const targetParty = allParties.find(party => party.partyUuid === testdata.a2BrunoSIUser.partyUuid);
+  
+    assert.exists(targetParty, 'Party with partyUuid '+testdata.a2BrunoSIUser.partyUuid+' should exist');
+    assert.includeMembers(targetParty.authorizedRoles, ["SELN"]);
+  
+  });
 }
