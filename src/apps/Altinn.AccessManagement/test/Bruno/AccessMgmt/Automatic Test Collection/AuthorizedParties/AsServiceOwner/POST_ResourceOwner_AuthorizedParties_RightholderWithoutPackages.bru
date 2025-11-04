@@ -1,7 +1,7 @@
 meta {
-  name: POST_ResourceOwner_AuthorizedParties_Dagl_Regn
+  name: POST_ResourceOwner_AuthorizedParties_RightholderWithoutPackages
   type: http
-  seq: 2
+  seq: 3
 }
 
 post {
@@ -23,14 +23,16 @@ headers {
 body:json {
   {
     "type": "urn:altinn:person:identifier-no",
-    "value": "14877296726"
+    "value": "{{personId}}"
   }
 }
 
 script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_Dagl_Regn");
+  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_RightholderWithoutPackages");
+  bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.employee_rightholderWithoutPackages.pid);
   
   var getTokenParameters = {
     auth_org: sharedtestdata.serviceOwners.digdir.org,
