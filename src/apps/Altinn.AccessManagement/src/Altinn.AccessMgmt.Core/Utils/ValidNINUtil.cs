@@ -3,7 +3,7 @@
 /// <summary>
 /// Utility class for working with Norwegian social security numbers (SSN)
 /// </summary>
-public static class ValidSSNUtil
+public static class ValidNINUtil
 {
     /// <summary>
     /// Validates that a given social security number is valid.
@@ -17,7 +17,7 @@ public static class ValidSSNUtil
     /// <remarks>
     /// Validates length, numeric and modulus 11.
     /// </remarks>
-    public static bool IsValidSSN(string ssnNo)
+    public static bool IsValidNIN(string ssnNo)
     {
         int[] weightDigit10 = { 3, 7, 6, 1, 8, 9, 4, 5, 2 };
         int[] weightDigit11 = { 5, 4, 3, 2, 7, 6, 5, 4, 3, 2 };
