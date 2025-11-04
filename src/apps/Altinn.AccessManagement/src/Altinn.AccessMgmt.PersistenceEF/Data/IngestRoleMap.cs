@@ -9,8 +9,9 @@ public static partial class StaticDataIngest
     /// <summary>
     /// Ingest RoleMap data
     /// </summary>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns></returns>
+    /// <param name="dbContext">The database context to use for ingesting RoleMap data.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public static async Task IngestRoleMap(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
         var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
@@ -65,84 +66,84 @@ public static partial class StaticDataIngest
         /*SAM*/
         var roleSam = GetRoleId("urn:altinn:external-role:ccr:sameier", "sameier");
         /*SENS*/
-        var roleSens = GetRoleId("urn:altinn:rolecode:SENS", "Sensitive-tjenester");
+        var roleSens = GetRoleId("urn:altinn:rolecode:sens", "Sensitive-tjenester");
         /*SREVA*/
         var roleSreva = GetRoleId("urn:altinn:external-role:ccr:kontaktperson-revisor", "kontaktperson-revisor");
 
         /*A0212*/
-        var roleA0212 = GetRoleId("urn:altinn:rolecode:A0212", "A0212");
+        var roleA0212 = GetRoleId("urn:altinn:rolecode:a0212", "A0212");
         /*A0236*/
-        var roleA0236 = GetRoleId("urn:altinn:rolecode:A0236", "A0236");
+        var roleA0236 = GetRoleId("urn:altinn:rolecode:a0236", "A0236");
         /*A0237*/
         var roleA0237 = GetRoleId("urn:altinn:rolecode:A0237", "A0237");
         /*A0238*/
-        var roleA0238 = GetRoleId("urn:altinn:rolecode:A0238", "A0238");
+        var roleA0238 = GetRoleId("urn:altinn:rolecode:a0238", "A0238");
         /*A0239*/
-        var roleA0239 = GetRoleId("urn:altinn:rolecode:A0239", "A0239");
+        var roleA0239 = GetRoleId("urn:altinn:rolecode:a0239", "A0239");
         /*A0240*/
-        var roleA0240 = GetRoleId("urn:altinn:rolecode:A0240", "A0240");
+        var roleA0240 = GetRoleId("urn:altinn:rolecode:a0240", "A0240");
         /*A0241*/
-        var roleA0241 = GetRoleId("urn:altinn:rolecode:A0241", "A0241");
+        var roleA0241 = GetRoleId("urn:altinn:rolecode:a0241", "A0241");
         /*A0278*/
-        var roleA0278 = GetRoleId("urn:altinn:rolecode:A0278", "A0278");
+        var roleA0278 = GetRoleId("urn:altinn:rolecode:a0278", "A0278");
         /*A0282*/
-        var roleA0282 = GetRoleId("urn:altinn:rolecode:A0282", "A0282");
+        var roleA0282 = GetRoleId("urn:altinn:rolecode:a0282", "A0282");
         /*A0286*/
-        var roleA0286 = GetRoleId("urn:altinn:rolecode:A0286", "A0286");
+        var roleA0286 = GetRoleId("urn:altinn:rolecode:a0286", "A0286");
         /*A0293*/
-        var roleA0293 = GetRoleId("urn:altinn:rolecode:A0293", "A0293");
+        var roleA0293 = GetRoleId("urn:altinn:rolecode:a0293", "A0293");
         /*A0294*/
-        var roleA0294 = GetRoleId("urn:altinn:rolecode:A0294", "A0294");
+        var roleA0294 = GetRoleId("urn:altinn:rolecode:a0294", "A0294");
         /*A0298*/
-        var roleA0298 = GetRoleId("urn:altinn:rolecode:A0298", "A0298");
+        var roleA0298 = GetRoleId("urn:altinn:rolecode:a0298", "A0298");
         /*ADMAI*/
-        var roleADMAI = GetRoleId("urn:altinn:rolecode:ADMAI", "ADMAI");
+        var roleADMAI = GetRoleId("urn:altinn:rolecode:admai", "ADMAI");
         /*APIADM*/
-        var roleAPIADM = GetRoleId("urn:altinn:rolecode:APIADM", "APIADM");
+        var roleAPIADM = GetRoleId("urn:altinn:rolecode:apiadm", "APIADM");
         /*APIADMNUF*/
-        var roleAPIADMNUF = GetRoleId("urn:altinn:rolecode:APIADMNUF", "APIADMNUF");
+        var roleAPIADMNUF = GetRoleId("urn:altinn:rolecode:apiadmnuf", "APIADMNUF");
         /*ATTST*/
-        var roleATTST = GetRoleId("urn:altinn:rolecode:ATTST", "ATTST");
+        var roleATTST = GetRoleId("urn:altinn:rolecode:attst", "ATTST");
         /*BOADM*/
-        var roleBOADM = GetRoleId("urn:altinn:rolecode:BOADM", "BOADM");
+        var roleBOADM = GetRoleId("urn:altinn:rolecode:boadm", "BOADM");
         /*BOBEL*/
-        var roleBOBEL = GetRoleId("urn:altinn:rolecode:BOBEL", "BOBEL");
+        var roleBOBEL = GetRoleId("urn:altinn:rolecode:bobel", "BOBEL");
         /*BOBES*/
-        var roleBOBES = GetRoleId("urn:altinn:rolecode:BOBES", "BOBES");
+        var roleBOBES = GetRoleId("urn:altinn:rolecode:bobes", "BOBES");
         /*ECKEYROLE*/
-        var roleECKEYROLE = GetRoleId("urn:altinn:rolecode:ECKEYROLE", "ECKEYROLE");
+        var roleECKEYROLE = GetRoleId("urn:altinn:rolecode:eckeyrole", "ECKEYROLE");
         /*EKTJ*/
-        var roleEKTJ = GetRoleId("urn:altinn:rolecode:EKTJ", "EKTJ");
+        var roleEKTJ = GetRoleId("urn:altinn:rolecode:ektj", "EKTJ");
         /*HADM*/
-        var roleHADM = GetRoleId("urn:altinn:rolecode:HADM", "HADM");
+        var roleHADM = GetRoleId("urn:altinn:rolecode:hadm", "HADM");
         /*HVASK*/
-        var roleHVASK = GetRoleId("urn:altinn:rolecode:HVASK", "HVASK");
+        var roleHVASK = GetRoleId("urn:altinn:rolecode:hvask", "HVASK");
         /*KLADM*/
-        var roleKLADM = GetRoleId("urn:altinn:rolecode:KLADM", "KLADM");
+        var roleKLADM = GetRoleId("urn:altinn:rolecode:kladm", "KLADM");
         /*KOMAB*/
-        var roleKOMAB = GetRoleId("urn:altinn:rolecode:KOMAB", "KOMAB");
+        var roleKOMAB = GetRoleId("urn:altinn:rolecode:komab", "KOMAB");
         /*LOPER*/
-        var roleLOPER = GetRoleId("urn:altinn:rolecode:LOPER", "LOPER");
+        var roleLOPER = GetRoleId("urn:altinn:rolecode:loper", "LOPER");
         /*PASIG*/
-        var rolePASIG = GetRoleId("urn:altinn:rolecode:PASIG", "PASIG");
+        var rolePASIG = GetRoleId("urn:altinn:rolecode:pasig", "PASIG");
         /*PAVAD*/
-        var rolePAVAD = GetRoleId("urn:altinn:rolecode:PAVAD", "PAVAD");
+        var rolePAVAD = GetRoleId("urn:altinn:rolecode:pavad", "PAVAD");
         /*PRIUT*/
-        var rolePRIUT = GetRoleId("urn:altinn:rolecode:PRIUT", "PRIUT");
+        var rolePRIUT = GetRoleId("urn:altinn:rolecode:priut", "PRIUT");
         /*REGNA*/
-        var roleREGNA = GetRoleId("urn:altinn:rolecode:REGNA", "REGNA");
+        var roleREGNA = GetRoleId("urn:altinn:rolecode:regna", "REGNA");
         /*SIGNE*/
-        var roleSIGNE = GetRoleId("urn:altinn:rolecode:SIGNE", "SIGNE");
+        var roleSIGNE = GetRoleId("urn:altinn:rolecode:signe", "SIGNE");
         /*SISKD*/
-        var roleSISKD = GetRoleId("urn:altinn:rolecode:SISKD", "SISKD");
+        var roleSISKD = GetRoleId("urn:altinn:rolecode:siskd", "SISKD");
         /*UIHTL*/
-        var roleUIHTL = GetRoleId("urn:altinn:rolecode:UIHTL", "UIHTL");
+        var roleUIHTL = GetRoleId("urn:altinn:rolecode:uihtl", "UIHTL");
         /*UILUF*/
-        var roleUILUF = GetRoleId("urn:altinn:rolecode:UILUF", "UILUF");
+        var roleUILUF = GetRoleId("urn:altinn:rolecode:uiluf", "UILUF");
         /*UTINN*/
-        var roleUTINN = GetRoleId("urn:altinn:rolecode:UTINN", "UTINN");
+        var roleUTINN = GetRoleId("urn:altinn:rolecode:utinn", "UTINN");
         /*UTOMR*/
-        var roleUTOMR = GetRoleId("urn:altinn:rolecode:UTOMR", "UTOMR");
+        var roleUTOMR = GetRoleId("urn:altinn:rolecode:utomr", "UTOMR");
 
         var roleMaps = new List<RoleMap>()
         {

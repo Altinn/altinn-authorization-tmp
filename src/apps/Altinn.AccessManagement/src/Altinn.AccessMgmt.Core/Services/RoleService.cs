@@ -147,7 +147,7 @@ public class RoleService: IRoleService
             if (legacyRoleCode != null)
             {
                 role.LegacyRoleCode = legacyRoleCode.Value;
-                role.LegacyUrn = $"urn:altinn:rolecode:{legacyRoleCode.Value}";
+                role.LegacyUrn = $"urn:altinn:rolecode:{legacyRoleCode.Value.ToLower()}";
             }
 
             roleDtos.Add(role);
@@ -162,7 +162,7 @@ public class RoleService: IRoleService
         if (legacyRoleCode != null)
         {
             extRole.LegacyRoleCode = legacyRoleCode.Value;
-            extRole.LegacyUrn = $"urn:altinn:rolecode:{legacyRoleCode.Value}";
+            extRole.LegacyUrn = $"urn:altinn:rolecode:{legacyRoleCode.Value.ToLower()}";
         }
     }
 }
