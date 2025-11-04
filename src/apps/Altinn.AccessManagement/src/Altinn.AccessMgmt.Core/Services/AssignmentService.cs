@@ -285,7 +285,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     }
 
     /// <inheritdoc/>
-    public async Task<Dictionary<Guid,bool>> AddPackageToAssignment(Guid userId, Guid assignmentId, IEnumerable<Guid> packageIds, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<Guid, bool>> AddPackageToAssignment(Guid userId, Guid assignmentId, IEnumerable<Guid> packageIds, CancellationToken cancellationToken = default)
     {
         var user = await db.Entities.AsNoTracking().SingleAsync(t => t.Id == userId, cancellationToken);
         var assignment = await db.Assignments.SingleAsync(t => t.Id == assignmentId, cancellationToken);
@@ -327,6 +327,8 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
 
         var result = await db.SaveChangesAsync(cancellationToken);
         return hasPackages;
+    }
+
     public async Task<IEnumerable<Assignment>> GetKeyRoleAssignments(Guid toId, CancellationToken cancellationToken = default)
     {
         return await db.Assignments.AsNoTracking()

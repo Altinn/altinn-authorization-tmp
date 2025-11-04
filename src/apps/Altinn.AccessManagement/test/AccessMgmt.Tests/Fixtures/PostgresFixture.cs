@@ -7,8 +7,10 @@ using Altinn.AccessManagement.Persistence;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Tests.Seeds;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using System.Collections.Concurrent;
@@ -54,7 +56,7 @@ public class PostgresFixture : IAsyncLifetime
         return db;
     }
 
-    public PostgresDatabase SharedDb { get; private set; }
+    public AppDbContext SharedDbContext { get; private set; }
 
     /// <inheritdoc/>
     public Task DisposeAsync()
@@ -64,21 +66,23 @@ public class PostgresFixture : IAsyncLifetime
     }
 
     /// <inheritdoc/>
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
         PostgresServer.StartUsing(this);
 
-        SharedDb = PostgresServer.NewEFDatabase();
+        var db = PostgresServer.NewEFDatabase();
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(SharedDb.Admin.ToString())
+            .UseNpgsql(db.Admin.ToString())
+            .ReplaceService<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>()
+            .EnableSensitiveDataLogging()
             .Options;
 
-        using var db = new AppDbContext(options);
-        db.Database.MigrateAsync().Wait();
-        AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(db).Wait();
-
-        return Task.CompletedTask;
+        SharedDbContext = new AppDbContext(options);
+        await SharedDbContext.Database.ExecuteSqlRawAsync("CREATE SCHEMA dbo");
+        await SharedDbContext.Database.ExecuteSqlRawAsync("CREATE SCHEMA dbo_history");
+        await SharedDbContext.Database.MigrateAsync();
+        await AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(SharedDbContext);
     }
 }
 

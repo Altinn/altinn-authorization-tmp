@@ -15,11 +15,7 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
 
     public ConnectionQueryTests(PostgresFixture fixture)
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(fixture.SharedDb.Admin.ToString())
-            .Options;
-
-        _db = new AppDbContext(options);
+        _db = fixture.SharedDbContext;
         _query = new ConnectionQuery(_db);
 
         _data = SeedTestData(_db).GetAwaiter().GetResult();

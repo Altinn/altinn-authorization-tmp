@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
@@ -30,51 +31,45 @@ public interface IRequestService
     
     Task<IEnumerable<RequestMessage>> GetRequestMessages(Guid requestId);
 
-    Task<Request> CreateRequest(Guid requestedBy, Guid fromId, Guid toId, Guid roleId, Guid? viaId, Guid? viaRoleId, List<Guid> packageIds, List<Guid> resourceIds);
+    Task<Request> CreateRequest(Guid requestedBy, Guid fromId, Guid toId, Guid roleId, Guid? viaId, Guid? viaRoleId, List<Guid> packageIds, List<Guid> resourceIds, AuditValues audit = null, CancellationToken cancellationToken = default);
     
-    Task<Request> CreateRequest(Guid requestedBy, Guid fromId, Guid toId, Guid roleId, List<Guid> packageIds, List<Guid> resourceIds);
+    Task<Request> CreateRequest(Guid requestedBy, Guid fromId, Guid toId, Guid roleId, List<Guid> packageIds, List<Guid> resourceIds, AuditValues audit = null, CancellationToken cancellationToken = default);
 
-    Task<bool> AddRequestMessage(Guid requestId, string message);
+    Task<bool> AddRequestMessage(Guid requestId, string message, AuditValues audit = null, CancellationToken cancellationToken = default);
 
-    Task<bool> AddRequestPackage(Guid requestId, Guid packageId);
+    Task<bool> AddRequestPackage(Guid requestId, Guid packageId, AuditValues audit = null, CancellationToken cancellationToken = default);
     
-    Task<bool> AddRequestPackage(Guid requestId, List<Guid> packageIds);
+    Task<bool> AddRequestPackage(Guid requestId, List<Guid> packageIds, AuditValues audit = null, CancellationToken cancellationToken = default);
 
-    Task<bool> AddRequestResource(Guid requestId, Guid resourceId);
+    Task<bool> AddRequestResource(Guid requestId, Guid resourceId, AuditValues audit = null, CancellationToken cancellationToken = default);
 
-    Task<bool> AddRequestResource(Guid requestId, List<Guid> resourceIds);
+    Task<bool> AddRequestResource(Guid requestId, List<Guid> resourceIds, AuditValues audit = null, CancellationToken cancellationToken = default);
 
-    Task<bool> RemoveRequestPackage(Guid requestId, Guid packageId);
+    Task<bool> RemoveRequestPackage(Guid requestId, Guid packageId, AuditValues audit = null, CancellationToken cancellationToken = default);
 
-    Task<bool> RemoveRequestResource(Guid requestId, Guid resourceId);
+    Task<bool> RemoveRequestResource(Guid requestId, Guid resourceId, AuditValues audit = null, CancellationToken cancellationToken = default);
 
-    Task<bool> AcceptRequest(Guid requestId);
+    Task<bool> AcceptRequest(Guid requestId, AuditValues audit = null, CancellationToken cancellationToken = default);
 
-    Task<bool> AcceptRequestPackage(Guid requestId, Guid packageId);
+    Task<bool> AcceptRequestPackage(Guid requestId, Guid packageId, AuditValues audit = null, CancellationToken cancellationToken = default);
     
-    Task<bool> AcceptRequestResource(Guid requestId, Guid resourceId);
+    Task<bool> AcceptRequestResource(Guid requestId, Guid resourceId, AuditValues audit = null, CancellationToken cancellationToken = default);
     
-    Task<bool> RejectRequest(Guid requestId);
+    Task<bool> RejectRequest(Guid requestId, AuditValues audit = null, CancellationToken cancellationToken = default);
     
-    Task<bool> RejectRequestPackage(Guid requestId, Guid packageId);
+    Task<bool> RejectRequestPackage(Guid requestId, Guid packageId, AuditValues audit = null, CancellationToken cancellationToken = default);
     
-    Task<bool> RejectRequestResource(Guid requestId, Guid resourceId);
+    Task<bool> RejectRequestResource(Guid requestId, Guid resourceId, AuditValues audit = null, CancellationToken cancellationToken = default);
 }
 
 public class RequestService(
-    AppDbContext appDbContext, 
-    IAuditAccessor auditAccessor,
+    AppDbContext appDbContext,
     IAssignmentService assignmentService
     ) : IRequestService
 {
     public AppDbContext Db { get; } = appDbContext;
 
-    private readonly Guid statusAccepted = Guid.Parse("0195efb8-7c80-7c6d-aec6-5eafa8154ca1");
-    private readonly Guid statusRejected = Guid.Parse("0195efb8-7c80-761b-b950-e709c703b6b1");
-    private readonly Guid statusOpen = Guid.Parse("0195efb8-7c80-7239-8ee5-7156872b53d1");
-    private readonly Guid statusClosed = Guid.Parse("0195efb8-7c80-7731-82a3-1f6b659ec848");
-
-    public async Task<bool> AcceptRequest(Guid requestId)
+    public async Task<bool> AcceptRequest(Guid requestId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
         // Loop all packages and resources connected to request and create
 
@@ -86,18 +81,18 @@ public class RequestService(
 
         var assignment = await assignmentService.GetOrCreateAssignment(request.FromId, request.ToId, request.RoleId);
 
-        var requestPackages = await Db.RequestPackages.Where(t => t.RequestId == request.Id && t.StatusId == statusOpen).ToListAsync();
-        var requestResources = await Db.RequestResources.Where(t => t.RequestId == request.Id && t.StatusId == statusOpen).ToListAsync();
+        var requestPackages = await Db.RequestPackages.Where(t => t.RequestId == request.Id && t.StatusId == RequestStatusConstants.Open).ToListAsync();
+        var requestResources = await Db.RequestResources.Where(t => t.RequestId == request.Id && t.StatusId == RequestStatusConstants.Open).ToListAsync();
 
-        var addPackageResult = assignmentService.AddPackageToAssignment(auditAccessor.AuditValues.ChangedBy, assignment.Id, requestPackages.Select(t => t.PackageId));
-        var addResourceResult = assignmentService.AddResourceToAssignment(auditAccessor.AuditValues.ChangedBy, assignment.Id, requestResources.Select(t => t.ResourceId));
+        var addPackageResult = assignmentService.AddPackageToAssignment(audit.ChangedBy, assignment.Id, requestPackages.Select(t => t.PackageId));
+        var addResourceResult = assignmentService.AddResourceToAssignment(audit.ChangedBy, assignment.Id, requestResources.Select(t => t.ResourceId));
 
         // Need return model. Dictionary<guid,bool> for Accepted posible/executed true/false.
 
-        return await ChangeRequestStatus(requestId, statusAccepted);
+        return await ChangeRequestStatus(requestId, RequestStatusConstants.Accepted);
     }
 
-    public async Task<bool> AcceptRequestPackage(Guid requestId, Guid packageId)
+    public async Task<bool> AcceptRequestPackage(Guid requestId, Guid packageId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
         var request = await Db.Requests.FirstOrDefaultAsync(t => t.Id == requestId);
         if (request == null)
@@ -106,6 +101,10 @@ public class RequestService(
         }
 
         var assignment = await assignmentService.GetOrCreateAssignment(request.FromId, request.ToId, request.RoleId);
+        if (assignment == null)
+        {
+            return false;
+        }
 
         var requestPackage = await Db.RequestPackages.FirstOrDefaultAsync(t => t.RequestId == request.Id && t.PackageId == packageId);
         if (requestPackage == null)
@@ -113,37 +112,39 @@ public class RequestService(
             return false;
         }
 
-        var addPackageResult = assignmentService.AddPackageToAssignment(auditAccessor.AuditValues.ChangedBy, assignment.Id, requestPackage.PackageId);
+        var addPackageResult = assignmentService.AddPackageToAssignment(audit.ChangedBy, assignment.Id, requestPackage.PackageId);
 
-        var statusResult = await ChangeRequestPackageStatus(requestId, packageId, statusAccepted);
+        var statusResult = await ChangeRequestPackageStatus(requestId, packageId, RequestStatusConstants.Accepted);
         if (!statusResult)
         {
             return false;
         }
 
         // need return model
+
+        var result = GetRequestPackage(requestId, packageId);
         return true;
     }
 
-    public async Task<bool> AcceptRequestResource(Guid requestId, Guid resourceId)
+    public async Task<bool> AcceptRequestResource(Guid requestId, Guid resourceId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
-        var request = await Db.Requests.FirstOrDefaultAsync(t => t.Id == requestId);
+        var request = await Db.Requests.FirstOrDefaultAsync(t => t.Id == requestId, cancellationToken);
         if (request == null)
         {
             return false;
         }
 
-        var assignment = await assignmentService.GetOrCreateAssignment(request.FromId, request.ToId, request.RoleId);
+        var assignment = await assignmentService.GetOrCreateAssignment(request.FromId, request.ToId, request.RoleId, audit, cancellationToken);
 
-        var requestResource = await Db.RequestResources.FirstOrDefaultAsync(t => t.RequestId == request.Id && t.ResourceId == resourceId);
+        var requestResource = await Db.RequestResources.FirstOrDefaultAsync(t => t.RequestId == request.Id && t.ResourceId == resourceId, cancellationToken);
         if (requestResource == null)
         {
             return false;
         }
 
-        var addPackageResult = assignmentService.AddResourceToAssignment(auditAccessor.AuditValues.ChangedBy, assignment.Id, requestResource.ResourceId);
+        var addPackageResult = assignmentService.AddResourceToAssignment(audit.ChangedBy, assignment.Id, requestResource.ResourceId);
 
-        var statusResult = await ChangeRequestResourceStatus(requestId, resourceId, statusAccepted);
+        var statusResult = await ChangeRequestResourceStatus(requestId, resourceId, RequestStatusConstants.Accepted, audit, cancellationToken);
         if (!statusResult)
         {
             return false;
@@ -153,12 +154,12 @@ public class RequestService(
         return true;
     }
 
-    public async Task<Request> CreateRequest(Guid requestedBy, Guid fromId, Guid toId, Guid roleId, List<Guid> packageIds, List<Guid> resourceIds)
+    public async Task<Request> CreateRequest(Guid requestedBy, Guid fromId, Guid toId, Guid roleId, List<Guid> packageIds, List<Guid> resourceIds, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
-        return await CreateRequest(requestedBy, fromId, toId, roleId, null, null, packageIds, resourceIds);
+        return await CreateRequest(requestedBy, fromId, toId, roleId, null, null, packageIds, resourceIds, audit, cancellationToken);
     }
 
-    public async Task<Request> CreateRequest(Guid requestedBy, Guid fromId, Guid toId, Guid roleId, Guid? viaId, Guid? viaRoleId, List<Guid> packageIds, List<Guid> resourceIds)
+    public async Task<Request> CreateRequest(Guid requestedBy, Guid fromId, Guid toId, Guid roleId, Guid? viaId, Guid? viaRoleId, List<Guid> packageIds, List<Guid> resourceIds, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
         var newRequest = new Request()
         {
@@ -169,7 +170,7 @@ public class RequestService(
             ViaId = viaId,
             ViaRoleId = viaRoleId,
             RequestedById = requestedBy,
-            StatusId = statusOpen
+            StatusId = RequestStatusConstants.Open
         };
 
         var packages = new List<RequestPackage>();
@@ -179,7 +180,7 @@ public class RequestService(
             {
                 Id = Guid.CreateVersion7(),
                 RequestId = newRequest.Id,
-                StatusId = statusOpen,
+                StatusId = RequestStatusConstants.Open,
                 PackageId = packageId
             });
         }
@@ -191,33 +192,71 @@ public class RequestService(
             {
                 Id = Guid.CreateVersion7(),
                 RequestId = newRequest.Id,
-                StatusId = statusOpen,
+                StatusId = RequestStatusConstants.Open,
                 ResourceId = resourceId
             });
         }
 
-        return await CreateRequest(newRequest, packages, resources);
+        return await CreateRequest(newRequest, packages, resources, audit, cancellationToken);
     }
 
-    private async Task<Request> CreateRequest(Request request, List<RequestPackage> packages, List<RequestResource> resources)
+    private async Task<Request> CreateRequest(Request request, List<RequestPackage> packages, List<RequestResource> resources, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
         Db.Requests.Add(request);
         Db.RequestPackages.AddRange(packages);
         Db.RequestResources.AddRange(resources);
 
-        var res = await Db.SaveChangesAsync();
+        var res = await Db.SaveChangesWithAuditFallbackAsync(audit, cancellationToken);
+        if (res == 0)
+        {
+            throw new Exception("No changes saved to database");
+        }
 
         return request;
     }
 
     public async Task<IEnumerable<RequestPackage>> GetRequestPackages(Guid requestId)
     {
-        return await Db.RequestPackages.Include(t => t.Request).Include(t => t.Package).ThenInclude(t => t.Area).Where(t => t.RequestId == requestId).ToListAsync();
+        return await Db.RequestPackages
+            .AsNoTracking()
+            .Include(t => t.Request)
+            .Include(t => t.Package)
+            .ThenInclude(t => t.Area)
+            .Where(t => t.RequestId == requestId)
+            .ToListAsync();
+    }
+
+    public async Task<RequestPackage> GetRequestPackage(Guid requestId, Guid packageId)
+    {
+        return await Db.RequestPackages
+            .AsNoTracking()
+            .Include(t => t.Request)
+            .Include(t => t.Package)
+            .ThenInclude(t => t.Area)
+            .Where(t => t.RequestId == requestId)
+            .Where(t => t.PackageId == packageId)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<RequestResource>> GetRequestResources(Guid requestId)
     {
-        return await Db.RequestResources.Where(t => t.RequestId == requestId).ToListAsync();
+        return await Db.RequestResources
+            .AsNoTracking()
+            .Include(t => t.Request)
+            .Include(t => t.Resource)
+            .Where(t => t.RequestId == requestId)
+            .ToListAsync();
+    }
+
+    public async Task<RequestResource> GetRequestResource(Guid requestId, Guid resourceId)
+    {
+        return await Db.RequestResources
+            .AsNoTracking()
+            .Include(t => t.Request)
+            .Include(t => t.Resource)
+            .Where(t => t.RequestId == requestId)
+            .Where(t => t.RequestId == requestId)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<Request>> GetOpenRequests(Guid? fromId, Guid? toId, Guid? viaId)
@@ -228,7 +267,7 @@ public class RequestService(
         }
 
         return await Db.Requests
-            .Where(t => t.StatusId == statusOpen)
+            .Where(t => t.StatusId == RequestStatusConstants.Open)
             .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
             .WhereIf(viaId.HasValue, t => t.ViaId == viaId.Value)
@@ -249,56 +288,53 @@ public class RequestService(
             .ToListAsync();
     }
 
-    public async Task<bool> RejectRequest(Guid requestId)
+    public async Task<bool> RejectRequest(Guid requestId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
-        return await ChangeRequestStatus(requestId, statusRejected);
+        return await ChangeRequestStatus(requestId, RequestStatusConstants.Rejected, audit, cancellationToken);
     }
 
-    public async Task<bool> RejectRequestPackage(Guid requestId, Guid packageId)
+    public async Task<bool> RejectRequestPackage(Guid requestId, Guid packageId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
-        return await ChangeRequestPackageStatus(requestId, packageId, statusRejected);
+        return await ChangeRequestPackageStatus(requestId, packageId, RequestStatusConstants.Rejected, audit, cancellationToken);
     }
 
-    public async Task<bool> RejectRequestResource(Guid requestId, Guid resourceId)
+    public async Task<bool> RejectRequestResource(Guid requestId, Guid resourceId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
-        return await ChangeRequestResourceStatus(requestId, resourceId, statusRejected);
+        return await ChangeRequestResourceStatus(requestId, resourceId, RequestStatusConstants.Rejected, audit, cancellationToken);
     }
 
-    private async Task<bool> ChangeRequestStatus(Guid requestId, Guid stausId)
+    private async Task<bool> ChangeRequestStatus(Guid requestId, Guid stausId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
-        var packages = await Db.RequestPackages.Where(t => t.RequestId == requestId).ToListAsync();
+        var packages = await Db.RequestPackages.Where(t => t.RequestId == requestId).ToListAsync(cancellationToken);
         foreach (var package in packages)
         {
             package.StatusId = stausId;
         }
 
-        var resources = await Db.RequestResources.Where(t => t.RequestId == requestId).ToListAsync();
+        var resources = await Db.RequestResources.Where(t => t.RequestId == requestId).ToListAsync(cancellationToken);
         foreach (var resource in resources)
         {
             resource.StatusId = stausId;
         }
 
-        var request = await Db.Requests.SingleAsync(t => t.Id == requestId);
+        var request = await Db.Requests.SingleAsync(t => t.Id == requestId,cancellationToken);
         request.StatusId = stausId;
 
-        var result = await Db.SaveChangesAsync();
-        return result > 0;
+        return await Db.SaveChangesWithAuditFallbackAsync(audit, cancellationToken) > 0;
     }
 
-    private async Task<bool> ChangeRequestPackageStatus(Guid requestId, Guid packageId, Guid stausId)
+    private async Task<bool> ChangeRequestPackageStatus(Guid requestId, Guid packageId, Guid stausId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
         var request = await Db.RequestPackages.SingleAsync(t => t.RequestId == requestId && t.PackageId == packageId);
         request.StatusId = stausId;
-        var result = await Db.SaveChangesAsync();
-        return result > 0;
+        return await Db.SaveChangesWithAuditFallbackAsync(audit, cancellationToken) > 0;
     }
 
-    private async Task<bool> ChangeRequestResourceStatus(Guid requestId, Guid resourceId, Guid stausId)
+    private async Task<bool> ChangeRequestResourceStatus(Guid requestId, Guid resourceId, Guid stausId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
         var request = await Db.RequestResources.SingleAsync(t => t.RequestId == requestId && t.ResourceId == resourceId);
         request.StatusId = stausId;
-        var result = await Db.SaveChangesAsync();
-        return result > 0;
+        return await Db.SaveChangesWithAuditFallbackAsync(audit, cancellationToken) > 0;
     }
 
     public async Task<Request> GetRequest(Guid id)
@@ -315,63 +351,56 @@ public class RequestService(
         return await Db.RequestMessages.Where(t => t.RequestId == requestId).ToListAsync();
     }
 
-    public async Task<bool> AddRequestPackage(Guid requestId, Guid packageId)
+    public async Task<bool> AddRequestPackage(Guid requestId, Guid packageId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
-        Db.RequestPackages.Add(new RequestPackage() { Id = Guid.NewGuid(), RequestId = requestId, PackageId = packageId, StatusId = statusOpen });
-        var res = await Db.SaveChangesAsync();
-        return res > 0;
+        Db.RequestPackages.Add(new RequestPackage() { Id = Guid.NewGuid(), RequestId = requestId, PackageId = packageId, StatusId = RequestStatusConstants.Open });
+        return await Db.SaveChangesWithAuditFallbackAsync(audit, cancellationToken) > 0;
     }
 
-    public async Task<bool> AddRequestPackage(Guid requestId, List<Guid> packageIds)
+    public async Task<bool> AddRequestPackage(Guid requestId, List<Guid> packageIds, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
-        var packages = packageIds.Select(packageId => new RequestPackage() { RequestId = requestId, PackageId = packageId, StatusId = statusOpen });
+        var packages = packageIds.Select(packageId => new RequestPackage() { RequestId = requestId, PackageId = packageId, StatusId = RequestStatusConstants.Open });
         Db.RequestPackages.AddRange(packages);
-        var res = await Db.SaveChangesAsync();
-        return res > 0;
+        return await Db.SaveChangesWithAuditFallbackAsync(audit, cancellationToken) > 0;
     }
 
-    public async Task<bool> AddRequestResource(Guid requestId, Guid resourceId)
+    public async Task<bool> AddRequestResource(Guid requestId, Guid resourceId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
-        Db.RequestResources.Add(new RequestResource() { Id = Guid.NewGuid(), RequestId = requestId, ResourceId = resourceId, StatusId = statusOpen });
-        var res = await Db.SaveChangesAsync();
-        return res > 0;
+        Db.RequestResources.Add(new RequestResource() { Id = Guid.NewGuid(), RequestId = requestId, ResourceId = resourceId, StatusId = RequestStatusConstants.Open });
+        return await Db.SaveChangesWithAuditFallbackAsync(audit, cancellationToken) > 0;
     }
 
-    public async Task<bool> AddRequestResource(Guid requestId, List<Guid> resourceIds)
+    public async Task<bool> AddRequestResource(Guid requestId, List<Guid> resourceIds, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
-        var resources = resourceIds.Select(resourceId => new RequestResource() { RequestId = requestId, ResourceId = resourceId, StatusId = statusOpen });   
+        var resources = resourceIds.Select(resourceId => new RequestResource() { RequestId = requestId, ResourceId = resourceId, StatusId = RequestStatusConstants.Open });   
         Db.RequestResources.AddRange(resources);
-        var res = await Db.SaveChangesAsync();
-        return res > 0;
+        return await Db.SaveChangesWithAuditFallbackAsync(audit, cancellationToken) > 0;
     }
 
-    public async Task<bool> RemoveRequestPackage(Guid requestId, Guid packageId)
+    public async Task<bool> RemoveRequestPackage(Guid requestId, Guid packageId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
         var requestPackage = await Db.RequestPackages.SingleAsync(t => t.RequestId == requestId && t.PackageId == packageId);
         Db.RequestPackages.Remove(requestPackage);
-        var res = await Db.SaveChangesAsync();
-        return res > 0;
+        return await Db.SaveChangesWithAuditFallbackAsync(audit, cancellationToken) > 0;
     }
 
-    public async Task<bool> RemoveRequestResource(Guid requestId, Guid resourceId)
+    public async Task<bool> RemoveRequestResource(Guid requestId, Guid resourceId, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
         var requestResource = await Db.RequestResources.SingleAsync(t => t.RequestId == requestId && t.ResourceId == resourceId);
         Db.RequestResources.Remove(requestResource);
-        var res = await Db.SaveChangesAsync();
-        return res > 0;
+        return await Db.SaveChangesWithAuditFallbackAsync(audit, cancellationToken) > 0;
     }
 
-    public async Task<bool> AddRequestMessage(Guid requestId, string message)
+    public async Task<bool> AddRequestMessage(Guid requestId, string message, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
         Db.RequestMessages.Add(new RequestMessage() 
         { 
             Id = Guid.CreateVersion7(), 
-            AuthorId = auditAccessor.AuditValues.ChangedBy, 
+            AuthorId = audit.ChangedBy, 
             RequestId = requestId, 
             Content = message 
         });
 
-        var res = await Db.SaveChangesAsync();
-        return res > 0;
+        return await Db.SaveChangesWithAuditFallbackAsync(audit, cancellationToken) > 0;
     }
 }

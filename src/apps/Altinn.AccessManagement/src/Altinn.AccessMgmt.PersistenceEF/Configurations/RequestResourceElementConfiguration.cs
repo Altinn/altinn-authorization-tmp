@@ -24,7 +24,7 @@ public class RequestResourceElementConfiguration : IEntityTypeConfiguration<Requ
         builder.PropertyWithReference(navKey: t => t.Request, foreignKey: t => t.RequestId, principalKey: t => t.Id, autoInclude: true);
         builder.PropertyWithReference(navKey: t => t.Status, foreignKey: t => t.StatusId, principalKey: t => t.Id, autoInclude: true);
         builder.PropertyWithReference(navKey: t => t.Resource, foreignKey: t => t.ResourceId, principalKey: t => t.Id, autoInclude: true);
-        // builder.PropertyWithReference(navKey: t => t.Element, foreignKey: t => t.ElementId, principalKey: t => t.Id, autoInclude: true);
+        //// builder.PropertyWithReference(navKey: t => t.Element, foreignKey: t => t.ElementId, principalKey: t => t.Id, autoInclude: true);
 
         builder.HasIndex(["RequestId", "ElementId"]).IsUnique();
     }

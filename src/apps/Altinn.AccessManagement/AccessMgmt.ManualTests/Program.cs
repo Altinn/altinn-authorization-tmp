@@ -1,5 +1,4 @@
-﻿using Altinn.AccessMgmt.Core.Data;
-using Altinn.AccessMgmt.PersistenceEF.Contexts;
+﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -13,9 +12,9 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
-builder.Services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
+//builder.Services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
 builder.Services.AddScoped<ITranslationService, TranslationService>();
-builder.Services.AddScoped<StaticDataIngest>();
+//builder.Services.AddScoped<StaticDataIngest>();
 
 var connString = "Database=accessmgmt_ef_05;Host=localhost;Username=platform_authorization_admin;Password=Password;Include Error Detail=true";
 
@@ -39,13 +38,13 @@ public sealed class DemoRunner(IServiceProvider services) : BackgroundService
     {
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var audit = scope.ServiceProvider.GetRequiredService<IAuditContextAccessor>();
-        var seed = scope.ServiceProvider.GetRequiredService<StaticDataIngest>();
+        //var audit = scope.ServiceProvider.GetRequiredService<IAuditContextAccessor>();
+        //var seed = scope.ServiceProvider.GetRequiredService<StaticDataIngest>();
 
-        audit.Current = new AuditValues(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid().ToString());
+       // audit.Current = new AuditValues(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid().ToString());
 
         //await seed.IngestAll();
-        await seed.IngestProviderType();
+//        await seed.IngestProviderType();
 
         var providerType = await db.ProviderTypes.FirstAsync();
         var provider = await db.Providers.FirstOrDefaultAsync(p => p.Code == "T");

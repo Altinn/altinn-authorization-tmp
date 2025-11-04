@@ -10,6 +10,8 @@ public interface IEntityService
 
     ValueTask<Entity> GetOrCreateEntity(Guid id, string name, string refId, string type, string variant, CancellationToken cancellationToken = default);
 
+    ValueTask<Entity> GetOrCreateEntity(Guid id, string name, string refId, Guid typeId, Guid variantId, CancellationToken cancellationToken = default);
+    
     /// <summary>
     /// Get Entity based on OrgNo
     /// </summary>

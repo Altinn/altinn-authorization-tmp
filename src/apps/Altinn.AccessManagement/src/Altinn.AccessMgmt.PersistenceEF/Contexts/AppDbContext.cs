@@ -185,14 +185,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<AuditRolePackage>(new AuditRolePackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRoleResource>(new AuditRoleResourceConfiguration());
 
+        modelBuilder.ApplyConfiguration<AuditResourceElement>(new AuditResourceElementConfiguration());
+        modelBuilder.ApplyConfiguration<AuditResourceElementType>(new AuditResourceElementTypeConfiguration());
+
         modelBuilder.ApplyConfiguration<AuditRequestStatus>(new AuditRequestStatusConfiguration());
         modelBuilder.ApplyConfiguration<AuditRequest>(new AuditRequestConfiguration());
         modelBuilder.ApplyConfiguration<AuditRequestMessage>(new AuditRequestMessageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRequestPackage>(new AuditRequestPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRequestResource>(new AuditRequestResourceConfiguration());
         modelBuilder.ApplyConfiguration<AuditRequestResourceElement>(new AuditRequestResourceElementConfiguration());
-        modelBuilder.ApplyConfiguration<AuditResourceElement>(new AuditResourceElementConfiguration());
-        modelBuilder.ApplyConfiguration<AuditResourceElementType>(new AuditResourceElementTypeConfiguration());
     }
 
     private void ApplyConfiguration(ModelBuilder modelBuilder)
@@ -225,14 +226,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<RolePackage>(new RolePackageConfiguration());
         modelBuilder.ApplyConfiguration<RoleResource>(new RoleResourceConfiguration());
 
+        modelBuilder.ApplyConfiguration<ResourceElement>(new ResourceElementConfiguration());
+        modelBuilder.ApplyConfiguration<ResourceElementType>(new ResourceElementTypeConfiguration());
+
         modelBuilder.ApplyConfiguration<RequestStatus>(new RequestStatusConfiguration());
         modelBuilder.ApplyConfiguration<Request>(new RequestConfiguration());
         modelBuilder.ApplyConfiguration<RequestMessage>(new RequestMessageConfiguration());
         modelBuilder.ApplyConfiguration<RequestPackage>(new RequestPackageConfiguration());
         modelBuilder.ApplyConfiguration<RequestResource>(new RequestResourceConfiguration());
         modelBuilder.ApplyConfiguration<RequestResourceElement>(new RequestResourceElementConfiguration());
-        modelBuilder.ApplyConfiguration<ResourceElement>(new ResourceElementConfiguration());
-        modelBuilder.ApplyConfiguration<ResourceElementType>(new ResourceElementTypeConfiguration());
     }
 
     #region Extensions
@@ -245,6 +247,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     private static InvalidOperationException MissingAudit() =>
         new("AuditContextAccessor.Current is null. Set it in your controller/service OR call SaveChangesAsync(BaseAudit audit, ...) explicitly.");
+
+    public Task<int> SaveChangesWithAuditFallbackAsync(AuditValues? audit, CancellationToken ct = default)
+    {
+        var effectiveAudit = audit ?? AuditAccessor?.AuditValues ?? throw MissingAudit();
+        return SaveChangesAsync(effectiveAudit, ct);
+    }
 
     public async Task<int> SaveChangesAsync(AuditValues audit, CancellationToken ct = default) =>
         await SaveChangesAsync(audit, acceptAllChangesOnSuccess: true, ct);

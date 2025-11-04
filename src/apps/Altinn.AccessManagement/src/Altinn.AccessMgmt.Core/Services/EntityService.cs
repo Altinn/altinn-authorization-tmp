@@ -35,23 +35,26 @@ public class EntityService : IEntityService
 
     public async ValueTask<Entity> GetOrCreateEntity(Guid id, string name, string refId, string type, string variant, CancellationToken cancellationToken = default)
     {
-        var et = await Db.EntityTypes
-            .FirstOrDefaultAsync(t => t.Name == type);
-        var ev = await Db.EntityVariants
-            .FirstOrDefaultAsync(t => t.Name == variant && t.TypeId == et.Id);
+        var et = await Db.EntityTypes.FirstOrDefaultAsync(t => t.Name == type);
+        var ev = await Db.EntityVariants.FirstOrDefaultAsync(t => t.Name == variant && t.TypeId == et.Id);
 
+        return await GetOrCreateEntity(id, name, refId, et.Id, ev.Id, cancellationToken);
+    }
+
+    public async ValueTask<Entity> GetOrCreateEntity(Guid id, string name, string refId, Guid typeId, Guid variantId, CancellationToken cancellationToken = default)
+    {
         var entity = await GetEntity(id);
 
         if (entity != null)
         {
-            if (!entity.TypeId.Equals(et.Id))
+            if (!entity.TypeId.Equals(typeId))
             {
-                throw new ArgumentException(string.Format("Entity is not of desired type '{0}'", type), paramName: "Type");
+                throw new ArgumentException(string.Format("Entity is not of desired type '{0}'", typeId), paramName: "Type");
             }
 
-            if (!entity.VariantId.Equals(ev.Id))
+            if (!entity.VariantId.Equals(variantId))
             {
-                throw new ArgumentException(string.Format("Entity is not of desired variant '{0}'", variant), paramName: "Variant");
+                throw new ArgumentException(string.Format("Entity is not of desired variant '{0}'", variantId), paramName: "Variant");
             }
 
             return entity;
@@ -63,8 +66,8 @@ public class EntityService : IEntityService
                 Id = id,
                 Name = name,
                 RefId = refId,
-                TypeId = et.Id,
-                VariantId = ev.Id
+                TypeId = typeId,
+                VariantId = variantId
             },
             cancellationToken
             );

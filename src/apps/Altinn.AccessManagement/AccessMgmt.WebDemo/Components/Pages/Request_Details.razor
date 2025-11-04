@@ -1,12 +1,15 @@
 ﻿@page "/request/{id}"
 @using Altinn.AccessMgmt.Core.Services
 @using Altinn.AccessMgmt.Core.Services.Contracts
+@using Altinn.AccessMgmt.PersistenceEF.Audit
+@using Altinn.AccessMgmt.PersistenceEF.Constants
 @using Altinn.AccessMgmt.PersistenceEF.Contexts
 @using Altinn.AccessMgmt.PersistenceEF.Models
 @using Microsoft.EntityFrameworkCore
 @inject IRequestService requestService
 @inject IEntityService entityService
 @inject IAssignmentService assignmentService
+@inject IAuditAccessor audit
 @inject AppDbContext dbContext;
 @inject NavigationManager nav;
 
@@ -102,7 +105,42 @@
                     </TemplateColumn>
                 </Columns>
             </MudDataGrid>
-       </MudItem> 
+       </MudItem>
+
+        <MudItem xs="12" xl="6">
+            <h3>Assignment</h3>
+
+            @if(Assignment != null)
+            {
+                <MudDataGrid T="Assignment" Items="@(new List<Assignment>() { Assignment })">
+                    <Columns>
+                        <PropertyColumn Property="x => x.From.Name" Title="Fra" />
+                        <PropertyColumn Property="x => x.To.Name" Title="Til" />
+                        <PropertyColumn Property="x => x.Role.Name" Title="Rolle" />
+                        <TemplateColumn Title="Handlinger" >
+                            <CellTemplate>
+                                <MudBadge>Ok</MudBadge>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>    
+                </MudDataGrid>
+            }
+            else
+            {
+                <MudDataGrid T="Request" Items="@(new List<Request>() { Request })">
+                    <Columns>
+                        <PropertyColumn Property="x => x.From.Name" Title="Fra" />
+                        <PropertyColumn Property="x => x.To.Name" Title="Til" />
+                        <PropertyColumn Property="x => x.Role.Name" Title="Rolle" />
+                        <TemplateColumn Title="Handlinger">
+                            <CellTemplate>
+                                <MudButton Color="Color.Primary" OnClick="CreateAssignment">Godkjenn</MudButton>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </MudDataGrid>
+            }
+        </MudItem>
 
         <MudItem xs="12" xl="6">
             <h3>Packages</h3>
@@ -170,6 +208,8 @@
     [Parameter] public string id { get; set; }
 
     public Request Request { get; set; }
+    public Assignment Assignment { get; set; }
+
     public IEnumerable<RequestPackage> Packages { get; set; }
     public IEnumerable<RequestResource> Resources { get; set; }
     public IEnumerable<RequestMessage> Messages { get; set; }
@@ -177,50 +217,30 @@
     protected async override Task OnInitializedAsync()
     {
         Request = await requestService.GetRequest(Guid.Parse(id));
+        Assignment = await assignmentService.GetAssignment(Request.FromId, Request.ToId, Request.RoleId);
 
         Packages = await requestService.GetRequestPackages(Request.Id);
         Resources = await requestService.GetRequestResources(Request.Id);
         Messages = await requestService.GetRequestMessages(Request.Id);
     }
 
+    private async Task CreateAssignment()
+    {
+        Assignment = await assignmentService.GetOrCreateAssignment(Request.FromId, Request.ToId, Request.RoleId, GetAuditValues());
+    }
 
     private async Task ApprovePackage(Guid packageId)
     {
-        await requestService.AcceptRequestPackage(Request.Id, packageId);
+        await requestService.AcceptRequestPackage(Request.Id, packageId, GetAuditValues());
     }
 
     private async Task ApproveResource(Guid resourceId)
     {
-        await requestService.AcceptRequestResource(Request.Id, resourceId);
+        await requestService.AcceptRequestResource(Request.Id, resourceId, GetAuditValues());
     }
 
-    private string GetInfoText()
+    private Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues GetAuditValues()
     {
-        string result = "";
-
-        if (Request.RequestedById.Equals(Request.ToId))
-        {
-            result += $"{Request.RequestedBy.Name} har bedt om ";
-        }
-        else
-        {
-            result += $"{Request.RequestedBy.Name} har på vegne av {Request.To.Name} bedt om ";
-        }
-
-        result += $"{Request.Role.Name} rollen hos {Request.From.Name}";
-
-        if (Packages.Any())
-        {
-            result += $" samt {Packages.Count()} pakker";
-        }
-
-        if (Resources.Any())
-        {
-            result += $" og {Resources.Count()} ressurser";
-        }
-
-        result += ".";
-
-        return result;
+        return new Altinn.AccessMgmt.PersistenceEF.Extensions.AuditValues(SystemEntityConstants.InternalApi, SystemEntityConstants.InternalApi);
     }
 }

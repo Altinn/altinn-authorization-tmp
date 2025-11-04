@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
     /// <inheritdoc />
-    public partial class Requests_01 : Migration
+    public partial class Requests : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -108,6 +108,30 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "auditrequestresourceelement",
+                schema: "dbo_history",
+                columns: table => new
+                {
+                    audit_validfrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    audit_validto = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    audit_deletedby = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_deletedbysystem = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_deleteoperation = table.Column<string>(type: "text", nullable: true),
+                    audit_changedby = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changedbysystem = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changeoperation = table.Column<string>(type: "text", nullable: true),
+                    requestid = table.Column<Guid>(type: "uuid", nullable: false),
+                    statusid = table.Column<Guid>(type: "uuid", nullable: false),
+                    resourceid = table.Column<Guid>(type: "uuid", nullable: false),
+                    elementid = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_auditrequestresourceelement", x => new { x.id, x.audit_validfrom, x.audit_validto });
+                });
+
+            migrationBuilder.CreateTable(
                 name: "auditrequeststatus",
                 schema: "dbo_history",
                 columns: table => new
@@ -130,6 +154,52 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "auditresourceelement",
+                schema: "dbo_history",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    audit_validfrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    audit_validto = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    audit_changedby = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changedbysystem = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changeoperation = table.Column<string>(type: "text", nullable: true),
+                    audit_deletedby = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_deletedbysystem = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_deleteoperation = table.Column<string>(type: "text", nullable: true),
+                    resourceid = table.Column<Guid>(type: "uuid", nullable: false),
+                    typeid = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "text", nullable: true),
+                    description = table.Column<string>(type: "text", nullable: true),
+                    refid = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_auditresourceelement", x => new { x.id, x.audit_validfrom, x.audit_validto });
+                });
+
+            migrationBuilder.CreateTable(
+                name: "auditresourceelementtype",
+                schema: "dbo_history",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    audit_validfrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    audit_validto = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    audit_changedby = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changedbysystem = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changeoperation = table.Column<string>(type: "text", nullable: true),
+                    audit_deletedby = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_deletedbysystem = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_deleteoperation = table.Column<string>(type: "text", nullable: true),
+                    name = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_auditresourceelementtype", x => new { x.id, x.audit_validfrom, x.audit_validto });
+                });
+
+            migrationBuilder.CreateTable(
                 name: "requeststatus",
                 schema: "dbo",
                 columns: table => new
@@ -148,6 +218,23 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "resourceelementtype",
+                schema: "dbo",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    audit_changedby = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changedbysystem = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changeoperation = table.Column<string>(type: "text", nullable: true),
+                    audit_validfrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_resourceelementtype", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "request",
                 schema: "dbo",
                 columns: table => new
@@ -162,8 +249,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     fromid = table.Column<Guid>(type: "uuid", nullable: false),
                     toid = table.Column<Guid>(type: "uuid", nullable: false),
                     roleid = table.Column<Guid>(type: "uuid", nullable: false),
-                    viaid = table.Column<Guid>(type: "uuid", nullable: false),
-                    viaroleid = table.Column<Guid>(type: "uuid", nullable: false)
+                    viaid = table.Column<Guid>(type: "uuid", nullable: true),
+                    viaroleid = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -174,49 +261,84 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         principalSchema: "dbo",
                         principalTable: "entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_request_entity_requestedbyid",
                         column: x => x.requestedbyid,
                         principalSchema: "dbo",
                         principalTable: "entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_request_entity_toid",
                         column: x => x.toid,
                         principalSchema: "dbo",
                         principalTable: "entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_request_entity_viaid",
                         column: x => x.viaid,
                         principalSchema: "dbo",
                         principalTable: "entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_request_requeststatus_statusid",
                         column: x => x.statusid,
                         principalSchema: "dbo",
                         principalTable: "requeststatus",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_request_role_roleid",
                         column: x => x.roleid,
                         principalSchema: "dbo",
                         principalTable: "role",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_request_role_viaroleid",
                         column: x => x.viaroleid,
                         principalSchema: "dbo",
                         principalTable: "role",
                         principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "resourceelement",
+                schema: "dbo",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    audit_changedby = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changedbysystem = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changeoperation = table.Column<string>(type: "text", nullable: true),
+                    audit_validfrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    resourceid = table.Column<Guid>(type: "uuid", nullable: false),
+                    typeid = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "text", nullable: false),
+                    description = table.Column<string>(type: "text", nullable: false),
+                    refid = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_resourceelement", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_resourceelement_resource_resourceid",
+                        column: x => x.resourceid,
+                        principalSchema: "dbo",
+                        principalTable: "resource",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_resourceelement_resourceelementtype_typeid",
+                        column: x => x.typeid,
+                        principalSchema: "dbo",
+                        principalTable: "resourceelementtype",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -242,14 +364,14 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         principalSchema: "dbo",
                         principalTable: "entity",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_requestmessage_request_requestid",
                         column: x => x.requestid,
                         principalSchema: "dbo",
                         principalTable: "request",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -275,21 +397,21 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         principalSchema: "dbo",
                         principalTable: "package",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_requestpackage_request_requestid",
                         column: x => x.requestid,
                         principalSchema: "dbo",
                         principalTable: "request",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_requestpackage_requeststatus_statusid",
                         column: x => x.statusid,
                         principalSchema: "dbo",
                         principalTable: "requeststatus",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -315,19 +437,67 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         principalSchema: "dbo",
                         principalTable: "request",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_requestresource_requeststatus_statusid",
                         column: x => x.statusid,
                         principalSchema: "dbo",
                         principalTable: "requeststatus",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_requestresource_resource_resourceid",
                         column: x => x.resourceid,
                         principalSchema: "dbo",
                         principalTable: "resource",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "requestresourceelement",
+                schema: "dbo",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    audit_changedby = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changedbysystem = table.Column<Guid>(type: "uuid", nullable: true),
+                    audit_changeoperation = table.Column<string>(type: "text", nullable: true),
+                    audit_validfrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    requestid = table.Column<Guid>(type: "uuid", nullable: false),
+                    statusid = table.Column<Guid>(type: "uuid", nullable: false),
+                    resourceid = table.Column<Guid>(type: "uuid", nullable: false),
+                    elementid = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_requestresourceelement", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_requestresourceelement_request_requestid",
+                        column: x => x.requestid,
+                        principalSchema: "dbo",
+                        principalTable: "request",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "fk_requestresourceelement_requeststatus_statusid",
+                        column: x => x.statusid,
+                        principalSchema: "dbo",
+                        principalTable: "requeststatus",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "fk_requestresourceelement_resource_resourceid",
+                        column: x => x.resourceid,
+                        principalSchema: "dbo",
+                        principalTable: "resource",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "fk_requestresourceelement_resourceelement_elementid",
+                        column: x => x.elementid,
+                        principalSchema: "dbo",
+                        principalTable: "resourceelement",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -444,9 +614,59 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 column: "statusid");
 
             migrationBuilder.CreateIndex(
+                name: "ix_requestresourceelement_elementid",
+                schema: "dbo",
+                table: "requestresourceelement",
+                column: "elementid");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_requestresourceelement_requestid",
+                schema: "dbo",
+                table: "requestresourceelement",
+                column: "requestid");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_requestresourceelement_requestid_elementid",
+                schema: "dbo",
+                table: "requestresourceelement",
+                columns: new[] { "requestid", "elementid" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_requestresourceelement_resourceid",
+                schema: "dbo",
+                table: "requestresourceelement",
+                column: "resourceid");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_requestresourceelement_statusid",
+                schema: "dbo",
+                table: "requestresourceelement",
+                column: "statusid");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_requeststatus_name",
                 schema: "dbo",
                 table: "requeststatus",
+                column: "name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_resourceelement_resourceid",
+                schema: "dbo",
+                table: "resourceelement",
+                column: "resourceid");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_resourceelement_typeid",
+                schema: "dbo",
+                table: "resourceelement",
+                column: "typeid");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_resourceelementtype_name",
+                schema: "dbo",
+                table: "resourceelementtype",
                 column: "name",
                 unique: true);
         }
@@ -471,7 +691,19 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 schema: "dbo_history");
 
             migrationBuilder.DropTable(
+                name: "auditrequestresourceelement",
+                schema: "dbo_history");
+
+            migrationBuilder.DropTable(
                 name: "auditrequeststatus",
+                schema: "dbo_history");
+
+            migrationBuilder.DropTable(
+                name: "auditresourceelement",
+                schema: "dbo_history");
+
+            migrationBuilder.DropTable(
+                name: "auditresourceelementtype",
                 schema: "dbo_history");
 
             migrationBuilder.DropTable(
@@ -487,11 +719,23 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                 schema: "dbo");
 
             migrationBuilder.DropTable(
+                name: "requestresourceelement",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
                 name: "request",
                 schema: "dbo");
 
             migrationBuilder.DropTable(
+                name: "resourceelement",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
                 name: "requeststatus",
+                schema: "dbo");
+
+            migrationBuilder.DropTable(
+                name: "resourceelementtype",
                 schema: "dbo");
         }
     }
