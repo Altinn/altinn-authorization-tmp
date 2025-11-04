@@ -55,7 +55,7 @@ public partial class ConnectionService(
         cancellationToken
         );
 
-        return new List<ConnectionDto>();
+        return DtoMapper.Convert(connections);
     }
 
     public async Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)

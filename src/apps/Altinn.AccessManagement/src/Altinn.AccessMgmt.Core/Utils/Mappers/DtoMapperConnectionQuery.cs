@@ -28,7 +28,8 @@ public partial class DtoMapper : IDtoMapper
 
     public static List<ConnectionDto> ConvertSubConnections(IEnumerable<ConnectionQueryExtendedRecord> res, Guid party)
     {
-        var result = res.Where(t => t.Reason != ConnectionReason.Delegation && t.ViaId == party)
+        var result = res
+            .Where(t => t.ToId == party)
             .DistinctBy(t => t.FromId)
             .Select(relation => new ConnectionDto()
             {
