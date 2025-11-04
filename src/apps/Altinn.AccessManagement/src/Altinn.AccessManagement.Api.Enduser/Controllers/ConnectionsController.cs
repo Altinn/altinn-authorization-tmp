@@ -387,6 +387,8 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
         _ = Guid.TryParse(connection.Party, out var partyUuid);
 
+        ////var result = await ConnectionService.GetResources(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken); ToDo: Implement when resource service is ready
+
         var result = await Task.FromResult(new Result<IEnumerable<ResourcePermissionDto>>(Enumerable.Empty<ResourcePermissionDto>()));
         if (result.IsProblem)
         {
