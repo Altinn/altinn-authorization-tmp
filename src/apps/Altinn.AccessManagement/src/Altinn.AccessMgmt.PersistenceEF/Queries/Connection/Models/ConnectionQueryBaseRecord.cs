@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-
-namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+﻿namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 
 /// <summary>
 /// Base row for ConnectionQuery
