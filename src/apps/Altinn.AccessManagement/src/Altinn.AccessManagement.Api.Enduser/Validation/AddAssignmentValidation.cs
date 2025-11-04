@@ -1,6 +1,6 @@
-﻿using Altinn.AccessMgmt.Core.Utils;
-using Altinn.AccessMgmt.Core.Utils.Models;
+﻿using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.Core.Validation;
+using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.AccessManagement.Api.Enduser.Validation;
@@ -33,7 +33,7 @@ internal static class AddAssignmentValidation
              errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", ValidationMessageTexts.PersonIdentifierRequired)]);
         }
 
-        if (trimmed.Length == 11 && trimmed.All(char.IsDigit) && !ValidPIDUtil.IsValidPID(trimmed))
+        if (!PersonIdentifier.TryParse(trimmed, null, out _))
         {
             return (ref ValidationErrorBuilder errors) =>
              errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", ValidationMessageTexts.PersonIdentifierInvalidNin)]);
