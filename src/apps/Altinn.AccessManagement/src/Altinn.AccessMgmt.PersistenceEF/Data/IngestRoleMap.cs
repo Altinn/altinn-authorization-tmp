@@ -75,7 +75,7 @@ public static partial class StaticDataIngest
         /*A0236*/
         var roleA0236 = GetRoleId("urn:altinn:rolecode:a0236", "A0236");
         /*A0237*/
-        var roleA0237 = GetRoleId("urn:altinn:rolecode:A0237", "A0237");
+        var roleA0237 = GetRoleId("urn:altinn:rolecode:a0237", "A0237");
         /*A0238*/
         var roleA0238 = GetRoleId("urn:altinn:rolecode:a0238", "A0238");
         /*A0239*/
