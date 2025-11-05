@@ -8,7 +8,7 @@ public partial class DtoMapper : IDtoMapper
 {
     public static List<ConnectionDto> ConvertToOthers(IEnumerable<ConnectionQueryExtendedRecord> connections)
     {
-        var result = connections.GroupBy(res => res.To.Id).Select(c =>
+        var result = connections.GroupBy(res => res.ToId).Select(c =>
         {
             var connection = c.First();
             var subconnections = c.Where(c => c.ViaId == connection.ToId);
