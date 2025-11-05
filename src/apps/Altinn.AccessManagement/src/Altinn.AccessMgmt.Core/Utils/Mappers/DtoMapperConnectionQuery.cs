@@ -1,4 +1,3 @@
-using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
@@ -7,26 +6,44 @@ namespace Altinn.AccessMgmt.Core.Utils;
 /// <inheritdoc/>
 public partial class DtoMapper : IDtoMapper
 {
-    public static List<ConnectionDto> Convert(IEnumerable<ConnectionQueryExtendedRecord> res)
+    public static List<ConnectionDto> ConvertToOthers(IEnumerable<ConnectionQueryExtendedRecord> connections)
     {
-        var connections = res.GroupBy(res => res.To.Id);
-        var result = connections.Select(c =>
+        var result = connections.GroupBy(res => res.To.Id).Select(c =>
         {
             var connection = c.First();
+            var subconnections = c.Where(c => c.ViaId == connection.ToId);
+            return new ConnectionDto()
+            {
+                Party = Convert(connection.From),
+                Roles = [.. c.Select(c => ConvertCompactRole(c.Role)).DistinctBy(t => t.Id)],
+                Resources = [.. c.SelectMany(c => c.Resources).Select(r => Convert(r)).DistinctBy(t => t.Id)],
+                Packages = [.. c.SelectMany(c => c.Packages).Select(p => Convert(p)).DistinctBy(t => t.Id)],
+                Connections = ConvertSubConnections(subconnections),
+            };
+        });
 
+        return result.ToList();
+    }
+
+    public static List<ConnectionDto> ConvertFromOthers(IEnumerable<ConnectionQueryExtendedRecord> connections)
+    {
+        var result = connections.GroupBy(res => res.FromId).Select(c =>
+        {
+            var connection = c.First();
+            var subconnections = c.Where(c => c.ViaId == connection.FromId);
             return new ConnectionDto()
             {
                 Party = Convert(connection.To),
                 Roles = [.. c.Select(c => ConvertCompactRole(c.Role)).DistinctBy(t => t.Id)],
                 Resources = [.. c.SelectMany(c => c.Resources).Select(r => Convert(r)).DistinctBy(t => t.Id)],
                 Packages = [.. c.SelectMany(c => c.Packages).Select(p => Convert(p)).DistinctBy(t => t.Id)],
-                Connections = ConvertSubConnections(c, connection.To.Id),
+                Connections = ConvertSubConnections(subconnections),
             };
         });
 
-        return [.. result];
+        return result.ToList();
     }
-
+    
     public static List<PackagePermissionDto> ConvertPackages(IEnumerable<ConnectionQueryExtendedRecord> res)
     {
         return res
@@ -53,11 +70,9 @@ public partial class DtoMapper : IDtoMapper
             .ToList();
     }
 
-    public static List<ConnectionDto> ConvertSubConnections(IEnumerable<ConnectionQueryExtendedRecord> res, Guid party)
+    public static List<ConnectionDto> ConvertSubConnections(IEnumerable<ConnectionQueryExtendedRecord> res)
     {
         var result = res
-            .Where(t => t.ToId == party)
-            .DistinctBy(t => t.FromId)
             .Select(relation => new ConnectionDto()
             {
                 Party = Convert(relation.From),
