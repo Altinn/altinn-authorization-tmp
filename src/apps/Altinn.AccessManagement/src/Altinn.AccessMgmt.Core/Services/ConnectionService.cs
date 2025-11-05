@@ -172,7 +172,7 @@ public partial class ConnectionService(
             FromIds = fromId.HasValue ? [fromId.Value] : null,
             ToIds = toId.HasValue ? [toId.Value] : null,
             EnrichEntities = true,
-            IncludeKeyRole = false,
+            IncludeKeyRole = true,
             IncludePackages = true,
             IncludeResource = false,
             EnrichPackageResources = false,
