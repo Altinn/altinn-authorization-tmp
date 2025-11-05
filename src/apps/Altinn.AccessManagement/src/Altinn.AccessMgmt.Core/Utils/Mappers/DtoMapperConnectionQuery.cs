@@ -1,3 +1,4 @@
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
@@ -24,6 +25,32 @@ public partial class DtoMapper : IDtoMapper
         });
 
         return [.. result];
+    }
+
+    public static List<PackagePermissionDto> ConvertPackages(IEnumerable<ConnectionQueryExtendedRecord> res)
+    {
+        return res
+            .SelectMany(connection =>
+            {
+                var permission = ConvertToPermission(connection);
+                return connection.Packages.Select(pkg => new PackagePermissionDto
+                {
+                    Package = new CompactPackageDto
+                    {
+                        Id = pkg.Id,
+                        Urn = pkg.Urn,
+                        AreaId = pkg.AreaId
+                    },
+                    Permissions = [permission]
+                });
+            })
+            .GroupBy(p => p.Package.Id)
+            .Select(p => new PackagePermissionDto
+            {
+                Package = p.First().Package,
+                Permissions = [.. p.SelectMany(x => x.Permissions).DistinctBy(p => (p.From?.Id, p.To?.Id, p.Via?.Id, p.ViaRole?.Id, p.Role?.Id))]
+            })
+            .ToList();
     }
 
     public static List<ConnectionDto> ConvertSubConnections(IEnumerable<ConnectionQueryExtendedRecord> res, Guid party)
