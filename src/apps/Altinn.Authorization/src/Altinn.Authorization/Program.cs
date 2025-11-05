@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Altinn.ApiClients.Maskinporten.Extensions;
 using Altinn.ApiClients.Maskinporten.Services;
 using Altinn.Authorization.Services.Implementation;
@@ -33,6 +33,7 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.FeatureManagement;
 using Microsoft.IdentityModel.Logging;
@@ -260,11 +261,11 @@ void ConfigureServices(IServiceCollection services, IConfiguration config)
         options.AddPolicy(AuthzConstants.ALTINNII_AUTHORIZATION, policy => policy.Requirements.Add(new ClaimAccessRequirement("urn:altinn:app", "sbl.authorization")));
         options.AddPolicy(AuthzConstants.POLICY_PLATFORMISSUER_ACCESSTOKEN, policy => policy.Requirements.Add(new AccessTokenRequirement(AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER)));
         options.AddPolicy(AuthzConstants.DELEGATIONEVENT_FUNCTION_AUTHORIZATION, policy => policy.Requirements.Add(new ClaimAccessRequirement("urn:altinn:app", "platform.authorization")));
-        options.AddPolicy(AuthzConstants.AUTHORIZESCOPEACCESS, policy => policy.Requirements.Add(new ScopeAccessRequirement([AuthzConstants.AUTHORIZE_SCOPE, AuthzConstants.AUTHORIZE_ADMIN_SCOPE])));
+        options.AddPolicy(AuthzConstants.AUTHORIZESCOPEACCESS, policy => policy.RequireAnyScopeOf(AuthzConstants.AUTHORIZE_SCOPE, AuthzConstants.AUTHORIZE_ADMIN_SCOPE));
     });
 
+    services.AddAltinnScopesAuthorizationHandlers();
     services.AddTransient<IAuthorizationHandler, ClaimAccessHandler>();
-    services.AddTransient<IAuthorizationHandler, ScopeAccessHandler>();
     services.AddSingleton<IAuthorizationHandler, AccessTokenHandler>();
 
     services.AddPlatformAccessTokenSupport(config, builder.Environment.IsDevelopment());
