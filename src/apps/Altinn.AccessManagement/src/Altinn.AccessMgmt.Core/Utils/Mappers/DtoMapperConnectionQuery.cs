@@ -11,7 +11,7 @@ public partial class DtoMapper : IDtoMapper
         var result = connections.GroupBy(res => res.ToId).Select(c =>
         {
             var connection = c.First();
-            var subconnections = c.Where(c => c.ViaId == connection.ToId);
+            var subconnections = connections.Where(c => c.ViaId == connection.ToId);
             return new ConnectionDto()
             {
                 Party = Convert(connection.From),
@@ -30,7 +30,7 @@ public partial class DtoMapper : IDtoMapper
         var result = connections.GroupBy(res => res.FromId).Select(c =>
         {
             var connection = c.First();
-            var subconnections = c.Where(c => c.ViaId == connection.FromId);
+            var subconnections = connections.Where(c => c.ViaId == connection.FromId);
             return new ConnectionDto()
             {
                 Party = Convert(connection.To),
