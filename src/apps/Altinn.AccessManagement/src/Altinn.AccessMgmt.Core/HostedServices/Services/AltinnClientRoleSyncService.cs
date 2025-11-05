@@ -43,9 +43,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             var leaseData = await lease.Get<AltinnClientRoleLease>(cancellationToken);
             var clientDelegations = await _role.StreamRoles("12", leaseData.AltinnClientRoleStreamNextPageLink, cancellationToken);
             
-            using var scope = _serviceProivider.CreateScope();
-            IDelegationService delegationService = scope.ServiceProvider.GetRequiredService<IDelegationService>();
-
             await foreach (var page in clientDelegations)
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -67,6 +64,9 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 {
                     foreach (var item in page.Content.Data)
                     {
+                        await using var scope = _serviceProivider.CreateAsyncScope();
+                        IDelegationService delegationService = scope.ServiceProvider.GetRequiredService<IDelegationService>();
+
                         AuditValues audit = new AuditValues(
                             item.PerformedByUserUuid ?? SystemEntityConstants.Altinn2RoleImportSystem,
                             SystemEntityConstants.Altinn2RoleImportSystem,
