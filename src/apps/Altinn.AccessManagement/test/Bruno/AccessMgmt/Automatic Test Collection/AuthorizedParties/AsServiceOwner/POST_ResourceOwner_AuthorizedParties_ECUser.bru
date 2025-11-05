@@ -1,7 +1,7 @@
 meta {
-  name: POST_ResourceOwner_AuthorizedParties_Dagl_Regn
+  name: POST_ResourceOwner_AuthorizedParties_ECUser
   type: http
-  seq: 2
+  seq: 6
 }
 
 post {
@@ -22,15 +22,17 @@ headers {
 
 body:json {
   {
-    "type": "urn:altinn:person:identifier-no",
-    "value": "14877296726"
+    "type": "urn:altinn:party:uuid",
+    "value": "{{partyUuid}}"
   }
 }
 
 script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_Dagl_Regn");
+  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_ECUser");
+  bru.setVar("partyUuid", testdata.a2BrunoECUser.partyUuid);
   
   var getTokenParameters = {
     auth_org: sharedtestdata.serviceOwners.digdir.org,
@@ -44,7 +46,8 @@ script:pre-request {
 }
 
 tests {
-  const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
+  const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   const body = res.getBody();
   const requestName = bru.getVar("requestName");
   
@@ -142,4 +145,15 @@ tests {
     expect(duplicates.length, `Duplicate partyUuid(s) found: ${duplicates.join(', ')}`).to.equal(0);
   
   });
+  
+  test(requestName + "|Find expected AuthorizedParty and AuthorizedAccessPackages", function() {  
+    // Test that the expected party exists in the response with the expected packages
+    
+    const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
+    const targetParty = allParties.find(party => party.organizationNumber === sharedtestdata.serviceOwners.digdir.orgno);
+  
+    assert.exists(targetParty, 'Party with organization id: '+sharedtestdata.serviceOwners.digdir.orgno+' should exist');
+  
+  });
+  
 }

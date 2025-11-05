@@ -64,6 +64,12 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 {
                     foreach (var item in page.Content.Data)
                     {
+                        // Do not process client roles for EC-Users
+                        if (item.ToUserType == UserType.EnterpriseIdentified)
+                        {
+                           continue;
+                        }
+
                         await using var scope = _serviceProivider.CreateAsyncScope();
                         IDelegationService delegationService = scope.ServiceProvider.GetRequiredService<IDelegationService>();
 
