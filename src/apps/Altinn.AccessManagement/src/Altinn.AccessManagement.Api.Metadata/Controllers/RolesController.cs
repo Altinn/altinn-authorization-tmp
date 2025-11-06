@@ -1,8 +1,11 @@
 ﻿using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace Altinn.AccessManagement.Api.Metadata.Controllers
 {
@@ -14,6 +17,7 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
     public class RolesController : ControllerBase
     {
         private readonly IRoleService roleService;
+        private readonly AppDbContext dbContext;
 
         /// <summary>
         /// Initialiserer en ny instans av <see cref="RolesController"/>.
@@ -95,48 +99,77 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         /// <summary>
         /// Gets privledges for a specific role and variant combination.
         /// </summary>
-        [HttpGet("privledges")]
+        [HttpGet("packages")]
         [ProducesResponseType(typeof(RoleVariantPrivilegeDto), StatusCodes.Status200OK)]
-        public async Task<ActionResult<RoleVariantPrivilegeDto>> GetRoleVariantPrivledges([FromQuery] string role, [FromQuery] string variant)
+        public async ValueTask<IEnumerable<PackageDto>> GetPackages([FromQuery] string role, [FromQuery] string variant, [FromQuery] bool includeResources)
         {
             RoleConstants.TryGetByCode(string.IsNullOrEmpty(role) ? "_" : role, out var roleDef);
             EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef);
+            if (roleDef == null)
+            {
+                throw new ArgumentException("Role not found");
+            }
 
-            var result = await roleService.GetPrivileges(roleId: roleDef == null ? null : roleDef.Id, variantId: variantDef == null ? null : variantDef.Id);
-            return Ok(result);
+            if (variantDef == null)
+            {
+                throw new ArgumentException("Variant not found");
+            }
+
+            return await roleService.GetRolePackages(roleDef.Id, variantDef.Id, includeResources);
         }
 
         /// <summary>
-        /// Gets privledges for a specific role.
+        /// Gets privledges for a specific role and variant combination.
         /// </summary>
-        [HttpGet("privledges/role")]
-        [ProducesResponseType(typeof(IEnumerable<VariantPrivilegeDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<VariantPrivilegeDto>>> GetRolePrivledges([FromQuery] string role)
+        [HttpGet("resources")]
+        [ProducesResponseType(typeof(RoleVariantPrivilegeDto), StatusCodes.Status200OK)]
+        public async ValueTask<IEnumerable<ResourceDto>> GetResources([FromQuery] string role, [FromQuery] string variant, [FromQuery] bool includePackageResoures)
         {
-            if (!RoleConstants.TryGetByCode(role, out var roleDef))
+            RoleConstants.TryGetByCode(string.IsNullOrEmpty(role) ? "_" : role, out var roleDef);
+            EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef);
+            if (roleDef == null)
             {
-                return BadRequest($"Role '{role}' not found");
+                throw new ArgumentException("Role not found");
             }
 
-            var result = await roleService.GetPrivileges(roleId: roleDef.Id, variantId: null);
-            return Ok(result.Select(DtoMapper.ConvertToVariantPrivledgeDto));
+            if (variantDef == null)
+            {
+                throw new ArgumentException("Variant not found");
+            }
+
+            return await roleService.GetRoleResources(roleDef.Id, variantDef.Id, includePackageResoures);
         }
 
         /// <summary>
-        /// Gets privledges for a specific variant.
+        /// Gets privledges for a specific role and variant combination.
         /// </summary>
-        [HttpGet("privledges/variant")]
-        [ProducesResponseType(typeof(IEnumerable<RolePrivilegeDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<RolePrivilegeDto>>> GetVariantPrivledges([FromQuery] string variant)
+        [HttpGet("{id}/packages")]
+        [ProducesResponseType(typeof(RoleVariantPrivilegeDto), StatusCodes.Status200OK)]
+        public async ValueTask<IEnumerable<PackageDto>> GetPackages([FromRoute] Guid roleId, [FromQuery] string variant, [FromQuery] bool includeResources)
         {
-            if (!EntityVariantConstants.TryGetByName(variant, out var variantDef))
+            EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef);
+            if (variantDef == null)
             {
-                return BadRequest($"Variant '{variant}' not found");
+                throw new ArgumentException("Variant not found");
             }
 
-            var result = await roleService.GetPrivileges(roleId: null, variantId: variantDef.Id);
-            return Ok(result.Select(DtoMapper.ConvertToRolePrivledgeDto));
+            return await roleService.GetRolePackages(roleId, variantDef.Id, includeResources);
+        }
+
+        /// <summary>
+        /// Gets privledges for a specific role and variant combination.
+        /// </summary>
+        [HttpGet("{id}/resources")]
+        [ProducesResponseType(typeof(RoleVariantPrivilegeDto), StatusCodes.Status200OK)]
+        public async ValueTask<IEnumerable<ResourceDto>> GetResources([FromRoute] Guid roleId, [FromQuery] string variant, [FromQuery] bool includePackageResoures)
+        {
+            EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef);
+            if (variantDef == null)
+            {
+                throw new ArgumentException("Variant not found");
+            }
+
+            return await roleService.GetRoleResources(roleId, variantDef.Id, includePackageResoures);
         }
     }
 }
-
