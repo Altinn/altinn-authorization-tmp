@@ -97,6 +97,51 @@ public class RoleService: IRoleService
         return await Db.RoleLookups.AsNoTracking().Select(t => t.Key).Distinct().ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<Resource>> GetRoleResources(Guid id, CancellationToken cancellationToken)
+    {
+        return await Db.RoleResources.AsNoTracking().Where(t => t.RoleId == id).Include(t => t.Resource).Select(t => t.Resource).Distinct().ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Resource>> GetRolePackageResources(Guid id, CancellationToken cancellationToken)
+    {
+        var packages = await GetPackagesForRole(id, cancellationToken);
+        return await Db.PackageResources.AsNoTracking().Where(t => packages.Select(p => p.Id).Contains(t.PackageId)).Select(r => r.Resource).ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<RolePackageDto>> GetPackagesForRole(Guid id, CancellationToken cancellationToken = default)
+    {
+        var rolePackages = await Db.RolePackages.AsNoTracking().Where(t => t.RoleId == id)
+            .Include(t => t.Role)
+            .Include(t => t.Package)
+            .Include(t => t.EntityVariant)
+            .ToListAsync(cancellationToken);
+
+        if (rolePackages == null || rolePackages.Count == 0)
+        {
+            var role = await Db.Roles.AsNoTracking().SingleAsync(t => t.Id == id, cancellationToken);
+            if (role == null)
+            {
+                return null;
+            }
+
+            return [];
+        }
+
+        var roleDto = DtoMapper.Convert(rolePackages.First().Role);
+        await GetSingleLegacyRoleCodeAndUrn(roleDto, cancellationToken);
+
+        var rolePackageDtos = new List<RolePackageDto>();
+        foreach (var rolePackage in rolePackages)
+        {
+            var rolePackageDto = DtoMapper.Convert(rolePackage);
+            rolePackageDto.Role = roleDto;
+            rolePackageDtos.Add(rolePackageDto);
+        }
+
+        return rolePackageDtos;
+    }
+
     private async Task<IEnumerable<RoleDto>> GetLegacyRoleCodeAndUrn(IEnumerable<RoleDto> roles, CancellationToken cancellationToken = default)
     {
         var roleLookup = await Db.RoleLookups.AsNoTracking().ToListAsync();
