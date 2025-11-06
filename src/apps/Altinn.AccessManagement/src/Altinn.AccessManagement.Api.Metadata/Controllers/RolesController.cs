@@ -97,10 +97,10 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         }
 
         /// <summary>
-        /// Gets privledges for a specific role and variant combination.
+        /// Gets role packages
         /// </summary>
         [HttpGet("packages")]
-        [ProducesResponseType(typeof(RoleVariantPrivilegeDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PackageDto), StatusCodes.Status200OK)]
         public async ValueTask<IEnumerable<PackageDto>> GetPackages([FromQuery] string role, [FromQuery] string variant, [FromQuery] bool includeResources)
         {
             RoleConstants.TryGetByCode(string.IsNullOrEmpty(role) ? "_" : role, out var roleDef);
@@ -119,10 +119,10 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         }
 
         /// <summary>
-        /// Gets privledges for a specific role and variant combination.
+        /// Gets role resources
         /// </summary>
         [HttpGet("resources")]
-        [ProducesResponseType(typeof(RoleVariantPrivilegeDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResourceDto), StatusCodes.Status200OK)]
         public async ValueTask<IEnumerable<ResourceDto>> GetResources([FromQuery] string role, [FromQuery] string variant, [FromQuery] bool includePackageResoures)
         {
             RoleConstants.TryGetByCode(string.IsNullOrEmpty(role) ? "_" : role, out var roleDef);
@@ -141,10 +141,10 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         }
 
         /// <summary>
-        /// Gets privledges for a specific role and variant combination.
+        /// Gets role packages
         /// </summary>
         [HttpGet("{id}/packages")]
-        [ProducesResponseType(typeof(RoleVariantPrivilegeDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PackageDto), StatusCodes.Status200OK)]
         public async ValueTask<IEnumerable<PackageDto>> GetPackages([FromRoute] Guid roleId, [FromQuery] string variant, [FromQuery] bool includeResources)
         {
             EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef);
@@ -157,10 +157,10 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         }
 
         /// <summary>
-        /// Gets privledges for a specific role and variant combination.
+        /// Gets role resources
         /// </summary>
         [HttpGet("{id}/resources")]
-        [ProducesResponseType(typeof(RoleVariantPrivilegeDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResourceDto), StatusCodes.Status200OK)]
         public async ValueTask<IEnumerable<ResourceDto>> GetResources([FromRoute] Guid roleId, [FromQuery] string variant, [FromQuery] bool includePackageResoures)
         {
             EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef);
