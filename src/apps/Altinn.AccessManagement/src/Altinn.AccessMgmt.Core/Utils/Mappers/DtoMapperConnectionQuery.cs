@@ -8,10 +8,10 @@ public partial class DtoMapper : IDtoMapper
 {
     public static List<ConnectionDto> ConvertToOthers(IEnumerable<ConnectionQueryExtendedRecord> connections)
     {
-        var result = connections.Where(t => t.Reason != ConnectionReason.KeyRole).GroupBy(res => res.ToId).Select(c =>
+        var result = connections.Where(t => t.Reason != ConnectionReason.KeyRole && t.Reason != ConnectionReason.Delegation).GroupBy(res => res.ToId).Select(c =>
         {
             var connection = c.First();
-            var subconnections = connections.Where(c => c.ViaId == connection.ToId && c.Reason == ConnectionReason.KeyRole);
+            var subconnections = connections.Where(c => c.ViaId == connection.ToId && (c.Reason == ConnectionReason.KeyRole || c.Reason == ConnectionReason.Delegation));
             return new ConnectionDto()
             {
                 Party = Convert(connection.From),
