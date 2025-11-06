@@ -8,7 +8,7 @@ public partial class DtoMapper : IDtoMapper
 {
     public static List<ConnectionDto> ConvertToOthers(IEnumerable<ConnectionQueryExtendedRecord> connections)
     {
-        var result = connections.Where(t => t.Reason == ConnectionReason.Assignment || t.Reason == ConnectionReason.Delegation || t.Reason == ConnectionReason.RoleMap).GroupBy(res => res.ToId).Select(c =>
+        var result = connections.Where(t => t.Reason != ConnectionReason.KeyRole).GroupBy(res => res.ToId).Select(c =>
         {
             var connection = c.First();
             var subconnections = connections.Where(c => c.ViaId == connection.ToId && c.Reason == ConnectionReason.KeyRole);
@@ -27,7 +27,7 @@ public partial class DtoMapper : IDtoMapper
 
     public static List<ConnectionDto> ConvertFromOthers(IEnumerable<ConnectionQueryExtendedRecord> connections)
     {
-        var result = connections.Where(t => t.Reason == ConnectionReason.Assignment || t.Reason == ConnectionReason.Delegation || t.Reason == ConnectionReason.RoleMap).GroupBy(res => res.FromId).Select(c =>
+        var result = connections.Where(t => t.Reason != ConnectionReason.Hierarchy).GroupBy(res => res.FromId).Select(c =>
         {
             var connection = c.First();
             var subconnections = connections.Where(c => c.ViaId == connection.FromId && c.Reason == ConnectionReason.Hierarchy);
