@@ -79,6 +79,11 @@ public sealed class ConnectionQueryFilter
     public bool IncludeSubConnections { get; init; } = true;
 
     /// <summary>
+    /// Gets or sets a value indicating whether to include connections through main unit
+    /// </summary>
+    public bool IncludeMainUnitConnections { get; init; } = true;
+
+    /// <summary>
     /// Returns true if at least one filter is provided.
     /// </summary>
     public bool HasAny =>
