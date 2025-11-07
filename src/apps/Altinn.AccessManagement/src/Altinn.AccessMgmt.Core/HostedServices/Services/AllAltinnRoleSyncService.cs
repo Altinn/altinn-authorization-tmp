@@ -76,7 +76,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 {
                     foreach (var item in page.Content.Data)
                     {
-                        if (item.ToUserType != UserType.EnterpriseIdentified && item.RoleTypeCode == "ECKEYROLE")
+                        if (item.ToUserType != UserType.EnterpriseIdentified && item.RoleTypeCode == RoleConstants.Eckeyrole.Entity.Code)
                         {                             
                             // Skip ECKEYROLE for non-enterprise users
                             continue;
