@@ -6,19 +6,35 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 
+public enum ConnectionQueryDirection { FromOthers, ToOthers }
+
 /// <summary>
 /// A query based on assignments and delegations
 /// </summary>
 public class ConnectionQuery(AppDbContext db)
 {
+
+    public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, CancellationToken ct = default)
+    {
+        return await GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, ct);
+    }
+
+    public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsToOthersAsync(ConnectionQueryFilter filter, CancellationToken ct = default)
+    {
+        return await GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, ct);
+    }
+
     /// <summary>
     /// Returns connections between to entities based on assignments and delegations
     /// </summary>
-    public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsAsync(ConnectionQueryFilter filter, bool isFromOthers = true, CancellationToken ct = default)
+    public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsAsync(ConnectionQueryFilter filter, ConnectionQueryDirection direction, CancellationToken ct = default)
     {
         try
         {
-            var baseQuery = isFromOthers ? BuildBaseQueryFromOthers(db, filter) : BuildBaseQuery(db, filter);
+            var baseQuery = direction == ConnectionQueryDirection.FromOthers 
+                ? BuildBaseQueryFromOthers(db, filter) 
+                : BuildBaseQuery(db, filter);
+
             List<ConnectionQueryExtendedRecord> result;
 
             if (filter.EnrichEntities || filter.ExcludeDeleted)
