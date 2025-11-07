@@ -53,6 +53,7 @@ public partial class ConnectionService(
             IncludeDelegation = true,
             OnlyUniqueResults = true,
         },
+        isFromOthers: party != fromId,
         cancellationToken
         );
 
@@ -181,6 +182,7 @@ public partial class ConnectionService(
             IncludeDelegation = true,
             OnlyUniqueResults = true,
         },
+        isFromOthers: party != fromId,
         cancellationToken
         );
 
@@ -514,7 +516,7 @@ public partial class ConnectionService(
             IncludeDelegation = false,
         };
 
-        var connections = await connectionQuery.GetConnectionsAsync(filter, cancellationToken);
+        var connections = await connectionQuery.GetConnectionsAsync(filter, isFromOthers: party != fromId, cancellationToken);
         return connections.GroupBy(r => r.RoleId).Select(connection =>
         {
             var role = connection.First().Role;
