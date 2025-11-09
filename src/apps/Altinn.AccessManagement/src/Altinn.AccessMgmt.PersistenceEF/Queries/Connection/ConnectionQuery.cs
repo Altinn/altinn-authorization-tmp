@@ -34,7 +34,7 @@ public class ConnectionQuery(AppDbContext db)
         {
             var baseQuery = direction == ConnectionQueryDirection.FromOthers 
                 ? BuildBaseQueryFromOthers(db, filter) 
-                : BuildBaseQuery(db, filter);
+                : BuildBaseQueryToOthers(db, filter);
 
             List<ConnectionQueryExtendedRecord> result;
 

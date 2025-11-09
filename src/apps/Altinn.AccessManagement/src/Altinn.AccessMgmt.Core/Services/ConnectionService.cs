@@ -40,8 +40,8 @@ public partial class ConnectionService(
         }
 
         var direction = party == fromId
-            ? ConnectionQueryDirection.FromOthers
-            : ConnectionQueryDirection.ToOthers;
+            ? ConnectionQueryDirection.ToOthers
+            : ConnectionQueryDirection.FromOthers;
 
         var connections = await connectionQuery.GetConnectionsAsync(
             new ConnectionQueryFilter()
