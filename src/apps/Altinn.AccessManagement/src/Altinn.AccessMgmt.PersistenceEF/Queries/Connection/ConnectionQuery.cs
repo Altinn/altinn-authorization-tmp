@@ -34,7 +34,7 @@ public class ConnectionQuery(AppDbContext db)
         {
             var baseQuery = direction == ConnectionQueryDirection.FromOthers 
                 ? BuildBaseQueryFromOthers(db, filter) 
-                : BuildBaseQueryToOthersNew(db, filter);
+                : BuildBaseQueryToOthers(db, filter);
 
             List<ConnectionQueryExtendedRecord> result;
 
@@ -96,7 +96,7 @@ public class ConnectionQuery(AppDbContext db)
     {
         var baseQuery = direction == ConnectionQueryDirection.FromOthers
                 ? BuildBaseQueryFromOthers(db, filter)
-                : BuildBaseQueryToOthersNew(db, filter);
+                : BuildBaseQueryToOthers(db, filter);
 
         if (filter.EnrichEntities || filter.ExcludeDeleted)
         {
@@ -338,7 +338,7 @@ public class ConnectionQuery(AppDbContext db)
             .RoleIdContains(roleSet);
     }
 
-    public IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryToOthersNew(AppDbContext db, ConnectionQueryFilter filter)
+    public IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryToOthers(AppDbContext db, ConnectionQueryFilter filter)
     {
         /* Senario: Tilgangsstyrer i Bakerhansen Bergen BEDR (FromId) som er underenhet av Bakerhansen AS
 
