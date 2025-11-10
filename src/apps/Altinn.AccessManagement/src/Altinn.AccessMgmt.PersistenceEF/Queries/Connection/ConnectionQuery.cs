@@ -380,7 +380,6 @@ public class ConnectionQuery(AppDbContext db)
             from keyRoleAssignment in db.Assignments
             join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
             where role.IsKeyRole
-                && keyRoleAssignment.ToId == filter.ToIds.First()
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = keyRoleAssignment.Id,
@@ -395,6 +394,9 @@ public class ConnectionQuery(AppDbContext db)
                 IsMainUnitAccess = false,
                 Reason = ConnectionReason.Assignment
             };
+
+        keyRoleAssignments = keyRoleAssignments.AsNoTracking()
+            .ToIdContains(toSet);
         #endregion
 
         #region Find all subunit KeyRole assignments
@@ -441,9 +443,6 @@ public class ConnectionQuery(AppDbContext db)
                 IsMainUnitAccess = keyRoleAssignment.IsMainUnitAccess,
                 Reason = ConnectionReason.KeyRole,
             };
-
-        inheritedKeyRoleAssignments = inheritedKeyRoleAssignments.AsNoTracking()
-            .ToIdContains(toSet);
         #endregion
 
         #region Find direct assignments to ToParty
@@ -607,10 +606,10 @@ public class ConnectionQuery(AppDbContext db)
             {
                 AssignmentId = ass.Id,
                 DelegationId = null,
-                FromId = e.Id,
-                ToId = ass.ToId,
-                RoleId = ass.RoleId,
-                ViaId = ass.FromId,
+                FromId = e.Id,      // Subunit (from-party)
+                ToId = ass.ToId,    // BDO / mottaker av tilgang fra hovedenhet
+                RoleId = ass.RoleId,// Regnskapsfører / rolle-tilgang gitt fra hovedenheten
+                ViaId = ass.FromId, // Hovedenheten til from-party
                 ViaRoleId = null,
                 IsRoleMap = false,
                 IsKeyRoleAccess = false,
@@ -657,12 +656,8 @@ public class ConnectionQuery(AppDbContext db)
                Reason = ConnectionReason.Delegation
            };
 
-        var all2 = allAssignments
-            .Union(roleMapAssignments)
-            .Union(directDelegations);
-
         var keyRoleAssignments =
-            from all in all2
+            from all in allAssignments
             join keyRoleAssignment in db.Assignments on all.ToId equals keyRoleAssignment.FromId
             join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
             where role.IsKeyRole
@@ -681,7 +676,10 @@ public class ConnectionQuery(AppDbContext db)
                 Reason = ConnectionReason.KeyRole
             };
 
-        return all2.Union(keyRoleAssignments);
+        return allAssignments
+            .Union(roleMapAssignments)
+            .Union(directDelegations)
+            .Union(keyRoleAssignments);
     }
 
     private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryToOthers(AppDbContext db, ConnectionQueryFilter filter)
@@ -699,6 +697,12 @@ public class ConnectionQuery(AppDbContext db)
             - Klientdelegeringer: Agent for BDO AS som har mottatt klientdelegeringer:
                 - Direkte fra Bakerhansen Bergen BEDR til Agent
                 - Fra Hovedenhet Bakerhansen AS til Agent
+
+            Scenario: Innehaver av Enk (For 1. mars og tilgangsstyringsside for privatpersoner)
+            - Revisor/Regnskapsfører forhold via ENK skal også dukke opp med tilgang til personen som er innehaver
+                - Selve Revisor/Regnskapsfører org
+                - Nøkkelrolle personer for Revi/regn
+                - Agenter med mottatt klientdelegering for Enk
         */
 
         if (filter.FromIds.Count != 1)

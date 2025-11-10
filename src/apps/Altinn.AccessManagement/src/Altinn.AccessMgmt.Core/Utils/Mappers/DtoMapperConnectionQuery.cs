@@ -18,7 +18,7 @@ public partial class DtoMapper : IDtoMapper
                 Roles = [.. c.Select(c => ConvertCompactRole(c.Role)).DistinctBy(t => t.Id)],
                 Resources = [.. c.SelectMany(c => c.Resources).Select(r => Convert(r)).DistinctBy(t => t.Id)],
                 Packages = [.. c.SelectMany(c => c.Packages).Select(p => Convert(p)).DistinctBy(t => t.Id)],
-                Connections = ConvertSubConnections(subconnections),
+                Connections = ConvertSubConnectionsToOthers(subconnections),
             };
         });
 
@@ -37,7 +37,7 @@ public partial class DtoMapper : IDtoMapper
                 Roles = [.. c.Select(c => ConvertCompactRole(c.Role)).DistinctBy(t => t.Id)],
                 Resources = [.. c.SelectMany(c => c.Resources).Select(r => Convert(r)).DistinctBy(t => t.Id)],
                 Packages = [.. c.SelectMany(c => c.Packages).Select(p => Convert(p)).DistinctBy(t => t.Id)],
-                Connections = ConvertSubConnections(subconnections),
+                Connections = ConvertSubConnectionsFromOthers(subconnections),
             };
         });
 
@@ -61,7 +61,7 @@ public partial class DtoMapper : IDtoMapper
             .ToList();
     }
 
-    public static List<ConnectionDto> ConvertSubConnections(IEnumerable<ConnectionQueryExtendedRecord> res)
+    public static List<ConnectionDto> ConvertSubConnectionsFromOthers(IEnumerable<ConnectionQueryExtendedRecord> res)
     {
         var result = res
             .Select(relation => new ConnectionDto()
@@ -79,6 +79,35 @@ public partial class DtoMapper : IDtoMapper
                     .ToList(),
                 Resources = res
                     .Where(t => t.FromId == relation.FromId && t.Resources != null)
+                    .SelectMany(t => t.Resources)
+                    .Select(r => Convert(r))
+                    .DistinctBy(t => t.Id)
+                    .ToList(),
+
+                Connections = new()
+            });
+
+        return result.ToList();
+    }
+
+    public static List<ConnectionDto> ConvertSubConnectionsToOthers(IEnumerable<ConnectionQueryExtendedRecord> res)
+    {
+        var result = res
+            .Select(relation => new ConnectionDto()
+            {
+                Party = Convert(relation.To),
+                Roles = res
+                    .Where(t => t.ToId == relation.ToId)
+                    .Select(t => ConvertCompactRole(t.Role))
+                    .DistinctBy(t => t.Id).ToList(),
+                Packages = res
+                    .Where(t => t.ToId == relation.ToId && t.Packages != null)
+                    .SelectMany(t => t.Packages)
+                    .Select(p => Convert(p))
+                    .DistinctBy(t => t.Id)
+                    .ToList(),
+                Resources = res
+                    .Where(t => t.ToId == relation.ToId && t.Resources != null)
                     .SelectMany(t => t.Resources)
                     .Select(r => Convert(r))
                     .DistinctBy(t => t.Id)
