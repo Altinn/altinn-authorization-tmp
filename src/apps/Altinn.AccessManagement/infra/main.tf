@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.46.0"
+      version = "4.51.0"
     }
     static = {
       source  = "tiwood/static"
@@ -205,6 +205,12 @@ module "appsettings" {
 
   feature_flags = [
     {
+      name        = "AccessMgmt.Core.Services.AuthorizedParties.EfEnabled"
+      description = "(EF) Specifies if the AuthorizedParty service re-write to run on mainly EF-services should be used in dependency injection. Will need recycle of pods to take effect."
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessMgmt.Core.HostedServices.RegisterSync"
       description = "(EF) Specifies if the resource register data should streamed from resource register service to access management database."
       label       = "${lower(var.environment)}-access-management"
@@ -223,6 +229,24 @@ module "appsettings" {
       value       = false
     },
     {
+      name        = "AccessMgmt.Core.HostedServices.AllAltinnRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.AltinnClientRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
+      name        = "AccessMgmt.Core.HostedServices.AltinnAdminRoleSync"
+      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
+      label       = "${lower(var.environment)}-access-management"
+      value       = false
+    },
+    {
       name        = "AccessManagement.HostedServices.ResourceRegistrySync"
       description = "Specifies if the resource register data should streamed from resource register service to access management database."
       label       = "${lower(var.environment)}-access-management"
@@ -231,30 +255,6 @@ module "appsettings" {
     {
       name        = "AccessManagement.HostedServices.RegisterSync"
       description = "Specifies if the register data should streamed from register service to access management database."
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
-      name        = "AccessManagement.HostedServices.AllAltinnRoleSync"
-      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
-      name        = "AccessManagement.HostedServices.AltinnClientRoleSync"
-      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
-      name        = "AccessManagement.HostedServices.AltinnAdminRoleSync"
-      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
-      label       = "${lower(var.environment)}-access-management"
-      value       = false
-    },
-    {
-      name        = "AccessManagement.HostedServices.AltinnBancruptcyEstateRoleSync"
-      description = "Specifies if the Altinn II roles should streamed from SBLBridge service to access management database"
       label       = "${lower(var.environment)}-access-management"
       value       = false
     },

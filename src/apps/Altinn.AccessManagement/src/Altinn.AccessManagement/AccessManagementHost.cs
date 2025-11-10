@@ -6,8 +6,6 @@ using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Extensions;
 using Altinn.AccessManagement.Health;
-using Altinn.AccessManagement.HostedServices.Contracts;
-using Altinn.AccessManagement.HostedServices.Services;
 using Altinn.AccessManagement.Integration.Configuration;
 using Altinn.AccessManagement.Integration.Extensions;
 using Altinn.AccessManagement.Persistence.Configuration;
@@ -100,7 +98,7 @@ internal static partial class AccessManagementHost
             options.Source = appsettings.RunInitOnly ? SourceType.Migration : SourceType.App; 
         });
 
-        builder.Services.AddAccessMgmtCore();
+        builder.Services.AddAccessMgmtCore(builder.Configuration);
 
         builder.ConfigurePostgreSqlConfiguration();
         builder.ConfigureAltinnPackages();
