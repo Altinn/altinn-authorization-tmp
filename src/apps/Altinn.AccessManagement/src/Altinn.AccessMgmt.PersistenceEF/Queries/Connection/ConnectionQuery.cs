@@ -681,7 +681,7 @@ public class ConnectionQuery(AppDbContext db)
                 Reason = ConnectionReason.KeyRole
             };
 
-        return keyRoleAssignments;
+        return all2.Union(keyRoleAssignments);
     }
 
     private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryToOthers(AppDbContext db, ConnectionQueryFilter filter)
