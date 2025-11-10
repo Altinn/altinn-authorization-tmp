@@ -1,4 +1,4 @@
-using Altinn.Common.PEP.Authorization;
+﻿using Altinn.Common.PEP.Authorization;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Altinn.Authorization.PEP.Extensions;
@@ -40,21 +40,5 @@ public static class AuthorizationBuilderExtensions
         ArgumentException.ThrowIfNullOrEmpty(resourceId, nameof(resourceId));
         ArgumentException.ThrowIfNullOrEmpty(actionType, nameof(actionType));
         return builder.AddPolicy(name, policy => policy.Requirements.Add(new ResourceAccessRequirement(resourceId, actionType)));
-    }
-
-    /// <summary>
-    /// Adds a scope-based access policy to the authorization builder.
-    /// </summary>
-    /// <param name="builder">The <see cref="AuthorizationBuilder"/> to which the policy will be added.</param>
-    /// <param name="name">The name of the policy.</param>
-    /// <param name="scopes">An array of scopes required by the policy.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="name"/> is null or empty or if <paramref name="scopes"/> contains null or empty values.</exception>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="scopes"/> is null.</exception>
-    /// <returns>The updated <see cref="AuthorizationBuilder"/>.</returns>
-    public static AuthorizationBuilder AddAltinnPEPScopePolicy(this AuthorizationBuilder builder, string name, params string[] scopes)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
-        ArgumentNullException.ThrowIfNull(scopes, nameof(scopes));
-        return builder.AddPolicy(name, policy => policy.Requirements.Add(new ScopeAccessRequirement(scopes)));
     }
 }

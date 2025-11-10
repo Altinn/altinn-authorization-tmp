@@ -14,6 +14,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Altinn.Authorization.PEP\Altinn.Authorization.PEP.csproj" />
+        <ProjectReference Include="..\..\src\Altinn.Authorization.Scopes\Altinn.Authorization.Scopes.csproj" />
     </ItemGroup>
 
 </Project>

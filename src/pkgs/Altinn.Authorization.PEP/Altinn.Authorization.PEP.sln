@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11201.2 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0C88DD14-F956-CE84-757C-A364CCF449FC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.PEP.Tests", "test\Altinn.Authorization.PEP.Tests\Altinn.Authorization.PEP.Tests.csproj", "{FABBF5B1-0E65-4C1D-A203-29E27CF2290E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Scopes", "src\Altinn.Authorization.Scopes\Altinn.Authorization.Scopes.csproj", "{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,18 @@ Global
 		{FABBF5B1-0E65-4C1D-A203-29E27CF2290E}.Release|x64.Build.0 = Release|Any CPU
 		{FABBF5B1-0E65-4C1D-A203-29E27CF2290E}.Release|x86.ActiveCfg = Release|Any CPU
 		{FABBF5B1-0E65-4C1D-A203-29E27CF2290E}.Release|x86.Build.0 = Release|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Debug|x64.Build.0 = Debug|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Debug|x86.Build.0 = Debug|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Release|x64.ActiveCfg = Release|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Release|x64.Build.0 = Release|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Release|x86.ActiveCfg = Release|Any CPU
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -72,5 +86,9 @@ Global
 		{3DF2543F-0E0A-CACB-3E58-E620BFB1FC4C} = {9D04EDA7-9286-9C38-2C42-87A0303CF8B9}
 		{A1395A34-CDF7-46CF-BEE9-FF075C11E44D} = {3DF2543F-0E0A-CACB-3E58-E620BFB1FC4C}
 		{FABBF5B1-0E65-4C1D-A203-29E27CF2290E} = {0C88DD14-F956-CE84-757C-A364CCF449FC}
+		{076BF3E1-F1DE-4F77-BA8E-73969B4F3FBF} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9230EB00-1D96-4B55-AB0F-5F44ED28CC43}
 	EndGlobalSection
 EndGlobal

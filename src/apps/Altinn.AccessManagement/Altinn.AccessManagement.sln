@@ -69,6 +69,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.ABAC",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Pipeline", "..\..\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host.Pipeline\Altinn.Authorization.Host.Pipeline.csproj", "{5D61CF74-4E31-455F-83B7-4150CB9EDD24}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Altinn.Authorization.PEP", "Altinn.Authorization.PEP", "{8128352C-5863-46AD-3CF8-B28DB5C72378}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Scopes", "..\..\pkgs\Altinn.Authorization.PEP\src\Altinn.Authorization.Scopes\Altinn.Authorization.Scopes.csproj", "{BD136059-79E8-433D-AD60-F3913EB79BB9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -379,6 +383,18 @@ Global
 		{5D61CF74-4E31-455F-83B7-4150CB9EDD24}.Release|x64.Build.0 = Release|Any CPU
 		{5D61CF74-4E31-455F-83B7-4150CB9EDD24}.Release|x86.ActiveCfg = Release|Any CPU
 		{5D61CF74-4E31-455F-83B7-4150CB9EDD24}.Release|x86.Build.0 = Release|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Debug|x64.Build.0 = Debug|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Debug|x86.Build.0 = Debug|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Release|x64.ActiveCfg = Release|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Release|x64.Build.0 = Release|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Release|x86.ActiveCfg = Release|Any CPU
+		{BD136059-79E8-433D-AD60-F3913EB79BB9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -413,6 +429,8 @@ Global
 		{E500EC60-7D61-68B6-6AA3-17C768ADB617} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{7D85E08F-02C0-4479-A093-2DB52CD39C5A} = {E500EC60-7D61-68B6-6AA3-17C768ADB617}
 		{5D61CF74-4E31-455F-83B7-4150CB9EDD24} = {935C4FF9-8B5E-1FBA-4117-FAEFD052FCC5}
+		{8128352C-5863-46AD-3CF8-B28DB5C72378} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{BD136059-79E8-433D-AD60-F3913EB79BB9} = {8128352C-5863-46AD-3CF8-B28DB5C72378}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7E091FE0-EC9B-410B-9087-FB89517072B5}
