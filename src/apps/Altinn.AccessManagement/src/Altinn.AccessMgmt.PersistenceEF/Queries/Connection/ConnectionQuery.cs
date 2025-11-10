@@ -94,8 +94,6 @@ public class ConnectionQuery(AppDbContext db)
     /// </summary>
     public string GenerateDebugQuery(ConnectionQueryFilter filter, ConnectionQueryDirection direction)
     {
-        // return BuildBaseQueryNew(db, filter).ToQueryString();
-
         var baseQuery = direction == ConnectionQueryDirection.FromOthers
                 ? BuildBaseQueryFromOthers(db, filter)
                 : BuildBaseQueryToOthersNew(db, filter);
@@ -106,243 +104,7 @@ public class ConnectionQuery(AppDbContext db)
         }
         else
         {
-            return BuildBaseQuery(db, filter).ToQueryString();
-        }
-    }
-
-    private IQueryable<ConnectionQueryBaseRecord> BuildBaseQuery(AppDbContext db, ConnectionQueryFilter filter)
-    {
-        var fromSet = filter.FromIds?.Count > 0 ? new HashSet<Guid>(filter.FromIds) : null;
-        var toSet = filter.ToIds?.Count > 0 ? new HashSet<Guid>(filter.ToIds) : null;
-        var roleSet = filter.RoleIds?.Count > 0 ? new HashSet<Guid>(filter.RoleIds) : null;
-
-        var queries = new List<IQueryable<ConnectionQueryBaseRecord>>();
-
-        #region Direct
-        var direct = 
-            from assignment in db.Assignments
-            select new ConnectionQueryBaseRecord()
-            {
-                AssignmentId = assignment.Id,
-                FromId = assignment.FromId,
-                ToId = assignment.ToId,
-                RoleId = assignment.RoleId,
-                ViaId = null,
-                ViaRoleId = null,
-                DelegationId = null,
-                Reason = ConnectionReason.Assignment,
-            };
-
-        direct = direct.AsNoTracking()
-            .ToIdContains(toSet)
-            .FromIdContains(fromSet)
-            .RoleIdContains(roleSet);
-
-        queries.Add(direct);
-
-        if (filter.IncludeKeyRole)
-        {
-            var directKeyRole = 
-                from assignment in db.Assignments
-                join role in db.Roles on assignment.RoleId equals role.Id
-                join keyRoleAssignment in db.Assignments on assignment.FromId equals keyRoleAssignment.ToId
-                where role.IsKeyRole
-                select new ConnectionQueryBaseRecord()
-                {
-                    AssignmentId = keyRoleAssignment.Id,
-                    FromId = keyRoleAssignment.FromId,
-                    ToId = assignment.ToId,
-                    ViaId = keyRoleAssignment.ToId,
-                    RoleId = assignment.RoleId,
-                    ViaRoleId = null,
-                    DelegationId = null,
-                    Reason = ConnectionReason.KeyRole,
-                };
-
-            directKeyRole = directKeyRole.AsNoTracking()
-                .ToIdContains(toSet)
-                .FromIdContains(fromSet)
-                .RoleIdContains(roleSet);
-
-            queries.Add(directKeyRole);
-        }
-        
-        #endregion
-
-        #region Children
-
-        var children =
-            from assignment in db.Assignments
-            join child in db.Entities on assignment.FromId equals child.ParentId
-            select new ConnectionQueryBaseRecord()
-            {
-                AssignmentId = assignment.Id,
-                FromId = child.Id,
-                ToId = assignment.ToId,
-                RoleId = assignment.RoleId,
-                ViaId = assignment.FromId,
-                ViaRoleId = null,
-                DelegationId = null,
-                Reason = ConnectionReason.Hierarchy,
-            };
-
-        children = children
-            .ToIdContains(toSet)
-            .FromIdContains(fromSet)
-            .RoleIdContains(roleSet);
-
-        queries.Add(children);
-
-        if (filter.IncludeKeyRole)
-        {
-            var childrenKeyRole =
-                from assignment in db.Assignments
-                join role in db.Roles on assignment.RoleId equals role.Id
-                join keyRoleAssignment in db.Assignments on assignment.FromId equals keyRoleAssignment.ToId
-                where role.IsKeyRole
-                join child in db.Entities on assignment.FromId equals child.ParentId
-                select new ConnectionQueryBaseRecord()
-                {
-                    AssignmentId = assignment.Id,
-                    FromId = child.Id,
-                    ToId = keyRoleAssignment.ToId,
-                    RoleId = assignment.RoleId,
-                    ViaId = assignment.FromId,
-                    ViaRoleId = null,
-                    DelegationId = null,
-                    Reason = ConnectionReason.KeyRole,
-                };
-
-            childrenKeyRole = childrenKeyRole
-                .ToIdContains(toSet)
-                .FromIdContains(fromSet)
-                .RoleIdContains(roleSet);
-
-            queries.Add(childrenKeyRole);
-        }
-
-        #endregion
-
-        #region RoleMap
-
-        var roleMaps =
-            from assignment in db.Assignments
-            join rolemap in db.RoleMaps on assignment.RoleId equals rolemap.HasRoleId
-            select new ConnectionQueryBaseRecord()
-            {
-                AssignmentId = assignment.Id,
-                FromId = assignment.FromId,
-                ToId = assignment.ToId,
-                RoleId = rolemap.GetRoleId,
-                ViaId = null,
-                ViaRoleId = null,
-                DelegationId = null,
-                Reason = ConnectionReason.RoleMap,
-            };
-
-        roleMaps = roleMaps
-            .ToIdContains(toSet)
-            .FromIdContains(fromSet)
-            .RoleIdContains(roleSet);
-
-        queries.Add(roleMaps);
-
-        if (filter.IncludeKeyRole)
-        {
-            var roleMapKeyRoles =
-                from assignment in db.Assignments
-                join role in db.Roles on assignment.RoleId equals role.Id
-                where role.IsKeyRole
-                join keyRoleAssignment in db.Assignments on assignment.FromId equals keyRoleAssignment.ToId
-                join rolemap in db.RoleMaps on assignment.RoleId equals rolemap.HasRoleId
-                select new ConnectionQueryBaseRecord()
-                {
-                    AssignmentId = assignment.Id,
-                    FromId = assignment.FromId,
-                    ToId = keyRoleAssignment.ToId,
-                    RoleId = rolemap.GetRoleId,
-                    ViaId = null,
-                    ViaRoleId = null,
-                    DelegationId = null,
-                    Reason = ConnectionReason.KeyRole,
-                };
-
-            roleMapKeyRoles = roleMapKeyRoles
-            .ToIdContains(toSet)
-            .FromIdContains(fromSet)
-            .RoleIdContains(roleSet);
-
-            queries.Add(roleMapKeyRoles);
-        }
-
-        #endregion
-
-        #region Delegation
-
-        if (filter.IncludeDelegation)
-        {
-            var delegations = 
-                from delgation in db.Delegations
-                join fromAssignment in db.Assignments on delgation.FromId equals fromAssignment.Id
-                join toAssignment in db.Assignments on delgation.ToId equals toAssignment.Id
-                select new ConnectionQueryBaseRecord()
-                {
-                    DelegationId = delgation.Id,
-                    FromId = fromAssignment.FromId,
-                    ToId = toAssignment.ToId,
-                    ViaId = fromAssignment.ToId,
-                    ViaRoleId = null,
-                    AssignmentId = null,
-                    RoleId = Guid.Empty,
-                    Reason = ConnectionReason.Delegation,
-                };
-
-            delegations = delegations
-                .ToIdContains(toSet)
-                .FromIdContains(fromSet)
-                .RoleIdContains(roleSet);
-
-            queries.Add(delegations);
-
-            if (filter.IncludeKeyRole)
-            {
-                var delegationKeyRoles =
-                    from delgation in db.Delegations
-                    join fromAssignment in db.Assignments on delgation.FromId equals fromAssignment.Id
-                    join toAssignment in db.Assignments on delgation.ToId equals toAssignment.Id
-                    join role in db.Roles on toAssignment.RoleId equals role.Id
-                    join keyRoleAssignment in db.Assignments on toAssignment.FromId equals keyRoleAssignment.ToId
-                    where role.IsKeyRole
-                    select new ConnectionQueryBaseRecord()
-                    {
-                        DelegationId = delgation.Id,
-                        FromId = fromAssignment.FromId,
-                        ToId = toAssignment.ToId,
-                        ViaId = fromAssignment.ToId,
-                        ViaRoleId = null,
-                        AssignmentId = null,
-                        RoleId = Guid.Empty,
-                        Reason = ConnectionReason.KeyRole,
-                    };
-
-                delegationKeyRoles = delegationKeyRoles
-               .ToIdContains(toSet)
-               .FromIdContains(fromSet)
-               .RoleIdContains(roleSet);
-
-                queries.Add(delegationKeyRoles);
-            }
-        }
-
-        #endregion
-
-        if (filter.OnlyUniqueResults)
-        {
-            return queries.Aggregate((current, next) => current.Union(next));
-        }
-        else
-        {
-            return queries.Aggregate((current, next) => current.Concat(next));
+            return baseQuery.ToQueryString();
         }
     }
 
@@ -578,8 +340,34 @@ public class ConnectionQuery(AppDbContext db)
 
     public IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryToOthersNew(AppDbContext db, ConnectionQueryFilter filter)
     {
-        var fromId = filter.FromIds.First();
+        /* Senario: Tilgangsstyrer i Bakerhansen Bergen BEDR (FromId) som er underenhet av Bakerhansen AS
 
+       Oppslag skal finne:
+           - Direkte tilganger gitt til BDO AS fra Bakerhansen Bergen BEDR
+           - Direkte tilganger gitt til BDO AS fra hovedenheten Bakerhansen AS 
+           - Andre direkte tilganger gjennom Rettighetshaver, ER-roller eller Altinn 2-roller
+
+           - Nøkkelroller tilganger: Daglig leder i BDO AS arve tilganger gitt til BDO AS
+               - Personer med nøkkelrolle skal returneres som sub-connections
+
+           - Klientdelegeringer: Agent for BDO AS som har mottatt klientdelegeringer:
+               - Direkte fra Bakerhansen Bergen BEDR til Agent
+               - Fra Hovedenhet Bakerhansen AS til Agent
+
+           Scenario: Innehaver av Enk (For 1. mars og tilgangsstyringsside for privatpersoner)
+           - Revisor/Regnskapsfører forhold via ENK skal også dukke opp med tilgang til personen som er innehaver
+               - Selve Revisor/Regnskapsfører org
+               - Nøkkelrolle personer for Revi/regn
+               - Agenter med mottatt klientdelegering for Enk
+       */
+
+        var fromId = filter.FromIds.First();
+        var toSet = filter.ToIds?.Count > 0 ? new HashSet<Guid>(filter.ToIds) : null;
+        var roleSet = filter.RoleIds?.Count > 0 ? new HashSet<Guid>(filter.RoleIds) : null;
+
+        /*
+        Direct Assignments
+        */
         var direct =
             from childAss in db.Assignments
             where childAss.FromId == fromId
@@ -598,6 +386,9 @@ public class ConnectionQuery(AppDbContext db)
                 Reason = ConnectionReason.Assignment
             };
 
+        /*
+        If FromId is a subunit, this will get mainunit assignments
+        */
         var mainAssignments =
             from e in db.Entities
             where e.Id == fromId
@@ -617,8 +408,14 @@ public class ConnectionQuery(AppDbContext db)
                 Reason = ConnectionReason.Hierarchy
             };
 
+        /*
+        Combine main and subunit assignments 
+        */
         var allAssignments = direct.Union(mainAssignments);
 
+        /*
+        Add RoleMpa roles to allAssignments 
+        */
         var roleMapAssignments =
            from assignment in allAssignments
            join rolemap in db.RoleMaps on assignment.RoleId equals rolemap.HasRoleId
@@ -637,6 +434,9 @@ public class ConnectionQuery(AppDbContext db)
                Reason = ConnectionReason.RoleMap
            };
 
+        /*
+        Add Delegations from AllAssignments
+        */
         var directDelegations =
            from delegation in db.Delegations
            join fromAssignment in allAssignments on delegation.FromId equals fromAssignment.AssignmentId
@@ -656,6 +456,9 @@ public class ConnectionQuery(AppDbContext db)
                Reason = ConnectionReason.Delegation
            };
 
+        /*
+        Add KeyRoles on allAssignments
+        */
         var keyRoleAssignments =
             from all in allAssignments
             join keyRoleAssignment in db.Assignments on all.ToId equals keyRoleAssignment.FromId
@@ -676,341 +479,14 @@ public class ConnectionQuery(AppDbContext db)
                 Reason = ConnectionReason.KeyRole
             };
 
+        /*
+        Combine everything
+        */
         return allAssignments
             .Union(roleMapAssignments)
             .Union(directDelegations)
-            .Union(keyRoleAssignments);
-    }
-
-    private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryToOthers(AppDbContext db, ConnectionQueryFilter filter)
-    {
-        /* Senario: Tilgangsstyrer i Bakerhansen Bergen BEDR (FromId) som er underenhet av Bakerhansen AS
-           
-        Oppslag skal finne:
-            - Direkte tilganger gitt til BDO AS fra Bakerhansen Bergen BEDR
-            - Direkte tilganger gitt til BDO AS fra hovedenheten Bakerhansen AS 
-            - Andre direkte tilganger gjennom Rettighetshaver, ER-roller eller Altinn 2-roller
-
-            - Nøkkelroller tilganger: Daglig leder i BDO AS arve tilganger gitt til BDO AS
-                - Personer med nøkkelrolle skal returneres som sub-connections
-
-            - Klientdelegeringer: Agent for BDO AS som har mottatt klientdelegeringer:
-                - Direkte fra Bakerhansen Bergen BEDR til Agent
-                - Fra Hovedenhet Bakerhansen AS til Agent
-
-            Scenario: Innehaver av Enk (For 1. mars og tilgangsstyringsside for privatpersoner)
-            - Revisor/Regnskapsfører forhold via ENK skal også dukke opp med tilgang til personen som er innehaver
-                - Selve Revisor/Regnskapsfører org
-                - Nøkkelrolle personer for Revi/regn
-                - Agenter med mottatt klientdelegering for Enk
-        */
-
-        if (filter.FromIds.Count != 1)
-        {
-            throw new NotSupportedException("BuildBaseQueryToOthers only supports lookups in context of a single FromId.");
-        }
-
-        var fromSet = new HashSet<Guid>(filter.FromIds);
-        var toSet = filter.ToIds?.Count > 0 ? new HashSet<Guid>(filter.ToIds) : null;
-        var roleSet = filter.RoleIds?.Count > 0 ? new HashSet<Guid>(filter.RoleIds) : null;
-
-        var queries = new List<IQueryable<ConnectionQueryBaseRecord>>();
-
-        #region Find MainUnit assignment if FromParty is a Subunit
-        var mainUnitAssignments =
-            from mainUnitAssignment in db.Assignments
-            where mainUnitAssignment.FromId == filter.FromIds.First()
-                && (mainUnitAssignment.RoleId == RoleConstants.HasAsRegistrationUnitBEDR.Id || mainUnitAssignment.RoleId == RoleConstants.HasAsRegistrationUnitAAFY.Id)
-            select new ConnectionQueryBaseRecord()
-            {
-                AssignmentId = mainUnitAssignment.Id,
-                DelegationId = null,
-                FromId = mainUnitAssignment.FromId,
-                ToId = mainUnitAssignment.ToId,
-                RoleId = mainUnitAssignment.RoleId,
-                ViaId = null,
-                ViaRoleId = null,
-                IsRoleMap = false,
-                IsKeyRoleAccess = false,
-                IsMainUnitAccess = false,
-                Reason = ConnectionReason.Hierarchy
-            };
-        #endregion
-
-        #region Find MainUnit-Assignments if FromParty is a Subunit
-        var inheritedMainUnitAssignments =
-            from inheritedAssignment in db.Assignments
-            join mainUnitAssignment in db.Assignments on inheritedAssignment.FromId equals mainUnitAssignment.ToId
-            where mainUnitAssignment.FromId == filter.FromIds.First()
-               && (mainUnitAssignment.RoleId == RoleConstants.HasAsRegistrationUnitBEDR.Id || mainUnitAssignment.RoleId == RoleConstants.HasAsRegistrationUnitAAFY.Id)
-            select new ConnectionQueryBaseRecord()
-            {
-                AssignmentId = inheritedAssignment.Id,
-                DelegationId = null,
-                FromId = inheritedAssignment.FromId,
-                ToId = mainUnitAssignment.FromId, // FromId on mainunit-assignment is the subunit
-                RoleId = inheritedAssignment.RoleId,
-                ViaId = mainUnitAssignment.ToId, // ToId on mainunit-assignment is the mainunit
-                ViaRoleId = mainUnitAssignment.RoleId,
-                IsRoleMap = false,
-                IsKeyRoleAccess = false,
-                IsMainUnitAccess = true,
-                Reason = ConnectionReason.Hierarchy
-            };
-        #endregion
-
-        #region Find direct assignments from FromParty
-        var directAssignments =
-                from assignments in db.Assignments
-                select new ConnectionQueryBaseRecord()
-                {
-                    AssignmentId = assignments.Id,
-                    DelegationId = null,
-                    FromId = assignments.FromId,
-                    ToId = assignments.ToId,
-                    ViaId = assignments.ToId,
-                    RoleId = assignments.RoleId,
-                    ViaRoleId = null,
-                    IsRoleMap = false,
-                    IsKeyRoleAccess = false,
-                    IsMainUnitAccess = false,
-                    Reason = ConnectionReason.Assignment
-                };
-
-        directAssignments = directAssignments.AsNoTracking()
-            .FromIdContains(fromSet);
-        #endregion
-
-        #region Combine to all assignments
-        var allAssignments = filter.IncludeMainUnitConnections ?
-            directAssignments.Union(inheritedMainUnitAssignments) :
-            directAssignments;
-        #endregion
-
-        #region Find all RoleMap roles for Assignments
-        var roleMapAssignments =
-            from assignment in allAssignments
-            join rolemap in db.RoleMaps on assignment.RoleId equals rolemap.HasRoleId
-            select new ConnectionQueryBaseRecord()
-            {
-                AssignmentId = assignment.AssignmentId,
-                DelegationId = null,
-                FromId = assignment.FromId,
-                ToId = assignment.ToId,
-                RoleId = rolemap.GetRoleId,
-                ViaId = assignment.ViaId,
-                ViaRoleId = assignment.ViaRoleId,
-                IsRoleMap = true,
-                IsKeyRoleAccess = assignment.IsKeyRoleAccess,
-                IsMainUnitAccess = assignment.IsMainUnitAccess,
-                Reason = ConnectionReason.RoleMap
-            };
-        #endregion
-
-        #region Find all sub-connections through Delegations direct from FromParty
-        var directDelegations =
-            from delegation in db.Delegations 
-            join fromAssignment in db.Assignments on delegation.FromId equals fromAssignment.Id
-            join toAssignment in db.Assignments on delegation.ToId equals toAssignment.Id
-            where fromAssignment.FromId == filter.FromIds.First()
-            select new ConnectionQueryBaseRecord()
-            {
-                AssignmentId = null,
-                DelegationId = delegation.Id,
-                FromId = fromAssignment.FromId,
-                ToId = toAssignment.ToId,
-                RoleId = Guid.Empty,
-                ViaId = fromAssignment.ToId,
-                ViaRoleId = null,
-                IsRoleMap = false,
-                IsKeyRoleAccess = false,
-                IsMainUnitAccess = false,
-                Reason = ConnectionReason.Delegation
-            };
-        #endregion
-
-        #region Find all sub-connections through Delegations made from MainUnit of FromParty
-        var inheritedMainUnitDelegations =
-            from delegation in db.Delegations
-            join toAssignment in db.Assignments on delegation.ToId equals toAssignment.Id
-            join fromAssignment in db.Assignments on delegation.FromId equals fromAssignment.Id
-            join mainUnit in db.Entities on fromAssignment.FromId equals mainUnit.Id
-            join subunit in db.Entities on mainUnit.Id equals subunit.ParentId
-            where subunit.Id == filter.FromIds.First()
-            select new ConnectionQueryBaseRecord()
-            {
-                AssignmentId = null,
-                DelegationId = delegation.Id,
-                FromId = subunit.Id,
-                ToId = toAssignment.ToId,
-                RoleId = Guid.Empty,
-                ViaId = mainUnit.Id,
-                ViaRoleId = null,
-                IsRoleMap = false,
-                IsKeyRoleAccess = false,
-                IsMainUnitAccess = false,
-                Reason = ConnectionReason.Delegation
-            };
-        #endregion
-
-        #region Combine to find all connections
-        var allBaseConnections = filter.IncludeDelegation ?
-            allAssignments.Union(roleMapAssignments).Union(directDelegations).Union(inheritedMainUnitDelegations) :
-            allAssignments.Union(roleMapAssignments);
-        #endregion
-
-        #region Find all sub-connections through keyroles
-        var keyRoleHolders =
-            from connection in allBaseConnections
-            join keyRoleAssignment in db.Assignments on connection.ToId equals keyRoleAssignment.FromId
-            join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
-            where role.IsKeyRole
-            select new ConnectionQueryBaseRecord()
-            {
-                AssignmentId = connection.AssignmentId,
-                DelegationId = connection.DelegationId,
-                FromId = connection.FromId,
-                ToId = keyRoleAssignment.ToId,
-                RoleId = connection.RoleId,
-                ViaId = keyRoleAssignment.FromId,
-                ViaRoleId = keyRoleAssignment.RoleId,
-                IsKeyRoleAccess = connection.IsKeyRoleAccess,
-                IsRoleMap = connection.IsRoleMap,
-                IsMainUnitAccess = connection.IsMainUnitAccess,
-                Reason = ConnectionReason.KeyRole
-            };
-        #endregion
-
-        var allConnections = filter.IncludeSubConnections ?
-            allBaseConnections.Union(keyRoleHolders) :
-            allBaseConnections;
-
-        return allConnections
-            .FromIdContains(fromSet)
-            .RoleIdContains(roleSet);
-    }
-
-    private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryNew(AppDbContext db, ConnectionQueryFilter filter)
-    {
-        // JUST TESTING .... THUEN
-        var fromSet = filter.FromIds?.Count > 0 ? new HashSet<Guid>(filter.FromIds) : null;
-        var toSet = filter.ToIds?.Count > 0 ? new HashSet<Guid>(filter.ToIds) : null;
-        var roleSet = filter.RoleIds?.Count > 0 ? new HashSet<Guid>(filter.RoleIds) : null;
-
-        var queries = new List<IQueryable<ConnectionQueryBaseRecord>>();
-
-        var directConnections =
-               from assignments in db.Assignments
-               select new ConnectionQueryBaseRecord()
-               {
-                   AssignmentId = assignments.Id,
-                   FromId = assignments.FromId,
-                   ToId = assignments.ToId,
-                   ViaId = assignments.ToId,
-                   RoleId = assignments.RoleId,
-                   ViaRoleId = null,
-                   DelegationId = null,
-                   IsKeyRoleAccess = false,
-                   IsRoleMap = false,
-                   Reason = ConnectionReason.Assignment,
-               };
-
-        var keyRoleConnections =
-               from keyRoleAssignment in db.Assignments
-               join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
-               join inheritedAssignment in db.Assignments on keyRoleAssignment.FromId equals inheritedAssignment.ToId
-               where role.IsKeyRole
-               select new ConnectionQueryBaseRecord()
-               {
-                   AssignmentId = keyRoleAssignment.Id,
-                   FromId = inheritedAssignment.FromId,
-                   ToId = keyRoleAssignment.ToId,
-                   RoleId = inheritedAssignment.RoleId,
-                   ViaId = keyRoleAssignment.FromId,
-                   ViaRoleId = keyRoleAssignment.RoleId,
-                   DelegationId = null,
-                   IsKeyRoleAccess = true,
-                   IsRoleMap = false,
-                   Reason = ConnectionReason.KeyRole,
-               };
-
-        #region Find all assignments
-        var allAssignments = filter.IncludeKeyRole ?
-            directConnections.Union(keyRoleConnections) :
-            directConnections;
-        #endregion
-
-        #region Find all RoleMap roles for Assignments
-        var roleMapAssignments =
-            from assignment in allAssignments
-            join rolemap in db.RoleMaps on assignment.RoleId equals rolemap.HasRoleId
-            select new ConnectionQueryBaseRecord()
-            {
-                AssignmentId = assignment.AssignmentId,
-                FromId = assignment.FromId,
-                ToId = assignment.ToId,
-                RoleId = rolemap.GetRoleId,
-                ViaId = assignment.ViaId,
-                ViaRoleId = assignment.ViaRoleId,
-                DelegationId = null,
-                IsKeyRoleAccess = assignment.IsKeyRoleAccess,
-                IsRoleMap = true,
-                Reason = ConnectionReason.RoleMap
-            };
-        #endregion
-
-        #region Find all Delegations to ToParty
-        var delegations =
-            from toAssignment in allAssignments
-            join delegation in db.Delegations on toAssignment.AssignmentId equals delegation.ToId
-            join fromAssignment in db.Assignments on delegation.FromId equals fromAssignment.Id
-            select new ConnectionQueryBaseRecord()
-            {
-                DelegationId = delegation.Id,
-                FromId = fromAssignment.FromId,
-                ToId = toAssignment.ToId,
-                ViaId = fromAssignment.ToId,
-                ViaRoleId = null,
-                AssignmentId = null,
-                RoleId = Guid.Empty,
-                IsKeyRoleAccess = toAssignment.IsKeyRoleAccess,
-                IsRoleMap = toAssignment.IsRoleMap,
-                Reason = ConnectionReason.Delegation
-            };
-        #endregion
-
-        #region Combine to find all connections
-        var allBaseConnections = filter.IncludeDelegation ?
-            allAssignments.Union(roleMapAssignments).Union(delegations) :
-            allAssignments.Union(roleMapAssignments);
-        #endregion
-
-        #region Include all sub-connections through hierarchy
-        var childConnections =
-            from connection in allBaseConnections
-            join child in db.Entities on connection.FromId equals child.ParentId
-            select new ConnectionQueryBaseRecord()
-            {
-                AssignmentId = connection.AssignmentId,
-                DelegationId = connection.DelegationId,
-                FromId = child.Id,
-                ToId = connection.ToId,
-                RoleId = connection.RoleId,
-                ViaId = connection.FromId,
-                ViaRoleId = null,
-                IsKeyRoleAccess = connection.IsKeyRoleAccess,
-                IsRoleMap = connection.IsRoleMap,
-                Reason = ConnectionReason.Hierarchy
-            };
-        #endregion
-
-        var allConnections = filter.IncludeSubConnections ?
-            allBaseConnections.Union(childConnections) :
-            allBaseConnections;
-
-        return allConnections
-            .FromIdContains(fromSet)
-            .ToIdContains(fromSet)
+            .Union(keyRoleAssignments)
+            .ToIdContains(toSet)
             .RoleIdContains(roleSet);
     }
 
