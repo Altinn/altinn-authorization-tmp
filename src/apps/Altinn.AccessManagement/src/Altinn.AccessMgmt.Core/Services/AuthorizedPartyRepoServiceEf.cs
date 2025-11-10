@@ -103,12 +103,15 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
             ToIds = [toId],
             EnrichEntities = true,
             IncludeKeyRole = true,
+            IncludeDelegation = true,
+            IncludeMainUnitConnections = true,
+            IncludeSubConnections = true,
             IncludePackages = true,
             IncludeResource = false,
             EnrichPackageResources = false,
-            ExcludeDeleted = false,
-            IncludeDelegation = true,
+            ExcludeDeleted = false
         },
+        ConnectionQueryDirection.FromOthers,
         ct);
 
         return DtoMapper.ConvertPackages(connections);

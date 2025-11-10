@@ -357,7 +357,7 @@ public class AuthorizedPartiesServiceEf(
                 }
 
                 allPartiesDict[subunit.Id] = subunitAuthParty;
-            }            
+            }
         }
 
         return Tuple.Create(allPartiesDict, authorizedParties.AsEnumerable());
