@@ -39,25 +39,31 @@ public partial class ConnectionService(
             return problem;
         }
 
+        var direction = party == fromId
+            ? ConnectionQueryDirection.ToOthers
+            : ConnectionQueryDirection.FromOthers;
+
         var connections = await connectionQuery.GetConnectionsAsync(
-        new ConnectionQueryFilter()
-        {
-            FromIds = fromId.HasValue ? [fromId.Value] : null,
-            ToIds = toId.HasValue ? [toId.Value] : null,
-            EnrichEntities = true,
-            IncludeKeyRole = true,
-            IncludePackages = true,
-            IncludeResource = true,
-            EnrichPackageResources = false,
-            ExcludeDeleted = false,
-            IncludeDelegation = true,
-        },
-        cancellationToken
+            new ConnectionQueryFilter()
+            {
+                FromIds = fromId.HasValue ? [fromId.Value] : null,
+                ToIds = toId.HasValue ? [toId.Value] : null,
+                EnrichEntities = true,
+                IncludeKeyRole = true,
+                IncludePackages = true,
+                IncludeResource = false,
+                EnrichPackageResources = false,
+                ExcludeDeleted = false,
+                IncludeDelegation = true,
+                OnlyUniqueResults = true,
+            },
+            direction,
+            cancellationToken
         );
 
-        return party == fromId ?
-            DtoMapper.ConvertToOthers(connections) :
-            DtoMapper.ConvertFromOthers(connections);
+        return direction == ConnectionQueryDirection.FromOthers
+            ? DtoMapper.ConvertFromOthers(connections)
+            : DtoMapper.ConvertToOthers(connections);
     }
 
     public async Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
@@ -166,6 +172,10 @@ public partial class ConnectionService(
             return problem;
         }
 
+        var direction = party == fromId
+            ? ConnectionQueryDirection.ToOthers
+            : ConnectionQueryDirection.FromOthers;
+
         var connections = await connectionQuery.GetConnectionsAsync(
         new ConnectionQueryFilter()
         {
@@ -178,7 +188,9 @@ public partial class ConnectionService(
             EnrichPackageResources = false,
             ExcludeDeleted = false,
             IncludeDelegation = true,
+            OnlyUniqueResults = true,
         },
+        direction,
         cancellationToken
         );
 
@@ -498,6 +510,10 @@ public partial class ConnectionService(
             return Problems.PartyNotFound;
         }
 
+        var direction = party == fromId
+            ? ConnectionQueryDirection.ToOthers
+            : ConnectionQueryDirection.FromOthers;
+
         var filter = new ConnectionQueryFilter()
         {
             FromIds = fromId.HasValue ? [fromId.Value] : null,
@@ -508,10 +524,11 @@ public partial class ConnectionService(
             IncludeResource = false,
             EnrichPackageResources = false,
             ExcludeDeleted = false,
+            OnlyUniqueResults = true,
             IncludeDelegation = false,
         };
 
-        var connections = await connectionQuery.GetConnectionsAsync(filter, cancellationToken);
+        var connections = await connectionQuery.GetConnectionsAsync(filter, direction, cancellationToken);
         return connections.GroupBy(r => r.RoleId).Select(connection =>
         {
             var role = connection.First().Role;
