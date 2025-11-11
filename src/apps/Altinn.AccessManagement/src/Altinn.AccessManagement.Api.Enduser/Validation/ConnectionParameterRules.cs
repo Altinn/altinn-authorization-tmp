@@ -1,5 +1,4 @@
-﻿using Altinn.AccessManagement.Api.Enduser.Models;
-using Altinn.AccessMgmt.Core.Utils.Models;
+﻿using Altinn.AccessMgmt.Core.Utils.Models;
 using Altinn.AccessMgmt.Core.Validation;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
@@ -17,7 +16,7 @@ internal static class ConnectionParameterRules
     private static readonly string[] FromToPartyKeywords = ["me", "all"];
 
     /// <summary>
-    /// party must be either keyword 'me' or a non-empty Guid.
+    /// party must be a non-empty Guid.
     /// </summary>
     /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
     internal static RuleExpression Party(string value) => () =>
@@ -43,21 +42,19 @@ internal static class ConnectionParameterRules
     /// <paramref name="value"/> has to be non-empty Guid if valueRequired is true.
     /// </summary>
     /// <param name="value">Raw query parameter value.</param>
-    /// <param name="valueRequired">True if a value must be non-empty Guid.</param>
-    /// <param name="paramName">Parameter name used in error path ("from" or "to").</param>
+    /// <param name="paramName">Parameter name used in error path.</param>
     /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
-    internal static RuleExpression PartyFrom(string value, bool valueRequired = false, string paramName = "from") =>
-        ValidateFromOrToParty(value, valueRequired, paramName);
+    internal static RuleExpression PartyFrom(string value, string paramName = "from") =>
+        ValidateFromOrToParty(value, paramName);
 
     /// <summary>
     /// <paramref name="value"/> has to be non-empty Guid if valueRequired is true.
     /// </summary>
     /// <param name="value">Raw query parameter value.</param>
-    /// <param name="valueRequired">True if a value must be non-empty Guid.</param>
-    /// <param name="paramName">Parameter name used in error path ("from" or "to").</param>
+    /// <param name="paramName">Parameter name used in error path.</param>
     /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
-    internal static RuleExpression PartyTo(string value, bool valueRequired = false, string paramName = "to") =>
-        ValidateFromOrToParty(value, valueRequired, paramName);
+    internal static RuleExpression PartyTo(string value, string paramName = "to") =>
+        ValidateFromOrToParty(value, paramName);
 
     /// <summary>
     /// personIdentifier must be present and pass <see cref="PersonIdentifier.TryParse(string?, IFormatProvider?, out PersonIdentifier)"/>,
@@ -89,26 +86,21 @@ internal static class ConnectionParameterRules
         return null;
     };
 
-    private static RuleExpression ValidateFromOrToParty(string value, bool valueRequired, string paramName) => () =>
+    private static RuleExpression ValidateFromOrToParty(string value, string paramName) => () =>
     {
-        if (valueRequired)
+        if (Guid.TryParse(value, out var parsed) && parsed != Guid.Empty)
         {
-            if (Guid.TryParse(value, out var parsed) && parsed != Guid.Empty)
-            {
-                return null;
-            }
-            else if (IsKeyword(value, FromToPartyKeywords))
-            {
-                return null;
-            }
-            else
-            {
-                return (ref ValidationErrorBuilder errors) =>
-                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new(paramName, ValidationErrorMessageTexts.InvalidPartyValue)]);
-            }
+            return null;
         }
-
-        return null;
+        else if (IsKeyword(value, FromToPartyKeywords))
+        {
+            return null;
+        }
+        else
+        {
+            return (ref ValidationErrorBuilder errors) =>
+                errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new(paramName, ValidationErrorMessageTexts.InvalidPartyValue)]);
+        }
     };
 
     private static bool IsKeyword(string? value, string[] keywords) =>

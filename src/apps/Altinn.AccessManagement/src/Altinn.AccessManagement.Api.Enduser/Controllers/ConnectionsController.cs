@@ -96,7 +96,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
 
         var validationErrors = hasPersonInputParameter
             ? ValidationComposer.Validate(
-                ConnectionValidation.ValidateAddAssignmentWithPersonInput(connection.Party, connection.From, connection.To, person.PersonIdentifier, person.LastName))
+                ConnectionValidation.ValidateAddAssignmentWithPersonInput(connection.Party, connection.From, person.PersonIdentifier, person.LastName))
             : ValidationComposer.Validate(
                 ConnectionValidation.ValidateAddAssignmentWithConnectionInput(connection.Party, connection.From, connection.To));
 
@@ -208,7 +208,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
 
         var validationErrors = hasPersonInputParameter
             ? ValidationComposer.Validate(
-                ConnectionValidation.ValidateAddPackageToConnectionWithPersonInput(connection.Party, connection.From, connection.To, person.PersonIdentifier, person.LastName, packageId, package))
+                ConnectionValidation.ValidateAddPackageToConnectionWithPersonInput(connection.Party, connection.From, person.PersonIdentifier, person.LastName, packageId, package))
             : ValidationComposer.Validate(
                 ConnectionValidation.ValidateAddPackageToConnectionWithConnectionInput(connection.Party, connection.From, connection.To, packageId, package));
 
