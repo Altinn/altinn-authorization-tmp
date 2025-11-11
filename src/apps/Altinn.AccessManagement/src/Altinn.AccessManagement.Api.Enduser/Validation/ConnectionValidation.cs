@@ -62,6 +62,9 @@ internal static class ConnectionValidation
             ConnectionCombinationRules.PartyEqualsFrom(party, from)
         );
 
+    /// <summary>
+    /// Validation rule for removing an existing rightholder connection.
+    /// </summary>
     internal static RuleExpression ValidateRemoveConnection(string party, string from, string to) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
@@ -70,6 +73,9 @@ internal static class ConnectionValidation
             ConnectionCombinationRules.RemovePartyMatchesFromOrTo(party, from, to)
         );
 
+    /// <summary>
+    /// Validation rule for removing package from existing rightholder connection.
+    /// </summary>
     internal static RuleExpression ValidateRemovePackageFromConnection(string party, string from, string to, Guid? packageId, string packageUrn) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
