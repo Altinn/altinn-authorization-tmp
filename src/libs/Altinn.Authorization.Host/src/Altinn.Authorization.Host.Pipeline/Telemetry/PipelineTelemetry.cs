@@ -29,7 +29,7 @@ internal static partial class PipelineTelemetry
 
     internal static void RecordCancelledState(this Activity? source)
     {
-        source?.SetStatus(ActivityStatusCode.Ok, "In Cancelled state.");
+        source?.SetStatus(ActivityStatusCode.Ok, "In cancelled state.");
     }
 
     internal static void SetSequence(this Activity? source, ulong sequence)

@@ -48,9 +48,32 @@ public class PaginatorStream<T>(HttpClient httpClient, HttpResponseMessage curre
             }
             else
             {
-                // RecordProblemDetails(response.ProblemDetails);
+                RecordProblemDetails(response.ProblemDetails);
                 yield return response;
                 yield break;
+            }
+        }
+    }
+
+    internal static void RecordProblemDetails(AltinnProblemDetails problem)
+    {
+        var activity = Activity.Current;
+        if (activity is { })
+        {
+            activity.AddTag("problem.title", problem.Title);
+            activity.AddTag("problem.detail", problem.Detail);
+            activity.AddTag("problem.status", problem.Status);
+            activity.AddTag("problem.error_code", problem.ErrorCode);
+            activity.AddTag("problem.instance", problem.Instance);
+            activity.AddTag("problem.type", problem.Type);
+            
+            try
+            {
+                var extensions = JsonSerializer.Serialize(problem.Extensions);
+                activity.AddTag($"problem.extensions", extensions);
+            }
+            catch (Exception)
+            {
             }
         }
     }
