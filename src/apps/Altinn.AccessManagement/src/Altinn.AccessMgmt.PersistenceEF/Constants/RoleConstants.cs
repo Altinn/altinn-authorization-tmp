@@ -1085,7 +1085,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> c497b499-7e98-423d-9fe7-ad5a6c3b71ad
-    /// - <c>URN:</c> urn:altinn:rolecode:A0212
+    /// - <c>URN:</c> urn:altinn:rolecode:a0212
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0212
     /// - <c>Description:</c> Denne rollen gir rettighet til tjenester innen import, foredling, produksjon og/eller salg av primærnæringsprodukter og andre næringsmiddel, samt dyrehold, akvakultur, planter og kosmetikk. Ved regelverksendringer eller innføring av nye digitale tjenester
@@ -1097,7 +1097,7 @@ public static class RoleConstants
             Name = "Primærnæring og næringsmiddel",
             Code = "A0212",
             Description = "Denne rollen gir rettighet til tjenester innen import, foredling, produksjon og/eller salg av primærnæringsprodukter og andre næringsmiddel, samt dyrehold, akvakultur, planter og kosmetikk. Ved regelverksendringer eller innføring av nye digitale tjenester",
-            Urn = "urn:altinn:rolecode:A0212",
+            Urn = "urn:altinn:rolecode:a0212",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1118,7 +1118,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 151955ec-d8aa-4c14-a435-ffa96b26a9fb
-    /// - <c>URN:</c> urn:altinn:rolecode:A0236
+    /// - <c>URN:</c> urn:altinn:rolecode:a0236
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0236
     /// - <c>Description:</c> Denne rollen gir rettighet til å lese meldinger som blir sendt til brukerens meldingsboks. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -1130,7 +1130,7 @@ public static class RoleConstants
             Name = "Post/arkiv",
             Code = "A0236",
             Description = "Denne rollen gir rettighet til å lese meldinger som blir sendt til brukerens meldingsboks. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0236",
+            Urn = "urn:altinn:rolecode:a0236",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1151,7 +1151,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> c2884487-a634-4537-95b4-bafb917b62a8
-    /// - <c>URN:</c> urn:altinn:rolecode:A0237
+    /// - <c>URN:</c> urn:altinn:rolecode:a0237
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0237
     /// - <c>Description:</c> Delegerbar revisorrolle med signeringsrettighet.Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -1163,7 +1163,7 @@ public static class RoleConstants
             Name = "Ansvarlig revisor",
             Code = "A0237",
             Description = "Delegerbar revisorrolle med signeringsrettighet.Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0237",
+            Urn = "urn:altinn:rolecode:a0237",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1184,7 +1184,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 10fcad57-7a91-4e02-a921-63e5751fbc24
-    /// - <c>URN:</c> urn:altinn:rolecode:A0238
+    /// - <c>URN:</c> urn:altinn:rolecode:a0238
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0238
     /// - <c>Description:</c> Denne rollen gir revisor rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -1196,7 +1196,7 @@ public static class RoleConstants
             Name = "Revisormedarbeider",
             Code = "A0238",
             Description = "Denne rollen gir revisor rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0238",
+            Urn = "urn:altinn:rolecode:a0238",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1217,7 +1217,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> ebed65a5-dd87-4180-b898-e1da249b128d
-    /// - <c>URN:</c> urn:altinn:rolecode:A0239
+    /// - <c>URN:</c> urn:altinn:rolecode:a0239
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0239
     /// - <c>Description:</c> Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester, samt signeringsrettighet for tjenestene. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -1229,7 +1229,7 @@ public static class RoleConstants
             Name = "Regnskapsfører med signeringsrettighet",
             Code = "A0239",
             Description = "Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester, samt signeringsrettighet for tjenestene. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0239",
+            Urn = "urn:altinn:rolecode:a0239",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1250,7 +1250,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 9407620b-21b6-4538-b4d8-2b4eb339c373
-    /// - <c>URN:</c> urn:altinn:rolecode:A0240
+    /// - <c>URN:</c> urn:altinn:rolecode:a0240
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0240
     /// - <c>Description:</c> Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -1262,7 +1262,7 @@ public static class RoleConstants
             Name = "Regnskapsfører uten signeringsrettighet",
             Code = "A0240",
             Description = "Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0240",
+            Urn = "urn:altinn:rolecode:a0240",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1283,7 +1283,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 723a43ab-13d8-4585-81e2-e4c734b2d4fc
-    /// - <c>URN:</c> urn:altinn:rolecode:A0241
+    /// - <c>URN:</c> urn:altinn:rolecode:a0241
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0241
     /// - <c>Description:</c> Denne rollen gir regnskapsfører rettighet til lønnsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -1295,7 +1295,7 @@ public static class RoleConstants
             Name = "Regnskapsfører lønn",
             Code = "A0241",
             Description = "Denne rollen gir regnskapsfører rettighet til lønnsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0241",
+            Urn = "urn:altinn:rolecode:a0241",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1382,7 +1382,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 6828080b-e846-4c51-b670-201af4917562
-    /// - <c>URN:</c> urn:altinn:rolecode:A0278
+    /// - <c>URN:</c> urn:altinn:rolecode:a0278
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0278
     /// - <c>Description:</c> Rollen er forbeholdt skjemaer og tjenester som er godkjent av Direktoratet for byggkvalitet (DiBK). Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -1394,7 +1394,7 @@ public static class RoleConstants
             Name = "Plan- og byggesak",
             Code = "A0278",
             Description = "Rollen er forbeholdt skjemaer og tjenester som er godkjent av Direktoratet for byggkvalitet (DiBK). Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0278",
+            Urn = "urn:altinn:rolecode:a0278",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1415,7 +1415,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 48f9e5ec-efd5-4863-baba-9697b8971666
-    /// - <c>URN:</c> urn:altinn:rolecode:ADMAI
+    /// - <c>URN:</c> urn:altinn:rolecode:admai
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> ADMAI
     /// - <c>Description:</c> Denne rollen gir administratortilgang til å gi videre rettigheter til andre.
@@ -1427,7 +1427,7 @@ public static class RoleConstants
             Name = "Tilgangsstyring",
             Code = "ADMAI",
             Description = "Denne rollen gir administratortilgang til å gi videre rettigheter til andre.",
-            Urn = "urn:altinn:rolecode:ADMAI",
+            Urn = "urn:altinn:rolecode:admai",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1448,7 +1448,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> e078bb18-f55a-4a2d-8964-c599f41b29b5
-    /// - <c>URN:</c> urn:altinn:rolecode:APIADM
+    /// - <c>URN:</c> urn:altinn:rolecode:apiadm
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> APIADM
     /// - <c>Description:</c> Delegerbar rolle som gir tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av virksomheten.
@@ -1460,7 +1460,7 @@ public static class RoleConstants
             Name = "Programmeringsgrensesnitt (API)",
             Code = "APIADM",
             Description = "Delegerbar rolle som gir tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av virksomheten.",
-            Urn = "urn:altinn:rolecode:APIADM",
+            Urn = "urn:altinn:rolecode:apiadm",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -2299,7 +2299,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> f4df0522-3034-405b-a9e5-83f971737033
-    /// - <c>URN:</c> urn:altinn:rolecode:A0282
+    /// - <c>URN:</c> urn:altinn:rolecode:a0282
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0282
     /// - <c>Description:</c> Tillatelsen gjelder alle opplysninger vedrørende dine eller ditt enkeltpersonsforetaks skatteforhold. Ved regelverksendringer eller innføring av nye digitale tjenester kan Skatteetaten endre i tillatelsen.
@@ -2313,7 +2313,7 @@ public static class RoleConstants
             Name = "Skatteforhold for privatpersoner",
             Code = "A0282",
             Description = "Tillatelsen gjelder alle opplysninger vedrørende dine eller ditt enkeltpersonsforetaks skatteforhold. Ved regelverksendringer eller innføring av nye digitale tjenester kan Skatteetaten endre i tillatelsen.",
-            Urn = "urn:altinn:rolecode:A0282",
+            Urn = "urn:altinn:rolecode:a0282",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2331,7 +2331,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 92ea5544-ca64-4e03-9532-646b9f86ff65
-    /// - <c>URN:</c> urn:altinn:rolecode:A0286
+    /// - <c>URN:</c> urn:altinn:rolecode:a0286
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0286
     /// - <c>Description:</c> Denne rollen gir tilgang til taushetsbelagt post fra stat og kommune. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -2345,7 +2345,7 @@ public static class RoleConstants
             Name = "Taushetsbelagt post ",
             Code = "A0286",
             Description = "Denne rollen gir tilgang til taushetsbelagt post fra stat og kommune. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0286",
+            Urn = "urn:altinn:rolecode:a0286",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2358,6 +2358,16 @@ public static class RoleConstants
         )
     };
 
+    /// <summary>
+    /// Represents the 'Taushetsbelagt post - oppvekst og utdanning' role.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> df34b69a-e0aa-4245-a840-3a850769b2bd
+    /// - <c>URN:</c> urn:altinn:rolecode:a0287
+    /// - <c>Provider:</c> Altinn2
+    /// - <c>Code:</c> A0287
+    /// - <c>Description:</c> Gir tilgang til taushetsbelagt post fra det offentlige innen oppvekst og utdanning
+    /// </remarks>
     public static ConstantDefinition<Role> A0287 { get; } = new ConstantDefinition<Role>("df34b69a-e0aa-4245-a840-3a850769b2bd")
     {
         Entity = new()
@@ -2367,7 +2377,7 @@ public static class RoleConstants
             Name = "Taushetsbelagt post - oppvekst og utdanning",
             Code = "A0287",
             Description = "Gir tilgang til taushetsbelagt post fra det offentlige innen oppvekst og utdanning",
-            Urn = "urn:altinn:rolecode:A0287",
+            Urn = "urn:altinn:rolecode:a0287",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2385,7 +2395,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 5fda4732-dd10-416d-b876-9e1715bbf21c
-    /// - <c>URN:</c> urn:altinn:rolecode:A0288
+    /// - <c>URN:</c> urn:altinn:rolecode:a0288
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0288
     /// - <c>Description:</c> Gir tilgang til taushetsbelagt post fra det offentlige innen administrasjon
@@ -2399,7 +2409,7 @@ public static class RoleConstants
             Name = "Taushetsbelagt post - administrasjon",
             Code = "A0288",
             Description = "Gir tilgang til taushetsbelagt post fra det offentlige innen administrasjon",
-            Urn = "urn:altinn:rolecode:A0288",
+            Urn = "urn:altinn:rolecode:a0288",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2417,7 +2427,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 4652e98f-7a6b-4dc2-b061-fc8d6840e456
-    /// - <c>URN:</c> urn:altinn:rolecode:A0293
+    /// - <c>URN:</c> urn:altinn:rolecode:a0293
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0293
     /// - <c>Description:</c> Havforskningsinstituttet - registrering av algetestdata
@@ -2431,7 +2441,7 @@ public static class RoleConstants
             Name = "Algetestdata",
             Code = "A0293",
             Description = "Havforskningsinstituttet - registrering av algetestdata",
-            Urn = "urn:altinn:rolecode:A0293",
+            Urn = "urn:altinn:rolecode:a0293",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2449,7 +2459,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> c22c6add-dd5d-4735-87de-b75491018e50
-    /// - <c>URN:</c> urn:altinn:rolecode:A0294
+    /// - <c>URN:</c> urn:altinn:rolecode:a0294
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0294
     /// - <c>Description:</c> Statens vegvesen - rolle som gir tilgang til app for transportløyvegarantister
@@ -2463,7 +2473,7 @@ public static class RoleConstants
             Name = "Transportløyvegaranti",
             Code = "A0294",
             Description = "Statens vegvesen - rolle som gir tilgang til app for transportløyvegarantister",
-            Urn = "urn:altinn:rolecode:A0294",
+            Urn = "urn:altinn:rolecode:a0294",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2481,7 +2491,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> d8b9c47b-e5a7-4912-8aa8-1d2bab75e41c
-    /// - <c>URN:</c> urn:altinn:rolecode:A0298
+    /// - <c>URN:</c> urn:altinn:rolecode:a0298
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> A0298
     /// - <c>Description:</c> Rollen gir bruker tilgang til å attestere tjenester for avgiver som revisor. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -2495,7 +2505,7 @@ public static class RoleConstants
             Name = "Revisorattesterer",
             Code = "A0298",
             Description = "Rollen gir bruker tilgang til å attestere tjenester for avgiver som revisor. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0298",
+            Urn = "urn:altinn:rolecode:a0298",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2513,7 +2523,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 0ea4e5de-3fb4-499e-b013-1e1b4459af24
-    /// - <c>URN:</c> urn:altinn:rolecode:APIADMNUF
+    /// - <c>URN:</c> urn:altinn:rolecode:apiadmnuf
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> APIADMNUF
     /// - <c>Description:</c> Delegerbar rolle som gir kontaktperson for norskregistrert utenlandsk foretak (NUF) tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av virksomheten.
@@ -2527,7 +2537,7 @@ public static class RoleConstants
             Name = "Programmeringsgrensesnitt for NUF (API)",
             Code = "APIADMNUF",
             Description = "Delegerbar rolle som gir kontaktperson for norskregistrert utenlandsk foretak (NUF) tilgang til å administrere tilgang til programmeringsgrensesnitt - API, på vegne av virksomheten.",
-            Urn = "urn:altinn:rolecode:APIADMNUF",
+            Urn = "urn:altinn:rolecode:apiadmnuf",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2545,7 +2555,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 60abf944-cf8c-4845-b310-83bcb6c77198
-    /// - <c>URN:</c> urn:altinn:rolecode:ATTST
+    /// - <c>URN:</c> urn:altinn:rolecode:attst
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> ATTST
     /// - <c>Description:</c> Denne rollen gir revisor rettighet til å attestere tjenesten Merverdiavgift - søknad om kompensasjon (RF-0009).
@@ -2559,7 +2569,7 @@ public static class RoleConstants
             Name = "Revisorattesterer - MVA kompensasjon",
             Code = "ATTST",
             Description = "Denne rollen gir revisor rettighet til å attestere tjenesten Merverdiavgift - søknad om kompensasjon (RF-0009).",
-            Urn = "urn:altinn:rolecode:ATTST",
+            Urn = "urn:altinn:rolecode:attst",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2577,7 +2587,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 0a76304e-345b-4f22-bb31-4837a630eb7a
-    /// - <c>URN:</c> urn:altinn:rolecode:BOADM
+    /// - <c>URN:</c> urn:altinn:rolecode:boadm
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> BOADM
     /// - <c>Description:</c> Denne rollen gir advokater mulighet til å styre hvem som har rettigheter til konkursbo.
@@ -2591,7 +2601,7 @@ public static class RoleConstants
             Name = "Konkursbo tilgangsstyring",
             Code = "BOADM",
             Description = "Denne rollen gir advokater mulighet til å styre hvem som har rettigheter til konkursbo.",
-            Urn = "urn:altinn:rolecode:BOADM",
+            Urn = "urn:altinn:rolecode:boadm",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2604,6 +2614,16 @@ public static class RoleConstants
         )
     };
 
+    /// <summary>
+    /// Represents the 'Konkursbo lesetilgang' role.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 7246639c-137b-4981-b172-6134c9fc1a7f
+    /// - <c>URN:</c> urn:altinn:rolecode:bobel
+    /// - <c>Provider:</c> Altinn2
+    /// - <c>Code:</c> BOBEL
+    /// - <c>Description:</c> Tilgang til å lese informasjon i tjenesten Konkursbehandling
+    /// </remarks>
     public static ConstantDefinition<Role> Bobel { get; } = new ConstantDefinition<Role>("7246639c-137b-4981-b172-6134c9fc1a7f")
     {
         Entity = new()
@@ -2613,7 +2633,7 @@ public static class RoleConstants
             Name = "Konkursbo lesetilgang",
             Code = "BOBEL",
             Description = "Tilgang til å lese informasjon i tjenesten Konkursbehandling",
-            Urn = "urn:altinn:rolecode:BOBEL",
+            Urn = "urn:altinn:rolecode:bobel",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2631,7 +2651,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 5f73b031-8b5b-45d8-a682-e9a7e75a7691
-    /// - <c>URN:</c> urn:altinn:rolecode:BOBES
+    /// - <c>URN:</c> urn:altinn:rolecode:bobes
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> BOBES
     /// - <c>Description:</c> Utvidet lesetilgang og innsendingsrett for tjenesten Konkursbehandling
@@ -2645,7 +2665,7 @@ public static class RoleConstants
             Name = "Konkursbo skrivetilgang",
             Code = "BOBES",
             Description = "Utvidet lesetilgang og innsendingsrett for tjenesten Konkursbehandling",
-            Urn = "urn:altinn:rolecode:BOBES",
+            Urn = "urn:altinn:rolecode:bobes",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2663,7 +2683,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> e0684f66-a46e-4706-a754-8889b532509c
-    /// - <c>URN:</c> urn:altinn:rolecode:ECKEYROLE
+    /// - <c>URN:</c> urn:altinn:rolecode:eckeyrole
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> ECKEYROLE
     /// - <c>Description:</c> Nøkkelrolle for virksomhetsertifikatbrukere
@@ -2677,7 +2697,7 @@ public static class RoleConstants
             Name = "ECKEYROLE",
             Code = "ECKEYROLE",
             Description = "Nøkkelrolle for virksomhetsertifikatbrukere",
-            Urn = "urn:altinn:rolecode:ECKEYROLE",
+            Urn = "urn:altinn:rolecode:eckeyrole",
             IsKeyRole = true
         },
         EN = TranslationEntryList.Create(
@@ -2695,7 +2715,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 1225bc46-4b03-4b63-b6e8-58926b29a97b
-    /// - <c>URN:</c> urn:altinn:rolecode:EKTJ
+    /// - <c>URN:</c> urn:altinn:rolecode:ektj
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> EKTJ
     /// - <c>Description:</c> Ikke-delegerbar roller for tjenester som kun skal delegeres enkeltvis
@@ -2709,7 +2729,7 @@ public static class RoleConstants
             Name = "Eksplisitt tjenestedelegering",
             Code = "EKTJ",
             Description = "Ikke-delegerbar roller for tjenester som kun skal delegeres enkeltvis",
-            Urn = "urn:altinn:rolecode:EKTJ",
+            Urn = "urn:altinn:rolecode:ektj",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2727,7 +2747,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> cde501eb-0d23-410b-b728-00ab9d68fb2e
-    /// - <c>URN:</c> urn:altinn:rolecode:GKBHT
+    /// - <c>URN:</c> urn:altinn:rolecode:gkbht
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> GKBHT
     /// - <c>Description:</c> Godkjenning av bedriftshelsetjeneste
@@ -2741,7 +2761,7 @@ public static class RoleConstants
             Name = "Godkjenning av bedriftshelsetjeneste",
             Code = "GKBHT",
             Description = "Godkjenning av bedriftshelsetjeneste",
-            Urn = "urn:altinn:rolecode:GKBHT",
+            Urn = "urn:altinn:rolecode:gkbht",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2759,7 +2779,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> d9e05d40-9849-4982-bf04-aa03b19e4a66
-    /// - <c>URN:</c> urn:altinn:rolecode:HADM
+    /// - <c>URN:</c> urn:altinn:rolecode:hadm
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> HADM
     /// - <c>Description:</c> Denne rollen gir mulighet for å delegere alle roller og rettigheter for en aktør, også de man ikke har selv. Hovedadministrator-rollen kan bare delegeres av daglig leder, styrets leder, innehaver og bestyrende reder.
@@ -2773,7 +2793,7 @@ public static class RoleConstants
             Name = "Hovedadministrator",
             Code = "HADM",
             Description = "Denne rollen gir mulighet for å delegere alle roller og rettigheter for en aktør, også de man ikke har selv. Hovedadministrator-rollen kan bare delegeres av daglig leder, styrets leder, innehaver og bestyrende reder.",
-            Urn = "urn:altinn:rolecode:HADM",
+            Urn = "urn:altinn:rolecode:hadm",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2791,7 +2811,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 98bebcac-d6bb-4343-97b8-0fe8bc744d7a
-    /// - <c>URN:</c> urn:altinn:rolecode:HVASK
+    /// - <c>URN:</c> urn:altinn:rolecode:hvask
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> HVASK
     /// - <c>Description:</c> Tilgang til tjenester fra Økokrim. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -2805,7 +2825,7 @@ public static class RoleConstants
             Name = "Økokrim rapportering",
             Code = "HVASK",
             Description = "Tilgang til tjenester fra Økokrim. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:HVASK",
+            Urn = "urn:altinn:rolecode:hvask",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2823,7 +2843,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 27e1ef41-df4d-439e-b948-df136c139e81
-    /// - <c>URN:</c> urn:altinn:rolecode:KLADM
+    /// - <c>URN:</c> urn:altinn:rolecode:kladm
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> KLADM
     /// - <c>Description:</c> Tilgang til å administrere klientroller for regnskapsførere og revisorer
@@ -2837,7 +2857,7 @@ public static class RoleConstants
             Name = "Klientadministrator",
             Code = "KLADM",
             Description = "Tilgang til å administrere klientroller for regnskapsførere og revisorer",
-            Urn = "urn:altinn:rolecode:KLADM",
+            Urn = "urn:altinn:rolecode:kladm",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2855,7 +2875,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> b8e6dd1c-ca10-4ce6-9c27-53cdb3c275b3
-    /// - <c>URN:</c> urn:altinn:rolecode:KOMAB
+    /// - <c>URN:</c> urn:altinn:rolecode:komab
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> KOMAB
     /// - <c>Description:</c> Rollen gir tilgang til kommunale tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -2869,7 +2889,7 @@ public static class RoleConstants
             Name = "Kommunale tjenester",
             Code = "KOMAB",
             Description = "Rollen gir tilgang til kommunale tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:KOMAB",
+            Urn = "urn:altinn:rolecode:komab",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2887,7 +2907,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 010b4c49-bf56-44e3-b73b-84be7b2a5eb6
-    /// - <c>URN:</c> urn:altinn:rolecode:LOPER
+    /// - <c>URN:</c> urn:altinn:rolecode:loper
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> LOPER
     /// - <c>Description:</c> Denne rollen gir rettighet til lønns- og personalrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -2901,7 +2921,7 @@ public static class RoleConstants
             Name = "Lønn og personalmedarbeider",
             Code = "LOPER",
             Description = "Denne rollen gir rettighet til lønns- og personalrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:LOPER",
+            Urn = "urn:altinn:rolecode:loper",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2914,6 +2934,16 @@ public static class RoleConstants
         )
     };
 
+    /// <summary>
+    /// Represents the 'Lønn og personalmedarbeider' role.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 0f276fc4-c201-4ff7-8e8a-caa3efe9c02a
+    /// - <c>URN:</c> urn:altinn:rolecode:pasig
+    /// - <c>Provider:</c> Altinn2
+    /// - <c>Code:</c> PASIG
+    /// - <c>Description:</c> Denne rollen gir rettighet til lønns- og personalrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
+    /// </remarks>
     public static ConstantDefinition<Role> Pasig { get; } = new ConstantDefinition<Role>("0f276fc4-c201-4ff7-8e8a-caa3efe9c02a")
     {
         Entity = new()
@@ -2923,7 +2953,7 @@ public static class RoleConstants
             Name = "Parallell signering",
             Code = "PASIG",
             Description = "Denne rollen gir rettighet til å signere elementer fra andre avgivere.",
-            Urn = "urn:altinn:rolecode:PASIG",
+            Urn = "urn:altinn:rolecode:pasig",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2941,7 +2971,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 23cade0a-287a-49e0-8957-22d5a14cb100
-    /// - <c>URN:</c> urn:altinn:rolecode:PAVAD
+    /// - <c>URN:</c> urn:altinn:rolecode:pavad
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> PAVAD
     /// - <c>Description:</c> Denne rollen gir rettighet til tjenester relatert til patent, varemerke og design. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -2955,7 +2985,7 @@ public static class RoleConstants
             Name = "Patent, varemerke og design",
             Code = "PAVAD",
             Description = "Denne rollen gir rettighet til tjenester relatert til patent, varemerke og design. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:PAVAD",
+            Urn = "urn:altinn:rolecode:pavad",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -2973,7 +3003,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 696478f4-c85b-4bda-ace0-caa058fe5def
-    /// - <c>URN:</c> urn:altinn:rolecode:PRIUT
+    /// - <c>URN:</c> urn:altinn:rolecode:priut
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> PRIUT
     /// - <c>Description:</c> Denne rollen gir mulighet til å benytte tjenester på vegne av en annen privatperson. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -2987,7 +3017,7 @@ public static class RoleConstants
             Name = "Privatperson begrensede rettigheter",
             Code = "PRIUT",
             Description = "Denne rollen gir mulighet til å benytte tjenester på vegne av en annen privatperson. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:PRIUT",
+            Urn = "urn:altinn:rolecode:priut",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -3005,7 +3035,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 633cde7d-3604-45b2-ba8c-e16161cf2cf8
-    /// - <c>URN:</c> urn:altinn:rolecode:REGNA
+    /// - <c>URN:</c> urn:altinn:rolecode:regna
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> REGNA
     /// - <c>Description:</c> Denne rollen gir rettighet til regnskapsrelaterte skjema og tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -3019,7 +3049,7 @@ public static class RoleConstants
             Name = "Regnskapsmedarbeider",
             Code = "REGNA",
             Description = "Denne rollen gir rettighet til regnskapsrelaterte skjema og tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:REGNA",
+            Urn = "urn:altinn:rolecode:regna",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -3037,7 +3067,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 1d71e23d-91b6-44ca-b171-c179028e7cdf
-    /// - <c>URN:</c> urn:altinn:rolecode:REVAI
+    /// - <c>URN:</c> urn:altinn:rolecode:revai
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> REVAI
     /// - <c>Description:</c> Denne rollen gir revisor rettighet til aktuelle skjema og tjenester
@@ -3051,7 +3081,7 @@ public static class RoleConstants
             Name = "Revisorrettighet",
             Code = "REVAI",
             Description = "Denne rollen gir revisor rettighet til aktuelle skjema og tjenester",
-            Urn = "urn:altinn:rolecode:REVAI",
+            Urn = "urn:altinn:rolecode:revai",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -3069,7 +3099,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 1a15b75c-2387-4278-ba3a-7eb1cffe1653
-    /// - <c>URN:</c> urn:altinn:rolecode:SENS01
+    /// - <c>URN:</c> urn:altinn:rolecode:sens01
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> SENS01
     /// - <c>Description:</c> Rollen gir tilgang til tjenester med taushetsbelagt informasjon fra kommunen, og bør ikke delegeres i stort omfang
@@ -3083,7 +3113,7 @@ public static class RoleConstants
             Name = "Taushetsbelagt post fra kommunen",
             Code = "SENS01",
             Description = "Rollen gir tilgang til tjenester med taushetsbelagt informasjon fra kommunen, og bør ikke delegeres i stort omfang",
-            Urn = "urn:altinn:rolecode:SENS01",
+            Urn = "urn:altinn:rolecode:sens01",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -3101,7 +3131,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> e427a9fb-4b6b-44b3-b873-689d174283b8
-    /// - <c>URN:</c> urn:altinn:rolecode:SIGNE
+    /// - <c>URN:</c> urn:altinn:rolecode:signe
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> SIGNE
     /// - <c>Description:</c> Denne rollen gir rettighet til tjenester på vegne av enheter/foretak. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -3115,7 +3145,7 @@ public static class RoleConstants
             Name = "Signerer av Samordnet registermelding",
             Code = "SIGNE",
             Description = "Denne rollen gir rettighet til tjenester på vegne av enheter/foretak. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:SIGNE",
+            Urn = "urn:altinn:rolecode:signe",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -3133,7 +3163,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 16857e39-441f-4dd4-8592-aed94e816c04
-    /// - <c>URN:</c> urn:altinn:rolecode:SISKD
+    /// - <c>URN:</c> urn:altinn:rolecode:siskd
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> SISKD
     /// - <c>Description:</c> Tilgang til å signere utvalgte skjema og tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -3147,7 +3177,7 @@ public static class RoleConstants
             Name = "Begrenset signeringsrettighet",
             Code = "SISKD",
             Description = "Tilgang til å signere utvalgte skjema og tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:SISKD",
+            Urn = "urn:altinn:rolecode:siskd",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -3165,7 +3195,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> b1213d79-03fa-4837-9193-e4b9fe24eccb
-    /// - <c>URN:</c> urn:altinn:rolecode:UIHTL
+    /// - <c>URN:</c> urn:altinn:rolecode:uihtl
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> UIHTL
     /// - <c>Description:</c> Tilgang til helse-, sosial- og velferdsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -3179,7 +3209,7 @@ public static class RoleConstants
             Name = "Helse-, sosial- og velferdstjenester",
             Code = "UIHTL",
             Description = "Tilgang til helse-, sosial- og velferdsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:UIHTL",
+            Urn = "urn:altinn:rolecode:uihtl",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -3197,7 +3227,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 3c99647d-10b5-447e-9f0b-7bef1c7880f7
-    /// - <c>URN:</c> urn:altinn:rolecode:UILUF
+    /// - <c>URN:</c> urn:altinn:rolecode:uiluf
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> UILUF
     /// - <c>Description:</c> Rollen gir rettighet til tjenester relatert til samferdsel. For eksempel tjenester fra Statens Vegvesen, Sjøfartsdirektoratet og Luftfartstilsynet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rolen gir.
@@ -3211,7 +3241,7 @@ public static class RoleConstants
             Name = "Samferdsel",
             Code = "UILUF",
             Description = "Rollen gir rettighet til tjenester relatert til samferdsel. For eksempel tjenester fra Statens Vegvesen, Sjøfartsdirektoratet og Luftfartstilsynet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rolen gir.",
-            Urn = "urn:altinn:rolecode:UILUF",
+            Urn = "urn:altinn:rolecode:uiluf",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -3229,7 +3259,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> dbaae9f8-107a-4222-9afd-d9f95cd5319c
-    /// - <c>URN:</c> urn:altinn:rolecode:UTINN
+    /// - <c>URN:</c> urn:altinn:rolecode:utinn
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> UTINN
     /// - <c>Description:</c> Denne rollen gir rettighet til et bredt utvalg skjema og tjenester som ikke har så strenge krav til autorisasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -3243,7 +3273,7 @@ public static class RoleConstants
             Name = "Utfyller/Innsender",
             Code = "UTINN",
             Description = "Denne rollen gir rettighet til et bredt utvalg skjema og tjenester som ikke har så strenge krav til autorisasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:UTINN",
+            Urn = "urn:altinn:rolecode:utinn",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -3261,7 +3291,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> af338fd5-3f1d-4ab5-8326-9dfecad26f71
-    /// - <c>URN:</c> urn:altinn:rolecode:UTOMR
+    /// - <c>URN:</c> urn:altinn:rolecode:utomr
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> UTOMR
     /// - <c>Description:</c> Tilgang til tjenester relatert til energi, miljø og klima. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.
@@ -3275,7 +3305,7 @@ public static class RoleConstants
             Name = "Energi, miljø og klima",
             Code = "UTOMR",
             Description = "Tilgang til tjenester relatert til energi, miljø og klima. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:UTOMR",
+            Urn = "urn:altinn:rolecode:utomr",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
@@ -3293,7 +3323,7 @@ public static class RoleConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 478f710a-4af1-412d-9c67-de976fd0b229
-    /// - <c>URN:</c> urn:altinn:rolecode:SENS
+    /// - <c>URN:</c> urn:altinn:rolecode:sens
     /// - <c>Provider:</c> Altinn2
     /// - <c>Code:</c> SENS
     /// - <c>Description:</c> Hovedrolle for sensitive tjeneste
@@ -3307,7 +3337,7 @@ public static class RoleConstants
             Name = "Hovedrolle for sensitive tjeneste",
             Code = "SENS",
             Description = "Hovedrolle for sensitive tjeneste",
-            Urn = "urn:altinn:rolecode:SENS",
+            Urn = "urn:altinn:rolecode:sens",
             IsKeyRole = false
         },
         EN = TranslationEntryList.Create(
