@@ -66,9 +66,9 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
             return validationErrors.ToActionResult();
         }
 
+        var partyUuid = Guid.Parse(connection.Party);
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
-        _ = Guid.TryParse(connection.Party, out var partyUuid);
 
         var result = await ConnectionService.Get(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
@@ -148,8 +148,9 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
             return validationErrors.ToActionResult();
         }
 
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
+        var fromUuid = Guid.Parse(connection.From);
+        var toUuid = Guid.Parse(connection.To);
+
         var problem = await ConnectionService.RemoveAssignment(fromUuid, toUuid, cascade, ConfigureConnections, cancellationToken);
         if (problem is { })
         {
@@ -179,9 +180,9 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
             return validationErrors.ToActionResult();
         }
 
+        var partyUuid = Guid.Parse(connection.Party);
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
-        _ = Guid.TryParse(connection.Party, out var partyUuid);
 
         var result = await ConnectionService.GetPackages(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
@@ -270,8 +271,9 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
             return validationErrors.ToActionResult();
         }
 
-        Guid.TryParse(connection.From, out var fromUuid);
-        Guid.TryParse(connection.To, out var toUuid);
+        var fromUuid = Guid.Parse(connection.From);
+        var toUuid = Guid.Parse(connection.To);
+
         async Task<ValidationProblemInstance> RemovePackage()
         {
             if (packageId.HasValue)
@@ -343,9 +345,9 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
             return validationErrors.ToActionResult();
         }
 
+        var partyUuid = Guid.Parse(connection.Party);
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
-        _ = Guid.TryParse(connection.Party, out var partyUuid);
 
         var result = await ConnectionService.GetRoles(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
