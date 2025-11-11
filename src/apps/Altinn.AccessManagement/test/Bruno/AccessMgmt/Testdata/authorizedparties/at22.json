@@ -82,7 +82,14 @@
         "partyId": 50922937,
         "partyUuid": "11e6a957-5a74-4a10-b89f-c557ccca5b34"
       },
-      "directPackageToDelegate": "mobler-og-annen-industri"
+      "subunit": {
+        "name": "STOLT BETYDELIG TIGER AS",
+        "orgno": "315043336",
+        "partyId": 51747770,
+        "partyUuid": "1044638b-f6ad-4e6c-a341-11a6eac4d8b8"
+      },
+      "directPackageToDelegate": "mobler-og-annen-industri",
+      "directPackageToDelegate2": "revisorattesterer"
     },
     "a2_klientadministrator": {
       "name": "RUSTEN AKVARELL",
@@ -151,5 +158,12 @@
     "userId": 21226088,
     "partyId": 51842409,
     "partyUuid": "2c496351-cdc6-402a-b4f8-2b1145bb626e"
+  },
+  "a2BrunoECUser": {
+    "name": "bruno_ec_digdir",
+    "username": "bruno_ec_digdir",
+    "userId": 21226091,
+    "partyId": 50088610,
+    "partyUuid": "B2139D9E-811B-48BD-81A7-7EDD79A84D69"
   }
 }
