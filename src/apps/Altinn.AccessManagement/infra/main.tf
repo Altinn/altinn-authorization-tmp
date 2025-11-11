@@ -206,7 +206,7 @@ module "appsettings" {
   feature_flags = [
     {
       name        = "AccessManagement.Core.Pipeline.Init"
-      description = "Specifies if pipelines should run on startup."
+      description = "Specifies if pipelines should run to end-of-stream once in init container."
       label       = "${lower(var.environment)}-access-management"
       value       = true
     },
