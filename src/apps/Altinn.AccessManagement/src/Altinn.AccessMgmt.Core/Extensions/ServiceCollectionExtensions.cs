@@ -99,7 +99,7 @@ public static class ServiceCollectionExtensions
         services.AddPipelines(descriptor =>
         {
             descriptor
-                // .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
+                .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
                 .WithGroupName("Register Import (Persons)")
                 .WithRecurring(TimeSpan.FromMinutes(2))
                 .AddPipeline("Sync Persons")
@@ -115,7 +115,7 @@ public static class ServiceCollectionExtensions
         services.AddPipelines(descriptor =>
         {
             descriptor
-                // .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
+                .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
                 .WithGroupName("Register Import (Organizations)")
                 .WithRecurring(TimeSpan.FromMinutes(2))
                 .AddPipeline("Sync Organizations")
@@ -131,7 +131,7 @@ public static class ServiceCollectionExtensions
         services.AddPipelines(descriptor =>
         {
             descriptor
-                // .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
+                .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
                 .WithGroupName("Register Import (System Users)")
                 .WithRecurring(TimeSpan.FromMinutes(2))
                 .AddPipeline("Sync System users")
@@ -147,7 +147,7 @@ public static class ServiceCollectionExtensions
         services.AddPipelines(descriptor =>
         {
             descriptor
-                // .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
+                .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
                 .WithGroupName("Register Import (Self Identified Users)")
                 .WithRecurring(TimeSpan.FromMinutes(2))
                 .AddPipeline("Sync Self Identified Users")
@@ -163,7 +163,7 @@ public static class ServiceCollectionExtensions
         services.AddPipelines(descriptor =>
         {
             descriptor
-                // .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
+                .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
                 .WithGroupName("Register Import (Self Enterprise Users)")
                 .WithRecurring(TimeSpan.FromMinutes(2))
                 .AddPipeline("Sync Enterprise Users")
