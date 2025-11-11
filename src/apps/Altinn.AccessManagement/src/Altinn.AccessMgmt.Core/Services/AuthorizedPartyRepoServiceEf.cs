@@ -95,17 +95,19 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagesFromOthers(
         Guid toId,
+        Guid? fromId = null,
         CancellationToken ct = default)
     {
         var connections = await connectionQuery.GetConnectionsAsync(
         new ConnectionQueryFilter()
         {
             ToIds = [toId],
+            FromIds = fromId.HasValue ? new[] { fromId.Value } : null,
             EnrichEntities = true,
-            IncludeKeyRole = true,
-            IncludeDelegation = true,
-            IncludeMainUnitConnections = true,
             IncludeSubConnections = true,
+            IncludeKeyRole = true,
+            IncludeMainUnitConnections = true,
+            IncludeDelegation = true,
             IncludePackages = true,
             IncludeResource = false,
             EnrichPackageResources = false,
