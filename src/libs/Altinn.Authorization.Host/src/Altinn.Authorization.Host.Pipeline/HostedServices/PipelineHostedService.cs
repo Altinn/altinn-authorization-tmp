@@ -26,6 +26,8 @@ internal partial class PipelineHostedService(
 
     internal List<Task> DispatchedPipelineGroups { get; set; } = [];
 
+    internal List<Task> InitPipelineGroups { get; set; } = [];
+
     private static readonly MethodInfo _pipelineSourceRunMethodInfo = typeof(PipelineSourceService).GetMethod(nameof(PipelineSourceService.Run));
 
     private static readonly MethodInfo _pipelineSegmentRunMethodInfo = typeof(PipelineSegmentService).GetMethod(nameof(PipelineSegmentService.Run));
@@ -59,6 +61,26 @@ internal partial class PipelineHostedService(
         return Task.CompletedTask;
     }
 
+    public Task StartInitAsync(CancellationToken cancellationToken)
+    {
+        using var ct = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _stopCts.Token);
+
+        Log.HostedServiceStarting(logger);
+        if (registry.Groups.Count == 0)
+        {
+            Log.NoPipelinesRegistered(logger);
+            return Task.CompletedTask;
+        }
+
+        foreach (var group in registry.Groups)
+        {
+            Log.PipelineGroupRegistered(logger, group.GroupName, group.Builders.Count);
+            DispatchedPipelineGroups.Add(DispatchInitPipelines(group, ct.Token));
+        }
+
+        return Task.WhenAll(DispatchedPipelineGroups);
+    }
+
     /// <inheritdoc/>
     public async Task StopAsync(CancellationToken cancellationToken)
     {
@@ -76,6 +98,18 @@ internal partial class PipelineHostedService(
         finally
         {
             _stopCts.Dispose();
+        }
+    }
+
+    private async Task DispatchInitPipelines(PipelineGroup group, CancellationToken cancellationToken)
+    {
+        foreach (var descriptor in group.Builders)
+        {
+            var problem = await DispatchPipeline(group, descriptor, cancellationToken);
+            if (problem)
+            {
+                throw new InvalidOperationException("An error occured while synchronizing data.");
+            }
         }
     }
 
@@ -299,6 +333,9 @@ internal partial class PipelineHostedService(
 
         [LoggerMessage(2, LogLevel.Information, "Pipeline group '{PipelineGroup}' registered with {PipelineCount} pipelines (recurring: {Recurring}).")]
         internal static partial void PipelineGroupRegistered(ILogger logger, string PipelineGroup, int PipelineCount, string Recurring);
+
+        [LoggerMessage(17, LogLevel.Information, "Pipeline group '{PipelineGroup}' registered with {PipelineCount}.")]
+        internal static partial void PipelineGroupRegistered(ILogger logger, string PipelineGroup, int PipelineCount);
 
         [LoggerMessage(3, LogLevel.Information, "Stopping pipeline hosted service...")]
         internal static partial void HostedServiceStopping(ILogger logger);

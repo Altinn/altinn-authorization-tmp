@@ -23,9 +23,9 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddAccessMgmtCore(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddHostedService<RegisterHostedService>();
+        // services.AddHostedService<RegisterHostedService>();
         services.AddHostedService<AltinnRoleHostedService>();
-        services.AddScoped<RegisterHostedService>();
+        // services.AddScoped<RegisterHostedService>();
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
         services.AddScoped<IPartyService, PartyService>();
@@ -100,79 +100,55 @@ public static class ServiceCollectionExtensions
         {
             descriptor
                 .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
-                .WithGroupName("Register Import (Persons)")
+                .WithGroupName("Register Import")
                 .WithRecurring(TimeSpan.FromMinutes(2))
                 .AddPipeline("Sync Persons")
-                    .WithLease("register_pipeline_persons")
+                    .WithLease("register_pipeline_entity_persons")
                     .WithServiceScope(sp => sp.CreateEFScope(SystemEntityConstants.RegisterImportSystem))
                     .WithStages()
-                        .AddSource(RegisterPipelines.PartyJobs.Extract<Person>)
-                        .AddSegment(RegisterPipelines.PartyJobs.Transform)
-                        .AddSink(RegisterPipelines.PartyJobs.Load)
-                        .Build();
-        });
-
-        services.AddPipelines(descriptor =>
-        {
-            descriptor
-                .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
-                .WithGroupName("Register Import (Organizations)")
-                .WithRecurring(TimeSpan.FromMinutes(2))
+                        .AddSource(RegisterPipelines.PartyTasks.Extract<Person>)
+                        .AddSegment(RegisterPipelines.PartyTasks.Transform)
+                        .AddSink(RegisterPipelines.PartyTasks.Load)
+                        .Build()
                 .AddPipeline("Sync Organizations")
-                    .WithLease("register_pipeline_organizations")
+                    .WithLease("register_pipeline_entity_organizations")
                     .WithServiceScope(sp => sp.CreateEFScope(SystemEntityConstants.RegisterImportSystem))
                     .WithStages()
-                        .AddSource(RegisterPipelines.PartyJobs.Extract<Organization>)
-                        .AddSegment(RegisterPipelines.PartyJobs.Transform)
-                        .AddSink(RegisterPipelines.PartyJobs.Load)
-                        .Build();
-        });
-
-        services.AddPipelines(descriptor =>
-        {
-            descriptor
-                .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
-                .WithGroupName("Register Import (System Users)")
-                .WithRecurring(TimeSpan.FromMinutes(2))
+                        .AddSource(RegisterPipelines.PartyTasks.Extract<Organization>)
+                        .AddSegment(RegisterPipelines.PartyTasks.Transform)
+                        .AddSink(RegisterPipelines.PartyTasks.Load)
+                        .Build()
                 .AddPipeline("Sync System users")
-                    .WithLease("register_pipeline_systemusers")
+                    .WithLease("register_pipeline_entity_systemusers")
                     .WithServiceScope(sp => sp.CreateEFScope(SystemEntityConstants.RegisterImportSystem))
                     .WithStages()
-                        .AddSource(RegisterPipelines.PartyJobs.Extract<SystemUser>)
-                        .AddSegment(RegisterPipelines.PartyJobs.Transform)
-                        .AddSink(RegisterPipelines.PartyJobs.Load)
-                        .Build();
-        });
-
-        services.AddPipelines(descriptor =>
-        {
-            descriptor
-                .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
-                .WithGroupName("Register Import (Self Identified Users)")
-                .WithRecurring(TimeSpan.FromMinutes(2))
+                        .AddSource(RegisterPipelines.PartyTasks.Extract<SystemUser>)
+                        .AddSegment(RegisterPipelines.PartyTasks.Transform)
+                        .AddSink(RegisterPipelines.PartyTasks.Load)
+                        .Build()
                 .AddPipeline("Sync Self Identified Users")
-                    .WithLease("register_pipeline_selfidentified")
+                    .WithLease("register_pipeline_entity_selfidentified")
                     .WithServiceScope(sp => sp.CreateEFScope(SystemEntityConstants.RegisterImportSystem))
                     .WithStages()
-                        .AddSource(RegisterPipelines.PartyJobs.Extract<SelfIdentifiedUser>)
-                        .AddSegment(RegisterPipelines.PartyJobs.Transform)
-                        .AddSink(RegisterPipelines.PartyJobs.Load)
-                        .Build();
-        });
-
-        services.AddPipelines(descriptor =>
-        {
-            descriptor
-                .WithFeatureFlag(AccessMgmtFeatureFlags.HostedServicesRegisterSync)
-                .WithGroupName("Register Import (Self Enterprise Users)")
-                .WithRecurring(TimeSpan.FromMinutes(2))
+                        .AddSource(RegisterPipelines.PartyTasks.Extract<SelfIdentifiedUser>)
+                        .AddSegment(RegisterPipelines.PartyTasks.Transform)
+                        .AddSink(RegisterPipelines.PartyTasks.Load)
+                        .Build()
                 .AddPipeline("Sync Enterprise Users")
-                    .WithLease("register_pipeline_enterpriseusers")
+                    .WithLease("register_pipeline_entity_enterpriseusers")
                     .WithServiceScope(sp => sp.CreateEFScope(SystemEntityConstants.RegisterImportSystem))
                     .WithStages()
-                        .AddSource(RegisterPipelines.PartyJobs.Extract<EnterpriseUser>)
-                        .AddSegment(RegisterPipelines.PartyJobs.Transform)
-                        .AddSink(RegisterPipelines.PartyJobs.Load)
+                        .AddSource(RegisterPipelines.PartyTasks.Extract<EnterpriseUser>)
+                        .AddSegment(RegisterPipelines.PartyTasks.Transform)
+                        .AddSink(RegisterPipelines.PartyTasks.Load)
+                        .Build()
+                .AddPipeline("Sync Roles")
+                    .WithLease("register_pipeline_roles")
+                    .WithServiceScope(sp => sp.CreateEFScope(SystemEntityConstants.RegisterImportSystem))
+                    .WithStages()
+                        .AddSource(RegisterPipelines.RoleTasks.Extract)
+                        .AddSegment(RegisterPipelines.RoleTasks.Transform)
+                        .AddSink(RegisterPipelines.RoleTasks.Load)
                         .Build();
         });
     }

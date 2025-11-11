@@ -17,7 +17,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services;
 /// <inheritdoc />
 public class PartySyncService : BaseSyncService, IPartySyncService
 {
-    private readonly ILogger<RegisterHostedService> _logger;
+    private readonly ILogger<PartySyncService> _logger;
     private readonly IAltinnRegister _register;
     private readonly IServiceProvider _serviceProvider;
 
@@ -26,7 +26,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     /// </summary>
     public PartySyncService(
         IAltinnRegister register,
-        ILogger<RegisterHostedService> logger,
+        ILogger<PartySyncService> logger,
         IServiceProvider serviceProvider
     )
     {

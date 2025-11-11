@@ -27,10 +27,10 @@ internal static class PipelineUtils
         var ingestTemp = await ingest.IngestTempData(items, batchId, cancellationToken);
         activity?.AddTag("ingested_temp", ingestTemp);
 
-        var merged = await ingest.MergeTempData<T>(batchId, audit, matchColumns, cancellationToken);
-        activity?.AddTag("ingested_merge", merged);
+        var flushed = await ingest.MergeTempData<T>(batchId, audit, matchColumns, cancellationToken);
+        activity?.AddTag("ingested_merge", flushed);
 
-        return merged;
+        return flushed;
     }
 
     internal static void EnsureSuccess<T>(PlatformResponse<PageStream<T>> page)

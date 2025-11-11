@@ -13,7 +13,7 @@ namespace Altinn.AccessMgmt.Core.Pipelines;
 
 internal static class RegisterPipelines
 {
-    internal static class PartyJobs
+    internal static class PartyTasks
     {
         internal static async IAsyncEnumerable<(List<T> Items, string NextPage)> Extract<T>(PipelineSourceContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
@@ -180,7 +180,7 @@ internal static class RegisterPipelines
         }
     }
 
-    internal static class ExternalRoleAssignmentJobs
+    internal static class RoleTasks
     {
         internal static async IAsyncEnumerable<(List<ExternalRoleAssignmentEvent> Items, string NextPage)> Extract(PipelineSourceContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
@@ -209,11 +209,13 @@ internal static class RegisterPipelines
                         FromId = assignment.FromParty,
                         ToId = assignment.ToParty,
                         RoleId = role.Id,
-                        IsAdded = assignment.Type == ExternalRoleAssignmentEvent.EventType.Added ? true : false,
+                        IsAdded = assignment.Type == ExternalRoleAssignmentEvent.EventType.Added,
                     });
                 }
-
-                throw new Exception(string.Format("Failed to convert model to Assignment. From:{0} To:{1} Role:{2}", assignment.FromParty, assignment.ToParty, assignment.RoleIdentifier));
+                else
+                {
+                    throw new Exception($"Failed to convert model to Assignment. From '{assignment.FromParty}' To '{assignment.ToParty}' Role: '{assignment.RoleIdentifier}'");
+                }
             }
 
             return Task.FromResult((result, context.Data.NextPage));

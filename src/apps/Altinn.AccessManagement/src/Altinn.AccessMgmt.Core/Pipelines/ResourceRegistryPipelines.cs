@@ -269,8 +269,8 @@ internal static class ResourceRegistryPipelines
 
         public static async Task Load(PipelineSinkContext<(List<Resource> Resources, string NextPage, DateTime UpdatedAt)> context)
         {
-            var merged = await PipelineUtils.Flush(context.Services, context.Data.Resources, ["refid"]);
-            if (merged > 0)
+            var flushed = await PipelineUtils.Flush(context.Services, context.Data.Resources, ["refid"]);
+            if (flushed > 0)
             {
                 await context.Lease.Update(new Lease()
                 {
@@ -683,16 +683,19 @@ internal static class ResourceRegistryPipelines
                 }
             }
 
-            await Flush();
-            await context.Lease.Update(new Lease()
+            var flushed = await Flush();
+            if (flushed > 0)
             {
-                NextPage = context.Data.NextPage,
-                UpdatedAt = context.Data.UpdatedAt,
-            });
+                await context.Lease.Update(new Lease()
+                {
+                    NextPage = context.Data.NextPage,
+                    UpdatedAt = context.Data.UpdatedAt,
+                });
+            }
 
-            async Task Flush()
+            async Task<int> Flush()
             {
-                await Task.WhenAll(
+                var result = await Task.WhenAll(
                     Task.Run(async () => await PipelineUtils.Flush(context.Services, add, ["packageid", "resourceid"])),
                     Task.Run(async () =>
                     {
@@ -709,14 +712,18 @@ internal static class ResourceRegistryPipelines
                                 .ToList();
 
                             db.PackageResources.RemoveRange(result);
-                            await db.SaveChangesAsync();
+                            return await db.SaveChangesAsync();
                         }
+
+                        return 0;
                     })
                 );
 
                 seen.Clear();
                 add.Clear();
                 remove.Clear();
+
+                return result.Sum();
             }
         }
 

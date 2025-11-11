@@ -13,6 +13,16 @@ namespace Altinn.Authorization.Host.Pipeline.Extensions;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
+    /// Executes Init Pipelines.
+    /// </summary>
+    /// <returns></returns>
+    public static async Task ExecuteInitPipelinesAsync(this IServiceProvider services, CancellationToken cancellationToken = default)
+    {
+        var hosted = services.GetRequiredService<PipelineHostedService>();
+        await hosted.StartInitAsync(cancellationToken);
+    }
+
+    /// <summary>
     /// Adds pipeline telemetry to the OpenTelemetry tracer provider.
     /// </summary>
     public static TracerProviderBuilder AddPipeline(this TracerProviderBuilder builder) =>
@@ -50,6 +60,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<PipelineSegmentService>();
             services.AddSingleton<PipelineSinkService>();
             services.AddSingleton<PipelineMarker>();
+            services.AddSingleton<PipelineHostedService>();
             services.AddHostedService<PipelineHostedService>();
         }
 
