@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Integration.Platform;
+using Altinn.Authorization.ProblemDetails;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessMgmt.Core.Pipelines;

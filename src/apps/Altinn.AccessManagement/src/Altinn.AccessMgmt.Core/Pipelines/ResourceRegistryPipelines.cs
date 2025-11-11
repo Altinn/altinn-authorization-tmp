@@ -14,18 +14,17 @@ namespace Altinn.AccessMgmt.Core.Pipelines;
 internal static class ResourceRegistryPipelines
 {
     /// <summary>
-    /// Synchronize all service owners
+    /// Service Owners Tasks
     /// </summary>
-    internal static class ServiceOwnerJobs
+    internal static class ServiceOwnerTasks
     {
-        internal const string LeaseName = "resource_registry_pipeline_service_owners";
-
         /// <summary>
-        /// Extracts service owners from resource registry
+        /// Extracts all service owners from resource registry.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="cancellationToken"></param>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <param name="context"><see cref="PipelineSourceContext"/></param>
+        /// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">is thrown if integration returns a problem.</exception>
         internal static async IAsyncEnumerable<IDictionary<string, ServiceOwner>> Extract(PipelineSourceContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var resourceRegistry = context.Services.ServiceProvider.GetRequiredService<IAltinnResourceRegistry>();
@@ -43,6 +42,10 @@ internal static class ResourceRegistryPipelines
             yield break;
         }
 
+        /// <summary>
+        /// Transforms a <see cref="ServiceOwner"/> to an EF <see cref="Provider"/>
+        /// </summary>
+        /// <param name="context"><see cref="Transform(PipelineSegmentContext{IDictionary{string, ServiceOwner}})"/></param>
         internal static Task<List<Provider>> Transform(PipelineSegmentContext<IDictionary<string, ServiceOwner>> context)
         {
             var result = new List<Provider>();
@@ -62,6 +65,11 @@ internal static class ResourceRegistryPipelines
             return Task.FromResult(result);
         }
 
+        /// <summary>
+        /// Flushes all <see cref="Provider"/> to Database./>
+        /// </summary>
+        /// <param name="context">List of <see cref="Load(PipelineSinkContext{List{Provider}})"/></param>
+        /// <returns></returns>
         internal static async Task Load(PipelineSinkContext<List<Provider>> context)
         {
             await PipelineUtils.Flush(context.Services, context.Data, ["id"]);
@@ -71,10 +79,8 @@ internal static class ResourceRegistryPipelines
     /// <summary>
     /// Only writes resources with policies.
     /// </summary>
-    internal static class ResourceJobs
+    internal static class ResourceTasks
     {
-        internal const string LeaseName = "resource_registry_pipeline_resources";
-
         private static Dictionary<string, Provider> CachedProviders { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         private static Dictionary<string, ResourceType> CachedResourcesTypes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
@@ -114,7 +120,7 @@ internal static class ResourceRegistryPipelines
                     }
                     else
                     {
-                        throw new InvalidOperationException($"Couldn't find resource '{identifier}' in stream in list of resources.");
+                        throw new InvalidOperationException($"Couldn't find resource '{identifier}' in list of resources.");
                     }
                 }
 
@@ -282,8 +288,14 @@ internal static class ResourceRegistryPipelines
         }
     }
 
-    internal static class UpdatedResourceJobs
+    /// <summary>
+    /// Contains a task for extracting <see cref="ResourceUpdatedModel"/> from resource registry.  
+    /// </summary>
+    internal static class UpdatedResourceTasks
     {
+        /// <summary>
+        /// Extracting <see cref="ResourceUpdatedModel"/> from resource registry.  
+        /// </summary>
         internal static async IAsyncEnumerable<(List<ResourceUpdatedModel> Resources, string NextPage, DateTime UpdatedAt)> Extract(PipelineSourceContext context, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var resourceRegistry = context.Services.ServiceProvider.GetRequiredService<IAltinnResourceRegistry>();
@@ -310,10 +322,12 @@ internal static class ResourceRegistryPipelines
         }
     }
 
-    internal static class RoleResourceJobs
+    /// <summary>
+    /// Contains tasks for transforming <see cref="ResourceUpdatedModel"/> to <see cref="RoleResource"/> 
+    /// and to ingest list of <see cref="RoleResource"/>.
+    /// </summary>
+    internal static class RoleResourceTasks
     {
-        internal const string LeaseName = "resource_registry_pipeline_role_resource";
-
         private static Dictionary<string, Resource> CachedResources { get; set; } = [];
 
         private static Dictionary<string, RoleLookup> CachedRoleLookups { get; set; } = [];
@@ -322,6 +336,9 @@ internal static class ResourceRegistryPipelines
 
         private static readonly SemaphoreSlim _roleLookupLock = new(1, 1);
 
+        /// <summary>
+        /// Transforms <see cref="ResourceUpdatedModel"/> to <see cref="RoleResource"/> 
+        /// </summary>
         internal static async Task<(List<RoleResourceOperation> Resources, string NextPage, DateTime UpdatedAt)> Transform(PipelineSegmentContext<(List<ResourceUpdatedModel> Resources, string NextPage, DateTime UpdatedAt)> context)
         {
             Activity.Current?.SetTag("next_page", context.Data.NextPage);
@@ -452,6 +469,9 @@ internal static class ResourceRegistryPipelines
             }
         }
 
+        /// <summary>
+        /// Batch upserting a list of <see cref="RoleResourceOperation"/>. 
+        /// </summary>
         internal static async Task Load(PipelineSinkContext<(List<RoleResourceOperation> Resources, string NextPage, DateTime UpdatedAt)> context)
         {
             var db = context.Services.ServiceProvider.GetRequiredService<AppDbContextFactory>().CreateDbContext();
@@ -478,16 +498,19 @@ internal static class ResourceRegistryPipelines
                 }
             }
 
-            await Flush();
-            await context.Lease.Update(new Lease()
+            var updates = await Flush();
+            if (updates > 0)
             {
-                NextPage = context.Data.NextPage,
-                UpdatedAt = context.Data.UpdatedAt,
-            });
+                await context.Lease.Update(new Lease()
+                {
+                    NextPage = context.Data.NextPage,
+                    UpdatedAt = context.Data.UpdatedAt,
+                });
+            }
 
-            async Task Flush()
+            async Task<int> Flush()
             {
-                await Task.WhenAll(
+                var result = await Task.WhenAll(
                     Task.Run(async () => await PipelineUtils.Flush(context.Services, add, ["roleid", "resourceid"])),
                     Task.Run(async () =>
                     {
@@ -504,14 +527,18 @@ internal static class ResourceRegistryPipelines
                                 .ToList();
 
                             db.RoleResources.RemoveRange(result);
-                            await db.SaveChangesAsync();
+                            return await db.SaveChangesAsync();
                         }
+
+                        return 0;
                     })
                 );
 
                 seen.Clear();
                 add.Clear();
                 remove.Clear();
+
+                return result.Sum();
             }
         }
 
@@ -529,9 +556,10 @@ internal static class ResourceRegistryPipelines
     }
 
     /// <summary>
-    /// 
+    /// Contains tasks for transforming <see cref="ResourceUpdatedModel"/> to <see cref="PackageResource"/> 
+    /// and to ingest list of <see cref="PackageResource"/>.
     /// </summary>
-    internal static class PackageResourceJobs
+    internal static class PackageResourceTasks
     {
         internal const string LeaseName = "resource_registry_pipeline_package_resource";
 

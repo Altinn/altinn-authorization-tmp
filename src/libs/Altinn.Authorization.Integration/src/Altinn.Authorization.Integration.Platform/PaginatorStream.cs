@@ -1,4 +1,7 @@
+using System.Diagnostics;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.Authorization.Integration.Platform;
 
@@ -45,6 +48,7 @@ public class PaginatorStream<T>(HttpClient httpClient, HttpResponseMessage curre
             }
             else
             {
+                // RecordProblemDetails(response.ProblemDetails);
                 yield return response;
                 yield break;
             }
