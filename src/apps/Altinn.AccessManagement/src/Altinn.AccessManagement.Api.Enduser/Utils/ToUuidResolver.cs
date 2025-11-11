@@ -13,16 +13,16 @@ namespace Altinn.AccessManagement.Api.Enduser.Utils;
 
 /// <summary>
 /// Resolves the target (to) UUID for AddAssignment based on either:
-/// - Provided 'to' UUID referencing a non-person entity
-/// - PersonInput (identifier + last name) resolved via profile lookup
+/// - Provided 'to' UUID referencing a non-person entity resolved via <see cref="IEntityService"/>
+/// - PersonInput (identifier + last name) resolved via <see cref="IUserProfileLookupService"/>
 /// Internal implementation detail of the Enduser API.
 /// </summary>
-internal sealed class AddAssignmentToUuidResolver
+internal sealed class ToUuidResolver
 {
     private readonly IEntityService _entityService;
     private readonly IUserProfileLookupService _userProfileLookupService;
 
-    internal AddAssignmentToUuidResolver(IEntityService entityService, IUserProfileLookupService userProfileLookupService)
+    internal ToUuidResolver(IEntityService entityService, IUserProfileLookupService userProfileLookupService)
     {
         _entityService = entityService;
         _userProfileLookupService = userProfileLookupService;
@@ -39,12 +39,10 @@ internal sealed class AddAssignmentToUuidResolver
     /// </summary>
     internal async Task<ResolveToUuidResult> ResolveAsync(Guid connectionInputToUuid, PersonInput? person, HttpContext httpContext, CancellationToken cancellationToken)
     {
-        bool hasPersonInputIdentifiers = person is { } &&
-                                         !string.IsNullOrWhiteSpace(person.PersonIdentifier) &&
-                                         !string.IsNullOrWhiteSpace(person.LastName);
+        bool hasPersonInputParameter = person is { };
 
-        // Path: If PersonInput is not provided, resolve directly to ConnectionInput 'to' UUID
-        if (!hasPersonInputIdentifiers)
+        // Path: If PersonInput is not provided, resolve directly to ConnectionInput 'to' UUID via EntityService
+        if (!hasPersonInputParameter)
         {
             var entity = await _entityService.GetEntity(connectionInputToUuid, cancellationToken);
             if (entity == null)
@@ -60,7 +58,7 @@ internal sealed class AddAssignmentToUuidResolver
             return new ResolveToUuidResult(connectionInputToUuid, null);
         }
 
-        // Path: If PersonInput is not provided, resolve 'to' UUID via profile lookup service
+        // Path: If PersonInput is not provided, resolve 'to' UUID via ProfileLookupService
         int authUserId = AuthenticationHelper.GetUserId(httpContext);
 
         string identifier = person!.PersonIdentifier.Trim();

@@ -1,3 +1,4 @@
+﻿using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessMgmt.Core.Validation;
 
 namespace Altinn.AccessManagement.Api.Enduser.Validation;
@@ -15,7 +16,10 @@ internal static class ConnectionValidation
             ConnectionCombinationRules.PartyMatchesFromOrTo(party, from, to)
         );
 
-    internal static RuleExpression ValidateAddConnection(string party, string from, string to) =>
+    /// <summary>
+    /// Validation rule for adding an assignment with <see cref="ConnectionInput"/>.
+    /// </summary>
+    internal static RuleExpression ValidateAddAssignment(string party, string from, string to) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
             ConnectionParameterRules.PartyFrom(from),
@@ -23,11 +27,42 @@ internal static class ConnectionValidation
             ConnectionCombinationRules.PartyEqualsFrom(party, from)
         );
 
-    internal static RuleExpression ValidateAddConnectionWithPackage(string party, string from, string to, Guid? packageId, string packageUrn) =>
+
+
+    /// <summary>
+    /// Validation rule for adding an assignment with <see cref="PersonInput"/>.
+    /// </summary>
+    internal static RuleExpression ValidateAddAssignment(string party, string from, string to, string personIdentifier, string personLastName) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
             ConnectionParameterRules.PartyFrom(from),
             ConnectionParameterRules.PartyTo(to),
+            ConnectionCombinationRules.PartyEqualsFrom(party, from),
+            ConnectionParameterRules.PersonInput(personIdentifier, personLastName)
+        );
+
+    /// <summary>
+    /// Validation rule for adding an access package to an existing rightholder connection with <see cref="ConnectionInput"/>.
+    /// </summary>
+    internal static RuleExpression ValidateAddPackageToConnection(string party, string from, string to, Guid? packageId, string packageUrn) =>
+        ValidationComposer.All(
+            ConnectionParameterRules.Party(party),
+            ConnectionParameterRules.PartyFrom(from),
+            ConnectionParameterRules.PartyTo(to),
+            ConnectionCombinationRules.ExclusivePackageReference(packageId, packageUrn),
+            ConnectionCombinationRules.PartyEqualsFrom(party, from)
+        );
+
+
+    /// <summary>
+    /// Validation rule for adding an access package to an existing rightholder connection with  <see cref="PersonInput"/>.
+    /// </summary>
+    internal static RuleExpression ValidateAddPackageToConnection(string party, string from, string to, string personIdentifier, string personLastName, Guid? packageId, string packageUrn) =>
+        ValidationComposer.All(
+            ConnectionParameterRules.Party(party),
+            ConnectionParameterRules.PartyFrom(from),
+            ConnectionParameterRules.PartyTo(to),
+            ConnectionParameterRules.PersonInput(personIdentifier, personLastName),
             ConnectionCombinationRules.ExclusivePackageReference(packageId, packageUrn),
             ConnectionCombinationRules.PartyEqualsFrom(party, from)
         );
@@ -40,7 +75,7 @@ internal static class ConnectionValidation
             ConnectionCombinationRules.RemovePartyMatchesFromOrTo(party, from, to)
         );
 
-    internal static RuleExpression ValidateRemoveConnectionWithPackage(string party, string from, string to, Guid? packageId, string packageUrn) =>
+    internal static RuleExpression ValidateRemovePackageFromConnection(string party, string from, string to, Guid? packageId, string packageUrn) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
             ConnectionParameterRules.PartyFrom(from),
