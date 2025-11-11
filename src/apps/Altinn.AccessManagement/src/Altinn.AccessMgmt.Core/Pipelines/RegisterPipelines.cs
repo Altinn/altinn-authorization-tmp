@@ -21,7 +21,7 @@ internal static class RegisterPipelines
             var lease = await context.Lease.Get<Lease>(cancellationToken);
             var result = new List<T>();
 
-            await foreach (var page in await register.StreamParties(AltinnRegisterClient.DefaultFields, lease.NextPage, cancellationToken))
+            await foreach (var page in await register.StreamParties(AltinnRegisterClient.DefaultFields, GetTypeFilter(), lease.NextPage, cancellationToken))
             {
                 PipelineUtils.EnsureSuccess(page);
                 foreach (var item in page.Content.Data)
@@ -44,6 +44,16 @@ internal static class RegisterPipelines
 
                 result = [];
             }
+
+            string[] GetTypeFilter() => typeof(T) switch
+            {
+                Type t when t == typeof(Person) => ["person"],
+                Type t when t == typeof(Organization) => ["organization"],
+                Type t when t == typeof(SelfIdentifiedUser) => ["self-identified-user"],
+                Type t when t == typeof(SystemUserType) => ["system-user"],
+                Type t when t == typeof(EnterpriseUser) => ["enterprise-user"],
+                _ => [],
+            };
         }
 
         internal static async Task<(List<Entity> Items, string NextPage)> Transform(PipelineSegmentContext<(List<Person> Items, string NextPage)> context)

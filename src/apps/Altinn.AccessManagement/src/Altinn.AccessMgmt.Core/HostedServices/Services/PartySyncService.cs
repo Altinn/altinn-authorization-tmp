@@ -52,7 +52,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
-        await foreach (var page in await _register.StreamParties(AltinnRegisterClient.DefaultFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await _register.StreamParties(AltinnRegisterClient.DefaultFields, null, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
             if (page.IsProblem)
             {
