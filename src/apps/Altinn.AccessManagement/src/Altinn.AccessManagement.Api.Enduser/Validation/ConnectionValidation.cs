@@ -12,55 +12,52 @@ internal static class ConnectionValidation
     internal static RuleExpression ValidateReadConnection(string party, string from, string to) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
-            ValidationComposer.Any(ConnectionParameterRules.PartyFrom(from), ConnectionParameterRules.PartyTo(to)),
+            ValidationComposer.Any(ConnectionParameterRules.PartyFrom(from, true), ConnectionParameterRules.PartyTo(to, true)),
             ConnectionCombinationRules.PartyMatchesFromOrTo(party, from, to)
         );
 
     /// <summary>
     /// Validation rule for adding an assignment with <see cref="ConnectionInput"/>.
     /// </summary>
-    internal static RuleExpression ValidateAddAssignment(string party, string from, string to) =>
+    internal static RuleExpression ValidateAddAssignmentWithConnectionInput(string party, string from, string to) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
-            ConnectionParameterRules.PartyFrom(from),
-            ConnectionParameterRules.PartyTo(to),
+            ConnectionParameterRules.PartyFrom(from, true),
+            ConnectionParameterRules.PartyTo(to, true),
             ConnectionCombinationRules.PartyEqualsFrom(party, from)
         );
-
-
 
     /// <summary>
     /// Validation rule for adding an assignment with <see cref="PersonInput"/>.
     /// </summary>
-    internal static RuleExpression ValidateAddAssignment(string party, string from, string to, string personIdentifier, string personLastName) =>
+    internal static RuleExpression ValidateAddAssignmentWithPersonInput(string party, string from, string to, string personIdentifier, string personLastName) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
-            ConnectionParameterRules.PartyFrom(from),
+            ConnectionParameterRules.PartyFrom(from, true),
             ConnectionParameterRules.PartyTo(to),
-            ConnectionCombinationRules.PartyEqualsFrom(party, from),
-            ConnectionParameterRules.PersonInput(personIdentifier, personLastName)
+            ConnectionParameterRules.PersonInput(personIdentifier, personLastName),
+            ConnectionCombinationRules.PartyEqualsFrom(party, from)
         );
 
     /// <summary>
     /// Validation rule for adding an access package to an existing rightholder connection with <see cref="ConnectionInput"/>.
     /// </summary>
-    internal static RuleExpression ValidateAddPackageToConnection(string party, string from, string to, Guid? packageId, string packageUrn) =>
+    internal static RuleExpression ValidateAddPackageToConnectionWithConnectionInput(string party, string from, string to, Guid? packageId, string packageUrn) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
-            ConnectionParameterRules.PartyFrom(from),
-            ConnectionParameterRules.PartyTo(to),
+            ConnectionParameterRules.PartyFrom(from, true),
+            ConnectionParameterRules.PartyTo(to, true),
             ConnectionCombinationRules.ExclusivePackageReference(packageId, packageUrn),
             ConnectionCombinationRules.PartyEqualsFrom(party, from)
         );
 
-
     /// <summary>
     /// Validation rule for adding an access package to an existing rightholder connection with  <see cref="PersonInput"/>.
     /// </summary>
-    internal static RuleExpression ValidateAddPackageToConnection(string party, string from, string to, string personIdentifier, string personLastName, Guid? packageId, string packageUrn) =>
+    internal static RuleExpression ValidateAddPackageToConnectionWithPersonInput(string party, string from, string to, string personIdentifier, string personLastName, Guid? packageId, string packageUrn) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
-            ConnectionParameterRules.PartyFrom(from),
+            ConnectionParameterRules.PartyFrom(from, true),
             ConnectionParameterRules.PartyTo(to),
             ConnectionParameterRules.PersonInput(personIdentifier, personLastName),
             ConnectionCombinationRules.ExclusivePackageReference(packageId, packageUrn),
@@ -70,16 +67,16 @@ internal static class ConnectionValidation
     internal static RuleExpression ValidateRemoveConnection(string party, string from, string to) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
-            ConnectionParameterRules.PartyFrom(from),
-            ConnectionParameterRules.PartyTo(to),
+            ConnectionParameterRules.PartyFrom(from, true),
+            ConnectionParameterRules.PartyTo(to, true),
             ConnectionCombinationRules.RemovePartyMatchesFromOrTo(party, from, to)
         );
 
     internal static RuleExpression ValidateRemovePackageFromConnection(string party, string from, string to, Guid? packageId, string packageUrn) =>
         ValidationComposer.All(
             ConnectionParameterRules.Party(party),
-            ConnectionParameterRules.PartyFrom(from),
-            ConnectionParameterRules.PartyTo(to),
+            ConnectionParameterRules.PartyFrom(from, true),
+            ConnectionParameterRules.PartyTo(to, true),
             ConnectionCombinationRules.ExclusivePackageReference(packageId, packageUrn),
             ConnectionCombinationRules.RemovePartyMatchesFromOrTo(party, from, to)
         );

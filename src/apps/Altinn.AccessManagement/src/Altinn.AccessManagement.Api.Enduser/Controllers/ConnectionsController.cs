@@ -96,9 +96,9 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
 
         var validationErrors = hasPersonInputParameter
             ? ValidationComposer.Validate(
-                ConnectionValidation.ValidateAddAssignment(connection.Party, connection.From, connection.To, person.PersonIdentifier, person.LastName))
+                ConnectionValidation.ValidateAddAssignmentWithPersonInput(connection.Party, connection.From, connection.To, person.PersonIdentifier, person.LastName))
             : ValidationComposer.Validate(
-                ConnectionValidation.ValidateAddAssignment(connection.Party, connection.From, connection.To));
+                ConnectionValidation.ValidateAddAssignmentWithConnectionInput(connection.Party, connection.From, connection.To));
 
         if (validationErrors is { })
         {
@@ -106,10 +106,12 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         }
 
         var fromUuid = Guid.Parse(connection.From);
-        var connectionInputToUuid = Guid.Parse(connection.To);
 
         var resolver = new ToUuidResolver(EntityService, UserProfileLookupService);
-        var resolveResult = await resolver.ResolveAsync(connectionInputToUuid, person, HttpContext, cancellationToken);
+        var resolveResult = hasPersonInputParameter
+            ? await resolver.ResolveWithPersonInputAsync(person, HttpContext, cancellationToken)
+            : await resolver.ResolveWithConnectionInputAsync(Guid.Parse(connection.To), cancellationToken);
+
         if (!resolveResult.Success)
         {
             return resolveResult.ErrorResult!;
@@ -206,9 +208,9 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
 
         var validationErrors = hasPersonInputParameter
             ? ValidationComposer.Validate(
-                ConnectionValidation.ValidateAddPackageToConnection(connection.Party, connection.From, connection.To, person.PersonIdentifier, person.LastName, packageId, package))
+                ConnectionValidation.ValidateAddPackageToConnectionWithPersonInput(connection.Party, connection.From, connection.To, person.PersonIdentifier, person.LastName, packageId, package))
             : ValidationComposer.Validate(
-                ConnectionValidation.ValidateAddPackageToConnection(connection.Party, connection.From, connection.To, packageId, package));
+                ConnectionValidation.ValidateAddPackageToConnectionWithConnectionInput(connection.Party, connection.From, connection.To, packageId, package));
 
         if (validationErrors is { })
         {
@@ -216,10 +218,12 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         }
 
         var fromUuid = Guid.Parse(connection.From);
-        var connectionInputToUuid = Guid.Parse(connection.To);
 
         var resolver = new ToUuidResolver(EntityService, UserProfileLookupService);
-        var resolveResult = await resolver.ResolveAsync(connectionInputToUuid, person, HttpContext, cancellationToken);
+        var resolveResult = hasPersonInputParameter
+            ? await resolver.ResolveWithPersonInputAsync(person, HttpContext, cancellationToken)
+            : await resolver.ResolveWithConnectionInputAsync(Guid.Parse(connection.To), cancellationToken);
+
         if (!resolveResult.Success)
         {
             return resolveResult.ErrorResult!;

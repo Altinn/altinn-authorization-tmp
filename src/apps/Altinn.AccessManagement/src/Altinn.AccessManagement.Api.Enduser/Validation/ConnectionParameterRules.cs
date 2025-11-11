@@ -19,88 +19,96 @@ internal static class ConnectionParameterRules
     /// <summary>
     /// party must be either keyword 'me' or a non-empty Guid.
     /// </summary>
-    internal static RuleExpression Party(string value, string paramName = "party") => () =>
+    /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
+    internal static RuleExpression Party(string value) => () =>
     {
-        var trimmed = value?.Trim();
-        if (!string.IsNullOrWhiteSpace(trimmed))
+        if (!string.IsNullOrWhiteSpace(value))
         {
-            if (IsKeyword(trimmed, PartyKeywords))
+            if (IsKeyword(value, PartyKeywords))
             {
                 return null;
             }
 
-            if (Guid.TryParse(trimmed, out var parsed) && parsed != Guid.Empty)
+            if (Guid.TryParse(value, out var parsed) && parsed != Guid.Empty)
             {
                 return null;
             }
         }
 
         return (ref ValidationErrorBuilder errors) =>
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new(paramName, ValidationMessageTexts.InvalidPartyValue)]);
+            errors.Add(ValidationErrors.InvalidQueryParameter, "QUERY/party", [new("party", ValidationErrorMessageTexts.InvalidPartyValue)]);
     };
 
     /// <summary>
-    /// from can be: 'me', 'all', blank, or a non-empty Guid.
+    /// <paramref name="value"/> has to be non-empty Guid if valueRequired is true.
     /// </summary>
-    internal static RuleExpression PartyFrom(string value, string paramName = "from") =>
-        ValidateFromOrTo(value, paramName);
+    /// <param name="value">Raw query parameter value.</param>
+    /// <param name="valueRequired">True if a value must be non-empty Guid.</param>
+    /// <param name="paramName">Parameter name used in error path ("from" or "to").</param>
+    /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
+    internal static RuleExpression PartyFrom(string value, bool valueRequired = false, string paramName = "from") =>
+        ValidateFromOrToParty(value, valueRequired, paramName);
 
     /// <summary>
-    /// to can be: 'me', 'all', blank, or a non-empty Guid.
+    /// <paramref name="value"/> has to be non-empty Guid if valueRequired is true.
     /// </summary>
-    internal static RuleExpression PartyTo(string value, string paramName = "to") =>
-        ValidateFromOrTo(value, paramName);
+    /// <param name="value">Raw query parameter value.</param>
+    /// <param name="valueRequired">True if a value must be non-empty Guid.</param>
+    /// <param name="paramName">Parameter name used in error path ("from" or "to").</param>
+    /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
+    internal static RuleExpression PartyTo(string value, bool valueRequired = false, string paramName = "to") =>
+        ValidateFromOrToParty(value, valueRequired, paramName);
 
     /// <summary>
     /// personIdentifier must be present and pass <see cref="PersonIdentifier.TryParse(string?, IFormatProvider?, out PersonIdentifier)"/>,
     /// lastName must be non-empty.
     /// </summary>
+    /// <param name="personIdentifier">The personIdentifier value of a PersonInput parameter</param>
+    /// <param name="personLastName">The lastName value of a PersonInput parameter</param>
+    /// <returns>A deferred rule expression that yields an error builder when invalid, otherwise null.</returns>
     internal static RuleExpression PersonInput(string personIdentifier, string personLastName) => () =>
     {
-        var trimmed = personIdentifier?.Trim();
-
-        if (string.IsNullOrWhiteSpace(trimmed))
+        if (string.IsNullOrWhiteSpace(personIdentifier))
         {
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", ValidationMessageTexts.PersonIdentifierRequired)]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", ValidationErrorMessageTexts.PersonIdentifierRequired)]);
         }
 
-        if (!PersonIdentifier.TryParse(trimmed, null, out _))
+        if (!PersonIdentifier.TryParse(personIdentifier, null, out _))
         {
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", ValidationMessageTexts.PersonIdentifierInvalid)]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/personIdentifier", [new("personIdentifier", ValidationErrorMessageTexts.PersonIdentifierInvalid)]);
         }
 
         if (string.IsNullOrWhiteSpace(personLastName))
         {
             return (ref ValidationErrorBuilder errors) =>
-                errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/lastName", [new("lastName", ValidationMessageTexts.LastNameRequired)]);
+                errors.Add(ValidationErrors.InvalidQueryParameter, "BODY/lastName", [new("lastName", ValidationErrorMessageTexts.LastNameRequired)]);
         }
 
         return null;
     };
 
-    private static RuleExpression ValidateFromOrTo(string value, string paramName) => () =>
+    private static RuleExpression ValidateFromOrToParty(string value, bool valueRequired, string paramName) => () =>
     {
-        var trimmed = value?.Trim();
-
-        if (string.IsNullOrWhiteSpace(trimmed))
+        if (valueRequired)
         {
-            return null;
+            if (Guid.TryParse(value, out var parsed) && parsed != Guid.Empty)
+            {
+                return null;
+            }
+            else if (IsKeyword(value, FromToPartyKeywords))
+            {
+                return null;
+            }
+            else
+            {
+                return (ref ValidationErrorBuilder errors) =>
+                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new(paramName, ValidationErrorMessageTexts.InvalidPartyValue)]);
+            }
         }
 
-        if (IsKeyword(trimmed, FromToPartyKeywords))
-        {
-            return null;
-        }
-
-        if (Guid.TryParse(trimmed, out var parsed) && parsed != Guid.Empty)
-        {
-            return null;
-        }
-
-        return (ref ValidationErrorBuilder errors) =>
-            errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new(paramName, ValidationMessageTexts.InvalidPartyFromOrToValue)]);
+        return null;
     };
 
     private static bool IsKeyword(string? value, string[] keywords) =>
