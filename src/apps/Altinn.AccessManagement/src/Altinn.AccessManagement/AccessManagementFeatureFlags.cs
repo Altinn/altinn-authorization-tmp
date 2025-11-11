@@ -5,8 +5,6 @@ namespace Altinn.AccessManagement;
 /// </summary>
 internal static class AccessManagementFeatureFlags
 {
-    internal const string PipelineInit = "AccessManagement.Core.Pipeline.Init";
-
     /// <summary>
     /// Specifies if the register data should streamed from register service to access management database
     /// </summary>

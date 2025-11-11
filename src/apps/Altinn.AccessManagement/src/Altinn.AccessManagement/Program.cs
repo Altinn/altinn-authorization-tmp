@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
+using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
@@ -76,7 +77,7 @@ async Task Init()
         await app.UseAccessMgmtDb(generateBasicData);
     }
 
-    if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.PipelineInit))
+    if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.PipelineInit))
     {
         await app.Services.ExecuteInitPipelinesAsync(cts.Token);
     }
