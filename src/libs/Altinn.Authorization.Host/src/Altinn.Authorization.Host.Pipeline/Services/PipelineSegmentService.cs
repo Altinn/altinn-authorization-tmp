@@ -79,19 +79,22 @@ internal partial class PipelineSegmentService(ILogger<PipelineSegmentService> lo
 
                 Log.SegmentMessageSent(logger, args.Descriptor.Name, args.Name, data.Sequence);
             }
-            catch (InvalidOperationException ex) // Should only occur if segment fails to process the same data repeatedly.
+            catch (InvalidOperationException ex) 
             {
+                // Should only occur if segment fails to process the same data repeatedly.
                 await data.CancellationTokenSource.CancelAsync();
                 activity?.AddException(ex);
                 Log.SegmentMessageAborted(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);
                 inFailingState = true;
             }
-            catch (OperationCanceledException) // Someone issued termination of the pipeline.
+            catch (OperationCanceledException) 
             {
+                // Someone issued termination of the pipeline.
                 inCancelledState = true;
             }
-            catch (Exception ex) // unexpected.
+            catch (Exception ex) 
             {
+                // unexpected.
                 await data.CancellationTokenSource.CancelAsync();
                 activity?.AddException(ex);
                 Log.SegmentUnhandledError(logger, args.Descriptor.Name, args.Name, data.Sequence, ex);

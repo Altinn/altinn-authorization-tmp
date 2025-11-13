@@ -56,7 +56,7 @@ internal static class RegisterPipelines
             };
         }
 
-        internal static async Task<(List<Entity> Items, string NextPage)> Transform(PipelineSegmentContext<(List<Person> Items, string NextPage)> context)
+        internal static Task<(List<Entity> Items, string NextPage)> Transform(PipelineSegmentContext<(List<Person> Items, string NextPage)> context)
         {
             var result = new List<Entity>();
             foreach (var person in context.Data.Items)
@@ -74,10 +74,10 @@ internal static class RegisterPipelines
                 result.Add(entity);
             }
 
-            return (result, context.Data.NextPage);
+            return Task.FromResult((result, context.Data.NextPage));
         }
 
-        internal static async Task<(List<Entity> Items, string NextPage)> Transform(PipelineSegmentContext<(List<Organization> Items, string NextPage)> context)
+        internal static Task<(List<Entity> Items, string NextPage)> Transform(PipelineSegmentContext<(List<Organization> Items, string NextPage)> context)
         {
             var result = new List<Entity>();
             foreach (var organization in context.Data.Items)
@@ -98,10 +98,10 @@ internal static class RegisterPipelines
                 result.Add(entity);
             }
 
-            return (result, context.Data.NextPage);
+            return Task.FromResult((result, context.Data.NextPage));
         }
 
-        internal static async Task<(List<Entity> Items, string NextPage)> Transform(PipelineSegmentContext<(List<SelfIdentifiedUser> Items, string NextPage)> context)
+        internal static Task<(List<Entity> Items, string NextPage)> Transform(PipelineSegmentContext<(List<SelfIdentifiedUser> Items, string NextPage)> context)
         {
             var result = new List<Entity>();
             foreach (var si in context.Data.Items)
@@ -116,10 +116,10 @@ internal static class RegisterPipelines
                 result.Add(entity);
             }
 
-            return (result, context.Data.NextPage);
+            return Task.FromResult((result, context.Data.NextPage));
         }
 
-        internal static async Task<(List<Entity> Items, string NextPage)> Transform(PipelineSegmentContext<(List<SystemUser> Items, string NextPage)> context)
+        internal static Task<(List<Entity> Items, string NextPage)> Transform(PipelineSegmentContext<(List<SystemUser> Items, string NextPage)> context)
         {
             var result = new List<Entity>();
             foreach (var systemUser in context.Data.Items)
@@ -141,10 +141,10 @@ internal static class RegisterPipelines
                 result.Add(entity);
             }
 
-            return (result, context.Data.NextPage);
+            return Task.FromResult((result, context.Data.NextPage));
         }
 
-        internal static async Task<(List<Entity> Items, string NextPage)> Transform(PipelineSegmentContext<(List<EnterpriseUser> Items, string NextPage)> context)
+        internal static Task<(List<Entity> Items, string NextPage)> Transform(PipelineSegmentContext<(List<EnterpriseUser> Items, string NextPage)> context)
         {
             var activity = Activity.Current;
             var result = new List<Entity>();
@@ -160,7 +160,7 @@ internal static class RegisterPipelines
                 result.Add(entity);
             }
 
-            return (result, context.Data.NextPage);
+            return Task.FromResult((result, context.Data.NextPage));
         }
 
         internal static async Task Load(PipelineSinkContext<(List<Entity> Items, string NextPage)> context)

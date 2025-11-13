@@ -62,8 +62,9 @@ internal partial class PipelineSinkService(
                 await DispatchSegment(data.Sequence, args, func, ctx);
                 Log.SinkMessageCompleted(logger, args.Descriptor.Name, args.Name, data.Sequence);
             }
-            catch (Exception ex) // Should only occur if segment fails to process the same data repeatedly.
+            catch (Exception ex) 
             {
+                // Should only occur if segment fails to process the same data repeatedly.
                 await data.CancellationTokenSource.CancelAsync();
                 activity?.SetTag("cancellation_requested", true);
                 if (ex is InvalidOperationException)
