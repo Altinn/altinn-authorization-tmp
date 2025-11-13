@@ -5,15 +5,15 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/accesspackages?party={{party}}&from={{party}}&to={{toOrg}}&package={{package}}
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/accesspackages?party={{fromParty}}&from={{fromParty}}&to={{toParty}}&package={{package}}
   body: json
   auth: inherit
 }
 
 params:query {
-  party: {{party}}
-  from: {{party}}
-  to: {{toOrg}}
+  party: {{fromParty}}
+  from: {{fromParty}}
+  to: {{toParty}}
   package: {{package}}
 }
 
@@ -27,8 +27,8 @@ script:pre-request {
   
   bru.setVar("requestName", "POST_Enduser_Conn_AccPcks_ToOthers_SubCon");
   
-  bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.partyUuid);
-  bru.setVar("toOrg", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid);
+  bru.setVar("fromParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.partyUuid);
+  bru.setVar("toParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid);
   bru.setVar("package", "revisorattesterer");
   
   var getTokenParameters = {
