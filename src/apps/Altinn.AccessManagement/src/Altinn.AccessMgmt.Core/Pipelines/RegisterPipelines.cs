@@ -45,7 +45,7 @@ internal static class RegisterPipelines
                 result = [];
             }
 
-            string[] GetTypeFilter() => typeof(T) switch
+            static string[] GetTypeFilter() => typeof(T) switch
             {
                 Type t when t == typeof(Person) => ["person"],
                 Type t when t == typeof(Organization) => ["organization"],
@@ -183,6 +183,7 @@ internal static class RegisterPipelines
                 UserId = party?.User.Value?.UserId.HasValue == true ? Convert.ToInt32(party.User.Value.UserId.Value) : null,
                 Username = party?.User.Value?.Username.HasValue == true ? party.User.Value.Username.ToString() : null,
                 IsDeleted = party?.IsDeleted.HasValue == true ? party.IsDeleted.Value : false,
+                Audit_ValidFrom = party.ModifiedAt.Value,
             };
 
             configureEntity(entity);

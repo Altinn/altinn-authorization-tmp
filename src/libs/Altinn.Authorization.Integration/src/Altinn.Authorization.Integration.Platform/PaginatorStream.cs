@@ -74,6 +74,7 @@ public class PaginatorStream<T>(HttpClient httpClient, HttpResponseMessage curre
             }
             catch (Exception)
             {
+                // ignore of serialization fails. Most likely to empty data.
             }
         }
     }
