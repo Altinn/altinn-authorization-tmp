@@ -29,10 +29,11 @@ public interface IAltinnRegister
     /// Streams a paginated list of parties from the Altinn Register service.
     /// </summary>
     /// <param name="fields">The fields to include in the response.</param>
+    /// <param name="types">Filter for entity types, must be either. (person, organization, self-identified-user, system-user, enterprise-user).</param>
     /// <param name="nextPage">The URL of the next page, if paginated.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An asynchronous enumerable of paginated <see cref="Party"/> items.</returns>
-    Task<IAsyncEnumerable<PlatformResponse<PageStream<Party>>>> StreamParties(IEnumerable<string> fields, string nextPage = null, CancellationToken cancellationToken = default);
+    Task<IAsyncEnumerable<PlatformResponse<PageStream<Party>>>> StreamParties(IEnumerable<string> fields, IEnumerable<string> types = null, string nextPage = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Streams a paginated list of roles from the Altinn Register service.
