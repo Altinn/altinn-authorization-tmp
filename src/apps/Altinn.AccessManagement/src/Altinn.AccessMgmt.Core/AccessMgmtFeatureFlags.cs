@@ -1,4 +1,4 @@
-namespace Altinn.AccessMgmt.Core;
+﻿namespace Altinn.AccessMgmt.Core;
 
 public static class AccessMgmtFeatureFlags
 {
@@ -36,4 +36,9 @@ public static class AccessMgmtFeatureFlags
     /// Specifies if the altinn admin roles data should streamed from sblbridge service to access management database
     /// </summary>
     public const string HostedServicesAltinnAdminRoleSync = $"AccessMgmt.Core.HostedServices.AltinnAdminRoleSync";
+
+    /// <summary>
+    /// Specifies if AuthorizedPartiesServiceEf should be used
+    /// </summary>
+    public const string AuthorizedPartiesEfEnabled = $"AccessMgmt.Core.Services.AuthorizedParties.EfEnabled";
 }

@@ -49,21 +49,23 @@ public partial class ConnectionService(
                 FromIds = fromId.HasValue ? [fromId.Value] : null,
                 ToIds = toId.HasValue ? [toId.Value] : null,
                 EnrichEntities = true,
+                IncludeSubConnections = true,
                 IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludeDelegation = true,
                 IncludePackages = true,
                 IncludeResource = false,
                 EnrichPackageResources = false,
                 ExcludeDeleted = false,
-                IncludeDelegation = true,
-                OnlyUniqueResults = true,
+                OnlyUniqueResults = true
             },
             direction,
             cancellationToken
         );
 
         return direction == ConnectionQueryDirection.FromOthers
-            ? DtoMapper.ConvertFromOthers(connections)
-            : DtoMapper.ConvertToOthers(connections);
+            ? DtoMapper.ConvertFromOthers(connections, getSingle: fromId.HasValue)
+            : DtoMapper.ConvertToOthers(connections, getSingle: toId.HasValue);
     }
 
     public async Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
@@ -182,13 +184,15 @@ public partial class ConnectionService(
             FromIds = fromId.HasValue ? [fromId.Value] : null,
             ToIds = toId.HasValue ? [toId.Value] : null,
             EnrichEntities = true,
+            IncludeSubConnections = true,
             IncludeKeyRole = true,
+            IncludeMainUnitConnections = true,
+            IncludeDelegation = true,
             IncludePackages = true,
             IncludeResource = false,
             EnrichPackageResources = false,
             ExcludeDeleted = false,
-            IncludeDelegation = true,
-            OnlyUniqueResults = true,
+            OnlyUniqueResults = true
         },
         direction,
         cancellationToken
@@ -519,13 +523,15 @@ public partial class ConnectionService(
             FromIds = fromId.HasValue ? [fromId.Value] : null,
             ToIds = toId.HasValue ? [toId.Value] : null,
             EnrichEntities = true,
+            IncludeSubConnections = true,
             IncludeKeyRole = true,
+            IncludeMainUnitConnections = true,
+            IncludeDelegation = false,
             IncludePackages = false,
             IncludeResource = false,
             EnrichPackageResources = false,
             ExcludeDeleted = false,
-            OnlyUniqueResults = true,
-            IncludeDelegation = false,
+            OnlyUniqueResults = true
         };
 
         var connections = await connectionQuery.GetConnectionsAsync(filter, direction, cancellationToken);
