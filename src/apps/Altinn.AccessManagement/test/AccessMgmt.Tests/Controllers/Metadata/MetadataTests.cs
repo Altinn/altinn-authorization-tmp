@@ -77,7 +77,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
 
         var res = await controller.GetPackages(RoleConstants.ManagingDirector.Entity.Code, "AS", includeResources: false);
-        Assert.NotNull(res);
+        Assert.NotNull(res.Value);
     }
 
     [Fact]
@@ -86,8 +86,8 @@ public class MetadataTests : IClassFixture<PostgresFixture>
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
 
         var res = await controller.GetPackages(RoleConstants.ManagingDirector.Entity.Code, "AS", includeResources: true);
-        Assert.NotNull(res);
-        Assert.True(res.SelectMany(t => t.Resources).Count() > 0);
+        Assert.NotNull(res.Value);
+        Assert.True(res.Value.SelectMany(t => t.Resources).Count() > 0);
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
 
         var res = await controller.GetPackages(RoleConstants.ManagingDirector.Id, "AS", includeResources: false);
-        Assert.NotNull(res);
+        Assert.NotNull(res.Value);
     }
 
     [Fact]
@@ -105,8 +105,8 @@ public class MetadataTests : IClassFixture<PostgresFixture>
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
 
         var res = await controller.GetPackages(RoleConstants.ManagingDirector.Id, "AS", includeResources: true);
-        Assert.NotNull(res);
-        Assert.True(res.SelectMany(t => t.Resources).Count() > 0);
+        Assert.NotNull(res.Value);
+        Assert.True(res.Value.SelectMany(t => t.Resources).Count() > 0);
     }
     #endregion
 
@@ -116,8 +116,8 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     {
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
 
-        var res = await controller.GetResources(RoleConstants.ManagingDirector.Entity.Code, "AS", includePackageResoures: false);
-        Assert.NotNull(res);
+        var res = await controller.GetResources(RoleConstants.ManagingDirector.Entity.Code, "AS", includePackageResources: false);
+        Assert.NotNull(res.Value);
     }
 
     [Fact]
@@ -125,9 +125,9 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     {
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
 
-        var res = await controller.GetResources(RoleConstants.ManagingDirector.Entity.Code, "AS", includePackageResoures: true);
-        Assert.NotNull(res);
-        Assert.True(res.Count(t => t.RefId == "T-05") > 0);
+        var res = await controller.GetResources(RoleConstants.ManagingDirector.Entity.Code, "AS", includePackageResources: true);
+        Assert.NotNull(res.Value);
+        Assert.True(res.Value.Count(t => t.RefId == "T-05") > 0);
     }
 
     [Fact]
@@ -135,8 +135,8 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     {
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
 
-        var res = await controller.GetResources(RoleConstants.ManagingDirector.Id, "AS", includePackageResoures: false);
-        Assert.NotNull(res);
+        var res = await controller.GetResources(RoleConstants.ManagingDirector.Id, "AS", includePackageResources: false);
+        Assert.NotNull(res.Value);
     }
 
     [Fact]
@@ -144,9 +144,9 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     {
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
 
-        var res = await controller.GetResources(RoleConstants.ManagingDirector.Id, "AS", includePackageResoures: true);
-        Assert.NotNull(res);
-        Assert.True(res.Count(t => t.RefId == "T-05") > 0);
+        var res = await controller.GetResources(RoleConstants.ManagingDirector.Id, "AS", includePackageResources: true);
+        Assert.NotNull(res.Value);
+        Assert.True(res.Value.Count(t => t.RefId == "T-05") > 0);
     }
     #endregion
 }
