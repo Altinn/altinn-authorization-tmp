@@ -100,21 +100,19 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         /// </summary>
         [HttpGet("packages")]
         [ProducesResponseType(typeof(PackageDto), StatusCodes.Status200OK)]
-        public async ValueTask<IEnumerable<PackageDto>> GetPackages([Required][FromQuery] string role, [Required][FromQuery] string variant, [FromQuery] bool includeResources = false)
-        {
-            RoleConstants.TryGetByCode(string.IsNullOrEmpty(role) ? "_" : role, out var roleDef);
-            EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef);
-            if (roleDef == null)
+        public async ValueTask<ActionResult<IEnumerable<PackageDto>>> GetPackages([Required][FromQuery] string role, [Required][FromQuery] string variant, [FromQuery] bool includeResources = false)
+        {            
+            if (!RoleConstants.TryGetByCode(string.IsNullOrEmpty(role) ? "_" : role, out var roleDef))
             {
-                throw new ArgumentException("Role not found");
+                return NotFound($"Role '{role}' not found");
             }
 
-            if (variantDef == null)
+            if (!EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef))
             {
-                throw new ArgumentException("Variant not found");
+                return NotFound($"Variant '{variant}' not found");
             }
 
-            return await roleService.GetRolePackages(roleDef.Id, variantDef.Id, includeResources);
+            return Ok(await roleService.GetRolePackages(roleDef.Id, variantDef.Id, includeResources));
         }
 
         /// <summary>
@@ -122,21 +120,19 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         /// </summary>
         [HttpGet("resources")]
         [ProducesResponseType(typeof(ResourceDto), StatusCodes.Status200OK)]
-        public async ValueTask<IEnumerable<ResourceDto>> GetResources([Required][FromQuery] string role, [Required][FromQuery] string variant, [FromQuery] bool includePackageResoures = false)
+        public async ValueTask<ActionResult<IEnumerable<ResourceDto>>> GetResources([Required][FromQuery] string role, [Required][FromQuery] string variant, [FromQuery] bool includePackageResources = false)
         {
-            RoleConstants.TryGetByCode(string.IsNullOrEmpty(role) ? "_" : role, out var roleDef);
-            EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef);
-            if (roleDef == null)
+            if (!RoleConstants.TryGetByCode(string.IsNullOrEmpty(role) ? "_" : role, out var roleDef))
             {
-                throw new ArgumentException("Role not found");
+                return NotFound($"Role '{role}' not found");
             }
 
-            if (variantDef == null)
+            if (!EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef))
             {
-                throw new ArgumentException("Variant not found");
+                return NotFound($"Variant '{variant}' not found");
             }
 
-            return await roleService.GetRoleResources(roleDef.Id, variantDef.Id, includePackageResoures);
+            return Ok(await roleService.GetRoleResources(roleDef.Id, variantDef.Id, includePackageResources));
         }
 
         /// <summary>
@@ -144,15 +140,14 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         /// </summary>
         [HttpGet("{id}/packages")]
         [ProducesResponseType(typeof(PackageDto), StatusCodes.Status200OK)]
-        public async ValueTask<IEnumerable<PackageDto>> GetPackages([Required][FromRoute] Guid id, [Required][FromQuery] string variant, [FromQuery] bool includeResources = false)
+        public async Task<ActionResult<IEnumerable<PackageDto>>> GetPackages([Required][FromRoute] Guid id, [Required][FromQuery] string variant, [FromQuery] bool includeResources = false)
         {
-            EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef);
-            if (variantDef == null)
+            if (!EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef))
             {
-                throw new ArgumentException("Variant not found");
+                return NotFound($"Variant '{variant}' not found");
             }
 
-            return await roleService.GetRolePackages(id, variantDef.Id, includeResources);
+            return Ok(await roleService.GetRolePackages(id, variantDef.Id, includeResources));
         }
 
         /// <summary>
@@ -160,15 +155,14 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         /// </summary>
         [HttpGet("{id}/resources")]
         [ProducesResponseType(typeof(ResourceDto), StatusCodes.Status200OK)]
-        public async ValueTask<IEnumerable<ResourceDto>> GetResources([Required][FromRoute] Guid id, [Required][FromQuery] string variant, [FromQuery] bool includePackageResoures = false)
+        public async Task<ActionResult<IEnumerable<ResourceDto>>> GetResources([Required][FromRoute] Guid id, [Required][FromQuery] string variant, [FromQuery] bool includePackageResources = false)
         {
-            EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef);
-            if (variantDef == null)
+            if (!EntityVariantConstants.TryGetByName(string.IsNullOrEmpty(variant) ? "_" : variant, out var variantDef))
             {
-                throw new ArgumentException("Variant not found");
+                return NotFound($"Variant '{variant}' not found");
             }
 
-            return await roleService.GetRoleResources(id, variantDef.Id, includePackageResoures);
+            return Ok(await roleService.GetRoleResources(id, variantDef.Id, includePackageResources));
         }
     }
 }
