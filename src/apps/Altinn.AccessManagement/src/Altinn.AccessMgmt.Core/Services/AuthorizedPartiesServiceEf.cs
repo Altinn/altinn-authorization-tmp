@@ -233,7 +233,11 @@ public class AuthorizedPartiesServiceEf(
             {
                 // Merge roles from Altinn 2 into existing Altinn 3 party
                 existingA3Party.AuthorizedRoles = a2Party.AuthorizedRoles;
-                existingA3Party.OnlyHierarchyElementWithNoAccess = false;
+                if (!a2Party.OnlyHierarchyElementWithNoAccess)
+                {
+                    // Only set to false if Altinn 2 party has actual access
+                    existingA3Party.OnlyHierarchyElementWithNoAccess = false;
+                }
 
                 foreach (AuthorizedParty a2SubUnit in a2Party.Subunits)
                 {
@@ -264,6 +268,7 @@ public class AuthorizedPartiesServiceEf(
                 {
                     var enhancedA2SubUnit = BuildAuthorizedPartyFromEntity(allA2Parties[a2SubUnit.PartyUuid]);
                     enhancedA2SubUnit.AuthorizedRoles = a2SubUnit.AuthorizedRoles;
+                    enhancedA2Party.Subunits.Add(enhancedA2SubUnit);
 
                     allParties.Add(enhancedA2SubUnit.PartyUuid, enhancedA2SubUnit);
                 }
@@ -278,7 +283,7 @@ public class AuthorizedPartiesServiceEf(
     private async Task<Tuple<Dictionary<Guid, AuthorizedParty>, IEnumerable<AuthorizedParty>>> GetAltinn3AuthorizedParties(Guid toId, List<Guid> toOrgs = null, CancellationToken cancellationToken = default)
     {
         // Get AccessPackage Delegations
-        var packagePermissions = await repoService.GetPackagesFromOthers(toId, cancellationToken);
+        var packagePermissions = await repoService.GetPackagesFromOthers(toId, ct: cancellationToken);
 
         // Get App, Resource and Instance delegations
         List<Guid> allToParties = toOrgs ?? new List<Guid>();

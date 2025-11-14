@@ -1,7 +1,7 @@
 {
     "env": "tt02",
     "resources": {
-        "clientDelgResourceId": "devtest_gar_bruno_client_resource"
+        "revisorattestererPckgResourceId": "devtest_gar_bruno_direct_resource"
     },
     "REGN_ULASTELIG_RETTFERDIG_TIGER": {
         "name": "ULASTELIG RETTFERDIG TIGER AS",
@@ -148,7 +148,7 @@
             "userId": 20962455,
             "partyId": 51233907,
             "partyUuid": "c8ded0aa-60b5-4007-9429-6acca2f88031",
-            "directPackageToDelegate": "motorvognavgift",
+            "directPackageToDelegate": "revisorattesterer",
             "directPackageTilgangsstyrer": "tilgangsstyrer"
         }
     },

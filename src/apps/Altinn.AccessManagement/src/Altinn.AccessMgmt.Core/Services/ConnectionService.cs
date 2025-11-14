@@ -49,21 +49,23 @@ public partial class ConnectionService(
                 FromIds = fromId.HasValue ? [fromId.Value] : null,
                 ToIds = toId.HasValue ? [toId.Value] : null,
                 EnrichEntities = true,
+                IncludeSubConnections = true,
                 IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludeDelegation = true,
                 IncludePackages = true,
                 IncludeResource = false,
                 EnrichPackageResources = false,
                 ExcludeDeleted = false,
-                IncludeDelegation = true,
-                OnlyUniqueResults = true,
+                OnlyUniqueResults = true
             },
             direction,
             cancellationToken
         );
 
         return direction == ConnectionQueryDirection.FromOthers
-            ? DtoMapper.ConvertFromOthers(connections)
-            : DtoMapper.ConvertToOthers(connections);
+            ? DtoMapper.ConvertFromOthers(connections, getSingle: fromId.HasValue)
+            : DtoMapper.ConvertToOthers(connections, getSingle: toId.HasValue);
     }
 
     public async Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
@@ -182,13 +184,15 @@ public partial class ConnectionService(
             FromIds = fromId.HasValue ? [fromId.Value] : null,
             ToIds = toId.HasValue ? [toId.Value] : null,
             EnrichEntities = true,
+            IncludeSubConnections = true,
             IncludeKeyRole = true,
+            IncludeMainUnitConnections = true,
+            IncludeDelegation = true,
             IncludePackages = true,
             IncludeResource = false,
             EnrichPackageResources = false,
             ExcludeDeleted = false,
-            IncludeDelegation = true,
-            OnlyUniqueResults = true,
+            OnlyUniqueResults = true
         },
         direction,
         cancellationToken
@@ -279,13 +283,8 @@ public partial class ConnectionService(
             return problem;
         }
 
-        var assignments = await dbContext.Assignments
-            .AsNoTracking()
-            .Where(a => a.FromId == fromId)
-            .Where(a => a.ToId == toId)
-            .ToListAsync(cancellationToken);
-
-        if (assignments.Count() == 0)
+        var connection = await Get(fromId, fromId, toId, configureConnection, cancellationToken: cancellationToken);
+        if (!connection.IsSuccess || connection.Value.Count() == 0)
         {
             return Problems.MissingConnection;
         }
@@ -306,7 +305,13 @@ public partial class ConnectionService(
             return problem;
         }
 
-        var assignment = assignments.FirstOrDefault(a => a.RoleId == RoleConstants.Rightholder);
+        // Look for existing direct rightholder assignment
+        var assignment = await dbContext.Assignments
+            .AsNoTracking()
+            .Where(a => a.FromId == fromId)
+            .Where(a => a.ToId == toId)
+            .Where(a => a.RoleId == RoleConstants.Rightholder.Id)
+            .FirstOrDefaultAsync(cancellationToken);
         if (assignment == null)
         {
             assignment = new Assignment()
@@ -519,13 +524,15 @@ public partial class ConnectionService(
             FromIds = fromId.HasValue ? [fromId.Value] : null,
             ToIds = toId.HasValue ? [toId.Value] : null,
             EnrichEntities = true,
+            IncludeSubConnections = true,
             IncludeKeyRole = true,
+            IncludeMainUnitConnections = true,
+            IncludeDelegation = false,
             IncludePackages = false,
             IncludeResource = false,
             EnrichPackageResources = false,
             ExcludeDeleted = false,
-            OnlyUniqueResults = true,
-            IncludeDelegation = false,
+            OnlyUniqueResults = true
         };
 
         var connections = await connectionQuery.GetConnectionsAsync(filter, direction, cancellationToken);

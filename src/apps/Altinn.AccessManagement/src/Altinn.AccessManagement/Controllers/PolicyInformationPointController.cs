@@ -1,9 +1,13 @@
-using Altinn.AccessManagement.Core.Models;
+﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
+using Altinn.AccessMgmt.Core;
+using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 
 namespace Altinn.AccessManagement.Controllers;
 
@@ -12,25 +16,14 @@ namespace Altinn.AccessManagement.Controllers;
 /// </summary>
 [Route("accessmanagement/api/v1/policyinformation")]
 [ApiController]
-public class PolicyInformationPointController : ControllerBase
+public class PolicyInformationPointController(
+    IFeatureManager featureManager,
+    IMapper mapper,
+    IPolicyInformationPoint pip,
+    IConnectionService connectionService,
+    IAuthorizedPartyRepoServiceEf authorizedPartyRepoService
+    ) : ControllerBase
 {
-    private readonly IPolicyInformationPoint _pip;
-    private readonly IMapper _mapper;
-    private readonly AccessMgmt.Core.Services.Contracts.IConnectionService _connectionService;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PolicyInformationPointController"/> class.
-    /// </summary>
-    /// <param name="pip">The policy information point</param>
-    /// <param name="mapper">The mapper</param>
-    /// <param name="connectionService">Connection Service</param>
-    public PolicyInformationPointController(IPolicyInformationPoint pip, IMapper mapper, AccessMgmt.Core.Services.Contracts.IConnectionService connectionService)
-    {
-        _pip = pip;
-        _mapper = mapper;
-        _connectionService = connectionService;
-    }
-
     /// <summary>
     /// Endpoint to find all delegation changes for a given user, reportee and app/resource context
     /// </summary>
@@ -42,7 +35,7 @@ public class PolicyInformationPointController : ControllerBase
     [Route("getdelegationchanges")]
     public async Task<ActionResult<List<DelegationChangeExternal>>> GetAllDelegationChanges([FromBody] DelegationChangeInput request, CancellationToken cancellationToken)
     {
-        DelegationChangeList response = await _pip.GetAllDelegations(request, includeInstanceDelegations: true, cancellationToken);
+        DelegationChangeList response = await pip.GetAllDelegations(request, includeInstanceDelegations: true, cancellationToken);
 
         if (!response.IsValid)
         {
@@ -54,7 +47,7 @@ public class PolicyInformationPointController : ControllerBase
             return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
         }
 
-        return _mapper.Map<List<DelegationChangeExternal>>(response.DelegationChanges);
+        return mapper.Map<List<DelegationChangeExternal>>(response.DelegationChanges);
     }
 
     /// <summary>
@@ -71,7 +64,16 @@ public class PolicyInformationPointController : ControllerBase
     {
         List<AccessPackageUrn> packages = new();
 
-        var connectionPackages = await _connectionService.GetPackagePermissionsFromOthers(partyId: to, fromId: from, cancellationToken: cancellationToken);
+        IEnumerable<PackagePermissionDto> connectionPackages = null;
+        if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled))
+        {
+            connectionPackages = await authorizedPartyRepoService.GetPackagesFromOthers(to, from, cancellationToken);
+        }
+        else
+        {
+            connectionPackages = await connectionService.GetPackagePermissionsFromOthers(partyId: to, fromId: from, cancellationToken: cancellationToken);
+        }
+
         if (connectionPackages != null)
         {
             packages.AddRange(connectionPackages.Select(conPackage => AccessPackageUrn.AccessPackageId.Create(AccessPackageIdentifier.CreateUnchecked(conPackage.Package.Urn.Split(':').Last()))));
