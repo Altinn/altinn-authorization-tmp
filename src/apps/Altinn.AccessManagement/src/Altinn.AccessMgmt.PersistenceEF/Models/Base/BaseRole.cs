@@ -39,6 +39,12 @@ public class BaseRole : BaseAudit, IEntityId, IEntityName, IEntityUrn, IEntityCo
     public string Code { get; set; }
 
     /// <summary>
+    /// Code
+    /// e.g dagl
+    /// </summary>
+    public string LegacyCode { get; set; }
+
+    /// <summary>
     /// Description
     /// e.g The main operator of the organization
     /// </summary>
@@ -55,6 +61,12 @@ public class BaseRole : BaseAudit, IEntityId, IEntityName, IEntityUrn, IEntityCo
     /// altinn:role:tilgangsstyrer
     /// </summary>
     public string Urn { get; set; }
+
+    /// <summary>
+    /// Urn
+    /// e.g urn:altinn:role:dagl
+    /// </summary>
+    public string LegacyUrn { get; set; }
 
     /// <summary>
     /// Can be assigned

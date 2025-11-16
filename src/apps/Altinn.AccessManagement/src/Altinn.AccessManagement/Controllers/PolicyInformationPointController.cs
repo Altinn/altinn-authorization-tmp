@@ -67,7 +67,7 @@ public class PolicyInformationPointController(
         IEnumerable<PackagePermissionDto> connectionPackages = null;
         if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled))
         {
-            connectionPackages = await authorizedPartyRepoService.GetPackagesFromOthers(to, from, cancellationToken);
+            connectionPackages = await authorizedPartyRepoService.GetPackagesFromOthers(to, from, ct: cancellationToken);
         }
         else
         {
