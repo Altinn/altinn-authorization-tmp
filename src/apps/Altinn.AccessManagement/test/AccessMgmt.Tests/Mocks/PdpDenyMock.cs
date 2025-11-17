@@ -10,7 +10,7 @@ namespace Altinn.AccessManagement.Tests.Mocks
     internal class PdpDenyMock : IPDP
     {
         /// <inheritdoc/>
-        public Task<XacmlJsonResponse> GetDecisionForRequest(XacmlJsonRequestRoot xacmlJsonRequest)
+        public Task<XacmlJsonResponse> GetDecisionForRequest(XacmlJsonRequestRoot xacmlJsonRequest, CancellationToken cancellationToken = default)
         {
             var response = new XacmlJsonResponse
             {
@@ -21,7 +21,7 @@ namespace Altinn.AccessManagement.Tests.Mocks
         }
 
         /// <inheritdoc/>
-        public Task<bool> GetDecisionForUnvalidateRequest(XacmlJsonRequestRoot xacmlJsonRequest, ClaimsPrincipal user)
+        public Task<bool> GetDecisionForUnvalidateRequest(XacmlJsonRequestRoot xacmlJsonRequest, ClaimsPrincipal user, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(false);
         }
