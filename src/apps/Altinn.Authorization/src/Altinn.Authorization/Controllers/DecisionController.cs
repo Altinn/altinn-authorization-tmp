@@ -143,7 +143,7 @@ namespace Altinn.Platform.Authorization.Controllers
                 bool logSingleRequest = await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnError, cancellationToken);
                 bool logMultiRequest = await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnErrorMultiRequest, cancellationToken);
 
-                if (logSingleRequest || logMultiRequest)
+                if (ex is not OperationCanceledException && (logSingleRequest || logMultiRequest))
                 {
                     try
                     {
@@ -361,6 +361,11 @@ namespace Altinn.Platform.Authorization.Controllers
             decisionRequest = await this._contextHandler.Enrich(decisionRequest, isExernalRequest, _appInstanceInfo);
 
             XacmlPolicy policy = await _prp.GetPolicyAsync(decisionRequest);
+            
+            if (policy == null)
+            {
+                throw new ArgumentException("Policy not found for resource");
+            }
 
             XacmlContextResponse rolesContextResponse = _pdp.Authorize(decisionRequest, policy);
             XacmlContextResult roleResult = rolesContextResponse.Results.First();
