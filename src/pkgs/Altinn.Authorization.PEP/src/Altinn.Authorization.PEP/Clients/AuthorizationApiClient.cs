@@ -56,8 +56,9 @@ namespace Altinn.Common.PEP.Clients
         /// Method for performing authorization.
         /// </summary>
         /// <param name="xacmlJsonRequest">An authorization request.</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>The result of the authorization request.</returns>
-        public async Task<XacmlJsonResponse> AuthorizeRequest(XacmlJsonRequestRoot xacmlJsonRequest)
+        public async Task<XacmlJsonResponse> AuthorizeRequest(XacmlJsonRequestRoot xacmlJsonRequest, CancellationToken cancellationToken = default)
         {
             XacmlJsonResponse xacmlJsonResponse = null;
             string apiUrl = $"decision";
@@ -66,19 +67,19 @@ namespace Altinn.Common.PEP.Clients
 
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
-            HttpResponseMessage response = await _httpClient.PostAsync(apiUrl, httpContent);
+            HttpResponseMessage response = await _httpClient.PostAsync(apiUrl, httpContent, cancellationToken);
             stopWatch.Stop();
             TimeSpan ts = stopWatch.Elapsed;
             _logger.LogInformation("Authorization PDP time elapsed: " + ts.TotalMilliseconds);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                xacmlJsonResponse = await response.Content.ReadFromJsonAsync<XacmlJsonResponse>(jsonOptions);
+                xacmlJsonResponse = await response.Content.ReadFromJsonAsync<XacmlJsonResponse>(jsonOptions, cancellationToken);
             }
             else
             {
                 _logger.LogInformation($"// PDPAppSI // GetDecisionForRequest // Non-zero status code: {response.StatusCode}");
-                _logger.LogInformation($"// PDPAppSI // GetDecisionForRequest // Response: {await response.Content.ReadAsStringAsync()}");
+                _logger.LogInformation($"// PDPAppSI // GetDecisionForRequest // Response: {await response.Content.ReadAsStringAsync(cancellationToken)}");
             }
 
             return xacmlJsonResponse;
