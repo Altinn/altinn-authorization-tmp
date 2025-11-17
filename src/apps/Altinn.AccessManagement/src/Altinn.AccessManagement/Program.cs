@@ -1,9 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
+using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.Authorization.Host.Pipeline.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.FeatureManagement;
@@ -52,9 +54,21 @@ await app.RunAsync();
 
 async Task Init()
 {
+    using var cts = new CancellationTokenSource();
+    AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+    {
+        try
+        {
+            cts.Cancel();
+        }
+        catch (Exception)
+        {
+        }
+    };
+
     if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbEf))
     {
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>().Database; 
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>().Database;
         await db.MigrateAsync();
     }
     else if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
@@ -63,21 +77,10 @@ async Task Init()
         await app.UseAccessMgmtDb(generateBasicData);
     }
 
-    using var cts = new CancellationTokenSource();
-    AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+    if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.PipelineInit))
     {
-        try
-        {
-            cts.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-            // Terminated by itself.
-        }
-    };
-
-    var registerImport = scope.ServiceProvider.GetRequiredService<RegisterHostedService>();
-    await registerImport.EnsureDbIsIngestWithRegisterData(cts.Token);
+        await app.Services.ExecuteInitPipelinesAsync(cts.Token);
+    }
 }
 
 /// <summary>

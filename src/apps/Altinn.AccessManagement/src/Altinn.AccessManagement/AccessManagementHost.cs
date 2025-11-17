@@ -67,7 +67,6 @@ internal static partial class AccessManagementHost
             .AddCheck<HealthCheck>("authorization_admin_health_check");
 
         builder.ConfigureLibsIntegrations();
-        builder.ConfigureAppsettings();
 
         if (!builder.Environment.IsDevelopment())
         {

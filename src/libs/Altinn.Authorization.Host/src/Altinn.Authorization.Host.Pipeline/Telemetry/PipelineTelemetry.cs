@@ -22,6 +22,16 @@ internal static partial class PipelineTelemetry
     /// </summary>
     internal static readonly Meter Meter = new(MeterName);
 
+    internal static void RecordFaultyState(this Activity? source)
+    {
+        source?.SetStatus(ActivityStatusCode.Error, "In faulty state.");
+    }
+
+    internal static void RecordCancelledState(this Activity? source)
+    {
+        source?.SetStatus(ActivityStatusCode.Ok, "In cancelled state.");
+    }
+
     internal static void SetSequence(this Activity? source, ulong sequence)
     {
         source?.SetTag("sequence", sequence);

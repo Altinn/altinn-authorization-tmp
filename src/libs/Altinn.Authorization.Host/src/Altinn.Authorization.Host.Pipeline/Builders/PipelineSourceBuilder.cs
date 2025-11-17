@@ -19,6 +19,11 @@ internal class PipelineSourceBuilder(PipelineGroup descriptor) : ISourceBuilder
         Next = segment;
         return segment;
     }
+
+    public ISegmentBuilder<TOutbound> AddSource<TOutbound>(PipelineSource<TOutbound> source)
+    {
+        return AddSource("Extract", source);
+    }
 }
 
 /// <summary>
@@ -36,4 +41,12 @@ public interface ISourceBuilder
     /// <param name="source">Source function: yields messages asynchronously.</param>
     /// <returns>Builder to configure the next stage.</returns>
     ISegmentBuilder<TOutbound> AddSource<TOutbound>(string name, PipelineSource<TOutbound> source);
+
+    /// <summary>
+    /// Configures the source function that produces messages.
+    /// Sources stream messages asynchronously using <c>IAsyncEnumerable</c>.
+    /// </summary>
+    /// <typeparam name="TOutbound">The output message type.</typeparam>
+    /// <returns>Builder to configure the next stage.</returns>
+    ISegmentBuilder<TOutbound> AddSource<TOutbound>(PipelineSource<TOutbound> source);
 }

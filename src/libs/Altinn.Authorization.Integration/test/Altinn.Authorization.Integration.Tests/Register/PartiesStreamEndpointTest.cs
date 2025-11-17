@@ -20,7 +20,7 @@ public class PartiesStreamEndpointTest : IClassFixture<PlatformFixture>
     [InlineData(5)]
     public async Task TestStreamParties(int iterations)
     {
-        await foreach (var role in await Register.StreamParties([], null, TestContext.Current.CancellationToken))
+        await foreach (var role in await Register.StreamParties([], null, null,  TestContext.Current.CancellationToken))
         {
             if (iterations-- <= 0)
             {
@@ -44,7 +44,7 @@ public class PartiesStreamEndpointTest : IClassFixture<PlatformFixture>
     [InlineData(5)]
     public async Task TestStreamPartiesWithAllFieldsSelected(int iterations)
     {
-        await foreach (var role in await Register.StreamParties(AltinnRegisterClient.DefaultFields, null, TestContext.Current.CancellationToken))
+        await foreach (var role in await Register.StreamParties(AltinnRegisterClient.DefaultFields, null, null, TestContext.Current.CancellationToken))
         {
             if (iterations-- <= 0)
             {
@@ -57,7 +57,7 @@ public class PartiesStreamEndpointTest : IClassFixture<PlatformFixture>
 
     private async Task<PlatformResponse<PageStream<Party>>> GetPage(string nextPage = null, CancellationToken cancellationToken = default)
     {
-        await foreach (var role in await Register.StreamParties([], nextPage, cancellationToken))
+        await foreach (var role in await Register.StreamParties([], null, nextPage, cancellationToken))
         {
             return role;
         }
