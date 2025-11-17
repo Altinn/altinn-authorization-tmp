@@ -533,6 +533,7 @@ public class ConnectionQuery(AppDbContext db)
 
         var rolePackages = allKeys
             .Join(db.RolePackages, c => c.RoleId, rp => rp.RoleId, (c, rp) => new { c, rp })
+            .Where(t => t.rp.HasAccess)
             .WhereIf(packageSet is not null, x => packageSet!.Contains(x.rp.PackageId));
 
         var delegationPackages = allKeys
