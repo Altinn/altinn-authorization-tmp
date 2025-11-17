@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using System.Xml;
 using Altinn.Authorization.ABAC;
@@ -263,6 +263,11 @@ namespace Altinn.Platform.Authorization.Controllers
                 XacmlJsonResponse multiResponse = new XacmlJsonResponse();
                 foreach (XacmlJsonRequestReference xacmlJsonRequestReference in decisionRequest.MultiRequests.RequestReference)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return await Task.FromCanceled<XacmlJsonResponse>(cancellationToken);
+                    }
+
                     XacmlJsonRequest jsonMultiRequestPart = new XacmlJsonRequest();
 
                     foreach (string refer in xacmlJsonRequestReference.ReferenceId)
