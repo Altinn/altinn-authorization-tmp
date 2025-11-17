@@ -1,7 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessManagement;
 using Altinn.AccessMgmt.Core.HostedServices;
-using Altinn.AccessMgmt.Persistence.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +15,6 @@ WebApplication app = AccessManagementHost.Create(args);
 using var scope = app.Services.CreateScope();
 var appsettings = scope.ServiceProvider.GetRequiredService<IOptions<AccessManagementAppsettings>>().Value;
 var featureManager = scope.ServiceProvider.GetRequiredService<FeatureManager>();
-await app.DefineAccessMgmtDbModels();
 
 if (appsettings.RunInitOnly)
 {
@@ -42,7 +40,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseDbAudit();
 app.UseEfAudit();
 
 app.MapControllers();
@@ -56,11 +53,6 @@ async Task Init()
     {
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>().Database; 
         await db.MigrateAsync();
-    }
-    else if (await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDb))
-    {
-        bool generateBasicData = await featureManager.IsEnabledAsync(AccessManagementFeatureFlags.MigrationDbWithBasicData);
-        await app.UseAccessMgmtDb(generateBasicData);
     }
 
     using var cts = new CancellationTokenSource();
