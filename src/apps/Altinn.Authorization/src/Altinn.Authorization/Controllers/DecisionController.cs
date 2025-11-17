@@ -214,7 +214,7 @@ namespace Altinn.Platform.Authorization.Controllers
                 bool logSingleRequest = await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnError, cancellationToken);
                 bool logMultiRequest = await _featureManager.IsEnabledAsync(FeatureFlags.DecisionRequestLogRequestOnErrorMultiRequest, cancellationToken);
 
-                if (logSingleRequest || logMultiRequest)
+                if (ex is not OperationCanceledException && (logSingleRequest || logMultiRequest))
                 {
                     try
                     {
@@ -263,10 +263,7 @@ namespace Altinn.Platform.Authorization.Controllers
                 XacmlJsonResponse multiResponse = new XacmlJsonResponse();
                 foreach (XacmlJsonRequestReference xacmlJsonRequestReference in decisionRequest.MultiRequests.RequestReference)
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        return await Task.FromCanceled<XacmlJsonResponse>(cancellationToken);
-                    }
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     XacmlJsonRequest jsonMultiRequestPart = new XacmlJsonRequest();
 
