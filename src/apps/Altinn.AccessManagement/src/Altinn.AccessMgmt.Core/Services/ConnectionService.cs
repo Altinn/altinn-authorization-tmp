@@ -60,6 +60,7 @@ public partial class ConnectionService(
                 OnlyUniqueResults = true
             },
             direction,
+            useNewExprQueries: false,
             cancellationToken
         );
 
@@ -195,6 +196,7 @@ public partial class ConnectionService(
             OnlyUniqueResults = true
         },
         direction,
+        useNewExprQueries: false,
         cancellationToken
         );
 
@@ -535,7 +537,7 @@ public partial class ConnectionService(
             OnlyUniqueResults = true
         };
 
-        var connections = await connectionQuery.GetConnectionsAsync(filter, direction, cancellationToken);
+        var connections = await connectionQuery.GetConnectionsAsync(filter, direction, useNewExprQueries: false, cancellationToken);
         return connections.GroupBy(r => r.RoleId).Select(connection =>
         {
             var role = connection.First().Role;

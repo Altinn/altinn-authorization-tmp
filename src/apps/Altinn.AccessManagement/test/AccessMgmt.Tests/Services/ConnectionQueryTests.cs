@@ -1,9 +1,13 @@
 ﻿using Altinn.AccessManagement.Tests.Fixtures;
+using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Text.Json;
 
 namespace AccessMgmt.Tests.Services;
 
@@ -48,6 +52,7 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
         var terje = new Entity() { Id = Guid.NewGuid(), Name = "Terje", TypeId = EntityTypeConstants.Person, VariantId = EntityVariantConstants.Person, PersonIdentifier = "06018412345", RefId = "06018412345", DateOfBirth = DateOnly.Parse("1984-01-06") };
 
         var bakerRegn = new Assignment() { FromId = baker.Id, ToId = bdo.Id, RoleId = RoleConstants.Accountant }; // Regnskapsfører
+        var bakerDagl = new Assignment() { FromId = baker.Id, ToId = kari.Id, RoleId = RoleConstants.ManagingDirector }; // Daglig leder
         var bdoDagl = new Assignment() { FromId = bdo.Id, ToId = petter.Id, RoleId = RoleConstants.ManagingDirector }; // Daglig leder
         var bdoAgent = new Assignment() { FromId = bdo.Id, ToId = gunnar.Id, RoleId = RoleConstants.Agent }; // Agent
         var skrikDagl = new Assignment() { FromId = skrik.Id, ToId = nina.Id, RoleId = RoleConstants.ManagingDirector }; // Daglig leder
@@ -78,6 +83,7 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
         testData.Entities.Add("terje", terje);
 
         testData.Assignments.Add("bakerRegn", bakerRegn);
+        testData.Assignments.Add("bakerDagl", bakerDagl);
         testData.Assignments.Add("bdoDagl", bdoDagl);
         testData.Assignments.Add("bdoAgent", bdoAgent);
         testData.Assignments.Add("skrikDagl", skrikDagl);
@@ -103,6 +109,152 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
 
         return testData;
     }
+
+
+    [Fact]
+    public async Task Petter()
+    {
+        // Daglig leder i BDO
+
+        var orgId = _data.Entities["bdo"].Id;
+        var personId = _data.Entities["petter"].Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            ToIds = new[] { personId },
+            IncludeKeyRole = true,
+            EnrichEntities = true,
+            IncludeDelegation = true,
+            OnlyUniqueResults = true,
+            IncludeMainUnitConnections = true,
+            IncludeSubConnections = true,
+            ExcludeDeleted = false,
+            EnrichPackageResources = false
+        };
+
+        var resNew = await _query.GetConnectionsFromOthersAsync(filter, true);
+        var dtosNew = DtoMapper.ConvertFromOthers(resNew, false);
+
+        var resOld = await _query.GetConnectionsFromOthersAsync(filter, false);
+        var dtosOld = DtoMapper.ConvertFromOthers(resOld, false);
+
+        var (onlyInA, onlyInB) = ConnectionDiffHelper.Diff(resOld, resNew);
+
+        if (onlyInA.Any())
+        {
+            var msg = "Rows missing from B:\n" + JsonSerializer.Serialize(onlyInA);
+            Console.WriteLine(msg);
+        }
+
+        if (onlyInB.Any())
+        {
+            var msg = "Rows missing from A:\n" + JsonSerializer.Serialize(onlyInB);
+            Console.WriteLine(msg);
+        }
+
+        Assert.Equal(resOld.Count, resNew.Count);
+        Assert.Equal(dtosOld.Count, dtosNew.Count);
+    }
+
+   
+
+    [Fact]
+    public async Task Gunnar()
+    {
+        var bakerId = _data.Entities["baker"].Id;
+        var kariId = _data.Entities["kari"].Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            ToIds = new[] { kariId },
+            IncludeKeyRole = true
+        };
+
+        var res = await _query.GetConnectionsFromOthersAsync(filter);
+        var dtos = DtoMapper.ConvertFromOthers(res);
+
+        Assert.Equal(1, dtos.Count(t => t.Party.Id == bakerId));
+        Assert.Equal(3, dtos.Single(t => t.Party.Id == bakerId).Connections.Count());
+    }
+
+    [Fact]
+    public async Task Nina()
+    {
+        var bakerId = _data.Entities["baker"].Id;
+        var kariId = _data.Entities["kari"].Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            ToIds = new[] { kariId },
+            IncludeKeyRole = true
+        };
+
+        var res = await _query.GetConnectionsFromOthersAsync(filter);
+        var dtos = DtoMapper.ConvertFromOthers(res);
+
+        Assert.Equal(1, dtos.Count(t => t.Party.Id == bakerId));
+        Assert.Equal(3, dtos.Single(t => t.Party.Id == bakerId).Connections.Count());
+    }
+
+    [Fact]
+    public async Task Kari()
+    {
+        var bakerId = _data.Entities["baker"].Id;
+        var kariId = _data.Entities["kari"].Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            ToIds = new[] { kariId },
+            IncludeKeyRole = true
+        };
+
+        var res = await _query.GetConnectionsFromOthersAsync(filter);
+        var dtos = DtoMapper.ConvertFromOthers(res);
+
+        Assert.Equal(1, dtos.Count(t => t.Party.Id == bakerId));
+        Assert.Equal(3, dtos.Single(t => t.Party.Id == bakerId).Connections.Count());
+    }
+
+    [Fact]
+    public async Task William()
+    {
+        var bakerId = _data.Entities["baker"].Id;
+        var kariId = _data.Entities["kari"].Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            ToIds = new[] { kariId },
+            IncludeKeyRole = true
+        };
+
+        var res = await _query.GetConnectionsFromOthersAsync(filter);
+        var dtos = DtoMapper.ConvertFromOthers(res);
+
+        Assert.Equal(1, dtos.Count(t => t.Party.Id == bakerId));
+        Assert.Equal(3, dtos.Single(t => t.Party.Id == bakerId).Connections.Count());
+    }
+
+    [Fact]
+    public async Task Terje()
+    {
+        var bakerId = _data.Entities["baker"].Id;
+        var kariId = _data.Entities["kari"].Id;
+
+        var filter = new ConnectionQueryFilter
+        {
+            ToIds = new[] { kariId },
+            IncludeKeyRole = true
+        };
+
+        var res = await _query.GetConnectionsFromOthersAsync(filter);
+        var dtos = DtoMapper.ConvertFromOthers(res);
+
+        Assert.Equal(1, dtos.Count(t => t.Party.Id == bakerId));
+        Assert.Equal(3, dtos.Single(t => t.Party.Id == bakerId).Connections.Count());
+    }
+
+
+
 
     [Fact]
     public async Task Petter_ShouldGetConnection_To_Baker_Via_BDO_When_KeyRoleIsEnabled()
