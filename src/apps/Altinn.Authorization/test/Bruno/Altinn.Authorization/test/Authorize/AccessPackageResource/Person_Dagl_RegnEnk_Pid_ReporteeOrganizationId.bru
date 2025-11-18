@@ -1,13 +1,13 @@
 meta {
-  name: Person_Dagl_EksplisittResource_UserId_ReporteePartyId
+  name: Person_Dagl_RegnEnk_Pid_ReporteeOrganizationId
   type: http
-  seq: 15
+  seq: 12
 }
 
 post {
-  url: {{baseUrl}}/authorization/api/v1/decision
+  url: {{baseUrl}}/authorization/api/v1/authorize
   body: json
-  auth: none
+  auth: inherit
 }
 
 headers {
@@ -23,8 +23,8 @@ body:json {
               {
                   "Attribute": [
                       {
-                          "AttributeId": "urn:altinn:userid",
-                          "Value": "{{subjectUserId}}"
+                          "AttributeId": "urn:altinn:person:identifier-no",
+                          "Value": "{{subjectPersonId}}"
                       }
                   ]
               }
@@ -48,8 +48,8 @@ body:json {
                           "Value": "{{resourceId}}"
                       },
                       {
-                          "AttributeId": "urn:altinn:partyid",
-                          "Value": "{{resourcePartyId}}",
+                          "AttributeId": "urn:altinn:organization:identifier-no",
+                          "Value": "{{resourceOrganizationId}}",
                           "DataType": "http://www.w3.org/2001/XMLSchema#string"
                       }
                   ]
@@ -62,18 +62,27 @@ body:json {
 script:pre-request {
   const testdata = require(`./testdata/accesspackage-resource-auth/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "Person_Dagl_EksplisittResource_UserId_ReporteePartyId");
+  bru.setVar("requestName", "Person_Dagl_RegnEnk_Pid_ReporteeOrganizationId");
   
-  bru.setVar("resourceId", testdata.resources.eksplisittResource);
-  bru.setVar("subjectUserId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId);
-  bru.setVar("resourcePartyId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyId);
+  bru.setVar("resourceId", testdata.resources.regnskapsforerResource);
+  bru.setVar("subjectPersonId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid);
+  bru.setVar("resourceOrganizationId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.orgno);
   
+  var getTokenParameters = {
+    auth_tokenType: sharedtestdata.authTokenType.enterprise,
+    auth_scopes: sharedtestdata.auth_scopes.authorize,
+    auth_org: sharedtestdata.serviceOwners.ttd.org,
+    auth_orgNo: sharedtestdata.serviceOwners.ttd.orgno,
+  }
+  
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
 }
 
 tests {
   test("Decision_" + bru.getVar("requestName"), function() {
     const data = res.getBody();
     expect(res.status).to.equal(200);
-    expect(data.response[0]).to.have.property('decision', "NotApplicable");
+    expect(data.response[0]).to.have.property('decision', "Permit");
   });
 }

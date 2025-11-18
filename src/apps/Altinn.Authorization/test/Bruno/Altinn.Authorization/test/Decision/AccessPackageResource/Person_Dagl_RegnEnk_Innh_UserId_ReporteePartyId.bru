@@ -1,7 +1,7 @@
 meta {
-  name: Person_Dagl_EksplisittResource_UserId_ReporteePartyId
+  name: Person_Dagl_RegnEnk_Innh_UserId_ReporteePartyId
   type: http
-  seq: 15
+  seq: 10
 }
 
 post {
@@ -62,11 +62,11 @@ body:json {
 script:pre-request {
   const testdata = require(`./testdata/accesspackage-resource-auth/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "Person_Dagl_EksplisittResource_UserId_ReporteePartyId");
+  bru.setVar("requestName", "Person_Dagl_RegnEnk_Innh_UserId_ReporteePartyId");
   
-  bru.setVar("resourceId", testdata.resources.eksplisittResource);
+  bru.setVar("resourceId", testdata.resources.regnskapsforerResource);
   bru.setVar("subjectUserId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId);
-  bru.setVar("resourcePartyId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyId);
+  bru.setVar("resourcePartyId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.innehaver.partyId);
   
 }
 
@@ -74,6 +74,6 @@ tests {
   test("Decision_" + bru.getVar("requestName"), function() {
     const data = res.getBody();
     expect(res.status).to.equal(200);
-    expect(data.response[0]).to.have.property('decision', "NotApplicable");
+    expect(data.response[0]).to.have.property('decision', "Permit");
   });
 }
