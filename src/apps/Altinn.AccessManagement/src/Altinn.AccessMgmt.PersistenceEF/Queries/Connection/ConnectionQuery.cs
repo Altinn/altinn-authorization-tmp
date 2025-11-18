@@ -240,7 +240,31 @@ public class ConnectionQuery(AppDbContext db)
                         IsRoleMap = c.IsRoleMap
                     });
 
-        var query = fromComplete.Concat(fromChildren);
+        var innehaverConnections =
+            from reviRegnConnection in complete
+            join innehaverConnection in db.Assignments on reviRegnConnection.FromId equals innehaverConnection.FromId
+            join innehaver in db.Entities on innehaverConnection.ToId equals innehaver.Id
+            join enk in db.Entities on innehaverConnection.FromId equals enk.Id
+            where (reviRegnConnection.RoleId == RoleConstants.Accountant.Id || reviRegnConnection.RoleId == RoleConstants.Auditor.Id)
+               && innehaverConnection.RoleId == RoleConstants.Innehaver.Id
+               && innehaver.DateOfDeath == null
+               && (!enk.IsDeleted || (enk.DeletedAt != null && enk.DeletedAt.Value.AddYears(2) < DateTime.UtcNow))
+            select new ConnectionQueryBaseRecord()
+            {
+                AssignmentId = reviRegnConnection.AssignmentId,
+                DelegationId = reviRegnConnection.DelegationId,
+                FromId = innehaverConnection.ToId,
+                ToId = reviRegnConnection.ToId,
+                RoleId = reviRegnConnection.RoleId,
+                ViaId = innehaverConnection.FromId,
+                ViaRoleId = innehaverConnection.RoleId,
+                IsKeyRoleAccess = reviRegnConnection.IsKeyRoleAccess,
+                IsRoleMap = reviRegnConnection.IsRoleMap,
+                IsMainUnitAccess = reviRegnConnection.IsMainUnitAccess,
+                Reason = ConnectionReason.Hierarchy
+            };
+
+        var query = fromComplete.Concat(fromChildren).Concat(innehaverConnections);
 
         return
             query
