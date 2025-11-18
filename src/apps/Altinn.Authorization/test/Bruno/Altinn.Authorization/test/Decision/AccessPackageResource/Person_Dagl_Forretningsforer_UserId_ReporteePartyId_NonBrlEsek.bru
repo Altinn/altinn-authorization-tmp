@@ -1,7 +1,7 @@
 meta {
-  name: Person_Dagl_EksplisittResource_UserId_ReporteePartyId
+  name: Person_Dagl_Forretningsforer_UserId_ReporteePartyId_NonBrlEsek
   type: http
-  seq: 15
+  seq: 17
 }
 
 post {
@@ -62,11 +62,11 @@ body:json {
 script:pre-request {
   const testdata = require(`./testdata/accesspackage-resource-auth/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "Person_Dagl_EksplisittResource_UserId_ReporteePartyId");
+  bru.setVar("requestName", "Person_Dagl_Forretningsforer_UserId_ReporteePartyId_NonBrlEsek");
   
-  bru.setVar("resourceId", testdata.resources.eksplisittResource);
-  bru.setVar("subjectUserId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId);
-  bru.setVar("resourcePartyId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyId);
+  bru.setVar("resourceId", testdata.resources.forretningsforerResource);
+  bru.setVar("subjectUserId", testdata.forretningsforerNonfigurativEmosjonellPuma.dagligleder.userId);
+  bru.setVar("resourcePartyId", testdata.forretningsforerNonfigurativEmosjonellPuma.nonBrlEsekClient.partyId);
   
 }
 
