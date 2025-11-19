@@ -19,7 +19,7 @@ public class AuthorizedPartiesFilters
 
     public bool IncludeInstances { get; set; } = true;
 
-    public bool IncludeKeyRoleConnections { get; set; } = true;
+    public bool IncludePartiesViaKeyRoles { get; set; } = true;
 
     /* Future filters to implement
     public string ProviderCode { get; set; } = null;

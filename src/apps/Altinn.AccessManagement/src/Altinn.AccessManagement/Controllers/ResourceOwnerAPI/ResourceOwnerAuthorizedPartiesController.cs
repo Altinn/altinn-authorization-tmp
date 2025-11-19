@@ -30,6 +30,7 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
     /// <param name="includeAccessPackages">Optional (Default: False): Whether authorized access packages should be included in the result set.</param>
     /// <param name="includeResources">Optional (Default: True): Whether authorized resources should be included in the result set.</param>
     /// <param name="includeInstances">Optional (Default: True): Whether authorized instances should be included in the result set.</param>
+    /// <param name="includePartiesViaKeyRoles">Optional (Default: True): Whether authorized parties via organizations the user has a key role for, should be included in the result set. Note: incomplete implementation (only affects access packages from Altinn 3)</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <response code="200" cref="List{AuthorizedParty}">Ok</response>
     /// <response code="401">Unauthorized</response>
@@ -53,6 +54,7 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
         [FromQuery] bool includeAccessPackages = false,
         [FromQuery] bool includeResources = true,
         [FromQuery] bool includeInstances = true,
+        [FromQuery] bool includePartiesViaKeyRoles = true,
         CancellationToken cancellationToken = default)
     {
         try
@@ -66,7 +68,8 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
                 IncludeRoles = includeRoles,
                 IncludeAccessPackages = includeAccessPackages,
                 IncludeResources = includeResources,
-                IncludeInstances = includeInstances
+                IncludeInstances = includeInstances,
+                IncludePartiesViaKeyRoles = includePartiesViaKeyRoles
             };
 
             if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled) && subject.PartyFilter?.Count() > 0)

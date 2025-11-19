@@ -12,7 +12,6 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
-using static Altinn.AccessManagement.Core.Models.AuthorizedParty;
 
 namespace Altinn.AccessManagement.Core.Services;
 
