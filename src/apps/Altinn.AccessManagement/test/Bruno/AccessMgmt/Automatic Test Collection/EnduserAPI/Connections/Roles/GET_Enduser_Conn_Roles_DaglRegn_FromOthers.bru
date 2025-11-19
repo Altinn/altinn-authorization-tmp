@@ -1,0 +1,56 @@
+meta {
+  name: GET_Enduser_Conn_Roles_DaglRegn_FromOthers
+  type: http
+  seq: 20
+}
+
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/roles?party={{party}}&to={{toParty}}&from={{fromParty}}
+  body: json
+  auth: inherit
+}
+
+params:query {
+  party: {{party}}
+  to: {{toParty}}
+  from: {{fromParty}}
+}
+
+headers {
+  Accept: application/json
+}
+
+script:pre-request {
+  const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
+  const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
+  
+  bru.setVar("requestName", "GET_Enduser_Conn_Roles_DaglRegn_FromOthers");
+  
+  bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid);
+  bru.setVar("toParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid);
+  bru.setVar("fromParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.partyUuid);
+  
+  
+  var getTokenParameters = {
+    auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
+    auth_partyId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyId,
+    auth_partyUuid: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid,
+    auth_ssn: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
+  }
+  
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken", token);
+}
+
+tests {
+  
+  test(bru.getVar("requestName"), function() {
+    const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
+     const data = res.getBody();
+      expect(res.status).to.equal(200);
+      expect(data.data[0].permissions[0].from).to.have.property('id', testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid.toLowerCase());
+    
+  });
+}

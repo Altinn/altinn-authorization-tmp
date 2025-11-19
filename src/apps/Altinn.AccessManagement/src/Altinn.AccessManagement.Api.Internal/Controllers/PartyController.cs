@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Controllers
 {
-    [Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
+    ////[Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
     [Route("accessmanagement/api/v1/internal/party")]
     public class PartyController : ControllerBase
     {
