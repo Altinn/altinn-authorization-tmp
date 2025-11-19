@@ -25,6 +25,7 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [ApiController]
 [Route("accessmanagement/api/v1/enduser/connections")]
 [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
+[Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class ConnectionsController(IConnectionService connectionService, IUserProfileLookupService userProfileLookupService, IEntityService entityService) : ControllerBase
 {
     private IConnectionService ConnectionService { get; } = connectionService;
@@ -48,7 +49,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     /// </summary>
     [HttpGet]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_READ)]
     [ProducesResponseType<PaginatedResult<ConnectionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -70,8 +70,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
 
-        //ToDo: Add scope authorization based on direction
-
         var result = await ConnectionService.Get(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
@@ -87,7 +85,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [HttpPost]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE)]
     [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -122,8 +119,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
 
         var toUuid = resolveResult.ToUuid;
 
-        //ToDo: Add scope authorization based on direction
-
         var result = await ConnectionService.AddAssignment(fromUuid, toUuid, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
@@ -138,7 +133,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     /// </summary>
     [HttpDelete]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -157,8 +151,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         var fromUuid = Guid.Parse(connection.From);
         var toUuid = Guid.Parse(connection.To);
 
-        //ToDo: Add scope authorization based on direction
-
         var problem = await ConnectionService.RemoveAssignment(fromUuid, toUuid, cascade, ConfigureConnections, cancellationToken);
         if (problem is { })
         {
@@ -173,7 +165,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     /// </summary>
     [HttpGet("accesspackages")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<PaginatedResult<PackagePermissionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -208,7 +199,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [HttpPost("accesspackages")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE)]
     [ProducesResponseType<AssignmentPackageDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -242,8 +232,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
 
         var toUuid = resolveResult.ToUuid;
 
-        //ToDo: Add scope authorization based on direction
-
         async Task<Result<AssignmentPackageDto>> AddPackage()
         {
             if (packageId.HasValue)
@@ -269,7 +257,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [HttpDelete("accesspackages")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -286,8 +273,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
 
         var fromUuid = Guid.Parse(connection.From);
         var toUuid = Guid.Parse(connection.To);
-
-        //ToDo: Add scope authorization based on direction
 
         async Task<ValidationProblemInstance> RemovePackage()
         {
@@ -315,7 +300,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [HttpGet("accesspackages/delegationcheck")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE)]
     [ProducesResponseType<PaginatedResult<AccessPackageDto.Check>>(StatusCodes.Status200OK)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -332,8 +316,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
             return await ConnectionService.CheckPackage(party, packageIds, ConfigureConnections, cancellationToken);
         }
 
-        //ToDo: Add scope authorization based on direction
-
         var result = await CheckPackage();
         if (result.IsProblem)
         {
@@ -348,7 +330,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     /// </summary>
     [HttpGet("roles")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<PaginatedResult<RolePermissionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -368,8 +349,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
 
-        //ToDo: Add scope authorization based on direction
-
         var result = await ConnectionService.GetRoles(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
         if (result.IsProblem)
         {
@@ -385,7 +364,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [HttpDelete("roles")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -399,8 +377,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         {
             return await Task.FromResult<ValidationProblemInstance>(null); // ToDo: Implement when role service is ready
         }
-
-        //ToDo: Add scope authorization based on direction
 
         var problem = await RemoveRole();
 
@@ -418,7 +394,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [HttpGet("resources")]
     [FeatureGate("connections/resources")]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_READ)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_READ)]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<PaginatedResult<ResourcePermissionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
@@ -432,8 +407,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
 
         //// ToDo: Implement when resource service is ready
         //// var result = await ConnectionService.GetResources(partyUuid, validFromUuid ? fromUuid : null, validToUuid ? toUuid : null, ConfigureConnections, cancellationToken);
-
-        //ToDo: Add scope authorization based on direction
 
         var result = await Task.FromResult(new Result<IEnumerable<ResourcePermissionDto>>(Enumerable.Empty<ResourcePermissionDto>()));
         if (result.IsProblem)
@@ -451,7 +424,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [FeatureGate("connections/resources")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE)]
     [ProducesResponseType<AssignmentResourceDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -465,8 +437,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         {
             return await Task.FromResult(new Result<AssignmentResourceDto>(new AssignmentResourceDto())); // ToDo: Implement when resource service is ready
         }
-
-        //ToDo: Add scope authorization based on direction
 
         var result = await AddResourceInternal();
         if (result.IsProblem)
@@ -484,7 +454,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [FeatureGate("connections/resources")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -497,8 +466,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         {
             return await Task.FromResult<ValidationProblemInstance>(null); // ToDo: Implement when resource service is ready
         }
-
-        //ToDo: Add scope authorization based on direction
 
         var problem = await RemovePackage();
 
@@ -517,7 +484,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [FeatureGate("connections/resources")]
     [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_ENDUSER_WRITE)]
-    [Authorize(Policy = AuthzConstants.POLICY_ENDUSER_CONNECTIONS_WRITE)]
     [ProducesResponseType<PaginatedResult<ResourceCheckDto>>(StatusCodes.Status200OK)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -528,8 +494,6 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
         {
             return await Task.FromResult(new Result<IEnumerable<ResourceCheckDto>>(Enumerable.Empty<ResourceCheckDto>())); // ToDo: Implement when resource service is ready
         }
-
-        //ToDo: Add scope authorization based on direction
 
         var result = await CheckResourceInternal();
         if (result.IsProblem)

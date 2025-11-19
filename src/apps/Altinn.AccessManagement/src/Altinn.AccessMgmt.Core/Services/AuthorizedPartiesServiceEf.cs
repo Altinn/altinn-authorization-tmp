@@ -269,67 +269,45 @@ public class AuthorizedPartiesServiceEf(
 
     private async Task<List<AuthorizedParty>> GetAuthorizedParties(AuthorizedPartiesFilters filter, Entity userSubject, IEnumerable<Guid> orgSubjectParties = null, CancellationToken cancellationToken = default)
     {
-        Task<(IEnumerable<AuthorizedParty> a2AuthorizedParties, Dictionary<Guid, Entity> allA2Parties)> a2Task = Task.FromResult((Enumerable.Empty<AuthorizedParty>(), new Dictionary<Guid, Entity>()));
-        Task<(IEnumerable<AuthorizedParty> a3AuthorizedParties, Dictionary<Guid, AuthorizedParty> allA3Parties)> a3Task = Task.FromResult((Enumerable.Empty<AuthorizedParty>(), new Dictionary<Guid, AuthorizedParty>()));
-
-        try
+        IEnumerable<AuthorizedParty> a2AuthorizedParties = [];
+        Dictionary<Guid, Entity> allA2Parties = [];
+        if (filter.IncludeAltinn2 && userSubject.UserId.HasValue)
         {
-            if (filter.IncludeAltinn2 && userSubject.UserId.HasValue)
+            a2AuthorizedParties = await altinnRolesClient.GetAuthorizedPartiesWithRoles(userSubject.UserId.Value, cancellationToken);
+
+            if (filter.PartyFilter?.Count() > 0)
             {
-                a2Task = Task.Run(async () =>
-                {
-                    var a2AuthorizedParties = await altinnRolesClient.GetAuthorizedPartiesWithRoles(userSubject.UserId.Value, cancellationToken);
-
-                    if (filter.PartyFilter?.Count() > 0)
-                    {
-                        a2AuthorizedParties = GetFilteredA2Parties(a2AuthorizedParties, filter);
-                    }
-
-                    return (a2AuthorizedParties.AsEnumerable(), new Dictionary<Guid, Entity>());
-                });
+                a2AuthorizedParties = GetFilteredA2Parties(a2AuthorizedParties, filter);
             }
 
-            if (filter.IncludeAltinn3)
+            // Get A3 party info for all Altinn 2 authorized parties and their subunits
+            List<Guid> a2PartyUuids = a2AuthorizedParties.Select(p => p.PartyUuid).Distinct().ToList();
+            a2PartyUuids.AddRange(a2AuthorizedParties.SelectMany(p => p.Subunits).Select(su => su.PartyUuid).Distinct());
+            var a2Parties = await repoService.GetEntities(a2PartyUuids, cancellationToken);
+            foreach (var a2Party in a2Parties)
             {
-                a3Task = Task.Run(async () =>
-                {
-                    var (allA3Parties, a3AuthorizedParties) = await GetAltinn3AuthorizedParties(filter, userSubject.Id, orgSubjectParties?.ToList(), cancellationToken);
-                    return (a3AuthorizedParties, allA3Parties);
-                });
+                allA2Parties.Add(a2Party.Id, a2Party);
             }
 
-            await Task.WhenAll(a2Task, a3Task);
-
-            var a2Result = await a2Task;
-            var a3Result = await a3Task;
-
-            // Since EF does not support parallel use of DbContexts, we need to fetch the Altinn 2 parties separately here
-            if (a2Result.a2AuthorizedParties.Count() > 0)
+            if (!filter.IncludeAltinn3)
             {
-                List<Guid> a2PartyUuids = a2Result.a2AuthorizedParties.Select(p => p.PartyUuid).Distinct().ToList();
-                a2PartyUuids.AddRange(a2Result.a2AuthorizedParties.SelectMany(p => p.Subunits).Select(su => su.PartyUuid).Distinct());
-                var a2Parties = await repoService.GetEntities(a2PartyUuids, cancellationToken);
-
-                foreach (var a2Party in a2Parties)
-                {
-                    a2Result.allA2Parties[a2Party.Id] = a2Party;
-                }
+                return MergeAuthorizePartyLists(a2AuthorizedParties, allA2Parties, [], new(), filter).ToList();
             }
-
-            return MergeAuthorizePartyLists(
-                a2Result.a2AuthorizedParties,
-                a2Result.allA2Parties,
-                a3Result.a3AuthorizedParties,
-                a3Result.allA3Parties,
-                filter
-            ).ToList();
         }
-        catch (Exception ex)
+
+        IEnumerable<AuthorizedParty> a3AuthorizedParties = [];
+        Dictionary<Guid, AuthorizedParty> allA3Parties = [];
+        if (filter.IncludeAltinn3)
         {
-            // Log the exception (replace with your logger)
-            Debug.WriteLine($"Error in GetAuthorizedParties: {ex}");
-            throw; // Rethrow to preserve stack trace
+            (allA3Parties, a3AuthorizedParties) = await GetAltinn3AuthorizedParties(filter, userSubject.Id, orgSubjectParties?.ToList(), cancellationToken);
+
+            if (!filter.IncludeAltinn2)
+            {
+                return a3AuthorizedParties.ToList();
+            }
         }
+
+        return MergeAuthorizePartyLists(a2AuthorizedParties, allA2Parties, a3AuthorizedParties, allA3Parties, filter).ToList();
     }
 
     private IEnumerable<AuthorizedParty> MergeAuthorizePartyLists(IEnumerable<AuthorizedParty> a2AuthorizedParties, Dictionary<Guid, Entity> allA2Parties, IEnumerable<AuthorizedParty> a3AuthorizedParties, Dictionary<Guid, AuthorizedParty> allParties, AuthorizedPartiesFilters filters)

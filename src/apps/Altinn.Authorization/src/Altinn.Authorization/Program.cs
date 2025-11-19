@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Altinn.ApiClients.Maskinporten.Extensions;
 using Altinn.ApiClients.Maskinporten.Services;
 using Altinn.Authorization.Services.Implementation;
@@ -265,7 +265,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration config)
 
     services.AddTransient<IAuthorizationHandler, ClaimAccessHandler>();
     services.AddTransient<IAuthorizationHandler, ScopeAccessHandler>();
-    ////services.AddSingleton<IAuthorizationHandler, AccessTokenHandler>(); // Todo Comment back out
+    services.AddSingleton<IAuthorizationHandler, AccessTokenHandler>();
 
     services.AddPlatformAccessTokenSupport(config, builder.Environment.IsDevelopment());
 
