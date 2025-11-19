@@ -67,16 +67,18 @@ public class AuthorizedPartiesController : ControllerBase
     {
         try
         {
+            var filter = new AuthorizedPartiesFilters { IncludeAltinn2 = includeAltinn2, IncludeAltinn3 = includeAltinn3 };
+
             int userId = AuthenticationHelper.GetUserId(HttpContext);
             if (userId != 0)
             {
-                return _mapper.Map<List<AuthorizedPartyExternal>>(await _authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, includeAltinn2, includeAltinn3, cancellationToken));
+                return _mapper.Map<List<AuthorizedPartyExternal>>(await _authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filter, cancellationToken));
             }
 
             string systemUserUuid = AuthenticationHelper.GetSystemUserUuid(HttpContext);
             if (!string.IsNullOrWhiteSpace(systemUserUuid))
             {
-                return _mapper.Map<List<AuthorizedPartyExternal>>(await _authorizedPartiesService.GetAuthorizedPartiesBySystemUserUuid(systemUserUuid, cancellationToken));
+                return _mapper.Map<List<AuthorizedPartyExternal>>(await _authorizedPartiesService.GetAuthorizedPartiesBySystemUserUuid(systemUserUuid, filter, cancellationToken));
             }
 
             return Unauthorized();
@@ -112,13 +114,15 @@ public class AuthorizedPartiesController : ControllerBase
     {
         try
         {
+            var filter = new AuthorizedPartiesFilters { IncludeAltinn2 = includeAltinn2, IncludeAltinn3 = includeAltinn3 };
+
             int userId = AuthenticationHelper.GetUserId(HttpContext);
             if (userId == 0)
             {
                 return Unauthorized();
             }
 
-            List<AuthorizedParty> authorizedParties = await _authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, includeAltinn2, includeAltinn3, cancellationToken);
+            List<AuthorizedParty> authorizedParties = await _authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filter, cancellationToken);
             AuthorizedParty authorizedParty = authorizedParties.Find(ap => ap.PartyId == partyId && !ap.OnlyHierarchyElementWithNoAccess)
                 ?? authorizedParties.SelectMany(ap => ap.Subunits).FirstOrDefault(subunit => subunit.PartyId == partyId);
 
@@ -161,6 +165,8 @@ public class AuthorizedPartiesController : ControllerBase
     {
         try
         {
+            var filter = new AuthorizedPartiesFilters { IncludeAltinn2 = includeAltinn2, IncludeAltinn3 = includeAltinn3 };
+
             int authenticatedUserPartyId = AuthenticationHelper.GetPartyId(HttpContext);
 
             Party subject = await _contextRetrievalService.GetPartyAsync(party, cancellationToken);
@@ -169,7 +175,7 @@ public class AuthorizedPartiesController : ControllerBase
                 return Forbid();
             }
 
-            List<AuthorizedParty> authorizedParties = await _authorizedPartiesService.GetAuthorizedPartiesByPartyId(subject.PartyId, includeAltinn2, includeAltinn3, cancellationToken);
+            List<AuthorizedParty> authorizedParties = await _authorizedPartiesService.GetAuthorizedPartiesByPartyId(subject.PartyId, filter, cancellationToken);
 
             return _mapper.Map<List<AuthorizedPartyExternal>>(authorizedParties);
         }
