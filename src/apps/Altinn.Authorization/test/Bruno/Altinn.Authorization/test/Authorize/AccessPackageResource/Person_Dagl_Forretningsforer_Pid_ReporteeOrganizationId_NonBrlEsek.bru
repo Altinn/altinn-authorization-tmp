@@ -1,13 +1,13 @@
 meta {
-  name: Person_Rightholder_WithPackage_PartyUuid_ReporteePartyUuid
+  name: Person_Dagl_Forretningsforer_Pid_ReporteeOrganizationId_NonBrlEsek
   type: http
-  seq: 12
+  seq: 11
 }
 
 post {
-  url: {{baseUrl}}/authorization/api/v1/decision
+  url: {{baseUrl}}/authorization/api/v1/authorize
   body: json
-  auth: none
+  auth: inherit
 }
 
 headers {
@@ -23,8 +23,8 @@ body:json {
               {
                   "Attribute": [
                       {
-                          "AttributeId": "urn:altinn:party:uuid",
-                          "Value": "{{subjectUserPartyUuid}}"
+                          "AttributeId": "urn:altinn:person:identifier-no",
+                          "Value": "{{subjectPersonId}}"
                       }
                   ]
               }
@@ -48,8 +48,8 @@ body:json {
                           "Value": "{{resourceId}}"
                       },
                       {
-                          "AttributeId": "urn:altinn:party:uuid",
-                          "Value": "{{resourcePartyUuid}}",
+                          "AttributeId": "urn:altinn:organization:identifier-no",
+                          "Value": "{{resourceOrganizationId}}",
                           "DataType": "http://www.w3.org/2001/XMLSchema#string"
                       }
                   ]
@@ -62,18 +62,27 @@ body:json {
 script:pre-request {
   const testdata = require(`./testdata/accesspackage-resource-auth/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "Person_Rightholder_WithPackage_PartyUuid_ReporteePartyUuid");
+  bru.setVar("requestName", "Person_Dagl_Forretningsforer_Pid_ReporteeOrganizationId_NonBrlEsek");
   
-  bru.setVar("resourceId", testdata.resources.revisorattestererPckgResourceId);
-  bru.setVar("subjectUserPartyUuid", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.employee_rightholderWithPackages.partyUuid);
-  bru.setVar("resourcePartyUuid", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
+  bru.setVar("resourceId", testdata.resources.forretningsforerResource);
+  bru.setVar("subjectPersonId", testdata.forretningsforerNonfigurativEmosjonellPuma.dagligleder.pid);
+  bru.setVar("resourceOrganizationId", testdata.forretningsforerNonfigurativEmosjonellPuma.nonBrlEsekClient.orgno);
   
+  var getTokenParameters = {
+    auth_tokenType: sharedtestdata.authTokenType.enterprise,
+    auth_scopes: sharedtestdata.auth_scopes.authorize,
+    auth_org: sharedtestdata.serviceOwners.ttd.org,
+    auth_orgNo: sharedtestdata.serviceOwners.ttd.orgno,
+  }
+  
+  const token = await testTokenGenerator.getToken(getTokenParameters);
+  bru.setVar("bearerToken",  token);
 }
 
 tests {
   test("Decision_" + bru.getVar("requestName"), function() {
     const data = res.getBody();
     expect(res.status).to.equal(200);
-    expect(data.response[0]).to.have.property('decision', "Permit");
+    expect(data.response[0]).to.have.property('decision', "NotApplicable");
   });
 }
