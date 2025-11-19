@@ -125,6 +125,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.PEP.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Host.Pipeline", "src\libs\Altinn.Authorization.Host\src\Altinn.Authorization.Host.Pipeline\Altinn.Authorization.Host.Pipeline.csproj", "{08D78C9D-2119-4D6C-B67F-C66BA8CDA3DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Altinn.Authorization.Scopes", "src\pkgs\Altinn.Authorization.PEP\src\Altinn.Authorization.Scopes\Altinn.Authorization.Scopes.csproj", "{76376A36-B395-4630-BEBF-34232C780718}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -531,6 +533,18 @@ Global
 		{08D78C9D-2119-4D6C-B67F-C66BA8CDA3DF}.Release|x64.Build.0 = Release|Any CPU
 		{08D78C9D-2119-4D6C-B67F-C66BA8CDA3DF}.Release|x86.ActiveCfg = Release|Any CPU
 		{08D78C9D-2119-4D6C-B67F-C66BA8CDA3DF}.Release|x86.Build.0 = Release|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Debug|x64.Build.0 = Debug|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Debug|x86.Build.0 = Debug|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Release|x64.ActiveCfg = Release|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Release|x64.Build.0 = Release|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Release|x86.ActiveCfg = Release|Any CPU
+		{76376A36-B395-4630-BEBF-34232C780718}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -593,5 +607,6 @@ Global
 		{4394C180-4B59-8FDB-0CD6-8DBF948B6A40} = {30FCD9B0-2F95-4F39-30BD-7D7607D03CA2}
 		{F25EF403-7C8A-44F3-813F-F6F7794B64B8} = {4394C180-4B59-8FDB-0CD6-8DBF948B6A40}
 		{08D78C9D-2119-4D6C-B67F-C66BA8CDA3DF} = {601907BC-5B37-6A9A-B6C8-6CFB12442689}
+		{76376A36-B395-4630-BEBF-34232C780718} = {5DAA5297-C475-220D-B4C1-09A154D0D9BB}
 	EndGlobalSection
 EndGlobal

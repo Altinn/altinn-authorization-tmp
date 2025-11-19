@@ -1,4 +1,4 @@
-using Altinn.Common.PEP.Authorization;
+﻿using Altinn.Common.PEP.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -20,7 +20,6 @@ public static class ServiceCollectionExtensions
     {
         services.TryAddScoped<IAuthorizationHandler, ClaimAccessHandler>();
         services.TryAddScoped<IAuthorizationHandler, ResourceAccessHandler>();
-        services.TryAddScoped<IAuthorizationHandler, ScopeAccessHandler>();
         return services;
     }
 }
