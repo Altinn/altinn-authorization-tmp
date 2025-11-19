@@ -1,9 +1,11 @@
-﻿using Altinn.AccessMgmt.Core.Services.Contracts;
+﻿using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 
@@ -96,22 +98,23 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
     /// <inheritdoc />
     public async Task<IEnumerable<PackagePermissionDto>> GetPackagesFromOthers(
         Guid toId,
-        Guid? fromId = null,
+        IEnumerable<Guid>? fromIds = null,
         IEnumerable<Guid>? packageIds = null,
+        AuthorizedPartiesFilters filters = null,
         CancellationToken ct = default)
     {
         var connections = await connectionQuery.GetConnectionsAsync(
         new ConnectionQueryFilter()
         {
             ToIds = [toId],
-            FromIds = fromId.HasValue ? new[] { fromId.Value } : null,
+            FromIds = fromIds != null ? fromIds.ToList() : null,
             PackageIds = packageIds != null ? packageIds.ToList() : null,
             EnrichEntities = true,
             IncludeSubConnections = true,
-            IncludeKeyRole = true,
+            IncludeKeyRole = filters?.IncludeKeyRoleConnections ?? true,
             IncludeMainUnitConnections = true,
             IncludeDelegation = true,
-            IncludePackages = true,
+            IncludePackages = filters?.IncludeAccessPackages ?? false,
             IncludeResource = false,
             EnrichPackageResources = false,
             ExcludeDeleted = false
@@ -120,6 +123,32 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
         ct);
 
         return DtoMapper.ConvertPackages(connections);
+    }
+
+    /// <inheritdoc />
+    public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthers(
+        Guid toId,
+        AuthorizedPartiesFilters filters = null,
+        CancellationToken ct = default)
+    {
+        return await connectionQuery.GetConnectionsAsync(
+        new ConnectionQueryFilter()
+        {
+            ToIds = [toId],
+            FromIds = filters?.PartyFilter?.Keys.ToList(),
+            PackageIds = null,
+            EnrichEntities = true,
+            IncludeSubConnections = true,
+            IncludeKeyRole = filters?.IncludeKeyRoleConnections ?? true,
+            IncludeMainUnitConnections = true,
+            IncludeDelegation = true,
+            IncludePackages = filters?.IncludeAccessPackages ?? false,
+            IncludeResource = false,
+            EnrichPackageResources = false,
+            ExcludeDeleted = false
+        },
+        ConnectionQueryDirection.FromOthers,
+        ct);
     }
 
     public async Task<Dictionary<string, Resource>> GetResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
@@ -149,35 +178,6 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
 
     public async Task<Dictionary<Guid, IEnumerable<PackageResource>>> GetPackageResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
     {
-        /*
-        var options = new AuditValues(SystemEntityConstants.ResourceRegistryImportSystem);
-        using var scope = _serviceProvider.CreateEFScope(options);
-        var dbContext = scope.ServiceProvider.GetService<AppDbContext>();
-        var adminPackageResource = new PackageResource
-        {
-            PackageId = Guid.Parse("0195efb8-7c80-7a95-ad36-900c3d8ad300"),
-            ResourceId = Guid.Parse("019a7eac-c384-73eb-b8ac-4209c0c43c38"),
-            ////Audit_ValidFrom = DateTime.UtcNow,
-            ////Audit_ChangedBy = Guid.Parse("14fd92db-c124-4208-ba62-293cbabff2ad"),
-            ////Audit_ChangedBySystem = Guid.Parse("14fd92db-c124-4208-ba62-293cbabff2ad"),
-            ////Audit_ChangeOperation = "019a7eac-bd7b-7a00-975a-c85e85ca342d"
-        };
-
-        var HAdminPackageResource = new PackageResource
-        {
-            PackageId = Guid.Parse("0195efb8-7c80-7e16-ab0c-36dc8ab1a29d"),
-            ResourceId = Guid.Parse("019a7eac-c384-73eb-b8ac-4209c0c43c38"),
-            ////Audit_ValidFrom = DateTime.UtcNow,
-            ////Audit_ChangedBy = Guid.Parse("14fd92db-c124-4208-ba62-293cbabff2ad"),
-            ////Audit_ChangedBySystem = Guid.Parse("14fd92db-c124-4208-ba62-293cbabff2ad"),
-            ////Audit_ChangeOperation = "019a7eac-bd7b-7a00-975a-c85e85ca342d"
-        };
-
-        dbContext.PackageResources.Add(adminPackageResource);
-        dbContext.PackageResources.Add(HAdminPackageResource);
-        await dbContext.SaveChangesAsync(ct);
-        */
-
         var packageResources = await db.PackageResources
             .AsNoTracking()
             .Include(pr => pr.Resource)

@@ -181,6 +181,12 @@ public class AuthorizedPartiesService : IAuthorizedPartiesService
         return parties.Value.ToList();
     }
 
+    /// <inheritdoc/>
+    public Task<IEnumerable<Guid>> GetPartyFilterUuids(IEnumerable<BaseAttribute> partyAttributes, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task AddInstanceDelegations(List<DelegationChange> delegations, int subjectUserId, List<int> subjectPartyIds, CancellationToken cancellationToken)
     {
         var toParties = new List<Party>();
