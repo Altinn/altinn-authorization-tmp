@@ -600,7 +600,7 @@ public class AuthorizedPartiesServiceEf(
             }
 
             party.Subunits = subunits;
-            if (filters.PartyFilter.ContainsKey(party.PartyUuid))
+            if (filters.PartyFilter.ContainsKey(party.PartyUuid) || party.Subunits.Count > 0)
             {
                 result.Add(party);
             }
