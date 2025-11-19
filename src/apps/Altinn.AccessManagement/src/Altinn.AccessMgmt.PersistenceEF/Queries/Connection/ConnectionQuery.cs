@@ -263,7 +263,6 @@ public class ConnectionQuery(AppDbContext db)
                 Reason = ConnectionReason.Hierarchy
             };
 
-
         var query = filter.OnlyUniqueResults
             ? a2.Union(fromChildren).Union(innehaverConnections)
             : a2.Concat(fromChildren).Concat(innehaverConnections);
