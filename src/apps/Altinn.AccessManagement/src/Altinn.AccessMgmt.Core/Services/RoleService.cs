@@ -146,13 +146,18 @@ public class RoleService: IRoleService
     /// <inheritdoc/>
     public async Task<IEnumerable<ResourceDto>> GetRoleResources(Guid id, Guid? variantId = null, bool includePackageResources = false, CancellationToken cancellationToken = default)
     {
-        var roleResources = await Db.RoleResources.AsNoTracking()
+        // Fetch resource ids for the role, then load the resources with Provider and Type.
+        var resourceIds = await Db.RoleResources.AsNoTracking()
             .Where(rr => rr.RoleId == id)
-            .Join(
-                Db.Resources,
-                rr => rr.ResourceId,
-                r => r.Id,
-                (rr, r) => DtoMapper.Convert(r))
+            .Select(rr => rr.ResourceId)
+            .ToListAsync(cancellationToken);
+
+        var roleResources = await Db.Resources.AsNoTracking()
+            .Where(r => resourceIds.Contains(r.Id))
+            .Include(r => r.Provider) // include Provider navigation
+                .ThenInclude(p => p.Type) // include Provider.Type navigation
+            .Include(r => r.Type) // include Type navigation
+            .Select(r => DtoMapper.Convert(r))
             .ToListAsync(cancellationToken);
 
         if (!includePackageResources)
@@ -160,11 +165,8 @@ public class RoleService: IRoleService
             return roleResources;
         }
 
-        var packageResources = (await GetRolePackagesQuery(id, variantId, true).ToListAsync()).SelectMany(p => p.Resources);
-
-        roleResources.Concat(packageResources);
-
-        return roleResources.DistinctBy(t => t.Id);
+        var packageResources = (await GetRolePackagesQuery(id, variantId, true).ToListAsync(cancellationToken)).SelectMany(p => p.Resources);
+        return roleResources.Concat(packageResources).DistinctBy(t => t.Id);
     }
 
     private async Task<List<PackageDto>> EnrichWithResources(List<PackageDto> packages, CancellationToken cancellationToken = default)
