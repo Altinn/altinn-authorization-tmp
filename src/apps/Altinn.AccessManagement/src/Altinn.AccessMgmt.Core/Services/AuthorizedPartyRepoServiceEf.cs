@@ -120,7 +120,7 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
             ExcludeDeleted = false
         },
         ConnectionQueryDirection.FromOthers,
-        true,
+        useNewQuery: true,
         ct);
 
         return DtoMapper.ConvertPackages(connections);
@@ -149,6 +149,7 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
             ExcludeDeleted = false
         },
         ConnectionQueryDirection.FromOthers,
+        useNewQuery: true,
         ct);
     }
 
