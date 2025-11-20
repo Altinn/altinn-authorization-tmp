@@ -165,7 +165,14 @@ public class RoleService: IRoleService
             return roleResources;
         }
 
-        var packageResources = (await GetRolePackagesQuery(id, variantId, true).ToListAsync(cancellationToken)).SelectMany(p => p.Resources);
+        var packages = await GetRolePackagesQuery(id, variantId, true).ToListAsync(cancellationToken);
+        packages = await EnrichWithResources(packages, cancellationToken);
+        var packageResources = packages.SelectMany(p => p.Resources);
+        if (packageResources == null || !packageResources.Any())
+        {
+            return roleResources;
+        }
+        
         return roleResources.Concat(packageResources).DistinctBy(t => t.Id);
     }
 
@@ -180,7 +187,11 @@ public class RoleService: IRoleService
 
         var resources = await Db.PackageResources
             .Where(pr => packageIds.Contains(pr.PackageId))
-            .Join(Db.Resources,
+            .Join(
+                Db.Resources
+                    .Include(r => r.Provider)
+                        .ThenInclude(p => p.Type)
+                    .Include(r => r.Type),
                 pr => pr.ResourceId,
                 r => r.Id,
                 (pr, r) => new { pr.PackageId, Resource = DtoMapper.Convert(r) })
