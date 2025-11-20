@@ -1,10 +1,10 @@
 meta {
-  name: POST_Enduser_Conn_AccPcks_ToOthers_SubCon
+  name: GET_Enduser_Conn_AccPcks_ToOthers
   type: http
-  seq: 7
+  seq: 4
 }
 
-post {
+get {
   url: {{baseUrl}}/accessmanagement/api/v1/enduser/connections/accesspackages?party={{fromParty}}&from={{fromParty}}&to={{toParty}}&package={{package}}
   body: json
   auth: inherit
@@ -25,7 +25,7 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_Enduser_Conn_AccPcks_ToOthers_SubCon");
+  bru.setVar("requestName", "GET_Enduser_Conn_AccPcks_ToOthers");
   
   bru.setVar("fromParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.partyUuid);
   bru.setVar("toParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid);
