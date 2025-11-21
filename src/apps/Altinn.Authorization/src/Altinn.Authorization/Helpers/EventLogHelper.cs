@@ -146,6 +146,11 @@ namespace Altinn.Platform.Authorization.Helpers
                         {
                             partyUuid = xacmlAtr.AttributeValues.First().Value;
                         }
+
+                        if (xacmlAtr.AttributeId.OriginalString.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUUIdAttribute))
+                        {
+                            partyUuid = xacmlAtr.AttributeValues.First().Value;
+                        }
                     }
                 }
             }
