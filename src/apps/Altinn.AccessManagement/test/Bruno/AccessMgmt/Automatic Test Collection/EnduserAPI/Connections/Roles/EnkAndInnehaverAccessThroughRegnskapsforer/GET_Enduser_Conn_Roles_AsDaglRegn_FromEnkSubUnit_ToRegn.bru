@@ -1,7 +1,7 @@
 meta {
-  name: GET_Enduser_Conn_Roles_AsDaglRegn_FromEnk_ToRegn
+  name: GET_Enduser_Conn_Roles_AsDaglRegn_FromEnkSubUnit_ToRegn
   type: http
-  seq: 7
+  seq: 9
 }
 
 get {
@@ -24,11 +24,11 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "GET_Enduser_Conn_Roles_AsDaglRegn_FromEnk_ToRegn");
+  bru.setVar("requestName", "GET_Enduser_Conn_Roles_AsDaglRegn_FromEnkSubUnit_ToRegn");
   
   bru.setVar("party", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
   bru.setVar("toParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-  bru.setVar("fromParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.partyUuid);
+  bru.setVar("fromParty", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.subunit.partyUuid);
   
   
   var getTokenParameters = {
@@ -56,7 +56,7 @@ tests {
   
   // Expected results
   const expectedRoles = ["A0239", "A0240", "A0241", "regnskapsforer", "rettighetshaver"];
-  const expectedFrom = testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL;
+  const expectedFrom = testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.subunit;
   const expectedTo = testdata.REGN_ULASTELIG_RETTFERDIG_TIGER;
   
   // Check that all expected roles exist
