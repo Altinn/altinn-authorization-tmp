@@ -85,16 +85,10 @@ tests {
             assertParty(expectedTo, directAssignment.to, `'to'`);
             
             const viaDaglAssignment = permissions.find(permission => permission.viaRole !== null && permission.viaRole.code === "daglig-leder");
-            assert.isDefined(viaDaglAssignment, `Permission via 'daglig-leder' of role ${roleCode} should exist`);
-            assertParty(expectedFrom, viaDaglAssignment.from, `'from'`);
-            assertParty(expectedTo, viaDaglAssignment.to, `'to'`);
-            assertParty(expectedVia, viaDaglAssignment.via, `'via'`);
+            assert.strictEqual(viaDaglAssignment, undefined, `Permission via 'daglig-leder' of role ${roleCode} should NOT exist`);
             
             const viaStyrelederAssignment = permissions.find(permission => permission.viaRole !== null && permission.viaRole.code === "styreleder");
-            assert.isDefined(viaStyrelederAssignment, `Permission via 'styreleder' of role ${roleCode} should exist`);
-            assertParty(expectedFrom, viaStyrelederAssignment.from, `'from'`);
-            assertParty(expectedTo, viaStyrelederAssignment.to, `'to'`);
-            assertParty(expectedVia, viaStyrelederAssignment.via, `'via'`);
+            assert.strictEqual(viaStyrelederAssignment, undefined, `Permission via 'styreleder' of role ${roleCode} should NOT exist`);
           } else {
             permissions.forEach(permission => {
               assertParty(expectedFrom, permission.from, `'from'`);

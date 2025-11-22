@@ -244,7 +244,9 @@ public class ConnectionQuery(AppDbContext db)
             join innehaverConnection in db.Assignments on reviRegnConnection.FromId equals innehaverConnection.FromId
             join innehaver in db.Entities on innehaverConnection.ToId equals innehaver.Id
             join enk in db.Entities on innehaverConnection.FromId equals enk.Id
-            where (reviRegnConnection.RoleId == RoleConstants.Accountant.Id || reviRegnConnection.RoleId == RoleConstants.Auditor.Id)
+            where (reviRegnConnection.RoleId == RoleConstants.Accountant.Id || reviRegnConnection.RoleId == RoleConstants.Auditor.Id
+                || reviRegnConnection.RoleId == RoleConstants.AccountantWithoutSigningRights.Id || reviRegnConnection.RoleId == RoleConstants.AccountantWithSigningRights.Id || reviRegnConnection.RoleId == RoleConstants.AccountantSalary.Id
+                || reviRegnConnection.RoleId == RoleConstants.AssistantAuditor.Id || reviRegnConnection.RoleId == RoleConstants.A0237.Id)
                && innehaverConnection.RoleId == RoleConstants.Innehaver.Id
                && innehaver.DateOfDeath == null
                && (!enk.IsDeleted || (enk.DeletedAt != null && enk.DeletedAt.Value.AddYears(2) < DateTime.UtcNow))
@@ -630,7 +632,7 @@ public class ConnectionQuery(AppDbContext db)
         Add KeyRoles on allAssignments
         */
         var keyRoleAssignments =
-            from all in allAssignments
+            from all in allAssignments.Union(roleMapAssignments) // Must include RoleMap assignments
             join keyRoleAssignment in db.Assignments on all.ToId equals keyRoleAssignment.FromId
             join role in db.Roles on keyRoleAssignment.RoleId equals role.Id
             where role.IsKeyRole

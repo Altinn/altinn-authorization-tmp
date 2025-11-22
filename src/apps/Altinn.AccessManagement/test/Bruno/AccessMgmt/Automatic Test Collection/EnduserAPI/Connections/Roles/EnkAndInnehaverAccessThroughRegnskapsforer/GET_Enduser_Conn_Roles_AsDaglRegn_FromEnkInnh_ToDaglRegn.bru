@@ -55,7 +55,7 @@ tests {
   });
   
   // Expected results
-  const expectedRoles = ["A0239", "A0240", "A0241", "regnskapsforer", "rettighetshaver"];
+  const expectedRoles = ["A0239", "A0240", "A0241", "regnskapsforer"];
   const expectedFrom = testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.innehaver;
   const expectedTo = testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder;
   const expectedVia = testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL;
@@ -78,31 +78,11 @@ tests {
           assert.isArray(permissions, `Permissions should be an array for role ${roleCode}`);
           assert.isNotEmpty(permissions, `Permissions should not be empty for role ${roleCode}`);
           
-          if (roleCode == "rettighetshaver")
-          {
-            const directAssignment = permissions.find(permission => permission.via === null);
-            assert.isDefined(directAssignment, `Direct permission of role ${roleCode} should exist`);
-            assertParty(expectedFrom, directAssignment.from, `'from'`);
-            assertParty(expectedTo, directAssignment.to, `'to'`);
-            
-            const viaDaglAssignment = permissions.find(permission => permission.viaRole !== null && permission.viaRole.code === "daglig-leder");
-            assert.isDefined(viaDaglAssignment, `Permission via 'daglig-leder' of role ${roleCode} should exist`);
-            assertParty(expectedFrom, viaDaglAssignment.from, `'from'`);
-            assertParty(expectedTo, viaDaglAssignment.to, `'to'`);
-            assertParty(expectedVia, viaDaglAssignment.via, `'via'`);
-            
-            const viaStyrelederAssignment = permissions.find(permission => permission.viaRole !== null && permission.viaRole.code === "styreleder");
-            assert.isDefined(viaStyrelederAssignment, `Permission via 'styreleder' of role ${roleCode} should exist`);
-            assertParty(expectedFrom, viaStyrelederAssignment.from, `'from'`);
-            assertParty(expectedTo, viaStyrelederAssignment.to, `'to'`);
-            assertParty(expectedVia, viaStyrelederAssignment.via, `'via'`);
-          } else {
-            permissions.forEach(permission => {
-              assertParty(expectedFrom, permission.from, `'from'`);
-              assertParty(expectedTo, permission.to, `'to'`);
-              assertParty(expectedVia, permission.via, `'via'`);
-            });
-          }
+          permissions.forEach(permission => {
+            assertParty(expectedFrom, permission.from, `'from'`);
+            assertParty(expectedTo, permission.to, `'to'`);
+            assertParty(expectedVia, permission.via, `'via'`);
+          });
       });
   });
   
