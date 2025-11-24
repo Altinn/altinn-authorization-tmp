@@ -12,18 +12,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services
 {
-    public class AltinnAdminRoleSyncService : BaseSyncService, IAltinnAdminRoleSyncService
+    public class PrivateTaxAffairRoleSyncService : BaseSyncService, IPrivateTaxAffairRoleSyncService
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AltinnAdminRoleSyncService"/> class.
+        /// Initializes a new instance of the <see cref="PrivateTaxAffairRoleSyncService"/> class.
         /// </summary>
         /// <param name="role">The role service used for streaming roles.</param>
         /// <param name="serviceProvider">object used for creating a scope and fetching a scoped service (IDelegationService) based on this scope</param>
         /// <param name="logger">The logger instance for logging information and errors.</param>
-        public AltinnAdminRoleSyncService(
+        public PrivateTaxAffairRoleSyncService(
             IAltinnSblBridge role,
             IServiceProvider serviceProvider,
-            ILogger<AltinnAdminRoleSyncService> logger
+            ILogger<PrivateTaxAffairRoleSyncService> logger
         )
         {
             _role = role;
@@ -32,13 +32,13 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         }
 
         private readonly IAltinnSblBridge _role;
-        private readonly ILogger<AltinnAdminRoleSyncService> _logger;
+        private readonly ILogger<PrivateTaxAffairRoleSyncService> _logger;
         private readonly IServiceProvider _serviceProivider;
 
-        public async Task SyncAdminRoles(ILease lease, CancellationToken cancellationToken)
+        public async Task SyncPrivateTaxAffairRoles(ILease lease, CancellationToken cancellationToken)
         {
-            var leaseData = await lease.Get<AltinnAdminRoleLease>(cancellationToken);
-            var adminDelegations = await _role.StreamRoles("11", leaseData.AltinnAdminRoleStreamNextPageLink, cancellationToken);
+            var leaseData = await lease.Get<PrivateTaxAffairRoleLease>(cancellationToken);
+            var adminDelegations = await _role.StreamRoles("13", leaseData.PrivateTaxAffairRoleStreamNextPageLink, cancellationToken);
 
             await foreach (var page in adminDelegations)
             {
@@ -76,7 +76,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             batchId.ToString(),
                             item.DelegationChangeDateTime?.ToUniversalTime() ?? DateTime.UtcNow);
 
-                        List<string> packageUrns = GetAdminPackageFromRoleTypeCode(item.RoleTypeCode, cancellationToken);
+                        List<string> packageUrns = GetPrivateTaxAffairPackageFromRoleTypeCode(item.RoleTypeCode, cancellationToken);
 
                         if (item.DelegationAction == DelegationAction.Revoke)
                         {
@@ -110,10 +110,20 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         }
                         else
                         {
+                            if (!item.DelegationChangeDateTime.HasValue || item.DelegationChangeDateTime.Value < new DateTimeOffset(2021, 3, 1, 0, 0, 0, new TimeSpan(1, 0, 0)))
+                            {
+                                _logger.LogInformation(
+                                    "Skipping privatetaxaffair delegation FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {packageUrn} since it is before the cut-off date",
+                                    item.FromPartyUuid,
+                                    item.ToUserPartyUuid,
+                                    string.Join(", ", packageUrns));
+                                continue;
+                            }
+                            
                             if (item.ToUserPartyUuid == null)
                             {
                                 _logger.LogWarning(
-                                    "The delegation is missing ToUserPartyUuid so it is not a valid admin delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
+                                    "The delegation is missing ToUserPartyUuid so it is not a valid privatetaxaffair delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
                                     item.FromPartyUuid,
                                     item.ToUserPartyUuid,
                                     string.Join(", ", packageUrns));
@@ -143,31 +153,14 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             }
         }
 
-        private List<string> GetAdminPackageFromRoleTypeCode(string roleTypeCode, CancellationToken cancellationToken = default)
+        private List<string> GetPrivateTaxAffairPackageFromRoleTypeCode(string roleTypeCode, CancellationToken cancellationToken = default)
         {
             List<string> packages = new List<string>();
 
             switch (roleTypeCode.ToUpper())
             {
-                case "ADMAI":
+                case "A0282":
                     packages.Add("urn:altinn:accesspackage:tilgangsstyrer");
-                    break;
-                case "APIADM":
-                    packages.Add("urn:altinn:accesspackage:maskinporten-administrator");
-                    packages.Add("urn:altinn:accesspackage:maskinporten-scopes");
-                    break;
-                case "APIADMNUF":
-                    packages.Add("urn:altinn:accesspackage:maskinporten-administrator");
-                    packages.Add("urn:altinn:accesspackage:maskinporten-scopes-nuf");
-                    break;
-                case "BOADM":
-                    packages.Add("urn:altinn:accesspackage:konkursbo-tilgangsstyrer");
-                    break;
-                case "HADM":
-                    packages.Add("urn:altinn:accesspackage:hovedadministrator");
-                    break;
-                case "KLADM":
-                    packages.Add("urn:altinn:accesspackage:klientadministrator");
                     break;
             }
 
