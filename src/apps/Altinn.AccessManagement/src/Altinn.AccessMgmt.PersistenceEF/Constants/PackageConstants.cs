@@ -1512,7 +1512,7 @@ public static class PackageConstants
             KeyValuePair.Create("Description", "This authorization provides access to services for the operation of schools that the school owner is responsible for. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Skuleeigар"),
+            KeyValuePair.Create("Name", "Skuleeigаr"),
             KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester innan drift av skule som skuleeigaren er ansvarleg for. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
