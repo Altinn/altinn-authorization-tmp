@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
@@ -68,7 +68,7 @@ public class AccessManagementWrapper : IAccessManagementWrapper
     /// <inheritdoc/>
     public async Task<IEnumerable<AuthorizedPartyDto>> GetAuthorizedParties(CancellationToken cancellationToken = default)
     {
-        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(new Uri(_client.Settings.Value.ApiAccessManagementEndpoint), "authorizedparties?includeAltinn2=true"));
+        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(new Uri(_client.Settings.Value.ApiAccessManagementEndpoint), "authorizedparties?includeAltinn2=true&includeAltinn3=true&includeRoles=false&includeAccessPackages=false&includeResources=false&includeInstances=false"));
         request.Headers.Add("Authorization", "Bearer " + JwtTokenUtil.GetTokenFromContext(_httpContextAccessor.HttpContext, _generalSettings.RuntimeCookieName));
 
         var response = await _client.Client.SendAsync(request, cancellationToken);
@@ -80,6 +80,23 @@ public class AccessManagementWrapper : IAccessManagementWrapper
 
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
         throw new HttpRequestException(content == string.Empty ? $"AuthorizedParties received status code {response.StatusCode}" : content);
+    }
+
+    /// <inheritdoc/>
+    public async Task<AuthorizedPartyDto> GetAuthorizedParty(int partyId, CancellationToken cancellationToken = default)
+    {
+        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(new Uri(_client.Settings.Value.ApiAccessManagementEndpoint), $"authorizedparties/{partyId}?includeAltinn2=true&includeAltinn3=true&includeRoles=false&includeAccessPackages=false&includeResources=false&includeInstances=false"));
+        request.Headers.Add("Authorization", "Bearer " + JwtTokenUtil.GetTokenFromContext(_httpContextAccessor.HttpContext, _generalSettings.RuntimeCookieName));
+
+        var response = await _client.Client.SendAsync(request, cancellationToken);
+
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<AuthorizedPartyDto>(_serializerOptions, cancellationToken);
+        }
+
+        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+        throw new HttpRequestException(content == string.Empty ? $"AuthorizedParty received status code {response.StatusCode}" : content);
     }
 
     /// <inheritdoc/>

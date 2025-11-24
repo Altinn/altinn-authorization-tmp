@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Altinn.Authorization.Enums;
 using Altinn.Authorization.Models;
 using Altinn.Platform.Authenticaiton.Extensions;
@@ -160,5 +160,10 @@ public class AccessManagementWrapperMock : IAccessManagementWrapper
     private static string GetAuthorizedPartiesPath(int userId)
     {
         return Path.Combine("Data", "AccessManagement", "AuthorizedParties", $"{userId}.json");
+    }
+
+    public Task<AuthorizedPartyDto> GetAuthorizedParty(int partyId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }
