@@ -103,7 +103,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Jordbruk"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir tilgang til tenester knytte til jordbruk. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir tilgang til tenester knytt til jordbruk. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -136,7 +136,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Dyrehald"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir tilgang til tenester knytte til dyrehald. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir tilgang til tenester knytt til dyrehald. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -165,11 +165,11 @@ public static class PackageConstants
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Aquaculture"),
-            KeyValuePair.Create("Description", "This access package provides authorizations for services related to aquaculture and fish farming. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
+            KeyValuePair.Create("Description", "This access package provides provides access to services related to aquaculture and fish farming. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that this access package provides.")
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Akvakultur"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til akvakultur og fiskeoppdrett. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til akvakultur og fiskeoppdrett. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -202,7 +202,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Fiske"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til fiske. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til fiske. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -235,7 +235,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Skogbruk"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til skogbruk. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til skogbruk. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -268,7 +268,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Jakt og viltstell"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til jakt og viltstell. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til jakt og viltstell. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -301,7 +301,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Reindrift"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir tilgang til tenester knytte til reindrift. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir tilgang til tenester knytt til reindrift. Ved regelverksendringer eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -618,7 +618,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Attestar"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til attestering av verksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til attestering av verksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -651,7 +651,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Dokumentbasert tilsyn"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til dokumentbaserte tilsyn. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til dokumentbaserte tilsyn. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -684,7 +684,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Eksplisitt tenestedelegering"),
-            KeyValuePair.Create("Description", "Denne fullmakta er ikkje delegerbar, og er ikkje knytt til nokon roller i Einingsregisteret. Tilgang til tenester knytte til denne pakken kan bli gitt av hovudadministrator gjennom enkeltrettigheitsdelegering.")
+            KeyValuePair.Create("Description", "Denne fullmakta er ikkje delegerbar, og er ikkje knytt til nokon roller i Einingsregisteret. Tilgang til tenester knytt til denne pakken kan bli gitt av hovudadministrator gjennom enkeltrettigheitsdelegering.")
         ),
     };
 
@@ -717,7 +717,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Generelle helfotenester"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til ordinære tenester knytte til verksemda sin dialog med Helfo der brukar kan få tilgang til personopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til ordinære tenester knytt til verksemda sin dialog med Helfo der brukar kan få tilgang til personopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -750,7 +750,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Tilskot, støtte og erstatning"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til å søkje tilskot, støtte og erstatning. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til å søkje tilskot, støtte og erstatning. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -783,7 +783,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Helfotenester med personopplysningar av særleg kategori"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til verksemda sin dialog med Helfo der brukar kan få tilgang til personopplysningar av særleg kategori. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til verksemda sin dialog med Helfo der brukar kan få tilgang til personopplysningar av særleg kategori. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -816,7 +816,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Infrastruktur"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til verksemda sin infrastruktur. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til verksemda sin infrastruktur. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -882,7 +882,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Patent, varemerke og design"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til patent, varemerke og design. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til patent, varemerke og design. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -915,7 +915,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Politi og domstol"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til verksemda sin dialog om juridiske forhold med politi og justismyndigheiter. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til verksemda sin dialog om juridiske forhold med politi og justismyndigheiter. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -981,7 +981,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Forsking"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til forsking. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til forsking. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1014,7 +1014,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Aksjar og eigarforhold"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til aksjar og eigarforhold. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til aksjar og eigarforhold. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1047,7 +1047,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Starte, endre og avvikle verksemd"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til å starte, endre og avvikle ei verksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til å starte, endre og avvikle ei verksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1117,7 +1117,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "SFO-leiar"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til førskule og fritidsordning. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til førskule og fritidsordning. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1150,7 +1150,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Godkjenning av utdanningsverksemd"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til å søkje om godkjenning av utdanningsverksemder. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til å søkje om godkjenning av utdanningsverksemder. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1183,7 +1183,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Statsforvaltar - barnehage"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester for statsforvaltar knytte til barnehagsektoren.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester for statsforvaltar knytt til barnehagsektoren.")
         ),
     };
 
@@ -1216,7 +1216,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Statsforvaltar - skule og opplæring"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester for statsforvaltar knytte til skule- og opplæringssektoren, medrekna fagopplæring og vaksenopplæring.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester for statsforvaltar knytt til skule- og opplæringssektoren, medrekna fagopplæring og vaksenopplæring.")
         ),
     };
 
@@ -1249,7 +1249,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Høgare utdanning og høgare yrkesfagleg utdanning"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til høgare utdanning og høgare yrkesfagleg utdanning. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til høgare utdanning og høgare yrkesfagleg utdanning. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1447,7 +1447,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Godkjenning av personell"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til å søkje om godkjenning til enkeltpersonar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til å søkje om godkjenning til enkeltpersonar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1550,7 +1550,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Overnatting"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til overnattingsverksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til overnattingsverksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1583,7 +1583,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Servering"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til serveringsverksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til serveringsverksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1616,7 +1616,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Varehandel"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til varehandel, inkludert eingongs- og detaljhandel, import og eksport, og sal og reparasjon av motorvogner. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til varehandel, inkludert eingongs- og detaljhandel, import og eksport, og sal og reparasjon av motorvogner. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1686,7 +1686,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Kjøp og sal av eigedom"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til kjøp og sal av eigedom. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til kjøp og sal av eigedom. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1785,7 +1785,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Tinglysing eigedom"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til elektronisk tinglysing av rettar i eigedom.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til elektronisk tinglysing av rettar i eigedom.")
         ),
     };
 
@@ -1818,7 +1818,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Eigedomsmeklar"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til omsetning og drift av fast eigedom på oppdrag, som eigedomsmekling og eigedomsforvaltning. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til omsetning og drift av fast eigedom på oppdrag, som eigedomsmekling og eigedomsforvaltning. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1851,7 +1851,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Utleige av eigedom"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til utleige av eigedom. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til utleige av eigedom. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1921,7 +1921,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Kunst og underhaldning"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til kunstnarisk og underhaldningsaktivitetar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til kunstnarisk og underhaldningsaktivitetar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1954,7 +1954,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Fornøyingar"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til drift av fornøyingsetablissementer. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til drift av fornøyingsetablissementer. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -1987,7 +1987,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bibliotek, museum, arkiv og anna kultur"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til bibliotek, museum, arkiv, og anna kultur som botaniske og zoologiske hagar, og drift av naturfenomen av historisk, kulturell eller undervisningsmessig interesse (t.d. verdskulturarv mv.). Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til bibliotek, museum, arkiv, og anna kultur som botaniske og zoologiske hagar, og drift av naturfenomen av historisk, kulturell eller undervisningsmessig interesse (t.d. verdskulturarv mv.). Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2020,7 +2020,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Lotteri og spel"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til lotteri og spel, som til dømes kasinoar, bingohaller og videospelhaller samt spelverksemd som til dømes lotteri og veddemål som blir inngått utanfor banen. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til lotteri og spel, som til dømes kasinoar, bingohaller og videospelhaller samt spelverksemd som til dømes lotteri og veddemål som blir inngått utanfor banen. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2053,7 +2053,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Politikk"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til aktivitetar i samband med politisk arbeid. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til aktivitetar i samband med politisk arbeid. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2086,7 +2086,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Sport og fritid"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til sports- og fritidsaktivitetar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til sports- og fritidsaktivitetar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2123,7 +2123,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Miljørydding - reinsing og liknande verksemd"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til miljørydding, -reinsing og liknande verksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til miljørydding, -reinsing og liknande verksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2156,7 +2156,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Elektrisitet - produsere, overføre og distribuere"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til elektrisitet: produsere, overføre og distribuere. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til elektrisitet: produsere, overføre og distribuere. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2189,7 +2189,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Utvinning av råolje, naturgass og kol"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til utvinning av råolje, naturgass og kol. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til utvinning av råolje, naturgass og kol. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2222,7 +2222,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Samle opp og behandle avløpsvatn"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til samle opp og behandle avløpsvatn. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til samle opp og behandle avløpsvatn. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2255,7 +2255,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Damp- og varmvatn"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til damp- og varmvatn. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til damp- og varmvatn. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2288,7 +2288,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Avfall - samle inn, behandle, bruke og gjenvinne"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til avfall: samle inn, behandle, bruke og gjenvinne. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til avfall: samle inn, behandle, bruke og gjenvinne. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2321,7 +2321,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Vatn - ta ut frå kjelde, reinske og distribuere"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til vatn: ta ut frå kjelde, reinske og distribuere. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til vatn: ta ut frå kjelde, reinske og distribuere. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2358,7 +2358,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Ulykke"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til ulykke. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til ulykke. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2391,7 +2391,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Miljørydding, miljøreinsing og liknande"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til miljørydding, miljøreinsing og liknande. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til miljørydding, miljøreinsing og liknande. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2424,7 +2424,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Yrkesskade"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til yrkesskade. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til yrkesskade. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2457,7 +2457,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Tryggleik og internkontroll"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til tryggleik og internkontroll. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til tryggleik og internkontroll. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2490,7 +2490,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Berekraft"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til tiltak og rapportering på berekraft. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til tiltak og rapportering på berekraft. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2523,7 +2523,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Renovasjon"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til renovasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til renovasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2560,7 +2560,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Pleie- og omsorgstenester i institusjon"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til pleie og omsorgstilbod i institusjon. Dette er tenester som tilbyr institusjonsopphald kombinert med sjukepleie, tilsyn eller anna form for pleie alt etter kva som blir kravd av bebuarane. Denne fullmakta kan gi brukar tilgang til helseopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til pleie og omsorgstilbod i institusjon. Dette er tenester som tilbyr institusjonsopphald kombinert med sjukepleie, tilsyn eller anna form for pleie alt etter kva som blir kravd av bebuarane. Denne fullmakta kan gi brukar tilgang til helseopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2593,7 +2593,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Barnevern"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til barnevern. Denne fullmakta kan gi brukar tilgang til helseopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir. OBS! Ver merksam på at tilgangspakken inneheld fullmakter som kan ha sensitiv karakter. Vurder om fullmaktene skal bli gitt som enkeltrettar.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til barnevern. Denne fullmakta kan gi brukar tilgang til helseopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir. OBS! Ver merksam på at tilgangspakken inneheld fullmakter som kan ha sensitiv karakter. Vurder om fullmaktene skal bli gitt som enkeltrettar.")
         ),
     };
 
@@ -2626,7 +2626,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Familievern"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til familievern. Denne fullmakta kan gi brukar tilgang til helseopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir. OBS! Ver merksam på at tilgangspakken inneheld fullmakter som kan ha sensitiv karakter. Vurder om fullmaktene skal bli gitt som enkeltrettar.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til familievern. Denne fullmakta kan gi brukar tilgang til helseopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir. OBS! Ver merksam på at tilgangspakken inneheld fullmakter som kan ha sensitiv karakter. Vurder om fullmaktene skal bli gitt som enkeltrettar.")
         ),
     };
 
@@ -2659,7 +2659,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Helsetenester"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til sjukehus, lege, tannlege og heimsjukepleie, fysioterapi, ambulanse og liknande. Denne fullmakta kan gi brukar tilgang til personopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til sjukehus, lege, tannlege og heimsjukepleie, fysioterapi, ambulanse og liknande. Denne fullmakta kan gi brukar tilgang til personopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2692,7 +2692,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Helsetenester med personopplysningar av særleg kategori"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til sjukehus, lege, tannlege og heimsjukepleie, fysioterapi, ambulanse og liknande, som er av særleg kategori. Denne fullmakta kan gi brukar tilgang til sensitive personopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til sjukehus, lege, tannlege og heimsjukepleie, fysioterapi, ambulanse og liknande, som er av særleg kategori. Denne fullmakta kan gi brukar tilgang til sensitive personopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2725,7 +2725,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Kommuneoverlege"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til sjukehus, lege, tannlege og heimsjukepleie, fysioterapi, ambulanse og liknande, som er relevant for kommunelegar. Denne fullmakta kan gi brukar tilgang til personopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til sjukehus, lege, tannlege og heimsjukepleie, fysioterapi, ambulanse og liknande, som er relevant for kommunelegar. Denne fullmakta kan gi brukar tilgang til personopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2758,7 +2758,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Sosiale omsorgstenester utan butilbod og flyktningemottak"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til sosiale omsorgstenester utan butilbod for eldre, funksjonshemma og rusmisbrukarar samt flyktningemottak, og tenester relatert til arbeidstrening og andre sosiale tenester, til dømes i regi av velferdsorganisasjonar. Denne fullmakta kan gi brukar tilgang til helseopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til sosiale omsorgstenester utan butilbod for eldre, funksjonshemma og rusmisbrukarar samt flyktningemottak, og tenester relatert til arbeidstrening og andre sosiale tenester, til dømes i regi av velferdsorganisasjonar. Denne fullmakta kan gi brukar tilgang til helseopplysningar om personar det blir rapportert om. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2795,7 +2795,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Næringsmiddel, drikkevarar og tobakk"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med næringsmiddel, drikkevarar og tobakk. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med næringsmiddel, drikkevarar og tobakk. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2828,7 +2828,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Møblar og anna industri"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med møblar og anna industri. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med møblar og anna industri. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2861,7 +2861,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Trelast, trevarar og papirvarar"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med trelast, trevarar og papirvarar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med trelast, trevarar og papirvarar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2894,7 +2894,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Metallvarar, elektrisk utstyr og maskiner"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med metallvarar, elektrisk utstyr og maskiner. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med metallvarar, elektrisk utstyr og maskiner. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2927,7 +2927,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Metallar og mineral"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med metallar og mineral. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med metallar og mineral. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2960,7 +2960,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bergverk"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med bergverk og tilhøyrande tenester til bergverksdrift og utvinning. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med bergverk og tilhøyrande tenester til bergverksdrift og utvinning. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -2993,7 +2993,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Oljeraffinering, kjemisk og farmasøytisk industri"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med oljeraffinering, kjemisk og farmasøytisk industri. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med oljeraffinering, kjemisk og farmasøytisk industri. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3026,7 +3026,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Trykkeri og reproduksjon av innspelte opptak"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med trykkeri og reproduksjon av innspelte opptak. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med trykkeri og reproduksjon av innspelte opptak. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3059,7 +3059,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Reparasjon og installasjon av maskiner og utstyr"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med reparasjon og installasjon av maskiner og utstyr. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med reparasjon og installasjon av maskiner og utstyr. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3092,7 +3092,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Gummi, plast og ikkje-metallhaldige mineralprodukt"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med gummi, plast og ikkje-metallhaldige mineralprodukt. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med gummi, plast og ikkje-metallhaldige mineralprodukt. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3125,7 +3125,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Verft og andre transportmiddel"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med verft og andre transportmiddel. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med verft og andre transportmiddel. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3158,7 +3158,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Tekstilar, klede og lærvarar"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til industri i samband med tekstilar, klede og lærvarar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til industri i samband med tekstilar, klede og lærvarar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3537,7 +3537,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Finansiering og forsikring"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til finansiering og forsikring. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til finansiering og forsikring. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3570,7 +3570,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Informasjon og kommunikasjon"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til informasjon og kommunikasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til informasjon og kommunikasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3603,7 +3603,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Anna tenesteyting"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til anna tenesteyting som til dømes organisasjonar og foreningar, reparasjon av datamaskiner og varer til personleg bruk og hushaldningsbruk og ei rekkje personlege tenester som ikkje er nemnt anna stad. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til anna tenesteyting som til dømes organisasjonar og foreningar, reparasjon av datamaskiner og varer til personleg bruk og hushaldningsbruk og ei rekkje personlege tenester som ikkje er nemnt anna stad. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3636,7 +3636,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Post- og telekommunikasjon"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til post og telekommunikasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til post og telekommunikasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3706,7 +3706,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Tilsetjingsforhold"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til tilsetjingsforhold. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til tilsetjingsforhold. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3739,7 +3739,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Permisjon"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til permisjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til permisjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3772,7 +3772,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Pensjon"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til pensjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til pensjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3805,7 +3805,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Lønn"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til lønn og honorar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til lønn og honorar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3838,7 +3838,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Lønn med personopplysningar av særleg kategori"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til lønn og refusjon som inkluderer personopplysningar av særleg kategori. Denne fullmakta kan gi brukar tilgang til sensitive personopplysningar om tilsette, til dømes knytt til informasjon om tilsettes sjukefråvær, foreldrepengar, pleiepengar eller liknande opplysningar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til lønn og refusjon som inkluderer personopplysningar av særleg kategori. Denne fullmakta kan gi brukar tilgang til sensitive personopplysningar om tilsette, til dømes knytt til informasjon om tilsettes sjukefråvær, foreldrepengar, pleiepengar eller liknande opplysningar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3871,7 +3871,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Sjukefråvær"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til sjukefråvær. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til sjukefråvær. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3908,7 +3908,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Rekneskap og økonomirapportering"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til rekneskap og økonomirapportering som ikkje høyrer til skatt og meirverdiavgift. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til rekneskap og økonomirapportering som ikkje høyrer til skatt og meirverdiavgift. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -3974,7 +3974,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Skatt næring"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til skatt for næringar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til skatt for næringar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4007,7 +4007,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Krav, betalingar og utlegg"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til krav og utlegg. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til krav og utlegg. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4040,7 +4040,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Kreditt- og oppgjerordningar"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til kreditt- og oppgjerordningar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til kreditt- og oppgjerordningar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4073,7 +4073,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Toll"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til toll og fortolling. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til toll og fortolling. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4106,7 +4106,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Motorvognavgifter"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til motorvognavgifter. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til motorvognavgifter. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4139,7 +4139,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Særavgifter"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til særavgifter. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til særavgifter. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4172,7 +4172,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Skattegrunnlag"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til innhenting av skattegrunnlag. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til innhenting av skattegrunnlag. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4205,7 +4205,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Meirverdiavgift"),
-            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til meirverdiavgift. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytt til meirverdiavgift. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4242,7 +4242,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Lufttransport"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til luftfartøy og romfartøy. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til luftfartøy og romfartøy. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4275,7 +4275,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Sjøfart"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til skipsarbeidstakarar og fartøy til sjøs. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til skipsarbeidstakarar og fartøy til sjøs. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4308,7 +4308,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Transport i røyr"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til transport i røyr. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til transport i røyr. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4341,7 +4341,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Jernbanetransport"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til jernbane, inkludert trikk, T-bane og sporvogn. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til jernbane, inkludert trikk, T-bane og sporvogn. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4374,7 +4374,7 @@ public static class PackageConstants
         ),
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Veitransport"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til person- og godstransport langs vegnettet. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til person- og godstransport langs vegnettet. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
@@ -4406,8 +4406,8 @@ public static class PackageConstants
             KeyValuePair.Create("Description", "This authorization provides access to services related to storage and auxiliary services in connection with transport, as well as postal and courier activities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Lagring og andre tenester tilknytte transport"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytte til lagring og hjelpetenester i samband med transport, samt post- og kurerverksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Name", "Lagring og andre tenester tilknytt transport"),
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til lagring og hjelpetenester i samband med transport, samt post- og kurerverksemd. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
