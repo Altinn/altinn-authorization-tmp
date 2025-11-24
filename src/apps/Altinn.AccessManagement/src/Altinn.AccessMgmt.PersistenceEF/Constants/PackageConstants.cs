@@ -131,7 +131,7 @@ public static class PackageConstants
             AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Animal Husbandry"),
+            KeyValuePair.Create("Name", "Animal husbandry"),
             KeyValuePair.Create("Description", "This access package provides access to services related to animal husbandry. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -263,7 +263,7 @@ public static class PackageConstants
             AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Hunting and Wildlife Management"),
+            KeyValuePair.Create("Name", "Hunting and wildlife management"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to hunting and wildlife management. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -296,7 +296,7 @@ public static class PackageConstants
             AreaId = AreaConstants.AgricultureForestryHuntingFishingAndAquaculture,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Reindeer Herding"),
+            KeyValuePair.Create("Name", "Reindeer herding"),
             KeyValuePair.Create("Description", "This access package provides access to services related to reindeer herding. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -333,7 +333,7 @@ public static class PackageConstants
             AreaId = AreaConstants.AuthorizationsForAccountants,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Accountant with Signing Rights"),
+            KeyValuePair.Create("Name", "Accountant with signing rights"),
             KeyValuePair.Create("Description", "This authorization allows an accountant to sign on behalf of the client for all services that require signing rights. These are services that have been deemed natural for an accountant to perform on behalf of their client. The authorization is only granted to authorized accountants. Authorization to the accountant occurs when the client registers the accountant in the Central Coordinating Register for Legal Entities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -366,7 +366,7 @@ public static class PackageConstants
             AreaId = AreaConstants.AuthorizationsForAccountants,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Accountant Salary"),
+            KeyValuePair.Create("Name", "Accountant salary"),
             KeyValuePair.Create("Description", "This authorization allows an accountant to report salaries for their client. These are services that have been deemed natural for an accountant to perform on behalf of their client. The authorization is only granted to authorized accountants. Authorization to the accountant occurs when the client registers the accountant in the Central Coordinating Register for Legal Entities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -399,7 +399,7 @@ public static class PackageConstants
             AreaId = AreaConstants.AuthorizationsForAccountants,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Accountant without Signing Rights"),
+            KeyValuePair.Create("Name", "Accountant without signing rights"),
             KeyValuePair.Create("Description", "This authorization allows to perform all services that do not require signing rights. These are services that have been deemed natural for an accountant to perform on behalf of their client. The authorization is only granted to authorized accountants. Authorization to the accountant occurs when the client registers the accountant in the Central Coordinating Register for Legal Entities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -436,7 +436,7 @@ public static class PackageConstants
             AreaId = AreaConstants.AuthorizationsForAuditors
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Assistant Auditor"),
+            KeyValuePair.Create("Name", "Assistant auditor"),
             KeyValuePair.Create("Description", "This authorization allows an auditor to act as an assistant auditor for a client and perform all services that require this authorization. These are services that the service provider has deemed natural for an auditor to perform on behalf of their client. The authorization is only granted to authorized auditors. Authorization to the auditor occurs when the client registers the auditor in the Central Coordinating Register for Legal Entities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -469,7 +469,7 @@ public static class PackageConstants
             AreaId = AreaConstants.AuthorizationsForAuditors,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Auditor in Charge"),
+            KeyValuePair.Create("Name", "Auditor in charge"),
             KeyValuePair.Create("Description", "This authorization allows an auditor to act as the auditor in charge for a client and perform all services that require this authorization. These are services that the service provider has deemed natural for an auditor to perform on behalf of their client. The authorization is only granted to authorized auditors. Authorization to the auditor occurs when the client registers the auditor in the Central Coordinating Register for Legal Entities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -506,7 +506,7 @@ public static class PackageConstants
             AreaId = AreaConstants.AuthorizationsForBankruptcyEstates,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Bankruptcy Estate Write Access"),
+            KeyValuePair.Create("Name", "Bankruptcy estate write access"),
             KeyValuePair.Create("Description", "This authorization gives the estate administrator's assistant access to work on behalf of the estate administrator. The estate administrator delegates this authorization together with Bankruptcy Estate Read Access to the assistant for each bankruptcy estate.")
         ),
         NN = TranslationEntryList.Create(
@@ -539,7 +539,7 @@ public static class PackageConstants
             AreaId = AreaConstants.AuthorizationsForBankruptcyEstates,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Bankruptcy Estate Read Access"),
+            KeyValuePair.Create("Name", "Bankruptcy estate read access"),
             KeyValuePair.Create("Description", "This authorization is delegated to creditors and others who should have read access to the individual bankruptcy estate.")
         ),
         NN = TranslationEntryList.Create(
@@ -576,7 +576,7 @@ public static class PackageConstants
             AreaId = AreaConstants.AuthorizationsForBusinesses,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Business Manager Real Estate"),
+            KeyValuePair.Create("Name", "Business manager real estate"),
             KeyValuePair.Create("Description", "This authorization gives the business manager for housing cooperatives and condominium associations access to act on behalf of the client and perform all services that require this authorization. These are services that the service provider has deemed natural for a business manager to perform on behalf of their client. Authorization to the business manager occurs when the housing cooperative or condominium association registers the business manager in the Central Coordinating Register for Legal Entities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -646,7 +646,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Document-Based Supervision"),
+            KeyValuePair.Create("Name", "Document-based supervision"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to document-based supervision. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -679,7 +679,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Explicit Service Delegation"),
+            KeyValuePair.Create("Name", "Explicit service delegation"),
             KeyValuePair.Create("Description", "This authorization is not delegable and is not linked to any roles in the Central Coordinating Register for Legal Entities. Access to services associated with this package can be granted by the Main Administrator through individual rights delegation.")
         ),
         NN = TranslationEntryList.Create(
@@ -712,7 +712,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "General Helfo Services"),
+            KeyValuePair.Create("Name", "General Helfo services"),
             KeyValuePair.Create("Description", "This authorization provides access to regular services related to the business's dialogue with Helfo where the user can gain access to personal information about persons being reported on. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -745,7 +745,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Grant, Support and Compensation"),
+            KeyValuePair.Create("Name", "Grant, support and compensation"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to applying for grants, support and compensation. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -778,7 +778,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Helfo Services with Personal Data of Special Category"),
+            KeyValuePair.Create("Name", "Helfo services with personal data of special category"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to the business's dialogue with Helfo where the user can gain access to personal data of special categories. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -844,7 +844,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "My Pages at the Municipality"),
+            KeyValuePair.Create("Name", "My pages at the municipality"),
             KeyValuePair.Create("Description", "This authorization provides general access to \"my page\" type services at municipalities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -877,7 +877,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Patents, Trademarks and Design"),
+            KeyValuePair.Create("Name", "Patents, trademarks and design"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to patents, trademarks and design. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -910,7 +910,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Police and Courts"),
+            KeyValuePair.Create("Name", "Police and courts"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to the business's dialogue on legal matters with police and judicial authorities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -943,7 +943,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Population Register"),
+            KeyValuePair.Create("Name", "Population register"),
             KeyValuePair.Create("Description", "This access package provides authorization for services that a business can have with the population register. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1009,7 +1009,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Shares and Ownership"),
+            KeyValuePair.Create("Name", "Shares and ownership"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to shares and ownership. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1042,7 +1042,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Start, Change and Dissolve Business"),
+            KeyValuePair.Create("Name", "Start, change and dissolve business"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to starting, changing and dissolving a business. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1075,7 +1075,7 @@ public static class PackageConstants
             AreaId = AreaConstants.BusinessAffairs,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Statistics Reporting"),
+            KeyValuePair.Create("Name", "Statistics reporting"),
             KeyValuePair.Create("Description", "This authorization provides access to all mandatory statistics reporting. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1112,7 +1112,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "After-School Program Leader"),
+            KeyValuePair.Create("Name", "After-school program leader"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to preschool and after-school programs. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1145,7 +1145,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Educational Institution Approval"),
+            KeyValuePair.Create("Name", "Educational institution approval"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to applying for approval of educational institutions. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1178,7 +1178,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "County Governor - Kindergarten"),
+            KeyValuePair.Create("Name", "County governor - kindergarten"),
             KeyValuePair.Create("Description", "This authorization provides access to services for the county governor related to the kindergarten sector.")
         ),
         NN = TranslationEntryList.Create(
@@ -1211,7 +1211,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "County Governor - School and Education"),
+            KeyValuePair.Create("Name", "County governor - school and education"),
             KeyValuePair.Create("Description", "This authorization provides access to services for the county governor related to the school and education sector, including vocational training and adult education.")
         ),
         NN = TranslationEntryList.Create(
@@ -1244,7 +1244,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Higher Education and Higher Vocational Education"),
+            KeyValuePair.Create("Name", "Higher education and higher vocational education"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to higher education and higher vocational education. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1277,7 +1277,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Kindergarten Authority"),
+            KeyValuePair.Create("Name", "Kindergarten authority"),
             KeyValuePair.Create("Description", "This authorization provides access to services for the operation of kindergartens that the kindergarten authority is responsible for. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1310,7 +1310,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Kindergarten Leader"),
+            KeyValuePair.Create("Name", "Kindergarten leader"),
             KeyValuePair.Create("Description", "This authorization provides access to services for the operation of kindergartens that the kindergarten leader is responsible for. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1343,7 +1343,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Kindergarten Owner"),
+            KeyValuePair.Create("Name", "Kindergarten owner"),
             KeyValuePair.Create("Description", "This authorization provides access to services for the operation of kindergartens that the kindergarten owner is responsible for. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1376,7 +1376,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Training Office Leader"),
+            KeyValuePair.Create("Name", "Training office leader"),
             KeyValuePair.Create("Description", "This authorization provides access to services for the operation of training offices that the training office leader is responsible for. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1409,7 +1409,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Educational-Psychological Service Leader"),
+            KeyValuePair.Create("Name", "Educational-psychological service leader"),
             KeyValuePair.Create("Description", "This authorization provides access to services for the operation of the Educational-Psychological Service (PPT) that the PPT leader is responsible for. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1442,7 +1442,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Personnel Approval"),
+            KeyValuePair.Create("Name", "Personnel approval"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to applying for approval for individuals. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1475,7 +1475,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "School Leader"),
+            KeyValuePair.Create("Name", "School leader"),
             KeyValuePair.Create("Description", "This authorization provides access to services for the operation of schools that the school leader is responsible for. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1508,7 +1508,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ChildhoodAndEducation,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "School Owner"),
+            KeyValuePair.Create("Name", "School owner"),
             KeyValuePair.Create("Description", "This authorization provides access to services for the operation of schools that the school owner is responsible for. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1611,7 +1611,7 @@ public static class PackageConstants
             AreaId = AreaConstants.CommerceAccommodationAndCatering,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Retail Trade"),
+            KeyValuePair.Create("Name", "Retail trade"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to retail trade, including wholesale and retail, import and export, and sale and repair of motor vehicles. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1648,7 +1648,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Building Application"),
+            KeyValuePair.Create("Name", "Building application"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services that the responsible applicant/project owner needs, such as building applications, directly signed declarations, neighbor notifications and property cases. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1681,7 +1681,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Buying and Selling Real Estate"),
+            KeyValuePair.Create("Name", "Buying and selling real estate"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to buying and selling real estate. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1714,7 +1714,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Construction of Buildings and Facilities"),
+            KeyValuePair.Create("Name", "Construction of buildings and facilities"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to the construction of buildings and facilities, excluding planning and building case processing. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1747,7 +1747,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Planning Case"),
+            KeyValuePair.Create("Name", "Planning case"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services that the proposer/planning consultant needs, such as notification of planning commencement, public hearing and public review. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1780,7 +1780,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Property Registration"),
+            KeyValuePair.Create("Name", "Property registration"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to electronic registration of rights in real estate.")
         ),
         NN = TranslationEntryList.Create(
@@ -1813,7 +1813,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Real Estate Agent"),
+            KeyValuePair.Create("Name", "Real estate agent"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to the sale and operation of real estate on assignment, such as real estate brokerage and property management. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1846,7 +1846,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Real Estate Rental"),
+            KeyValuePair.Create("Name", "Real estate rental"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to real estate rental. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1879,7 +1879,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ConstructionInfrastructureAndRealEstate,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Receive Neighbor and Planning Notifications"),
+            KeyValuePair.Create("Name", "Receive neighbor and planning notifications"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services to read and respond to notifications about planning/building cases. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1916,7 +1916,7 @@ public static class PackageConstants
             AreaId = AreaConstants.CultureAndVolunteering,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Arts and Entertainment"),
+            KeyValuePair.Create("Name", "Arts and entertainment"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to artistic and entertainment activities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -1982,7 +1982,7 @@ public static class PackageConstants
             AreaId = AreaConstants.CultureAndVolunteering,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Libraries, Museums, Archives and Other Culture"),
+            KeyValuePair.Create("Name", "Libraries, museums, archives and other culture"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to libraries, museums, archives, and other culture such as botanical and zoological gardens, and operation of natural phenomena of historical, cultural or educational interest (e.g., world heritage sites, etc.). In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2015,7 +2015,7 @@ public static class PackageConstants
             AreaId = AreaConstants.CultureAndVolunteering,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Lottery and Games"),
+            KeyValuePair.Create("Name", "Lottery and games"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to lottery and games, such as casinos, bingo halls and video game arcades, as well as gaming activities such as lotteries and betting entered into off-track. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2081,7 +2081,7 @@ public static class PackageConstants
             AreaId = AreaConstants.CultureAndVolunteering,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Sports and Recreation"),
+            KeyValuePair.Create("Name", "Sports and recreation"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to sports and recreational activities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2118,7 +2118,7 @@ public static class PackageConstants
             AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Environmental Remediation, Cleaning and Similar Activities"),
+            KeyValuePair.Create("Name", "Environmental remediation, cleaning and similar activities"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to environmental remediation, cleaning and similar activities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2151,7 +2151,7 @@ public static class PackageConstants
             AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Electricity - Production, Transmission and Distribution"),
+            KeyValuePair.Create("Name", "Electricity - production, transmission and distribution"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to electricity: production, transmission and distribution. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2184,7 +2184,7 @@ public static class PackageConstants
             AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Extraction of Crude Oil, Natural Gas and Coal"),
+            KeyValuePair.Create("Name", "Extraction of crude oil, natural gas and coal"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to the extraction of crude oil, natural gas and coal. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2217,7 +2217,7 @@ public static class PackageConstants
             AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Sewage Collection and Treatment"),
+            KeyValuePair.Create("Name", "Sewage collection and treatment"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to sewage collection and treatment. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2250,7 +2250,7 @@ public static class PackageConstants
             AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Steam and Hot Water"),
+            KeyValuePair.Create("Name", "Steam and hot water"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to steam and hot water. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2283,7 +2283,7 @@ public static class PackageConstants
             AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Waste - Collection, Treatment, Use and Recycling"),
+            KeyValuePair.Create("Name", "Waste - collection, treatment, use and recycling"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to waste: collection, treatment, use and recycling. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2316,7 +2316,7 @@ public static class PackageConstants
             AreaId = AreaConstants.EnergyWaterSewageAndWaste,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Water - Source Extraction, Treatment and Distribution"),
+            KeyValuePair.Create("Name", "Water - source extraction, treatment and distribution"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to water: source extraction, treatment and distribution. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2386,7 +2386,7 @@ public static class PackageConstants
             AreaId = AreaConstants.EnvironmentAccidentAndSafety,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Environmental Cleanup, Environmental Remediation and Similar"),
+            KeyValuePair.Create("Name", "Environmental cleanup, environmental remediation and similar"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to environmental cleanup, environmental remediation and similar activities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2419,7 +2419,7 @@ public static class PackageConstants
             AreaId = AreaConstants.EnvironmentAccidentAndSafety,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Occupational Injury"),
+            KeyValuePair.Create("Name", "Occupational injury"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to occupational injuries. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2452,7 +2452,7 @@ public static class PackageConstants
             AreaId = AreaConstants.EnvironmentAccidentAndSafety,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Security and Internal Control"),
+            KeyValuePair.Create("Name", "Security and internal control"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to security and internal control. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2518,7 +2518,7 @@ public static class PackageConstants
             AreaId = AreaConstants.EnvironmentAccidentAndSafety,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Waste Management"),
+            KeyValuePair.Create("Name", "Waste management"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to waste management. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2555,7 +2555,7 @@ public static class PackageConstants
             AreaId = AreaConstants.HealthCareAndProtection,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Care Services in Institutions"),
+            KeyValuePair.Create("Name", "Care services in institutions"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to care services in institutions. These are services that offer institutional stays combined with nursing, supervision or other forms of care depending on what is required by the residents. This authorization may give the user access to health information about persons being reported on. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2588,7 +2588,7 @@ public static class PackageConstants
             AreaId = AreaConstants.HealthCareAndProtection,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Child Protection Services"),
+            KeyValuePair.Create("Name", "Child protection services"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to child protection services. This authorization may give the user access to health information about persons being reported on. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides. NOTE! Be aware that the access package contains authorizations that may be of a sensitive nature. Consider whether the authorizations should be granted as individual rights.")
         ),
         NN = TranslationEntryList.Create(
@@ -2621,7 +2621,7 @@ public static class PackageConstants
             AreaId = AreaConstants.HealthCareAndProtection,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Family Counseling"),
+            KeyValuePair.Create("Name", "Family counseling"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to family counseling. This authorization may give the user access to health information about persons being reported on. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides. NOTE! Be aware that the access package contains authorizations that may be of a sensitive nature. Consider whether the authorizations should be granted as individual rights.")
         ),
         NN = TranslationEntryList.Create(
@@ -2654,7 +2654,7 @@ public static class PackageConstants
             AreaId = AreaConstants.HealthCareAndProtection,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Health Services"),
+            KeyValuePair.Create("Name", "Health services"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to hospitals, doctors, dentists, home nursing, physiotherapy, ambulances and similar services. This authorization may give the user access to personal information about persons being reported on. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2687,7 +2687,7 @@ public static class PackageConstants
             AreaId = AreaConstants.HealthCareAndProtection,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Health Services with Personal Data of Special Category"),
+            KeyValuePair.Create("Name", "Health services with personal data of special category"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to hospitals, doctors, dentists, home nursing, physiotherapy, ambulances and similar services, which are of a special category. This authorization may give the user access to sensitive personal information about persons being reported on. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2720,7 +2720,7 @@ public static class PackageConstants
             AreaId = AreaConstants.HealthCareAndProtection,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Municipal Chief Medical Officer"),
+            KeyValuePair.Create("Name", "Municipal chief medical officer"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to hospitals, doctors, dentists, home nursing, physiotherapy, ambulances and similar services, which are relevant for municipal doctors. This authorization may give the user access to personal information about persons being reported on. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2753,7 +2753,7 @@ public static class PackageConstants
             AreaId = AreaConstants.HealthCareAndProtection,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Social Care Services without Housing and Refugee Reception"),
+            KeyValuePair.Create("Name", "Social care services without housing and refugee reception"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to social care services without housing for the elderly, disabled and substance abusers as well as refugee reception centers, and services related to work training and other social services, e.g., under the auspices of welfare organizations. This authorization may give the user access to health information about persons being reported on. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2790,7 +2790,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Industries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Food, Beverages and Tobacco"),
+            KeyValuePair.Create("Name", "Food, beverages and tobacco"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to industries in connection with food, beverages and tobacco. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2823,7 +2823,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Industries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Furniture and Other Manufacturing"),
+            KeyValuePair.Create("Name", "Furniture and other manufacturing"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to industries in connection with furniture and other manufacturing. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2856,7 +2856,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Industries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Lumber, Wood Products and Paper Goods"),
+            KeyValuePair.Create("Name", "Lumber, wood products and paper goods"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to industries in connection with lumber, wood products and paper goods. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2889,7 +2889,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Industries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Metal Products, Electrical Equipment and Machinery"),
+            KeyValuePair.Create("Name", "Metal products, electrical equipment and machinery"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to industries in connection with metal products, electrical equipment and machinery. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2922,7 +2922,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Industries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Metals and Minerals"),
+            KeyValuePair.Create("Name", "Metals and minerals"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to industries in connection with metals and minerals. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -2988,7 +2988,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Industries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Oil Refining, Chemical and Pharmaceutical Industry"),
+            KeyValuePair.Create("Name", "Oil refining, chemical and pharmaceutical industry"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to industries in connection with oil refining, chemical and pharmaceutical industries. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3021,7 +3021,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Industries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Printing and Reproduction of Recorded Media"),
+            KeyValuePair.Create("Name", "Printing and reproduction of recorded media"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to industries in connection with printing and reproduction of recorded media. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3054,7 +3054,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Industries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Repair and Installation of Machinery and Equipment"),
+            KeyValuePair.Create("Name", "Repair and installation of machinery and equipment"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to industries in connection with repair and installation of machinery and equipment. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3087,7 +3087,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Industries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Rubber, Plastic and Non-Metallic Mineral Products"),
+            KeyValuePair.Create("Name", "Rubber, plastic and non-metallic mineral products"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to industries in connection with rubber, plastic and non-metallic mineral products. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3120,7 +3120,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Industries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Shipyards and Other Transport Vehicles"),
+            KeyValuePair.Create("Name", "Shipyards and other transport vehicles"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to industries in connection with shipyards and other transport vehicles. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3153,7 +3153,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Industries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Textiles, Clothing and Leather Goods"),
+            KeyValuePair.Create("Name", "Textiles, clothing and leather goods"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to industries in connection with textiles, clothing and leather goods. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3190,7 +3190,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Integrations,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Delegable Maskinporten Scopes"),
+            KeyValuePair.Create("Name", "Delegable maskinporten scopes"),
             KeyValuePair.Create("Description", "This access package provides authorizations for data and application programming interfaces (APIs) that use Maskinporten or equivalent solutions for API security. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3223,7 +3223,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Integrations,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Delegable Maskinporten Scopes - NUF"),
+            KeyValuePair.Create("Name", "Delegable maskinporten scopes - NUF"),
             KeyValuePair.Create("Description", "This access package provides authorizations for data and application programming interfaces (APIs) that use Maskinporten or equivalent solutions for API security on behalf of Norwegian Registered Foreign Enterprises (NUF). In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3256,7 +3256,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Integrations,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Machine-Readable Events"),
+            KeyValuePair.Create("Name", "Machine-readable events"),
             KeyValuePair.Create("Description", "This access package provides authorizations to administer access to machine-readable events. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3293,7 +3293,7 @@ public static class PackageConstants
             AreaId = AreaConstants.MailAndArchive,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Mail to Business with Confidential Content"),
+            KeyValuePair.Create("Name", "Mail to business with confidential content"),
             KeyValuePair.Create("Description", "This authorization provides access to all received mail containing sensitive/confidential information sent to the business. The authorization is normally granted to those in the business who handle the receipt of mail with confidential content. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3326,7 +3326,7 @@ public static class PackageConstants
             AreaId = AreaConstants.MailAndArchive,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Regular Mail to Business"),
+            KeyValuePair.Create("Name", "Regular mail to business"),
             KeyValuePair.Create("Description", "This authorization provides access to all received mail that does not contain sensitive/confidential information sent to the business. The authorization is normally granted to those in the business who handle the receipt of mail. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3363,7 +3363,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ManageAccess,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Access Manager"),
+            KeyValuePair.Create("Name", "Access manager"),
             KeyValuePair.Create("Description", "Provides the ability to delegate access for the business that one has received oneself")
         ),
         NN = TranslationEntryList.Create(
@@ -3396,7 +3396,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ManageAccess,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Client Administrator"),
+            KeyValuePair.Create("Name", "Client administrator"),
             KeyValuePair.Create("Description", "Provides the ability to administer access to services to employees on behalf of their clients")
         ),
         NN = TranslationEntryList.Create(
@@ -3429,7 +3429,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ManageAccess,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Bankruptcy Estate Administrator"),
+            KeyValuePair.Create("Name", "Bankruptcy estate administrator"),
             KeyValuePair.Create("Description", "Provides the user with the ability to administer bankruptcy estates")
         ),
         NN = TranslationEntryList.Create(
@@ -3462,7 +3462,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ManageAccess,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Main Administrator"),
+            KeyValuePair.Create("Name", "Main administrator"),
             KeyValuePair.Create("Description", "Provides the ability to administer all access for the business")
         ),
         NN = TranslationEntryList.Create(
@@ -3495,7 +3495,7 @@ public static class PackageConstants
             AreaId = AreaConstants.ManageAccess,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Maskinporten Administrator"),
+            KeyValuePair.Create("Name", "Maskinporten administrator"),
             KeyValuePair.Create("Description", "Provides the user with the ability to administer access to Maskinporten scopes")
         ),
         NN = TranslationEntryList.Create(
@@ -3532,7 +3532,7 @@ public static class PackageConstants
             AreaId = AreaConstants.OtherServiceIndustries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Financing and Insurance"),
+            KeyValuePair.Create("Name", "Financing and insurance"),
             KeyValuePair.Create("Description", "This authorization provides access to services related to financing and insurance. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3565,7 +3565,7 @@ public static class PackageConstants
             AreaId = AreaConstants.OtherServiceIndustries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Information and Communication"),
+            KeyValuePair.Create("Name", "Information and communication"),
             KeyValuePair.Create("Description", "This authorization provides access to services related to information and communication. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3598,7 +3598,7 @@ public static class PackageConstants
             AreaId = AreaConstants.OtherServiceIndustries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Other Services"),
+            KeyValuePair.Create("Name", "Other services"),
             KeyValuePair.Create("Description", "This authorization provides access to services related to other services such as organizations and associations, repair of computers and goods for personal and household use, and a range of personal services not mentioned elsewhere. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3631,7 +3631,7 @@ public static class PackageConstants
             AreaId = AreaConstants.OtherServiceIndustries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Postal and Telecommunications"),
+            KeyValuePair.Create("Name", "Postal and telecommunications"),
             KeyValuePair.Create("Description", "This authorization provides access to services related to postal and telecommunications. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3668,7 +3668,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Personnel,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "A-melding System"),
+            KeyValuePair.Create("Name", "A-melding system"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services included in the A-melding system. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides. NOTE! Be aware that the access package contains authorizations that may be of a sensitive nature. Consider whether the authorizations should be granted as individual rights.")
         ),
         NN = TranslationEntryList.Create(
@@ -3701,7 +3701,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Personnel,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Employment Relations"),
+            KeyValuePair.Create("Name", "Employment relations"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to employment relations. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3734,7 +3734,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Personnel,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Leave of Absence"),
+            KeyValuePair.Create("Name", "Leave of absence"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to leave of absence. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3833,7 +3833,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Personnel,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Salary with Personal Data of Special Category"),
+            KeyValuePair.Create("Name", "Salary with personal data of special category"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to salary and reimbursement that include personal data of special categories. This authorization may give the user access to sensitive personal information about employees, for example related to information about employees' sick leave, parental benefits, care benefits or similar information. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3866,7 +3866,7 @@ public static class PackageConstants
             AreaId = AreaConstants.Personnel,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Sick Leave"),
+            KeyValuePair.Create("Name", "Sick leave"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to sick leave. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3903,7 +3903,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Accounting and Economic Reporting"),
+            KeyValuePair.Create("Name", "Accounting and economic reporting"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to accounting and economic reporting that do not belong to tax and value-added tax. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3936,7 +3936,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Auditor Attestation"),
+            KeyValuePair.Create("Name", "Auditor attestation"),
             KeyValuePair.Create("Description", "This authorization provides access to all services that require auditor attestation. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -3969,7 +3969,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Business Tax"),
+            KeyValuePair.Create("Name", "Business tax"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to tax for businesses. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4002,7 +4002,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Claims, Payments and Enforcement"),
+            KeyValuePair.Create("Name", "Claims, payments and enforcement"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to claims and enforcement. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4035,7 +4035,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Credit and Settlement Arrangements"),
+            KeyValuePair.Create("Name", "Credit and settlement arrangements"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to credit and settlement arrangements. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4101,7 +4101,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Motor Vehicle Taxes"),
+            KeyValuePair.Create("Name", "Motor vehicle taxes"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to motor vehicle taxes. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4134,7 +4134,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Special Taxes"),
+            KeyValuePair.Create("Name", "Special taxes"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to special taxes. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4167,7 +4167,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Tax Base"),
+            KeyValuePair.Create("Name", "Tax base"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to the collection of tax basis information. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4200,7 +4200,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Value Added Tax"),
+            KeyValuePair.Create("Name", "Value added tax"),
             KeyValuePair.Create("Description", "This access package provides authorizations for services related to value-added tax. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4237,7 +4237,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TransportAndStorage,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Air Transport"),
+            KeyValuePair.Create("Name", "Air transport"),
             KeyValuePair.Create("Description", "This authorization provides access to services related to aircraft and spacecraft. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4270,7 +4270,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TransportAndStorage,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Maritime Transport"),
+            KeyValuePair.Create("Name", "Maritime transport"),
             KeyValuePair.Create("Description", "This authorization provides access to services related to ship workers and vessels at sea. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4303,7 +4303,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TransportAndStorage,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Pipeline Transport"),
+            KeyValuePair.Create("Name", "Pipeline transport"),
             KeyValuePair.Create("Description", "This authorization provides access to services related to pipeline transport. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4336,7 +4336,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TransportAndStorage,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Railway Transport"),
+            KeyValuePair.Create("Name", "Railway transport"),
             KeyValuePair.Create("Description", "This authorization provides access to services related to railways, including trams, subways and trolleys. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4369,7 +4369,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TransportAndStorage,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Road Transport"),
+            KeyValuePair.Create("Name", "Road transport"),
             KeyValuePair.Create("Description", "This authorization provides access to services related to passenger and freight transport along the road network. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
@@ -4402,7 +4402,7 @@ public static class PackageConstants
             AreaId = AreaConstants.TransportAndStorage,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Storage and Other Transport-Related Services"),
+            KeyValuePair.Create("Name", "Storage and other transport-related services"),
             KeyValuePair.Create("Description", "This authorization provides access to services related to storage and auxiliary services in connection with transport, as well as postal and courier activities. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
