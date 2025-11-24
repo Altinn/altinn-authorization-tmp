@@ -82,7 +82,7 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         var fromAssignment = await assignmentService.GetAssignment(delegation.FromId, cancellationToken);
         var toAssignment = await assignmentService.GetAssignment(delegation.ToId, cancellationToken);
         var assignmentPackages = await assignmentService.GetPackagesForAssignment(fromAssignment.Id, cancellationToken);
-        var rolePackages = await roleService.GetPackagesForRole(fromAssignment.RoleId, cancellationToken);
+        var rolePackages = await roleService.GetRolePackages(fromAssignment.RoleId, variantId: null, includeResources: false, cancellationToken: cancellationToken);
 
         if (assignmentPackages.Count(t => t.AssignmentPackageId == packageId) == 0 && rolePackages.Count(t => t.Id == packageId) == 0)
         {
@@ -122,18 +122,12 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         var toAssignment = await assignmentService.GetAssignment(delegation.ToId, cancellationToken);
 
         var assignmentResources = await assignmentService.GetAssignmentResources(fromAssignment.Id, cancellationToken);
-        var roleResources = await roleService.GetRoleResources(fromAssignment.RoleId, cancellationToken);
-        var rolePackages = await roleService.GetPackagesForRole(fromAssignment.RoleId, cancellationToken);
 
-        var rolePackageResources = new Dictionary<Guid, List<ResourceDto>>();
-        foreach (var package in rolePackages)
-        {
-            rolePackageResources.Add(package.Id, [.. await packageService.GetPackageResources(package.Id)]);
-        }
+        // TODO: Add Assignment Variant to include RoleVariantPackages
+        var roleResources = await roleService.GetRoleResources(fromAssignment.RoleId, variantId: null, includePackageResoures: true, cancellationToken);
 
         if (assignmentResources.Count(t => t.Id == resourceId) == 0
             && roleResources.Count(t => t.Id == resourceId) == 0
-            && rolePackageResources.SelectMany(t => t.Value).Count(t => t.Id == resourceId) == 0
             )
         {
             throw new Exception($"The source assignment does not have the resource '{resource.Name}'");
@@ -171,14 +165,33 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
     /// <inheritdoc />
     public async Task<int> RevokeClientDelegation(ImportClientDelegationRequestDto request, AuditValues audit, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default)
     {
-        // Find Facilitator
-        var facilitator = await entityService.GetEntity(request.Facilitator.Value, cancellationToken) ?? throw new Exception(string.Format("Party not found '{0}' for facilitator", request.Facilitator.Value));
-
         // Find Client
         var client = await entityService.GetEntity(request.ClientId, cancellationToken) ?? throw new Exception(string.Format("Party not found '{0}' for client", request.ClientId));
 
-        // Create Delegation and DelegationPackage(s)
-        return await RevokeClientDelegations(request, client, facilitator, audit, onlyRemoveA2Packages, cancellationToken);
+        Entity facilitator = null;
+        if (request.Facilitator.HasValue)
+        {
+            // Find Facilitator
+            facilitator = await entityService.GetEntity(request.Facilitator.Value, cancellationToken) ?? throw new Exception(string.Format("Party not found '{0}' for facilitator", request.Facilitator.Value));
+
+            // Delete Delegation
+            return await RevokeClientDelegations(request, client, facilitator, audit, onlyRemoveA2Packages, cancellationToken);
+        }
+        else
+        {
+            List<Assignment> assignments = await assignmentService.GetFacilitatorAssignments(client.Id, request.RolePackages.First().RoleIdentifier);
+            int count = 0;
+            foreach (Assignment assignment in assignments)
+            {
+                facilitator = await entityService.GetEntity(assignment.ToId, cancellationToken);
+                if (facilitator != null)
+                {
+                    count += await RevokeClientDelegations(request, client, facilitator, audit, onlyRemoveA2Packages, cancellationToken);
+                }
+            }
+
+            return count;
+        }
     }
 
     private async Task<int> RevokeClientDelegations(ImportClientDelegationRequestDto request, Entity client, Entity facilitator, AuditValues audit, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default)
@@ -186,99 +199,81 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
         int packagesRevoked = 0;
         
         // Find Agent Role
-        try
+        var agentRole = await db.Roles.AsNoTracking().FirstOrDefaultAsync(t => string.Equals(t.Code.ToLower(), request.AgentRole.ToLower()), cancellationToken) ?? throw new Exception(string.Format("Role not found '{0}'", request.AgentRole));
+
+        // Verify Delegation Packages
+        Dictionary<string, List<PackageDto>> rolepacks = await VerifyDelegationPackages(request);
+
+        foreach (var rp in rolepacks)
         {
-            // Find Agent Role
-            var agentRole = await db.Roles.AsNoTracking().FirstOrDefaultAsync(t => string.Equals(t.Code.ToLower(), request.AgentRole.ToLower()), cancellationToken) ?? throw new Exception(string.Format("Role not found '{0}'", request.AgentRole));
-
-            // Verify Delegation Packages
-            Dictionary<string, List<PackageDto>> rolepacks = await VerifyDelegationPackages(request);
-
-            Assignment agentAssignment = null;
-            foreach (var rp in rolepacks)
+            // Find ClientPartyId Role
+            var clientRole = (await roleService.GetByCode(rp.Key)).First();
+            if (clientRole == null)
             {
-                // Find ClientPartyId Role
-                var clientRole = (await roleService.GetByCode(rp.Key)).First() ?? throw new Exception(string.Format("Role not found '{0}'", rp.Key));
-                if (clientRole == null)
+                return 0;
+            }
+
+            // Find ClientAssignment
+            var clientAssignment = await assignmentService.GetAssignment(client.Id, facilitator.Id, clientRole.Id, cancellationToken);
+            if (clientAssignment == null)
+            {
+                return 0;
+            }
+
+            var clientPackages = await assignmentService.GetPackagesForAssignment(clientAssignment.Id);
+
+            var agent = await entityService.GetEntity(request.AgentId, cancellationToken) ?? throw new Exception(string.Format("Could not find party '{0}'", request.AgentId));
+            var agentAssignment = await assignmentService.GetAssignment(facilitator.Id, agent.Id, agentRole.Id, cancellationToken);
+            if (agentAssignment == null)
+            {
+                return 0;
+            }
+
+            var delegation = await db.Delegations.Where(t => t.FromId == clientAssignment.Id && t.ToId == agentAssignment.Id && t.FacilitatorId == facilitator.Id).FirstOrDefaultAsync(cancellationToken: cancellationToken);
+            if (delegation == null)
+            {
+                return 0;
+            }
+
+            foreach (var package in rp.Value)
+            {
+                // TODO: Add "&& t.CanAssign" when data is ready
+                if (!clientPackages.Any(t => t.PackageId == package.Id))
                 {
-                    return 0;
+                    continue;
                 }
 
-                // Find ClientAssignment
-                var clientAssignment = await assignmentService.GetAssignment(client.Id, facilitator.Id, clientRole.Id, cancellationToken) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
-                if (clientAssignment == null)
+                // Revoke DelegationPackage
+                var revoked = await RevokeDelegationPackage(delegation.Id, package.Id, audit, onlyRemoveA2Packages, cancellationToken);
+
+                if (revoked)
                 {
-                    return 0;
-                }
-
-                var clientPackages = await assignmentService.GetPackagesForAssignment(clientAssignment.Id);
-
-                Delegation delegation = null;
-                foreach (var package in rp.Value)
-                {
-                    // TODO: Add "&& t.CanAssign" when data is ready
-                    if (!clientPackages.Any(t => t.PackageId == package.Id))
-                    {
-                        return 0;
-                    }
-
-                    if (delegation == null)
-                    {
-                        if (agentAssignment == null)
-                        {
-                            // Find Agent Entity
-                            var agent = await entityService.GetEntity(request.AgentId, cancellationToken) ?? throw new Exception(string.Format("Could not find party '{0}'", request.AgentId));
-
-                            // Find the Agent Assignment
-                            agentAssignment = await assignmentService.GetAssignment(facilitator.Id, agent.Id, agentRole.Id, cancellationToken);
-                            if (agentAssignment == null)
-                            {
-                                return 0;
-                            }
-                        }
-
-                        delegation = await GetDelegation(clientAssignment, agentAssignment, facilitator);
-                        if (delegation == null)
-                        {
-                            return 0;
-                        }
-                    }
-
-                    // Revoke DelegationPackage
-                    var revoked = await RevokeDelegationPackage(delegation.Id, package.Id, audit, onlyRemoveA2Packages, cancellationToken);
-
-                    if (revoked)
-                    {
-                        packagesRevoked++;
-                    }
-                }
-
-                // if no packages left remove delegation
-                var remainingPackages = await db.DelegationPackages.AsNoTracking().Where(t => t.DelegationId == delegation.Id).ToListAsync(cancellationToken);
-                if (remainingPackages.Count == 0)
-                {
-                    db.Delegations.Attach(delegation);
-                    db.Delegations.Remove(delegation);
-                    await db.SaveChangesAsync(audit, cancellationToken);
+                    packagesRevoked++;
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(string.Format("Error revoking delegation: {0}", ex.Message));
-        }
 
+            // if no packages left remove delegation
+            var remainingPackages = await db.DelegationPackages.AsNoTracking().Where(t => t.DelegationId == delegation.Id).ToListAsync(cancellationToken);
+            if (remainingPackages.Count == 0)
+            {
+                db.Delegations.Remove(delegation);
+                await db.SaveChangesAsync(audit, cancellationToken);
+            }
+        }
+        
         return packagesRevoked;
     }
 
     private async Task<bool> RevokeDelegationPackage(Guid delegationId, Guid packageId, AuditValues audit, bool onlyRemoveA2, CancellationToken cancellationToken = default)
     {
-        var delegationPackage = await db.DelegationPackages
+        DelegationPackage delegationPackage = null;
+        
+        delegationPackage = await db.DelegationPackages
             .AsTracking()
             .Where(t => t.DelegationId == delegationId && t.PackageId == packageId)
-            .Where(t => !onlyRemoveA2 || t.Audit_ChangedBySystem.Equals(AuditDefaults.Altinn2RoleImportSystem)) // Remove only A2 packages if flag is set
+            .Where(t => !onlyRemoveA2 || t.Audit_ChangedBySystem == SystemEntityConstants.Altinn2RoleImportSystem.Id) // Remove only A2 packages if flag is set
             .FirstOrDefaultAsync(cancellationToken);
-
+        
         if (delegationPackage != null)
         {
             db.DelegationPackages.Remove(delegationPackage);
@@ -622,5 +617,5 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
 
             return await assignmentService.GetOrCreateAssignment(from.Id, to.Id, role.Id, audit, cancellationToken);
         }
-    }
+    }    
 }

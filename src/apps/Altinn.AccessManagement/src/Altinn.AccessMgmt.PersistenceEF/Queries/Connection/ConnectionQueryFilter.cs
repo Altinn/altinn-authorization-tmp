@@ -36,7 +36,7 @@ public sealed class ConnectionQueryFilter
     /// <summary>
     /// Gets or sets a value indicating whether only unique results should be returned.
     /// </summary>
-    public bool OnlyUniqueResults { get; set; } = true;
+    public bool OnlyUniqueResults { get; set; } = false;
 
     /// <summary>
     /// Gets or sets a value indicating whether to enrich entities with more details.
@@ -72,6 +72,16 @@ public sealed class ConnectionQueryFilter
     /// Gets or sets a value indicating whether to include connections calculated by keyrole.
     /// </summary>
     public bool IncludeKeyRole { get; init; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to include sub-connections.
+    /// </summary>
+    public bool IncludeSubConnections { get; init; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to include connections through main unit
+    /// </summary>
+    public bool IncludeMainUnitConnections { get; init; } = true;
 
     /// <summary>
     /// Returns true if at least one filter is provided.

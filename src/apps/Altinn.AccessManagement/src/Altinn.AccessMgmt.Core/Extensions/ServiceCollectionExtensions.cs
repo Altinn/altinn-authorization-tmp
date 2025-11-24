@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.Core.Repositories.Interfaces;
+﻿using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessManagement.Core.Services.Interfaces;
@@ -32,6 +32,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEntityService, EntityService>();
         services.AddScoped<IAmPartyRepository, AMPartyService>();
         services.AddScoped<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
+        services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
 
         if (configuration.GetValue<bool>("FeatureManagement:AccessMgmt.Core.Services.AuthorizedParties.EfEnabled"))
         {

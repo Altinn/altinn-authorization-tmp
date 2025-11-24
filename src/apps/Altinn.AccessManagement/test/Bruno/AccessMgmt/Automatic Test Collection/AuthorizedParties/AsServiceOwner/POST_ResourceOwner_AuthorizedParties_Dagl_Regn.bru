@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true
+  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true
   body: json
   auth: inherit
 }
@@ -13,6 +13,7 @@ post {
 params:query {
   includeAltinn2: true
   includeAltinn3: true
+  includeAccessPackages: true
 }
 
 headers {
@@ -23,26 +24,26 @@ headers {
 body:json {
   {
     "type": "urn:altinn:person:identifier-no",
-    "value": "14877296726"
+    "value": "{{personId}}"
   }
 }
 
 script:pre-request {
-  const testdata = require(`./Testdata/maskinportenschema/${bru.getEnvVar("tokenEnv")}testdata.json`);
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
   bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_Dagl_Regn");
+  bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid);
   
   var getTokenParameters = {
-    auth_org: testdata.digdir.partyid,
-    auth_orgNo: testdata.digdir.orgno,
-    scope: sharedtestdata.scopes.k6Read,
+    auth_org: sharedtestdata.serviceOwners.digdir.org,
+    auth_orgNo: sharedtestdata.serviceOwners.digdir.orgno,
     auth_tokenType: sharedtestdata.authTokenType.enterprise,
     auth_scopes: sharedtestdata.auth_scopes.authorizedPartiesResourceOwner
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
-  bru.setVar("bearerToken",  token);
+  bru.setVar("bearerToken", token);
 }
 
 tests {
@@ -144,4 +145,39 @@ tests {
     expect(duplicates.length, `Duplicate partyUuid(s) found: ${duplicates.join(', ')}`).to.equal(0);
   
   });
+  
+  test(requestName + "|Find expected Client AuthorizedParty and AuthorizedAccessPackages", function() {  
+    // Test that the expected client party exists in the response with the expected packages
+    
+    const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
+    const targetParty = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_USENSUELL_UVIRKSOM_TIGER.partyUuid);
+  
+    assert.exists(targetParty, 'Expected ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_USENSUELL_UVIRKSOM_TIGER.name+' to exist');
+    assert.includeMembers(targetParty.authorizedAccessPackages, ["regnskapsforer-lonn", "regnskapsforer-med-signeringsrettighet", "regnskapsforer-uten-signeringsrettighet"]);
+    expect(targetParty.authorizedAccessPackages.length, `authorizedAccessPackages for Client contains unexpected packages`).to.equal(3);
+    
+  });
+  
+  test(requestName + "|Find expected Innehaver of ENK Client AuthorizedParty and AuthorizedAccessPackages", function() {  
+    // Test that the expected client party exists in the response with the expected packages
+    
+    const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
+    const targetParty = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.innehaver.partyUuid);
+  
+    assert.exists(targetParty, 'Expected Innehaver of Enk-ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.innehaver.name+' to exist');
+    assert.includeMembers(targetParty.authorizedAccessPackages, ["regnskapsforer-lonn", "regnskapsforer-med-signeringsrettighet", "regnskapsforer-uten-signeringsrettighet"]);
+    expect(targetParty.authorizedAccessPackages.length, `authorizedAccessPackages for Client contains unexpected packages`).to.equal(3);
+    
+  });
+  
+  test(requestName + "|Find expected KeyRole AuthorizedParty and AuthorizedAccessPackages", function() {    
+    const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
+    const targetParty = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
+  
+    assert.exists(targetParty, 'Expected KeyRole-party: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.name+' to exist');
+    assert.notIncludeMembers(targetParty.authorizedAccessPackages, ["eksplisitt", "maskinporten-scopes-nuf", "post-til-virksomheten-med-taushetsbelagt-innhold"]);
+    expect(targetParty.authorizedAccessPackages.length, `authorizedAccessPackages for Dagl-KeyRole-Party contains unexpected packages`).to.equal(117);
+    
+  });
+  
 }
