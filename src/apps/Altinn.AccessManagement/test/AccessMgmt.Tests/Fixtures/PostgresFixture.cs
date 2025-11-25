@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-using System.Reflection;
 using Altinn.AccessManagement.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
@@ -8,8 +6,13 @@ using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Persistence;
 using Altinn.AccessManagement.Persistence.Configuration;
 using Altinn.AccessManagement.Tests.Seeds;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using System.Collections.Concurrent;
+using System.Reflection;
 using Testcontainers.PostgreSql;
 using Xunit.Sdk;
 using Yuniql.Core;
@@ -51,6 +54,8 @@ public class PostgresFixture : IAsyncLifetime
         return db;
     }
 
+    public PostgresDatabase SharedDb { get; private set; }
+
     /// <inheritdoc/>
     public Task DisposeAsync()
     {
@@ -62,6 +67,17 @@ public class PostgresFixture : IAsyncLifetime
     public Task InitializeAsync()
     {
         PostgresServer.StartUsing(this);
+
+        SharedDb = PostgresServer.NewEFDatabase();
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseNpgsql(SharedDb.Admin.ToString())
+            .Options;
+
+        using var db = new AppDbContext(options);
+        db.Database.MigrateAsync().Wait();
+        AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(db).Wait();
+
         return Task.CompletedTask;
     }
 }
@@ -121,7 +137,7 @@ public static class PostgresServer
                 	IF NOT EXISTS (SELECT * FROM pg_user WHERE usename IN ('{DbUserName}', '{DbAdminName}')) THEN
                 		CREATE USER {DbUserName} WITH PASSWORD '{DbPassword}';
                 		CREATE USER {DbAdminName} WITH PASSWORD '{DbPassword}';
-                		ALTER ROLE {DbUserName} LOGIN INHERIT;
+                		ALTER ROLE {DbUserName} LOGIN SUPERUSER INHERIT;
                 		ALTER ROLE {DbAdminName} LOGIN SUPERUSER INHERIT;
                 	END IF;
                 END
@@ -185,6 +201,42 @@ public static class PostgresServer
             Mutex.ReleaseMutex();
         }
     }
+
+    /// <summary>
+    /// Creates a new database and connection string
+    /// </summary>
+    public static PostgresDatabase NewEFDatabase()
+    {
+
+        Mutex.WaitOne();
+        try
+        {
+            var dbname = $"ef_{DatabaseInstance++}";
+            Server.ExecScriptAsync($"CREATE DATABASE {dbname};").Wait();
+
+            var connectionString = Server.GetConnectionString();
+            var adminConn = new NpgsqlConnectionStringBuilder(connectionString)
+            {
+                Database = dbname,
+                Username = DbAdminName,
+                Password = DbPassword
+            };
+
+            var grantSql = $@"
+            CREATE SCHEMA IF NOT EXISTS dbo;
+            CREATE SCHEMA IF NOT EXISTS dbo_history;
+            ";
+
+            Server.ExecScriptAsync(grantSql).Wait();
+
+            return new(dbname, connectionString);
+        }
+        finally
+        {
+            Mutex.ReleaseMutex();
+        }
+
+    }
 }
 
 /// <summary>
@@ -218,8 +270,12 @@ public class PostgresDatabase(string dbname, string connectionString) : IOptions
         Username = PostgresServer.DbAdminName,
         Password = PostgresServer.DbPassword,
         IncludeErrorDetail = true,
-        Pooling = false,      // or "false" to disable pooling entirely
-        ConnectionIdleLifetime = 30,  // (optional) return idle connections quickly
+        // Pooling enabled (remove previous Pooling = false)
+        Pooling = true,
+        ConnectionIdleLifetime = 30,
+        MinPoolSize = 0,
+        MaxPoolSize = 50,
+        ConnectionPruningInterval = 15,
     };
 
     /// <summary>
@@ -232,8 +288,11 @@ public class PostgresDatabase(string dbname, string connectionString) : IOptions
         Username = PostgresServer.DbUserName,
         Password = PostgresServer.DbPassword,
         IncludeErrorDetail = true,
-        Pooling = false,      // or "false" to disable pooling entirely
-        ConnectionIdleLifetime = 30,  // (optional) return idle connections quickly
+        Pooling = true,
+        ConnectionIdleLifetime = 30,
+        MinPoolSize = 0,
+        MaxPoolSize = 50,
+        ConnectionPruningInterval = 15,
     };
 
     /// <summary>

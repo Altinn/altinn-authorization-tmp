@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.Core.Services.Contracts;
@@ -11,6 +12,7 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -18,31 +20,55 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor auditAccessor) : IConnectionService
+public partial class ConnectionService(
+    AppDbContext dbContext,
+    ConnectionQuery connectionQuery,
+    IAuditAccessor auditAccessor,
+    IAltinn2RightsClient altinn2Client) : IConnectionService
 {
     public async Task<Result<IEnumerable<ConnectionDto>>> Get(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
     {
         var options = new ConnectionOptions(configureConnections);
         var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
-        var problem = ValidateReadOpInput(from, to, options);
+        var problem = ValidateReadOpInput(fromId, from, toId, to, options);
         if (problem is { })
         {
+            if (problem.ErrorCode == Problems.PartyNotFound.ErrorCode)
+            {
+                return new List<ConnectionDto>();
+            }
+
             return problem;
         }
 
-        if (party == from?.Id)
-        {
-            var result = await GetConnectionsToOthers(party, to?.Id, null, configureConnections, cancellationToken);
-            return result.ToList();
-        }
+        var direction = party == fromId
+            ? ConnectionQueryDirection.ToOthers
+            : ConnectionQueryDirection.FromOthers;
 
-        if (party == to?.Id)
-        {
-            var result = await GetConnectionsFromOthers(party, from?.Id, null, configureConnections, cancellationToken);
-            return result.ToList();
-        }
+        var connections = await connectionQuery.GetConnectionsAsync(
+            new ConnectionQueryFilter()
+            {
+                FromIds = fromId.HasValue ? [fromId.Value] : null,
+                ToIds = toId.HasValue ? [toId.Value] : null,
+                EnrichEntities = true,
+                IncludeSubConnections = true,
+                IncludeKeyRole = true,
+                IncludeMainUnitConnections = true,
+                IncludeDelegation = true,
+                IncludePackages = true,
+                IncludeResource = false,
+                EnrichPackageResources = false,
+                ExcludeDeleted = false,
+                OnlyUniqueResults = false
+            },
+            direction,
+            true,
+            cancellationToken
+        );
 
-        return new List<ConnectionDto>();
+        return direction == ConnectionQueryDirection.FromOthers
+            ? DtoMapper.ConvertFromOthers(connections, getSingle: fromId.HasValue)
+            : DtoMapper.ConvertToOthers(connections, getSingle: toId.HasValue);
     }
 
     public async Task<Result<AssignmentDto>> AddAssignment(Guid fromId, Guid toId, Action<ConnectionOptions> configureConnections = null, CancellationToken cancellationToken = default)
@@ -120,7 +146,7 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
                 .ToListAsync(cancellationToken);
 
             problem = ValidationComposer.Validate(
-                AssignementPackageValidation.HasAssignedPackages(assignedPackages),
+                AssignmentPackageValidation.HasAssignedPackages(assignedPackages),
                 DelegationValidation.HasDelegationsAssigned(delegationsFrom),
                 DelegationValidation.HasDelegationsAssigned(delegationsTo)
             );
@@ -133,6 +159,12 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
 
         dbContext.Remove(existingAssignment);
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        if (from.PartyId.HasValue && to.PartyId.HasValue)
+        {
+            await altinn2Client.ClearReporteeRights(from.PartyId.Value, to.PartyId.Value, to.UserId.HasValue ? to.UserId.Value : 0, cancellationToken: cancellationToken);
+        }
+
         return null;
     }
 
@@ -140,25 +172,43 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
     {
         var options = new ConnectionOptions(configureConnections);
         var (from, to) = await GetFromAndToEntities(fromId, toId, cancellationToken);
-        var problem = ValidateReadOpInput(from, to, options);
+        var problem = ValidateReadOpInput(fromId, from, toId, to, options);
         if (problem is { })
         {
+            if (problem.ErrorCode == Problems.PartyNotFound.ErrorCode)
+            {
+                return new List<PackagePermissionDto>();
+            }
+
             return problem;
         }
 
-        if (party == from?.Id)
-        {
-            var result = await GetPackagePermissionsToOthers(party, to?.Id, null, configureConnections, cancellationToken);
-            return result.ToList();
-        }
+        var direction = party == fromId
+            ? ConnectionQueryDirection.ToOthers
+            : ConnectionQueryDirection.FromOthers;
 
-        if (party == to?.Id)
+        var connections = await connectionQuery.GetConnectionsAsync(
+        new ConnectionQueryFilter()
         {
-            var result = await GetPackagePermissionsFromOthers(party, from?.Id, null, configureConnections, cancellationToken);
-            return result.ToList();
-        }
+            FromIds = fromId.HasValue ? [fromId.Value] : null,
+            ToIds = toId.HasValue ? [toId.Value] : null,
+            EnrichEntities = true,
+            IncludeSubConnections = true,
+            IncludeKeyRole = true,
+            IncludeMainUnitConnections = true,
+            IncludeDelegation = true,
+            IncludePackages = true,
+            IncludeResource = false,
+            EnrichPackageResources = false,
+            ExcludeDeleted = false,
+            OnlyUniqueResults = false
+        },
+        direction,
+        true,
+        cancellationToken
+        );
 
-        return new List<PackagePermissionDto>();
+        return DtoMapper.ConvertPackages(connections);
     }
 
     public async Task<Result<AssignmentPackageDto>> AddPackage(Guid fromId, Guid toId, Guid packageId, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
@@ -243,16 +293,10 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
             return problem;
         }
 
-        var assignment = await dbContext.Assignments
-            .AsNoTracking()
-            .Where(a => a.FromId == fromId)
-            .Where(a => a.ToId == toId)
-            .Where(a => a.RoleId == RoleConstants.Rightholder)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (assignment is null)
+        var connection = await Get(fromId, fromId, toId, configureConnection, cancellationToken: cancellationToken);
+        if (!connection.IsSuccess || connection.Value.Count() == 0)
         {
-            return Problems.MissingRightHolder;
+            return Problems.MissingConnection;
         }
 
         var check = await CheckPackage(fromId, packageIds: [packageId], configureConnection, cancellationToken);
@@ -271,27 +315,53 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
             return problem;
         }
 
-        var existingAssignmentPackage = await dbContext.AssignmentPackages
+        // Look for existing direct rightholder assignment
+        var assignment = await dbContext.Assignments
             .AsNoTracking()
-            .Where(a => a.AssignmentId == assignment.Id)
-            .Where(a => a.PackageId == packageId)
+            .Where(a => a.FromId == fromId)
+            .Where(a => a.ToId == toId)
+            .Where(a => a.RoleId == RoleConstants.Rightholder.Id)
             .FirstOrDefaultAsync(cancellationToken);
-
-        if (existingAssignmentPackage is { })
+        if (assignment == null)
         {
-            return DtoMapper.Convert(existingAssignmentPackage);
+            assignment = new Assignment()
+            {
+                FromId = fromId,
+                ToId = toId,
+                RoleId = RoleConstants.Rightholder
+            };
+
+            await dbContext.Assignments.AddAsync(assignment, cancellationToken);
+        }
+        else
+        {
+            var existingAssignmentPackage = await dbContext.AssignmentPackages
+                .AsNoTracking()
+                .Where(a => a.AssignmentId == assignment.Id)
+                .Where(a => a.PackageId == packageId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (existingAssignmentPackage is { })
+            {
+                return DtoMapper.Convert(existingAssignmentPackage);
+            }
         }
 
-        existingAssignmentPackage = new AssignmentPackage()
+        var newAssignmentPackage = new AssignmentPackage()
         {
             AssignmentId = assignment.Id,
             PackageId = packageId,
         };
 
-        await dbContext.AssignmentPackages.AddAsync(existingAssignmentPackage, cancellationToken);
+        await dbContext.AssignmentPackages.AddAsync(newAssignmentPackage, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return DtoMapper.Convert(existingAssignmentPackage);
+        if (from.PartyId.HasValue && to.PartyId.HasValue)
+        {
+            await altinn2Client.ClearReporteeRights(from.PartyId.Value, to.PartyId.Value, to.UserId.HasValue ? to.UserId.Value : 0, cancellationToken: cancellationToken);
+        }
+
+        return DtoMapper.Convert(newAssignmentPackage);
     }
 
     public async Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default)
@@ -408,7 +478,7 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
         return problem;
     }
 
-    private ProblemInstance ValidateReadOpInput(Entity? from, Entity? to, ConnectionOptions options)
+    private ProblemInstance ValidateReadOpInput(Guid? fromId, Entity? from, Guid? toId, Entity? to, ConnectionOptions options)
     {
         if (from is { })
         {
@@ -439,41 +509,62 @@ public partial class ConnectionService(AppDbContext dbContext, IAuditAccessor au
             return Problems.ConnectionEntitiesDoNotExist;
         }
 
+        if (toId.HasValue && to is null)
+        {
+            return Problems.PartyNotFound;
+        }
+
+        if (fromId.HasValue && from is null)
+        {
+            return Problems.PartyNotFound;
+        }
+
         return null;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Result<IEnumerable<RolePermissionDto>>> GetRoles(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken)
+    {
+        if (!fromId.HasValue && !toId.HasValue)
+        {
+            return Problems.PartyNotFound;
+        }
+
+        var direction = party == fromId
+            ? ConnectionQueryDirection.ToOthers
+            : ConnectionQueryDirection.FromOthers;
+
+        var filter = new ConnectionQueryFilter()
+        {
+            FromIds = fromId.HasValue ? [fromId.Value] : null,
+            ToIds = toId.HasValue ? [toId.Value] : null,
+            EnrichEntities = true,
+            IncludeSubConnections = true,
+            IncludeKeyRole = true,
+            IncludeMainUnitConnections = true,
+            IncludeDelegation = false,
+            IncludePackages = false,
+            IncludeResource = false,
+            EnrichPackageResources = false,
+            ExcludeDeleted = false
+        };
+
+        var connections = await connectionQuery.GetConnectionsAsync(filter, direction, true, cancellationToken);
+        return connections.GroupBy(r => r.RoleId).Select(connection =>
+        {
+            var role = connection.First().Role;
+            return new RolePermissionDto
+            {
+                Role = DtoMapper.Convert(role),
+                Permissions = connection.Select(connection => DtoMapper.ConvertToPermission(connection)),
+            };
+        }).ToList();
     }
 }
 
 /// <inheritdoc />
 public partial class ConnectionService
 {
-    /// <inheritdoc />
-    public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsToOthers(
-        Guid partyId,
-        Guid? toId = null,
-        Guid? roleId = null,
-        Guid? packageId = null,
-        Guid? resourceId = null,
-        Action<ConnectionOptions> configureConnections = null,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var options = new ConnectionOptions(configureConnections);
-        var result = await dbContext.Connections.AsNoTracking()
-            .IncludeExtendedEntities()
-            .Include(t => t.Role)
-            .Include(t => t.Package)
-            .Where(t => t.FromId == partyId)
-            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.FromId))
-            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.ToId))
-            .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
-            .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
-            .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
-            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
-            .ToListAsync(cancellationToken);
-
-        return ExtractRelationPackageDtoToOthers(result, includeSubConnections: false);
-    }
-
     /// <inheritdoc />
     public async Task<IEnumerable<ConnectionDto>> GetConnectionsToOthers(
         Guid partyId,
@@ -486,41 +577,14 @@ public partial class ConnectionService
         var result = await dbContext.Connections.AsNoTracking()
             .IncludeExtendedEntities()
             .Include(t => t.Role)
-            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.FromId))
-            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.ToId))
+            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.From.TypeId))
+            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.To.TypeId))
             .Where(t => t.FromId == partyId)
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
             .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
             .ToListAsync(cancellationToken);
 
         return ExtractRelationDtoToOthers(result, includeSubConnections: false);
-    }
-
-    /// <inheritdoc />
-    public async Task<IEnumerable<ConnectionPackageDto>> GetConnectionsFromOthers(
-        Guid partyId,
-        Guid? fromId = null,
-        Guid? roleId = null,
-        Guid? packageId = null,
-        Guid? resourceId = null,
-        Action<ConnectionOptions> configureConnections = null,
-        CancellationToken cancellationToken = default)
-    {
-        var options = new ConnectionOptions(configureConnections);
-        var result = await dbContext.Connections.AsNoTracking()
-            .IncludeExtendedEntities()
-            .Include(t => t.Role)
-            .Include(t => t.Package)
-            .Where(t => t.ToId == partyId)
-            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.FromId))
-            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.ToId))
-            .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
-            .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
-            .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
-            .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
-            .ToListAsync(cancellationToken);
-
-        return ExtractRelationPackageDtoFromOthers(result, includeSubConnections: false);
     }
 
     /// <inheritdoc />
@@ -536,8 +600,8 @@ public partial class ConnectionService
             .IncludeExtendedEntities()
             .Include(c => c.Role)
             .Where(t => t.ToId == partyId)
-            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.FromId))
-            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.ToId))
+            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.From.TypeId))
+            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.To.TypeId))
             .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
             .WhereIf(roleId.HasValue, t => t.RoleId == roleId.Value)
             .ToListAsync(cancellationToken);
@@ -562,8 +626,8 @@ public partial class ConnectionService
             .Include(t => t.ViaRole)
             .Include(t => t.Role)
             .Where(c => c.ToId == partyId)
-            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.FromId))
-            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.ToId))
+            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.From.TypeId))
+            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.To.TypeId))
             .WhereIf(fromId.HasValue, c => c.FromId == fromId.Value)
             .WhereIf(packageId.HasValue, c => c.PackageId == packageId.Value)
             .ToListAsync(cancellationToken);
@@ -597,8 +661,8 @@ public partial class ConnectionService
             .Include(t => t.ViaRole)
             .Include(t => t.Role)
             .Where(t => t.FromId == partyId)
-            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.FromId))
-            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.ToId))
+            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.From.TypeId))
+            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.To.TypeId))
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
             .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
             .ToListAsync(cancellationToken);
@@ -632,8 +696,8 @@ public partial class ConnectionService
             .Include(t => t.Role)
             .Include(t => t.Resource)
             .Where(t => t.ToId == partyId)
-            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.FromId))
-            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.ToId))
+            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.From.TypeId))
+            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.To.TypeId))
             .WhereIf(fromId.HasValue, t => t.FromId == fromId.Value)
             .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
             .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)
@@ -668,8 +732,8 @@ public partial class ConnectionService
             .Include(t => t.Resource)
             .Include(t => t.Role)
             .Where(t => t.FromId == partyId)
-            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.FromId))
-            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.ToId))
+            .WhereIf(options.FilterFromEntityTypes.Any(), c => options.FilterFromEntityTypes.Contains(c.From.TypeId))
+            .WhereIf(options.FilterToEntityTypes.Any(), c => options.FilterToEntityTypes.Contains(c.To.TypeId))
             .WhereIf(toId.HasValue, t => t.ToId == toId.Value)
             .WhereIf(packageId.HasValue, t => t.PackageId == packageId.Value)
             .WhereIf(resourceId.HasValue, t => t.ResourceId == resourceId.Value)

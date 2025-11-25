@@ -40,22 +40,22 @@ public class AuthorizedPartiesService : IAuthorizedPartiesService
     }
 
     /// <inheritdoc/>
-    public async Task<List<AuthorizedParty>> GetAuthorizedParties(BaseAttribute subjectAttribute, bool includeAltinn2AuthorizedParties, bool includeAuthorizedResourcesThroughRoles, CancellationToken cancellationToken) => subjectAttribute.Type switch
+    public async Task<List<AuthorizedParty>> GetAuthorizedParties(BaseAttribute subjectAttribute, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default) => subjectAttribute.Type switch
     {
-        AltinnXacmlConstants.MatchAttributeIdentifiers.PersonId => await GetAuthorizedPartiesForPerson(subjectAttribute.Value.ToString(), includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken),
-        AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationId => await GetAuthorizedPartiesForOrganization(subjectAttribute.Value, includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken),
-        AltinnXacmlConstants.MatchAttributeIdentifiers.EnterpriseUserName => await GetAuthorizedPartiesForEnterpriseUser(subjectAttribute.Value, includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken),
-        AltinnXacmlConstants.MatchAttributeIdentifiers.PersonUuid => await GetAuthorizedPartiesForPersonUuid(subjectAttribute.Value, includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken),
-        AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid => await GetAuthorizedPartiesForOrganizationUuid(subjectAttribute.Value, includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken),
-        AltinnXacmlConstants.MatchAttributeIdentifiers.EnterpriseUserUuid => await GetAuthorizedPartiesForEnterpriseUserUuid(subjectAttribute.Value, includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken),
-        AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute => await GetAuthorizedPartiesForParty(int.Parse(subjectAttribute.Value), includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken),
-        AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute => await GetAuthorizedPartiesForUser(int.Parse(subjectAttribute.Value), includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken),
-        AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid => await GetAuthorizedPartiesForSystemUser(subjectAttribute.Value, cancellationToken),
+        AltinnXacmlConstants.MatchAttributeIdentifiers.PersonId => await GetAuthorizedPartiesByPersonId(subjectAttribute.Value.ToString(), filter, cancellationToken: cancellationToken),
+        AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationId => await GetAuthorizedPartiesByOrganizationId(subjectAttribute.Value, filter, cancellationToken: cancellationToken),
+        AltinnXacmlConstants.MatchAttributeIdentifiers.EnterpriseUserName => await GetAuthorizedPartiesByEnterpriseUsername(subjectAttribute.Value, filter, cancellationToken: cancellationToken),
+        AltinnXacmlConstants.MatchAttributeIdentifiers.PersonUuid => await GetAuthorizedPartiesByPersonUuid(subjectAttribute.Value, filter, cancellationToken: cancellationToken),
+        AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid => await GetAuthorizedPartiesByOrganizationUuid(subjectAttribute.Value, filter, cancellationToken: cancellationToken),
+        AltinnXacmlConstants.MatchAttributeIdentifiers.EnterpriseUserUuid => await GetAuthorizedPartiesByEnterpriseUserUuid(subjectAttribute.Value, filter, cancellationToken: cancellationToken),
+        AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute => await GetAuthorizedPartiesByPartyId(int.Parse(subjectAttribute.Value), filter, cancellationToken: cancellationToken),
+        AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute => await GetAuthorizedPartiesByUserId(int.Parse(subjectAttribute.Value), filter, cancellationToken: cancellationToken),
+        AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid => await GetAuthorizedPartiesBySystemUserUuid(subjectAttribute.Value, filter, cancellationToken),
         _ => throw new ArgumentException(message: $"Unknown attribute type: {subjectAttribute.Type}", paramName: nameof(subjectAttribute))
     };
 
     /// <inheritdoc/>
-    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesForParty(int subjectPartyId, bool includeAltinn2AuthorizedParties, bool includeAuthorizedResourcesThroughRoles, CancellationToken cancellationToken)
+    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByPartyId(int subjectPartyId, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default)
     {
         Party subject = await _contextRetrievalService.GetPartyAsync(subjectPartyId, cancellationToken);
         if (subject?.PartyTypeName == PartyType.Person)
@@ -63,39 +63,39 @@ public class AuthorizedPartiesService : IAuthorizedPartiesService
             UserProfile user = await _profile.GetUser(new() { Ssn = subject.SSN }, cancellationToken);
             if (user != null)
             {
-                return await GetAuthorizedPartiesForUser(user.UserId, includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken);
+                return await GetAuthorizedPartiesByUserId(user.UserId, filter, cancellationToken: cancellationToken);
             }
         }
 
         if (subject?.PartyTypeName == PartyType.Organisation)
         {
-            return await BuildAuthorizedParties(0, subject.PartyId.SingleToList(), includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken);
+            return await BuildAuthorizedParties(0, subject.PartyId.SingleToList(), filter.IncludeAltinn2, cancellationToken);
         }
 
         return await Task.FromResult(new List<AuthorizedParty>());
     }
 
     /// <inheritdoc/>
-    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesForUser(int subjectUserId, bool includeAltinn2AuthorizedParties, bool includeAuthorizedResourcesThroughRoles, CancellationToken cancellationToken)
+    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByUserId(int subjectUserId, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default)
     {
         List<int> keyRoleUnits = await _contextRetrievalService.GetKeyRolePartyIds(subjectUserId, cancellationToken);
-        return await BuildAuthorizedParties(subjectUserId, keyRoleUnits, includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken);
+        return await BuildAuthorizedParties(subjectUserId, keyRoleUnits, filter.IncludeAltinn2, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesForPerson(string subjectNationalId, bool includeAltinn2AuthorizedParties, bool includeAuthorizedResourcesThroughRoles, CancellationToken cancellationToken)
+    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByPersonId(string subjectNationalId, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default)
     {
         UserProfile user = await _profile.GetUser(new() { Ssn = subjectNationalId }, cancellationToken);
         if (user != null)
         {
-            return await GetAuthorizedPartiesForUser(user.UserId, includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken);
+            return await GetAuthorizedPartiesByUserId(user.UserId, filter, cancellationToken: cancellationToken);
         }
 
         return await Task.FromResult(new List<AuthorizedParty>());
     }
 
     /// <inheritdoc/>
-    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesForPersonUuid(string subjectPersonUuid, bool includeAltinn2AuthorizedParties, bool includeAuthorizedResourcesThroughRoles, CancellationToken cancellationToken)
+    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByPersonUuid(string subjectPersonUuid, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default)
     {
         if (!Guid.TryParse(subjectPersonUuid, out Guid personUuid))
         {
@@ -105,26 +105,26 @@ public class AuthorizedPartiesService : IAuthorizedPartiesService
         UserProfile user = await _profile.GetUser(new() { UserUuid = personUuid }, cancellationToken);
         if (user != null && user.Party.PartyTypeName == PartyType.Person)
         {
-            return await GetAuthorizedPartiesForUser(user.UserId, includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken);
+            return await GetAuthorizedPartiesByUserId(user.UserId, filter, cancellationToken: cancellationToken);
         }
 
         return await Task.FromResult(new List<AuthorizedParty>());
     }
 
     /// <inheritdoc/>
-    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesForOrganization(string subjectOrganizationNumber, bool includeAltinn2AuthorizedParties, bool includeAuthorizedResourcesThroughRoles, CancellationToken cancellationToken)
+    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByOrganizationId(string subjectOrganizationNumber, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default)
     {
         Party subject = await _contextRetrievalService.GetPartyForOrganization(subjectOrganizationNumber, cancellationToken);
         if (subject != null)
         {
-            return await BuildAuthorizedParties(0, subject.PartyId.SingleToList(), includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken);
+            return await BuildAuthorizedParties(0, subject.PartyId.SingleToList(), filter.IncludeAltinn2, cancellationToken);
         }
 
         return await Task.FromResult(new List<AuthorizedParty>());
     }
 
     /// <inheritdoc/>
-    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesForOrganizationUuid(string subjectOrganizationUuid, bool includeAltinn2AuthorizedParties, bool includeAuthorizedResourcesThroughRoles, CancellationToken cancellationToken)
+    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByOrganizationUuid(string subjectOrganizationUuid, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default)
     {
         if (!Guid.TryParse(subjectOrganizationUuid, out Guid orgUuid))
         {
@@ -134,26 +134,26 @@ public class AuthorizedPartiesService : IAuthorizedPartiesService
         Party subject = await _contextRetrievalService.GetPartyByUuid(orgUuid, cancellationToken: cancellationToken);
         if (subject != null && subject.PartyTypeName == PartyType.Organisation)
         {
-            return await BuildAuthorizedParties(0, subject.PartyId.SingleToList(), includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken);
+            return await BuildAuthorizedParties(0, subject.PartyId.SingleToList(), filter.IncludeAltinn2, cancellationToken);
         }
 
         return await Task.FromResult(new List<AuthorizedParty>());
     }
 
     /// <inheritdoc/>
-    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesForEnterpriseUser(string subjectEnterpriseUsername, bool includeAltinn2AuthorizedParties, bool includeAuthorizedResourcesThroughRoles, CancellationToken cancellationToken)
+    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByEnterpriseUsername(string subjectEnterpriseUsername, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default)
     {
         UserProfile user = await _profile.GetUser(new() { Username = subjectEnterpriseUsername }, cancellationToken);
         if (user != null && user.Party.PartyTypeName == PartyType.Organisation)
         {
-            return await GetAuthorizedPartiesForUser(user.UserId, includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken);
+            return await GetAuthorizedPartiesByUserId(user.UserId, filter, cancellationToken: cancellationToken);
         }
 
         return await Task.FromResult(new List<AuthorizedParty>());
     }
 
     /// <inheritdoc/>
-    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesForEnterpriseUserUuid(string subjectEnterpriseUserUuid, bool includeAltinn2AuthorizedParties, bool includeAuthorizedResourcesThroughRoles, CancellationToken cancellationToken)
+    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesByEnterpriseUserUuid(string subjectEnterpriseUserUuid, AuthorizedPartiesFilters filter, CancellationToken cancellationToken = default)
     {
         if (!Guid.TryParse(subjectEnterpriseUserUuid, out Guid enterpriseUserUuid))
         {
@@ -163,14 +163,14 @@ public class AuthorizedPartiesService : IAuthorizedPartiesService
         UserProfile user = await _profile.GetUser(new() { UserUuid = enterpriseUserUuid }, cancellationToken);
         if (user != null && user.Party.PartyTypeName == PartyType.Organisation)
         {
-            return await GetAuthorizedPartiesForUser(user.UserId, includeAltinn2AuthorizedParties, includeAuthorizedResourcesThroughRoles, cancellationToken);
+            return await GetAuthorizedPartiesByUserId(user.UserId, filter, cancellationToken: cancellationToken);
         }
 
         return await Task.FromResult(new List<AuthorizedParty>());
     }
 
     /// <inheritdoc/>
-    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesForSystemUser(string subjectSystemUserUuid, CancellationToken cancellationToken)
+    public async Task<List<AuthorizedParty>> GetAuthorizedPartiesBySystemUserUuid(string subjectSystemUserUuid, AuthorizedPartiesFilters filter, CancellationToken cancellationToken)
     {
         if (!Guid.TryParse(subjectSystemUserUuid, out Guid systemUserId))
         {
@@ -179,6 +179,12 @@ public class AuthorizedPartiesService : IAuthorizedPartiesService
 
         var parties = await _authorizedPartyRepoService.Get(systemUserId, cancellationToken);
         return parties.Value.ToList();
+    }
+
+    /// <inheritdoc/>
+    public Task<IEnumerable<Guid>> GetPartyFilterUuids(IEnumerable<BaseAttribute> partyAttributes, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 
     private async Task AddInstanceDelegations(List<DelegationChange> delegations, int subjectUserId, List<int> subjectPartyIds, CancellationToken cancellationToken)
@@ -228,22 +234,17 @@ public class AuthorizedPartiesService : IAuthorizedPartiesService
         }
     }
 
-    private async Task<List<AuthorizedParty>> BuildAuthorizedParties(int subjectUserId, List<int> subjectPartyIds, bool includeAltinn2AuthorizedParties, bool includeResourcesThroughRoles, CancellationToken cancellationToken)
+    private async Task<List<AuthorizedParty>> BuildAuthorizedParties(int subjectUserId, List<int> subjectPartyIds, bool includeAltinn2, CancellationToken cancellationToken)
     {
         List<AuthorizedParty> result = [];
         List<AuthorizedParty> a3AuthParties = [];
         SortedDictionary<int, AuthorizedParty> authorizedPartyDict = [];
 
-        if ((includeAltinn2AuthorizedParties || includeResourcesThroughRoles) && subjectUserId != 0)
+        if (includeAltinn2 && subjectUserId != 0)
         {
             List<AuthorizedParty> a2AuthParties = await _altinnRolesClient.GetAuthorizedPartiesWithRoles(subjectUserId, cancellationToken);
             foreach (AuthorizedParty a2AuthParty in a2AuthParties)
             {
-                if (includeResourcesThroughRoles)
-                {
-                    await EnrichPartyWithAuthorizedResourcesThroughRoles(a2AuthParty, cancellationToken);
-                }
-
                 authorizedPartyDict.Add(a2AuthParty.PartyId, a2AuthParty);
                 if (a2AuthParty.Subunits != null)
                 {
@@ -359,22 +360,5 @@ public class AuthorizedPartiesService : IAuthorizedPartiesService
 
         result.AddRange(a3AuthParties);
         return result;
-    }
-
-    private async Task EnrichPartyWithAuthorizedResourcesThroughRoles(AuthorizedParty party, CancellationToken cancellationToken)
-    {
-        if (party.AuthorizedRoles?.Count > 0)
-        {
-            IDictionary<string, IEnumerable<BaseAttribute>> subjectResources = await _contextRetrievalService.GetSubjectResources(party.AuthorizedRoles.Select(r => $"{AltinnXacmlConstants.MatchAttributeIdentifiers.RoleAttribute}:{r.ToLower()}"), cancellationToken);
-            party.AuthorizedResources.AddRange(subjectResources.Keys.SelectMany(subject => subjectResources[subject].Where(resource => resource != null && resource.Value != null).Select(resource => resource.Value)));
-        }
-
-        if (party.Subunits?.Count > 0)
-        {
-            foreach (AuthorizedParty subunit in party.Subunits)
-            {
-                await EnrichPartyWithAuthorizedResourcesThroughRoles(subunit, cancellationToken);
-            }
-        }
     }
 }

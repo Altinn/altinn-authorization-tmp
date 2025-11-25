@@ -1,4 +1,4 @@
-using Altinn.AccessManagement.Core.Errors;
+﻿using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -11,7 +11,7 @@ namespace Altinn.AccessMgmt.Core.Validation;
 /// </summary>
 public static class PackageValidation
 {
-    internal static RuleExpression PackageExists(Package package, string paramName = "package") => () =>
+    internal static RuleExpression PackageExists(Package package, string packageName, string paramName = "package") => () =>
     {
         if (package is { })
         {
@@ -19,7 +19,7 @@ public static class PackageValidation
         }
 
         return (ref ValidationErrorBuilder errors) =>
-            errors.Add(ValidationErrors.PackageNotExists, $"QUERY/{paramName}", [new("packages", $"No packages are found with given name.")]
+            errors.Add(ValidationErrors.PackageNotExists, $"QUERY/{paramName}", [new("packages", $"No packages with name '{packageName}' do not exists.")]
         );
     };
 
@@ -54,7 +54,7 @@ public static class PackageValidation
             if (packagesNotAssignableToOrg.Any())
             {
                 return (ref ValidationErrorBuilder errors) =>
-                    errors.Add(ValidationErrors.InvalidQueryParameter, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableToOrg)} are not assignable to an organization.")]);
+                    errors.Add(ValidationErrors.PackageIsNotAssignableToRecipient, $"QUERY/{paramName}", [new("Packages", $"{string.Join(", ", packagesNotAssignableToOrg)} are not assignable to an organization.")]);
             }
         }
 

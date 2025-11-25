@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Data;
 
-internal static partial class StaticDataIngest
+public static partial class StaticDataIngest
 {
     /// <summary>
     /// Ingest RolePackage
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    internal async static Task IngestRolePackage(AppDbContext dbContext, CancellationToken cancellationToken = default)
+    public async static Task IngestRolePackage(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
         var packages = (await dbContext.Packages.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
         var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
@@ -775,15 +775,15 @@ internal static partial class StaticDataIngest
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:kommuneoverlege"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:kommuneoverlege"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:helsetjenester-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:helsetjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1191,13 +1191,13 @@ internal static partial class StaticDataIngest
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:post-til-virksomheten-med-taushetsbelagt-innhold"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:eksplisitt"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysinger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
         };
 
         foreach (var d in data)

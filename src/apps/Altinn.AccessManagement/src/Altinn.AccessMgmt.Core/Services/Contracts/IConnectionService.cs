@@ -49,6 +49,17 @@ public interface IConnectionService
     Task<ValidationProblemInstance> RemoveAssignment(Guid fromId, Guid toId, bool cascade = false, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves the roles associated with a given entity.
+    /// </summary>
+    /// <param name="party">The user is operating on behalf of.</param>
+    /// <param name="fromId">ID of the entity from which the assignment originates.</param>
+    /// <param name="toId">ID of the entity to which the assignment was made.</param>
+    /// <param name="configureConnections">A delegate used to configure connection behavior.</param>
+    /// <param name="cancellationToken">A token used to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a collection of role permissions.</returns>
+    Task<Result<IEnumerable<RolePermissionDto>>> GetRoles(Guid party, Guid? fromId, Guid? toId, Action<ConnectionOptions> configureConnections, CancellationToken cancellationToken);
+
+    /// <summary>
     /// 
     /// </summary>
     /// <param name="party"></param>
@@ -150,32 +161,6 @@ public interface IConnectionService
     /// A <see cref="ValidationProblemInstance"/> indicating success or describing any validation errors.
     /// </returns>
     Task<Result<IEnumerable<AccessPackageDto.Check>>> CheckPackage(Guid party, IEnumerable<string> packages, IEnumerable<Guid> packageIds = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get Connections given from party
-    /// </summary>
-    /// <param name="partyId">Filter for party</param>
-    /// <param name="toId">to party</param>
-    /// <param name="roleId">Filter for role</param>
-    /// <param name="packageId">Filter for package</param>
-    /// <param name="resourceId">Filter for resource</param>
-    /// <param name="configureConnection"></param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns></returns>
-    Task<IEnumerable<ConnectionPackageDto>> GetConnectionsToOthers(Guid partyId, Guid? toId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get Connections recived from party
-    /// </summary>
-    /// <param name="partyId">Filter for party</param>
-    /// <param name="fromId">to party</param>
-    /// <param name="roleId">Filter for role</param>
-    /// <param name="packageId">Filter for package</param>
-    /// <param name="resourceId">Filter for resource</param>
-    /// <param name="configureConnection"></param>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns></returns>
-    Task<IEnumerable<ConnectionPackageDto>> GetConnectionsFromOthers(Guid partyId, Guid? fromId = null, Guid? roleId = null, Guid? packageId = null, Guid? resourceId = null, Action<ConnectionOptions> configureConnection = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get connections given from party

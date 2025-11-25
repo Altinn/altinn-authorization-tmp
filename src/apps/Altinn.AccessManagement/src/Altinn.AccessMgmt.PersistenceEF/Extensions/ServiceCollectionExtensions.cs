@@ -4,6 +4,7 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
 using Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
 using Altinn.AccessMgmt.PersistenceEF.Models.Legacy.Enums;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ReadOnlyInterceptor>();
         services.AddScoped<IAuditAccessor, AuditAccessor>();
         services.AddScoped<ITranslationService, TranslationService>();
-        
+        services.AddScoped<ConnectionQuery>();
         services.AddScoped<AppDbContextFactory>();
         services.AddScoped(sp => sp.GetRequiredService<AppDbContextFactory>().CreateDbContext());
 
@@ -48,7 +49,7 @@ public static class ServiceCollectionExtensions
 
     private static void ConfigureNpgsql(NpgsqlDbContextOptionsBuilder builder)
     {
-        builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+        builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
     }
 
     private static void AddMigrationDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)

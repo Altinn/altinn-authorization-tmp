@@ -114,7 +114,7 @@ namespace Altinn.AccessMgmt.Persistence.Services
             {
                 Name = extEntityLookup.Entity.Name,
                 PartyUuid = extEntityLookup.Entity.Id,
-                OrganizationId = extEntityLookup.Value,
+                PersonId = extEntityLookup.Value,
                 PartyType = extEntityLookup.Entity.TypeId
             };
         }

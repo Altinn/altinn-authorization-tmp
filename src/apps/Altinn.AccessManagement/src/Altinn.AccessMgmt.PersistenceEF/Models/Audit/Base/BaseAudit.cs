@@ -17,7 +17,7 @@ public class BaseAudit
         Audit_ChangedBy = values.ChangedBy;
         Audit_ChangedBySystem = values.ChangedBySystem;
         Audit_ChangeOperation = values.OperationId;
-        Audit_ValidFrom = DateTimeOffset.UtcNow;
+        Audit_ValidFrom = values.ValidFrom == DateTimeOffset.MinValue ? DateTimeOffset.UtcNow : values.ValidFrom;
     }
 
     public void SetAuditValues(Guid changedBy, Guid changedBySystem)
@@ -25,7 +25,7 @@ public class BaseAudit
         Audit_ChangedBy = changedBy;
         Audit_ChangedBySystem = changedBySystem;
         Audit_ChangeOperation = Guid.NewGuid().ToString();
-        Audit_ValidFrom = DateTimeOffset.Now;
+        Audit_ValidFrom = DateTimeOffset.UtcNow;
     }
 
     public void SetAuditValues(Guid changedBy, Guid changedBySystem, string changeOperation)
@@ -33,7 +33,7 @@ public class BaseAudit
         Audit_ChangedBy = changedBy;
         Audit_ChangedBySystem = changedBySystem;
         Audit_ChangeOperation = changeOperation;
-        Audit_ValidFrom = DateTimeOffset.Now;
+        Audit_ValidFrom = DateTimeOffset.UtcNow;
     }
 
     public void SetAuditValues(Guid changedBy, Guid changedBySystem, string changeOperation, DateTimeOffset validFrom)

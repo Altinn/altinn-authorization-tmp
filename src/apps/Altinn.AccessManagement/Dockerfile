@@ -1,11 +1,11 @@
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine@sha256:f47429a125e38d83f5231a78dde18106cb447d541f7ffdc5b8af4d227a323d95 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine@sha256:512f8347b0d2f9848f099a8c31be07286955ceea337cadb1114057ed0b15862f AS build
 WORKDIR /app
 WORKDIR /src
 COPY src/ .
 WORKDIR /src/apps/Altinn.AccessManagement/src/Altinn.AccessManagement
 RUN dotnet publish -c Release -o /app
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine@sha256:56cbdd25b168276871f8f4916efebde4d10e69250bb6b3e8a4f6f95db8d65ac2 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine@sha256:07c48612ac44393b15e741734761cf1f30cdb8f7e645e66e25b4563681ceef99 AS final
 EXPOSE 5110
 WORKDIR /app
 COPY --from=build /app .

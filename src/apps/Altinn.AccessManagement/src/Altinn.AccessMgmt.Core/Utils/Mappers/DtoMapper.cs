@@ -1,5 +1,6 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Utils;
@@ -97,19 +98,31 @@ public partial class DtoMapper
         });
     }
 
-    public static CompactEntityDto Convert(Entity compactEntity, bool isConvertingParent = false)
+    public static CompactEntityDto Convert(Entity entity, bool isConvertingParent = false)
     {
-        if (compactEntity is { })
+        if (entity is { })
         {
+            EntityTypeConstants.TryGetById(entity.TypeId, out var type);
+            EntityVariantConstants.TryGetById(entity.VariantId, out var variant);
+
             return new CompactEntityDto()
             {
-                Id = compactEntity.Id,
-                Name = compactEntity?.Name,
-                Type = compactEntity?.Type?.Name,
-                Variant = compactEntity?.Variant?.Name,
-                KeyValues = GetFakeKeyValues(compactEntity),
-                Parent = isConvertingParent ? null : Convert(compactEntity.Parent, true),
-                Children = null
+                Id = entity.Id,
+                Name = entity?.Name,
+                Type = type.Entity.Name,
+                Variant = variant.Entity.Name,
+                Parent = isConvertingParent ? null : Convert(entity.Parent, true),
+                Children = null,
+                KeyValues = GetFakeKeyValues(entity),
+                DateOfBirth = entity.DateOfBirth,
+                DateOfDeath = entity.DateOfDeath,
+                IsDeleted = entity.IsDeleted,
+                DeletedAt = entity.DeletedAt,
+                OrganizationIdentifier = entity.OrganizationIdentifier,
+                PartyId = entity.PartyId,
+                PersonIdentifier = entity.PersonIdentifier,
+                UserId = entity.UserId,
+                Username = entity.Username
             };
         }
 
@@ -123,6 +136,11 @@ public partial class DtoMapper
         if (entity.TypeId.Equals(EntityTypeConstants.Organisation))
         {
             result.Add("OrganizationIdentifier", entity.RefId);
+        }
+
+        if (entity.PartyId.HasValue && entity.PartyId > 0)
+        {
+            result.Add("PartyId", entity.PartyId.ToString());
         }
 
         if (entity.TypeId.Equals(EntityTypeConstants.Person))
@@ -195,6 +213,21 @@ public partial class DtoMapper
                 Id = role.Id,
                 Children = null,
                 Code = role.Code
+            };
+        }
+
+        return null;
+    }
+
+    public static CompactPackageDto ConvertCompactPackage(ConnectionQueryPackage package)
+    {
+        if (package is { })
+        {
+            return new CompactPackageDto()
+            {
+                Id = package.Id,
+                Urn = package.Urn,
+                AreaId = package.AreaId,
             };
         }
 

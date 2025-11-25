@@ -1,4 +1,4 @@
-create view dbo.connectionef(fromid, roleid, viaid, viaroleid, toid, packageid, resourceid, reason) as
+create view dbo.connectionef(fromid, roleid, viaid, viaroleid, toid, packageid, resourceid, delegationid, reason) as
 SELECT a.fromid,
        a.roleid,
        NULL::uuid     AS viaid,
@@ -101,3 +101,5 @@ FROM dbo.delegation d
          JOIN dbo.assignment fa ON fa.id = d.fromid
          JOIN dbo.assignment ta ON ta.id = d.toid
          JOIN dbo.delegationpackage dp ON dp.delegationid = d.id
+         ;
+grant select on dbo.connectionef to platform_authorization;

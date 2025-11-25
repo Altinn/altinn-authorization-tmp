@@ -14,7 +14,7 @@ public class EntityService : IEntityService
         Db = appDbContext;
     }
 
-    private AuditValues AuditValues { get; set; } = new AuditValues(SystemEntityConstants.InternalApi, SystemEntityConstants.InternalApi, Guid.NewGuid().ToString());
+    private AuditValues AuditValues { get; set; } = new AuditValues(SystemEntityConstants.InternalApi, SystemEntityConstants.InternalApi, Guid.NewGuid().ToString(), DateTimeOffset.UtcNow);
 
     private AppDbContext Db { get; }
 
@@ -73,39 +73,51 @@ public class EntityService : IEntityService
     }
 
     /// <inheritdoc/>
-    public async Task<Entity> GetByOrgNo(string orgNo, CancellationToken cancellationToken = default)
-    {
-        var entityId = await Db.EntityLookups.AsNoTracking().Where(t => t.Key == "OrganizationIdentifier" && t.Value == orgNo).Select(t => t.EntityId).FirstOrDefaultAsync();
-        return await GetEntity(entityId, cancellationToken);
-    }
+    public async Task<Entity> GetByOrgNo(string orgNo, CancellationToken cancellationToken = default) => await
+        Db.Entities
+            .AsNoTracking()
+            .Where(e => e.OrganizationIdentifier == orgNo)
+            .FirstOrDefaultAsync(cancellationToken);
 
     /// <inheritdoc/>
-    public async Task<Entity> GetByPersNo(string persNo, CancellationToken cancellationToken = default)
-    {
-        var entityId = await Db.EntityLookups.AsNoTracking().Where(t => t.Key == "PersonIdentifier" && t.Value == persNo).Select(t => t.EntityId).FirstOrDefaultAsync();
-        return await GetEntity(entityId, cancellationToken);
-    }
+    public async Task<Entity> GetByPersNo(string persNo, CancellationToken cancellationToken = default) => await 
+        Db.Entities
+            .AsNoTracking()
+            .Where(e => e.PersonIdentifier == persNo)
+            .FirstOrDefaultAsync(cancellationToken);
 
+    /// <inheritdoc/>
+    public async Task<Entity?> GetByPartyId(int partyId, CancellationToken ct = default) => await
+       Db.Entities
+            .AsNoTracking()
+            .Where(e => e.PartyId == partyId)
+            .FirstOrDefaultAsync(ct);
+    
     /// <inheritdoc/>
     public async Task<Entity> GetByPartyId(string partyId, CancellationToken cancellationToken = default)
     {
-        var entityId = await Db.EntityLookups.AsNoTracking().Where(t => t.Key == "PartyId" && t.Value == partyId).Select(t => t.EntityId).FirstOrDefaultAsync();
-        return await GetEntity(entityId, cancellationToken);
+        return await GetByPartyId(int.Parse(partyId), cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<Entity?> GetByUserId(int userId, CancellationToken ct = default) => await
+        Db.Entities
+            .AsNoTracking()
+            .Where(e => e.UserId == userId)
+            .FirstOrDefaultAsync(ct);
 
     /// <inheritdoc/>
     public async Task<Entity> GetByUserId(string userId, CancellationToken cancellationToken = default)
     {
-        var entityId = await Db.EntityLookups.AsNoTracking().Where(t => t.Key == "UserId" && t.Value == userId).Select(t => t.EntityId).FirstOrDefaultAsync();
-        return await GetEntity(entityId, cancellationToken);
+        return await GetByUserId(int.Parse(userId), cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<Entity> GetByProfile(string profileId, CancellationToken cancellationToken = default)
-    {
-        var entityId = await Db.EntityLookups.AsNoTracking().Where(t => t.Key == "ProfileId" && t.Value == profileId).Select(t => t.EntityId).FirstOrDefaultAsync();
-        return await GetEntity(entityId, cancellationToken);
-    }
+    public async Task<Entity?> GetByUsername(string username, CancellationToken ct = default) => await
+        Db.Entities
+            .AsNoTracking()
+            .Where(e => e.Username == username)
+            .FirstOrDefaultAsync(ct);
 
     /// <inheritdoc/>
     public async Task<IEnumerable<Entity>> GetChildren(Guid parentId, CancellationToken cancellationToken = default)
@@ -114,8 +126,35 @@ public class EntityService : IEntityService
     }
 
     /// <inheritdoc/>
+    public async Task<IEnumerable<Entity>> GetChildren(IEnumerable<Guid> parentIds, CancellationToken cancellationToken = default)
+    {
+        return await Db.Entities
+            .AsNoTracking()
+            .Where(t => t.ParentId.HasValue && parentIds.Contains(t.ParentId.Value))
+            .Include(t => t.Parent)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<Entity> GetParent(Guid parentId, CancellationToken cancellationToken = default)
     {
         return await GetEntity(parentId, cancellationToken);
-    }    
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Entity>> GetEntities(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+    {
+        return await Db.Entities.AsNoTracking()
+            .Where(r => ids.Contains(r.Id))
+            .Include(t => t.Parent)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Entity>> GetEntitiesByPartyIds(IEnumerable<int> partyIds, CancellationToken cancellationToken = default)
+    {
+        return await Db.Entities.AsNoTracking()
+            .Where(r => r.PartyId.HasValue && partyIds.Contains(r.PartyId.Value))
+            .ToListAsync(cancellationToken);
+    }
 }
