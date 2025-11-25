@@ -1,5 +1,4 @@
-﻿using AccessMgmt.Tests.Services;
-using Altinn.AccessManagement.Tests.Fixtures;
+﻿using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
@@ -7,7 +6,6 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Moq;
 
 namespace AccessMgmt.Tests.Controllers.Metadata;
 
