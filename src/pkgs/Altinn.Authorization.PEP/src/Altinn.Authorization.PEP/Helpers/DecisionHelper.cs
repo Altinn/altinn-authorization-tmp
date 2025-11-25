@@ -252,10 +252,20 @@ namespace Altinn.Common.PEP.Helpers
                 }
                 else if (IsSidClaim(claim.Type))
                 {
+                    if (attributes.Any(a => a.AttributeId == AltinnXacmlUrns.SessionId))
+                    {
+                        continue;
+                    }
+
                     attributes.Add(CreateXacmlJsonAttribute(AltinnXacmlUrns.SessionId, claim.Value, DefaultType, claim.Issuer));
                 }
                 else if (IsJtiClaim(claim.Type))
                 {
+                    if (attributes.Any(a => a.AttributeId == AltinnXacmlUrns.SessionId))
+                    {
+                        continue;
+                    }
+
                     attributes.Add(CreateXacmlJsonAttribute(AltinnXacmlUrns.SessionId, claim.Value, DefaultType, claim.Issuer));
                 }
                 else if (IsSystemUserClaim(claim, out SystemUserClaim userClaim))
