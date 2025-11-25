@@ -225,6 +225,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             UserId = party?.User.Value?.UserId.HasValue == true ? Convert.ToInt32(party.User.Value.UserId.Value) : null,
             Username = party?.User.Value?.Username.HasValue == true ? party.User.Value.Username.ToString() : null,
             IsDeleted = party?.IsDeleted.HasValue == true ? party.IsDeleted.Value : false,
+            Audit_ValidFrom = party.ModifiedAt.Value,
         };
 
         configureEntity(entity);
