@@ -85,7 +85,7 @@ public class AccessManagementWrapper : IAccessManagementWrapper
     /// <inheritdoc/>
     public async Task<AuthorizedPartyDto> GetAuthorizedParty(int partyId, CancellationToken cancellationToken = default)
     {
-        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(new Uri(_client.Settings.Value.ApiAccessManagementEndpoint), $"authorizedparties/{partyId}?includeAltinn2=true&includeAltinn3=true&includeRoles=false&includeAccessPackages=false&includeResources=false&includeInstances=false"));
+        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(new Uri(_client.Settings.Value.ApiAccessManagementEndpoint), $"authorizedparty/{partyId}?includeAltinn2=true&includeAltinn3=true&includeRoles=false&includeAccessPackages=false&includeResources=false&includeInstances=false"));
         request.Headers.Add("Authorization", "Bearer " + JwtTokenUtil.GetTokenFromContext(_httpContextAccessor.HttpContext, _generalSettings.RuntimeCookieName));
 
         var response = await _client.Client.SendAsync(request, cancellationToken);
@@ -93,6 +93,10 @@ public class AccessManagementWrapper : IAccessManagementWrapper
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<AuthorizedPartyDto>(_serializerOptions, cancellationToken);
+        }
+        else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+        {
+            return null;
         }
 
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
