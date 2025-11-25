@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Altinn.Register.Contracts;
 
 namespace Altinn.Authorization.Integration.Platform.Register;
@@ -24,15 +25,21 @@ public partial class AltinnRegisterClient
     ];
 
     /// <inheritdoc/>
-    public async Task<IAsyncEnumerable<PlatformResponse<PageStream<Party>>>> StreamParties(IEnumerable<string> fields, string nextPage = null, CancellationToken cancellationToken = default)
+    public async Task<IAsyncEnumerable<PlatformResponse<PageStream<Party>>>> StreamParties(IEnumerable<string> fields, IEnumerable<string> types = null, string nextPage = null, CancellationToken cancellationToken = default)
     {
-        IEnumerable<Action<HttpRequestMessage>> request = [
+        types ??= [];
+        List<Action<HttpRequestMessage>> request = [
             RequestComposer.WithHttpVerb(HttpMethod.Get),
             RequestComposer.WithSetUri(RegisterOptions.Value.Endpoint, "/register/api/v2/internal/parties/stream"),
             RequestComposer.WithSetUri(nextPage),
             RequestComposer.WithAppendQueryParam("fields", fields),
             RequestComposer.WithPlatformAccessToken(async () => await TokenGenerator.CreatePlatformAccessToken(cancellationToken))
         ];
+
+        if (types.Any())
+        {
+            request.Add(RequestComposer.WithAppendQueryParam("types", string.Join(',', types)));
+        }
 
         var response = await HttpClient.SendAsync(RequestComposer.New([.. request]), cancellationToken);
 

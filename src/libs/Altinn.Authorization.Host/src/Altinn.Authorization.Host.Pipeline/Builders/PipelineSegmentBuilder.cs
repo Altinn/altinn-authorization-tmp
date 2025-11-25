@@ -25,6 +25,11 @@ internal class PipelineSegmentBuilder<TIn>(
         return builder;
     }
 
+    public ISegmentBuilder<TOutbound> AddSegment<TOutbound>(PipelineSegment<TIn, TOutbound> segment)
+    {
+        return AddSegment("Transform", segment);
+    }
+
     /// <inheritdoc/>
     public ISinkBuilder AddSink(string name, PipelineSink<TIn> sink)
     {
@@ -34,6 +39,11 @@ internal class PipelineSegmentBuilder<TIn>(
         Func = sink;
         Sink = builder;
         return builder;
+    }
+
+    public ISinkBuilder AddSink(PipelineSink<TIn> sink)
+    {
+        return AddSink("Load", sink);
     }
 }
 
@@ -55,6 +65,15 @@ public interface ISegmentBuilder<TInbound>
     ISegmentBuilder<TOutbound> AddSegment<TOutbound>(string name, PipelineSegment<TInbound, TOutbound> segment);
 
     /// <summary>
+    /// Adds a transformation segment.
+    /// Segments transform messages and are retried up to 3 times on failure.
+    /// </summary>
+    /// <typeparam name="TOutbound">The output message type.</typeparam>
+    /// <param name="segment">Transform function: receives <typeparamref name="TInbound"/>, returns <typeparamref name="TOutbound"/>.</param>
+    /// <returns>Builder for the next stage.</returns>
+    ISegmentBuilder<TOutbound> AddSegment<TOutbound>(PipelineSegment<TInbound, TOutbound> segment);
+
+    /// <summary>
     /// Adds the terminal sink stage.
     /// Sinks perform final processing (e.g., database writes, API calls) and are retried up to 3 times on failure.
     /// </summary>
@@ -62,4 +81,12 @@ public interface ISegmentBuilder<TInbound>
     /// <param name="sink">Sink function: consumes <typeparamref name="TInbound"/> and performs final processing.</param>
     /// <returns>Builder to complete pipeline configuration.</returns>
     ISinkBuilder AddSink(string name, PipelineSink<TInbound> sink);
+
+    /// <summary>
+    /// Adds the terminal sink stage.
+    /// Sinks perform final processing (e.g., database writes, API calls) and are retried up to 3 times on failure.
+    /// </summary>
+    /// <param name="sink">Sink function: consumes <typeparamref name="TInbound"/> and performs final processing.</param>
+    /// <returns>Builder to complete pipeline configuration.</returns>
+    ISinkBuilder AddSink(PipelineSink<TInbound> sink);
 }

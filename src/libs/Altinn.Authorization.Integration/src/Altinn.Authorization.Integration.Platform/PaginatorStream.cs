@@ -1,4 +1,7 @@
+using System.Diagnostics;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using Altinn.Authorization.ProblemDetails;
 
 namespace Altinn.Authorization.Integration.Platform;
 
@@ -45,8 +48,33 @@ public class PaginatorStream<T>(HttpClient httpClient, HttpResponseMessage curre
             }
             else
             {
+                RecordProblemDetails(response.ProblemDetails);
                 yield return response;
                 yield break;
+            }
+        }
+    }
+
+    internal static void RecordProblemDetails(AltinnProblemDetails problem)
+    {
+        var activity = Activity.Current;
+        if (activity is { })
+        {
+            activity.AddTag("problem.title", problem.Title);
+            activity.AddTag("problem.detail", problem.Detail);
+            activity.AddTag("problem.status", problem.Status);
+            activity.AddTag("problem.error_code", problem.ErrorCode);
+            activity.AddTag("problem.instance", problem.Instance);
+            activity.AddTag("problem.type", problem.Type);
+            
+            try
+            {
+                var extensions = JsonSerializer.Serialize(problem.Extensions);
+                activity.AddTag($"problem.extensions", extensions);
+            }
+            catch (Exception)
+            {
+                // ignore of serialization fails. Most likely to empty data.
             }
         }
     }

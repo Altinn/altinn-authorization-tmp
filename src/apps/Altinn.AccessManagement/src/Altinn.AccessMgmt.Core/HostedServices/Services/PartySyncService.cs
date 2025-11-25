@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+﻿using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -18,7 +17,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services;
 /// <inheritdoc />
 public class PartySyncService : BaseSyncService, IPartySyncService
 {
-    private readonly ILogger<RegisterHostedService> _logger;
+    private readonly ILogger<PartySyncService> _logger;
     private readonly IAltinnRegister _register;
     private readonly IServiceProvider _serviceProvider;
 
@@ -27,7 +26,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
     /// </summary>
     public PartySyncService(
         IAltinnRegister register,
-        ILogger<RegisterHostedService> logger,
+        ILogger<PartySyncService> logger,
         IServiceProvider serviceProvider
     )
     {
@@ -53,7 +52,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
-        await foreach (var page in await _register.StreamParties(AltinnRegisterClient.DefaultFields, leaseData?.PartyStreamNextPageLink, cancellationToken))
+        await foreach (var page in await _register.StreamParties(AltinnRegisterClient.DefaultFields, null, leaseData?.PartyStreamNextPageLink, cancellationToken))
         {
             if (page.IsProblem)
             {
