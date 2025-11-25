@@ -276,7 +276,7 @@ public class AuthorizedPartiesServiceEf(
         {
             a2Task = Task.Run(async () =>
             {
-                var a2AuthorizedParties = await altinnRolesClient.GetAuthorizedPartiesWithRoles(userSubject.UserId.Value, cancellationToken);
+                var a2AuthorizedParties = await altinnRolesClient.GetAuthorizedPartiesWithRoles(userSubject.UserId.Value, filter.IncludePartiesViaKeyRoles, cancellationToken);
 
                 if (filter.PartyFilter?.Count() > 0)
                 {
