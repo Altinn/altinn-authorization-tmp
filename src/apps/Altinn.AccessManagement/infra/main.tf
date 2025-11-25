@@ -205,6 +205,12 @@ module "appsettings" {
 
   feature_flags = [
     {
+      name        = "AccessManagement.Core.Pipeline.Init"
+      description = "Specifies if pipelines should run to end-of-stream once in init container."
+      label       = "${lower(var.environment)}-access-management"
+      value       = true
+    },
+    {
       name        = "AccessMgmt.Core.Services.AuthorizedParties.EfEnabled"
       description = "(EF) Specifies if the AuthorizedParty service re-write to run on mainly EF-services should be used in dependency injection. Will need recycle of pods to take effect."
       label       = "${lower(var.environment)}-access-management"
