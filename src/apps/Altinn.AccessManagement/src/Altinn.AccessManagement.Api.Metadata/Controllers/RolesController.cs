@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Altinn.AccessManagement.Api.Metadata.Translation;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,15 +18,17 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
     public class RolesController : ControllerBase
     {
         private readonly IRoleService roleService;
-        private readonly AppDbContext dbContext;
+        private readonly ITranslationService translationService;
 
         /// <summary>
         /// Initialiserer en ny instans av <see cref="RolesController"/>.
         /// </summary>
         /// <param name="roleService">Service for håndtering av roller.</param>
-        public RolesController(IRoleService roleService)
+        /// <param name="translationService">Service for translation of entities.</param>
+        public RolesController(IRoleService roleService, ITranslationService translationService)
         {
             this.roleService = roleService;
+            this.translationService = translationService;
         }
 
         /// <summary>
@@ -41,7 +45,13 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound();
             }
 
-            return Ok(res);
+            // Translate the collection
+            var translated = await res.TranslateAsync(
+                translationService, 
+                this.GetLanguageCode(), 
+                this.AllowPartialTranslation());
+
+            return Ok(translated.ToList());
         }
 
         /// <summary>
@@ -58,7 +68,13 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound();
             }
 
-            return Ok(res);
+            // Translate the role
+            var translated = await res.TranslateAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
+
+            return Ok(translated);
         }
 
         /// <summary>
@@ -75,7 +91,13 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound();
             }
 
-            return Ok(res);
+            // Translate the role
+            var translated = await res.TranslateAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
+
+            return Ok(translated);
         }
 
         /// <summary>
@@ -92,6 +114,7 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound();
             }
 
+            // No translation needed for lookup keys
             return Ok(res);
         }
 
@@ -112,7 +135,15 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound($"Variant '{variant}' not found");
             }
 
-            return Ok(await roleService.GetRolePackages(roleDef.Id, variantDef.Id, includeResources));
+            var packages = await roleService.GetRolePackages(roleDef.Id, variantDef.Id, includeResources);
+            
+            // Translate the packages
+            var translated = await packages.TranslateAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
+
+            return Ok(translated);
         }
 
         /// <summary>
@@ -132,7 +163,15 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound($"Variant '{variant}' not found");
             }
 
-            return Ok(await roleService.GetRoleResources(roleDef.Id, variantDef.Id, includePackageResources));
+            var resources = await roleService.GetRoleResources(roleDef.Id, variantDef.Id, includePackageResources);
+            
+            // Translate the resources
+            var translated = await resources.TranslateAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
+
+            return Ok(translated);
         }
 
         /// <summary>
@@ -147,7 +186,15 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound($"Variant '{variant}' not found");
             }
 
-            return Ok(await roleService.GetRolePackages(id, variantDef.Id, includeResources));
+            var packages = await roleService.GetRolePackages(id, variantDef.Id, includeResources);
+            
+            // Translate the packages
+            var translated = await packages.TranslateAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
+
+            return Ok(translated);
         }
 
         /// <summary>
@@ -162,7 +209,15 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
                 return NotFound($"Variant '{variant}' not found");
             }
 
-            return Ok(await roleService.GetRoleResources(id, variantDef.Id, includePackageResources));
+            var resources = await roleService.GetRoleResources(id, variantDef.Id, includePackageResources);
+            
+            // Translate the resources
+            var translated = await resources.TranslateAsync(
+                translationService,
+                this.GetLanguageCode(),
+                this.AllowPartialTranslation());
+
+            return Ok(translated);
         }
     }
 }

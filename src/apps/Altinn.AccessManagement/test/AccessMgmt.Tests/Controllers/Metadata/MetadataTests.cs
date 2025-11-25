@@ -4,13 +4,17 @@ using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Moq;
 
 namespace AccessMgmt.Tests.Controllers.Metadata;
 
 public class MetadataTests : IClassFixture<PostgresFixture>
 {
     private readonly AppDbContext _db;
+    private readonly ITranslationService _translationService;
 
     public MetadataTests(PostgresFixture fixture)
     {
@@ -19,6 +23,10 @@ public class MetadataTests : IClassFixture<PostgresFixture>
             .Options;
 
         _db = new AppDbContext(options);
+
+        // Create a real translation service for tests
+        var memoryCache = new MemoryCache(new MemoryCacheOptions());
+        _translationService = new TranslationService(_db, memoryCache);
 
         SeedTestData(_db).Wait();
     }
@@ -54,7 +62,6 @@ public class MetadataTests : IClassFixture<PostgresFixture>
         db.PackageResources.Add(new PackageResource() { PackageId = PackageConstants.Catering.Id, ResourceId = Resources.First(t => t.RefId == "T-05").Id });
         db.PackageResources.Add(new PackageResource() { PackageId = PackageConstants.Catering.Id, ResourceId = Resources.First(t => t.RefId == "T-06").Id });
 
-
         if (!db.RolePackages.AsNoTracking().Any(t => t.RoleId == RoleConstants.ManagingDirector.Id && t.PackageId == PackageConstants.Catering.Id))
         {
             db.RolePackages.Add(new RolePackage() { RoleId = RoleConstants.ManagingDirector.Id, PackageId = PackageConstants.Catering.Id });
@@ -74,7 +81,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Code_AS_Shold_Have_Packages()
     {
-        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
+        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
 
         var res = await controller.GetPackages(RoleConstants.ManagingDirector.Entity.Code, "AS", includeResources: false);
         Assert.NotNull(res.Value);
@@ -83,7 +90,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Code_AS_Shold_Have_PackageResources()
     {
-        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
+        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
 
         var res = await controller.GetPackages(RoleConstants.ManagingDirector.Entity.Code, "AS", includeResources: true);
         Assert.NotNull(res.Value);
@@ -93,7 +100,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Id_AS_Shold_Have_Packages()
     {
-        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
+        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
 
         var res = await controller.GetPackages(RoleConstants.ManagingDirector.Id, "AS", includeResources: false);
         Assert.NotNull(res.Value);
@@ -102,7 +109,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Id_AS_Shold_Have_PackageResources()
     {
-        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
+        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
 
         var res = await controller.GetPackages(RoleConstants.ManagingDirector.Id, "AS", includeResources: true);
         Assert.NotNull(res.Value);
@@ -114,7 +121,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Code_AS_Shold_Have_Resources()
     {
-        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
+        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
 
         var res = await controller.GetResources(RoleConstants.ManagingDirector.Entity.Code, "AS", includePackageResources: false);
         Assert.NotNull(res.Value);
@@ -123,7 +130,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Code_AS_Shold_Have_Resources_FromPackages()
     {
-        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
+        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
 
         var res = await controller.GetResources(RoleConstants.ManagingDirector.Entity.Code, "AS", includePackageResources: true);
         Assert.NotNull(res.Value);
@@ -133,7 +140,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Id_AS_Shold_Have_Resources()
     {
-        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
+        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
 
         var res = await controller.GetResources(RoleConstants.ManagingDirector.Id, "AS", includePackageResources: false);
         Assert.NotNull(res.Value);
@@ -146,7 +153,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Id_AS_Shold_Have_Resources_FromPackages()
     {
-        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db));
+        var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
 
         var res = await controller.GetResources(RoleConstants.ManagingDirector.Id, "AS", includePackageResources: true);
         Assert.NotNull(res.Value);

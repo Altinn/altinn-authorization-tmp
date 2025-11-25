@@ -1,4 +1,4 @@
-using Altinn.AccessMgmt.PersistenceEF.Audit;
+﻿using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
         ConstantGuard.ConstantIdsAreUnique();
         services.AddScoped<ReadOnlyInterceptor>();
         services.AddScoped<IAuditAccessor, AuditAccessor>();
+        services.AddMemoryCache(); // Add memory cache for translation service
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ConnectionQuery>();
         services.AddScoped<AppDbContextFactory>();
