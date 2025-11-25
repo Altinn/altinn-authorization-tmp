@@ -174,7 +174,7 @@ public class TranslationServiceTests : IClassFixture<PostgresFixture>
 
         // Assert
         Assert.Equal("Catering", result.Name);
-        Assert.Contains("liquor", result.Description, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("catering businesses", result.Description, StringComparison.OrdinalIgnoreCase);
     }
 
     #endregion
