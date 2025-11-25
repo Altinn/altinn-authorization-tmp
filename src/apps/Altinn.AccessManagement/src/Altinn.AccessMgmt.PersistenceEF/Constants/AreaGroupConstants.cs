@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 
@@ -50,7 +50,7 @@ public static class AreaGroupConstants
         {
             Name = "Allment",
             Description = "Standard gruppe",
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             Urn = null,
         },
         EN = TranslationEntryList.Create(
@@ -74,7 +74,7 @@ public static class AreaGroupConstants
         {
             Name = "Bransje",
             Description = "For bransje grupper",
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             Urn = null,
         },
         EN = TranslationEntryList.Create(
@@ -98,7 +98,7 @@ public static class AreaGroupConstants
         {
             Name = "Særskilt",
             Description = "For de sære tingene",
-            EntityTypeId = EntityTypeConstants.Organisation,
+            EntityTypeId = EntityTypeConstants.Organization,
             Urn = null,
         },
         EN = TranslationEntryList.Create(

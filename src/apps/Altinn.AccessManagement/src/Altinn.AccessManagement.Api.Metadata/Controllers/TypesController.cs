@@ -62,11 +62,11 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
         /// <summary>
         /// Gets all organization variants <see cref="VariantDto"/>
         /// </summary>
-        [Route("organisasjon/variants")]
+        [Route("organization/variants")]
         [HttpGet]
         public async Task<ActionResult<List<VariantDto>>> GetOrganizationVariants()
         {
-            var res = await dbContext.EntityVariants.AsNoTracking().Where(t => t.TypeId == EntityTypeConstants.Organisation.Id).ToListAsync();
+            var res = await dbContext.EntityVariants.AsNoTracking().Where(t => t.TypeId == EntityTypeConstants.Organization.Id).ToListAsync();
             if (res == null)
             {
                 return NotFound();
