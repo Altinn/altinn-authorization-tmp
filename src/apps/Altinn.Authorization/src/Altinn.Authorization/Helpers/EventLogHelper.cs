@@ -117,22 +117,22 @@ namespace Altinn.Platform.Authorization.Helpers
                 {
                     foreach (XacmlAttribute xacmlAtr in attr.Attributes)
                     {
-                        if (xacmlAtr.AttributeId.OriginalString.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.UserAttribute))
+                        if (xacmlAtr.AttributeId.OriginalString.Equals(XacmlRequestAttribute.UserAttribute))
                         {
                             userId = Convert.ToInt32(xacmlAtr.AttributeValues.First().Value);
                         }
 
-                        if (xacmlAtr.AttributeId.OriginalString.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute))
+                        if (xacmlAtr.AttributeId.OriginalString.Equals(XacmlRequestAttribute.PartyAttribute))
                         {
                             partyId = Convert.ToInt32(xacmlAtr.AttributeValues.First().Value);
                         }
 
-                        if (xacmlAtr.AttributeId.OriginalString.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.OrgAttribute))
+                        if (xacmlAtr.AttributeId.OriginalString.Equals(XacmlRequestAttribute.OrgAttribute))
                         {
                             org = xacmlAtr.AttributeValues.First().Value;
                         }
 
-                        if (xacmlAtr.AttributeId.OriginalString.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.OrgNumberAttribute))
+                        if (xacmlAtr.AttributeId.OriginalString.Equals(XacmlRequestAttribute.OrgNumberAttribute))
                         {
                             orgNumber = Convert.ToInt32(xacmlAtr.AttributeValues.First().Value);
                         }
@@ -142,12 +142,12 @@ namespace Altinn.Platform.Authorization.Helpers
                             sessionId = xacmlAtr.AttributeValues.First().Value;
                         }
 
-                        if (xacmlAtr.AttributeId.OriginalString.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserIdAttribute))
+                        if (xacmlAtr.AttributeId.OriginalString.Equals(XacmlRequestAttribute.SystemUserIdAttribute))
                         {
                             partyUuid = xacmlAtr.AttributeValues.First().Value;
                         }
 
-                        if (xacmlAtr.AttributeId.OriginalString.Equals(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUUIdAttribute))
+                        if (xacmlAtr.AttributeId.OriginalString.Equals(XacmlRequestAttribute.PartyUUIdAttribute))
                         {
                             partyUuid = xacmlAtr.AttributeValues.First().Value;
                         }
