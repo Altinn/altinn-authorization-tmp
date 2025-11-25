@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -250,6 +250,10 @@ namespace Altinn.Common.PEP.Helpers
                 {
                     attributes.Add(CreateXacmlJsonAttribute(AltinnXacmlUrns.Scope, claim.Value, DefaultType, claim.Issuer));
                 }
+                else if (IsSidClaim(claim.Type))
+                {
+                    attributes.Add(CreateXacmlJsonAttribute(AltinnXacmlUrns.SessionId, claim.Value, DefaultType, claim.Issuer));
+                }
                 else if (IsJtiClaim(claim.Type))
                 {
                     attributes.Add(CreateXacmlJsonAttribute(AltinnXacmlUrns.SessionId, claim.Value, DefaultType, claim.Issuer));
@@ -457,6 +461,11 @@ namespace Altinn.Common.PEP.Helpers
         private static bool IsJtiClaim(string name)
         {
             return name.Equals("jti");
+        }
+
+        private static bool IsSidClaim(string name)
+        {
+            return name.Equals("sid");
         }
 
         private static bool IsSystemUserClaim(Claim claim, out SystemUserClaim userClaim)
