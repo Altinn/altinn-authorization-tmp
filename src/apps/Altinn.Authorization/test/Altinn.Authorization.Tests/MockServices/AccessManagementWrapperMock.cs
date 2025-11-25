@@ -162,8 +162,25 @@ public class AccessManagementWrapperMock : IAccessManagementWrapper
         return Path.Combine("Data", "AccessManagement", "AuthorizedParties", $"{userId}.json");
     }
 
-    public Task<AuthorizedPartyDto> GetAuthorizedParty(int partyId, CancellationToken cancellationToken = default)
+    public async Task<AuthorizedPartyDto> GetAuthorizedParty(int partyId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var authorizedParties = await GetAuthorizedParties(cancellationToken);
+        foreach (var party in authorizedParties)
+        {
+            if (party.PartyId == partyId)
+            {
+                return party;
+            }
+
+            foreach (var subunit in party.Subunits)
+            {
+                if (subunit.PartyId == partyId)
+                {
+                    return subunit;
+                }
+            }
+        }
+
+        return null;
     }
 }
