@@ -142,7 +142,7 @@ public class IngestService : IIngestService
         var mergeUpdateUnMatchStatement = string.Join(
             " OR ",
             ingestColumns
-                .Where(t => matchColumns.Count(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase)) == 0)
+                .Where(t => (matchColumns.Count(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase)) == 0) && (!t.Name.StartsWith("audit_")) )
                 .Select(t =>
                     $"(" +
                     $"target.{t.Name} <> source.{t.Name} " +
@@ -152,7 +152,7 @@ public class IngestService : IIngestService
                 )
         );
 
-        string mergeUpdateStatement = string.Join(", ", ingestColumns.Where(t => !t.IsPK && !matchColumns.Any(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase))).Select(t => $"{t.Name} = source.{t.Name}"));
+        string mergeUpdateStatement = string.Join(", ", ingestColumns.Where(t => !t.IsPK && !matchColumns.Any(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase)) && (!t.Name.StartsWith("audit_"))).Select(t => $"{t.Name} = source.{t.Name}"));
 
         var insertColumns = string.Join(", ", ingestColumns.Select(t => $"{t.Name}"));
         var insertValues = string.Join(", ", ingestColumns.Select(t => $"source.{t.Name}"));
