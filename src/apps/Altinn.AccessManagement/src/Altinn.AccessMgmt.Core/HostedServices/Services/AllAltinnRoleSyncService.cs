@@ -11,7 +11,6 @@ using Altinn.Authorization.Integration.Platform.SblBridge;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Threading;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services
 {
@@ -123,14 +122,14 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     try
                     {
                         _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchName);
-                        var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
+                        var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, includeAuditColumns: true, cancellationToken);
 
                         if (ingested != batchData.Count)
                         {
                             _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
                         }
 
-                        var merged = await ingestService.MergeTempData<Assignment>(batchId, previousOptions, GetAssignmentMergeMatchFilter, cancellationToken: cancellationToken);
+                        var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken: cancellationToken);
 
                         _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
                     }

@@ -166,7 +166,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         try
         {
             _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchId.ToString());
-            var ingested = await ingestService.IngestTempData<Assignment>(assignments, batchId, cancellationToken);
+            var ingested = await ingestService.IngestTempData<Assignment>(assignments, batchId, false, cancellationToken);
 
             if (ingested != assignments.Count)
             {

@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using Altinn.AccessMgmt.Core.HostedServices.Contracts;
+﻿using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Leases;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -111,7 +110,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
             {
                 _logger.LogInformation("Ingest and Merge Entity batch '{0}' to db", batchName);
 
-                var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchId, cancellationToken);
+                var ingestedEntities = await ingestService.IngestTempData(ingestEntities, batchId, false, cancellationToken);
 
                 if (ingestedEntities != ingestEntities.Count)
                 {

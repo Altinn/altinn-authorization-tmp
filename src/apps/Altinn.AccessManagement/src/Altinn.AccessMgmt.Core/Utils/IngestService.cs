@@ -27,7 +27,7 @@ public class IngestService : IIngestService
     }
 
     /// <inheritdoc />
-    public async Task<int> IngestTempData<T>(List<T> data, Guid ingestId, CancellationToken cancellationToken = default)
+    public async Task<int> IngestTempData<T>(List<T> data, Guid ingestId, bool includeAuditColumns = false, CancellationToken cancellationToken = default)
     {
         if (ingestId.Equals(Guid.Empty))
         {
@@ -35,7 +35,7 @@ public class IngestService : IIngestService
         }
 
         var table = GetTableName<T>(DbContext.Model);
-        var ingestColumns = GetColumns<T>(DbContext.Model);
+        var ingestColumns = GetColumns<T>(DbContext.Model, includeAuditColumns);
 
         string columnStatement = string.Join(',', ingestColumns.Select(t => t.Name));
 
@@ -60,7 +60,7 @@ public class IngestService : IIngestService
         }
 
         var table = GetTableName<T>(DbContext.Model);
-        var ingestColumns = GetColumns<T>(DbContext.Model);
+        var ingestColumns = GetColumns<T>(DbContext.Model, false);
 
         string columnStatement = string.Join(',', ingestColumns.Select(t => t.Name));
 
@@ -123,10 +123,69 @@ public class IngestService : IIngestService
     }
 
     /// <inheritdoc />
+    public async Task<int> MergeTempData<T>(Guid ingestId, IEnumerable<string> matchColumns = null, CancellationToken cancellationToken = default)
+    {
+        if (matchColumns == null || matchColumns.Count() == 0)
+        {
+            matchColumns = ["id"];
+        }
+
+        var table = GetTableName<T>(DbContext.Model);
+        var ingestColumns = GetColumns<T>(DbContext.Model, true);
+
+        string columnStatement = string.Join(',', ingestColumns.Select(t => t.Name));
+
+        var ingestName = ingestId.ToString().Replace("-", string.Empty);
+        string ingestTableName = "ingest." + table.TableName + "_" + ingestName;
+
+        var mergeMatchStatement = string.Join(" AND ", matchColumns.Select(t => $"(target.{t} IS NULL AND source.{t} IS NULL OR target.{t} = source.{t})"));
+        var mergeUpdateUnMatchStatement = string.Join(
+            " OR ",
+            ingestColumns
+                .Where(t => matchColumns.Count(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase)) == 0)
+                .Select(t =>
+                    $"(" +
+                    $"target.{t.Name} <> source.{t.Name} " +
+                    $"OR (target.{t.Name} IS NULL AND source.{t.Name} IS NOT NULL) " +
+                    $"OR (target.{t.Name} IS NOT NULL AND source.{t.Name} IS NULL)" +
+                    $")"
+                )
+        );
+
+        string mergeUpdateStatement = string.Join(", ", ingestColumns.Where(t => !t.IsPK && !matchColumns.Any(y => y.Equals(t.Name, StringComparison.OrdinalIgnoreCase))).Select(t => $"{t.Name} = source.{t.Name}"));
+
+        var insertColumns = string.Join(", ", ingestColumns.Select(t => $"{t.Name}"));
+        var insertValues = string.Join(", ", ingestColumns.Select(t => $"source.{t.Name}"));
+
+        var sb = new StringBuilder();
+
+        sb.AppendLine(GetBlankAuditVariables(ingestId.ToString()));
+        sb.AppendLine($"MERGE INTO {table.SchemaName}.{table.TableName} AS target USING {ingestTableName} AS source ON {mergeMatchStatement}");
+        sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
+        sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
+        sb.AppendLine($"WHEN NOT MATCHED THEN ");
+        sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
+
+        string mergeStatement = sb.ToString();
+
+        Console.WriteLine("Starting MERGE");
+
+        var res = await ExecuteMigrationCommand(mergeStatement, cancellationToken: cancellationToken);
+
+        Console.WriteLine("Cleanup");
+        var dropIngestTable = $"DROP TABLE IF EXISTS {ingestTableName};";
+        await ExecuteMigrationCommand(dropIngestTable, cancellationToken: cancellationToken);
+
+        Console.WriteLine($"Merged {res}");
+
+        return res;
+    }
+
+    /// <inheritdoc />
     public async Task<int> IngestAndMergeData<T>(List<T> data, AuditValues auditValues, IEnumerable<string> matchColumns = null, CancellationToken cancellationToken = default)
     {
         var ingestId = Guid.CreateVersion7();
-        await IngestTempData(data, ingestId, cancellationToken);
+        await IngestTempData(data, ingestId, false, cancellationToken);
         var res = await MergeTempData<T>(ingestId, auditValues, matchColumns, cancellationToken);
 
         return res;
@@ -185,7 +244,7 @@ public class IngestService : IIngestService
 
     private Dictionary<Type, List<IngestColumnDefinition>> TypedIngestColumnDefinitions { get; set; } = new Dictionary<Type, List<IngestColumnDefinition>>();
 
-    private List<IngestColumnDefinition> GetColumns<T>(IModel entityModel)
+    private List<IngestColumnDefinition> GetColumns<T>(IModel entityModel, bool includeAuditColumns = false)
     {
         var table = GetTableName<T>(entityModel);
 
@@ -203,18 +262,35 @@ public class IngestService : IIngestService
             return null; 
         }
 
-        return et.GetProperties()
-            .Where(n => (!n.Name.StartsWith("audit_", StringComparison.OrdinalIgnoreCase)) || n.Name.Equals("audit_validfrom", StringComparison.OrdinalIgnoreCase))
-            .Select(p => new IngestColumnDefinition() 
-            { 
-                Name = p.GetColumnName(storeObject), 
-                Property = p.PropertyInfo, 
-                DbTypeName = p.GetColumnType(),
-                IsFK = p.IsForeignKey(),
-                IsPK = p.IsPrimaryKey()
-            })
-            .Distinct()
-            .ToList()!;
+        if (includeAuditColumns)
+        {
+            return et.GetProperties()
+                .Select(p => new IngestColumnDefinition()
+                {
+                    Name = p.GetColumnName(storeObject),
+                    Property = p.PropertyInfo,
+                    DbTypeName = p.GetColumnType(),
+                    IsFK = p.IsForeignKey(),
+                    IsPK = p.IsPrimaryKey()
+                })
+                .Distinct()
+                .ToList()!;
+        }
+        else
+        {
+            return et.GetProperties()
+                .Where(n => (!n.Name.StartsWith("audit_", StringComparison.OrdinalIgnoreCase)) || n.Name.Equals("audit_validfrom", StringComparison.OrdinalIgnoreCase))
+                .Select(p => new IngestColumnDefinition()
+                {
+                    Name = p.GetColumnName(storeObject),
+                    Property = p.PropertyInfo,
+                    DbTypeName = p.GetColumnType(),
+                    IsFK = p.IsForeignKey(),
+                    IsPK = p.IsPrimaryKey()
+                })
+                .Distinct()
+                .ToList()!;
+        }
     }
 
     private (string TableName, string SchemaName) GetTableName<T>(IModel entityModel)
@@ -225,6 +301,11 @@ public class IngestService : IIngestService
     private static string GetAuditVariables(AuditValues auditValues)
     {
         return string.Format("SET LOCAL app.changed_by = '{0}'; SET LOCAL app.changed_by_system = '{1}'; SET LOCAL app.change_operation_id = '{2}';", auditValues.ChangedBy, auditValues.ChangedBySystem, auditValues.OperationId);
+    }
+
+    private static string GetBlankAuditVariables(string operationId)
+    {
+        return string.Format("SET LOCAL app.changed_by = '{0}'; SET LOCAL app.changed_by_system = '{1}'; SET LOCAL app.change_operation_id = '{2}';", Guid.Empty, Guid.Empty, operationId);
     }
 }
 
@@ -241,12 +322,17 @@ public interface IIngestService
     /// <summary>
     /// Ingest data to temp table, using original table as template
     /// </summary>
-    Task<int> IngestTempData<T>(List<T> data, Guid ingestId, CancellationToken cancellationToken = default);
+    Task<int> IngestTempData<T>(List<T> data, Guid ingestId, bool includeAuditColumns = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Merge data from temp table to original
     /// </summary>
     Task<int> MergeTempData<T>(Guid ingestId, AuditValues auditValues, IEnumerable<string> matchColumns = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Merge data from temp table to original
+    /// </summary>
+    Task<int> MergeTempData<T>(Guid ingestId, IEnumerable<string> matchColumns = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Ingest data to temp table, using original table as template
