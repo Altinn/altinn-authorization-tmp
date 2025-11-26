@@ -129,7 +129,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                             _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
                         }
 
-                        var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken: cancellationToken);
+                        //// var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken: cancellationToken);
+                        var merged = await ingestService.MergeTempDataManual<Assignment>(batchId, GetMergeStatement(batchId), cancellationToken: cancellationToken);
 
                         _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
                     }
@@ -199,6 +200,16 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
             Roles.Add(roleIdentifier, role);
             return role;
+        }
+
+        private string GetMergeStatement(Guid batchId)
+        {
+            return $"""
+                INSERT INTO assignment (id, audit_changeoperation, audit_changedby, audit_changedbysystem, audit_validfrom, fromid, roleid, toid)
+                SELECT id, audit_changeoperation, audit_changedby, audit_changedbysystem, audit_validfrom, fromid, roleid, toid
+                FROM ingest.assignment_{batchId.ToString()}
+                ON CONFLICT (fromid, toid, roleid) DO NOTHING;
+                """;
         }
     }
 }

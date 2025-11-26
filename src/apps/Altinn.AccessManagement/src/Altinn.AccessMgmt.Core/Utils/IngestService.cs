@@ -186,6 +186,25 @@ public class IngestService : IIngestService
         return res;
     }
 
+    public async Task<int> MergeTempDataManual<T>(Guid ingestId, string mergeStatement, CancellationToken cancellationToken = default)
+    {
+        var ingestName = ingestId.ToString().Replace("-", string.Empty);
+        var table = GetTableName<T>(DbContext.Model);
+        string ingestTableName = "ingest." + table.TableName + "_" + ingestName;
+
+        Console.WriteLine("Starting MERGE");
+
+        var res = await ExecuteMigrationCommand(mergeStatement, cancellationToken: cancellationToken);
+
+        Console.WriteLine("Cleanup");
+        var dropIngestTable = $"DROP TABLE IF EXISTS {ingestTableName};";
+        await ExecuteMigrationCommand(dropIngestTable, cancellationToken: cancellationToken);
+
+        Console.WriteLine($"Merged {res}");
+
+        return res;
+    }
+
     /// <inheritdoc />
     public async Task<int> IngestAndMergeData<T>(List<T> data, AuditValues auditValues, IEnumerable<string> matchColumns = null, CancellationToken cancellationToken = default)
     {
@@ -338,6 +357,11 @@ public interface IIngestService
     /// Merge data from temp table to original
     /// </summary>
     Task<int> MergeTempData<T>(Guid ingestId, IEnumerable<string> matchColumns = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Merge data from temp table to original
+    /// </summary>
+    Task<int> MergeTempDataManual<T>(Guid ingestId, string mergeStatement, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Ingest data to temp table, using original table as template
