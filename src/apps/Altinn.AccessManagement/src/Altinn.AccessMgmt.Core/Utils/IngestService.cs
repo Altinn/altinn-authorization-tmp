@@ -161,8 +161,13 @@ public class IngestService : IIngestService
 
         sb.AppendLine(GetBlankAuditVariables(ingestId.ToString()));
         sb.AppendLine($"MERGE INTO {table.SchemaName}.{table.TableName} AS target USING {ingestTableName} AS source ON {mergeMatchStatement}");
-        sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
-        sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
+        
+        if (!string.IsNullOrEmpty(mergeUpdateStatement))
+        {
+            sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
+            sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
+        }
+
         sb.AppendLine($"WHEN NOT MATCHED THEN ");
         sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
 
