@@ -192,6 +192,8 @@ public class IngestService : IIngestService
         var table = GetTableName<T>(DbContext.Model);
         string ingestTableName = "ingest." + table.TableName + "_" + ingestName;
 
+        mergeStatement = GetBlankAuditVariables(ingestId.ToString()) + " \n" + mergeStatement;
+
         Console.WriteLine("Starting MERGE");
 
         var res = await ExecuteMigrationCommand(mergeStatement, cancellationToken: cancellationToken);
