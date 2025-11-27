@@ -118,12 +118,25 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
             async Task<int> Flush()
             {
+                /*
+                // Parallel version
                 var results = await Task.WhenAll(
                     RemoveParents(appDbContextFactory, removeParent, cancellationToken),
                     SetParents(appDbContextFactory, addParent, cancellationToken),
                     RemoveAssignments(appDbContextFactory, removeAssignments, cancellationToken),
                     IngestAssigments(ingestService, addAssignments, options, cancellationToken)
                 );
+                */
+
+                var cleanUpResult = await DoAllTheThings(
+                    dbContextFactory: appDbContextFactory,
+                    removeParents: removeParent,
+                    setParents: addParent,
+                    removeAssignments: removeAssignments,
+                    cancellationToken: cancellationToken                    
+                    );
+
+                var ingestResult = await IngestAssigments(ingestService, addAssignments, options, cancellationToken);
 
                 seen.Clear();
                 addParent.Clear();
@@ -131,9 +144,64 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 addAssignments.Clear();
                 removeAssignments.Clear();
 
-                return results.Sum();
+                // return results.Sum();
+
+                return cleanUpResult + ingestResult;
             }
         }
+    }
+
+    private async Task<int> DoAllTheThings(
+        AppDbContextFactory dbContextFactory, 
+        List<Guid> removeParents, 
+        Dictionary<Guid, Guid> setParents,
+        List<Assignment> removeAssignments,
+        CancellationToken cancellationToken = default
+        )
+    {
+        using var dbContext = dbContextFactory.CreateDbContext();
+
+        var ids = removeParents.Concat(setParents.Keys).ToList();
+
+        var entities = await dbContext.Entities
+            .Where(e => ids.Contains(e.Id))
+            .ToListAsync(cancellationToken);
+
+        foreach (var e in entities)
+        {
+            if (removeParents.Contains(e.Id))
+            {
+                e.ParentId = null;
+            }
+            else if (setParents.TryGetValue(e.Id, out var parentId))
+            {
+                e.ParentId = parentId;
+            }
+        }
+
+        /*Remove Assignments*/
+        var relationsFromRemove = removeAssignments
+            .Select(r => r.FromId)
+            .ToList();
+
+        var assignmentsToRemove = await dbContext.Assignments
+            .AsTracking()
+            .Where(e => relationsFromRemove.Contains(e.FromId))
+            .ToListAsync(cancellationToken: cancellationToken);
+
+        var relationSetRemove = removeAssignments
+            .Select(r => (r.FromId, r.ToId, r.RoleId))
+            .ToHashSet();
+
+        assignmentsToRemove = assignmentsToRemove
+            .Where(e => relationSetRemove.Contains((e.FromId, e.ToId, e.RoleId)))
+            .ToList();
+
+        dbContext.RemoveRange(assignmentsToRemove);
+
+        /*Add Assignments*/
+
+        return await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<int> RemoveAssignments(AppDbContextFactory dbContextFactory, List<Assignment> relations, CancellationToken cancellationToken = default)
