@@ -205,9 +205,9 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         private string GetMergeStatement(Guid batchId)
         {
             return $"""
-                INSERT INTO assignment (id, audit_changeoperation, audit_changedby, audit_changedbysystem, audit_validfrom, fromid, roleid, toid)
+                INSERT INTO dbo.assignment (id, audit_changeoperation, audit_changedby, audit_changedbysystem, audit_validfrom, fromid, roleid, toid)
                 SELECT id, audit_changeoperation, audit_changedby, audit_changedbysystem, audit_validfrom, fromid, roleid, toid
-                FROM ingest.assignment_{batchId.ToString()}
+                FROM ingest.assignment_{batchId.ToString().Replace("-", string.Empty)}
                 ON CONFLICT (fromid, toid, roleid) DO NOTHING;
                 """;
         }
