@@ -302,7 +302,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
 
     #region Role Packages
     [Fact]
-    public async Task DagligLeder_Code_AS_Shold_Have_Packages()
+    public async Task DagligLeder_Code_AS_Should_Have_Packages()
     {
         var controller = new RolesController(new RoleService(_db));
 
@@ -312,7 +312,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     }
 
     [Fact]
-    public async Task DagligLeder_Code_AS_Shold_Have_PackageResources()
+    public async Task DagligLeder_Code_AS_Should_Have_PackageResources()
     {
         var controller = new RolesController(new RoleService(_db));
         var result = await controller.GetPackages(RoleConstants.ManagingDirector.Entity.Code, "AS", includeResources: true);
@@ -324,7 +324,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     }
 
     [Fact]
-    public async Task DagligLeder_Id_AS_Shold_Have_Packages()
+    public async Task DagligLeder_Id_AS_Should_Have_Packages()
     {
         var controller = new RolesController(new RoleService(_db));
         var result = await controller.GetPackages(RoleConstants.ManagingDirector.Id, "AS", includeResources: false);
@@ -333,7 +333,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     }
 
     [Fact]
-    public async Task DagligLeder_Id_AS_Shold_Have_PackageResources()
+    public async Task DagligLeder_Id_AS_Should_Have_PackageResources()
     {
         var controller = new RolesController(new RoleService(_db));
 
@@ -347,7 +347,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
 
     #region Role Resources
     [Fact]
-    public async Task DagligLeder_Code_AS_Shold_Have_Resources()
+    public async Task DagligLeder_Code_AS_Should_Have_Resources()
     {
         var controller = new RolesController(new RoleService(_db));
 
@@ -359,7 +359,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     }
 
     [Fact]
-    public async Task DagligLeder_Code_AS_Shold_Have_Resources_FromPackages()
+    public async Task DagligLeder_Code_AS_Should_Have_Resources_FromPackages()
     {
         var controller = new RolesController(new RoleService(_db));
         var result = await controller.GetResources(RoleConstants.ManagingDirector.Entity.Code, "AS", includePackageResources: true);
@@ -369,7 +369,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     }
 
     [Fact]
-    public async Task DagligLeder_Id_AS_Shold_Have_Resources()
+    public async Task DagligLeder_Id_AS_Should_Have_Resources()
     {
         var controller = new RolesController(new RoleService(_db));
 
@@ -381,7 +381,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     }
 
     [Fact]
-    public async Task DagligLeder_Id_AS_Shold_Have_Resources_FromPackages()
+    public async Task DagligLeder_Id_AS_Should_Have_Resources_FromPackages()
     {
         var controller = new RolesController(new RoleService(_db));
         var result = await controller.GetResources(RoleConstants.ManagingDirector.Id, "AS", includePackageResources: true);
