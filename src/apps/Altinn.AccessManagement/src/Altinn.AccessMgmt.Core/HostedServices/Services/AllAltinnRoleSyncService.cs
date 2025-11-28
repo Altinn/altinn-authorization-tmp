@@ -11,7 +11,6 @@ using Altinn.Authorization.Integration.Platform.SblBridge;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Threading;
 
 namespace Altinn.AccessMgmt.Core.HostedServices.Services
 {
@@ -70,8 +69,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 var batchName = batchId.ToString().ToLower().Replace("-", string.Empty);
                 _logger.LogInformation("Starting proccessing role page '{0}'", batchName);
 
-                AuditValues previousOptions = null;
-
                 if (page.Content != null)
                 {
                     foreach (var item in page.Content.Data)
@@ -86,14 +83,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         if (assignment.Assignment == null)
                         {
                             throw new Exception("Failed to convert RoleModel to Assignment");
-                        }
-
-                        currentOptions = assignment.Options;
-
-                        if (batchData.Any(t => t.FromId == assignment.Assignment.FromId && t.ToId == assignment.Assignment.ToId && t.RoleId == assignment.Assignment.RoleId) || (previousOptions != null && currentOptions.ChangedBy != previousOptions.ChangedBy))
-                        {
-                            // If changes on same assignment or performed in a difrent user then execute as-is before continuing.
-                            await Flush(batchId);
                         }
 
                         if (item.DelegationAction == DelegationAction.Delegate)
@@ -112,9 +101,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                                 appDbContext.Remove(deleteAssignment);
                                 await appDbContext.SaveChangesAsync(assignment.Options, cancellationToken);
                             }
-                        }
-
-                        previousOptions = currentOptions;
+                        }                        
                     }
                 }
 
@@ -135,14 +122,15 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     try
                     {
                         _logger.LogInformation("Ingest and Merge Assignment batch '{0}' to db", batchName);
-                        var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, cancellationToken);
+                        var ingested = await ingestService.IngestTempData<Assignment>(batchData, batchId, includeAuditColumns: true, cancellationToken);
 
                         if (ingested != batchData.Count)
                         {
                             _logger.LogWarning("Ingest partial complete: Assignment ({0}/{1})", ingested, batchData.Count);
                         }
 
-                        var merged = await ingestService.MergeTempData<Assignment>(batchId, previousOptions, GetAssignmentMergeMatchFilter, cancellationToken: cancellationToken);
+                        //// var merged = await ingestService.MergeTempData<Assignment>(batchId, GetAssignmentMergeMatchFilter, cancellationToken: cancellationToken);
+                        var merged = await ingestService.MergeTempDataManual<Assignment>(batchId, GetMergeStatement(batchId), cancellationToken: cancellationToken);
 
                         _logger.LogInformation("Merge complete: Assignment ({0}/{1})", merged, ingested);
                     }
@@ -172,9 +160,13 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 {
                     Id = Guid.CreateVersion7(),
                     FromId = model.FromPartyUuid,
+                    
                     ToId = model.ToUserPartyUuid.Value,
                     RoleId = role.Id,
-                    Audit_ValidFrom = model.DelegationChangeDateTime?.UtcDateTime ?? DateTime.UtcNow
+                    Audit_ChangedBy = model.PerformedByPartyUuid ?? model.PerformedByUserUuid ?? SystemEntityConstants.Altinn2RoleImportSystem,
+                    Audit_ChangedBySystem = SystemEntityConstants.Altinn2RoleImportSystem,
+                    Audit_ValidFrom = model.DelegationChangeDateTime?.UtcDateTime ?? DateTime.UtcNow,
+                    Audit_ChangeOperation = batchId
                 };
                 
                 AuditValues options = new AuditValues(model.PerformedByPartyUuid ?? model.PerformedByUserUuid ?? SystemEntityConstants.Altinn2RoleImportSystem, SystemEntityConstants.Altinn2RoleImportSystem, batchId, model.DelegationChangeDateTime ?? DateTimeOffset.UtcNow);
@@ -208,6 +200,16 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
             Roles.Add(roleIdentifier, role);
             return role;
+        }
+
+        private string GetMergeStatement(Guid batchId)
+        {
+            return $"""
+                INSERT INTO dbo.assignment (id, audit_changeoperation, audit_changedby, audit_changedbysystem, audit_validfrom, fromid, roleid, toid)
+                SELECT id, audit_changeoperation, audit_changedby, audit_changedbysystem, audit_validfrom, fromid, roleid, toid
+                FROM ingest.assignment_{batchId.ToString().Replace("-", string.Empty)}
+                ON CONFLICT (fromid, toid, roleid) DO NOTHING;
+                """;
         }
     }
 }
