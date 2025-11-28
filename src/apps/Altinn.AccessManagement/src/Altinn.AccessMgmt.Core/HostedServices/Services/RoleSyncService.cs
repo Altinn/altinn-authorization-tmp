@@ -60,19 +60,21 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 throw new Exception("Stream page is not successful");
             }
 
-            _logger.LogInformation("Starting proccessing party page ({0}-{1})", page.Content.Stats.PageStart, page.Content.Stats.PageEnd);
+            _logger.LogInformation("Starting processing party page ({0}-{1})", page.Content.Stats.PageStart, page.Content.Stats.PageEnd);
 
             var flushed = 0;
             foreach (var item in page.Content.Data)
             {
                 var assignment = MapToAssignment(item);
+                
+                // Fix #7: Improved duplicate detection logic
                 if (ShouldSetParent(item))
                 {
-                    if (!seen.Add((From: assignment.FromId, To: assignment.ToId, Role: RoleConstants.HasAsRegistrationUnitBEDR)))
-                    {
-                        flushed += await Flush();
-                    }
-                    else if (!seen.Add((From: assignment.FromId, To: assignment.ToId, Role: RoleConstants.HasAsRegistrationUnitAAFY)))
+                    // Track both parent role types before checking if flush is needed
+                    var bedrAdded = seen.Add((From: assignment.FromId, To: assignment.ToId, Role: RoleConstants.HasAsRegistrationUnitBEDR));
+                    var aafyAdded = seen.Add((From: assignment.FromId, To: assignment.ToId, Role: RoleConstants.HasAsRegistrationUnitAAFY));
+                    
+                    if (!bedrAdded || !aafyAdded)
                     {
                         flushed += await Flush();
                     }
@@ -128,7 +130,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
                 );
                 */
 
-                var cleanUpResult = await DoAllTheThings(
+                var cleanUpResult = await ProcessEntityAndAssignmentUpdates(
                     dbContextFactory: appDbContextFactory,
                     removeParents: removeParent,
                     setParents: addParent,
@@ -151,7 +153,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         }
     }
 
-    private async Task<int> DoAllTheThings(
+    private async Task<int> ProcessEntityAndAssignmentUpdates(
         AppDbContextFactory dbContextFactory, 
         List<Guid> removeParents, 
         Dictionary<Guid, Guid> setParents,
@@ -163,55 +165,58 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
         var ids = removeParents.Concat(setParents.Keys).ToList();
 
-        var entities = await dbContext.Entities
-            .Where(e => ids.Contains(e.Id))
-            .ToListAsync(cancellationToken);
-
-        foreach (var e in entities)
+        // Fix #6: Validate that all expected entities were retrieved
+        if (ids.Any())
         {
-            if (removeParents.Contains(e.Id))
+            var entities = await dbContext.Entities
+                .Where(e => ids.Contains(e.Id))
+                .ToListAsync(cancellationToken);
+
+            var retrievedIds = entities.Select(e => e.Id).ToHashSet();
+            var missingIds = ids.Except(retrievedIds).ToList();
+            
+            if (missingIds.Any())
             {
-                e.ParentId = null;
+                _logger.LogWarning("Failed to retrieve {Count} entities for parent updates: {MissingIds}", 
+                    missingIds.Count, 
+                    string.Join(", ", missingIds.Take(10)));
             }
-            else if (setParents.TryGetValue(e.Id, out var parentId))
+
+            foreach (var e in entities)
             {
-                e.ParentId = parentId;
+                if (removeParents.Contains(e.Id))
+                {
+                    e.ParentId = null;
+                }
+                else if (setParents.TryGetValue(e.Id, out var parentId))
+                {
+                    e.ParentId = parentId;
+                }
             }
         }
 
-        /*Remove Assignments*/
-        var relationsFromRemove = removeAssignments
-            .Select(r => r.FromId)
-            .ToList();
-
-        var assignmentsToRemove = await dbContext.Assignments
-            .AsTracking()
-            .Where(e => relationsFromRemove.Contains(e.FromId))
-            .ToListAsync(cancellationToken: cancellationToken);
-
-        var relationSetRemove = removeAssignments
-            .Select(r => (r.FromId, r.ToId, r.RoleId))
-            .ToHashSet();
-
-        assignmentsToRemove = assignmentsToRemove
-            .Where(e => relationSetRemove.Contains((e.FromId, e.ToId, e.RoleId)))
-            .ToList();
-
-        dbContext.RemoveRange(assignmentsToRemove);
-
-        /*Add Assignments*/
+        // Fix #5: Use shared helper method for removing assignments
+        if (removeAssignments.Any())
+        {
+            var assignmentsToRemove = await GetMatchingAssignments(dbContext, removeAssignments, cancellationToken);
+            dbContext.RemoveRange(assignmentsToRemove);
+        }
 
         return await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<int> RemoveAssignments(AppDbContextFactory dbContextFactory, List<Assignment> relations, CancellationToken cancellationToken = default)
+    // Fix #5: Extracted shared logic into helper method
+    private static async Task<List<Assignment>> GetMatchingAssignments(
+        AppDbContext dbContext, 
+        List<Assignment> relations, 
+        CancellationToken cancellationToken)
     {
-        using var dbContext = dbContextFactory.CreateDbContext();
         var relationsFrom = relations
             .Select(r => r.FromId)
+            .Distinct()
             .ToList();
 
-        var entities = await dbContext.Assignments
+        var candidates = await dbContext.Assignments
             .AsTracking()
             .Where(e => relationsFrom.Contains(e.FromId))
             .ToListAsync(cancellationToken: cancellationToken);
@@ -220,9 +225,17 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             .Select(r => (r.FromId, r.ToId, r.RoleId))
             .ToHashSet();
 
-        entities = entities
+        return candidates
             .Where(e => relationSet.Contains((e.FromId, e.ToId, e.RoleId)))
             .ToList();
+    }
+
+    private async Task<int> RemoveAssignments(AppDbContextFactory dbContextFactory, List<Assignment> relations, CancellationToken cancellationToken = default)
+    {
+        using var dbContext = dbContextFactory.CreateDbContext();
+        
+        // Fix #5: Use shared helper method
+        var entities = await GetMatchingAssignments(dbContext, relations, cancellationToken);
 
         dbContext.RemoveRange(entities);
         return await dbContext.SaveChangesAsync(cancellationToken);
@@ -290,8 +303,29 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     private bool ShouldSetParent(ExternalRoleAssignmentEvent item) =>
         item.RoleIdentifier == RoleConstants.HasAsRegistrationUnitBEDR.Entity.Code || item.RoleIdentifier == RoleConstants.HasAsRegistrationUnitAAFY.Entity.Code;
 
+    // Fix #8: Added validation for model properties
     private Assignment MapToAssignment(ExternalRoleAssignmentEvent model)
     {
+        if (model == null)
+        {
+            throw new ArgumentNullException(nameof(model), "External role assignment event cannot be null");
+        }
+
+        if (model.FromParty == Guid.Empty)
+        {
+            throw new ArgumentException($"Invalid FromParty ID in role assignment event. Role: {model.RoleIdentifier}", nameof(model));
+        }
+
+        if (model.ToParty == Guid.Empty)
+        {
+            throw new ArgumentException($"Invalid ToParty ID in role assignment event. Role: {model.RoleIdentifier}", nameof(model));
+        }
+
+        if (string.IsNullOrWhiteSpace(model.RoleIdentifier))
+        {
+            throw new ArgumentException("Role identifier cannot be null or empty", nameof(model));
+        }
+
         if (RoleConstants.TryGetByCode(model.RoleIdentifier, out var role))
         {
             return new Assignment()
@@ -302,6 +336,6 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             };
         }
 
-        throw new Exception(string.Format("Failed to convert model to Assignment. From:{0} To:{1} Role:{2}", model.FromParty, model.ToParty, model.RoleIdentifier));
+        throw new InvalidOperationException($"Failed to convert model to Assignment. Unknown role code. From:{model.FromParty} To:{model.ToParty} Role:{model.RoleIdentifier}");
     }
 }
