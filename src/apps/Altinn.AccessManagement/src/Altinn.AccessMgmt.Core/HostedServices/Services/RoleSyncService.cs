@@ -67,7 +67,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             {
                 var assignment = MapToAssignment(item);
                 
-                // Fix #7: Improved duplicate detection logic
+                // Fix: Improved duplicate detection logic
                 if (ShouldSetParent(item))
                 {
                     // Track both parent role types before checking if flush is needed
@@ -165,7 +165,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
 
         var ids = removeParents.Concat(setParents.Keys).ToList();
 
-        // Fix #6: Validate that all expected entities were retrieved
+        // Fix: Validate that all expected entities were retrieved
         if (ids.Any())
         {
             var entities = await dbContext.Entities
@@ -195,7 +195,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
             }
         }
 
-        // Fix #5: Use shared helper method for removing assignments
+        // Fix: Use shared helper method for removing assignments
         if (removeAssignments.Any())
         {
             var assignmentsToRemove = await GetMatchingAssignments(dbContext, removeAssignments, cancellationToken);
@@ -205,7 +205,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         return await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    // Fix #5: Extracted shared logic into helper method
+    // Fix: Extracted shared logic into helper method
     private static async Task<List<Assignment>> GetMatchingAssignments(
         AppDbContext dbContext, 
         List<Assignment> relations, 
@@ -234,7 +234,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     {
         using var dbContext = dbContextFactory.CreateDbContext();
         
-        // Fix #5: Use shared helper method
+        // Fix: Use shared helper method
         var entities = await GetMatchingAssignments(dbContext, relations, cancellationToken);
 
         dbContext.RemoveRange(entities);
@@ -303,7 +303,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     private bool ShouldSetParent(ExternalRoleAssignmentEvent item) =>
         item.RoleIdentifier == RoleConstants.HasAsRegistrationUnitBEDR.Entity.Code || item.RoleIdentifier == RoleConstants.HasAsRegistrationUnitAAFY.Entity.Code;
 
-    // Fix #8: Added validation for model properties
+    // Fix: Added validation for model properties
     private Assignment MapToAssignment(ExternalRoleAssignmentEvent model)
     {
         if (model == null)
