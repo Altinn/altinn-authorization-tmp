@@ -199,7 +199,7 @@ public class ConnectionQuery(AppDbContext db)
 
         var delegations =
             db.Assignments
-                .Where(a => a.ToId == toId)   
+                .Where(t => t.ToId == toId)   
                 .Where(t => t.RoleId == RoleConstants.Agent.Id)
                 .Join(
                     db.Delegations,
