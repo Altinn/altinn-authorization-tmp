@@ -2,13 +2,16 @@
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
+using Altinn.AccessManagement.Core.Helpers.Extensions;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 
 namespace Altinn.AccessManagement.Controllers;
@@ -22,7 +25,8 @@ public class AuthorizedPartiesController(
     ILogger<AuthorizedPartiesController> logger,
     IMapper mapper,
     IAuthorizedPartiesService authorizedPartiesService,
-    IContextRetrievalService contextRetrievalService) : ControllerBase
+    IContextRetrievalService contextRetrievalService,
+    FeatureManager featureManager) : ControllerBase
 {
     /// <summary>
     /// Endpoint for retrieving all authorized parties (with option to include Authorized Parties, aka Reportees, from Altinn 2) for the authenticated user
@@ -133,6 +137,12 @@ public class AuthorizedPartiesController(
     {
         try
         {
+            if (partyId == 0)
+            {
+                ModelState.AddModelError("InvalidParty", "The party id must be a valid non-zero integer");
+                return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
+            }
+
             var filters = new AuthorizedPartiesFilters
             {
                 IncludeAltinn2 = includeAltinn2,
@@ -148,6 +158,13 @@ public class AuthorizedPartiesController(
             if (userId == 0)
             {
                 return Unauthorized();
+            }
+
+            if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled))
+            {
+                var partyFilters = new BaseAttribute(AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute, partyId.ToString()).SingleToList();
+                var partyUuids = await authorizedPartiesService.GetPartyFilterUuids(partyFilters, cancellationToken);
+                filters.PartyFilter = partyUuids?.Distinct().ToDictionary(k => k, v => v);
             }
 
             List<AuthorizedParty> authorizedParties = await authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filters, cancellationToken);
