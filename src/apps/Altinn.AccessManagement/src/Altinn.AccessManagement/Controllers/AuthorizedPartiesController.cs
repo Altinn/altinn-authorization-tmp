@@ -77,6 +77,15 @@ public class AuthorizedPartiesController(
             int userId = AuthenticationHelper.GetUserId(HttpContext);
             if (userId != 0)
             {
+                var userProfile = await contextRetrievalService.GetNewUserProfile(userId, cancellationToken);
+                if (userProfile == null)
+                {
+                    ModelState.AddModelError("Invaliduser", "The user id is either invalid or does not exist");
+                    return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
+                }
+
+                filters.IncludePartiesViaKeyRoles = userProfile.ProfileSettingPreference.ShowClientUnits;
+
                 return mapper.Map<List<AuthorizedPartyExternal>>(await authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filters, cancellationToken));
             }
 
@@ -149,6 +158,15 @@ public class AuthorizedPartiesController(
             {
                 return Unauthorized();
             }
+
+            var userProfile = await contextRetrievalService.GetNewUserProfile(userId, cancellationToken);
+            if (userProfile == null)
+            {
+                ModelState.AddModelError("Invaliduser", "The user id is either invalid or does not exist");
+                return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
+            }
+
+            filters.IncludePartiesViaKeyRoles = userProfile.ProfileSettingPreference.ShowClientUnits;
 
             List<AuthorizedParty> authorizedParties = await authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filters, cancellationToken);
             AuthorizedParty authorizedParty = authorizedParties.Find(ap => ap.PartyId == partyId && !ap.OnlyHierarchyElementWithNoAccess)

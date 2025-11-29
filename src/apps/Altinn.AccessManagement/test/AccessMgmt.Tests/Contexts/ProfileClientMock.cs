@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
@@ -19,4 +19,10 @@ public class ProfileClientMock(MockContext context) : IProfileClient
             profile.UserName == userProfileLookup.Username ||
             profile.Party.SSN == userProfileLookup.Ssn ||
             profile.UserUuid == userProfileLookup.UserUuid));
+
+    /// <inheritdoc/>
+    public Task<NewUserProfile> GetNewUserProfile(int userId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }

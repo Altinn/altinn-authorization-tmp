@@ -36,5 +36,11 @@ namespace Altinn.AccessManagement.Tests.Mocks
             string unitTestFolder = Path.GetDirectoryName(new Uri(typeof(ProfileClientMock).Assembly.Location).LocalPath);
             return Path.Combine(unitTestFolder, "Data", "UserProfile", $"{userIdentifier}.json");
         }
+
+        /// <inheritdoc/>
+        public Task<NewUserProfile> GetNewUserProfile(int userId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
