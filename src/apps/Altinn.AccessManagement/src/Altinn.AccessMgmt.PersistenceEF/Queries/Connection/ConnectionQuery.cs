@@ -66,6 +66,7 @@ public class ConnectionQuery(AppDbContext db)
             }
             else
             {
+                
                 var data = await baseQuery.AsNoTracking().ToListAsync(ct);
                 result = data.Select(ToDtoEmpty).ToList();
             }
@@ -198,10 +199,12 @@ public class ConnectionQuery(AppDbContext db)
                     });
 
         var delegations =
-            a1
+            db.Assignments
+                .Where(a1 => a1.ToId == toId)   
+                .Where(t => t.RoleId == RoleConstants.Agent.Id)
                 .Join(
                     db.Delegations,
-                    dkr => dkr.AssignmentId,
+                    dkr => dkr.Id,
                     d => d.ToId,
                     (dkr, d) => new { dkr, d }
                 )
