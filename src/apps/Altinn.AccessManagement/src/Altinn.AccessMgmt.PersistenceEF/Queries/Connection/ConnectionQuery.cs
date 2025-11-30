@@ -12,9 +12,8 @@ public enum ConnectionQueryDirection { FromOthers, ToOthers }
 /// <summary>
 /// A query based on assignments and delegations
 /// </summary>
-public class ConnectionQuery(AppDbContext db)
+public class ConnectionQuery(IDbContextFactory<ReadOnlyDbContext> factory)
 {
-
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
     {
         return await GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, useNewQuery, ct);
@@ -32,6 +31,8 @@ public class ConnectionQuery(AppDbContext db)
     {
         try
         {
+            using var db = factory.CreateDbContext();
+
             var baseQuery = direction == ConnectionQueryDirection.FromOthers 
                 ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter) : BuildBaseQueryFromOthers(db, filter)
                 : BuildBaseQueryToOthers(db, filter);
@@ -42,7 +43,7 @@ public class ConnectionQuery(AppDbContext db)
 
             if (filter.EnrichEntities || filter.ExcludeDeleted || filter.IncludePackages || filter.EnrichPackageResources)
             {
-                var query = EnrichEntities(filter, baseQuery);
+                var query = EnrichEntities(db, filter, baseQuery);
                 var data = await query.AsNoTracking().ToListAsync(ct);
                 result = data.Select(ToDtoEmpty).ToList();
 
@@ -50,10 +51,10 @@ public class ConnectionQuery(AppDbContext db)
                 {
                     if (filter.IncludePackages || filter.EnrichPackageResources)
                     {
-                        var pkgs = await LoadPackagesByKeyAsync(query, filter, ct);
+                        var pkgs = await LoadPackagesByKeyAsync(db, query, filter, ct);
                         if (filter.EnrichPackageResources)
                         {
-                            await EnrichPackageResourcesAsync(pkgs, filter, ct);
+                            await EnrichPackageResourcesAsync(db, pkgs, filter, ct);
                         }
 
                         result = Attach(result, pkgs, p => p.Id, (dto, list) => dto.Packages = list);
@@ -74,7 +75,7 @@ public class ConnectionQuery(AppDbContext db)
             {
                 if (filter.IncludeResource)
                 {
-                    var res = await LoadResourcesByKeyAsync(baseQuery, filter, ct);
+                    var res = await LoadResourcesByKeyAsync(db, baseQuery, filter, ct);
                     result = Attach(result, res, r => r.Id, (dto, list) => dto.Resources = list);
                 }
             }
@@ -96,13 +97,15 @@ public class ConnectionQuery(AppDbContext db)
     /// </summary>
     public string GenerateDebugQuery(ConnectionQueryFilter filter, ConnectionQueryDirection direction, bool useNewQuery = true)
     {
+        using var db = factory.CreateDbContext();
+
         var baseQuery = direction == ConnectionQueryDirection.FromOthers
                 ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter) : BuildBaseQueryFromOthers(db, filter)
                 : BuildBaseQueryToOthers(db, filter);
 
         if (filter.EnrichEntities || filter.ExcludeDeleted)
         {
-            return EnrichEntities(filter, baseQuery).ToQueryString();
+            return EnrichEntities(db, filter, baseQuery).ToQueryString();
         }
         else
         {
@@ -672,7 +675,7 @@ public class ConnectionQuery(AppDbContext db)
             .RoleIdContains(roleSet);
     }
 
-    private IQueryable<ConnectionQueryRecord> EnrichEntities(ConnectionQueryFilter filter, IQueryable<ConnectionQueryBaseRecord> allKeys)
+    private IQueryable<ConnectionQueryRecord> EnrichEntities(AppDbContext db, ConnectionQueryFilter filter, IQueryable<ConnectionQueryBaseRecord> allKeys)
     {
         var entities = db.Entities.AsQueryable();
 
@@ -705,7 +708,7 @@ public class ConnectionQuery(AppDbContext db)
         return query;
     }
 
-    private async Task<ConnectionIndex<ConnectionQueryPackage>> LoadPackagesByKeyAsync(IQueryable<ConnectionQueryRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
+    private async Task<ConnectionIndex<ConnectionQueryPackage>> LoadPackagesByKeyAsync(AppDbContext db, IQueryable<ConnectionQueryRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
     {
         var packageSet = filter.PackageIds?.Count > 0 ? new HashSet<Guid>(filter.PackageIds) : null;
 
@@ -759,7 +762,7 @@ public class ConnectionQuery(AppDbContext db)
         return index;
     }
 
-    private async Task<ConnectionIndex<ConnectionQueryResource>> LoadResourcesByKeyAsync(IQueryable<ConnectionQueryBaseRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
+    private async Task<ConnectionIndex<ConnectionQueryResource>> LoadResourcesByKeyAsync(AppDbContext db, IQueryable<ConnectionQueryBaseRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
     {
         var resourceSet = filter.ResourceIds?.Count > 0 ? new HashSet<Guid>(filter.ResourceIds) : null;
 
@@ -814,7 +817,7 @@ public class ConnectionQuery(AppDbContext db)
         return index;
     }
 
-    private async Task EnrichPackageResourcesAsync(ConnectionIndex<ConnectionQueryPackage> packageIndex, ConnectionQueryFilter filter, CancellationToken ct = default)
+    private async Task EnrichPackageResourcesAsync(AppDbContext db, ConnectionIndex<ConnectionQueryPackage> packageIndex, ConnectionQueryFilter filter, CancellationToken ct = default)
     {
         var packageIds = packageIndex.Pairs
             .SelectMany(kv => kv.Value)

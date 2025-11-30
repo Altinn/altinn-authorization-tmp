@@ -1,7 +1,8 @@
-using Altinn.AccessMgmt.PersistenceEF.Audit;
+﻿using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
+using Altinn.AccessMgmt.PersistenceEF.Extensions.ReadOnly;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
@@ -18,7 +19,19 @@ public static class ServiceCollectionExtensions
     {
         var options = new AccessManagementDatabaseOptions(configureOptions);
         ConstantGuard.ConstantIdsAreUnique();
+
+        /*ReadOnly Replica service*/
+        services.AddScoped<IReadOnlyHintService, ReadOnlyHintService>();
+        services.AddSingleton<IReadOnlySelector>(sp => new ReadOnlySelector(sp));
+        services.AddPooledDbContextFactory<ReadOnlyDbContext>((sp, opt) =>
+        {
+            AddReadOnlyDbContext(sp, opt, options);
+            opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            opt.EnableSensitiveDataLogging(false);
+        });
         services.AddScoped<ReadOnlyInterceptor>();
+        /*---*/
+
         services.AddScoped<IAuditAccessor, AuditAccessor>();
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ConnectionQuery>();
@@ -50,6 +63,17 @@ public static class ServiceCollectionExtensions
         builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
     }
 
+    private static void AddReadOnlyDbContext(IServiceProvider sp, DbContextOptionsBuilder opt, AccessManagementDatabaseOptions options)
+    {
+        var selector = sp.GetRequiredService<IReadOnlySelector>();
+        opt.UseNpgsql(selector.GetConnectionString());
+
+        opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+
+        // var interceptor = sp.GetRequiredService<ReadOnlyInterceptor>();
+        // opt.AddInterceptors(interceptor);
+    }
+
     private static void AddMigrationDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
     {
         options.UseAsyncSeeding(async (dbcontext, anyChanges, ct) => await StaticDataIngest.IngestAll((AppDbContext)dbcontext, ct));
@@ -75,5 +99,11 @@ public static class ServiceCollectionExtensions
         public string MigrationConnectionString { get; set; } = string.Empty;
 
         public string AppConnectionString { get; set; } = string.Empty;
+
+        public Dictionary<string, string> ReadOnlyConnectionStrings { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public bool IncludePrimaryInReadOnlyPool { get; set; } = false;
+        
+        public bool EnableReadOnlyHints { get; set; } = false;
     }
 }
