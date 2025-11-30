@@ -99,14 +99,16 @@ public class ConnectionQuery(IDbContextFactory<ReadOnlyDbContext> factory)
     {
         try
         {
+            using var db = factory.CreateDbContext();
+
             var baseQuery = BuildBaseQueryFromOthersNew(db, filter);
             var queryString = baseQuery.ToQueryString();
 
-            var query = EnrichFromEntities(filter, baseQuery);
+            var query = EnrichFromEntities(db, filter, baseQuery);
             var data = await query.AsNoTracking().ToListAsync(ct);
             var result = data.Select(ToDtoEmpty).ToList();
 
-            var pkgs = await LoadPackagesByKeyAsync(query, filter, ct);
+            var pkgs = await LoadPackagesByKeyAsync(db, query, filter, ct);
             return Attach(result, pkgs, p => p.Id, (dto, list) => dto.Packages = list);
         }
         catch (Exception ex)

@@ -8,6 +8,7 @@ using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AccessMgmt.Tests.Services;
 
@@ -16,14 +17,16 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
     private readonly AppDbContext _db;
     private readonly ConnectionQuery _query;
 
-    public ConnectionQueryTests(PostgresFixture fixture)
+    public ConnectionQueryTests(IServiceProvider sp, PostgresFixture fixture)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(fixture.SharedDb.Admin.ToString())
             .Options;
 
-        _db = new AppDbContext(options);
-        _query = new ConnectionQuery(_db);
+        _db = sp.GetRequiredService<AppDbContext>();
+
+        var factory = sp.GetService<IDbContextFactory<ReadOnlyDbContext>>();
+        _query = new ConnectionQuery(factory);
 
         SeedTestData(_db).GetAwaiter().GetResult();
     }
