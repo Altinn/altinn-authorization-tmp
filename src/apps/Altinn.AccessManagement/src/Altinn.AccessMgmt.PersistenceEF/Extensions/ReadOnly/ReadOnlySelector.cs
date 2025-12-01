@@ -32,6 +32,25 @@ public class ReadOnlySelector : IReadOnlySelector
             : readonlySources.ToArray();
     }
 
+    public ReadOnlySelector(IServiceProvider sp, AccessManagementDatabaseOptions options)
+    {
+        _sp = sp;
+        _options = options;
+       
+        _namedReplicas = new Dictionary<string, string>(
+            _options.ReadOnlyConnectionStrings ?? new(),
+            StringComparer.OrdinalIgnoreCase
+            );
+
+        _namedReplicas["Primary"] = _options.AppConnectionString;
+
+        var readonlySources = _options.ReadOnlyConnectionStrings?.Values ?? Enumerable.Empty<string>();
+
+        _roundRobinPool = _options.IncludePrimaryInReadOnlyPool
+            ? readonlySources.Append(_options.AppConnectionString).ToArray()
+            : readonlySources.ToArray();
+    }
+
     public string GetConnectionString()
     {
         if (_roundRobinPool.Length == 0)

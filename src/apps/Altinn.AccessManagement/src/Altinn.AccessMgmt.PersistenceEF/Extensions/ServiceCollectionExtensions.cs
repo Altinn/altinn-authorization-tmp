@@ -22,8 +22,8 @@ public static class ServiceCollectionExtensions
 
         /*ReadOnly Replica service*/
         services.AddScoped<IReadOnlyHintService, ReadOnlyHintService>();
-        services.AddSingleton<IReadOnlySelector>(sp => new ReadOnlySelector(sp));
-        services.AddPooledDbContextFactory<ReadOnlyDbContext>((sp, opt) =>
+        services.AddSingleton<IReadOnlySelector>(sp => new ReadOnlySelector(sp, options));
+        services.AddDbContextFactory<ReadOnlyDbContext>((sp, opt) =>
         {
             AddReadOnlyDbContext(sp, opt, options);
             opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
