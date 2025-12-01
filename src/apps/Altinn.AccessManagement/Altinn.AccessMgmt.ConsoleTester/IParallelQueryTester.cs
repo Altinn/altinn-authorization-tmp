@@ -1,36 +1,54 @@
 ﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Altinn.AccessMgmt.ConsoleTester;
 
 public interface IParallelQueryTester
 {
-    Task RunAsync(int numberOfQueries);
+    Task RunAsync(int numberOfQueries, CancellationToken cancellationToken);
 }
 
-public class ParallelQueryTester(IDbContextFactory<ReadOnlyDbContext> factory, ConnectionQuery connectionQuery, ReadOnlyRoundRobinTester roundRobinTester) : IParallelQueryTester
+public class ParallelQueryTester : IParallelQueryTester
 {
-    public IDbContextFactory<ReadOnlyDbContext> Factory { get; } = factory;
+    private readonly IServiceProvider _services;
 
-    public async Task RunAsync(int numberOfQueries)
+    public ParallelQueryTester(IServiceProvider services)
     {
-        var calls = Enumerable.Range(0, numberOfQueries);
+        _services = services;
+    }
 
+    public async Task RunAsync(int numberOfQueries, CancellationToken cancellationToken)
+    {
         Console.WriteLine($"Starting {numberOfQueries} parallel queries...");
 
+        var calls = Enumerable.Range(0, numberOfQueries);
+
         await Parallel.ForEachAsync(
-            calls, 
+            calls,
             new ParallelOptions
             {
-                MaxDegreeOfParallelism = numberOfQueries
+                MaxDegreeOfParallelism = numberOfQueries,
+                CancellationToken = cancellationToken
             },
             async (index, ct) =>
             {
                 try
                 {
-                    var msg = await ExecuteAsync(index);
-                    Console.WriteLine($"[{index}] OK: {msg}");
+                    // Create new scope for each parallel worker
+                    using var scope = _services.CreateScope();
+
+                    var rr = scope.ServiceProvider.GetRequiredService<ReadOnlyRoundRobinTester>();
+
+                    // Execute query
+                    var res = await rr.Go(ct);
+
+                    Console.WriteLine($"[{index}] Server: {res.DB}, IP: {res.IP}, Slot: {res.Slot}");
+                }
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine($"[{index}] CANCELLED");
                 }
                 catch (Exception ex)
                 {
@@ -38,18 +56,5 @@ public class ParallelQueryTester(IDbContextFactory<ReadOnlyDbContext> factory, C
                 }
             }
         );
-    }
-
-    //private async Task<string> ExecuteAsync(int index)
-    //{
-    //    var res = await connectionQuery.GetConnectionsFromOthersAsync(new ConnectionQueryFilter() { ToIds = [Guid.Parse("1ed8a4e3-6d2b-4cf0-9d8e-25d0439c9c57")] });
-    //    return $"Count: {res.Count()}";
-    //}
-
-    private async Task<string> ExecuteAsync(int index)
-    {
-        var rr = new ReadOnlyRoundRobinTester(Factory);
-        var res = await rr.Go();
-        return $"[{index}]: IP: {res.IP} Db: {res.DB} Slot: {res.Slot}";
     }
 }

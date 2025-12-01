@@ -4,12 +4,9 @@ using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.ConsoleTester;
-using Altinn.AccessMgmt.Core.Extensions;
-using Altinn.AccessMgmt.Core.HostedServices.Services;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
-using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
 using Microsoft.Extensions.Configuration;
@@ -36,6 +33,7 @@ var host = Host.CreateDefaultBuilder(args)
         );
 
         var connectionStrings = GetConnectionStrings(configManager);
+
         services.AddAccessManagementDatabase(options =>
         {
             var appsettings = new AccessManagementAppsettings(config);
@@ -45,7 +43,7 @@ var host = Host.CreateDefaultBuilder(args)
             options.Source = appsettings.RunInitOnly ? SourceType.Migration : SourceType.App;
         });
 
-
+        // Domain services
         services.AddScoped<IIngestService, IngestService>();
         services.AddScoped<IConnectionService, ConnectionService>();
         services.AddScoped<IPartyService, PartyService>();
@@ -53,15 +51,17 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddScoped<IAssignmentService, AssignmentService>();
         services.AddScoped<IDelegationService, DelegationService>();
         services.AddScoped<IResourceService, ResourceService>();
-        services.AddScoped<IEntityService, EntityService>();        
+        services.AddScoped<IEntityService, EntityService>();
         services.AddScoped<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
 
-        services.AddTransient<IParallelQueryTester, ParallelQueryTester>();
-        services.AddTransient<ReadOnlyRoundRobinTester>();
-        services.AddHostedService<Worker>();
+        // Load-test services
+        services.AddScoped<IParallelQueryTester, ParallelQueryTester>();
+        services.AddScoped<ReadOnlyRoundRobinTester>();
 
+        // Hosted worker
+        services.AddHostedService<Worker>();
     })
     .Build();
 
@@ -103,7 +103,6 @@ static (string AppSource, string MigrationSource, Dictionary<string, string> Rea
     return (appConn, adminConn, list, true);
 }
 
-
 /// <summary>
 /// Background worker that runs once.
 /// </summary>
@@ -118,12 +117,23 @@ public class Worker : BackgroundService
         _logger = logger;
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Worker started");
-        _tester.RunAsync(10);
+
+        try
+        {
+            await _tester.RunAsync(10, stoppingToken);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Worker cancelled");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Worker failed");
+        }
+
         _logger.LogInformation("Worker finished");
-        return Task.CompletedTask;
     }
 }
-
