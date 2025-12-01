@@ -3,6 +3,7 @@ using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services;
 using Altinn.AccessManagement.Core.Services.Contracts;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.ConsoleTester;
 using Altinn.AccessMgmt.Core.Extensions;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
 using Altinn.AccessMgmt.Core.Services;
@@ -57,7 +58,8 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
         services.AddScoped<IAuthorizedPartiesService, AuthorizedPartiesServiceEf>();
 
-        services.AddTransient<IBasicEFTester, Greeter>();
+        services.AddTransient<IParallelQueryTester, ParallelQueryTester>();
+        services.AddTransient<ReadOnlyRoundRobinTester>();
         services.AddHostedService<Worker>();
 
     })
@@ -105,44 +107,25 @@ static (string AppSource, string MigrationSource, Dictionary<string, string> Rea
 
 
 /// <summary>
-/// Example interface for DI.
-/// </summary>
-public interface IBasicEFTester
-{
-    void Go();
-}
-
-/// <summary>
-/// Simple implementation.
-/// </summary>
-public class Greeter(ConnectionQuery connectionQuery) : IBasicEFTester
-{
-    public void Go()
-    {
-        var query = connectionQuery.GenerateDebugQuery(new ConnectionQueryFilter() { ToIds = [Guid.Empty] }, ConnectionQueryDirection.FromOthers, true);
-        Console.WriteLine(query);
-    }
-}
-
-/// <summary>
 /// Background worker that runs once.
 /// </summary>
 public class Worker : BackgroundService
 {
-    private readonly IBasicEFTester _greeter;
+    private readonly IParallelQueryTester _tester;
     private readonly ILogger<Worker> _logger;
 
-    public Worker(IBasicEFTester greeter, ILogger<Worker> logger)
+    public Worker(IParallelQueryTester tester, ILogger<Worker> logger)
     {
-        _greeter = greeter;
+        _tester = tester;
         _logger = logger;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Worker started");
-        _greeter.Go();
+        _tester.RunAsync(10);
         _logger.LogInformation("Worker finished");
         return Task.CompletedTask;
     }
 }
+
