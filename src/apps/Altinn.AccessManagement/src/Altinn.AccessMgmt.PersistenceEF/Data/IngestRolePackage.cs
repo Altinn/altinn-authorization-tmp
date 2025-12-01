@@ -11,7 +11,7 @@ public static partial class StaticDataIngest
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public async static Task IngestRolePackage(AppDbContext dbContext, CancellationToken cancellationToken = default)
+    public async static Task IngestRolePackage(AppPrimaryDbContext dbContext, CancellationToken cancellationToken = default)
     {
         var packages = (await dbContext.Packages.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
         var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);

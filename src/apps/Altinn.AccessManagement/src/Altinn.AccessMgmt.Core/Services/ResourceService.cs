@@ -9,11 +9,11 @@ namespace Altinn.AccessMgmt.Core.Services;
 /// <inheritdoc/>
 public class ResourceService : IResourceService
 {
-    public AppDbContext Db { get; }
+    public AppPrimaryDbContext Db { get; }
 
     public IAuditAccessor AuditAccessor { get; }
 
-    public ResourceService(AppDbContext appDbContext, IAuditAccessor auditAccessor)
+    public ResourceService(AppPrimaryDbContext appDbContext, IAuditAccessor auditAccessor)
     {
         Db = appDbContext;
         AuditAccessor = auditAccessor;

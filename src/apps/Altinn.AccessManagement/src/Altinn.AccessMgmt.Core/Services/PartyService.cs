@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
-public class PartyService(AppDbContext db) : IPartyService
+public class PartyService(AppPrimaryDbContext db) : IPartyService
 {
     /// <inheritdoc />
     public async Task<Result<AddPartyResultDto>> AddParty(PartyBaseDto party, CancellationToken cancellationToken = default)

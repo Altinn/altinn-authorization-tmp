@@ -15,7 +15,7 @@ public static partial class StaticDataIngest
 {
     private static AuditValues AuditValues { get; set; } = new(SystemEntityConstants.StaticDataIngest, SystemEntityConstants.StaticDataIngest, Guid.NewGuid().ToString(), DateTimeOffset.UtcNow);
 
-    public static async Task IngestAll(AppDbContext dbContext, CancellationToken cancellationToken = default)
+    public static async Task IngestAll(AppPrimaryDbContext dbContext, CancellationToken cancellationToken = default)
     {
         /* ProviderType */
         await AutoIngest(
@@ -140,7 +140,7 @@ public static partial class StaticDataIngest
     }
 
     internal static async Task AutoIngest<T>(
-        AppDbContext dbContext,
+        AppPrimaryDbContext dbContext,
         IEnumerable<ConstantDefinition<T>> seeds,
         Action<T, ConstantDefinition<T>> onUpdate,
         CancellationToken cancellationToken)

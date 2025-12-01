@@ -70,11 +70,11 @@ public class PostgresFixture : IAsyncLifetime
 
         SharedDb = PostgresServer.NewEFDatabase();
 
-        var options = new DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<AppPrimaryDbContext>()
             .UseNpgsql(SharedDb.Admin.ToString())
             .Options;
 
-        using var db = new AppDbContext(options);
+        using var db = new AppPrimaryDbContext(options);
         db.Database.MigrateAsync().Wait();
         AccessMgmt.PersistenceEF.Data.StaticDataIngest.IngestAll(db).Wait();
 

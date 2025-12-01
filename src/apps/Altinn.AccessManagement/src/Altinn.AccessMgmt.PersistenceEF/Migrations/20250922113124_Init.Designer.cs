@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
+    [DbContext(typeof(AppPrimaryDbContext))]
     [Migration("20250922113124_Init")]
     partial class Init
     {

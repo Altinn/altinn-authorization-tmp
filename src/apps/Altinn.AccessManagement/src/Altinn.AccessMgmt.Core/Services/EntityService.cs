@@ -9,14 +9,14 @@ namespace Altinn.AccessMgmt.Core.Services;
 
 public class EntityService : IEntityService
 {
-    public EntityService(AppDbContext appDbContext)
+    public EntityService(AppPrimaryDbContext appDbContext)
     {
         Db = appDbContext;
     }
 
     private AuditValues AuditValues { get; set; } = new AuditValues(SystemEntityConstants.InternalApi, SystemEntityConstants.InternalApi, Guid.NewGuid().ToString(), DateTimeOffset.UtcNow);
 
-    private AppDbContext Db { get; }
+    private AppPrimaryDbContext Db { get; }
 
     public async ValueTask<Entity> GetEntity(Guid id, CancellationToken cancellationToken = default)
     {

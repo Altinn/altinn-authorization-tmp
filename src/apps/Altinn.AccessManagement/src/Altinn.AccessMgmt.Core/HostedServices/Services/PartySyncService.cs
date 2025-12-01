@@ -50,7 +50,7 @@ public class PartySyncService : BaseSyncService, IPartySyncService
         var ingestEntities = new List<Entity>();
 
         using var scope = _serviceProvider.CreateEFScope(options);
-        var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var appDbContext = scope.ServiceProvider.GetRequiredService<AppPrimaryDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
         await foreach (var page in await _register.StreamParties(AltinnRegisterClient.DefaultFields, leaseData?.PartyStreamNextPageLink, cancellationToken))

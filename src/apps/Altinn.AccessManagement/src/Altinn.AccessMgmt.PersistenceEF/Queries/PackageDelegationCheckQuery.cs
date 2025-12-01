@@ -14,7 +14,7 @@ namespace Altinn.AccessMgmt.PersistenceEF.Queries;
 public static class PackageDelegationCheckQuery
 {
     public static async Task<IReadOnlyList<PackageDelegationCheck>> GetAssignableAccessPackages(
-        this AppDbContext dbContext,
+        this AppPrimaryDbContext dbContext,
         Guid fromId,
         Guid toId,
         IEnumerable<Guid> packageIds,

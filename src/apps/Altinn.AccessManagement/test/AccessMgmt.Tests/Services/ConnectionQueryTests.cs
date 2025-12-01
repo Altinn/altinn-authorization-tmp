@@ -13,22 +13,22 @@ namespace AccessMgmt.Tests.Services;
 
 public class ConnectionQueryTests : IClassFixture<PostgresFixture>
 {
-    private readonly AppDbContext _db;
+    private readonly AppPrimaryDbContext _db;
     private readonly ConnectionQuery _query;
 
     public ConnectionQueryTests(PostgresFixture fixture)
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<AppPrimaryDbContext>()
             .UseNpgsql(fixture.SharedDb.Admin.ToString())
             .Options;
 
-        _db = new AppDbContext(options);
+        _db = new AppPrimaryDbContext(options);
         _query = new ConnectionQuery(_db);
 
         SeedTestData(_db).GetAwaiter().GetResult();
     }
 
-    private async Task SeedTestData(AppDbContext db)
+    private async Task SeedTestData(AppPrimaryDbContext db)
     {
         db.Entities.AddRange(TestDataSet.Entities);
         db.Assignments.AddRange(TestDataSet.Assignments);

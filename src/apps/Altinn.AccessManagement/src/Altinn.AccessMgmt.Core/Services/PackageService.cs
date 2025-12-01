@@ -13,9 +13,9 @@ namespace Altinn.AccessMgmt.Core.Services;
 /// <inheritdoc/>
 public class PackageService : IPackageService
 {
-    public AppDbContext DbContext { get; set; }
+    public AppPrimaryDbContext DbContext { get; set; }
 
-    public PackageService(AppDbContext appDbContext)
+    public PackageService(AppPrimaryDbContext appDbContext)
     {
         DbContext = appDbContext;
     }

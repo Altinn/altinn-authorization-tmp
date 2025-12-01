@@ -22,8 +22,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuditAccessor, AuditAccessor>();
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ConnectionQuery>();
-        services.AddScoped<AppDbContextFactory>();
-        services.AddScoped(sp => sp.GetRequiredService<AppDbContextFactory>().CreateDbContext());
+
+        services.AddScoped<AppPrimaryDbContextFactory>();
+        services.AddScoped<AppReplicaDbContextFactory>();
+        services.AddScoped(sp => sp.GetRequiredService<AppPrimaryDbContextFactory>().CreateDbContext());
+        services.AddScoped(sp => sp.GetRequiredService<AppReplicaDbContextFactory>().CreateDbContext());
 
         services.AddSingleton<AuditMiddleware>();
 
@@ -31,34 +34,64 @@ public static class ServiceCollectionExtensions
         {
             return options.Source switch
             {
-                SourceType.App => services.AddPooledDbContextFactory<AppDbContext>((sp, opt) => AddAppDbContext(sp, opt, options)),
-                SourceType.Migration => services.AddPooledDbContextFactory<AppDbContext>((sp, opt) => AddMigrationDbContext(sp, opt, options)),
+                SourceType.App => services
+                    .AddPooledDbContextFactory<AppPrimaryDbContext>((sp, opt) => AddAppPrimaryDbContext(opt, options))
+                    .AddPooledDbContextFactory<AppReplicaDbContext>((sp, opt) => AddAppReplicaDbContext(opt, options)),
+                SourceType.Migration => services
+                    .AddPooledDbContextFactory<AppPrimaryDbContext>((sp, opt) => AddPrimaryMigrationDbContext(opt, options)),
                 _ => throw new ArgumentException("Invalid configured source must be either <App, Migration>", nameof(configureOptions)),
             };
         }
 
         return options.Source switch
         {
-            SourceType.App => services.AddDbContextFactory<AppDbContext>((sp, opt) => AddAppDbContext(sp, opt, options)),
-            SourceType.Migration => services.AddDbContextFactory<AppDbContext>((sp, opt) => AddMigrationDbContext(sp, opt, options)),
-            _ => throw new ArgumentException("Invalid configured source must be either <App, Migration>", nameof(configureOptions)),
+                SourceType.App => services
+                    .AddDbContextFactory<AppPrimaryDbContext>((sp, opt) => AddAppPrimaryDbContext(opt, options))
+                    .AddDbContextFactory<AppReplicaDbContext>((sp, opt) => AddAppReplicaDbContext(opt, options)),
+                SourceType.Migration => services
+                    .AddDbContextFactory<AppPrimaryDbContext>((sp, opt) => AddPrimaryMigrationDbContext(opt, options)),
+                _ => throw new ArgumentException("Invalid configured source must be either <App, Migration>", nameof(configureOptions)),
         };
     }
 
-    private static void ConfigureNpgsql(NpgsqlDbContextOptionsBuilder builder)
+    private static void ConfigurePrimaryNpgsql(NpgsqlDbContextOptionsBuilder builder)
     {
         builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
     }
 
-    private static void AddMigrationDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
+    private static void ConfigureReplicaNpgsql(NpgsqlDbContextOptionsBuilder builder)
     {
-        options.UseAsyncSeeding(async (dbcontext, anyChanges, ct) => await StaticDataIngest.IngestAll((AppDbContext)dbcontext, ct));
-        options.UseNpgsql(databaseOptions.MigrationConnectionString, ConfigureNpgsql).ReplaceService<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
+        builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
     }
 
-    private static void AddAppDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
+    private static void AddPrimaryMigrationDbContext(DbContextOptionsBuilder builder, AccessManagementDatabaseOptions options)
     {
-        options.UseNpgsql(databaseOptions.AppConnectionString, ConfigureNpgsql);
+        builder.UseAsyncSeeding(async (dbcontext, anyChanges, ct) => await StaticDataIngest.IngestAll((AppPrimaryDbContext)dbcontext, ct));
+        builder.UseNpgsql(options.MigrationConnectionString, ConfigurePrimaryNpgsql).ReplaceService<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
+    }
+
+    private static void AddAppPrimaryDbContext(DbContextOptionsBuilder builder, AccessManagementDatabaseOptions options)
+    {
+        builder.UseNpgsql(options.AppConnectionString, ConfigurePrimaryNpgsql);
+    }
+
+    private static void AddAppReplicaDbContext(DbContextOptionsBuilder builder, AccessManagementDatabaseOptions options)
+    {
+        if (options.ReplicaConnectionStrings.Length > 0)
+        {
+            long replicaIndex = -1;
+            var replicas = options.ReplicaConnectionStrings;
+            var index = Interlocked.Increment(ref replicaIndex);
+            var connectionString = replicas[index % replicas.Length];
+
+            builder.UseNpgsql(connectionString, ConfigureReplicaNpgsql).
+                UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        }
+        else
+        {
+            builder.UseNpgsql(options.AppConnectionString, ConfigureReplicaNpgsql).
+                UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        }
     }
 
     public class AccessManagementDatabaseOptions
@@ -75,5 +108,7 @@ public static class ServiceCollectionExtensions
         public string MigrationConnectionString { get; set; } = string.Empty;
 
         public string AppConnectionString { get; set; } = string.Empty;
+
+        public string[] ReplicaConnectionStrings { get; set; } = [];
     }
 }

@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF;
 
-public class BaseRepository<TBasic, TExtended, TAudit>(AppDbContext basicDb)
+public class BaseRepository<TBasic, TExtended, TAudit>(AppPrimaryDbContext basicDb)
     where TBasic : class
     where TExtended : class
     where TAudit : class
 {
-    private readonly AppDbContext basicDb = basicDb;
+    private readonly AppPrimaryDbContext basicDb = basicDb;
 
     public virtual async ValueTask<TBasic> Get(Guid id) =>
         await basicDb.Set<TBasic>().SingleOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);

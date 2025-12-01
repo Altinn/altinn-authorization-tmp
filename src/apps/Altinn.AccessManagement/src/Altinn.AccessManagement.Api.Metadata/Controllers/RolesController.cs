@@ -16,7 +16,7 @@ namespace Altinn.AccessManagement.Api.Metadata.Controllers
     public class RolesController : ControllerBase
     {
         private readonly IRoleService roleService;
-        private readonly AppDbContext dbContext;
+        private readonly AppPrimaryDbContext dbContext;
 
         /// <summary>
         /// Initialiserer en ny instans av <see cref="RolesController"/>.

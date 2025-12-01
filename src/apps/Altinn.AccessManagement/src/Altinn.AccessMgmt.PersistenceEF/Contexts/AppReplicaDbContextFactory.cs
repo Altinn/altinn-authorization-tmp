@@ -4,12 +4,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.PersistenceEF.Contexts;
 
 /// <inheritdoc />
-public class AppDbContextFactory(IDbContextFactory<AppDbContext> factory, IAuditAccessor audit) : IDbContextFactory<AppDbContext>
+public class AppReplicaDbContextFactory(IDbContextFactory<AppReplicaDbContext> factory) : IDbContextFactory<AppReplicaDbContext>
 {
-    public AppDbContext CreateDbContext()
+    public AppReplicaDbContext CreateDbContext()
     {
         var dbContext = factory.CreateDbContext();
-        dbContext.AuditAccessor = audit;
         return dbContext;
     }
 }
