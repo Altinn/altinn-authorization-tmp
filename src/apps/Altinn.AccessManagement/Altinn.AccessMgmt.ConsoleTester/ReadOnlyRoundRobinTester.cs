@@ -54,3 +54,40 @@ public class DbTest
     public string DB { get; set; } = string.Empty;
     public string Slot { get; set; } = string.Empty;
 }
+
+
+public class ReadOnlyRoundRobinTester2
+{
+    private readonly IDbContextFactory<ReadOnlyDbContext> _factory;
+    private readonly IReadOnlySelector _selector;
+
+    public ReadOnlyRoundRobinTester2(
+        IDbContextFactory<ReadOnlyDbContext> factory,
+        IReadOnlySelector selector)
+    {
+        _factory = factory;
+        _selector = selector;
+    }
+
+    public async Task<string> Go(CancellationToken cancellationToken = default)
+    {
+        // Hent connectionstring HER
+        var conn = _selector.GetConnectionString();
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+        .UseNpgsql(conn, npgsql =>
+        {
+            npgsql.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(2),
+                errorCodesToAdd: null);
+        })
+        .Options;
+
+        await using var db = new ReadOnlyDbContext(options);
+
+        var result = await db.Roles.FirstOrDefaultAsync();
+
+        return result?.Name ?? "Nada";
+    }
+}

@@ -39,12 +39,18 @@ public class ParallelQueryTester : IParallelQueryTester
                     // Create new scope for each parallel worker
                     using var scope = _services.CreateScope();
 
-                    var rr = scope.ServiceProvider.GetRequiredService<ReadOnlyRoundRobinTester>();
+                    //var rr = scope.ServiceProvider.GetRequiredService<ReadOnlyRoundRobinTester>();
+                    //var res = await rr.Go(ct);
+                    //Console.WriteLine($"[{index}] Server: {res.DB}, IP: {res.IP}, Slot: {res.Slot}");
 
-                    // Execute query
+                    var rr = scope.ServiceProvider.GetRequiredService<ReadOnlyRoundRobinTester2>();
                     var res = await rr.Go(ct);
+                    Console.WriteLine($"[{index}] {res}");
 
-                    Console.WriteLine($"[{index}] Server: {res.DB}, IP: {res.IP}, Slot: {res.Slot}");
+                    //var rr = scope.ServiceProvider.GetRequiredService<ConnectionQuery>();
+                    //var res = await rr.GetConnectionsFromOthersAsync(new ConnectionQueryFilter() { ToIds = [Guid.Parse("1ed8a4e3-6d2b-4cf0-9d8e-25d0439c9c57")] }, true, ct);
+                    //Console.WriteLine($"[{index}] Count: {res.Count}");
+
                 }
                 catch (OperationCanceledException)
                 {

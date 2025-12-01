@@ -34,6 +34,8 @@ public class ConnectionQuery(IDbContextFactory<ReadOnlyDbContext> factory)
         {
             using var db = factory.CreateDbContext();
 
+            db.Database.ExecuteSqlRaw("SET search_path TO dbo, public;");
+
             var baseQuery = direction == ConnectionQueryDirection.FromOthers 
                 ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter) : BuildBaseQueryFromOthers(db, filter)
                 : BuildBaseQueryToOthers(db, filter);

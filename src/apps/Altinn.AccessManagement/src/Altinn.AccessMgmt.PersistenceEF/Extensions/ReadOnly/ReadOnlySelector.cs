@@ -1,6 +1,4 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using static Altinn.AccessMgmt.PersistenceEF.Extensions.ServiceCollectionExtensions;
 
@@ -54,7 +52,7 @@ public class ReadOnlySelector : IReadOnlySelector
     }
 
     public string GetConnectionString()
-        {
+    {
         if (_roundRobinPool.Length == 0)
         {
             return _options.AppConnectionString;

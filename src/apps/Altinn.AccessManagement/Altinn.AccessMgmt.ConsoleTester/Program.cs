@@ -59,6 +59,7 @@ var host = Host.CreateDefaultBuilder(args)
         // Load-test services
         services.AddScoped<IParallelQueryTester, ParallelQueryTester>();
         services.AddScoped<ReadOnlyRoundRobinTester>();
+        services.AddScoped<ReadOnlyRoundRobinTester2>();
 
         // Hosted worker
         services.AddHostedService<Worker>();
