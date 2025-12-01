@@ -100,8 +100,6 @@ static (string AppSource, string MigrationSource, Dictionary<string, string> Rea
         }
     }
 
-    list.Add("Primary", appConn);
-
     return (appConn, adminConn, list, true);
 }
 

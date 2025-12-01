@@ -1,4 +1,6 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
+using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.ConsoleTester;
 
@@ -7,8 +9,10 @@ public interface IParallelQueryTester
     Task RunAsync(int numberOfQueries);
 }
 
-public class ParallelQueryTester(ConnectionQuery connectionQuery, ReadOnlyRoundRobinTester roundRobinTester) : IParallelQueryTester
+public class ParallelQueryTester(IDbContextFactory<ReadOnlyDbContext> factory, ConnectionQuery connectionQuery, ReadOnlyRoundRobinTester roundRobinTester) : IParallelQueryTester
 {
+    public IDbContextFactory<ReadOnlyDbContext> Factory { get; } = factory;
+
     public async Task RunAsync(int numberOfQueries)
     {
         var calls = Enumerable.Range(0, numberOfQueries);
@@ -44,7 +48,8 @@ public class ParallelQueryTester(ConnectionQuery connectionQuery, ReadOnlyRoundR
 
     private async Task<string> ExecuteAsync(int index)
     {
-        var res = await roundRobinTester.Go();
-        return $"[{index}]: IP: {res.IP} Db: {res.DB}";
+        var rr = new ReadOnlyRoundRobinTester(Factory);
+        var res = await rr.Go();
+        return $"[{index}]: IP: {res.IP} Db: {res.DB} Slot: {res.Slot}";
     }
 }
