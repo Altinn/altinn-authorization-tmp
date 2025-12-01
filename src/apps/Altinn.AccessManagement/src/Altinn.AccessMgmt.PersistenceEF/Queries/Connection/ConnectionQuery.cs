@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -32,7 +33,7 @@ public class ConnectionQuery(AppDbContext db)
     {
         try
         {
-            var baseQuery = direction == ConnectionQueryDirection.FromOthers 
+            var baseQuery = direction == ConnectionQueryDirection.FromOthers
                 ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter) : BuildBaseQueryFromOthers(db, filter)
                 : BuildBaseQueryToOthers(db, filter);
 
@@ -135,6 +136,12 @@ public class ConnectionQuery(AppDbContext db)
 
     private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryFromOthersNew(AppDbContext db, ConnectionQueryFilter filter)
     {
+        var activity = Activity.Current;
+        if (activity is { } && filter is { })
+        {
+            activity.AddBaggage("db", JsonSerializer.Serialize(filter));
+        }
+
         var toId = filter.ToIds.First();
         var fromSet = filter.FromIds?.Count > 0 ? new HashSet<Guid>(filter.FromIds) : null;
         var roleSet = filter.RoleIds?.Count > 0 ? new HashSet<Guid>(filter.RoleIds) : null;
@@ -166,7 +173,7 @@ public class ConnectionQuery(AppDbContext db)
                     IsMainUnitAccess = false,
                     IsRoleMap = false
                 });
-        
+
         var keyrole =
             direct
                 .Join(
@@ -198,7 +205,7 @@ public class ConnectionQuery(AppDbContext db)
         var a1 = filter.IncludeKeyRole
             ? direct.Concat(keyrole)
             : direct;
-        
+
         var rolemap =
             a1
                 .Join(
@@ -222,7 +229,7 @@ public class ConnectionQuery(AppDbContext db)
 
         var delegations =
             db.Assignments
-                .Where(t => t.ToId == toId)   
+                .Where(t => t.ToId == toId)
                 .Where(t => t.RoleId == RoleConstants.Agent.Id)
                 .Join(
                     db.Delegations,
