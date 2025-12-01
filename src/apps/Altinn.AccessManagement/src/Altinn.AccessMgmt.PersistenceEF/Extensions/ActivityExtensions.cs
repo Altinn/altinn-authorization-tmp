@@ -8,22 +8,29 @@ public static class ActivityExtensions
     /// <summary>
     /// Adds tags to the activity baggage with "db." prefix
     /// </summary>
-    public static void AddDbJsonTags<T>(this Activity? activity, string key, T data)
+    public static void AddJsonParamsTags<T>(this Activity? activity, string queryName, string paramName, T data)
+        where T : class
     {
-        if (activity is { } && data is { })
+        if (data is { })
         {
-            activity.AddBaggage($"db.{key}", JsonSerializer.Serialize(data));
+            AddParamsTags(activity, queryName, paramName, JsonSerializer.Serialize(data));
         }
     }
 
     /// <summary>
     /// Adds tags to the activity baggage with "db." prefix
     /// </summary>
-    public static void AddDbTags(this Activity? activity, string key, string data)
+    public static void AddParamsTags(this Activity? activity, string queryName, string paramName, object? data)
     {
-        if (activity is { } && !string.IsNullOrEmpty(data))
+        if (activity is { } && data is { })
         {
-            activity.AddBaggage($"db.{key}", data);
+            var activityEvent = new ActivityEvent(queryName, default, new ActivityTagsCollection()
+            {
+                { "db.parameter.name", paramName },
+                { "db.parameter.value",  data },
+            });
+
+            activity.AddEvent(activityEvent);
         }
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
+using OpenTelemetry;
 using OpenTelemetry.Trace;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -50,22 +51,6 @@ public static class ServiceCollectionExtensions
     private static void ConfigureNpgsql(NpgsqlDbContextOptionsBuilder builder)
     {
         builder.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
-        builder.ConfigureDataSource(source =>
-        {
-            source.ConfigureTracing(tracing =>
-            {
-                tracing.ConfigureCommandEnrichmentCallback((activity, cmd) =>
-                {
-                    foreach (var baggage in activity.Baggage)
-                    {
-                        if (baggage.Key.StartsWith("db"))
-                        {
-                            activity?.SetTag(baggage.Key, baggage.Value);
-                        }
-                    }
-                });
-            });
-        });
     }
 
     private static void AddMigrationDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
