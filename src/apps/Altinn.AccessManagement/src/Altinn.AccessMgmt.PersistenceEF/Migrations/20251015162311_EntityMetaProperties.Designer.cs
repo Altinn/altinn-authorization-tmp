@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
+    [DbContext(typeof(AppPrimaryDbContext))]
     [Migration("20251015162311_EntityMetaProperties")]
     partial class EntityMetaProperties
     {

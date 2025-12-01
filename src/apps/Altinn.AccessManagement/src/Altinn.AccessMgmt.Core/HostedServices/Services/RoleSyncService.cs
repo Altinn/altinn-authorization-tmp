@@ -43,7 +43,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         var options = new AuditValues(SystemEntityConstants.RegisterImportSystem);
 
         using var scope = _serviceProvider.CreateEFScope(options);
-        var appDbContextFactory = scope.ServiceProvider.GetRequiredService<AppDbContextFactory>();
+        var appDbContextFactory = scope.ServiceProvider.GetRequiredService<AppPrimaryDbContextFactory>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
         var leaseData = await lease.Get<RegisterLease>(cancellationToken);
 
@@ -136,7 +136,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         }
     }
 
-    private async Task<int> RemoveAssignments(AppDbContextFactory dbContextFactory, List<Assignment> relations, CancellationToken cancellationToken = default)
+    private async Task<int> RemoveAssignments(AppPrimaryDbContextFactory dbContextFactory, List<Assignment> relations, CancellationToken cancellationToken = default)
     {
         using var dbContext = dbContextFactory.CreateDbContext();
         var relationsFrom = relations
@@ -186,7 +186,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         }
     }
 
-    private async Task<int> RemoveParents(AppDbContextFactory dbContextFactory, List<Guid> relations, CancellationToken cancellationToken = default)
+    private async Task<int> RemoveParents(AppPrimaryDbContextFactory dbContextFactory, List<Guid> relations, CancellationToken cancellationToken = default)
     {
         using var dbContext = dbContextFactory.CreateDbContext();
         var entities = await dbContext.Entities
@@ -202,7 +202,7 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
         return await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<int> SetParents(AppDbContextFactory dbContextFactory, Dictionary<Guid, Guid> relations, CancellationToken cancellationToken = default)
+    private async Task<int> SetParents(AppPrimaryDbContextFactory dbContextFactory, Dictionary<Guid, Guid> relations, CancellationToken cancellationToken = default)
     {
         using var dbContext = dbContextFactory.CreateDbContext();
         var fields = relations.Keys.ToList();

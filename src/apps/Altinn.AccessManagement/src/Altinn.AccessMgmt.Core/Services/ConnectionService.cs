@@ -21,7 +21,7 @@ namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc />
 public partial class ConnectionService(
-    AppDbContext dbContext,
+    AppPrimaryDbContext dbContext,
     ConnectionQuery connectionQuery,
     IAuditAccessor auditAccessor,
     IAltinn2RightsClient altinn2Client) : IConnectionService

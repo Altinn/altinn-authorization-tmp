@@ -7,12 +7,12 @@ namespace Altinn.AccessMgmt.PersistenceEF.Utils;
 /// <inheritdoc />
 public class TranslationService : ITranslationService
 {
-    public TranslationService(AppDbContext dbContext)
+    public TranslationService(AppPrimaryDbContext dbContext)
     {
         Db = dbContext;
     }
 
-    private AppDbContext Db { get; }
+    private AppPrimaryDbContext Db { get; }
 
     /// <inheritdoc />
     public async ValueTask<T> TranslateAsync<T>(T source, string languageCode)

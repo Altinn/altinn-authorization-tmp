@@ -51,7 +51,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
             AuditValues currentOptions = new AuditValues(SystemEntityConstants.Altinn2RoleImportSystem);
 
             using var scope = _serviceProivider.CreateEFScope(currentOptions);
-            var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContextFactory>().CreateDbContext();
+            var appDbContext = scope.ServiceProvider.GetRequiredService<AppPrimaryDbContextFactory>().CreateDbContext();
             var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
             await foreach (var page in allRoles)
@@ -162,7 +162,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
         private static readonly IReadOnlyList<string> GetAssignmentMergeMatchFilter = new List<string>() { "fromid", "roleid", "toid" }.AsReadOnly();
 
-        private async Task<(Assignment Assignment, AuditValues Options)> ConvertRoleDelegationModelToAssignment(AppDbContext dbContext, RoleDelegationModel model, string batchId, CancellationToken cancellationToken)
+        private async Task<(Assignment Assignment, AuditValues Options)> ConvertRoleDelegationModelToAssignment(AppPrimaryDbContext dbContext, RoleDelegationModel model, string batchId, CancellationToken cancellationToken)
         {
             try
             {
@@ -189,7 +189,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
         private Dictionary<string, Role> Roles { get; set; } = new Dictionary<string, Role>(StringComparer.OrdinalIgnoreCase);
 
-        private async Task<Role> GetRole(AppDbContext dbContext, string roleCode, CancellationToken cancellationToken)
+        private async Task<Role> GetRole(AppPrimaryDbContext dbContext, string roleCode, CancellationToken cancellationToken)
         {
             string roleIdentifier = $"urn:altinn:rolecode:{roleCode.ToLower()}";
 

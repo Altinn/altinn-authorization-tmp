@@ -95,6 +95,7 @@ internal static partial class AccessManagementHost
             var appsettings = new AccessManagementAppsettings(builder.Configuration);
             options.AppConnectionString = connectionStrings.AppSource;
             options.MigrationConnectionString = connectionStrings.MigrationSource;
+            options.ReplicaConnectionStrings = connectionStrings.ReplicaSources;
             options.Source = appsettings.RunInitOnly ? SourceType.Migration : SourceType.App; 
         });
 
@@ -112,21 +113,22 @@ internal static partial class AccessManagementHost
         return builder.Build();
     }
 
-    private static (string AppSource, string MigrationSource, bool Valid) GetConnectionStrings(ConfigurationManager configuration)
+    private static (string AppSource, string[] ReplicaSources, string MigrationSource, bool Valid) GetConnectionStrings(ConfigurationManager configuration)
     {
         var adminConnectionStringFmt = configuration.GetValue<string>("PostgreSQLSettings:AdminConnectionString");
         var connectionStringFmt = configuration.GetValue<string>("PostgreSQLSettings:ConnectionString");
+        var replicaConnectionStringsFmt = configuration.GetSection("PostgreSQLSettings:ReplicaConnectionStrings").Get<string[]>() ?? [];
 
         if (string.IsNullOrEmpty(connectionStringFmt) || string.IsNullOrEmpty(adminConnectionStringFmt))
         {
             Log.PgsqlMissingConnectionString(Logger);
-            return (connectionStringFmt, adminConnectionStringFmt, false);
+            return (connectionStringFmt, replicaConnectionStringsFmt, adminConnectionStringFmt, false);
         }
         else
         {
             var adminConnectionStringPwd = configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbAdminPwd");
             var connectionStringPwd = configuration.GetValue<string>("PostgreSQLSettings:AuthorizationDbPwd");
-            return (string.Format(connectionStringFmt, connectionStringPwd), string.Format(adminConnectionStringFmt, adminConnectionStringPwd), true);
+            return (string.Format(connectionStringFmt, connectionStringPwd), replicaConnectionStringsFmt, string.Format(adminConnectionStringFmt, adminConnectionStringPwd), true);
         }
     }
 

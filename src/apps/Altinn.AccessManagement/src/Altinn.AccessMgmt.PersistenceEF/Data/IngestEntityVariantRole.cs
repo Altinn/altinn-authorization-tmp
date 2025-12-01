@@ -11,7 +11,7 @@ public static partial class StaticDataIngest
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public static async Task IngestEntityVariantRole(AppDbContext dbContext, CancellationToken cancellationToken = default)
+    public static async Task IngestEntityVariantRole(AppPrimaryDbContext dbContext, CancellationToken cancellationToken = default)
     {
         var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
         var variants = (await dbContext.EntityVariants.ToListAsync()).ToDictionary(t => t.Name, t => t.Id);

@@ -48,7 +48,7 @@ public partial class ResourceSyncService : IResourceSyncService
         var options = new AuditValues(SystemEntityConstants.ResourceRegistryImportSystem);
 
         using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppPrimaryDbContext>();
         var ingestService = scope.ServiceProvider.GetRequiredService<IIngestService>();
 
         var resourceOwners = new List<Provider>();
@@ -77,7 +77,7 @@ public partial class ResourceSyncService : IResourceSyncService
     {
         var options = new AuditValues(SystemEntityConstants.ResourceRegistryImportSystem);
         using var scope = _serviceProvider.CreateEFScope(options);
-        var dbContext = scope.ServiceProvider.GetService<AppDbContext>();
+        var dbContext = scope.ServiceProvider.GetService<AppPrimaryDbContext>();
 
         ResourceTypes = await dbContext.ResourceTypes.ToListAsync(cancellationToken);
         var leaseData = await lease.Get<ResourceRegistryLease>(cancellationToken);
@@ -121,21 +121,21 @@ public partial class ResourceSyncService : IResourceSyncService
         }
     }
 
-    private Task UpsertUpdatedSubject(AppDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken) => updatedResource.SubjectUrn switch
+    private Task UpsertUpdatedSubject(AppPrimaryDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken) => updatedResource.SubjectUrn switch
     {
         var s when s.StartsWith("urn:altinn:rolecode:", StringComparison.OrdinalIgnoreCase) => UpsertRoleCodeResource(dbContext, updatedResource, resource, cancellationToken),
         var s when s.StartsWith("urn:altinn:accesspackage:", StringComparison.OrdinalIgnoreCase) => UpsertAccessPackageResource(dbContext, updatedResource, resource, cancellationToken),
         _ => Task.CompletedTask,
     };
 
-    private Task DeleteUpdatedSubject(AppDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken) => updatedResource.SubjectUrn switch
+    private Task DeleteUpdatedSubject(AppPrimaryDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken) => updatedResource.SubjectUrn switch
     {
         var s when s.StartsWith("urn:altinn:rolecode:", StringComparison.OrdinalIgnoreCase) => DeleteRoleCodeResource(dbContext, updatedResource, resource, cancellationToken),
         var s when s.StartsWith("urn:altinn:accesspackage:", StringComparison.OrdinalIgnoreCase) => DeleteAccessPackageResource(dbContext, updatedResource, resource, cancellationToken),
         _ => Task.CompletedTask,
     };
 
-    private async Task DeleteRoleCodeResource(AppDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken)
+    private async Task DeleteRoleCodeResource(AppPrimaryDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken)
     {
         var subjectUrnPart = updatedResource.SubjectUrn.Split(":").Last();
 
@@ -158,7 +158,7 @@ public partial class ResourceSyncService : IResourceSyncService
         }
     }
 
-    private async Task DeleteAccessPackageResource(AppDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken)
+    private async Task DeleteAccessPackageResource(AppPrimaryDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken)
     {
         var packageResource = await dbContext.PackageResources
             .AsTracking()
@@ -173,7 +173,7 @@ public partial class ResourceSyncService : IResourceSyncService
         }
     }
 
-    private async Task UpsertAccessPackageResource(AppDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken)
+    private async Task UpsertAccessPackageResource(AppPrimaryDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken)
     {
         var package = await dbContext.Packages
             .AsNoTracking()
@@ -197,7 +197,7 @@ public partial class ResourceSyncService : IResourceSyncService
         }
     }
 
-    private async Task UpsertRoleCodeResource(AppDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken)
+    private async Task UpsertRoleCodeResource(AppPrimaryDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken)
     {
         var subjectUrnPart = updatedResource.SubjectUrn.Split(":").Last();
 
@@ -220,7 +220,7 @@ public partial class ResourceSyncService : IResourceSyncService
         }
     }
 
-    private async Task<Resource?> UpsertResource(AppDbContext dbContext, ResourceUpdatedModel resourceUpdated, CancellationToken cancellationToken)
+    private async Task<Resource?> UpsertResource(AppPrimaryDbContext dbContext, ResourceUpdatedModel resourceUpdated, CancellationToken cancellationToken)
     {
         var response = await _resourceRegistry.GetResource(resourceUpdated.ResourceUrn.Split(":").Last(), cancellationToken: cancellationToken);
         if (response.IsProblem)
@@ -254,7 +254,7 @@ public partial class ResourceSyncService : IResourceSyncService
 
     public IEnumerable<ResourceType> ResourceTypes { get; set; }
 
-    private async Task<Resource> ConvertToResource(AppDbContext dbContext, ResourceModel model, CancellationToken cancellationToken)
+    private async Task<Resource> ConvertToResource(AppPrimaryDbContext dbContext, ResourceModel model, CancellationToken cancellationToken)
     {
         var provider = await dbContext.Providers
         .AsNoTracking()
@@ -276,12 +276,12 @@ public partial class ResourceSyncService : IResourceSyncService
         };
     }
 
-    private async Task LoadResourceTypes(AppDbContext dbContext, CancellationToken cancellationToken)
+    private async Task LoadResourceTypes(AppPrimaryDbContext dbContext, CancellationToken cancellationToken)
     {
         ResourceTypes = await dbContext.ResourceTypes.ToListAsync(cancellationToken);
     }
 
-    private async Task<ResourceType> GetOrCreateResourceType(AppDbContext dbContext, ResourceModel model, CancellationToken cancellationToken)
+    private async Task<ResourceType> GetOrCreateResourceType(AppPrimaryDbContext dbContext, ResourceModel model, CancellationToken cancellationToken)
     {
         if (ResourceTypes == null || !ResourceTypes.Any())
         {

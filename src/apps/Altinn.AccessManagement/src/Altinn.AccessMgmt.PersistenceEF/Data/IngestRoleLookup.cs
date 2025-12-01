@@ -11,7 +11,7 @@ public static partial class StaticDataIngest
     /// </summary>
     /// <param name="cancellationToken">CancellationToken</param>
     /// <returns></returns>
-    public static async Task IngestRoleLookup(AppDbContext dbContext, CancellationToken cancellationToken = default)
+    public static async Task IngestRoleLookup(AppPrimaryDbContext dbContext, CancellationToken cancellationToken = default)
     {
         var roles = await dbContext.Roles.AsNoTracking().ToListAsync();
 

@@ -12,12 +12,12 @@ namespace Altinn.AccessMgmt.Core.Services;
 /// <inheritdoc />
 public class RoleService: IRoleService
 {
-    public RoleService(AppDbContext appDbContext)
+    public RoleService(AppPrimaryDbContext appDbContext)
     {
         Db = appDbContext;
     }
 
-    public AppDbContext Db { get; }
+    public AppPrimaryDbContext Db { get; }
 
     /// <inheritdoc />
     public async Task<RoleDto> GetById(Guid id, CancellationToken cancellationToken = default)

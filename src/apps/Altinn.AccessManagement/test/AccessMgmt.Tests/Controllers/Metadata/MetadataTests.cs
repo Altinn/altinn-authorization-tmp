@@ -14,22 +14,22 @@ namespace AccessMgmt.Tests.Controllers.Metadata;
 
 public class MetadataTests : IClassFixture<PostgresFixture>
 {
-    private readonly AppDbContext _db;
+    private readonly AppPrimaryDbContext _db;
 
     public MetadataTests(PostgresFixture fixture)
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<AppPrimaryDbContext>()
             .UseNpgsql(fixture.SharedDb.Admin.ToString())
             .Options;
 
-        _db = new AppDbContext(options);
+        _db = new AppPrimaryDbContext(options);
 
         SeedTestData(_db).Wait();
     }
 
     public List<Resource> Resources { get; set; } = new List<Resource>();
 
-    private async Task SeedTestData(AppDbContext db)
+    private async Task SeedTestData(AppPrimaryDbContext db)
     {
         var resourceType = await db.ResourceTypes.AsNoTracking().FirstOrDefaultAsync(t => t.Id == Guid.Parse("0195efb8-7c80-7f26-817a-50893176320d"));
         if (resourceType is null)

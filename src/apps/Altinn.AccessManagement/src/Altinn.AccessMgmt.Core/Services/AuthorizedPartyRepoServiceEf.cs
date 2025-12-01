@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Altinn.AccessMgmt.Core.Services;
 
 /// <inheritdoc/>
-public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery connectionQuery, IServiceProvider _serviceProvider) : IAuthorizedPartyRepoServiceEf
+public class AuthorizedPartyRepoServiceEf(AppPrimaryDbContext db, ConnectionQuery connectionQuery, IServiceProvider _serviceProvider) : IAuthorizedPartyRepoServiceEf
 {
     /// <inheritdoc/>
     public async Task<Entity?> GetEntity(Guid id, CancellationToken ct = default) =>

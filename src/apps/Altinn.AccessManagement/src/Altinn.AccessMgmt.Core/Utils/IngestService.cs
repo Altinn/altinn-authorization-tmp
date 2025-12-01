@@ -10,9 +10,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Utils;
 
 public class IngestService : IIngestService
 {
-    public AppDbContext DbContext { get; set; }
+    public AppPrimaryDbContext DbContext { get; set; }
     
-    public IngestService(AppDbContext dbContext)
+    public IngestService(AppPrimaryDbContext dbContext)
     {
         DbContext = dbContext;
     }

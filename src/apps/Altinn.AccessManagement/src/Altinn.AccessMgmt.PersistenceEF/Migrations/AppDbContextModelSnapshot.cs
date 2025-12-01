@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
+    [DbContext(typeof(AppPrimaryDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
