@@ -145,8 +145,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
         private Task<ImportClientDelegationRolePackageDto> CreateSystemDelegationRolePackageDtoForClientDelegation(string roleTypeCode, CancellationToken cancellationToken = default)
         {
-            string urn = string.Empty;
-            string clientRoleCode = string.Empty;
+            string urn;
+            string clientRoleCode;
             switch (roleTypeCode.ToUpper())
             {
                 case "A0237":
@@ -169,6 +169,8 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                     urn = "urn:altinn:accesspackage:regnskapsforer-lonn";
                     clientRoleCode = "regnskapsforer";
                     break;
+                default:
+                    throw new Exception($"Role type code '{roleTypeCode}' is not mapped to any access package");
             }
 
             ImportClientDelegationRolePackageDto accessPackage = new ImportClientDelegationRolePackageDto()

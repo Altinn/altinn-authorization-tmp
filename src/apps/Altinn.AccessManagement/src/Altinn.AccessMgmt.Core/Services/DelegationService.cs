@@ -320,7 +320,13 @@ public class DelegationService(AppDbContext db, IAssignmentService assignmentSer
             var clientRole = (await roleService.GetByCode(rp.Key)).First() ?? throw new Exception(string.Format("Role not found '{0}'", rp.Key));
 
             // Find ClientAssignment
-            var clientAssignment = await assignmentService.GetAssignment(client.Id, facilitator.Id, clientRole.Id, cancellationToken) ?? throw new Exception(string.Format("Could not find client assignment '{0}' - {1} - {2}", client.Name, clientRole.Code, facilitator.Name));
+            var clientAssignment = await assignmentService.GetAssignment(client.Id, facilitator.Id, clientRole.Id, cancellationToken);
+            if (clientAssignment == null)
+            {
+                // If client assignment does not exist none of the packages can be delegated this should happen if the client has lost the connection to the facilitator before the delegation is imported.
+                continue;
+            }
+
             var clientPackages = await assignmentService.GetPackagesForAssignment(clientAssignment.Id);
 
             Delegation delegation = null;
