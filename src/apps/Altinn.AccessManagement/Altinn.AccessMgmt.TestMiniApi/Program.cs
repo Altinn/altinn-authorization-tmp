@@ -7,6 +7,7 @@ using Altinn.AccessMgmt.ConsoleTester;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
 using Microsoft.Extensions.Configuration;
@@ -44,6 +45,8 @@ builder.Services.AddAccessManagementDatabase(options =>
     options.Source = appsettings.RunInitOnly ? SourceType.Migration : SourceType.App;
 });
 
+builder.Services.AddScoped<ConnectionQuery>();
+
 // Load-test services
 builder.Services.AddScoped<ReadOnlyRoundRobinTester>();
 builder.Services.AddScoped<ReadOnlyRoundRobinTester2>();
@@ -68,6 +71,24 @@ app.MapGet("/test/replicas", async (
 {
     // This method does ONE query per call
     var result = await tester.Go(ct);
+    return Results.Ok(result);
+});
+
+app.MapGet("/test/replicas3", async (
+    ConnectionQuery tester,
+    CancellationToken ct) =>
+{
+    // This method does ONE query per call
+    var result = tester.GenerateDebugQuery(new ConnectionQueryFilter() { ToIds = [Guid.Parse("1ed8a4e3-6d2b-4cf0-9d8e-25d0439c9c57")] }, ConnectionQueryDirection.FromOthers, true);
+    return Results.Ok(result);
+});
+
+app.MapGet("/test/replicas4", async (
+    ConnectionQuery tester,
+    CancellationToken ct) =>
+{
+    // This method does ONE query per call
+    var result = await tester.GetConnectionsFromOthersAsync(new ConnectionQueryFilter() { ToIds = [Guid.Parse("1ed8a4e3-6d2b-4cf0-9d8e-25d0439c9c57")] }, true, ct);
     return Results.Ok(result);
 });
 
