@@ -26,5 +26,10 @@ public class DatabaseSettings
         /// Gets or sets the migration connection string used for database migrations.
         /// </summary>
         public string MigrationConnectionString { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Replica Connection Strings
+        /// </summary>
+        public string[] ReplicaConnectionStrings { get; set; } = [];
     }
 }
