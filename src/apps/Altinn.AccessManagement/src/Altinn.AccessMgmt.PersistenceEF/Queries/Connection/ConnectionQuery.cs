@@ -19,7 +19,7 @@ public class ConnectionQuery(AppDbContext db)
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
     {
         var activity = Activity.Current;
-        activity.AddJsonParamsTags(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
+        activity.AddJsonParamsEvent(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
 
         return await GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, useNewQuery, ct);
     }
@@ -27,7 +27,7 @@ public class ConnectionQuery(AppDbContext db)
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsToOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
     {
         var activity = Activity.Current;
-        activity.AddJsonParamsTags(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
+        activity.AddJsonParamsEvent(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
 
         return await GetConnectionsAsync(filter, ConnectionQueryDirection.ToOthers, useNewQuery, ct);
     }
@@ -38,7 +38,7 @@ public class ConnectionQuery(AppDbContext db)
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsAsync(ConnectionQueryFilter filter, ConnectionQueryDirection direction, bool useNewQuery = true, CancellationToken ct = default)
     {
         var activity = Activity.Current;
-        activity.AddJsonParamsTags(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
+        activity.AddJsonParamsEvent(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
 
         try
         {
@@ -107,7 +107,7 @@ public class ConnectionQuery(AppDbContext db)
     public async Task<List<ConnectionQueryExtendedRecord>> GetPipConnectionPackagesAsync(ConnectionQueryFilter filter, CancellationToken ct = default)
     {
         var activity = Activity.Current;
-        activity.AddJsonParamsTags(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
+        activity.AddJsonParamsEvent(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
 
 
         try
@@ -134,7 +134,7 @@ public class ConnectionQuery(AppDbContext db)
     public string GenerateDebugQuery(ConnectionQueryFilter filter, ConnectionQueryDirection direction, bool useNewQuery = true)
     {
         var activity = Activity.Current;
-        activity.AddJsonParamsTags(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
+        activity.AddJsonParamsEvent(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
         
         var baseQuery = direction == ConnectionQueryDirection.FromOthers
                 ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter) : BuildBaseQueryFromOthers(db, filter)

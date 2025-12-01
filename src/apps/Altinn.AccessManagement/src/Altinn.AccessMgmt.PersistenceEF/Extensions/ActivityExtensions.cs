@@ -6,9 +6,9 @@ namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 public static class ActivityExtensions
 {
     /// <summary>
-    /// Adds tags to the activity baggage with "db." prefix
+    /// Creates an event in current traces with serialized json data.
     /// </summary>
-    public static void AddJsonParamsTags<T>(this Activity? activity, string queryName, string paramName, T data)
+    public static void AddJsonParamsEvent<T>(this Activity? activity, string queryName, string paramName, T data)
         where T : class
     {
         if (data is { })
@@ -18,7 +18,7 @@ public static class ActivityExtensions
     }
 
     /// <summary>
-    /// Adds tags to the activity baggage with "db." prefix
+    /// Creates an event in current traces with provided raw data.
     /// </summary>
     public static void AddParamsTags(this Activity? activity, string queryName, string paramName, object? data)
     {

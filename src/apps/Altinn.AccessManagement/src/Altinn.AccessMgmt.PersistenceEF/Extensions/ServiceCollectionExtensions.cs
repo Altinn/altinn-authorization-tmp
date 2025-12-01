@@ -8,10 +8,7 @@ using Altinn.Authorization.Host.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
-using OpenTelemetry;
-using OpenTelemetry.Trace;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Extensions;
 
