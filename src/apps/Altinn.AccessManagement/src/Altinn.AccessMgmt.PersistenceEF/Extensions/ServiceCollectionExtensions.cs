@@ -20,18 +20,9 @@ public static class ServiceCollectionExtensions
         var options = new AccessManagementDatabaseOptions(configureOptions);
         ConstantGuard.ConstantIdsAreUnique();
 
-        /*ReadOnly Replica service*/
         services.AddScoped<IReadOnlyHintService, ReadOnlyHintService>();
         services.AddSingleton<IReadOnlySelector>(sp => new ReadOnlySelector(sp, options));
-        services.AddDbContextFactory<ReadOnlyDbContext>((sp, opt) =>
-        {
-            AddReadOnlyDbContext(sp, opt, options);
-            opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-            opt.EnableSensitiveDataLogging(false);
-        });
         services.AddScoped<ReadOnlyInterceptor>();
-        /*---*/
-
         services.AddScoped<IAuditAccessor, AuditAccessor>();
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ConnectionQuery>();
@@ -44,7 +35,9 @@ public static class ServiceCollectionExtensions
         {
             return options.Source switch
             {
-                SourceType.App => services.AddPooledDbContextFactory<AppDbContext>((sp, opt) => AddAppDbContext(sp, opt, options)),
+                SourceType.App => services
+                .AddPooledDbContextFactory<AppDbContext>((sp, opt) => AddAppDbContext(sp, opt, options))
+                .AddPooledDbContextFactory<ReadOnlyDbContext>((sp, opt) => AddReadOnlyDbContext(sp, opt, options)),
                 SourceType.Migration => services.AddPooledDbContextFactory<AppDbContext>((sp, opt) => AddMigrationDbContext(sp, opt, options)),
                 _ => throw new ArgumentException("Invalid configured source must be either <App, Migration>", nameof(configureOptions)),
             };
@@ -52,7 +45,9 @@ public static class ServiceCollectionExtensions
 
         return options.Source switch
         {
-            SourceType.App => services.AddDbContextFactory<AppDbContext>((sp, opt) => AddAppDbContext(sp, opt, options)),
+            SourceType.App => services
+            .AddDbContextFactory<AppDbContext>((sp, opt) => AddAppDbContext(sp, opt, options))
+            .AddDbContextFactory<ReadOnlyDbContext>((sp, opt) => AddReadOnlyDbContext(sp, opt, options)),
             SourceType.Migration => services.AddDbContextFactory<AppDbContext>((sp, opt) => AddMigrationDbContext(sp, opt, options)),
             _ => throw new ArgumentException("Invalid configured source must be either <App, Migration>", nameof(configureOptions)),
         };
@@ -67,8 +62,8 @@ public static class ServiceCollectionExtensions
     {
         var selector = sp.GetRequiredService<IReadOnlySelector>();
         opt.UseNpgsql(selector.GetConnectionString());
-
         opt.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        opt.EnableSensitiveDataLogging(false);
 
         // var interceptor = sp.GetRequiredService<ReadOnlyInterceptor>();
         // opt.AddInterceptors(interceptor);
