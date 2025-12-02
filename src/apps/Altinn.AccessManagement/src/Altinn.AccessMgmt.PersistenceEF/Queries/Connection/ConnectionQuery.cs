@@ -12,7 +12,7 @@ public enum ConnectionQueryDirection { FromOthers, ToOthers }
 /// <summary>
 /// A query based on assignments and delegations
 /// </summary>
-public class ConnectionQuery(IDbContextFactory<ReadOnlyDbContext> factory)
+public class ConnectionQuery(IDbContextFactory<AppDbContext> factory)
 {
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
     {

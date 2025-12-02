@@ -6,11 +6,11 @@ namespace Altinn.AccessMgmt.ConsoleTester;
 
 public class ReadOnlyRoundRobinTester
 {
-    private readonly IDbContextFactory<ReadOnlyDbContext> _factory;
+    private readonly IDbContextFactory<AppDbContext> _factory;
     private readonly IReadOnlySelector _selector;
 
     public ReadOnlyRoundRobinTester(
-        IDbContextFactory<ReadOnlyDbContext> factory,
+        IDbContextFactory<AppDbContext> factory,
         IReadOnlySelector selector)
     {
         _factory = factory;
@@ -32,7 +32,7 @@ public class ReadOnlyRoundRobinTester
         })
         .Options;
 
-        await using var db = new ReadOnlyDbContext(options);
+        await using var db = new AppDbContext(options);
 
         var result = await db.Database.SqlQueryRaw<DbTest>(
             """
@@ -56,11 +56,11 @@ public class DbTest
 
 public class ReadOnlyRoundRobinTester2
 {
-    private readonly IDbContextFactory<ReadOnlyDbContext> _factory;
+    private readonly IDbContextFactory<AppDbContext> _factory;
     private readonly IReadOnlySelector _selector;
 
     public ReadOnlyRoundRobinTester2(
-        IDbContextFactory<ReadOnlyDbContext> factory,
+        IDbContextFactory<AppDbContext> factory,
         IReadOnlySelector selector)
     {
         _factory = factory;
@@ -82,7 +82,7 @@ public class ReadOnlyRoundRobinTester2
         })
         .Options;
 
-        await using var db = new ReadOnlyDbContext(options);
+        await using var db = new AppDbContext(options);
 
         var result = await db.Roles.FirstOrDefaultAsync();
 
