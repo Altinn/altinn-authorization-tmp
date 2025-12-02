@@ -40,8 +40,7 @@ namespace Altinn.Platform.Authorization.Helpers
                 ResourcePartyId = resourcePartyId,
                 Operation = GetActionInformation(contextRequest),
                 IpAdress = GetClientIpAddress(context),
-                //ContextRequestJson = JsonSerializer.Serialize(contextRequest), // TODO: Enriching of accesspackage increates size significantly, New implementation needed if we want to store this
-
+                ContextRequestJson = JsonSerializer.Serialize(contextRequest), // TODO: Enriching of accesspackage increases size significantly, New implementation needed if we want to store this
                 Decision = contextRespsonse.Results?.FirstOrDefault()?.Decision,
                 SubjectPartyUuid = partyUuid,
             };
