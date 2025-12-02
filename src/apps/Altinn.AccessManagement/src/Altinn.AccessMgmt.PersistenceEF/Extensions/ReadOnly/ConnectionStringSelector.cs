@@ -7,37 +7,19 @@ namespace Altinn.AccessMgmt.PersistenceEF.Extensions.ReadOnly;
 
 public class ConnectionStringSelector : IConnectionStringSelector
 {
-    private readonly IServiceProvider _sp;
     private readonly AccessManagementDatabaseOptions _options;
     private readonly Dictionary<string, string> _namedReplicas;
     private readonly string[] _roundRobinPool;
 
     private static int _globalIndex = -1;
 
-    public ConnectionStringSelector(IServiceProvider sp)
+    public IHintService _hintService { get; }
+
+    public ConnectionStringSelector(AccessManagementDatabaseOptions options, IHintService hintService)
     {
-        _sp = sp;
-        _options = _sp.GetRequiredService<IOptions<AccessManagementDatabaseOptions>>().Value;
-
-        _namedReplicas = new Dictionary<string, string>(
-            _options.ReadOnlyConnectionStrings ?? new(),
-            StringComparer.OrdinalIgnoreCase
-            );
-
-        _namedReplicas["Primary"] = _options.AppConnectionString;
-
-        var readonlySources = _options.ReadOnlyConnectionStrings?.Values ?? Enumerable.Empty<string>();
-
-        _roundRobinPool = _options.IncludePrimaryInReadOnlyPool
-            ? readonlySources.Append(_options.AppConnectionString).ToArray()
-            : readonlySources.ToArray();
-    }
-
-    public ConnectionStringSelector(IServiceProvider sp, AccessManagementDatabaseOptions options)
-    {
-        _sp = sp;
+        _hintService = hintService;
         _options = options;
-       
+
         _namedReplicas = new Dictionary<string, string>(
             _options.ReadOnlyConnectionStrings ?? new(),
             StringComparer.OrdinalIgnoreCase
@@ -61,8 +43,8 @@ public class ConnectionStringSelector : IConnectionStringSelector
 
         if (_options.EnableReadOnlyHints)
         {
-            var hintService = _sp.GetRequiredService<IHintService>();
-            var hint = hintService.GetHint();
+            //var hintService = _sp.GetRequiredService<IHintService>();
+            var hint = _hintService.GetHint();
 
             if (hint != null && _namedReplicas.TryGetValue(hint.Value, out var hintedConn))
             {

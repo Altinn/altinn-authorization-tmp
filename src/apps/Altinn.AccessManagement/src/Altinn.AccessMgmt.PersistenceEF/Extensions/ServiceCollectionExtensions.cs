@@ -21,16 +21,15 @@ public static class ServiceCollectionExtensions
         var options = new AccessManagementDatabaseOptions(configureOptions);
         ConstantGuard.ConstantIdsAreUnique();
 
-        services.AddSingleton<IConnectionStringSelector>(sp => new ConnectionStringSelector(sp, options));
-        services.AddScoped<IHintService, HintService>();
-        services.AddScoped<ConnectionStringSelectorInterceptor>();
-        services.AddScoped<HintSaveChangesInterceptor>();
+        services.AddSingleton<IConnectionStringSelector>(sp => new ConnectionStringSelector(options, sp.GetRequiredService<IHintService>()));
+        services.AddSingleton<IHintService, HintService>();
+        services.AddSingleton<ConnectionStringSelectorInterceptor>();
+        services.AddSingleton<HintSaveChangesInterceptor>();
 
         services.AddScoped<IAuditAccessor, AuditAccessor>();
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ConnectionQuery>();
         services.AddScoped<AppDbContextFactory>();
-        services.AddScoped(sp => sp.GetRequiredService<AppDbContextFactory>().CreateDbContext());
 
         services.AddSingleton<AuditMiddleware>();
 
