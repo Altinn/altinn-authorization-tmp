@@ -78,9 +78,4 @@ public enum SourceType
     /// Represents an application-related database source.
     /// </summary>
     App,
-
-    /// <summary>
-    /// Using a read_only replica
-    /// </summary>
-    ReadOnly,
 }
