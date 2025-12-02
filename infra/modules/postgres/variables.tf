@@ -49,6 +49,11 @@ variable "enable_high_availability" {
   default = false
 }
 
+variable "read_replicas" {
+  type    = string
+  default = []
+}
+
 variable "compute_sku" {
   type    = string
   default = "D2"
