@@ -24,9 +24,7 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
             .Options;
 
         _db = sp.GetRequiredService<AppDbContext>();
-
-        var factory = sp.GetService<IDbContextFactory<AppDbContext>>();
-        _query = new ConnectionQuery(factory);
+        _query = new ConnectionQuery(_db);
 
         SeedTestData(_db).GetAwaiter().GetResult();
     }
