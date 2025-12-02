@@ -60,7 +60,6 @@ namespace Altinn.Platform.Authorization.Clients
                         info = "See the following link for more details https://github.com/Altinn/altinn-authorization-tmp/issues/1858",
                     });
                     base64Content = Convert.ToBase64String(Encoding.UTF8.GetBytes(fallbackJson));
-                    _logger.LogWarning("Message exceeded 64KB. Sent fallback message with GitHub link instead.");
                 }
 
                 await client.SendMessageAsync(base64Content, null, timeToLive, cancellationToken);      
