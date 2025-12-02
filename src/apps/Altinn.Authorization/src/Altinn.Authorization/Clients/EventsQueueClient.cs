@@ -52,10 +52,15 @@ namespace Altinn.Platform.Authorization.Clients
                 byte[] utf8Bytes = Encoding.UTF8.GetBytes(content);
                 string base64Content = Convert.ToBase64String(utf8Bytes);
 
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                };
+                options.Converters.Add(new JsonStringEnumConverter());
                 // Azure Storage Queue message size limit is 64 KB (65536 bytes)
                 if (base64Content.Length > 64 * 1024)
                 {
-                    AuthorizationEvent authorizationEvent = JsonSerializer.Deserialize<AuthorizationEvent>(content);
+                    AuthorizationEvent? authorizationEvent = JsonSerializer.Deserialize<AuthorizationEvent>(content, options);
                     
                     // Replace with a small JSON message and a GitHub link
                     var fallbackJson = System.Text.Json.JsonSerializer.Serialize(new
