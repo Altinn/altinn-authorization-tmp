@@ -50,8 +50,16 @@ variable "enable_high_availability" {
 }
 
 variable "read_replicas" {
-  type    = string
+  type    = list(string)
   default = []
+
+  validation {
+    condition = alltrue([
+      for r in var.read_replicas : (r != null && trim(r) != "")
+    ])
+
+    error_message = "All read_replicas entries must be non-empty, non-null strings."
+  }
 }
 
 variable "compute_sku" {
