@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Altinn.AccessMgmt.PersistenceEF.Extensions.Hint;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using static Altinn.AccessMgmt.PersistenceEF.Extensions.ServiceCollectionExtensions;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Extensions.ReadOnly;
 
-public class ReadOnlySelector : IReadOnlySelector
+public class ConnectionStringSelector : IConnectionStringSelector
 {
     private readonly IServiceProvider _sp;
     private readonly AccessManagementDatabaseOptions _options;
@@ -13,7 +14,7 @@ public class ReadOnlySelector : IReadOnlySelector
 
     private static int _globalIndex = -1;
 
-    public ReadOnlySelector(IServiceProvider sp)
+    public ConnectionStringSelector(IServiceProvider sp)
     {
         _sp = sp;
         _options = _sp.GetRequiredService<IOptions<AccessManagementDatabaseOptions>>().Value;
@@ -32,7 +33,7 @@ public class ReadOnlySelector : IReadOnlySelector
             : readonlySources.ToArray();
     }
 
-    public ReadOnlySelector(IServiceProvider sp, AccessManagementDatabaseOptions options)
+    public ConnectionStringSelector(IServiceProvider sp, AccessManagementDatabaseOptions options)
     {
         _sp = sp;
         _options = options;
@@ -60,10 +61,10 @@ public class ReadOnlySelector : IReadOnlySelector
 
         if (_options.EnableReadOnlyHints)
         {
-            var hintService = _sp.GetRequiredService<IReadOnlyHintService>();
+            var hintService = _sp.GetRequiredService<IHintService>();
             var hint = hintService.GetHint();
 
-            if (hint != null && _namedReplicas.TryGetValue(hint, out var hintedConn))
+            if (hint != null && _namedReplicas.TryGetValue(hint.Value, out var hintedConn))
             {
                 return hintedConn;
             }

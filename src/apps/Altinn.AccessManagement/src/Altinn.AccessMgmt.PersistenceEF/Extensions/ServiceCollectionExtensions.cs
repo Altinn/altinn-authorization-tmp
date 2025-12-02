@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
+using Altinn.AccessMgmt.PersistenceEF.Extensions.Hint;
 using Altinn.AccessMgmt.PersistenceEF.Extensions.ReadOnly;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -20,10 +21,10 @@ public static class ServiceCollectionExtensions
         var options = new AccessManagementDatabaseOptions(configureOptions);
         ConstantGuard.ConstantIdsAreUnique();
 
-        services.AddSingleton<IReadOnlySelector>(sp => new ReadOnlySelector(sp, options));
-        services.AddScoped<IReadOnlyHintService, ReadOnlyHintService>();
-        services.AddScoped<ReadOnlyConnectionInterceptor>();
-        services.AddScoped<ReadOnlySaveChangesInterceptor>();
+        services.AddSingleton<IConnectionStringSelector>(sp => new ConnectionStringSelector(sp, options));
+        services.AddScoped<IHintService, HintService>();
+        services.AddScoped<ConnectionStringSelectorInterceptor>();
+        services.AddScoped<HintSaveChangesInterceptor>();
 
         services.AddScoped<IAuditAccessor, AuditAccessor>();
         services.AddScoped<ITranslationService, TranslationService>();
@@ -66,8 +67,8 @@ public static class ServiceCollectionExtensions
     {
         options.UseNpgsql(databaseOptions.AppConnectionString, ConfigureNpgsql);
 
-        var connectionInterceptor = sp.GetRequiredService<ReadOnlyConnectionInterceptor>();
-        var saveChangesInterceptor = sp.GetRequiredService<ReadOnlySaveChangesInterceptor>();
+        var connectionInterceptor = sp.GetRequiredService<ConnectionStringSelectorInterceptor>();
+        var saveChangesInterceptor = sp.GetRequiredService<HintSaveChangesInterceptor>();
 
         options.AddInterceptors(connectionInterceptor, saveChangesInterceptor);
     }

@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Altinn.AccessMgmt.PersistenceEF.Extensions.ReadOnly;
+namespace Altinn.AccessMgmt.PersistenceEF.Extensions.Hint;
 
-public class UseReadOnlyActionFilter : IAsyncActionFilter
+public class UseHintActionFilter : IAsyncActionFilter
 {
-    private readonly IReadOnlyHintService _hintService;
+    private readonly IHintService _hintService;
 
-    public UseReadOnlyActionFilter(IReadOnlyHintService hintService)
+    public UseHintActionFilter(IHintService hintService)
     {
         _hintService = hintService;
     }
@@ -15,7 +15,7 @@ public class UseReadOnlyActionFilter : IAsyncActionFilter
     {
         var attribute = context.ActionDescriptor
             .EndpointMetadata
-            .OfType<UseReadOnlyAttribute>()
+            .OfType<UseHintAttribute>()
             .FirstOrDefault();
 
         if (attribute != null)

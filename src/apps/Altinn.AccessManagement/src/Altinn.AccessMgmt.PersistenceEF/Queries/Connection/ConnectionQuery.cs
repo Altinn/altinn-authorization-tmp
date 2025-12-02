@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Extensions.Hint;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +13,7 @@ public enum ConnectionQueryDirection { FromOthers, ToOthers }
 /// <summary>
 /// A query based on assignments and delegations
 /// </summary>
-public class ConnectionQuery(AppDbContext db)
+public class ConnectionQuery(AppDbContext db, IHintService hint)
 {
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
     {
@@ -31,6 +32,7 @@ public class ConnectionQuery(AppDbContext db)
     {
         try
         {
+            using var hintScope = hint.UseReadOnly();
             db.Database.ExecuteSqlRaw("SET search_path TO dbo, public;");
 
             var baseQuery = direction == ConnectionQueryDirection.FromOthers 

@@ -7,11 +7,11 @@ namespace Altinn.AccessMgmt.ConsoleTester;
 public class ReadOnlyRoundRobinTester
 {
     private readonly IDbContextFactory<AppDbContext> _factory;
-    private readonly IReadOnlySelector _selector;
+    private readonly IConnectionStringSelector _selector;
 
     public ReadOnlyRoundRobinTester(
         IDbContextFactory<AppDbContext> factory,
-        IReadOnlySelector selector)
+        IConnectionStringSelector selector)
     {
         _factory = factory;
         _selector = selector;
@@ -57,11 +57,11 @@ public class DbTest
 public class ReadOnlyRoundRobinTester2
 {
     private readonly IDbContextFactory<AppDbContext> _factory;
-    private readonly IReadOnlySelector _selector;
+    private readonly IConnectionStringSelector _selector;
 
     public ReadOnlyRoundRobinTester2(
         IDbContextFactory<AppDbContext> factory,
-        IReadOnlySelector selector)
+        IConnectionStringSelector selector)
     {
         _factory = factory;
         _selector = selector;

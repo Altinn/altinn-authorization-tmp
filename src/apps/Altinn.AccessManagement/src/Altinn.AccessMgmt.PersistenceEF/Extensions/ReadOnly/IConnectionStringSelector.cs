@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Extensions.ReadOnly;
 
-public interface IReadOnlySelector
+public interface IConnectionStringSelector
 {
     string GetConnectionString();
 }
