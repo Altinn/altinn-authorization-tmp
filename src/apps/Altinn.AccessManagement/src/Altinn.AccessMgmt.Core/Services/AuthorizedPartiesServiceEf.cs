@@ -12,6 +12,7 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 
 namespace Altinn.AccessManagement.Core.Services;
 
@@ -49,7 +50,7 @@ public class AuthorizedPartiesServiceEf(
         {
             case var id when id == EntityTypeConstants.Person.Id:
                 List<Guid> keyRoleEntities = [];
-                if (filter.IncludePartiesViaKeyRoles)
+                if (filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto || filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True)
                 {
                     // Persons can have key roles for other parties, meaning they inherit access to others via these parties.
                     var keyRoleAssignments = await repoService.GetKeyRoleAssignments(subject.Id, cancellationToken);
@@ -69,7 +70,7 @@ public class AuthorizedPartiesServiceEf(
 
                 // Enterprise user can also have key role (ECKeyRole) for their organization. Will still need to get these via SBL Bridge until A2-role import is complete.
                 IEnumerable<Entity> ecKeyRoleEntities = [];
-                if (filter.IncludePartiesViaKeyRoles && subject.UserId.HasValue)
+                if (filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto || filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True)
                 {
                     // A2 lookup of key role parties includes subunits by default
                     List<int> keyRolePartyIds = await contextRetrievalService.GetKeyRolePartyIds(subject.UserId.Value, cancellationToken);
@@ -279,7 +280,7 @@ public class AuthorizedPartiesServiceEf(
         {
             a2Task = Task.Run(async () =>
             {
-                var a2AuthorizedParties = await altinnRolesClient.GetAuthorizedPartiesWithRoles(userSubject.UserId.Value, filter.IncludePartiesViaKeyRoles, cancellationToken);
+                var a2AuthorizedParties = await altinnRolesClient.GetAuthorizedPartiesWithRoles(userSubject.UserId.Value, filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True, cancellationToken);
 
                 if (filter.PartyFilter?.Count() > 0)
                 {

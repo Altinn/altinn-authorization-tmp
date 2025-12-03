@@ -4,6 +4,7 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using AutoMapper;
@@ -33,7 +34,9 @@ public class AuthorizedPartiesController(
     /// <param name="includeAccessPackages">Optional (Default: False): Whether authorized access packages should be included in the result set.</param>
     /// <param name="includeResources">Optional (Default: True): Whether authorized resources should be included in the result set.</param>
     /// <param name="includeInstances">Optional (Default: True): Whether authorized instances should be included in the result set.</param>
-    /// <param name="includePartiesViaKeyRoles">Optional (Default: True): Whether authorized parties via organizations the user has a key role for, should be included in the result set. Note: incomplete implementation (only affects access packages from Altinn 3)</param>   
+    /// <param name="includePartiesViaKeyRoles">Optional (Default: True): Whether authorized parties via organizations the user has a key role for, should be included in the result set.</param>
+    /// <param name="includeSubParties">Optional (Default: True): Whether sub-parties of authorized parties should be included in the result set.</param>
+    /// <param name="includeInactiveParties">Optional (Default: True): Whether inactive authorized parties should be included in the result set.</param>
     /// <param name="partyFilter">Optional: A list of party uuids to filter the results.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <response code="200" cref="List{AuthorizedParty}">Ok</response>
@@ -56,7 +59,9 @@ public class AuthorizedPartiesController(
         [FromQuery] bool includeAccessPackages = false,
         [FromQuery] bool includeResources = true,
         [FromQuery] bool includeInstances = true,
-        [FromQuery] bool includePartiesViaKeyRoles = true,
+        [FromQuery] AuthorizedPartiesIncludeFilter includePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True,
+        [FromQuery] AuthorizedPartiesIncludeFilter includeSubParties = AuthorizedPartiesIncludeFilter.True,
+        [FromQuery] AuthorizedPartiesIncludeFilter includeInactiveParties = AuthorizedPartiesIncludeFilter.True,
         [FromQuery] IEnumerable<Guid>? partyFilter = null,
         CancellationToken cancellationToken = default)
     {
@@ -71,6 +76,8 @@ public class AuthorizedPartiesController(
                 IncludeResources = includeResources,
                 IncludeInstances = includeInstances,
                 IncludePartiesViaKeyRoles = includePartiesViaKeyRoles,
+                IncludeSubParties = includeSubParties,
+                IncludeInactiveParties = includeInactiveParties,
                 PartyFilter = partyFilter?.Distinct().ToDictionary(uuid => uuid, uuid => uuid)
             };
 
@@ -114,7 +121,9 @@ public class AuthorizedPartiesController(
     /// <param name="includeAccessPackages">Optional (Default: False): Whether authorized access packages should be included in the result set.</param>
     /// <param name="includeResources">Optional (Default: True): Whether authorized resources should be included in the result set.</param>
     /// <param name="includeInstances">Optional (Default: True): Whether authorized instances should be included in the result set.</param>
-    /// <param name="includePartiesViaKeyRoles">Optional (Default: True): Whether authorized parties via organizations the user has a key role for, should be included in the result set. Note: incomplete implementation (only affects access packages from Altinn 3)</param>
+    /// <param name="includePartiesViaKeyRoles">Optional (Default: True): Whether authorized parties via organizations the user has a key role for, should be included in the result set.</param>
+    /// <param name="includeSubParties">Optional (Default: True): Whether sub-parties of authorized parties should be included in the result set.</param>
+    /// <param name="includeInactiveParties">Optional (Default: True): Whether inactive authorized parties should be included in the result set.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <response code="200" cref="List{AuthorizedParty}">Ok</response>
     /// <response code="401">Unauthorized</response>
@@ -137,7 +146,9 @@ public class AuthorizedPartiesController(
         [FromQuery] bool includeAccessPackages = false,
         [FromQuery] bool includeResources = true,
         [FromQuery] bool includeInstances = true,
-        [FromQuery] bool includePartiesViaKeyRoles = true,
+        [FromQuery] AuthorizedPartiesIncludeFilter includePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True,
+        [FromQuery] AuthorizedPartiesIncludeFilter includeSubParties = AuthorizedPartiesIncludeFilter.True,
+        [FromQuery] AuthorizedPartiesIncludeFilter includeInactiveParties = AuthorizedPartiesIncludeFilter.True,
         CancellationToken cancellationToken = default)
     {
         try
@@ -150,7 +161,9 @@ public class AuthorizedPartiesController(
                 IncludeAccessPackages = includeAccessPackages,
                 IncludeResources = includeResources,
                 IncludeInstances = includeInstances,
-                IncludePartiesViaKeyRoles = includePartiesViaKeyRoles
+                IncludePartiesViaKeyRoles = includePartiesViaKeyRoles,
+                IncludeSubParties = includeSubParties,
+                IncludeInactiveParties = includeInactiveParties,
             };
 
             int userId = AuthenticationHelper.GetUserId(HttpContext);
@@ -197,7 +210,9 @@ public class AuthorizedPartiesController(
     /// <param name="includeAccessPackages">Optional (Default: False): Whether authorized access packages should be included in the result set.</param>
     /// <param name="includeResources">Optional (Default: True): Whether authorized resources should be included in the result set.</param>
     /// <param name="includeInstances">Optional (Default: True): Whether authorized instances should be included in the result set.</param>
-    /// <param name="includePartiesViaKeyRoles">Optional (Default: True): Whether authorized parties via organizations the user has a key role for, should be included in the result set. Note: incomplete implementation (only affects access packages from Altinn 3)</param>
+    /// <param name="includePartiesViaKeyRoles">Optional (Default: True): Whether authorized parties via organizations the user has a key role for, should be included in the result set.</param>
+    /// <param name="includeSubParties">Optional (Default: True): Whether sub-parties of authorized parties should be included in the result set.</param>
+    /// <param name="includeInactiveParties">Optional (Default: True): Whether inactive authorized parties should be included in the result set.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <response code="200" cref="List{AuthorizedParty}">Ok</response>
     /// <response code="401">Unauthorized</response>
@@ -220,7 +235,9 @@ public class AuthorizedPartiesController(
         [FromQuery] bool includeAccessPackages = false,
         [FromQuery] bool includeResources = true,
         [FromQuery] bool includeInstances = true,
-        [FromQuery] bool includePartiesViaKeyRoles = true,
+        [FromQuery] AuthorizedPartiesIncludeFilter includePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True,
+        [FromQuery] AuthorizedPartiesIncludeFilter includeSubParties = AuthorizedPartiesIncludeFilter.True,
+        [FromQuery] AuthorizedPartiesIncludeFilter includeInactiveParties = AuthorizedPartiesIncludeFilter.True,
         CancellationToken cancellationToken = default)
     {
         try
