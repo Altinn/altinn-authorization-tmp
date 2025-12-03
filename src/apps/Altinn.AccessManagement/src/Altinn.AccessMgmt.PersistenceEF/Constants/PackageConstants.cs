@@ -1023,7 +1023,7 @@ public static class PackageConstants
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> 956cfcf0-ab4c-44d8-98a2-d68c4d59321b
-    /// - <c>URN:</c> urn:altinn:accesspackage:starte-drive-endre-avikle-virksomhet
+    /// - <c>URN:</c> urn:altinn:accesspackage:starte-drive-endre-avvikle-virksomhet
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester knyttet til å starte, endre og avvikle en virksomhet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
     /// </remarks>
@@ -1033,7 +1033,7 @@ public static class PackageConstants
         {
             Name = "Starte, endre og avvikle virksomhet",
             Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til å starte, endre og avvikle en virksomhet. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            Urn = "urn:altinn:accesspackage:starte-drive-endre-avikle-virksomhet",
+            Urn = "urn:altinn:accesspackage:starte-drive-endre-avvikle-virksomhet",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
