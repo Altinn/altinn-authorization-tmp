@@ -4078,6 +4078,39 @@ public static class PackageConstants
     };
 
     /// <summary>
+    /// Represents the 'Revisjon' access package.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 2baf30c2-ba5c-49de-8cce-f8ac27d12690
+    /// - <c>URN:</c> urn:altinn:accesspackage:revisjon
+    /// - <c>Provider:</c> Altinn3
+    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester knyttet til revisjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
+    /// </remarks>
+    public static ConstantDefinition<Package> Revision { get; } = new ConstantDefinition<Package>("2baf30c2-ba5c-49de-8cce-f8ac27d12690")
+    {
+        Entity = new()
+        {
+            Name = "Revisjon",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester knyttet til revisjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:revisjon",
+            IsDelegable = true,
+            HasResources = true,
+            IsAssignable = true,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.TaxFeesAccountingAndCustoms,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Revision"),
+            KeyValuePair.Create("Description", "This access package authorizes services related to auditing. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Rekneskap og økonomirapportering"),
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester knytte til revisjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+        ),
+    };
+
+    /// <summary>
     /// Represents the 'Revisorattesterer' access package.
     /// </summary>
     /// <remarks>
