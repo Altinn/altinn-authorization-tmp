@@ -147,7 +147,7 @@ internal static partial class AccessManagementHost
             }
         }
 
-        list.Add("Primary", appConn);
+       // list.Add("Primary", appConn);
 
         return (appConn, adminConn, list, true);
     }
