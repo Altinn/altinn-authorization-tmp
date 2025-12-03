@@ -1,7 +1,7 @@
 meta {
-  name: DelegateInstanceRightsSubUnitToPerson
+  name: DelegateInstanceRightsSubUnitToKeyRoleUnit
   type: http
-  seq: 6
+  seq: 5
 }
 
 post {
@@ -66,9 +66,9 @@ script:pre-request {
   const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
   bru.setVar("resourceId", testdata.resources.appInstanceDelegation.resourceId);
-  bru.setVar("instanceId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg2.subunit.instanceIdDelegatedToPerson);
+  bru.setVar("instanceId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg2.subunit.instanceIdDelegatedToKeyRoleUnit);
   bru.setVar("fromUuid", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg2.subunit.partyUuid);
-  bru.setVar("toUuid", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid);
+  bru.setVar("toUuid", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
   
   var getTokenParameters = {
       auth_org: testdata.resources.appInstanceDelegation.org,
