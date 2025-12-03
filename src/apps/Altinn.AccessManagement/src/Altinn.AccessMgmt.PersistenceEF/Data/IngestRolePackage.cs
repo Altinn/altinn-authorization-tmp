@@ -873,7 +873,27 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:overnatting"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:overnatting"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:posttjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:posttjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:posttjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"], PackageId = packages["urn:altinn:accesspackage:posttjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:posttjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:posttjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:posttjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:posttjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:posttjenester"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:elektronisk-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:elektronisk-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:elektronisk-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"], PackageId = packages["urn:altinn:accesspackage:elektronisk-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:elektronisk-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:elektronisk-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:elektronisk-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:elektronisk-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+			new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:elektronisk-kommunikasjon"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
+
+			new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:innehaver"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"], PackageId = packages["urn:altinn:accesspackage:servering"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -1238,6 +1258,14 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:komplementar"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
         };
 
         foreach (var d in data)
