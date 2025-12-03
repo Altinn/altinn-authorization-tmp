@@ -54,22 +54,83 @@ script:pre-request {
 }
 
 tests {
-  const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   const body = res.getBody();
   const requestName = bru.getVar("requestName");
+  
+  const expectedMainUnit = testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg2;
+  const expectedSubUnit = testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_rightholderOrg2.subunit;
   
   test(requestName + "|HttpStatus.OK", function() {
     expect(res.status).to.equal(200);
   });
   
-  test(requestName + "|Verify all expected parties exists", function() {    
+  test(requestName + "|Verify all expected parties exists with expected access", function() {
     const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
-    const targetParty = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
-    const targetSubUnit = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.subunit.partyUuid);
+    const mainUnit = allParties.find(party => party.partyUuid === expectedMainUnit.partyUuid);
+    const targetSubUnit = allParties.find(party => party.partyUuid === expectedMainUnit.subunit.partyUuid);
   
-    assert.exists(targetParty, 'Expected MainUnit Party: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.name+' to exist');
-    assert.exists(targetSubUnit, 'Expected SubUnit Party: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.subunit.name+' to exist');
+    assert.exists(mainUnit, 'Expected MainUnit Party: '+expectedMainUnit.name+' to exist');
+    assert.exists(targetSubUnit, 'Expected SubUnit Party: '+expectedMainUnit.subunit.name+' to exist');
     expect(allParties.length, `Result should only contain the parties filtered`).to.equal(2);
+    
+    const expectedRolesMainUnit = [
+      expectedMainUnit.roleDelegatedToPerson,
+      expectedMainUnit.roleDelegatedToKeyRoleUnit
+    ];
+    const expectedRolesSubUnit = [
+      expectedMainUnit.roleDelegatedToPerson,
+      expectedMainUnit.roleDelegatedToKeyRoleUnit,
+      expectedMainUnit.subunit.roleDelegatedToPerson,
+      expectedMainUnit.subunit.roleDelegatedToKeyRoleUnit
+    ];
+    
+    assert.includeMembers(mainUnit.authorizedRoles, expectedRolesMainUnit);
+    assert.includeMembers(targetSubUnit.authorizedRoles, expectedRolesSubUnit);
+    
+    const expectedPackagesMainUnit = [
+      expectedMainUnit.directPackageToDelegate,
+      expectedMainUnit.directPackageToDelegate2,
+      expectedMainUnit.packageDelegatedToPerson
+    ];
+    const expectedPackagesSubUnit = [
+      expectedMainUnit.directPackageToDelegate,
+      expectedMainUnit.directPackageToDelegate2,
+      expectedMainUnit.packageDelegatedToPerson,
+      expectedMainUnit.subunit.packageDelegatedToPerson,
+      expectedMainUnit.subunit.packageDelegatedToKeyRoleUnit
+    ];
+    
+    assert.includeMembers(mainUnit.authorizedAccessPackages, expectedPackagesMainUnit);
+    assert.includeMembers(targetSubUnit.authorizedAccessPackages, expectedPackagesSubUnit);
+    
+    const expectedResourcesMainUnit = [
+      expectedMainUnit.resourceIdDelegatedToPerson,
+      expectedMainUnit.resourceIdDelegatedToKeyRoleUnit,
+      expectedMainUnit.appIdDelegatedToPerson,
+      expectedMainUnit.appIdDelegatedToKeyRoleUnit
+    ];
+    const expectedResourcesSubUnit = [
+      expectedMainUnit.resourceIdDelegatedToPerson,
+      expectedMainUnit.resourceIdDelegatedToKeyRoleUnit,
+      expectedMainUnit.appIdDelegatedToPerson,
+      expectedMainUnit.appIdDelegatedToKeyRoleUnit,
+      expectedMainUnit.subunit.resourceIdDelegatedToPerson,
+      expectedMainUnit.subunit.resourceIdDelegatedToKeyRoleUnit
+    ];
+    
+    assert.includeMembers(mainUnit.authorizedResources, expectedResourcesMainUnit);
+    assert.includeMembers(targetSubUnit.authorizedResources, expectedResourcesSubUnit);
+    
+    const expectedInstancesMainUnit = [
+      // ToDo
+    ];
+    const expectedInstancesSubUnit = [
+      // ToDo
+    ];
+    
+    assert.includeMembers(mainUnit.authorizedInstances, expectedInstancesMainUnit);
+    assert.includeMembers(targetSubUnit.authorizedInstances, expectedInstancesSubUnit);
   });
   
   test(requestName + "|Inherits all mainunit accesses on subunits", function() {  
