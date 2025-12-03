@@ -7,13 +7,13 @@ namespace Altinn.AccessMgmt.PersistenceEF.Extensions.ReadOnly;
 
 public class ConnectionStringSelector : IConnectionStringSelector
 {
+    private readonly IHintService _hintService;
     private readonly AccessManagementDatabaseOptions _options;
     private readonly Dictionary<string, string> _namedReplicas;
     private readonly string[] _roundRobinPool;
 
     private static int _globalIndex = -1;
 
-    public IHintService _hintService { get; }
 
     public ConnectionStringSelector(AccessManagementDatabaseOptions options, IHintService hintService)
     {
@@ -43,7 +43,6 @@ public class ConnectionStringSelector : IConnectionStringSelector
 
         if (_options.EnableReadOnlyHints)
         {
-            //var hintService = _sp.GetRequiredService<IHintService>();
             var hint = _hintService.GetHint();
 
             if (hint != null && _namedReplicas.TryGetValue(hint.Value, out var hintedConn))
