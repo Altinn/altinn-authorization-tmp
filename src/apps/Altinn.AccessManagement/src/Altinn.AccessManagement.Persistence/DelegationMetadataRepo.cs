@@ -893,8 +893,12 @@ namespace Altinn.AccessManagement.Persistence
                 SELECT rr.resourceRegistryDelegationChangeId, rr.delegationChangeType, res.resourceRegistryId as resourceregistryid, res.resourceType, rr.offeredByPartyId, rr.fromUuid, rr.fromType, rr.coveredByUserId, rr.coveredByPartyId, rr.toUuid, rr.toType, rr.performedByUserId, rr.performedByPartyId, rr.blobStoragePolicyPath, rr.blobStorageVersionId, rr.created
                 FROM delegation.ResourceRegistryDelegationChanges AS rr
                 JOIN accessmanagement.Resource AS res ON rr.resourceId_fk = res.resourceid
-                WHERE res.resourceRegistryId = @resourceRegistryId AND offeredByPartyId = @offeredByPartyId
-                    AND coveredByUserId = @coveredByUserId
+                WHERE 
+
+res.resourceRegistryId = @resourceRegistryId 
+AND offeredByPartyId = @offeredByPartyId
+AND coveredByUserId = @coveredByUserId
+
                 ORDER BY resourceRegistryDelegationChangeId DESC LIMIT 1
                 ";
             }
@@ -905,8 +909,12 @@ namespace Altinn.AccessManagement.Persistence
                 SELECT rr.resourceRegistryDelegationChangeId, rr.delegationChangeType, res.resourceRegistryId as resourceregistryid, res.resourceType, rr.offeredByPartyId, rr.fromUuid, rr.fromType, rr.coveredByUserId, rr.coveredByPartyId, rr.toUuid, rr.toType, rr.performedByUserId, rr.performedByPartyId, rr.blobStoragePolicyPath, rr.blobStorageVersionId, rr.created
                 FROM delegation.ResourceRegistryDelegationChanges AS rr
                 JOIN accessmanagement.Resource AS res ON rr.resourceId_fk = res.resourceid
-                WHERE res.resourceRegistryId = @resourceRegistryId AND offeredByPartyId = @offeredByPartyId
-                    AND coveredByPartyId = @coveredByPartyId
+                WHERE 
+
+res.resourceRegistryId = @resourceRegistryId 
+AND offeredByPartyId = @offeredByPartyId
+AND coveredByPartyId = @coveredByPartyId
+
                 ORDER BY resourceRegistryDelegationChangeId DESC LIMIT 1
                 ";
             }
