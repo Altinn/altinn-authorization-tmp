@@ -5,17 +5,17 @@ using Altinn.AccessMgmt.PersistenceEF.Models.Extensions;
 namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 
 /// <summary>
-/// Resources added to an assignment
+/// Instances added to an assignment
 /// </summary>
 [NotMapped]
-public class BaseAssignmentResource : BaseAudit
+public class BaseAssignmentInstance : BaseAudit
 {
     private Guid _id;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="BaseAssignmentResource"/> class.
+    /// Initializes a new instance of the <see cref="BaseAssignmentInstance"/> class.
     /// </summary>
-    public BaseAssignmentResource()
+    public BaseAssignmentInstance()
     {
         Id = Guid.CreateVersion7();
     }
@@ -56,4 +56,9 @@ public class BaseAssignmentResource : BaseAudit
     /// Policy version
     /// </summary>
     public string PolicyVersion { get; set; }
+
+    /// <summary>
+    /// Instance identifier
+    /// </summary>
+    public string InstanceId { get; set; }
 }
