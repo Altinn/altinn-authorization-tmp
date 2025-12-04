@@ -31,6 +31,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<AssignmentResource> AssignmentResources => Set<AssignmentResource>();
 
+    public DbSet<AssignmentInstance> AssignmentInstances => Set<AssignmentInstance>();
+
     public DbSet<Delegation> Delegations => Set<Delegation>();
 
     public DbSet<DelegationPackage> DelegationPackages => Set<DelegationPackage>();
