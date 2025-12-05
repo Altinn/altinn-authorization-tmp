@@ -191,10 +191,10 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     private async Task<int> RemoveParents(AppDbContextFactory dbContextFactory, Dictionary<Guid, Guid> relations, CancellationToken cancellationToken = default)
     {
         using var dbContext = dbContextFactory.CreateDbContext();
-        var fields = relations.Keys.ToList();
+        var subunitIds = relations.Keys.ToList();
         var entities = await dbContext.Entities
             .AsTracking()
-            .Where(e => fields.Contains(e.Id))
+            .Where(e => subunitIds.Contains(e.Id))
             .ToListAsync(cancellationToken);
 
         foreach (var entity in entities)
@@ -212,10 +212,10 @@ public class RoleSyncService : BaseSyncService, IRoleSyncService
     private async Task<int> SetParents(AppDbContextFactory dbContextFactory, Dictionary<Guid, Guid> relations, CancellationToken cancellationToken = default)
     {
         using var dbContext = dbContextFactory.CreateDbContext();
-        var fields = relations.Keys.ToList();
+        var subunitIds = relations.Keys.ToList();
         var entities = await dbContext.Entities
             .AsTracking()
-            .Where(e => fields.Contains(e.Id))
+            .Where(e => subunitIds.Contains(e.Id))
             .ToListAsync(cancellationToken);
 
         foreach (var entity in entities)
