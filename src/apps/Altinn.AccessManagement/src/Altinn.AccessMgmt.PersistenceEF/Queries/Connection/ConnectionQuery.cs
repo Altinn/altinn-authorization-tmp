@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Extensions.Hint;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,9 +13,8 @@ public enum ConnectionQueryDirection { FromOthers, ToOthers }
 /// <summary>
 /// A query based on assignments and delegations
 /// </summary>
-public class ConnectionQuery(AppDbContext db)
+public class ConnectionQuery(AppDbContext db, IHintService hint)
 {
-
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
     {
         return await GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, useNewQuery, ct);
@@ -32,9 +32,12 @@ public class ConnectionQuery(AppDbContext db)
     {
         try
         {
+            using var hintScope = hint.UseReadOnly();
+            db.Database.ExecuteSqlRaw("SET search_path TO dbo, public;");
+
             var baseQuery = direction == ConnectionQueryDirection.FromOthers 
-                ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter) : BuildBaseQueryFromOthers(db, filter)
-                : BuildBaseQueryToOthers(db, filter);
+                ? useNewQuery ? BuildBaseQueryFromOthersNew(filter) : BuildBaseQueryFromOthers(filter)
+                : BuildBaseQueryToOthers(filter);
 
             var queryString = baseQuery.ToQueryString();
 
@@ -98,7 +101,7 @@ public class ConnectionQuery(AppDbContext db)
     {
         try
         {
-            var baseQuery = BuildBaseQueryFromOthersNew(db, filter);
+            var baseQuery = BuildBaseQueryFromOthersNew(filter);
             var queryString = baseQuery.ToQueryString();
 
             var query = EnrichFromEntities(filter, baseQuery);
@@ -120,8 +123,8 @@ public class ConnectionQuery(AppDbContext db)
     public string GenerateDebugQuery(ConnectionQueryFilter filter, ConnectionQueryDirection direction, bool useNewQuery = true)
     {
         var baseQuery = direction == ConnectionQueryDirection.FromOthers
-                ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter) : BuildBaseQueryFromOthers(db, filter)
-                : BuildBaseQueryToOthers(db, filter);
+                ? useNewQuery ? BuildBaseQueryFromOthersNew(filter) : BuildBaseQueryFromOthers(filter)
+                : BuildBaseQueryToOthers(filter);
 
         if (filter.EnrichEntities || filter.ExcludeDeleted)
         {
@@ -133,7 +136,7 @@ public class ConnectionQuery(AppDbContext db)
         }
     }
 
-    private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryFromOthersNew(AppDbContext db, ConnectionQueryFilter filter)
+    private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryFromOthersNew(ConnectionQueryFilter filter)
     {
         var toId = filter.ToIds.First();
         var fromSet = filter.FromIds?.Count > 0 ? new HashSet<Guid>(filter.FromIds) : null;
@@ -313,7 +316,7 @@ public class ConnectionQuery(AppDbContext db)
             .RoleIdContains(roleSet);
     }
 
-    private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryFromOthers(AppDbContext db, ConnectionQueryFilter filter)
+    private IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryFromOthers(ConnectionQueryFilter filter)
     {
         /* Scenario: Ansatt X i BDO AS (ToId)
             Oppslag skal finne:
@@ -543,7 +546,7 @@ public class ConnectionQuery(AppDbContext db)
             .RoleIdContains(roleSet);
     }
 
-    public IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryToOthers(AppDbContext db, ConnectionQueryFilter filter)
+    public IQueryable<ConnectionQueryBaseRecord> BuildBaseQueryToOthers(ConnectionQueryFilter filter)
     {
         /* Senario: Tilgangsstyrer i Bakerhansen Bergen BEDR (FromId) som er underenhet av Bakerhansen AS
 
