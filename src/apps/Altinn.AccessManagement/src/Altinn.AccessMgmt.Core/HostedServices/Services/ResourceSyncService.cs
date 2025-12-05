@@ -139,15 +139,15 @@ public partial class ResourceSyncService : IResourceSyncService
     {
         var subjectUrnPart = updatedResource.SubjectUrn.Split(":").Last();
 
-        var roleLookup = await dbContext.RoleLookups
+        var role = await dbContext.Roles
             .AsNoTracking()
-            .Where(r => r.Key == "LegacyCode" && EF.Functions.ILike(r.Value, subjectUrnPart))
+            .Where(r => r.LegacyCode == subjectUrnPart)
             .SingleOrDefaultAsync(cancellationToken);
 
-        if (roleLookup is { })
+        if (role is { })
         {
             var roleResource = await dbContext.RoleResources
-                .Where(r => r.RoleId == roleLookup.RoleId && r.ResourceId == resource.Id)
+                .Where(r => r.RoleId == role.Id && r.ResourceId == resource.Id)
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (roleResource is { })
@@ -201,17 +201,17 @@ public partial class ResourceSyncService : IResourceSyncService
     {
         var subjectUrnPart = updatedResource.SubjectUrn.Split(":").Last();
 
-        var role = await dbContext.RoleLookups
+        var role = await dbContext.Roles
             .AsNoTracking()
-            .Where(r => r.Key == "LegacyCode" && EF.Functions.ILike(r.Value, subjectUrnPart))
+            .Where(r => r.LegacyCode == subjectUrnPart)
             .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception(string.Format("Role not found '{0}'", subjectUrnPart));
 
-        var roleResource = await dbContext.RoleResources.FirstOrDefaultAsync(t => t.RoleId == role.RoleId && t.ResourceId == resource.Id, cancellationToken);
+        var roleResource = await dbContext.RoleResources.FirstOrDefaultAsync(t => t.RoleId == role.Id && t.ResourceId == resource.Id, cancellationToken);
         if (roleResource == null)
         {
             roleResource = new RoleResource
             {
-                RoleId = role.RoleId,
+                RoleId = role.Id,
                 ResourceId = resource.Id,
             };
 
