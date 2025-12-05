@@ -3641,39 +3641,6 @@ public static class PackageConstants
     };
 
     /// <summary>
-    /// Represents the 'Posttjenester' access package.
-    /// </summary>
-    /// <remarks>
-    /// - <c>Id:</c> d6f87b4e-650f-44bb-9d8d-f0916a818e1b
-    /// - <c>URN:</c> urn:altinn:accesspackage:posttjenester
-    /// - <c>Provider:</c> Altinn3
-    /// - <c>Description:</c> Denne fullmakten gir tilgang til tjenester knyttet til posttjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
-    /// </remarks>
-    public static ConstantDefinition<Package> PostalServices { get; } = new ConstantDefinition<Package>("d6f87b4e-650f-44bb-9d8d-f0916a818e1b")
-    {
-        Entity = new()
-        {
-            Name = "Posttjenester",
-            Description = "Denne fullmakten gir tilgang til tjenester knyttet til posttjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            Urn = "urn:altinn:accesspackage:posttjenester",
-            IsDelegable = true,
-            HasResources = true,
-            IsAssignable = true,
-            EntityTypeId = EntityTypeConstants.Organisation,
-            ProviderId = ProviderConstants.Altinn3,
-            AreaId = AreaConstants.OtherServiceIndustries,
-        },
-        EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Postal services"),
-            KeyValuePair.Create("Description", "This authorization gives access to services related to postal services. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
-        ),
-        NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Posttenester"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til informasjon og kommunikasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
-        ),
-    };
-
-    /// <summary>
     /// Represents the 'Elektronisk kommunikasjon' access package.
     /// </summary>
     /// <remarks>
@@ -3740,21 +3707,21 @@ public static class PackageConstants
     };
 
     /// <summary>
-    /// Represents the 'Post- og telekommunikasjon' access package.
+    /// Represents the 'Posttjenester' access package.
     /// </summary>
     /// <remarks>
     /// - <c>Id:</c> a736c33b-c15a-43ac-85be-a684630e1e59
-    /// - <c>URN:</c> urn:altinn:accesspackage:post-og-telekommunikasjon
+    /// - <c>URN:</c> urn:altinn:accesspackage:posttjenester
     /// - <c>Provider:</c> Altinn3
-    /// - <c>Description:</c> Denne fullmakten gir tilgang til tjenester knyttet til post og telekommunikasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
+    /// - <c>Description:</c> Denne fullmakten gir tilgang til tjenester knyttet til posttjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
     /// </remarks>
     public static ConstantDefinition<Package> PostalAndTelecommunications { get; } = new ConstantDefinition<Package>("a736c33b-c15a-43ac-85be-a684630e1e59")
     {
         Entity = new()
         {
-            Name = "Post- og telekommunikasjon",
-            Description = "Denne fullmakten gir tilgang til tjenester knyttet til post og telekommunikasjon. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            Urn = "urn:altinn:accesspackage:post-og-telekommunikasjon",
+            Name = "Posttjenester",
+            Description = "Denne fullmakten gir tilgang til tjenester knyttet til posttjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:posttjenester",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
@@ -3763,12 +3730,12 @@ public static class PackageConstants
             AreaId = AreaConstants.OtherServiceIndustries,
         },
         EN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Postal and telecommunications"),
-            KeyValuePair.Create("Description", "This authorization provides access to services related to postal and telecommunications. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
+            KeyValuePair.Create("Name", "Postal services"),
+            KeyValuePair.Create("Description", "This authorization gives access to services related to postal services. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
         NN = TranslationEntryList.Create(
-            KeyValuePair.Create("Name", "Post- og telekommunikasjon"),
-            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til post og telekommunikasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+            KeyValuePair.Create("Name", "Posttenester"),
+            KeyValuePair.Create("Description", "Denne fullmakta gir tilgang til tenester knytt til informasjon og kommunikasjon. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
