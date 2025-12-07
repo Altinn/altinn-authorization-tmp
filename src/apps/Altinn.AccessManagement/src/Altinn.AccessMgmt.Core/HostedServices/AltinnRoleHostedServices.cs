@@ -17,7 +17,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
         ILogger<AltinnRoleHostedService> logger,
         IAllAltinnRoleSyncService allAltinnRoleSyncService,
         IAltinnClientRoleSyncService altinnClientRoleSyncService,
-        //// IAltinnBankruptcyEstateRoleSyncService altinnBankruptcyEstateRoleSyncService,
+        IPrivateTaxAffairRoleSyncService privateTaxAffairsRoleSyncService,
         IAltinnAdminRoleSyncService altinnAdminRoleSyncService
         ) : IHostedService, IDisposable
     {
@@ -26,7 +26,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
         private readonly IFeatureManager _featureManager = featureManager;
         private readonly IAllAltinnRoleSyncService _allAltinnRoleSyncService = allAltinnRoleSyncService;
         private readonly IAltinnClientRoleSyncService _altinnClientRoleSyncService = altinnClientRoleSyncService;
-        //// private readonly IAltinnBankruptcyEstateRoleSyncService _altinnBankruptcyEstateRoleSyncService = altinnBankruptcyEstateRoleSyncService;
+        private readonly IPrivateTaxAffairRoleSyncService _privateTaxAffairsRoleSyncService = privateTaxAffairsRoleSyncService;
         private readonly IAltinnAdminRoleSyncService _altinnAdminRoleSyncService = altinnAdminRoleSyncService;
         private Timer _timer = null;
         private readonly CancellationTokenSource _stop = new();
@@ -75,7 +75,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
                     }
 
                     await SyncAltinnClientRoles(lease, cancellationToken);
-                }               
+                }
 
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAltinnAdminRoleSync))
                 {
@@ -86,6 +86,17 @@ namespace Altinn.AccessMgmt.Core.HostedServices
                     }
 
                     await SyncAltinnAdminRoles(lease, cancellationToken);
+                }
+
+                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesPrivateTaxAffairRoleSync))
+                {
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_privatetaxaffairrole_sync", cancellationToken);
+                    if (lease is null || cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    await SyncPrivateTaxAffairRoles(lease, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -128,6 +139,18 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             try
             {
                 await _altinnAdminRoleSyncService.SyncAdminRoles(lease, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.SyncError(_logger, ex);
+            }
+        }
+
+        private async Task SyncPrivateTaxAffairRoles(ILease lease, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _privateTaxAffairsRoleSyncService.SyncPrivateTaxAffairRoles(lease, cancellationToken);
             }
             catch (Exception ex)
             {
