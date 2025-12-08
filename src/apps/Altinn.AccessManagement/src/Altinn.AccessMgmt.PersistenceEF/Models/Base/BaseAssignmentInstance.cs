@@ -61,4 +61,9 @@ public class BaseAssignmentInstance : BaseAudit
     /// Instance identifier
     /// </summary>
     public string InstanceId { get; set; }
+
+    /// <summary>
+    /// Legacy DelegationChangeId
+    /// </summary>
+    public long DelegationChangeId { get; set; }
 }

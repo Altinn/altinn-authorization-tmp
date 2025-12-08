@@ -56,4 +56,9 @@ public class BaseAssignmentResource : BaseAudit
     /// Policy version
     /// </summary>
     public string PolicyVersion { get; set; }
+
+    /// <summary>
+    /// Legacy DelegationChangeId
+    /// </summary>
+    public long DelegationChangeId { get; set; }
 }
