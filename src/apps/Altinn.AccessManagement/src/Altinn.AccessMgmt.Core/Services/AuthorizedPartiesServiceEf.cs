@@ -716,14 +716,15 @@ public class AuthorizedPartiesServiceEf(
             return filters;
         }
 
-        if (subject.TypeId != EntityTypeConstants.Person.Id ||
-            subject.TypeId != EntityTypeConstants.SelfIdentified.Id ||
+        if (subject.TypeId != EntityTypeConstants.Person.Id &&
+            subject.TypeId != EntityTypeConstants.SelfIdentified.Id &&
             subject.TypeId != EntityTypeConstants.EnterpriseUser.Id)
         {
             // Only users have profile settings, for other entity types we default to including all
             filters.IncludePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True;
             filters.IncludeSubParties = AuthorizedPartiesIncludeFilter.True;
             filters.IncludeInactiveParties = AuthorizedPartiesIncludeFilter.True;
+            return filters;
         }
 
         if (!subject.UserId.HasValue)

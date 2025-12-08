@@ -71,7 +71,7 @@ namespace Altinn.AccessManagement.Integration.Clients
         /// <inheritdoc/>
         public async Task<NewUserProfile> GetNewUserProfile(int userId, CancellationToken cancellationToken = default)
         {
-            var endpointUrl = new UriBuilder($"{_settings.ApiProfileEndpoint}/users/{userId}");
+            var endpointUrl = new UriBuilder($"{_settings.ApiProfileEndpoint}users/{userId}");
             var accessToken = _accessTokenGenerator.GenerateAccessToken("platform", "access-management");
 
             HttpResponseMessage response = await _client.GetAsync(endpointUrl.Uri.ToString(), null, accessToken, cancellationToken);
