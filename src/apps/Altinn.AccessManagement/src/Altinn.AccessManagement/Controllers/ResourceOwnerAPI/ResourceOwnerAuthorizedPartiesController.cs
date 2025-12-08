@@ -74,7 +74,9 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
                 IncludeAccessPackages = includeAccessPackages,
                 IncludeResources = includeResources,
                 IncludeInstances = includeInstances,
-                IncludePartiesViaKeyRoles = includePartiesViaKeyRoles
+                IncludePartiesViaKeyRoles = includePartiesViaKeyRoles,
+                IncludeSubParties = includeSubParties,
+                IncludeInactiveParties = includeInactiveParties
             };
 
             if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled) && subject.PartyFilter?.Count() > 0)

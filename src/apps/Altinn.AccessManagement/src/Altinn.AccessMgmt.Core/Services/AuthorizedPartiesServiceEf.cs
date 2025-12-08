@@ -46,6 +46,8 @@ public class AuthorizedPartiesServiceEf(
             return await Task.FromResult(new List<AuthorizedParty>());
         }
 
+        filter = await ProcessAutoFilters(filter, subject, cancellationToken);
+
         switch (subject.TypeId)
         {
             case var id when id == EntityTypeConstants.Person.Id:
@@ -702,6 +704,55 @@ public class AuthorizedPartiesServiceEf(
         }
 
         return party;
+    }
+
+    private async Task<AuthorizedPartiesFilters> ProcessAutoFilters(AuthorizedPartiesFilters filters, Entity subject, CancellationToken cancellationToken)
+    {
+        if (filters.IncludePartiesViaKeyRoles != AuthorizedPartiesIncludeFilter.Auto &&
+            filters.IncludeSubParties != AuthorizedPartiesIncludeFilter.Auto &&
+            filters.IncludeInactiveParties != AuthorizedPartiesIncludeFilter.Auto)
+        {
+            // No auto processing needed
+            return filters;
+        }
+
+        if (subject.TypeId != EntityTypeConstants.Person.Id ||
+            subject.TypeId != EntityTypeConstants.SelfIdentified.Id ||
+            subject.TypeId != EntityTypeConstants.EnterpriseUser.Id)
+        {
+            // Only users have profile settings, for other entity types we default to including all
+            filters.IncludePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True;
+            filters.IncludeSubParties = AuthorizedPartiesIncludeFilter.True;
+            filters.IncludeInactiveParties = AuthorizedPartiesIncludeFilter.True;
+        }
+
+        if (!subject.UserId.HasValue)
+        {
+            Unreachable();
+        }
+
+        var userProfile = await contextRetrievalService.GetNewUserProfile(subject.UserId.Value, cancellationToken);
+        if (userProfile == null)
+        {
+            throw new ArgumentException("The user id is either invalid or does not exist", nameof(subject));
+        }
+
+        if (filters.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto)
+        {
+            filters.IncludePartiesViaKeyRoles = userProfile.ProfileSettingPreference.ShowClientUnits ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+        }
+
+        if (filters.IncludeSubParties == AuthorizedPartiesIncludeFilter.Auto)
+        {
+            filters.IncludeSubParties = userProfile.ProfileSettingPreference.ShouldShowSubEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+        }
+
+        if (filters.IncludeInactiveParties == AuthorizedPartiesIncludeFilter.Auto)
+        {
+            filters.IncludeInactiveParties = userProfile.ProfileSettingPreference.ShouldShowDeletedEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+        }
+
+        return filters;
     }
 
     [DoesNotReturn]

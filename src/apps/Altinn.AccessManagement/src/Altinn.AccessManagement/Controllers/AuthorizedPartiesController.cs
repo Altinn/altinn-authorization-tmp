@@ -98,28 +98,6 @@ public class AuthorizedPartiesController(
 
             if (userId != 0)
             {
-                var userProfile = await contextRetrievalService.GetNewUserProfile(userId, cancellationToken);
-                if (userProfile == null)
-                {
-                    ModelState.AddModelError("Invaliduser", "The user id is either invalid or does not exist");
-                    return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
-                }
-
-                if (includePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto)
-                {
-                    filters.IncludePartiesViaKeyRoles = userProfile.ProfileSettingPreference.ShowClientUnits ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
-                }
-
-                if (includeSubParties == AuthorizedPartiesIncludeFilter.Auto)
-                {
-                    filters.IncludeSubParties = userProfile.ProfileSettingPreference.ShouldShowSubEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
-                }
-
-                if (includeInactiveParties == AuthorizedPartiesIncludeFilter.Auto)
-                {
-                    filters.IncludeInactiveParties = userProfile.ProfileSettingPreference.ShouldShowDeletedEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
-                }
-
                 return mapper.Map<List<AuthorizedPartyExternal>>(await authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filters, cancellationToken));
             }
 
@@ -199,28 +177,6 @@ public class AuthorizedPartiesController(
                 return Unauthorized();
             }
 
-            var userProfile = await contextRetrievalService.GetNewUserProfile(userId, cancellationToken);
-            if (userProfile == null)
-            {
-                ModelState.AddModelError("Invaliduser", "The user id is either invalid or does not exist");
-                return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
-            }
-
-            if (includePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto)
-            {
-                filters.IncludePartiesViaKeyRoles = userProfile.ProfileSettingPreference.ShowClientUnits ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
-            }
-
-            if (includeSubParties == AuthorizedPartiesIncludeFilter.Auto)
-            {
-                filters.IncludeSubParties = userProfile.ProfileSettingPreference.ShouldShowSubEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
-            }
-
-            if (includeInactiveParties == AuthorizedPartiesIncludeFilter.Auto)
-            {
-                filters.IncludeInactiveParties = userProfile.ProfileSettingPreference.ShouldShowDeletedEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
-            }
-
             List<AuthorizedParty> authorizedParties = await authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filters, cancellationToken);
             AuthorizedParty authorizedParty = authorizedParties.Find(ap => ap.PartyId == partyId && !ap.OnlyHierarchyElementWithNoAccess)
                 ?? authorizedParties.SelectMany(ap => ap.Subunits).FirstOrDefault(subunit => subunit.PartyId == partyId);
@@ -290,7 +246,9 @@ public class AuthorizedPartiesController(
                 IncludeAccessPackages = includeAccessPackages,
                 IncludeResources = includeResources,
                 IncludeInstances = includeInstances,
-                IncludePartiesViaKeyRoles = includePartiesViaKeyRoles
+                IncludePartiesViaKeyRoles = includePartiesViaKeyRoles,
+                IncludeSubParties = includeSubParties,
+                IncludeInactiveParties = includeInactiveParties
             };
 
             int authenticatedUserPartyId = AuthenticationHelper.GetPartyId(HttpContext);
