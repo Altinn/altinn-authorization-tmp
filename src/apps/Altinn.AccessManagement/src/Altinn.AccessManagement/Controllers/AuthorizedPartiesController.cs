@@ -4,12 +4,14 @@ using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
+using Altinn.AccessMgmt.Core;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using Microsoft.FeatureManagement.Mvc;
 
 namespace Altinn.AccessManagement.Controllers;
@@ -22,6 +24,7 @@ namespace Altinn.AccessManagement.Controllers;
 public class AuthorizedPartiesController(
     ILogger<AuthorizedPartiesController> logger,
     IMapper mapper,
+    FeatureManager featureManager,
     IAuthorizedPartiesService authorizedPartiesService,
     IContextRetrievalService contextRetrievalService) : ControllerBase
 {
@@ -59,9 +62,9 @@ public class AuthorizedPartiesController(
         [FromQuery] bool includeAccessPackages = false,
         [FromQuery] bool includeResources = true,
         [FromQuery] bool includeInstances = true,
-        [FromQuery] AuthorizedPartiesIncludeFilter includePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True,
-        [FromQuery] AuthorizedPartiesIncludeFilter includeSubParties = AuthorizedPartiesIncludeFilter.True,
-        [FromQuery] AuthorizedPartiesIncludeFilter includeInactiveParties = AuthorizedPartiesIncludeFilter.True,
+        [FromQuery] AuthorizedPartiesIncludeFilter includePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.Auto,
+        [FromQuery] AuthorizedPartiesIncludeFilter includeSubParties = AuthorizedPartiesIncludeFilter.Auto,
+        [FromQuery] AuthorizedPartiesIncludeFilter includeInactiveParties = AuthorizedPartiesIncludeFilter.Auto,
         [FromQuery] IEnumerable<Guid>? partyFilter = null,
         CancellationToken cancellationToken = default)
     {
@@ -81,7 +84,18 @@ public class AuthorizedPartiesController(
                 PartyFilter = partyFilter?.Distinct().ToDictionary(uuid => uuid, uuid => uuid)
             };
 
+            if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled) && partyFilter?.Count() > 0)
+            {
+                var partyUuids = await authorizedPartiesService.GetPartyFilterUuids(partyFilter, cancellationToken);
+                filters.PartyFilter = partyUuids?.Distinct().ToDictionary(uuid => uuid, uuid => uuid);
+            }
+
             int userId = AuthenticationHelper.GetUserId(HttpContext);
+            if (userId == 0)
+            {
+                return Unauthorized();
+            }
+
             if (userId != 0)
             {
                 var userProfile = await contextRetrievalService.GetNewUserProfile(userId, cancellationToken);
@@ -91,7 +105,20 @@ public class AuthorizedPartiesController(
                     return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
                 }
 
-                filters.IncludePartiesViaKeyRoles = userProfile.ProfileSettingPreference.ShowClientUnits;
+                if (includePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto)
+                {
+                    filters.IncludePartiesViaKeyRoles = userProfile.ProfileSettingPreference.ShowClientUnits ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+                }
+
+                if (includeSubParties == AuthorizedPartiesIncludeFilter.Auto)
+                {
+                    filters.IncludeSubParties = userProfile.ProfileSettingPreference.ShouldShowSubEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+                }
+
+                if (includeInactiveParties == AuthorizedPartiesIncludeFilter.Auto)
+                {
+                    filters.IncludeInactiveParties = userProfile.ProfileSettingPreference.ShouldShowDeletedEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+                }
 
                 return mapper.Map<List<AuthorizedPartyExternal>>(await authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filters, cancellationToken));
             }
@@ -146,9 +173,9 @@ public class AuthorizedPartiesController(
         [FromQuery] bool includeAccessPackages = false,
         [FromQuery] bool includeResources = true,
         [FromQuery] bool includeInstances = true,
-        [FromQuery] AuthorizedPartiesIncludeFilter includePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True,
-        [FromQuery] AuthorizedPartiesIncludeFilter includeSubParties = AuthorizedPartiesIncludeFilter.True,
-        [FromQuery] AuthorizedPartiesIncludeFilter includeInactiveParties = AuthorizedPartiesIncludeFilter.True,
+        [FromQuery] AuthorizedPartiesIncludeFilter includePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.Auto,
+        [FromQuery] AuthorizedPartiesIncludeFilter includeSubParties = AuthorizedPartiesIncludeFilter.Auto,
+        [FromQuery] AuthorizedPartiesIncludeFilter includeInactiveParties = AuthorizedPartiesIncludeFilter.Auto,
         CancellationToken cancellationToken = default)
     {
         try
@@ -179,7 +206,20 @@ public class AuthorizedPartiesController(
                 return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
             }
 
-            filters.IncludePartiesViaKeyRoles = userProfile.ProfileSettingPreference.ShowClientUnits;
+            if (includePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto)
+            {
+                filters.IncludePartiesViaKeyRoles = userProfile.ProfileSettingPreference.ShowClientUnits ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+            }
+
+            if (includeSubParties == AuthorizedPartiesIncludeFilter.Auto)
+            {
+                filters.IncludeSubParties = userProfile.ProfileSettingPreference.ShouldShowSubEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+            }
+
+            if (includeInactiveParties == AuthorizedPartiesIncludeFilter.Auto)
+            {
+                filters.IncludeInactiveParties = userProfile.ProfileSettingPreference.ShouldShowDeletedEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+            }
 
             List<AuthorizedParty> authorizedParties = await authorizedPartiesService.GetAuthorizedPartiesByUserId(userId, filters, cancellationToken);
             AuthorizedParty authorizedParty = authorizedParties.Find(ap => ap.PartyId == partyId && !ap.OnlyHierarchyElementWithNoAccess)
