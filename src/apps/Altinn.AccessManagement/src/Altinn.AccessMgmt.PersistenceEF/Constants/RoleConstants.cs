@@ -174,6 +174,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "ADOS",
+            LegacyUrn = $"urn:altinn:rolecode:ADOS",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Administrative Unit - Public Sector"),
@@ -207,6 +209,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "NEST",
+            LegacyUrn = $"urn:altinn:rolecode:NEST",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Deputy Leader"),
@@ -240,6 +244,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "KTRF",
+            LegacyUrn = $"urn:altinn:rolecode:KTRF",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Part of Office Community"),
@@ -273,6 +279,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "ORGL",
+            LegacyUrn = $"urn:altinn:rolecode:ORGL",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Organizational Unit in the Public Sector"),
@@ -306,6 +314,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "OPMV",
+            LegacyUrn = $"urn:altinn:rolecode:OPMV",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Distinct Subunit"),
@@ -339,6 +349,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "DAGL",
+            LegacyUrn = $"urn:altinn:rolecode:DAGL",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Managing Director"),
@@ -372,6 +384,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "DTPR",
+            LegacyUrn = $"urn:altinn:rolecode:DTPR",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Participant with Shared Responsibility"),
@@ -405,6 +419,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "INNH",
+            LegacyUrn = $"urn:altinn:rolecode:INNH",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Owner"),
@@ -438,6 +454,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "DTSO",
+            LegacyUrn = $"urn:altinn:rolecode:DTSO",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Participant with Full Responsibility"),
@@ -471,6 +489,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "VARA",
+            LegacyUrn = $"urn:altinn:rolecode:VARA",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Alternate Member"),
@@ -504,6 +524,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "OBS",
+            LegacyUrn = $"urn:altinn:rolecode:OBS",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Observer"),
@@ -537,6 +559,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "MEDL",
+            LegacyUrn = $"urn:altinn:rolecode:MEDL",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Board Member"),
@@ -570,6 +594,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "LEDE",
+            LegacyUrn = $"urn:altinn:rolecode:LEDE",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Chair of the Board"),
@@ -603,6 +629,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "KENK",
+            LegacyUrn = $"urn:altinn:rolecode:KENK",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Personal Bankruptcy"),
@@ -636,6 +664,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "REPR",
+            LegacyUrn = $"urn:altinn:rolecode:REPR",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Norwegian Representative for a Foreign Entity"),
@@ -669,6 +699,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "KONT",
+            LegacyUrn = $"urn:altinn:rolecode:KONT",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Contact Person"),
@@ -702,6 +734,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "KNUF",
+            LegacyUrn = $"urn:altinn:rolecode:KNUF",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Contact Person NUF"),
@@ -735,6 +769,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "BEST",
+            LegacyUrn = $"urn:altinn:rolecode:BEST",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Managing Shipowner"),
@@ -768,6 +804,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "EIKM",
+            LegacyUrn = $"urn:altinn:rolecode:EIKM",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Owning Municipality"),
@@ -801,6 +839,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "BOBE",
+            LegacyUrn = $"urn:altinn:rolecode:BOBE",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Estate Administrator"),
@@ -834,6 +874,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "HLSE",
+            LegacyUrn = $"urn:altinn:rolecode:HLSE",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Healthcare Institution"),
@@ -867,6 +909,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "REVI",
+            LegacyUrn = $"urn:altinn:rolecode:REVI",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Auditor"),
@@ -900,6 +944,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "FFØR",
+            LegacyUrn = $"urn:altinn:rolecode:FFØR",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Business Manager"),
@@ -933,6 +979,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "KOMP",
+            LegacyUrn = $"urn:altinn:rolecode:KOMP",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "General Partner"),
@@ -966,6 +1014,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "KDEB",
+            LegacyUrn = $"urn:altinn:rolecode:KDEB",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Bankrupt Debtor"),
@@ -999,6 +1049,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "KIRK",
+            LegacyUrn = $"urn:altinn:rolecode:KIRK",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Part of a Church Council"),
@@ -1032,6 +1084,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "HFOR",
+            LegacyUrn = $"urn:altinn:rolecode:HFOR",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Information about the Company in the Home Country"),
@@ -1065,6 +1119,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.CentralCoordinatingRegister,
+            LegacyCode = "REGN",
+            LegacyUrn = $"urn:altinn:rolecode:REGN",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Accountant"),
@@ -1333,6 +1389,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.Altinn2,
+            LegacyCode = "PRIV",
+            LegacyUrn = "urn:altinn:rolecode:PRIV",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Private person"),
@@ -1366,6 +1424,8 @@ public static class RoleConstants
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Person,
             ProviderId = ProviderConstants.Altinn2,
+            LegacyCode = "SELN",
+            LegacyUrn = "urn:altinn:rolecode:SELN",
         },
         EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Self registered user"),
@@ -1499,7 +1559,9 @@ public static class RoleConstants
             Description = "Er regnskapsforeradresse for",
             Urn = "urn:altinn:external-role:ccr:regnskapsforeradressat",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "RFAD",
+            LegacyUrn = "urn:altinn:rolecode:RFAD",
         },
     };
 
@@ -1524,7 +1586,9 @@ public static class RoleConstants
             Description = "Signatur",
             Urn = "urn:altinn:external-role:ccr:signerer",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "SIGN",
+            LegacyUrn = "urn:altinn:rolecode:SIGN",
         },
     };
 
@@ -1549,7 +1613,9 @@ public static class RoleConstants
             Description = "Skal fusjoneres med",
             Urn = "urn:altinn:external-role:ccr:fusjonsovertaker",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "FUSJ",
+            LegacyUrn = "urn:altinn:rolecode:FUSJ",
         },
     };
 
@@ -1574,7 +1640,9 @@ public static class RoleConstants
             Description = "Skal fisjoneres med",
             Urn = "urn:altinn:external-role:ccr:fisjonsovertaker",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "FISJ",
+            LegacyUrn = "urn:altinn:rolecode:FISJ",
         },
     };
 
@@ -1599,7 +1667,9 @@ public static class RoleConstants
             Description = "Har som registreringsenhet",
             Urn = "urn:altinn:external-role:ccr:hovedenhet",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "BEDR",
+            LegacyUrn = "urn:altinn:rolecode:BEDR",
         },
     };
 
@@ -1624,7 +1694,9 @@ public static class RoleConstants
             Description = "Har som registreringsenhet",
             Urn = "urn:altinn:external-role:ccr:ikke-naeringsdrivende-hovedenhet",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "AAFY",
+            LegacyUrn = "urn:altinn:rolecode:AAFY",
         },
     };
 
@@ -1649,7 +1721,9 @@ public static class RoleConstants
             Description = "Prokura i fellesskap",
             Urn = "urn:altinn:external-role:ccr:prokurist-fellesskap",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "POFE",
+            LegacyUrn = "urn:altinn:rolecode:POFE",
         },
     };
 
@@ -1674,7 +1748,9 @@ public static class RoleConstants
             Description = "Prokura hver for seg",
             Urn = "urn:altinn:external-role:ccr:prokurist-hver-for-seg",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "POHV",
+            LegacyUrn = "urn:altinn:rolecode:POHV",
         },
     };
 
@@ -1699,7 +1775,9 @@ public static class RoleConstants
             Description = "Prokura",
             Urn = "urn:altinn:external-role:ccr:prokurist",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "PROK",
+            LegacyUrn = "urn:altinn:rolecode:PROK",
         },
     };
 
@@ -1724,7 +1802,9 @@ public static class RoleConstants
             Description = "Er revisoradresse for",
             Urn = "urn:altinn:external-role:ccr:revisoradressat",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "READ",
+            LegacyUrn = "urn:altinn:rolecode:READ",
         },
     };
 
@@ -1749,7 +1829,9 @@ public static class RoleConstants
             Description = "Ekstern rolle",
             Urn = "urn:altinn:external-role:ccr:sameier",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "SAM",
+            LegacyUrn = "urn:altinn:rolecode:SAM",
         },
     };
 
@@ -1774,7 +1856,9 @@ public static class RoleConstants
             Description = "Signatur i fellesskap",
             Urn = "urn:altinn:external-role:ccr:signerer-fellesskap",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "SIFE",
+            LegacyUrn = "urn:altinn:rolecode:SIFE",
         },
     };
 
@@ -1799,7 +1883,9 @@ public static class RoleConstants
             Description = "Signatur hver for seg",
             Urn = "urn:altinn:external-role:ccr:signerer-hver-for-seg",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "SIHV",
+            LegacyUrn = "urn:altinn:rolecode:SIHV",
         },
     };
 
@@ -1824,7 +1910,9 @@ public static class RoleConstants
             Description = "Ekstern rolle",
             Urn = "urn:altinn:external-role:ccr:kontaktperson-kommune",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "KOMK",
+            LegacyUrn = "urn:altinn:rolecode:KOMK",
         },
     };
 
@@ -1849,7 +1937,9 @@ public static class RoleConstants
             Description = "enhet - offentlig sektor",
             Urn = "urn:altinn:external-role:ccr:kontaktperson-ados",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "KEMN",
+            LegacyUrn = "urn:altinn:rolecode:KEMN",
         },
     };
 
@@ -1873,7 +1963,9 @@ public static class RoleConstants
             Description = "Leder i partiets utovende organ",
             Urn = "urn:altinn:external-role:ccr:parti-organ-leder",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "HLED",
+            LegacyUrn = "urn:altinn:rolecode:HLED",
         },
     };
 
@@ -1898,7 +1990,9 @@ public static class RoleConstants
             Description = "Elektronisk signeringsrett",
             Urn = "urn:altinn:external-role:ccr:elektronisk-signeringsrettig",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "ESGR",
+            LegacyUrn = "urn:altinn:rolecode:ESGR",
         },
     };
 
@@ -1922,7 +2016,9 @@ public static class RoleConstants
             Description = "Tildeler av elektronisk signeringsrett",
             Urn = "urn:altinn:external-role:ccr:elektronisk-signeringsrett-tildeler",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "ETDL",
+            LegacyUrn = "urn:altinn:rolecode:ETDL",
         },
     };
 
@@ -1947,7 +2043,9 @@ public static class RoleConstants
             Description = "Inngår i foretaksgruppe med",
             Urn = "urn:altinn:external-role:ccr:foretaksgruppe-med",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "FGRP",
+            LegacyUrn = "urn:altinn:rolecode:FGRP",
         },
     };
 
@@ -1971,7 +2069,9 @@ public static class RoleConstants
             Description = "Har som datter i konsern",
             Urn = "urn:altinn:external-role:ccr:konsern-datter",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "KDAT",
+            LegacyUrn = "urn:altinn:rolecode:KDAT",
         },
     };
 
@@ -1995,7 +2095,9 @@ public static class RoleConstants
             Description = "Har som grunnlag for konsern",
             Urn = "urn:altinn:external-role:ccr:konsern-grunnlag",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "KGRL",
+            LegacyUrn = "urn:altinn:rolecode:KGRL",
         },
     };
 
@@ -2019,7 +2121,9 @@ public static class RoleConstants
             Description = "Har som mor i konsern",
             Urn = "urn:altinn:external-role:ccr:konsern-mor",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "KMOR",
+            LegacyUrn = "urn:altinn:rolecode:KMOR",
         },
     };
 
@@ -2043,7 +2147,9 @@ public static class RoleConstants
             Description = "Forestår avvikling",
             Urn = "urn:altinn:external-role:ccr:forestaar-avvikling",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "AVKL",
+            LegacyUrn = "urn:altinn:rolecode:AVKL",
         },
     };
 
@@ -2068,7 +2174,9 @@ public static class RoleConstants
             Description = "Inngår i felles- registrering",
             Urn = "urn:altinn:external-role:ccr:felles-registrert-med",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "FEMV",
+            LegacyUrn = "urn:altinn:rolecode:FEMV",
         },
     };
 
@@ -2093,7 +2201,9 @@ public static class RoleConstants
             Description = "Er frivillig registrert utleiebygg for",
             Urn = "urn:altinn:external-role:ccr:utleiebygg",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "UTBG",
+            LegacyUrn = "urn:altinn:rolecode:UTBG",
         },
     };
 
@@ -2118,7 +2228,9 @@ public static class RoleConstants
             Description = "Er virksomhet drevet i fellesskap av",
             Urn = "urn:altinn:external-role:ccr:virksomhet-fellesskap-drifter",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "VIFE",
+            LegacyUrn = "urn:altinn:rolecode:VIFE",
         },
     };
 
@@ -2143,7 +2255,9 @@ public static class RoleConstants
             Description = "Utfyller MVA-oppgaver",
             Urn = "urn:altinn:external-role:ccr:mva-utfyller",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "MVAU",
+            LegacyUrn = "urn:altinn:rolecode:MVAU",
         },
     };
 
@@ -2167,7 +2281,9 @@ public static class RoleConstants
             Description = "Signerer MVA-oppgaver",
             Urn = "urn:altinn:external-role:ccr:mva-signerer",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "MVAG",
+            LegacyUrn = "urn:altinn:rolecode:MVAG",
         },
     };
 
@@ -2192,7 +2308,9 @@ public static class RoleConstants
             Description = "Rettigheter for revisjonsselskap",
             Urn = "urn:altinn:external-role:ccr:kontaktperson-revisor",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "SREVA",
+            LegacyUrn = "urn:altinn:rolecode:SREVA",
         },
     };
 
@@ -2216,7 +2334,9 @@ public static class RoleConstants
             Description = "Stifter",
             Urn = "urn:altinn:external-role:ccr:stifter",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "STFT",
+            LegacyUrn = "urn:altinn:rolecode:STFT",
         },
     };
 
@@ -2240,7 +2360,9 @@ public static class RoleConstants
             Description = "Varamedlem i partiets utovende organ",
             Urn = "urn:altinn:external-role:ccr:parti-organ-varamedlem",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "HVAR",
+            LegacyUrn = "urn:altinn:rolecode:HVAR",
         },
     };
 
@@ -2265,7 +2387,9 @@ public static class RoleConstants
             Description = "Nestleder i partiets utovende organ",
             Urn = "urn:altinn:external-role:ccr:parti-organ-nestleder",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "HNST",
+            LegacyUrn = "urn:altinn:rolecode:HNST",
         },
     };
 
@@ -2290,7 +2414,9 @@ public static class RoleConstants
             Description = "Styremedlem i partiets utovende organ",
             Urn = "urn:altinn:external-role:ccr:parti-organ-styremedlem",
             IsKeyRole = false,
-            IsAssignable = false
+            IsAssignable = false,
+            LegacyCode = "HMDL",
+            LegacyUrn = "urn:altinn:rolecode:HMDL",
         },
     };
 

@@ -133,7 +133,6 @@ public static partial class StaticDataIngest
             cancellationToken
         );
 
-        await IngestRoleLookup(dbContext, cancellationToken);
         await IngestRoleMap(dbContext, cancellationToken);
         await IngestRolePackage(dbContext, cancellationToken);
         await IngestEntityVariantRole(dbContext, cancellationToken);

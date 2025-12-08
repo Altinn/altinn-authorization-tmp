@@ -61,8 +61,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Role> Roles => Set<Role>();
 
-    public DbSet<RoleLookup> RoleLookups => Set<RoleLookup>();
-
     public DbSet<RoleMap> RoleMaps => Set<RoleMap>();
 
     public DbSet<RolePackage> RolePackages => Set<RolePackage>();
@@ -113,8 +111,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<AuditRole> AuditRoles => Set<AuditRole>();
 
-    public DbSet<AuditRoleLookup> AuditRoleLookups => Set<AuditRoleLookup>();
-
     public DbSet<AuditRoleMap> AuditRoleMaps => Set<AuditRoleMap>();
 
     public DbSet<AuditRolePackage> AuditRolePackages => Set<AuditRolePackage>();
@@ -164,7 +160,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<AuditResource>(new AuditResourceConfiguration());
         modelBuilder.ApplyConfiguration<AuditResourceType>(new AuditResourceTypeConfiguration());
         modelBuilder.ApplyConfiguration<AuditRole>(new AuditRoleConfiguration());
-        modelBuilder.ApplyConfiguration<AuditRoleLookup>(new AuditRoleLookupConfiguration());
         modelBuilder.ApplyConfiguration<AuditRoleMap>(new AuditRoleMapConfiguration());
         modelBuilder.ApplyConfiguration<AuditRolePackage>(new AuditRolePackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRoleResource>(new AuditRoleResourceConfiguration());
