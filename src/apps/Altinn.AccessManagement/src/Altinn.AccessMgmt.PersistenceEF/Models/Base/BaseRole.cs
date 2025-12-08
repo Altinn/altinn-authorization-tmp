@@ -72,4 +72,9 @@ public class BaseRole : BaseAudit, IEntityId, IEntityName, IEntityUrn, IEntityCo
     /// Can be assigned
     /// </summary>
     public bool IsAssignable { get; set; }
+
+    /// <summary>
+    /// Is available for ServiceOwners
+    /// </summary>
+    public bool IsAvailableForServiceOwners { get; set; }
 }

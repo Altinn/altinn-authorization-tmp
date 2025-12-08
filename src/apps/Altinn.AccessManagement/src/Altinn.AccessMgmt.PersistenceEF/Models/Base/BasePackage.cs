@@ -59,4 +59,9 @@ public class BasePackage : BaseAudit, IEntityId, IEntityName, IEntityUrn
     /// Urn
     /// </summary>
     public string Urn { get; set; }
+
+    /// <summary>
+    /// Code
+    /// </summary>
+    public string Code { get; set; }
 }
