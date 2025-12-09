@@ -1,6 +1,4 @@
-﻿using Altinn.AccessManagement.Tests.Fixtures;
-﻿using AccessMgmt.Tests.Services;
-using Altinn.AccessManagement.Api.Metadata.Controllers;
+﻿using Altinn.AccessManagement.Api.Metadata.Controllers;
 using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
@@ -8,7 +6,6 @@ using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
-using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -65,7 +62,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
             }
         }
 
-        var RoleResources = new List<RoleResource>()
+        var roleResources = new List<RoleResource>()
         {
             new RoleResource() { Id = Guid.Parse("0195efb8-7c80-7e5d-afd8-61915a156dcc"), RoleId = RoleConstants.ManagingDirector.Id, ResourceId = Resources.First(t => t.RefId == "T-01").Id },
             new RoleResource() { Id = Guid.Parse("0195efb8-7c80-7988-9880-855732872555"), RoleId = RoleConstants.ManagingDirector.Id, ResourceId = Resources.First(t => t.RefId == "T-02").Id },
@@ -73,7 +70,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
             new RoleResource() { Id = Guid.Parse("0195efb8-7c80-710f-bed6-35c99fbc46b1"), RoleId = RoleConstants.MainAdministrator.Id, ResourceId = Resources.First(t => t.RefId == "T-04").Id },
         };
 
-        foreach (var roleResource in RoleResources)
+        foreach (var roleResource in roleResources)
         {
             if (db.RoleResources.AsNoTracking().Count(t => t.Id == roleResource.Id) == 0)
             {
@@ -81,13 +78,13 @@ public class MetadataTests : IClassFixture<PostgresFixture>
             }
         }
 
-        var PackageResources = new List<PackageResource>()
+        var packageResources = new List<PackageResource>()
         {
             new PackageResource() { PackageId = PackageConstants.Catering.Id, ResourceId = Resources.First(t => t.RefId == "T-05").Id },
             new PackageResource() { PackageId = PackageConstants.Catering.Id, ResourceId = Resources.First(t => t.RefId == "T-06").Id },
         };
 
-        foreach (var packageResource in PackageResources)
+        foreach (var packageResource in packageResources)
         {
             if (db.PackageResources.AsNoTracking().Count(t => t.Id == packageResource.Id) == 0)
             {
@@ -119,6 +116,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     public async Task RoleVariantPackage_BusinessManager_ESEK_BusinessManagerRealEstate_Have()
     {
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
+
         // Forretningsfører for ESEK skal ha Forretningsforer eiendom pakken
         var role = RoleConstants.BusinessManager;
         var variant = EntityVariantConstants.ESEK;
@@ -131,6 +129,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     public async Task RoleVariantPackage_BusinessManager_BRL_BusinessManagerRealEstate_Have()
     {
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
+
         // Forretningsfører for BRL skal ha Forretningsforer eiendom pakken
         var role = RoleConstants.BusinessManager;
         var variant = EntityVariantConstants.BRL;
@@ -143,6 +142,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     public async Task RoleVariantPackage_ContactPersonNUF_NUF_DelegableMaskinportenScopesNUF_Have()
     {
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
+
         // Forretningsfører for BRL skal ha Forretningsforer eiendom pakken
         var role = RoleConstants.ContactPersonNUF;
         var variant = EntityVariantConstants.NUF;
@@ -155,6 +155,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     public async Task RoleVariantPackage_MainAdministrator_NUF_DelegableMaskinportenScopesNUF_Have()
     {
         var controller = new Altinn.AccessManagement.Api.Metadata.Controllers.RolesController(new RoleService(_db), _translationService);
+
         // Forretningsfører for BRL skal ha Forretningsforer eiendom pakken
         var role = RoleConstants.MainAdministrator;
         var variant = EntityVariantConstants.NUF;
@@ -299,7 +300,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     Package package,
     bool shouldExist)
     {
-        var controller = new RolesController(new RoleService(_db));
+        var controller = new RolesController(new RoleService(_db), _translationService);
         var result = await controller.GetPackages(role.Id, variant.Name, includeResources: false);
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var value = Assert.IsAssignableFrom<IEnumerable<PackageDto>>(ok.Value);
@@ -320,7 +321,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Code_AS_Should_Have_Packages()
     {
-        var controller = new RolesController(new RoleService(_db));
+        var controller = new RolesController(new RoleService(_db), _translationService);
 
         var result = await controller.GetPackages(RoleConstants.ManagingDirector.Entity.Code, "AS", includeResources: false);
         var ok = Assert.IsType<OkObjectResult>(result.Result);
@@ -330,7 +331,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Code_AS_Should_Have_PackageResources()
     {
-        var controller = new RolesController(new RoleService(_db));
+        var controller = new RolesController(new RoleService(_db), _translationService);
         var result = await controller.GetPackages(RoleConstants.ManagingDirector.Entity.Code, "AS", includeResources: true);
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);
@@ -342,7 +343,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Id_AS_Should_Have_Packages()
     {
-        var controller = new RolesController(new RoleService(_db));
+        var controller = new RolesController(new RoleService(_db), _translationService);
         var result = await controller.GetPackages(RoleConstants.ManagingDirector.Id, "AS", includeResources: false);
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var value = Assert.IsAssignableFrom<IEnumerable<PackageDto>>(ok.Value);
@@ -351,7 +352,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Id_AS_Should_Have_PackageResources()
     {
-        var controller = new RolesController(new RoleService(_db));
+        var controller = new RolesController(new RoleService(_db), _translationService);
 
         var result = await controller.GetPackages(RoleConstants.ManagingDirector.Id, "AS", includeResources: true);
         var ok = Assert.IsType<OkObjectResult>(result.Result);
@@ -365,7 +366,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Code_AS_Should_Have_Resources()
     {
-        var controller = new RolesController(new RoleService(_db));
+        var controller = new RolesController(new RoleService(_db), _translationService);
 
         var result = await controller.GetResources(RoleConstants.ManagingDirector.Entity.Code, "AS");
         var ok = Assert.IsType<OkObjectResult>(result.Result);
@@ -377,7 +378,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Code_AS_Should_Have_Resources_FromPackages()
     {
-        var controller = new RolesController(new RoleService(_db));
+        var controller = new RolesController(new RoleService(_db), _translationService);
         var result = await controller.GetResources(RoleConstants.ManagingDirector.Entity.Code, "AS", includePackageResources: true);
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var value = Assert.IsAssignableFrom<IEnumerable<ResourceDto>>(ok.Value);
@@ -387,7 +388,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Id_AS_Should_Have_Resources()
     {
-        var controller = new RolesController(new RoleService(_db));
+        var controller = new RolesController(new RoleService(_db), _translationService);
 
         var result = await controller.GetResources(RoleConstants.ManagingDirector.Id, "AS", includePackageResources: false);
         var ok = Assert.IsType<OkObjectResult>(result.Result);
@@ -399,7 +400,7 @@ public class MetadataTests : IClassFixture<PostgresFixture>
     [Fact]
     public async Task DagligLeder_Id_AS_Should_Have_Resources_FromPackages()
     {
-        var controller = new RolesController(new RoleService(_db));
+        var controller = new RolesController(new RoleService(_db), _translationService);
         var result = await controller.GetResources(RoleConstants.ManagingDirector.Id, "AS", includePackageResources: true);
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var value = Assert.IsAssignableFrom<IEnumerable<ResourceDto>>(ok.Value);
