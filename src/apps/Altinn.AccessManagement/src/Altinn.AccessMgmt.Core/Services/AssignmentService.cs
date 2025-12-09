@@ -458,6 +458,64 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
     }
 
     /// <inheritdoc/>
+    public async Task<bool> UpdateAssignmentResource(Guid userId, Guid assignmentId, Guid resourceId, string policyPath, string policyVersion, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Entities.AsNoTracking().SingleAsync(t => t.Id == userId, cancellationToken);
+        var assignment = await db.Assignments.AsNoTracking().SingleAsync(t => t.Id == assignmentId, cancellationToken);
+        var resource = await db.Resources.AsNoTracking().SingleAsync(t => t.Id == resourceId, cancellationToken);
+
+        // Check if user has AccessManager (Tilgangsstyrer) role
+        if (await HasRole(assignment.Id, user.Id, RoleConstants.AccessManager, cancellationToken))
+        {
+            throw new Exception("User does not have permission to add resource to assignment");
+        }
+
+        // Check if user has access to the resource
+        if (await HasResource(assignment.Id, user.Id, resource.Id, cancellationToken))
+        {
+            throw new Exception(string.Format("User '{0}' does not have resource '{1}' for '{2}'", user.Name, resource.Name, assignment.FromId));
+        }
+
+        var res = await db.AssignmentResources.AsTracking().SingleAsync(t => t.AssignmentId == assignmentId && t.ResourceId == resource.Id, cancellationToken);
+
+        res.PolicyPath = policyPath;
+        res.PolicyVersion = policyVersion;
+
+        var result = await db.SaveChangesAsync(cancellationToken);
+
+        return result > 0;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> UpdateAssignmentInstance(Guid userId, Guid assignmentId, Guid resourceId, string instanceId, string policyPath, string policyVersion, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Entities.AsNoTracking().SingleAsync(t => t.Id == userId, cancellationToken);
+        var assignment = await db.Assignments.AsNoTracking().SingleAsync(t => t.Id == assignmentId, cancellationToken);
+        var resource = await db.Resources.AsNoTracking().SingleAsync(t => t.Id == resourceId, cancellationToken);
+
+        // Check if user has AccessManager (Tilgangsstyrer) role
+        if (await HasRole(assignment.Id, user.Id, RoleConstants.AccessManager, cancellationToken))
+        {
+            throw new Exception("User does not have permission to add resource to assignment");
+        }
+
+        // Check if user has access to the resource
+        if (await HasResource(assignment.Id, user.Id, resource.Id, cancellationToken))
+        {
+            throw new Exception(string.Format("User '{0}' does not have resource '{1}' for '{2}'", user.Name, resource.Name, assignment.FromId));
+        }
+
+        var res = await db.AssignmentInstances.AsTracking().SingleAsync(t => t.AssignmentId == assignmentId && t.ResourceId == resource.Id && t.InstanceId == instanceId, cancellationToken);
+
+        res.PolicyPath = policyPath;
+        res.PolicyVersion = policyVersion;
+
+        var result = await db.SaveChangesAsync(cancellationToken);
+
+        return result > 0;
+    }
+
+    /// <inheritdoc/>
     public async Task<bool> RemoveAssignmentPackage(Guid userId, Guid assignmentId, Guid packageId, CancellationToken cancellationToken = default)
     {
         var user = await db.Entities.AsNoTracking().SingleAsync(t => t.Id == userId, cancellationToken);
