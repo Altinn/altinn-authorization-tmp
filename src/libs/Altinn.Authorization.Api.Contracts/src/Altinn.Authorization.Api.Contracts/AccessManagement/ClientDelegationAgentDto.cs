@@ -1,10 +1,10 @@
-﻿namespace Altinn.Authorization.Api.Contracts.AccessManagement;
+namespace Altinn.Authorization.Api.Contracts.AccessManagement;
 
 /// <summary>
 /// Model representing a connected client party, meaning a party which has been authorized for one or more accesses, either directly or through role(s), access packages, resources or resource instances.
 /// Model can be used both to represent a connection received from another party or a connection provided to another party.
 /// </summary>
-public class ClientDto
+public class ClientDelegationAgentDto
 {
     /// <summary>
     /// Gets or sets the party
@@ -30,16 +30,6 @@ public class ClientDto
         /// Gets or sets the name of the party
         /// </summary>
         public string Name { get; set; }
-
-        /// <summary>
-        /// Gets the organization number if the party is an organization
-        /// </summary>
-        public string OrganizationNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unit type if the party is an organization
-        /// </summary>
-        public string UnitType { get; set; }
 
         /* ToBe Added in the future maybe
         /// <summary>

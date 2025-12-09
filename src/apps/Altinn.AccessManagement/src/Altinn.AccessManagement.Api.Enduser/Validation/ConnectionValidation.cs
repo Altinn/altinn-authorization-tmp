@@ -17,7 +17,7 @@ internal static class ConnectionValidation
         );
 
     /// <summary>
-    /// Validation rule for adding an assignment with <see cref="ConnectionInput"/>.
+    /// Validation rule for adding an assignment with <see cref="PartyToFromInput"/>.
     /// </summary>
     internal static RuleExpression ValidateAddAssignmentWithConnectionInput(string party, string from, string to) =>
         ValidationComposer.All(
@@ -39,7 +39,7 @@ internal static class ConnectionValidation
         );
 
     /// <summary>
-    /// Validation rule for adding an access package to an existing rightholder connection with <see cref="ConnectionInput"/>.
+    /// Validation rule for adding an access package to an existing rightholder connection with <see cref="PartyToFromInput"/>.
     /// </summary>
     internal static RuleExpression ValidateAddPackageToConnectionWithConnectionInput(string party, string from, string to, Guid? packageId, string packageUrn) =>
         ValidationComposer.All(

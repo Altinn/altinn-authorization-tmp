@@ -1,4 +1,6 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 
 namespace Altinn.AccessMgmt.Core.Utils;
@@ -43,7 +45,7 @@ public partial class DtoMapper : IDtoMapper
 
         return result.ToList();
     }
-    
+
     public static List<PackagePermissionDto> ConvertPackages(IEnumerable<ConnectionQueryExtendedRecord> res)
     {
         var records = res.ToList();
@@ -152,5 +154,74 @@ public partial class DtoMapper : IDtoMapper
             Id = resource.Id,
             Name = resource.Name,
         };
+    }
+
+    public static List<ClientDelegationAgentDto> ConvertToClientDelegationAgentDto(List<ConnectionQueryExtendedRecord> connections)
+    {
+        var agents = connections.GroupBy(c => c.ToId);
+        var result = new List<ClientDelegationAgentDto>();
+
+        foreach (var agent in agents)
+        {
+            var person = agent.First();
+            var party = new ClientDelegationAgentDto.ClientParty
+            {
+                Id = agent.First().To.Id,
+                Name = agent.First().To.Name,
+            };
+
+            var roles = agent.GroupBy(c => c.Role.Id);
+            var roleAccess = new List<ClientDelegationAgentDto.ClientRoleAccessPackages>();
+            foreach (var role in roles)
+            {
+                var access = new ClientDelegationAgentDto.ClientRoleAccessPackages
+                {
+                    Role = role.First().Role.Urn,
+                    Packages = role.SelectMany(r => r.Packages.Select(p => p.Name)).Distinct().ToArray(),
+                };
+
+                roleAccess.Add(access);
+            }
+        }
+
+        return result;
+    }
+
+    public static List<ClientDto> ConvertToClientDto(List<ConnectionQueryExtendedRecord> connections)
+    {
+        var clients = connections.GroupBy(c => c.FromId);
+        var result = new List<ClientDto>();
+
+        foreach (var client in clients)
+        {
+            var organization = client.First();
+            if (organization.From.TypeId != EntityTypeConstants.Organisation)
+            {
+                continue;
+            }
+
+            var party = new ClientDto.ClientParty
+            {
+                Id = organization.From.Id,
+                Name = organization.From.Name,
+                OrganizationNumber = organization.From.OrganizationIdentifier,
+                UnitType = organization.From.Variant.Name,
+            };
+
+            var roles = client.GroupBy(c => c.Role.Id);
+            var roleAccess = new List<ClientDto.ClientRoleAccessPackages>();
+            foreach (var role in roles)
+            {
+                var access = new ClientDto.ClientRoleAccessPackages
+                {
+                    Role = role.First().Role.Urn,
+                    Packages = role.SelectMany(r => r.Packages.Select(p => p.Name)).Distinct().ToArray(),
+                };
+
+                roleAccess.Add(access);
+            }
+        }
+
+        return result;
     }
 }

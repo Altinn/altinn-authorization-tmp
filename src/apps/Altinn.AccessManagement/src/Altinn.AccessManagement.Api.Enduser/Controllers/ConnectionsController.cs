@@ -26,14 +26,11 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [Route("accessmanagement/api/v1/enduser/connections")]
 [FeatureGate(AccessManagementEnduserFeatureFlags.ControllerConnections)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-public class ConnectionsController(IConnectionService connectionService, IUserProfileLookupService userProfileLookupService, IEntityService entityService) : ControllerBase
+public class ConnectionsController(
+    IConnectionService ConnectionService,
+    IUserProfileLookupService UserProfileLookupService,
+    IEntityService EntityService) : ControllerBase
 {
-    private IConnectionService ConnectionService { get; } = connectionService;
-
-    private IUserProfileLookupService UserProfileLookupService { get; } = userProfileLookupService;
-
-    private IEntityService EntityService { get; } = entityService;
-
     private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
     {
         options.AllowedWriteFromEntityTypes = [EntityTypeConstants.Organisation];
@@ -54,7 +51,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetConnections(
-        [FromQuery] ConnectionInput connection,
+        [FromQuery] PartyToFromInput connection,
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
@@ -90,7 +87,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<IActionResult> AddAssignment([FromQuery] ConnectionInput connection, [FromBody] PersonInput? person, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddAssignment([FromQuery] PartyToFromInput connection, [FromBody] PersonInput? person, CancellationToken cancellationToken = default)
     {
         bool hasPersonInputParameter = person is { };
 
@@ -138,7 +135,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RemoveAssignment([FromQuery] ConnectionInput connection, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> RemoveAssignment([FromQuery] PartyToFromInput connection, [FromQuery] bool cascade = false, CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(
             ConnectionValidation.ValidateRemoveConnection(connection.Party, connection.From, connection.To));
@@ -170,7 +167,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetPackages([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetPackages([FromQuery] PartyToFromInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(
             ConnectionValidation.ValidateReadConnection(connection.Party, connection.From, connection.To));
@@ -203,7 +200,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> AddPackages([FromQuery] ConnectionInput connection, [FromBody] PersonInput? person, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddPackages([FromQuery] PartyToFromInput connection, [FromBody] PersonInput? person, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
     {
         bool hasPersonInputParameter = person is { };
 
@@ -261,7 +258,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RemovePackages([FromQuery] ConnectionInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> RemovePackages([FromQuery] PartyToFromInput connection, [FromQuery] Guid? packageId, [FromQuery] string package, CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(
             ConnectionValidation.ValidateRemovePackageFromConnection(connection.Party, connection.From, connection.To, packageId, package));
@@ -335,7 +332,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetRoles([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetRoles([FromQuery] PartyToFromInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
         var validationErrors = ValidationComposer.Validate(
             ConnectionValidation.ValidateReadConnection(connection.Party, connection.From, connection.To));
@@ -368,7 +365,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RemoveRole([FromQuery] ConnectionInput connection, [FromQuery] string roleCode, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> RemoveRole([FromQuery] PartyToFromInput connection, [FromQuery] string roleCode, CancellationToken cancellationToken = default)
     {
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);
@@ -399,7 +396,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetResources([FromQuery] ConnectionInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetResources([FromQuery] PartyToFromInput connection, [FromQuery, FromHeader] PagingInput paging, CancellationToken cancellationToken = default)
     {
         var validFromUuid = Guid.TryParse(connection.From, out var fromUuid);
         var validToUuid = Guid.TryParse(connection.To, out var toUuid);
@@ -428,7 +425,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> AddResource([FromQuery] ConnectionInput connection, [FromQuery] string resourceId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> AddResource([FromQuery] PartyToFromInput connection, [FromQuery] string resourceId, CancellationToken cancellationToken = default)
     {
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);
@@ -458,7 +455,7 @@ public class ConnectionsController(IConnectionService connectionService, IUserPr
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> RemoveResource([FromQuery] ConnectionInput connection, [FromQuery] string resourceId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> RemoveResource([FromQuery] PartyToFromInput connection, [FromQuery] string resourceId, CancellationToken cancellationToken = default)
     {
         Guid.TryParse(connection.From, out var fromUuid);
         Guid.TryParse(connection.To, out var toUuid);

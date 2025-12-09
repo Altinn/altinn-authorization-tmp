@@ -6,15 +6,8 @@ namespace Altinn.AccessManagement.Api.Enduser.Models;
 /// <summary>
 /// Input for connection controller.
 /// </summary>
-public class ConnectionInput
+public class PartyToFromInput : PartyInput
 {
-    /// <summary>
-    /// making request on behalf of.
-    /// </summary>
-    [FromQuery(Name = "party")]
-    [SwaggerSchema(Description = "party", Format = "<me, uuid>")]
-    public string Party { get; set; }
-
     /// <summary>
     /// from party
     /// </summary>
