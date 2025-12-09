@@ -59,7 +59,7 @@ public static class ServiceCollectionExtensions
 
     private static void AddAppDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
     {
-        options.UseNpgsql(databaseOptions.AppConnectionString, ConfigureNpgsql);
+        options.UseNpgsql(databaseOptions.AppConnectionString, ConfigureNpgsql).EnableSensitiveDataLogging();
     }
 
     public class AccessManagementDatabaseOptions

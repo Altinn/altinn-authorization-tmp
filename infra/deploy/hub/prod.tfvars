@@ -11,6 +11,13 @@ client_certs = [
   "andreasisnes",
   "havardandersen",
   "aleksanderh",
+  "runetlarsen",
+  "simenr",
+  "dhanalakshimi",
+  "snehas",
+  "vegardn",
+  "ivart",
+  "marting",
   "github",
 ]
 hub_principal_ids = [
