@@ -1,9 +1,12 @@
+using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services;
+using Altinn.AccessMgmt.PersistenceEF.Audit;
+using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
@@ -25,12 +28,11 @@ public class ClientDelegationController(IClientDelegationService clientDelegatio
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetClients(
-        [FromQuery] PartyInput party,
+        [FromQuery(Name = "party")][Required] Guid party,
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var partyUuid = Guid.Parse(party.Party);
-        var result = await clientDelegationService.GetClientsAsync(partyUuid, cancellationToken);
+        var result = await clientDelegationService.GetClientsAsync(party, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -45,13 +47,12 @@ public class ClientDelegationController(IClientDelegationService clientDelegatio
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetConnections(
-        [FromQuery] PartyInput party,
+    public async Task<IActionResult> GetAgents(
+        [FromQuery(Name = "party")][Required] Guid party,
         [FromQuery, FromHeader] PagingInput paging,
         CancellationToken cancellationToken = default)
     {
-        var partyUuid = Guid.Parse(party.Party);
-        var result = await clientDelegationService.GetClientsAsync(partyUuid, cancellationToken);
+        var result = await clientDelegationService.GetAgentsAsync(party, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -62,17 +63,17 @@ public class ClientDelegationController(IClientDelegationService clientDelegatio
 
     [HttpPost("agents")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddAgent(
-        [FromQuery] PartyToInput party,
+        [FromQuery(Name = "party")][Required] Guid party,
+        [FromQuery(Name = "to")][Required] Guid to,
         CancellationToken cancellationToken = default)
     {
-        var partyUuid = Guid.Parse(party.Party);
-        var toUuid = Guid.Parse(party.To);
-        var result = await clientDelegationService.AddAgent(partyUuid, toUuid, cancellationToken);
+        var result = await clientDelegationService.AddAgent(party, to, cancellationToken);
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
@@ -83,17 +84,35 @@ public class ClientDelegationController(IClientDelegationService clientDelegatio
 
     [HttpDelete("agents")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
+    [AuditJWTClaimToDb(Claim = AltinnCoreClaimTypes.PartyUuid, System = AuditDefaults.EnduserApi)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> RemoveAgent(
-        [FromQuery] PartyToInput party,
+        [FromQuery(Name = "party")][Required] Guid party,
+        [FromQuery(Name = "to")][Required] Guid to,
         CancellationToken cancellationToken = default)
     {
-        var partyUuid = Guid.Parse(party.Party);
-        var toUuid = Guid.Parse(party.To);
-        await clientDelegationService.RemoveAgent(partyUuid, toUuid, cancellationToken);
+        await clientDelegationService.RemoveAgent(party, to, cancellationToken);
         return NoContent();
+    }
+
+    [HttpGet("agents/accesspackages")]
+    public async Task<IActionResult> GetClientAccessPackage()
+    {
+        return StatusCode(StatusCodes.Status501NotImplemented);
+    }
+
+    [HttpPost("agents/accesspackages")]
+    public async Task<IActionResult> AddClientAccessPackage()
+    {
+        return StatusCode(StatusCodes.Status501NotImplemented);
+    }
+
+    [HttpDelete("agents/accesspackages")]
+    public async Task<IActionResult> DeleteClientAccessPackage()
+    {
+        return StatusCode(StatusCodes.Status501NotImplemented);
     }
 }

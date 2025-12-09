@@ -36,7 +36,7 @@ internal sealed class ToUuidResolver
     }
 
     /// <summary>
-    /// Resolve target UUID for a non-person entity from <see cref="PartyToFromInput"/> via <see cref="EntityService"/>.
+    /// Resolve target UUID for a non-person entity from <see cref="ConnectionInput"/> via <see cref="EntityService"/>.
     /// </summary>
     internal async Task<ResolveToUuidResult> ResolveWithConnectionInputAsync(Guid connectionInputToUuid, bool allowConnectionInputForPersonEntity, CancellationToken cancellationToken)
     {

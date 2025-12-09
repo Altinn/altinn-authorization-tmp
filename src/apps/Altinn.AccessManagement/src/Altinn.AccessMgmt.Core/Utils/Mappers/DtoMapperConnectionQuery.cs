@@ -182,6 +182,12 @@ public partial class DtoMapper : IDtoMapper
 
                 roleAccess.Add(access);
             }
+
+            result.Add(new ClientDelegationAgentDto
+            {
+                Party = party,
+                Access = roleAccess,
+            });
         }
 
         return result;
@@ -220,6 +226,12 @@ public partial class DtoMapper : IDtoMapper
 
                 roleAccess.Add(access);
             }
+
+            result.Add(new ClientDto
+            {
+                Party = party,
+                Access = roleAccess,
+            });
         }
 
         return result;

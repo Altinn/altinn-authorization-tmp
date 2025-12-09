@@ -12,6 +12,7 @@ public class PartyToInput : PartyInput
     /// <summary>
     /// making request on behalf of.
     /// </summary>
+    [FromHeader]
     [FromQuery(Name = "to")]
     [SwaggerSchema(Description = "party", Format = "<me, uuid>")]
     public string To { get; set; }

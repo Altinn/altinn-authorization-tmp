@@ -19,9 +19,10 @@ public partial class ClientDelegationService(
 {
     public async Task<Result<List<ClientDelegationAgentDto>>> GetAgentsAsync(Guid partyId, CancellationToken cancellationToken = default)
     {
-        var connections = await connectionQuery.GetConnectionsFromOthersAsync(
+        var connections = await connectionQuery.GetConnectionsToOthersAsync(
             new ConnectionQueryFilter
             {
+                ToIds = [],
                 FromIds = [partyId],
                 RoleIds = [RoleConstants.Agent],
                 IncludeResource = true,
@@ -37,10 +38,11 @@ public partial class ClientDelegationService(
 
     public async Task<Result<List<ClientDto>>> GetClientsAsync(Guid partyId, CancellationToken cancellationToken = default)
     {
-        var connections = await connectionQuery.GetConnectionsToOthersAsync(
+        var connections = await connectionQuery.GetConnectionsFromOthersAsync(
             new ConnectionQueryFilter
             {
                 ToIds = [partyId],
+                FromIds = [],
                 IncludeResource = true,
                 IncludePackages = true,
                 EnrichEntities = true,
