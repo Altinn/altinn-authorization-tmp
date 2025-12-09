@@ -141,7 +141,7 @@ public partial class ResourceSyncService : IResourceSyncService
 
         var role = await dbContext.Roles
             .AsNoTracking()
-            .Where(r => r.LegacyCode == subjectUrnPart)
+            .Where(r => r.LegacyCode == subjectUrnPart || r.Code == subjectUrnPart)
             .SingleOrDefaultAsync(cancellationToken);
 
         if (role is { })
@@ -203,7 +203,7 @@ public partial class ResourceSyncService : IResourceSyncService
 
         var role = await dbContext.Roles
             .AsNoTracking()
-            .Where(r => r.LegacyCode == subjectUrnPart)
+            .Where(r => r.LegacyCode == subjectUrnPart || r.Code == subjectUrnPart)
             .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception(string.Format("Role not found '{0}'", subjectUrnPart));
 
         var roleResource = await dbContext.RoleResources.FirstOrDefaultAsync(t => t.RoleId == role.Id && t.ResourceId == resource.Id, cancellationToken);
