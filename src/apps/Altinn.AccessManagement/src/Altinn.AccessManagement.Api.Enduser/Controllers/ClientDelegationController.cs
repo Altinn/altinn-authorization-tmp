@@ -99,19 +99,19 @@ public class ClientDelegationController(IClientDelegationService clientDelegatio
     }
 
     [HttpGet("agents/accesspackages")]
-    public async Task<IActionResult> GetClientAccessPackage()
+    public async Task<IActionResult> GetAgentAccessPackages()
     {
         return StatusCode(StatusCodes.Status501NotImplemented);
     }
 
     [HttpPost("agents/accesspackages")]
-    public async Task<IActionResult> AddClientAccessPackage()
+    public async Task<IActionResult> AddAgentAccessPackage()
     {
         return StatusCode(StatusCodes.Status501NotImplemented);
     }
 
     [HttpDelete("agents/accesspackages")]
-    public async Task<IActionResult> DeleteClientAccessPackage()
+    public async Task<IActionResult> DeleteAgentAccessPackage()
     {
         return StatusCode(StatusCodes.Status501NotImplemented);
     }
