@@ -18,9 +18,6 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
 public class ClientDelegationController(IClientDelegationService clientDelegationService) : ControllerBase
 {
-    /// <summary>
-    /// Get connections between the authenticated user's selected party and the specified target party.
-    /// </summary>
     [HttpGet("clients")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
     [ProducesResponseType<PaginatedResult<ConnectionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -42,9 +39,6 @@ public class ClientDelegationController(IClientDelegationService clientDelegatio
         return Ok(PaginatedResult.Create(result.Value, null));
     }
 
-    /// <summary>
-    /// Get connections between the authenticated user's selected party and the specified target party.
-    /// </summary>
     [HttpGet("agents")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
     [ProducesResponseType<PaginatedResult<ConnectionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -66,9 +60,6 @@ public class ClientDelegationController(IClientDelegationService clientDelegatio
         return Ok(PaginatedResult.Create(result.Value, null));
     }
 
-    /// <summary>
-    /// Get connections between the authenticated user's selected party and the specified target party.
-    /// </summary>
     [HttpPost("agents")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [ProducesResponseType<AssignmentDto>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
@@ -90,9 +81,6 @@ public class ClientDelegationController(IClientDelegationService clientDelegatio
         return Ok(result.Value);
     }
 
-    /// <summary>
-    /// Get connections between the authenticated user's selected party and the specified target party.
-    /// </summary>
     [HttpDelete("agents")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_WRITE)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
