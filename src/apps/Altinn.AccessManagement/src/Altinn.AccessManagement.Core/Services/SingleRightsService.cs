@@ -22,6 +22,7 @@ using Altinn.Platform.Profile.Models;
 using Altinn.Platform.Register.Enums;
 using Altinn.Platform.Register.Models;
 using Altinn.Urn.Json;
+using Azure;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Altinn.AccessManagement.Core.Services
@@ -570,6 +571,24 @@ namespace Altinn.AccessManagement.Core.Services
 
             await _pap.TryDeleteDelegationPolicies(policiesToDelete, cancellationToken);
             return assertion;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<DelegationChange>> GetNextPageAppDelegationChanges(long appRightFeedId = 1, CancellationToken cancellationToken = default)
+        {
+            return await _pip.GetNextPageAppDelegationChanges(appRightFeedId, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<DelegationChange>> GetNextPageResourceDelegationChanges(long appRightFeedId = 1, CancellationToken cancellationToken = default)
+        {
+            return await _pip.GetNextPageResourceDelegationChanges(appRightFeedId, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<InstanceDelegationChange>> GetNextPageInstanceDelegationChanges(long appRightFeedId = 1, CancellationToken cancellationToken = default)
+        {
+            return await _pip.GetNextPageInstanceDelegationChanges(appRightFeedId, cancellationToken);
         }
 
         /// <summary>

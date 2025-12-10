@@ -177,6 +177,24 @@ namespace Altinn.AccessManagement.Core.Services
             return result.Values.Where(r => r.CanDelegate.HasValue && r.CanDelegate.Value).ToList();
         }
 
+        /// <inheritdoc />
+        public async Task<List<DelegationChange>> GetNextPageAppDelegationChanges(long appRightFeedId = 1, CancellationToken cancellationToken = default)
+        {
+            return await _delegationRepository.GetNextPageAppDelegationChanges(appRightFeedId, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<DelegationChange>> GetNextPageResourceDelegationChanges(long appRightFeedId = 1, CancellationToken cancellationToken = default)
+        {
+            return await _delegationRepository.GetNextPageResourceDelegationChanges(appRightFeedId, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<InstanceDelegationChange>> GetNextPageInstanceDelegationChanges(long instanceRightFeedId = 1, CancellationToken cancellationToken = default)
+        {
+            return await _delegationRepository.GetNextPageInstanceDelegationChanges(instanceRightFeedId, cancellationToken);
+        }
+
         private async Task<XacmlPolicy> GetPolicy(List<AttributeMatch> resource, CancellationToken cancellationToken)
         {
             XacmlPolicy policy = null;
@@ -307,6 +325,12 @@ namespace Altinn.AccessManagement.Core.Services
             }
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<bool>> GetAppRightFeed(long appRightFeedId, CancellationToken cancellationToken = default)
+        {
+            return new List<bool>();
         }
 
         private static List<InstanceRightDelegationResult> GetRightsFromPolicy(XacmlPolicy policy)

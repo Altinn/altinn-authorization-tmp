@@ -10,22 +10,20 @@ namespace Altinn.AccessMgmt.Core.HostedServices
     /// <summary>
     /// Hosted service for synchronizing Altinn roles.
     /// </summary>
-    public partial class AltinnRoleHostedService(
+    public partial class SingleRightsHostedService(
         ILeaseService leaseService,
         IFeatureManager featureManager,
         ILogger<AltinnRoleHostedService> logger,
-        IAllAltinnRoleSyncService allAltinnRoleSyncService,
+        ISingleAppRightSyncService singleAppRightSyncService,
         IAltinnClientRoleSyncService altinnClientRoleSyncService,
-        //// IAltinnBankruptcyEstateRoleSyncService altinnBankruptcyEstateRoleSyncService,
         IAltinnAdminRoleSyncService altinnAdminRoleSyncService
         ) : IHostedService, IDisposable
     {
         private readonly ILeaseService _leaseService = leaseService;
         private readonly ILogger<AltinnRoleHostedService> _logger = logger;
         private readonly IFeatureManager _featureManager = featureManager;
-        private readonly IAllAltinnRoleSyncService _allAltinnRoleSyncService = allAltinnRoleSyncService;
+        private readonly ISingleAppRightSyncService _singleAppRightSyncService = singleAppRightSyncService;
         private readonly IAltinnClientRoleSyncService _altinnClientRoleSyncService = altinnClientRoleSyncService;
-        //// private readonly IAltinnBankruptcyEstateRoleSyncService _altinnBankruptcyEstateRoleSyncService = altinnBankruptcyEstateRoleSyncService;
         private readonly IAltinnAdminRoleSyncService _altinnAdminRoleSyncService = altinnAdminRoleSyncService;
         private Timer _timer = null;
         private readonly CancellationTokenSource _stop = new();
@@ -35,7 +33,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
         {
             Log.StartRegisterSync(_logger);
 
-            _timer = new Timer(async state => await SyncAltinnRoleDispatcher(state), _stop.Token, TimeSpan.Zero, TimeSpan.FromMinutes(2));
+            _timer = new Timer(async state => await SyncSingleRightsDispatcher(state), _stop.Token, TimeSpan.Zero, TimeSpan.FromMinutes(2));
 
             return Task.CompletedTask;
         }
@@ -44,7 +42,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
         /// Dispatches the Altinn roles synchronization process in a separate task.
         /// </summary>
         /// <param name="state">Cancellation token for stopping execution.</param>
-        private async Task SyncAltinnRoleDispatcher(object state)
+        private async Task SyncSingleRightsDispatcher(object state)
         {
             if (Interlocked.Exchange(ref _isRunning, 1) == 1)
             {
@@ -54,30 +52,30 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             try
             {
                 var cancellationToken = (CancellationToken)state;
-                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAllAltinnRoleSync))
+                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleAppRightSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_allaltinnrole_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleappright_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
-                        await SyncAllAltinnRoles(lease, cancellationToken);
+                        await SyncSingleAppRights(lease, cancellationToken);
                     }
                 }
 
-                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAltinnClientRoleSync))
+                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleResorceRightSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_altinnclientrole_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleresorceregistryright_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
-                        await SyncAltinnClientRoles(lease, cancellationToken);
+                        ////await SyncSingleResourceRegistryRights(lease, cancellationToken);
                     }
-                }               
+                }
 
-                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesAltinnAdminRoleSync))
+                if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleInstanceRightSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_altinnadminrole_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_singleinstanceright_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
-                        await SyncAltinnAdminRoles(lease, cancellationToken);
+                        ////await SyncSingleInstanceRights(lease, cancellationToken);
                     }
                 }
             }
@@ -91,11 +89,11 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             }
         }
 
-        private async Task SyncAllAltinnRoles(ILease lease, CancellationToken cancellationToken)
+        private async Task SyncSingleAppRights(ILease lease, CancellationToken cancellationToken)
         {
             try
             {
-                await _allAltinnRoleSyncService.SyncAllAltinnRoles(lease, cancellationToken);
+                await _singleAppRightSyncService.SyncSingleAppRights(lease, cancellationToken);
             }
             catch (Exception ex)
             {

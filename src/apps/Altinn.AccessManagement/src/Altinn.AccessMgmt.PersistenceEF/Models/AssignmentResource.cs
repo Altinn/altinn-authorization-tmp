@@ -16,4 +16,14 @@ public class AssignmentResource : BaseAssignmentResource
     /// Resource
     /// </summary>
     public Resource Resource { get; set; }
+
+    /// <summary>
+    /// Policy path refers to where on
+    /// </summary>
+    public string PolicyPath { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string PolicyVersion { get; set; }
 }

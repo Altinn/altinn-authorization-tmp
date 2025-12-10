@@ -36,4 +36,19 @@ public static class AccessMgmtFeatureFlags
     /// Specifies if AuthorizedPartiesServiceEf should be used
     /// </summary>
     public const string AuthorizedPartiesEfEnabled = $"AccessMgmt.Core.Services.AuthorizedParties.EfEnabled";
+
+    /// <summary>
+    /// Represents the resource name for the hosted service responsible for synchronizing single application rights.
+    /// </summary>
+    public const string HostedServicesSingleAppRightSync = $"AccessMgmt.Core.HostedServices.SingleAppRightsSync";
+
+    /// <summary>
+    /// Represents the resource name for the hosted service responsible for synchronizing single resourceregistry rights.
+    /// </summary>
+    public const string HostedServicesSingleResorceRightSync = $"AccessMgmt.Core.HostedServices.SingleResourceRightsSync";
+
+    /// <summary>
+    /// Represents the resource name for the hosted service responsible for synchronizing single instance rights.
+    /// </summary>
+    public const string HostedServicesSingleInstanceRightSync = $"AccessMgmt.Core.HostedServices.SingleInstanceRightsSync";
 }
