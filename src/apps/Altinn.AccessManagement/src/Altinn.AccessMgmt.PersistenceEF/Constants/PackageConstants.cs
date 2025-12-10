@@ -1025,7 +1025,7 @@ public static class PackageConstants
     /// - <c>Id:</c> 58c282e4-4505-4411-8d8d-62fdaee7f7ed
     /// - <c>URN:</c> urn: urn:altinn:accesspackage:offentlige-anskaffelser
     /// - <c>Provider:</c> Altinn3
-    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester til å lese og svare på varsel om plan-/byggesak. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
+    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til å dele data om virksomheten i forbindelse med offentlige anskaffelser. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
     /// </remarks>
     public static ConstantDefinition<Package> PublicProcurement { get; } = new ConstantDefinition<Package>("58c282e4-4505-4411-8d8d-62fdaee7f7ed")
     {
