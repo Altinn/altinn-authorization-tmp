@@ -51,9 +51,9 @@ public class BasePackage : BaseAudit, IEntityId, IEntityName, IEntityUrn
     public bool IsDelegable { get; set; }
 
     /// <summary>
-    /// Has resources
+    /// Is available for ServiceOwners
     /// </summary>
-    public bool HasResources { get; set; }
+    public bool IsAvailableForServiceOwners { get; set; }
 
     /// <summary>
     /// Urn

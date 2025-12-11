@@ -97,7 +97,7 @@ public static partial class StaticDataIngest
                 package.Name = seed.Entity.Name;
                 package.Description = seed.Entity.Description;
                 package.IsDelegable = seed.Entity.IsDelegable;
-                package.HasResources = seed.Entity.HasResources;
+                package.IsAvailableForServiceOwners = seed.Entity.IsAvailableForServiceOwners;
                 package.IsAssignable = seed.Entity.IsAssignable;
             },
             cancellationToken);
