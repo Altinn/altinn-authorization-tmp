@@ -1033,7 +1033,7 @@ public static class PackageConstants
         {
             Name = "Offentlige anskaffelser",
             Description = "Denne tilgangspakken gir fullmakter til å dele data om virksomheten i forbindelse med offentlige anskaffelser. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-            Urn = "urn: urn:altinn:accesspackage:offentlige-anskaffelser",
+            Urn = "urn:altinn:accesspackage:offentlige-anskaffelser",
             IsDelegable = true,
             HasResources = true,
             IsAssignable = true,
