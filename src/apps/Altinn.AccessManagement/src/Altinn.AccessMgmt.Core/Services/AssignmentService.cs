@@ -107,7 +107,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         }
 
         var existingAssignmentPackages = await db.AssignmentPackages
-            .AsTracking()
+            .AsNoTracking()
             .Where(a => a.AssignmentId == assignment.Id)
             .Where(a => packageIds.Contains(a.PackageId))
             .Where(a => !onlyRemoveA2Packages || a.Audit_ChangedBySystem == SystemEntityConstants.Altinn2RoleImportSystem.Id)
@@ -122,8 +122,16 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         {
             db.Remove(item);
         }
-        
-        return await db.SaveChangesAsync(values, cancellationToken);
+
+        var deletedCount = await db.SaveChangesAsync(values, cancellationToken);
+
+        if (!onlyRemoveA2Packages || assignment.Audit_ChangedBySystem == SystemEntityConstants.Altinn2RoleImportSystem.Id)
+        {
+            // We do not care if the assignment is removed or not, just try to remove it if it has no dependencies left it should be removed an kept if it has dependencies.
+            await DeleteAssignment(assignment.Id, false, cancellationToken, values);
+        }
+
+        return deletedCount;
     }
 
     /// <inheritdoc/>
@@ -404,7 +412,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     }
 
     /// <inheritdoc/>
-    public async Task<ProblemInstance> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, bool cascade = false, CancellationToken cancellationToken = default)
+    public async Task<ProblemInstance> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, bool cascade = false, CancellationToken cancellationToken = default, AuditValues values = null)
     {
         ValidationErrorBuilder errors = default;
 
@@ -464,7 +472,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
 
         var assignment = await db.Assignments.SingleAsync(t => t.Id == existingAssignment.Id, cancellationToken);
         db.Assignments.Remove(assignment);
-        var result = await db.SaveChangesAsync(cancellationToken);
+        var result = await db.SaveChangesAsync(values, cancellationToken);
 
         if (result == 0)
         {
@@ -475,7 +483,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     }
 
     /// <inheritdoc/>
-    public async Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, CancellationToken cancellationToken = default)
+    public async Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, CancellationToken cancellationToken = default, AuditValues values = null)
     {
         ValidationErrorBuilder errors = default;
 
@@ -502,6 +510,15 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
                     errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("packages", string.Join(",", packages.Select(p => p.Id.ToString())))]);
                 }
 
+                var resources = await db.AssignmentResources.AsNoTracking()
+                    .Where(t => t.AssignmentId == existingAssignment.Id)
+                    .ToListAsync(cancellationToken);
+
+                if (resources != null && resources.Any())
+                {
+                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("resources", string.Join(",", resources.Select(p => p.Id.ToString())))]);
+                }
+
                 var delegationsFromAssingment = await db.Delegations.AsNoTracking()
                     .Where(t => t.FromId == existingAssignment.Id)
                     .ToListAsync(cancellationToken);
@@ -515,7 +532,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
                     .ToListAsync(cancellationToken);
                 if (delegationsToAssignment != null && delegationsToAssignment.Any())
                 {
-                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsFromAssingment.Select(p => p.Id.ToString())))]);
+                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsToAssignment.Select(p => p.Id.ToString())))]);
                 }
             }
         }
@@ -526,7 +543,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         }
 
         db.Assignments.Remove(existingAssignment);
-        var result = await db.SaveChangesAsync(cancellationToken);
+        var result = await db.SaveChangesAsync(values, cancellationToken);
 
         if (result == 0)
         {

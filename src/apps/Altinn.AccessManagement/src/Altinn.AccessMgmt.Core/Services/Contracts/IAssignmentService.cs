@@ -39,14 +39,14 @@ public interface IAssignmentService
     /// Deletes an assignment of the given role if found between the parties.
     /// </summary>
     /// <returns></returns>
-    Task<ProblemInstance> DeleteAssignment(Guid fromId, Guid toId, string roleCode, bool cascade = false, CancellationToken cancellationToken = default);
+    Task<ProblemInstance> DeleteAssignment(Guid fromId, Guid toId, string roleCode, bool cascade = false, CancellationToken cancellationToken = default, AuditValues values = null);
 
     /// <summary>
     /// NB: It is the callers responsibility to ensure that the assignment is allowed to be deleted.
     /// Deletes an assignment by the assignment id.
     /// </summary>
     /// <returns></returns>
-    Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, CancellationToken cancellationToken = default);
+    Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, CancellationToken cancellationToken = default, AuditValues values = null);
 
     /// <summary>
     /// Gets assignment and creates if not exits
