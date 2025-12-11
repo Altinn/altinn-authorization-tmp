@@ -137,11 +137,9 @@ public partial class ResourceSyncService : IResourceSyncService
 
     private async Task DeleteRoleCodeResource(AppDbContext dbContext, ResourceUpdatedModel updatedResource, Resource resource, CancellationToken cancellationToken)
     {
-        var subjectUrnPart = updatedResource.SubjectUrn.Split(":").Last();
-
         var role = await dbContext.Roles
             .AsNoTracking()
-            .Where(r => r.LegacyCode == subjectUrnPart || r.Code == subjectUrnPart || r.LegacyUrn == updatedResource.SubjectUrn || r.Urn == updatedResource.SubjectUrn)
+            .Where(r => EF.Functions.ILike(r.LegacyUrn, updatedResource.SubjectUrn) || EF.Functions.ILike(r.Urn, updatedResource.SubjectUrn))
             .SingleOrDefaultAsync(cancellationToken);
 
         if (role is { })
@@ -203,7 +201,7 @@ public partial class ResourceSyncService : IResourceSyncService
 
         var role = await dbContext.Roles
             .AsNoTracking()
-            .Where(r => r.LegacyCode == subjectUrnPart || r.Code == subjectUrnPart || r.LegacyUrn == updatedResource.SubjectUrn || r.Urn == updatedResource.SubjectUrn)
+            .Where(r => EF.Functions.ILike(r.LegacyUrn, updatedResource.SubjectUrn) || EF.Functions.ILike(r.Urn, updatedResource.SubjectUrn))
             .SingleOrDefaultAsync(cancellationToken) ?? throw new Exception(string.Format("Role not found '{0}'", subjectUrnPart));
 
         var roleResource = await dbContext.RoleResources.FirstOrDefaultAsync(t => t.RoleId == role.Id && t.ResourceId == resource.Id, cancellationToken);
