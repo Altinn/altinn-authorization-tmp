@@ -61,44 +61,6 @@ public static class ReadOnlyWriteOverride
     }
 }
 
-public class ReadOnlyInterceptor : SaveChangesInterceptor
-{
-    public override InterceptionResult<int> SavingChanges(
-        DbContextEventData eventData,
-        InterceptionResult<int> result)
-    {
-        ThrowIfHasChanges(eventData.Context);
-        return base.SavingChanges(eventData, result);
-    }
-
-    public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
-        DbContextEventData eventData,
-        InterceptionResult<int> result,
-        CancellationToken cancellationToken = default)
-    {
-        ThrowIfHasChanges(eventData.Context);
-        return base.SavingChangesAsync(eventData, result, cancellationToken);
-    }
-
-    private void ThrowIfHasChanges(DbContext? context)
-    {
-        if (context == null) 
-        {
-            return;        
-        }
-
-        var hasModifications = context.ChangeTracker.Entries()
-            .Any(e => e.State == EntityState.Added
-                   || e.State == EntityState.Modified
-                   || e.State == EntityState.Deleted);
-
-        if (hasModifications)
-        {
-            throw new DbUpdateException("Writing is disabled in this context.");
-        }
-    }
-}
-
 public class AuditConnectionInterceptor : DbConnectionInterceptor
 {
     private readonly IAuditContextProvider _context;
