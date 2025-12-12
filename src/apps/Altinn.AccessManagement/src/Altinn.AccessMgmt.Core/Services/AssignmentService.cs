@@ -85,7 +85,7 @@ public class AssignmentService(AppDbContext db, ConnectionQuery connectionQuery)
     }
 
     /// <inheritdoc/>
-    public async Task<int> RevokeAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default)
+    public async Task<int> RevokeImportedAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default)
     {
         var packageIds = await db.Packages
             .AsNoTracking()
