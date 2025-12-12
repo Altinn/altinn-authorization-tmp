@@ -54,7 +54,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
                 var cancellationToken = (CancellationToken)state;
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleAppRightSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleappright_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_singleappright_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
                         await SyncSingleAppRights(lease, cancellationToken);
@@ -63,7 +63,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices
 
                 if (await _featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.HostedServicesSingleResorceRightSync))
                 {
-                    await using var lease = await _leaseService.TryAcquireNonBlocking("access_management_singleresorceregistryright_sync", cancellationToken);
+                    await using var lease = await _leaseService.TryAcquireNonBlocking("ral_access_management_singleresorceregistryright_sync", cancellationToken);
                     if (lease is not null && !cancellationToken.IsCancellationRequested)
                     {
                         ////await SyncSingleResourceRegistryRights(lease, cancellationToken);
