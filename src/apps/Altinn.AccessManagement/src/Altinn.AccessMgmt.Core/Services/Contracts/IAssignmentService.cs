@@ -13,9 +13,10 @@ public interface IAssignmentService
 {
     /// <summary>
     /// Removes packages from the assignment between the two parties.
+    /// This is created to be used when an assignment is imported from Altinn 2 so it is tailored for this need as it removes assignment when last package is removed.
     /// </summary>
     /// <returns></returns>
-    Task<int> RevokeAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default);
+    Task<int> RevokeImportedAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Add packages to an assignment (creates the assignment if it does not exist) between the two parties.

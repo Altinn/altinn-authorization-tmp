@@ -8,7 +8,6 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.EntityFrameworkCore;
@@ -84,7 +83,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     }
 
     /// <inheritdoc/>
-    public async Task<int> RevokeAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default)
+    public async Task<int> RevokeImportedAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default)
     {
         var packageIds = await db.Packages
             .AsNoTracking()
@@ -107,23 +106,38 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         }
 
         var existingAssignmentPackages = await db.AssignmentPackages
-            .AsTracking()
+            .AsNoTracking()
             .Where(a => a.AssignmentId == assignment.Id)
             .Where(a => packageIds.Contains(a.PackageId))
             .Where(a => !onlyRemoveA2Packages || a.Audit_ChangedBySystem == SystemEntityConstants.Altinn2RoleImportSystem.Id)
             .ToListAsync(cancellationToken);
 
-        if (existingAssignmentPackages.Count == 0)
-        {
-            return 0;
-        }
-
+        bool removeditem = false;
         foreach (var item in existingAssignmentPackages)
         {
             db.Remove(item);
+            removeditem = true;
         }
-        
-        return await db.SaveChangesAsync(values, cancellationToken);
+
+        int result = 0;
+        if (removeditem)
+        {
+            result = await db.SaveChangesAsync(values, cancellationToken);
+        }
+
+        if (!onlyRemoveA2Packages || assignment.Audit_ChangedBySystem == SystemEntityConstants.Altinn2RoleImportSystem.Id)
+        {
+            ValidationErrorBuilder errors = await CheckCascadingAssignmentRevoke(assignment.Id, cancellationToken);
+
+            // if no existing dependencies remove assignment
+            if (errors.IsEmpty)
+            {
+                db.Assignments.Remove(assignment);
+                await db.SaveChangesAsync(values, cancellationToken);
+            }
+        }
+
+        return result;
     }
 
     /// <inheritdoc/>
@@ -407,6 +421,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     public async Task<ProblemInstance> DeleteAssignment(Guid fromEntityId, Guid toEntityId, string roleCode, bool cascade = false, CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errors = default;
+        ValidationProblemInstance errorResult = default;
 
         var fromEntity = await db.Entities.FirstOrDefaultAsync(t => t.Id == fromEntityId, cancellationToken);
         var toEntity = await db.Entities.FirstOrDefaultAsync(t => t.Id == toEntityId, cancellationToken);
@@ -426,6 +441,10 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         if (!role.IsAssignable)
         {
             errors.Add(ValidationErrors.UnableToRevokeRoleAssignment, "$QUERY/roleCode", [new("role", role.Code)]);
+            if (errors.TryBuild(out errorResult))
+            {
+                return errorResult;
+            }
         }
         
         var existingAssignment = await GetAssignment(fromEntityId, toEntityId, role.Id, cancellationToken: cancellationToken);
@@ -437,27 +456,11 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         {
             if (!cascade)
             {
-                var packages = await db.AssignmentPackages.AsNoTracking().Where(t => t.AssignmentId == existingAssignment.Id).ToListAsync(cancellationToken);
-                if (packages != null && packages.Any())
-                {
-                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("packages", string.Join(",", packages.Select(p => p.Id.ToString())))]);
-                }
-
-                var delegationsFromAssingment = await db.Delegations.AsNoTracking().Where(t => t.FromId == existingAssignment.Id).ToListAsync(cancellationToken);
-                if (delegationsFromAssingment != null && delegationsFromAssingment.Any())
-                {
-                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsFromAssingment.Select(p => p.Id.ToString())))]);
-                }
-
-                var delegationsToAssignment = await db.Delegations.AsNoTracking().Where(t => t.ToId == existingAssignment.Id).ToListAsync(cancellationToken);
-                if (delegationsToAssignment != null && delegationsToAssignment.Any())
-                {
-                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsToAssignment.Select(p => p.Id.ToString())))]);
-                }
+                errors = await CheckCascadingAssignmentRevoke(existingAssignment.Id, cancellationToken);
             }
         }
 
-        if (errors.TryBuild(out var errorResult))
+        if (errors.TryBuild(out errorResult))
         {
             return errorResult;
         }
@@ -474,10 +477,59 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         return null;
     }
 
+    /// <summary>
+    /// This does checks for dependencies on the assignment that will be revoked together with the assignment if it is removed
+    /// 
+    /// WARNING:    If this method is missing checks it can lead to cascading revokes of assignments and data loss that was not 
+    ///             intended so this has to be updated toghether with any new feature that adds dependencies on assignments
+    /// </summary>
+    /// <param name="assignmentId">The id of the assignment to delete</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
+    /// <returns>dependencies on the assignment taht will be revoked together with the assignment if it is removed</returns>
+    public async Task<ValidationErrorBuilder> CheckCascadingAssignmentRevoke(Guid assignmentId, CancellationToken cancellationToken)
+    {
+        ValidationErrorBuilder errors = default;
+
+        var packages = await db.AssignmentPackages.AsNoTracking()
+                    .Where(t => t.AssignmentId == assignmentId)
+                    .ToListAsync(cancellationToken);
+        if (packages != null && packages.Any())
+        {
+            errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("packages", string.Join(",", packages.Select(p => p.Id.ToString())))]);
+        }
+
+        var resources = await db.AssignmentResources.AsNoTracking()
+            .Where(t => t.AssignmentId == assignmentId)
+            .ToListAsync(cancellationToken);
+        if (resources != null && resources.Any())
+        {
+            errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("resources", string.Join(",", resources.Select(p => p.Id.ToString())))]);
+        }
+
+        var delegationsFromAssingment = await db.Delegations.AsNoTracking()
+            .Where(t => t.FromId == assignmentId)
+            .ToListAsync(cancellationToken);
+        if (delegationsFromAssingment != null && delegationsFromAssingment.Any())
+        {
+            errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsFromAssingment.Select(p => p.Id.ToString())))]);
+        }
+
+        var delegationsToAssignment = await db.Delegations.AsNoTracking()
+            .Where(t => t.ToId == assignmentId)
+            .ToListAsync(cancellationToken);
+        if (delegationsToAssignment != null && delegationsToAssignment.Any())
+        {
+            errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsToAssignment.Select(p => p.Id.ToString())))]);
+        }
+
+        return errors;
+    }
+
     /// <inheritdoc/>
     public async Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errors = default;
+        ValidationProblemInstance errorResult = default;
 
         var existingAssignment = await GetAssignment(assignmentId, cancellationToken: cancellationToken);
         if (existingAssignment == null)
@@ -489,38 +541,19 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
             if (!existingAssignment.Role.IsAssignable)
             {
                 errors.Add(ValidationErrors.UnableToRevokeRoleAssignment, "$QUERY/assignmentId", [new("role", existingAssignment.Role.Code)]);
+                if (errors.TryBuild(out errorResult))
+                {
+                    return errorResult;
+                }
             }
 
             if (!cascade)
             {
-                var packages = await db.AssignmentPackages.AsNoTracking()
-                    .Where(t => t.AssignmentId == existingAssignment.Id)
-                    .ToListAsync(cancellationToken);
-
-                if (packages != null && packages.Any())
-                {
-                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("packages", string.Join(",", packages.Select(p => p.Id.ToString())))]);
-                }
-
-                var delegationsFromAssingment = await db.Delegations.AsNoTracking()
-                    .Where(t => t.FromId == existingAssignment.Id)
-                    .ToListAsync(cancellationToken);
-                if (delegationsFromAssingment != null && delegationsFromAssingment.Any())
-                {
-                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsFromAssingment.Select(p => p.Id.ToString())))]);
-                }
-
-                var delegationsToAssignment = await db.Delegations.AsNoTracking()
-                    .Where(t => t.ToId == existingAssignment.Id)
-                    .ToListAsync(cancellationToken);
-                if (delegationsToAssignment != null && delegationsToAssignment.Any())
-                {
-                    errors.Add(ValidationErrors.AssignmentIsActiveInOneOrMoreDelegations, "$QUERY/cascade", [new("delegations", string.Join(",", delegationsFromAssingment.Select(p => p.Id.ToString())))]);
-                }
+                errors = await CheckCascadingAssignmentRevoke(existingAssignment.Id, cancellationToken);
             }
         }
 
-        if (errors.TryBuild(out var errorResult))
+        if (errors.TryBuild(out errorResult))
         {
             return errorResult;
         }
