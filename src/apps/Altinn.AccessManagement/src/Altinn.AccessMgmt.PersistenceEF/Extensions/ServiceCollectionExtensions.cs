@@ -2,6 +2,8 @@
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
+using Altinn.AccessMgmt.PersistenceEF.Models.Legacy;
+using Altinn.AccessMgmt.PersistenceEF.Models.Legacy.Enums;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
@@ -55,11 +57,21 @@ public static class ServiceCollectionExtensions
     {
         options.UseAsyncSeeding(async (dbcontext, anyChanges, ct) => await StaticDataIngest.IngestAll((AppDbContext)dbcontext, ct));
         options.UseNpgsql(databaseOptions.MigrationConnectionString, ConfigureNpgsql).ReplaceService<IMigrationsSqlGenerator, CustomMigrationsSqlGenerator>();
+        options.UseNpgsql(opt =>
+        {
+            opt.MapEnum<UuidType>("delegation", nameof(UuidType).ToLower());
+            opt.MapEnum<DelegationChangeType>("delegation", nameof(DelegationChangeType).ToLower());
+        });
     }
 
     private static void AddAppDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
     {
         options.UseNpgsql(databaseOptions.AppConnectionString, ConfigureNpgsql).EnableSensitiveDataLogging();
+        options.UseNpgsql(opt =>
+        {
+            opt.MapEnum<UuidType>("delegation", nameof(UuidType).ToLower());
+            opt.MapEnum<DelegationChangeType>("delegation", nameof(DelegationChangeType).ToLower());
+        });
     }
 
     public class AccessManagementDatabaseOptions

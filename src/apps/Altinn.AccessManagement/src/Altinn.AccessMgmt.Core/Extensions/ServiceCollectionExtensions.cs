@@ -5,6 +5,7 @@ using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core.HostedServices;
 using Altinn.AccessMgmt.Core.HostedServices.Contracts;
 using Altinn.AccessMgmt.Core.HostedServices.Services;
+using Altinn.AccessMgmt.Core.Services.Legacy;
 using Altinn.AccessMgmt.Core.Services;
 using Altinn.AccessMgmt.Core.Services.Contracts;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
@@ -30,6 +31,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDelegationService, DelegationService>();
         services.AddScoped<IResourceService, ResourceService>();
         services.AddScoped<IEntityService, EntityService>();
+
+        services.AddScoped<IDelegationChangesService, LegacyDelegationChanges>();
         services.AddScoped<IAmPartyRepository, AMPartyService>();
         services.AddScoped<IAuthorizedPartyRepoService, AuthorizedPartyRepoService>();
         services.AddScoped<IAuthorizedPartyRepoServiceEf, AuthorizedPartyRepoServiceEf>();
@@ -55,5 +58,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAltinnClientRoleSyncService, AltinnClientRoleSyncService>();
         services.AddSingleton<IAltinnAdminRoleSyncService, AltinnAdminRoleSyncService>();
         services.AddSingleton<IAllAltinnRoleSyncService, AllAltinnRoleSyncService>();
+        return services;
     }
 }
