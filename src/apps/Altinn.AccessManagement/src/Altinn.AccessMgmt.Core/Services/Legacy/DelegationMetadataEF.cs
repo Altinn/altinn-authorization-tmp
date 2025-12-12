@@ -6,12 +6,7 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
-using Altinn.Platform.Storage.Interface.Models;
-using Authorization.Platform.Authorization.Models;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using NpgsqlTypes;
-using System.Diagnostics;
 
 namespace Altinn.AccessMgmt.Core.Services.Legacy;
 
@@ -127,23 +122,6 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     {
         return await DbContext.Resources.AsNoTracking().SingleAsync(t => t.RefId == resourceIdentifier, cancellationToken);
     }
-
-    private async Task<List<Resource>> GetResource(List<string> resourceIdentifier, CancellationToken cancellationToken = default)
-    {
-        return await DbContext.Resources.AsNoTracking().Where(t => resourceIdentifier.Contains(t.RefId)).ToListAsync(cancellationToken);
-    }
-
-    private readonly NpgsqlDataSource _conn;
-    private readonly string defaultAppColumns = "delegationChangeId, delegationChangeType, altinnAppId, offeredByPartyId, fromUuid, fromType, coveredByUserId, coveredByPartyId, toUuid, toType, performedByUserId, performedByUuid, performedByType, blobStoragePolicyPath, blobStorageVersionId, created";
-    private const string FromUuid = "fromUuid";
-    private const string FromType = "fromType";
-    private const string ToUuid = "toUuid";
-    private const string ToType = "toType";
-    private const string PerformedByUuid = "performedByUuid";
-    private const string PerformedByType = "performedByType";
-    private const string InstanceId = "instanceId";
-    private const string ResourceId = "resourceId";
-    private const string DelegationChangeType = "delegationChangeType";
 
     public AppDbContext DbContext { get; }
 
