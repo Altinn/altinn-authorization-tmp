@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -52,17 +53,15 @@ namespace Altinn.AccessManagement.Integration.Clients
 
             StringContent requestBody = new StringContent(JsonSerializer.Serialize(userProfileLookup), Encoding.UTF8, "application/json");
             HttpResponseMessage response = await _client.PostAsync(endpoint.Uri, requestBody, cancellationToken);
-            string responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
-
+            
             if (!response.IsSuccessStatusCode)
             {
+                string responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
                 _logger.LogError("Getting user profile failed with unexpected HttpStatusCode: {StatusCode}\n {responseContent}", response.StatusCode, responseContent);
                 return null;
             }
 
-            NewUserProfile userProfile = JsonSerializer.Deserialize<NewUserProfile>(responseContent, _serializerOptions);
-
-            return userProfile;
+            return await response.Content.ReadFromJsonAsync<NewUserProfile>(_serializerOptions, cancellationToken);
         }
     }
 }

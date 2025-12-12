@@ -735,7 +735,11 @@ public class AuthorizedPartiesServiceEf(
         var userProfile = await contextRetrievalService.GetNewUserProfile(subject.UserId.Value, cancellationToken);
         if (userProfile == null)
         {
-            throw new ArgumentException("The user id is either invalid or does not exist", nameof(subject));
+            // Should not happen, but if it does (brand new user perhaps?) we default to including all
+            filters.IncludePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True;
+            filters.IncludeSubParties = AuthorizedPartiesIncludeFilter.True;
+            filters.IncludeInactiveParties = AuthorizedPartiesIncludeFilter.True;
+            return filters;
         }
 
         if (filters.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto)
