@@ -46,8 +46,22 @@ public interface IAssignmentService
     /// NB: It is the callers responsibility to ensure that the assignment is allowed to be deleted.
     /// Deletes an assignment by the assignment id.
     /// </summary>
-    /// <returns></returns>
-    Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, CancellationToken cancellationToken = default);
+    /// <param name="assignmentId">The unique identifier of the assignment to delete.</param>
+    /// <param name="cascade">If true, related dependent assignments will also be deleted.</param>
+    /// <param name="audit">Audit values for the operation. If null it is expected to be found on the AuditAccessor</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>ProblemInstance representing errors stopping the delete operation. or null if no problems</returns>
+    Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, AuditValues audit = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Validates whether revoking the specified assignment will result in cascading revocations of related assignments. 
+    /// If three are cascading effects, these are captured as validation errors in the returned ValidationErrorBuilder.
+    /// </summary>
+    /// <param name="assignmentId">The unique identifier of the assignment to check for cascading revocation effects.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A ValidationErrorBuilder with any any validation errors representing a cascading revocation due to a dependency. 
+    /// If no dependencys are found, the error builder will be empty. meaning a delete can be performed without cascading effects.</returns>
+    Task<ValidationErrorBuilder> CheckCascadingAssignmentRevoke(Guid assignmentId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets assignment and creates if not exits
