@@ -533,7 +533,7 @@ public class ContextRetrievalService : IContextRetrievalService
             return userprofile;
         }
 
-        userprofile = await _profileClient.GetNewUserProfile(userId, cancellationToken);
+        userprofile = await _profileClient.GetUser(new UserProfileLookup { UserId = userId }, cancellationToken);
 
         if (userprofile != null)
         {

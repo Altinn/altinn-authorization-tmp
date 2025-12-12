@@ -13,16 +13,10 @@ public class ProfileClientMock(MockContext context) : IProfileClient
     private MockContext Context { get; } = context;
 
     /// <inheritdoc/>
-    public Task<UserProfile> GetUser(UserProfileLookup userProfileLookup, CancellationToken cancellationToken = default) =>
+    public Task<NewUserProfile> GetUser(UserProfileLookup userProfileLookup, CancellationToken cancellationToken = default) =>
         Task.FromResult(Context.UserProfiles.FirstOrDefault(profile =>
             profile.UserId == userProfileLookup.UserId ||
             profile.UserName == userProfileLookup.Username ||
             profile.Party.SSN == userProfileLookup.Ssn ||
             profile.UserUuid == userProfileLookup.UserUuid));
-
-    /// <inheritdoc/>
-    public Task<NewUserProfile> GetNewUserProfile(int userId, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
 }
