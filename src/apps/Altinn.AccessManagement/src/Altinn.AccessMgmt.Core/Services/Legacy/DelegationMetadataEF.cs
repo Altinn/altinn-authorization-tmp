@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Altinn.AccessManagement.Core.Enums;
+﻿using Altinn.AccessManagement.Core.Enums;
 using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Enums;
@@ -7,9 +6,12 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.Platform.Storage.Interface.Models;
+using Authorization.Platform.Authorization.Models;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpgsqlTypes;
+using System.Diagnostics;
 
 namespace Altinn.AccessMgmt.Core.Services.Legacy;
 
@@ -20,39 +22,99 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     {
         return new DelegationChange()
         {
-            FromUuid = assignmentResource.Assignment.FromId,
-            ToUuid = assignmentResource.Assignment.ToId,
-            PerformedByUuid = assignmentResource.Audit_ChangedBy.ToString(),
+            DelegationChangeId = assignmentResource.DelegationChangeId,
             Created = assignmentResource.Audit_ValidFrom.UtcDateTime,
+            
             ResourceId = assignmentResource.ResourceId.ToString(),
             ResourceType = assignmentResource.Resource.Type.Name,
-            //BlobStoragePolicyPath = assignmentResource.ddd,
-            //BlobStorageVersionId = assignmentResource.ssss,
-            //DelegationChangeId = assignmentResource.eeeee,
-            //InstanceId = assignmentResource.qqqqq,
+            BlobStoragePolicyPath = assignmentResource.PolicyPath,
+            BlobStorageVersionId = assignmentResource.PolicyVersion,
+            
+            FromUuid = assignmentResource.Assignment.FromId,
+            FromUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.From.TypeId),
+            OfferedByPartyId = assignmentResource.Assignment.From.PartyId.Value,           
+            
+            PerformedByUuid = assignmentResource.Audit_ChangedBy.ToString(),
+
+            ToUuid = assignmentResource.Assignment.ToId,
+            ToUuidType = ConvertEntityTypeToUuidType(assignmentResource.Assignment.To.TypeId),
+            CoveredByPartyId = assignmentResource.Assignment.To.PartyId,
+            CoveredByUserId = assignmentResource.Assignment.To.UserId,
         };
     }
 
-    //private DelegationChange Convert(AssignmentInstance assignmentInstance)
-    //{
-    //    return new DelegationChange()
-    //    {
-    //        FromUuid = assignmentInstance.Assignment.FromId,
-    //        ToUuid = assignmentInstance.Assignment.ToId,
-    //        PerformedByUuid = assignmentInstance.Audit_ChangedBy.ToString(),
-    //        Created = assignmentInstance.Audit_ValidFrom.UtcDateTime,
-    //        ResourceId = assignmentInstance.ResourceId.ToString(),
-    //        ResourceType = assignmentInstance.Resource.Type.Name,
-    //        BlobStoragePolicyPath = assignmentInstance.ddd,
-    //        BlobStorageVersionId = assignmentInstance.ssss,
-    //        DelegationChangeId = assignmentInstance.eeeee,
-    //        InstanceId = assignmentInstance.qqqqq,
-    //    };
-    //}
+    private InstanceDelegationChange Convert(AssignmentInstance assignmentInstance)
+    {
+        return new InstanceDelegationChange()
+        {
+            ToUuidType = ConvertEntityTypeToUuidType(assignmentInstance.Assignment.To.TypeId),
+            ToUuid = assignmentInstance.Assignment.ToId,
+            
+            PerformedBy = assignmentInstance.Audit_ChangedBy.ToString(),
+            PerformedByType = UuidType.NotSpecified,
+
+            FromUuid = assignmentInstance.Assignment.FromId,
+            FromUuidType = ConvertEntityTypeToUuidType(assignmentInstance.Assignment.From.TypeId),
+            
+            BlobStoragePolicyPath = assignmentInstance.PolicyPath,
+            BlobStorageVersionId = assignmentInstance.PolicyVersion,
+            
+            ResourceId = assignmentInstance.ResourceId.ToString(),
+            InstanceId = assignmentInstance.InstanceId,
+            
+            InstanceDelegationMode = InstanceDelegationMode.Normal,
+            InstanceDelegationChangeId = assignmentInstance.DelegationChangeId,
+
+            Created = assignmentInstance.Audit_ValidFrom.UtcDateTime,
+        };
+    }
+
+    private UuidType ConvertEntityTypeToUuidType(Guid entityTypeId)
+    {
+        /*
+        Missing map for:
+            - UuidType.Resource
+            - UuidType.Party
+        */
+
+        if (entityTypeId.Equals(EntityTypeConstants.Person))
+        {
+            return UuidType.Person;
+        }
+
+        if (entityTypeId.Equals(EntityTypeConstants.Organisation))
+        {
+            return UuidType.Organization;
+        }
+
+        if (entityTypeId.Equals(EntityTypeConstants.SystemUser))
+        {
+            return UuidType.SystemUser;
+        }
+
+        if (entityTypeId.Equals(EntityTypeConstants.EnterpriseUser))
+        {
+            return UuidType.EnterpriseUser;
+        }
+
+
+        return UuidType.NotSpecified;
+    }
 
     private async Task<DelegationChange> GetAssignmentResource(Guid id)
     {
         return Convert(await DbContext.AssignmentResources
+            .Include(t => t.Assignment).ThenInclude(t => t.From)
+            .Include(t => t.Assignment).ThenInclude(t => t.To)
+            .Include(t => t.Resource).ThenInclude(t => t.Provider)
+            .Where(t => t.Id == id)
+            .SingleAsync(t => t.Id == id)
+            );
+    }
+
+    private async Task<InstanceDelegationChange> GetAssignmentInstance(Guid id)
+    {
+        return Convert(await DbContext.AssignmentInstances
             .Include(t => t.Assignment).ThenInclude(t => t.From)
             .Include(t => t.Assignment).ThenInclude(t => t.To)
             .Include(t => t.Resource).ThenInclude(t => t.Provider)
@@ -236,7 +298,9 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
                 Id = Guid.CreateVersion7(),
                 AssignmentId = assignment.Id,
                 ResourceId = resource.Id,
-                // Policy...
+                PolicyPath = delegationChange.BlobStoragePolicyPath,
+                PolicyVersion = delegationChange.BlobStorageVersionId,
+                DelegationChangeId = delegationChange.DelegationChangeId,
             };
             DbContext.AssignmentResources.Add(assignmentResource);
         }
@@ -254,357 +318,138 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     /// <returns></returns>
     public async Task<List<InstanceDelegationChange>> GetAllCurrentReceivedInstanceDelegations(List<Guid> toUuid, CancellationToken cancellationToken = default)
     {
-        using var activity = TelemetryConfig.ActivitySource.StartActivity(ActivityKind.Client);
+        var result = await DbContext.AssignmentInstances.AsNoTracking()
+          .Include(t => t.Assignment).ThenInclude(t => t.From)
+          .Include(t => t.Assignment).ThenInclude(t => t.To)
+          .Include(t => t.Resource)
+          .Where(t => toUuid.Contains(t.Assignment.ToId))
+          .ToListAsync(cancellationToken);
 
-        var query = /* strpsql */ @"
-                WITH latestChanges AS (
-                    SELECT
-                        MAX(instancedelegationchangeid) as latestId
-                    FROM
-                        delegation.instancedelegationchanges
-                    WHERE
-                        touuid = ANY(@toUuid)
-                    GROUP BY
-                        touuid,
-                        fromuuid,
-                        resourceid,
-                        instanceid
-                )
-                SELECT
-                    instancedelegationchangeid,
-                    delegationchangetype,
-                    instanceDelegationMode,
-                    resourceid,
-                    instanceid,
-                    fromuuid,
-                    fromtype,
-                    touuid,
-                    totype,
-                    performedby,
-                    performedbytype,
-                    blobstoragepolicypath,
-                    blobstorageversionid,
-                    created
-                FROM
-                    delegation.instancedelegationchanges
-                INNER JOIN latestChanges
-                    ON instancedelegationchangeid = latestChanges.latestId
-                WHERE
-                    delegationchangetype != 'revoke_last'
-            ";
-
-        try
-        {
-            await using var cmd = _conn.CreateCommand(query);
-            cmd.Parameters.AddWithValue("toUuid", NpgsqlDbType.Array | NpgsqlDbType.Uuid, toUuid);
-            return await cmd.ExecuteEnumerableAsync(cancellationToken)
-                .SelectAwait(GetInstanceDelegationChange)
-                .ToListAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            activity?.StopWithError(ex);
-            throw;
-        }
+        return result.Select(Convert).ToList();
     }
 
     /// <inheritdoc />
     public async Task<InstanceDelegationChange> GetLastInstanceDelegationChange(InstanceDelegationChangeRequest request, CancellationToken cancellationToken = default)
     {
-        using var activity = TelemetryConfig.ActivitySource.StartActivity(ActivityKind.Client);
+        var result = await DbContext.AssignmentInstances.AsNoTracking()
+           .Include(t => t.Assignment).ThenInclude(t => t.From)
+           .Include(t => t.Assignment).ThenInclude(t => t.To)
+           .Include(t => t.Resource)
 
-        string query = /*strpsql*/@"
-            SELECT
-                instancedelegationchangeid
-                ,delegationchangetype
-                ,instanceDelegationMode
-                ,resourceId
-                ,instanceId
-                ,fromUuid
-                ,fromType
-                ,toUuid
-                ,toType
-                ,performedBy
-                ,performedByType
-                ,blobStoragePolicyPath
-                ,blobStorageVersionId
-                ,created
-            FROM
-                delegation.instancedelegationchanges
-            WHERE
-                resourceId = @resourceId
-                AND instanceId = @instanceId
-                AND instanceDelegationMode = @instanceDelegationMode
-                AND fromUuid = @fromUuid
-                AND fromType = @fromType
-                AND toUuid = @toUuid
-                AND toType = @toType
-            ORDER BY
-                instancedelegationchangeid DESC LIMIT 1;
-            ";
+           .Where(t => t.Resource.RefId == request.Resource)
+           .Where(t => t.InstanceId == request.Instance)
+           .Where(t => t.Assignment.FromId == request.FromUuid)
+           .Where(t => t.Assignment.ToId == request.ToUuid)
+           .SingleAsync(cancellationToken);
 
-        try
-        {
-            await using var cmd = _conn.CreateCommand(query);
-            cmd.Parameters.AddWithValue(ResourceId, NpgsqlDbType.Text, request.Resource);
-            cmd.Parameters.AddWithValue(InstanceId, NpgsqlDbType.Text, request.Instance);
-            cmd.Parameters.Add(new NpgsqlParameter<InstanceDelegationMode>("instancedelegationmode", request.InstanceDelegationMode));
-            cmd.Parameters.AddWithValue(FromUuid, NpgsqlDbType.Uuid, request.FromUuid);
-            cmd.Parameters.Add(new NpgsqlParameter<UuidType>(FromType, request.FromType));
-            cmd.Parameters.AddWithValue(ToUuid, NpgsqlDbType.Uuid, request.ToUuid);
-            cmd.Parameters.Add(new NpgsqlParameter<UuidType>(ToType, request.ToType));
-
-            await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
-            if (await reader.ReadAsync(cancellationToken))
-            {
-                return await GetInstanceDelegationChange(reader);
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            activity?.StopWithError(ex);
-            throw;
-        }
+        return Convert(result);
     }
 
     /// <inheritdoc />
     public async Task<InstanceDelegationChange> InsertInstanceDelegation(InstanceDelegationChange instanceDelegationChange, CancellationToken cancellationToken = default)
     {
-        using var activity = TelemetryConfig.ActivitySource.StartActivity(ActivityKind.Client);
+        var role = RoleConstants.Rightholder;
+        var from = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == instanceDelegationChange.FromUuid, cancellationToken);
+        var to = await DbContext.Entities.AsNoTracking().SingleAsync(t => t.Id == instanceDelegationChange.ToUuid, cancellationToken);
+        var resource = await DbContext.Resources.AsNoTracking().SingleAsync(t => t.RefId == instanceDelegationChange.ResourceId, cancellationToken);
 
-        string query = /*strpsql*/@"
-            INSERT INTO delegation.instancedelegationchanges(
-                delegationchangetype
-                ,instanceDelegationMode
-                ,resourceId
-                ,instanceid
-                ,fromUuid
-                ,fromType
-                ,toUuid
-                ,toType
-                ,performedBy
-                ,performedByType
-                ,blobStoragePolicyPath
-                ,blobStorageVersionId)
-            VALUES (
-                @delegationchangetype
-                ,@instanceDelegationMode
-                ,@resourceId
-                ,@instanceid
-                ,@fromUuid
-                ,@fromType
-                ,@toUuid
-                ,@toType
-                ,@performedBy
-                ,@performedByType
-                ,@blobStoragePolicyPath
-                ,@blobStorageVersionId)
-            RETURNING *;
-            ";
-
-        try
+        var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == from.Id && t.ToId == to.Id && t.RoleId == role.Id, cancellationToken);
+        if (assignment == null)
         {
-            await using var cmd = _conn.CreateCommand(query);
-            cmd.Parameters.Add(new NpgsqlParameter<DelegationChangeType>(DelegationChangeType, instanceDelegationChange.DelegationChangeType));
-            cmd.Parameters.Add(new NpgsqlParameter<InstanceDelegationMode>("instancedelegationmode", instanceDelegationChange.InstanceDelegationMode));
-            cmd.Parameters.AddWithValue(ResourceId, NpgsqlDbType.Text, instanceDelegationChange.ResourceId);
-            cmd.Parameters.AddWithValue(InstanceId, NpgsqlDbType.Text, instanceDelegationChange.InstanceId);
-            cmd.Parameters.AddWithValue(FromUuid, NpgsqlDbType.Uuid, instanceDelegationChange.FromUuid);
-            cmd.Parameters.Add(new NpgsqlParameter<UuidType?>(FromType, instanceDelegationChange.FromUuidType != UuidType.NotSpecified ? instanceDelegationChange.FromUuidType : null));
-            cmd.Parameters.AddWithValue(ToUuid, NpgsqlDbType.Uuid, instanceDelegationChange.ToUuid);
-            cmd.Parameters.Add(new NpgsqlParameter<UuidType?>(ToType, instanceDelegationChange.ToUuidType != UuidType.NotSpecified ? instanceDelegationChange.ToUuidType : null));
-            cmd.Parameters.AddWithValue("performedBy", NpgsqlDbType.Text, instanceDelegationChange.PerformedBy);
-            cmd.Parameters.Add(new NpgsqlParameter<UuidType?>("performedByType", instanceDelegationChange.PerformedByType != UuidType.NotSpecified ? instanceDelegationChange.PerformedByType : null));
-            cmd.Parameters.AddWithValue("blobStoragePolicyPath", NpgsqlDbType.Text, instanceDelegationChange.BlobStoragePolicyPath);
-            cmd.Parameters.AddWithValue("blobStorageVersionId", NpgsqlDbType.Text, instanceDelegationChange.BlobStorageVersionId);
-
-            using NpgsqlDataReader reader = await cmd.ExecuteReaderAsync(cancellationToken);
-            if (await reader.ReadAsync(cancellationToken))
+            assignment = new Assignment()
             {
-                return await GetInstanceDelegationChange(reader);
-            }
+                Id = Guid.CreateVersion7(),
+                FromId = from.Id,
+                ToId = to.Id,
+                RoleId = role.Id
+            };
+            DbContext.Assignments.Add(assignment);
+        }
 
-            return null;
-        }
-        catch (Exception ex)
+        var assignmentInstance = await DbContext.AssignmentInstances.FirstOrDefaultAsync(t => t.AssignmentId == assignment.Id && t.ResourceId == resource.Id && t.InstanceId == instanceDelegationChange.InstanceId, cancellationToken);
+        if (assignmentInstance == null)
         {
-            activity?.StopWithError(ex);
-            throw;
+            assignmentInstance = new AssignmentInstance()
+            {
+                Id = Guid.CreateVersion7(),
+                AssignmentId = assignment.Id,
+                ResourceId = resource.Id,
+                InstanceId = instanceDelegationChange.InstanceId,
+                PolicyPath = instanceDelegationChange.BlobStoragePolicyPath,
+                PolicyVersion = instanceDelegationChange.BlobStorageVersionId,
+                DelegationChangeId = instanceDelegationChange.InstanceDelegationChangeId,
+            };
+            DbContext.AssignmentInstances.Add(assignmentInstance);
         }
+
+        await DbContext.SaveChangesAsync();
+
+        return await GetAssignmentInstance(assignmentInstance.Id);
     }
 
     /// <inheritdoc />
     public async Task<bool> InsertMultipleInstanceDelegations(List<PolicyWriteOutput> policyWriteOutputs, CancellationToken cancellationToken = default)
     {
-        using var activity = TelemetryConfig.ActivitySource.StartActivity(ActivityKind.Client);
-        NpgsqlConnection connection = null;
-
         try
         {
-            connection = await _conn.OpenConnectionAsync(cancellationToken);
+            var assignmentInstances = new List<AssignmentInstance>();
+            var role = RoleConstants.Rightholder;
 
-            using (var writer = await connection.BeginBinaryImportAsync("copy delegation.instancedelegationchanges (delegationchangetype, instancedelegationmode, resourceid, instanceid, fromuuid, fromtype, touuid, totype, performedby, performedbytype, blobstoragepolicypath, blobstorageversionid, instancedelegationsource) from STDIN (FORMAT BINARY)", cancellationToken))
+            foreach (var policy in policyWriteOutputs)
             {
-                foreach (var record in policyWriteOutputs)
-                {
-                    await writer.StartRowAsync(cancellationToken);
-                    await writer.WriteAsync(record.ChangeType, cancellationToken);
-                    await writer.WriteAsync(record.Rules.InstanceDelegationMode, cancellationToken);
-                    await writer.WriteAsync(record.Rules.ResourceId, NpgsqlDbType.Text, cancellationToken);
-                    await writer.WriteAsync(record.Rules.InstanceId, NpgsqlDbType.Text, cancellationToken);
-                    await writer.WriteAsync(record.Rules.FromUuid, NpgsqlDbType.Uuid, cancellationToken);
-                    await writer.WriteAsync(record.Rules.FromType, cancellationToken);
-                    await writer.WriteAsync(record.Rules.ToUuid, NpgsqlDbType.Uuid, cancellationToken);
-                    await writer.WriteAsync(record.Rules.ToType, cancellationToken);
-                    await writer.WriteAsync(record.Rules.PerformedBy, NpgsqlDbType.Text, cancellationToken);
-                    await writer.WriteAsync(record.Rules.PerformedByType, cancellationToken);
-                    await writer.WriteAsync(record.PolicyPath, NpgsqlDbType.Text, cancellationToken);
-                    await writer.WriteAsync(record.VersionId, NpgsqlDbType.Text, cancellationToken);
-                    await writer.WriteAsync(record.Rules.InstanceDelegationSource, cancellationToken);
-                }
+                var resource = await GetResource(policy.Rules.ResourceId);
+                var assignment = await DbContext.Assignments.FirstOrDefaultAsync(t => t.FromId == policy.Rules.FromUuid && t.ToId == policy.Rules.ToUuid && t.RoleId == role.Id, cancellationToken);
 
-                await writer.CompleteAsync(cancellationToken);
+                assignmentInstances.Add(new AssignmentInstance()
+                {
+                    Id = Guid.CreateVersion7(),
+                    AssignmentId = assignment.Id,
+                    ResourceId = resource.Id,
+                    InstanceId = policy.Rules.InstanceId,
+                    DelegationChangeId = 0,
+                    PolicyPath = policy.PolicyPath,
+                    PolicyVersion = policy.VersionId,
+                });
             }
 
+            DbContext.AssignmentInstances.AddRange(assignmentInstances);
+            await DbContext.SaveChangesAsync();
             return true;
         }
-        catch (Exception ex)
+        catch
         {
-            activity?.StopWithError(ex);
             return false;
-        }
-        finally
-        {
-            if (connection != null)
-            {
-                await connection.CloseAsync();
-            }
         }
     }
 
     /// <inheritdoc />
     public async Task<List<InstanceDelegationChange>> GetAllLatestInstanceDelegationChanges(InstanceDelegationSource source, string resourceID, string instanceID, CancellationToken cancellationToken = default)
     {
-        using var activity = TelemetryConfig.ActivitySource.StartActivity(ActivityKind.Client);
+        var result = await DbContext.AssignmentInstances.AsNoTracking()
+           .Include(t => t.Assignment).ThenInclude(t => t.From)
+           .Include(t => t.Assignment).ThenInclude(t => t.To)
+           .Include(t => t.Resource)
 
-        string query = /*strpsql*/@"
-            WITH LatestChanges AS(
-		    SELECT 
-			    MAX(instancedelegationchangeid) instancedelegationchangeid
-		    FROM
-			    delegation.instancedelegationchanges
-		    WHERE
-			    instancedelegationsource = @source
-                AND resourceid = @resourceId
-			    AND instanceid = @instanceId
-		    GROUP BY
-			    instancedelegationmode
-			    ,resourceid
-			    ,instanceid
-			    ,fromuuid
-			    ,fromtype
-			    ,touuid
-			    ,totype)
-            SELECT
-	            dc.instancedelegationchangeid
-	            ,delegationchangetype
-	            ,instancedelegationmode
-	            ,resourceid
-	            ,instanceid
-	            ,fromuuid
-	            ,fromtype
-	            ,touuid
-	            ,totype
-	            ,performedby
-	            ,performedbytype
-	            ,blobstoragepolicypath
-	            ,blobstorageversionid
-	            ,created
-            FROM
-	            LatestChanges lc
-	            JOIN delegation.instancedelegationchanges dc ON lc.instancedelegationchangeid = dc.instancedelegationchangeid
-            WHERE
-                delegationchangetype != 'revoke_last';";
+           .Where(t => t.Resource.RefId == resourceID)
+           .Where(t => t.InstanceId == instanceID)
+           .ToListAsync(cancellationToken);
 
-        try
-        {
-            await using var cmd = _conn.CreateCommand(query);
-            cmd.Parameters.Add(new NpgsqlParameter<InstanceDelegationSource>("source", source));
-            cmd.Parameters.AddWithValue(ResourceId, NpgsqlDbType.Text, resourceID);
-            cmd.Parameters.AddWithValue(InstanceId, NpgsqlDbType.Text, instanceID);
-
-            return await cmd.ExecuteEnumerableAsync(cancellationToken)
-                .SelectAwait(GetInstanceDelegationChange)
-                .ToListAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            activity?.StopWithError(ex);
-            throw;
-        }
+        return result.Select(Convert).ToList();
     }
 
     /// <inheritdoc />
     public async Task<IEnumerable<InstanceDelegationChange>> GetActiveInstanceDelegations(List<string> resourceIds, Guid from, List<Guid> to, CancellationToken cancellationToken = default)
     {
-        using var activity = TelemetryConfig.ActivitySource.StartActivity(ActivityKind.Client);
+        var result = await DbContext.AssignmentInstances.AsNoTracking()
+           .Include(t => t.Assignment).ThenInclude(t => t.From)
+           .Include(t => t.Assignment).ThenInclude(t => t.To)
+           .Include(t => t.Resource)
+           .Where(t => t.Assignment.FromId == from)
+           .Where(t => resourceIds.Contains(t.Resource.RefId))
+           .Where(t => to.Contains(t.Assignment.ToId))
+           .ToListAsync(cancellationToken);
 
-        string query = /*strpsql*/@"
-            WITH LatestChanges AS(
-		    SELECT 
-			    MAX(instancedelegationchangeid) instancedelegationchangeid
-		    FROM
-			    delegation.instancedelegationchanges
-		    WHERE
-                resourceid = ANY(@resourceIds)
-			    AND fromuuid = @fromUuid
-                AND touuid = ANY(@toUuids)
-		    GROUP BY
-			    instancedelegationmode
-			    ,resourceid
-			    ,instanceid
-			    ,fromuuid
-			    ,fromtype
-			    ,touuid
-			    ,totype)
-            SELECT
-	            dc.instancedelegationchangeid
-	            ,delegationchangetype
-	            ,instancedelegationmode
-	            ,resourceid
-	            ,instanceid
-	            ,fromuuid
-	            ,fromtype
-	            ,touuid
-	            ,totype
-	            ,performedby
-	            ,performedbytype
-	            ,blobstoragepolicypath
-	            ,blobstorageversionid
-	            ,created
-            FROM
-	            LatestChanges lc
-	            JOIN delegation.instancedelegationchanges dc ON lc.instancedelegationchangeid = dc.instancedelegationchangeid
-            WHERE delegationchangetype != 'revoke_last';";
-
-        try
-        {
-            await using var cmd = _conn.CreateCommand(query);
-            cmd.Parameters.AddWithValue("resourceIds", NpgsqlDbType.Array | NpgsqlDbType.Text, resourceIds);
-            cmd.Parameters.AddWithValue("fromUuid", NpgsqlDbType.Uuid, from);
-            cmd.Parameters.AddWithValue("toUuids", NpgsqlDbType.Array | NpgsqlDbType.Uuid, to);
-
-            return await cmd.ExecuteEnumerableAsync(cancellationToken)
-                .SelectAwait(GetInstanceDelegationChange)
-                .ToListAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            activity?.StopWithError(ex);
-            throw;
-        }
+        return result.Select(Convert).ToList();
     }
 
     /// <inheritdoc/>
@@ -643,7 +488,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     }
 
     /// <inheritdoc/>
-    public async Task<List<DelegationChange>> GetOfferedResourceRegistryDelegations(int offeredByPartyId, List<string> resourceRegistryIds = null, List<ResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
+    public async Task<List<DelegationChange>> GetOfferedResourceRegistryDelegations(int offeredByPartyId, List<string> resourceRegistryIds = null, List<AccessManagement.Core.Models.ResourceRegistry.ResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
     {
         var result = await DbContext.AssignmentResources.AsNoTracking()
            .Include(t => t.Assignment).ThenInclude(t => t.From)
@@ -657,7 +502,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     }
 
     /// <inheritdoc/>
-    public async Task<List<DelegationChange>> GetReceivedResourceRegistryDelegationsForCoveredByPartys(List<int> coveredByPartyIds, List<int> offeredByPartyIds = null, List<string> resourceRegistryIds = null, List<ResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
+    public async Task<List<DelegationChange>> GetReceivedResourceRegistryDelegationsForCoveredByPartys(List<int> coveredByPartyIds, List<int> offeredByPartyIds = null, List<string> resourceRegistryIds = null, List<AccessManagement.Core.Models.ResourceRegistry.ResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
     {
         var result = await DbContext.AssignmentResources.AsNoTracking()
            .Include(t => t.Assignment).ThenInclude(t => t.From)
@@ -672,7 +517,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     }
 
     /// <inheritdoc/>
-    public async Task<List<DelegationChange>> GetReceivedResourceRegistryDelegationsForCoveredByUser(int coveredByUserId, List<int> offeredByPartyIds, List<string> resourceRegistryIds = null, List<ResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
+    public async Task<List<DelegationChange>> GetReceivedResourceRegistryDelegationsForCoveredByUser(int coveredByUserId, List<int> offeredByPartyIds, List<string> resourceRegistryIds = null, List<AccessManagement.Core.Models.ResourceRegistry.ResourceType> resourceTypes = null, CancellationToken cancellationToken = default)
     {
         var result = await DbContext.AssignmentResources.AsNoTracking()
            .Include(t => t.Assignment).ThenInclude(t => t.From)
@@ -687,7 +532,7 @@ public class DelegationMetadataEF : IDelegationMetadataRepository
     }
 
     /// <inheritdoc/>
-    public async Task<List<DelegationChange>> GetResourceRegistryDelegationChanges(List<string> resourceIds, int offeredByPartyId, int coveredByPartyId, ResourceType resourceType, CancellationToken cancellationToken = default)
+    public async Task<List<DelegationChange>> GetResourceRegistryDelegationChanges(List<string> resourceIds, int offeredByPartyId, int coveredByPartyId, AccessManagement.Core.Models.ResourceRegistry.ResourceType resourceType, CancellationToken cancellationToken = default)
     {
         var result = await DbContext.AssignmentResources.AsNoTracking()
            .Include(t => t.Assignment).ThenInclude(t => t.From)

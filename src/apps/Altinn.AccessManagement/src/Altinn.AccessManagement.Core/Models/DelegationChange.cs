@@ -13,13 +13,13 @@ namespace Altinn.AccessManagement.Core.Models
         /// Gets or sets the delegation change id
         /// </summary>
         [JsonPropertyName("delegationchangeid")]
-        public int DelegationChangeId { get; set; }
+        public long DelegationChangeId { get; set; }
 
         /// <summary>
         /// Gets or sets the resource registry delegation change id
         /// </summary>
         [JsonPropertyName("resourceregistrydelegationchangeid")]
-        public int ResourceRegistryDelegationChangeId { get; set; }
+        public long ResourceRegistryDelegationChangeId { get; set; }
 
         /// <summary>
         /// Gets or sets the delegation change type
@@ -49,7 +49,7 @@ namespace Altinn.AccessManagement.Core.Models
         /// Gets or sets the offeredbypartyid, refering to the party id of the user or organization offering the delegation.
         /// </summary>
         [JsonPropertyName("offeredbypartyid")]
-        public int OfferedByPartyId { get; set; }
+        public int? OfferedByPartyId { get; set; }
 
         /// <summary>
         /// The uuid of the party the right is on behalf of
