@@ -97,7 +97,7 @@ public static partial class StaticDataIngest
                 package.Name = seed.Entity.Name;
                 package.Description = seed.Entity.Description;
                 package.IsDelegable = seed.Entity.IsDelegable;
-                package.HasResources = seed.Entity.HasResources;
+                package.IsAvailableForServiceOwners = seed.Entity.IsAvailableForServiceOwners;
                 package.IsAssignable = seed.Entity.IsAssignable;
             },
             cancellationToken);
@@ -133,7 +133,6 @@ public static partial class StaticDataIngest
             cancellationToken
         );
 
-        await IngestRoleLookup(dbContext, cancellationToken);
         await IngestRoleMap(dbContext, cancellationToken);
         await IngestRolePackage(dbContext, cancellationToken);
         await IngestEntityVariantRole(dbContext, cancellationToken);
