@@ -526,7 +526,7 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     }
 
     /// <inheritdoc/>
-    public async Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, CancellationToken cancellationToken = default)
+    public async Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, AuditValues audit = null, CancellationToken cancellationToken = default)
     {
         ValidationErrorBuilder errors = default;
         ValidationProblemInstance errorResult = default;
@@ -559,7 +559,17 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
         }
 
         db.Assignments.Remove(existingAssignment);
-        var result = await db.SaveChangesAsync(cancellationToken);
+
+        int result;
+
+        if (audit == null)
+        {
+            result = await db.SaveChangesAsync(cancellationToken);
+        }
+        else
+        {
+            result = await db.SaveChangesAsync(audit, cancellationToken);
+        }
 
         if (result == 0)
         {
