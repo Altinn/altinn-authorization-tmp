@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
@@ -17,11 +18,17 @@ public class ConnectionQuery(AppDbContext db)
 
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
     {
+        var activity = Activity.Current;
+        activity.AddJsonParamsEvent(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
+
         return await GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, useNewQuery, ct);
     }
 
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsToOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
     {
+        var activity = Activity.Current;
+        activity.AddJsonParamsEvent(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
+
         return await GetConnectionsAsync(filter, ConnectionQueryDirection.ToOthers, useNewQuery, ct);
     }
 
@@ -30,9 +37,12 @@ public class ConnectionQuery(AppDbContext db)
     /// </summary>
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsAsync(ConnectionQueryFilter filter, ConnectionQueryDirection direction, bool useNewQuery = true, CancellationToken ct = default)
     {
+        var activity = Activity.Current;
+        activity.AddJsonParamsEvent(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
+
         try
         {
-            var baseQuery = direction == ConnectionQueryDirection.FromOthers 
+            var baseQuery = direction == ConnectionQueryDirection.FromOthers
                 ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter) : BuildBaseQueryFromOthers(db, filter)
                 : BuildBaseQueryToOthers(db, filter);
 
@@ -96,6 +106,10 @@ public class ConnectionQuery(AppDbContext db)
     /// </summary>
     public async Task<List<ConnectionQueryExtendedRecord>> GetPipConnectionPackagesAsync(ConnectionQueryFilter filter, CancellationToken ct = default)
     {
+        var activity = Activity.Current;
+        activity.AddJsonParamsEvent(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
+
+
         try
         {
             var baseQuery = BuildBaseQueryFromOthersNew(db, filter);
@@ -119,6 +133,9 @@ public class ConnectionQuery(AppDbContext db)
     /// </summary>
     public string GenerateDebugQuery(ConnectionQueryFilter filter, ConnectionQueryDirection direction, bool useNewQuery = true)
     {
+        var activity = Activity.Current;
+        activity.AddJsonParamsEvent(nameof(GetConnectionsFromOthersAsync), nameof(filter), filter);
+        
         var baseQuery = direction == ConnectionQueryDirection.FromOthers
                 ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter) : BuildBaseQueryFromOthers(db, filter)
                 : BuildBaseQueryToOthers(db, filter);
@@ -166,7 +183,7 @@ public class ConnectionQuery(AppDbContext db)
                     IsMainUnitAccess = false,
                     IsRoleMap = false
                 });
-        
+
         var keyrole =
             direct
                 .Join(
@@ -198,7 +215,7 @@ public class ConnectionQuery(AppDbContext db)
         var a1 = filter.IncludeKeyRole
             ? direct.Concat(keyrole)
             : direct;
-        
+
         var rolemap =
             a1
                 .Join(
@@ -222,7 +239,7 @@ public class ConnectionQuery(AppDbContext db)
 
         var delegations =
             db.Assignments
-                .Where(t => t.ToId == toId)   
+                .Where(t => t.ToId == toId)
                 .Where(t => t.RoleId == RoleConstants.Agent.Id)
                 .Join(
                     db.Delegations,
