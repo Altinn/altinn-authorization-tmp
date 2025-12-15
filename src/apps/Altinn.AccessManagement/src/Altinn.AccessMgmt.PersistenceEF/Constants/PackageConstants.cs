@@ -1062,6 +1062,7 @@ public static class PackageConstants
             Urn = "urn:altinn:accesspackage:forskning",
             Code = "forskning",
             IsDelegable = true,
+            HasResources = true,
             IsAvailableForServiceOwners = true,
             IsAssignable = true,
             EntityTypeId = EntityTypeConstants.Organisation,
