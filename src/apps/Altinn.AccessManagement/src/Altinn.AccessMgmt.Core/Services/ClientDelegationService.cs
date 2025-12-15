@@ -63,9 +63,10 @@ public partial class ClientDelegationService(
         }
 
         var entity = await db.Entities.FirstOrDefaultAsync(e => e.Id == toUuid, cancellationToken);
-        if (entity is null ||
-            (entity.TypeId != EntityTypeConstants.Person) ||
-            (entity.TypeId != EntityTypeConstants.SystemUser && entity.VariantId == EntityVariantConstants.AgentSystem))
+        if (entity is null
+            || (entity.TypeId != EntityTypeConstants.Person)
+            || (entity.TypeId != EntityTypeConstants.SystemUser && entity.VariantId == EntityVariantConstants.AgentSystem)
+            )
         {
             return Problems.UnsupportedEntityType;
         }
