@@ -2,6 +2,8 @@
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Data;
+using Altinn.AccessMgmt.PersistenceEF.Extensions.Hint;
+using Altinn.AccessMgmt.PersistenceEF.Extensions.ReadOnly;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Host.Database;
@@ -18,13 +20,17 @@ public static class ServiceCollectionExtensions
     {
         var options = new AccessManagementDatabaseOptions(configureOptions);
         ConstantGuard.ConstantIdsAreUnique();
-        services.AddScoped<ReadOnlyInterceptor>();
+
+        services.AddSingleton<IConnectionStringSelector>(sp => new ConnectionStringSelector(options, sp.GetRequiredService<IHintService>()));
+        services.AddSingleton<IHintService, HintService>();
+        services.AddSingleton<ConnectionStringSelectorInterceptor>();
+        services.AddSingleton<HintSaveChangesInterceptor>();
+
         services.AddScoped<IAuditAccessor, AuditAccessor>();
         services.AddMemoryCache(); // Add memory cache for translation service
         services.AddScoped<ITranslationService, TranslationService>();
         services.AddScoped<ConnectionQuery>();
         services.AddScoped<AppDbContextFactory>();
-        services.AddScoped(sp => sp.GetRequiredService<AppDbContextFactory>().CreateDbContext());
 
         services.AddSingleton<AuditMiddleware>();
 
@@ -60,6 +66,11 @@ public static class ServiceCollectionExtensions
     private static void AddAppDbContext(IServiceProvider sp, DbContextOptionsBuilder options, AccessManagementDatabaseOptions databaseOptions)
     {
         options.UseNpgsql(databaseOptions.AppConnectionString, ConfigureNpgsql).EnableSensitiveDataLogging();
+
+        var connectionInterceptor = sp.GetRequiredService<ConnectionStringSelectorInterceptor>();
+        var saveChangesInterceptor = sp.GetRequiredService<HintSaveChangesInterceptor>();
+
+        options.AddInterceptors(connectionInterceptor, saveChangesInterceptor);
     }
 
     public class AccessManagementDatabaseOptions
@@ -76,5 +87,11 @@ public static class ServiceCollectionExtensions
         public string MigrationConnectionString { get; set; } = string.Empty;
 
         public string AppConnectionString { get; set; } = string.Empty;
+
+        public Dictionary<string, string> ReadOnlyConnectionStrings { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public bool IncludePrimaryInReadOnlyPool { get; set; } = false;
+        
+        public bool EnableReadOnlyHints { get; set; } = false;
     }
 }

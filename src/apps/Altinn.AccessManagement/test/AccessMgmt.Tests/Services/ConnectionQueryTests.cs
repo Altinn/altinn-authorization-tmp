@@ -1,11 +1,10 @@
-﻿using System.Text.Json;
-using Altinn.AccessManagement.Tests.Fixtures;
+﻿using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
+using Altinn.AccessMgmt.PersistenceEF.Extensions.Hint;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
-using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,7 +22,7 @@ public class ConnectionQueryTests : IClassFixture<PostgresFixture>
             .Options;
 
         _db = new AppDbContext(options);
-        _query = new ConnectionQuery(_db);
+        _query = new ConnectionQuery(_db, new HintService());
 
         SeedTestData(_db).GetAwaiter().GetResult();
     }

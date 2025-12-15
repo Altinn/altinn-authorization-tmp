@@ -1,0 +1,61 @@
+﻿using Altinn.AccessMgmt.PersistenceEF.Extensions.Hint;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using static Altinn.AccessMgmt.PersistenceEF.Extensions.ServiceCollectionExtensions;
+
+namespace Altinn.AccessMgmt.PersistenceEF.Extensions.ReadOnly;
+
+public class ConnectionStringSelector : IConnectionStringSelector
+{
+    private readonly IHintService _hintService;
+    private readonly AccessManagementDatabaseOptions _options;
+    private readonly Dictionary<string, string> _namedReplicas;
+    private readonly string[] _roundRobinPool;
+
+    private static int _globalIndex = -1;
+
+
+    public ConnectionStringSelector(AccessManagementDatabaseOptions options, IHintService hintService)
+    {
+        _hintService = hintService;
+        _options = options;
+
+        _namedReplicas = new Dictionary<string, string>(
+            _options.ReadOnlyConnectionStrings ?? new(),
+            StringComparer.OrdinalIgnoreCase
+            );
+
+        _namedReplicas["Primary"] = _options.AppConnectionString;
+
+        var readonlySources = _options.ReadOnlyConnectionStrings?.Values ?? Enumerable.Empty<string>();
+
+        _roundRobinPool = _options.IncludePrimaryInReadOnlyPool
+            ? readonlySources.Append(_options.AppConnectionString).ToArray()
+            : readonlySources.ToArray();
+    }
+
+    public string GetConnectionString()
+    {
+        if (_roundRobinPool.Length == 0)
+        {
+            return _options.AppConnectionString;
+        }
+
+        if (_options.EnableReadOnlyHints)
+        {
+            var hint = _hintService.GetHint();
+
+            if (hint != null && _namedReplicas.TryGetValue(hint.Value, out var hintedConn))
+            {
+                return hintedConn;
+            }
+        }
+
+        var idx = Interlocked.Increment(ref _globalIndex);
+        var conn = _roundRobinPool[idx % _roundRobinPool.Length];
+
+        Console.WriteLine(conn);
+
+        return conn;
+    }
+}
