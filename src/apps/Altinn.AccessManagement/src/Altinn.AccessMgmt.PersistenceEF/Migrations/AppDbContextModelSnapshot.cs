@@ -1121,6 +1121,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("entitytypeid");
 
+                    b.Property<bool>("HasResources")
+                        .HasColumnType("boolean")
+                        .HasColumnName("hasresources");
+
                     b.Property<bool>("IsAssignable")
                         .HasColumnType("boolean")
                         .HasColumnName("isassignable");
@@ -2306,6 +2310,10 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                     b.Property<Guid>("EntityTypeId")
                         .HasColumnType("uuid")
                         .HasColumnName("entitytypeid");
+
+                    b.Property<bool>("HasResources")
+                       .HasColumnType("boolean")
+                       .HasColumnName("hasresources");
 
                     b.Property<bool>("IsAssignable")
                         .ValueGeneratedOnAdd()
