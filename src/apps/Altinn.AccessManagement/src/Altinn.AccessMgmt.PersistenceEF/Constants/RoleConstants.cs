@@ -1594,7 +1594,6 @@ public static class RoleConstants
     };
 
     #endregion
-
     /// <summary>
     /// Represents the 'Er regnskapsforeradresse for' role.
     /// </summary>
@@ -1617,8 +1616,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:regnskapsforeradressat",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "RFAD",
-            LegacyUrn = "urn:altinn:rolecode:RFAD",
+            LegacyCode = "rfad",
+            LegacyUrn = "urn:altinn:rolecode:rfad",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1646,8 +1645,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:signerer",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "SIGN",
-            LegacyUrn = "urn:altinn:rolecode:SIGN",
+            LegacyCode = "sign",
+            LegacyUrn = "urn:altinn:rolecode:sign",
             IsAvailableForServiceOwners = true,
         },
     };
@@ -1674,8 +1673,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:fusjonsovertaker",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "FUSJ",
-            LegacyUrn = "urn:altinn:rolecode:FUSJ",
+            LegacyCode = "fusj",
+            LegacyUrn = "urn:altinn:rolecode:fusj",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1703,8 +1702,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:fisjonsovertaker",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "FISJ",
-            LegacyUrn = "urn:altinn:rolecode:FISJ",
+            LegacyCode = "fisj",
+            LegacyUrn = "urn:altinn:rolecode:fisj",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1732,8 +1731,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:hovedenhet",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "BEDR",
-            LegacyUrn = "urn:altinn:rolecode:BEDR",
+            LegacyCode = "bedr",
+            LegacyUrn = "urn:altinn:rolecode:bedr",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1761,8 +1760,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:ikke-naeringsdrivende-hovedenhet",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "AAFY",
-            LegacyUrn = "urn:altinn:rolecode:AAFY",
+            LegacyCode = "aafy",
+            LegacyUrn = "urn:altinn:rolecode:aafy",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1790,8 +1789,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:prokurist-fellesskap",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "POFE",
-            LegacyUrn = "urn:altinn:rolecode:POFE",
+            LegacyCode = "pofe",
+            LegacyUrn = "urn:altinn:rolecode:pofe",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1819,8 +1818,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:prokurist-hver-for-seg",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "POHV",
-            LegacyUrn = "urn:altinn:rolecode:POHV",
+            LegacyCode = "pohv",
+            LegacyUrn = "urn:altinn:rolecode:pohv",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1848,8 +1847,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:prokurist",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "PROK",
-            LegacyUrn = "urn:altinn:rolecode:PROK",
+            LegacyCode = "prok",
+            LegacyUrn = "urn:altinn:rolecode:prok",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1877,8 +1876,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:revisoradressat",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "READ",
-            LegacyUrn = "urn:altinn:rolecode:READ",
+            LegacyCode = "read",
+            LegacyUrn = "urn:altinn:rolecode:read",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1906,8 +1905,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:sameier",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "SAM",
-            LegacyUrn = "urn:altinn:rolecode:SAM",
+            LegacyCode = "sam",
+            LegacyUrn = "urn:altinn:rolecode:sam",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1935,8 +1934,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:signerer-fellesskap",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "SIFE",
-            LegacyUrn = "urn:altinn:rolecode:SIFE",
+            LegacyCode = "sife",
+            LegacyUrn = "urn:altinn:rolecode:sife",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1964,8 +1963,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:signerer-hver-for-seg",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "SIHV",
-            LegacyUrn = "urn:altinn:rolecode:SIHV",
+            LegacyCode = "sihv",
+            LegacyUrn = "urn:altinn:rolecode:sihv",
 
             IsAvailableForServiceOwners = false,
         },
@@ -1993,8 +1992,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:kontaktperson-kommune",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "KOMK",
-            LegacyUrn = "urn:altinn:rolecode:KOMK",
+            LegacyCode = "komk",
+            LegacyUrn = "urn:altinn:rolecode:komk",
             IsAvailableForServiceOwners = true,
         },
     };
@@ -2021,8 +2020,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:kontaktperson-ados",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "KEMN",
-            LegacyUrn = "urn:altinn:rolecode:KEMN",
+            LegacyCode = "kemn",
+            LegacyUrn = "urn:altinn:rolecode:kemn",
             IsAvailableForServiceOwners = true,
         },
     };
@@ -2048,8 +2047,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:parti-organ-leder",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "HLED",
-            LegacyUrn = "urn:altinn:rolecode:HLED",
+            LegacyCode = "hled",
+            LegacyUrn = "urn:altinn:rolecode:hled",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2077,8 +2076,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:elektronisk-signeringsrettig",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "ESGR",
-            LegacyUrn = "urn:altinn:rolecode:ESGR",
+            LegacyCode = "esgr",
+            LegacyUrn = "urn:altinn:rolecode:esgr",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2105,8 +2104,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:elektronisk-signeringsrett-tildeler",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "ETDL",
-            LegacyUrn = "urn:altinn:rolecode:ETDL",
+            LegacyCode = "etdl",
+            LegacyUrn = "urn:altinn:rolecode:etdl",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2134,8 +2133,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:foretaksgruppe-med",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "FGRP",
-            LegacyUrn = "urn:altinn:rolecode:FGRP",
+            LegacyCode = "fgrp",
+            LegacyUrn = "urn:altinn:rolecode:fgrp",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2162,8 +2161,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:konsern-datter",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "KDAT",
-            LegacyUrn = "urn:altinn:rolecode:KDAT",
+            LegacyCode = "kdat",
+            LegacyUrn = "urn:altinn:rolecode:kdat",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2190,8 +2189,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:konsern-grunnlag",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "KGRL",
-            LegacyUrn = "urn:altinn:rolecode:KGRL",
+            LegacyCode = "kgrl",
+            LegacyUrn = "urn:altinn:rolecode:kgrl",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2218,8 +2217,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:konsern-mor",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "KMOR",
-            LegacyUrn = "urn:altinn:rolecode:KMOR",
+            LegacyCode = "kmor",
+            LegacyUrn = "urn:altinn:rolecode:kmor",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2246,8 +2245,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:forestaar-avvikling",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "AVKL",
-            LegacyUrn = "urn:altinn:rolecode:AVKL",
+            LegacyCode = "avkl",
+            LegacyUrn = "urn:altinn:rolecode:avkl",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2275,8 +2274,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:felles-registrert-med",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "FEMV",
-            LegacyUrn = "urn:altinn:rolecode:FEMV",
+            LegacyCode = "femv",
+            LegacyUrn = "urn:altinn:rolecode:femv",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2304,8 +2303,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:utleiebygg",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "UTBG",
-            LegacyUrn = "urn:altinn:rolecode:UTBG",
+            LegacyCode = "utbg",
+            LegacyUrn = "urn:altinn:rolecode:utbg",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2333,8 +2332,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:virksomhet-fellesskap-drifter",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "VIFE",
-            LegacyUrn = "urn:altinn:rolecode:VIFE",
+            LegacyCode = "vife",
+            LegacyUrn = "urn:altinn:rolecode:vife",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2362,8 +2361,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:mva-utfyller",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "MVAU",
-            LegacyUrn = "urn:altinn:rolecode:MVAU",
+            LegacyCode = "mvau",
+            LegacyUrn = "urn:altinn:rolecode:mvau",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2390,8 +2389,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:mva-signerer",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "MVAG",
-            LegacyUrn = "urn:altinn:rolecode:MVAG",
+            LegacyCode = "mvag",
+            LegacyUrn = "urn:altinn:rolecode:mvag",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2419,8 +2418,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:kontaktperson-revisor",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "SREVA",
-            LegacyUrn = "urn:altinn:rolecode:SREVA",
+            LegacyCode = "sreva",
+            LegacyUrn = "urn:altinn:rolecode:sreva",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2447,8 +2446,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:stifter",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "STFT",
-            LegacyUrn = "urn:altinn:rolecode:STFT",
+            LegacyCode = "stft",
+            LegacyUrn = "urn:altinn:rolecode:stft",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2475,8 +2474,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:parti-organ-varamedlem",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "HVAR",
-            LegacyUrn = "urn:altinn:rolecode:HVAR",
+            LegacyCode = "hvar",
+            LegacyUrn = "urn:altinn:rolecode:hvar",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2504,8 +2503,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:parti-organ-nestleder",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "HNST",
-            LegacyUrn = "urn:altinn:rolecode:HNST",
+            LegacyCode = "hnst",
+            LegacyUrn = "urn:altinn:rolecode:hnst",
 
             IsAvailableForServiceOwners = false,
         },
@@ -2533,8 +2532,8 @@ public static class RoleConstants
             Urn = "urn:altinn:external-role:ccr:parti-organ-styremedlem",
             IsKeyRole = false,
             IsAssignable = false,
-            LegacyCode = "HMDL",
-            LegacyUrn = "urn:altinn:rolecode:HMDL",
+            LegacyCode = "hmdl",
+            LegacyUrn = "urn:altinn:rolecode:hmdl",
             IsAvailableForServiceOwners = false,
         },
     };
