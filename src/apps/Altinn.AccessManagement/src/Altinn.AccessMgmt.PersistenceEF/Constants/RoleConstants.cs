@@ -1195,9 +1195,9 @@ public static class RoleConstants
         Entity = new()
         {
             Name = "Primærnæring og næringsmiddel",
-            Code = "A0212",
+            Code = "a0212",
             Description = "Denne rollen gir rettighet til tjenester innen import, foredling, produksjon og/eller salg av primærnæringsprodukter og andre næringsmiddel, samt dyrehold, akvakultur, planter og kosmetikk. Ved regelverksendringer eller innføring av nye digitale tjenester",
-            Urn = "urn:altinn:rolecode:A0212",
+            Urn = "urn:altinn:rolecode:a0212",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1229,9 +1229,9 @@ public static class RoleConstants
         Entity = new()
         {
             Name = "Post/arkiv",
-            Code = "A0236",
+            Code = "a0236",
             Description = "Denne rollen gir rettighet til å lese meldinger som blir sendt til brukerens meldingsboks. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0236",
+            Urn = "urn:altinn:rolecode:a0236",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1263,9 +1263,9 @@ public static class RoleConstants
         Entity = new()
         {
             Name = "Ansvarlig revisor",
-            Code = "A0237",
+            Code = "a0237",
             Description = "Delegerbar revisorrolle med signeringsrettighet.Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0237",
+            Urn = "urn:altinn:rolecode:a0237",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1297,9 +1297,9 @@ public static class RoleConstants
         Entity = new()
         {
             Name = "Revisormedarbeider",
-            Code = "A0238",
+            Code = "a0238",
             Description = "Denne rollen gir revisor rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0238",
+            Urn = "urn:altinn:rolecode:a0238",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1331,9 +1331,9 @@ public static class RoleConstants
         Entity = new()
         {
             Name = "Regnskapsfører med signeringsrettighet",
-            Code = "A0239",
+            Code = "a0239",
             Description = "Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester, samt signeringsrettighet for tjenestene. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0239",
+            Urn = "urn:altinn:rolecode:a0239",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1365,9 +1365,9 @@ public static class RoleConstants
         Entity = new()
         {
             Name = "Regnskapsfører uten signeringsrettighet",
-            Code = "A0240",
+            Code = "a0240",
             Description = "Denne rollen gir regnskapsfører rettighet til aktuelle skjema og tjenester. Denne gir ikke rettighet til å signere. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0240",
+            Urn = "urn:altinn:rolecode:a0240",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1399,9 +1399,9 @@ public static class RoleConstants
         Entity = new()
         {
             Name = "Regnskapsfører lønn",
-            Code = "A0241",
+            Code = "a0241",
             Description = "Denne rollen gir regnskapsfører rettighet til lønnsrelaterte tjenester. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0241",
+            Urn = "urn:altinn:rolecode:a0241",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1505,9 +1505,9 @@ public static class RoleConstants
         Entity = new()
         {
             Name = "Plan- og byggesak",
-            Code = "A0278",
+            Code = "a0278",
             Description = "Rollen er forbeholdt skjemaer og tjenester som er godkjent av Direktoratet for byggkvalitet (DiBK). Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0278",
+            Urn = "urn:altinn:rolecode:a0278",
             IsKeyRole = false,
             IsAssignable = false,
             EntityTypeId = EntityTypeConstants.Organisation,
@@ -1594,6 +1594,7 @@ public static class RoleConstants
     };
 
     #endregion
+
     /// <summary>
     /// Represents the 'Er regnskapsforeradresse for' role.
     /// </summary>
@@ -2555,9 +2556,9 @@ public static class RoleConstants
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Skatteforhold for privatpersoner",
-            Code = "A0282",
+            Code = "a0282",
             Description = "Tillatelsen gjelder alle opplysninger vedrørende dine eller ditt enkeltpersonsforetaks skatteforhold. Ved regelverksendringer eller innføring av nye digitale tjenester kan Skatteetaten endre i tillatelsen.",
-            Urn = "urn:altinn:rolecode:A0282",
+            Urn = "urn:altinn:rolecode:a0282",
             IsKeyRole = false,
             IsAvailableForServiceOwners = true,
         },
@@ -2588,9 +2589,9 @@ public static class RoleConstants
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Taushetsbelagt post ",
-            Code = "A0286",
+            Code = "a0286",
             Description = "Denne rollen gir tilgang til taushetsbelagt post fra stat og kommune. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0286",
+            Urn = "urn:altinn:rolecode:a0286",
             IsKeyRole = false,
             IsAvailableForServiceOwners = true,
         },
@@ -2611,9 +2612,9 @@ public static class RoleConstants
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Taushetsbelagt post - oppvekst og utdanning",
-            Code = "A0287",
+            Code = "a0287",
             Description = "Gir tilgang til taushetsbelagt post fra det offentlige innen oppvekst og utdanning",
-            Urn = "urn:altinn:rolecode:A0287",
+            Urn = "urn:altinn:rolecode:a0287",
             IsKeyRole = false,
             IsAvailableForServiceOwners = true,
         },
@@ -2644,9 +2645,9 @@ public static class RoleConstants
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Taushetsbelagt post - administrasjon",
-            Code = "A0288",
+            Code = "a0288",
             Description = "Gir tilgang til taushetsbelagt post fra det offentlige innen administrasjon",
-            Urn = "urn:altinn:rolecode:A0288",
+            Urn = "urn:altinn:rolecode:a0288",
             IsKeyRole = false,
             IsAvailableForServiceOwners = true,
         },
@@ -2677,9 +2678,9 @@ public static class RoleConstants
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Algetestdata",
-            Code = "A0293",
+            Code = "a0293",
             Description = "Havforskningsinstituttet - registrering av algetestdata",
-            Urn = "urn:altinn:rolecode:A0293",
+            Urn = "urn:altinn:rolecode:a0293",
             IsKeyRole = false,
             IsAvailableForServiceOwners = false,
         },
@@ -2710,9 +2711,9 @@ public static class RoleConstants
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Transportløyvegaranti",
-            Code = "A0294",
+            Code = "a0294",
             Description = "Statens vegvesen - rolle som gir tilgang til app for transportløyvegarantister",
-            Urn = "urn:altinn:rolecode:A0294",
+            Urn = "urn:altinn:rolecode:a0294",
             IsKeyRole = false,
             IsAvailableForServiceOwners = false,
         },
@@ -2743,9 +2744,9 @@ public static class RoleConstants
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Revisorattesterer",
-            Code = "A0298",
+            Code = "a0298",
             Description = "Rollen gir bruker tilgang til å attestere tjenester for avgiver som revisor. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som rollen gir.",
-            Urn = "urn:altinn:rolecode:A0298",
+            Urn = "urn:altinn:rolecode:a0298",
             IsKeyRole = false,
             IsAvailableForServiceOwners = true,
         },
