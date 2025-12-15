@@ -51,7 +51,7 @@ public class BasePackage : BaseAudit, IEntityId, IEntityName, IEntityUrn
     public bool IsDelegable { get; set; }
 
     /// <summary>
-    /// Has Resources
+    /// Has resources
     /// </summary>
     public bool HasResources { get; set; }
 

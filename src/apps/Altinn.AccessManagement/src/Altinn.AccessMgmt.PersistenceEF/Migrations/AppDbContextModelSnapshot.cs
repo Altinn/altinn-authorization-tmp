@@ -2312,8 +2312,8 @@ namespace Altinn.AccessMgmt.PersistenceEF.Migrations
                         .HasColumnName("entitytypeid");
 
                     b.Property<bool>("HasResources")
-                       .HasColumnType("boolean")
-                       .HasColumnName("hasresources");
+                        .HasColumnType("boolean")
+                        .HasColumnName("hasresources");
 
                     b.Property<bool>("IsAssignable")
                         .ValueGeneratedOnAdd()
