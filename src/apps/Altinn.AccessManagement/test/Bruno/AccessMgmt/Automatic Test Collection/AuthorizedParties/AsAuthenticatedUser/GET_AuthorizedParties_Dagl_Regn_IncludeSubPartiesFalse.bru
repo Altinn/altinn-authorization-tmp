@@ -1,4 +1,4 @@
-meta {
+﻿meta {
   name: GET_AuthorizedParties_Dagl_Regn_IncludeSubPartiesFalse
   type: http
   seq: 14
@@ -42,7 +42,7 @@ script:pre-request {
 }
 
 tests {
-  const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   const body = res.getBody();
   const requestName = bru.getVar("requestName");
   

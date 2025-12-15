@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&includePartiesViaKeyRoles=true
+  url: {{baseUrl}}/accessmanagement/api/v1/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&includePartiesViaKeyRoles=false
   body: json
   auth: inherit
 }
@@ -14,7 +14,7 @@ params:query {
   includeAltinn2: true
   includeAltinn3: true
   includeAccessPackages: true
-  includePartiesViaKeyRoles: true
+  includePartiesViaKeyRoles: false
 }
 
 headers {
@@ -42,7 +42,7 @@ script:pre-request {
 }
 
 tests {
-  const testdata = require(`./Testdata/systemuser-clientdelegation/${bru.getEnvVar("tokenEnv")}.json`);
+  const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   const body = res.getBody();
   const requestName = bru.getVar("requestName");
   
@@ -147,18 +147,17 @@ tests {
   
     assert.exists(ownDaglParty, 'Expected ER-role party: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.name+' to exist');
     assert.notIncludeMembers(ownDaglParty.authorizedAccessPackages, ["eksplisitt", "maskinporten-scopes-nuf", "post-til-virksomheten-med-taushetsbelagt-innhold"]);
-    expect(targetParty.authorizedAccessPackages.length, `authorizedAccessPackages for Dagl-KeyRole-Party contains unexpected packages`).to.equal(117);
+    expect(ownDaglParty.authorizedAccessPackages.length, `authorizedAccessPackages for Dagl-KeyRole-Party contains unexpected packages`).to.equal(124);
     
   });
   
-  test(requestName + "|KeyRole AuthorizedParty and AuthorizedAccessPackages", function() {    
+  test(requestName + "|Check keyRole AuthorizedParties not included", function() {    
     const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
-    const ownDaglParty = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
+    const deletedEnkLessThanTwoYears = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2025_11_27_InnehaverAccess.partyUuid);
+    const innehaverOfDeletedEnkLessThanTwoYears = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2025_11_27_InnehaverAccess.innehaver.partyUuid);
   
-    assert.exists(ownDaglParty, 'Expected KeyRole-party: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.name+' to exist');
-    assert.notIncludeMembers(ownDaglParty.authorizedAccessPackages, ["eksplisitt", "maskinporten-scopes-nuf", "post-til-virksomheten-med-taushetsbelagt-innhold"]);
-    expect(targetParty.authorizedAccessPackages.length, `authorizedAccessPackages for Dagl-KeyRole-Party contains unexpected packages`).to.equal(117);
-    
+    assert.strictEqual(deletedEnkLessThanTwoYears, undefined, 'Expected Enk-ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2023_11_01_NoInnehaverAccess.name+' to NOT exist');
+    assert.strictEqual(deletedEnkLessThanTwoYears, undefined, 'Expected Innehaver of Enk-ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2023_11_01_NoInnehaverAccess.innehaver.name+' to NOT exist');  
   });
   
   
