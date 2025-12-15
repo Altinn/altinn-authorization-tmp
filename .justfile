@@ -34,7 +34,8 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 # Run the script to update solution files
 @update-sln-files *ARGS: install-script-packages-frozen
   #!{{shebang}}
-  node ./.github/scripts/update-sln-files.mts -- {{ARGS}}
+  pushd .github/scripts
+  pnpm tsx ./update-sln-files.mts -- {{ARGS}}
 
 @dotnet-reference-trimmer:
   dotnet build -p:EnableReferenceTrimmer=true
