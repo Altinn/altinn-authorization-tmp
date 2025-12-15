@@ -679,14 +679,14 @@ public static class PackageConstants
     /// - <c>Id:</c> c0eb20c1-2268-48f5-88c5-f26cb47a6b1f
     /// - <c>URN:</c> urn:altinn:accesspackage:eksplisitt
     /// - <c>Provider:</c> Altinn3
-    /// - <c>Description:</c> Denne fullmakten er ikke delegerbar, og er ikke knyttet til noen roller i ENhetsregisteret. Tilgang til tjenester knyttet til denne pakken kan gis av Hovedadministrator gjennom enkeltrettighetsdelegering.
+    /// - <c>Description:</c> Denne fullmakten er ikke delegerbar, og er ikke knyttet til noen roller i Enhetsregisteret. Tilgang til tjenester knyttet til denne pakken kan gis av Hovedadministrator gjennom enkeltrettighetsdelegering.
     /// </remarks>
     public static ConstantDefinition<Package> ExplicitServiceDelegation { get; } = new ConstantDefinition<Package>("c0eb20c1-2268-48f5-88c5-f26cb47a6b1f")
     {
         Entity = new()
         {
             Name = "Eksplisitt tjenestedelegering",
-            Description = "Denne fullmakten er ikke delegerbar, og er ikke knyttet til noen roller i ENhetsregisteret. Tilgang til tjenester knyttet til denne pakken kan gis av Hovedadministrator gjennom enkeltrettighetsdelegering.",
+            Description = "Denne fullmakten er ikke delegerbar, og er ikke knyttet til noen roller i Enhetsregisteret. Tilgang til tjenester knyttet til denne pakken kan gis av Hovedadministrator gjennom enkeltrettighetsdelegering.",
             Urn = "urn:altinn:accesspackage:eksplisitt",
             Code = "eksplisitt",
             IsDelegable = false,
@@ -1041,6 +1041,39 @@ public static class PackageConstants
         NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Folkeregister"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakt til tenester som ei verksemd kan ha mot folkeregisteret. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
+        ),
+    };
+
+    /// <summary>
+    /// Represents the 'Offentlige anskaffelser' access package.
+    /// </summary>
+    /// <remarks>
+    /// - <c>Id:</c> 58c282e4-4505-4411-8d8d-62fdaee7f7ed
+    /// - <c>URN:</c> urn:altinn:accesspackage:offentlige-anskaffelser
+    /// - <c>Provider:</c> Altinn3
+    /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til å dele data om virksomheten i forbindelse med offentlige anskaffelser. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
+    /// </remarks>
+    public static ConstantDefinition<Package> PublicProcurement { get; } = new ConstantDefinition<Package>("58c282e4-4505-4411-8d8d-62fdaee7f7ed")
+    {
+        Entity = new()
+        {
+            Name = "Offentlige anskaffelser",
+            Description = "Denne tilgangspakken gir fullmakter til å dele data om virksomheten i forbindelse med offentlige anskaffelser. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:offentlige-anskaffelser",
+            Code = "offentlige-anskaffelser",
+            IsDelegable = true,
+            IsAssignable = true,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
+        },
+        EN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Public procurement"),
+            KeyValuePair.Create("Description", "This access package gives authorization to share data about the business in connection with public procurement. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
+        ),
+        NN = TranslationEntryList.Create(
+            KeyValuePair.Create("Name", "Offentlege anskaffingar"),
+            KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til å dela data om verksemda i samband med offentlege anskaffingar. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
     };
 
