@@ -117,6 +117,7 @@ public static partial class StaticDataIngest
                 role.IsKeyRole = seed.Entity.IsKeyRole;
                 role.LegacyUrn = seed.Entity.LegacyUrn;
                 role.LegacyCode = seed.Entity.LegacyCode;
+                role.IsAvailableForServiceOwners = seed.Entity.IsAvailableForServiceOwners;
                 role.ProviderId = seed.Entity.ProviderId;
                 role.Urn = seed.Entity.Urn;
             },
