@@ -78,7 +78,7 @@ public class AuthorizedPartiesServiceEf(
 
                 return await GetAuthorizedParties(filter, subject, ecKeyRoleEntities.Select(t => t.Id), cancellationToken);
 
-            case var id when id == EntityTypeConstants.Organization.Id:
+            case var id when id == EntityTypeConstants.Organisation.Id:
 
                 // Organizations can not have Altinn 2 roles, only Altinn 3 delegations.
                 filter.IncludeAltinn2 = false;
@@ -677,7 +677,7 @@ public class AuthorizedPartiesServiceEf(
 
         switch (entity.TypeId)
         {
-            case var orgType when orgType == EntityTypeConstants.Organization.Id:
+            case var orgType when orgType == EntityTypeConstants.Organisation.Id:
                 party.OrganizationNumber = entity.OrganizationIdentifier;
                 party.Type = AuthorizedPartyType.Organization;
 

@@ -1,4 +1,4 @@
-﻿using System.Net.Mime;
+using System.Net.Mime;
 using Altinn.AccessManagement.Api.Internal.Models;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
@@ -26,11 +26,11 @@ public class InternalConnectionsController(IConnectionService connectionService)
 {
     private Action<ConnectionOptions> ConfigureConnections { get; } = options =>
     {
-        options.AllowedWriteFromEntityTypes = [EntityTypeConstants.Organization];
+        options.AllowedWriteFromEntityTypes = [EntityTypeConstants.Organisation];
         options.AllowedWriteToEntityTypes = [EntityTypeConstants.SystemUser];
-        options.AllowedReadFromEntityTypes = [EntityTypeConstants.Organization];
+        options.AllowedReadFromEntityTypes = [EntityTypeConstants.Organisation];
         options.AllowedReadToEntityTypes = [EntityTypeConstants.SystemUser];
-        options.FilterFromEntityTypes = [EntityTypeConstants.Organization];
+        options.FilterFromEntityTypes = [EntityTypeConstants.Organisation];
         options.FilterToEntityTypes = [EntityTypeConstants.SystemUser];
     };
 

@@ -49,7 +49,7 @@ public class AMPartyService(IEntityService entityService) : IAmPartyRepository
             PartyType = entity.TypeId
         };
 
-        if (entity.TypeId == EntityTypeConstants.Organization.Id)
+        if (entity.TypeId == EntityTypeConstants.Organisation.Id)
         {
             party.OrganizationId = entity.OrganizationIdentifier;
         }
@@ -125,7 +125,7 @@ public class AMPartyService(IEntityService entityService) : IAmPartyRepository
             PartyType = entity.TypeId
         };
 
-        if (entity.TypeId == EntityTypeConstants.Organization.Id)
+        if (entity.TypeId == EntityTypeConstants.Organisation.Id)
         {
             party.OrganizationId = entity.OrganizationIdentifier;
         }

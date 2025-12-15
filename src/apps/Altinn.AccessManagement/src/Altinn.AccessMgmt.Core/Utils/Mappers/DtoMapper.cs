@@ -133,7 +133,7 @@ public partial class DtoMapper
     {
         var result = new Dictionary<string, string>();
 
-        if (entity.TypeId.Equals(EntityTypeConstants.Organization))
+        if (entity.TypeId.Equals(EntityTypeConstants.Organisation))
         {
             result.Add("OrganizationIdentifier", entity.RefId);
         }

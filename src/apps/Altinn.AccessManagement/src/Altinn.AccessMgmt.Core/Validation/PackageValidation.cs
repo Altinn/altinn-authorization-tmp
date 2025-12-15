@@ -46,7 +46,7 @@ public static class PackageValidation
         ArgumentNullException.ThrowIfNull(packageUrns);
         ArgumentException.ThrowIfNullOrEmpty(paramName);
 
-        if (toEntity.Id == EntityTypeConstants.Organization)
+        if (toEntity.Id == EntityTypeConstants.Organisation)
         {
             var packagesNotAssignableToOrg = packageUrns
                 .Where(p => p.Equals(PackageConstants.MainAdministrator.Entity.Urn));
