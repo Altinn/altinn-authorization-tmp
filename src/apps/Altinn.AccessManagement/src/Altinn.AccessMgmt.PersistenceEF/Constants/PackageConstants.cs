@@ -716,24 +716,24 @@ public static class PackageConstants
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester for å forvalte og koordinere tekniske grensesnitt mot Skatteetaten. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
     /// </remarks>
     public static ConstantDefinition<Package> TechnicalInteractionWithTheNorwegianTaxAgency { get; } = new ConstantDefinition<Package>("1e36b4e3-2eff-4613-9f52-52cde5c1c0f3")
+    {
+        Entity = new()
         {
-            Entity = new()
-            {
-                Name = "Teknisk samhandling med Skatteetaten",
-                Description = "Denne tilgangspakken gir fullmakter til tjenester for å forvalte og koordinere tekniske grensesnitt mot Skatteetaten. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
-                Urn = "urn:altinn:accesspackage:teknisk-samhandling-skatt",
-                IsDelegable = false,
-                IsAvailableForServiceOwners = true,
-                IsAssignable = false,
-                EntityTypeId = EntityTypeConstants.Organisation,
-                ProviderId = ProviderConstants.Altinn3,
-                AreaId = AreaConstants.BusinessAffairs,
-            },
-            EN = TranslationEntryList.Create(
+            Name = "Teknisk samhandling med Skatteetaten",
+            Description = "Denne tilgangspakken gir fullmakter til tjenester for å forvalte og koordinere tekniske grensesnitt mot Skatteetaten. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.",
+            Urn = "urn:altinn:accesspackage:teknisk-samhandling-skatt",
+            IsDelegable = false,
+            IsAvailableForServiceOwners = true,
+            IsAssignable = false,
+            EntityTypeId = EntityTypeConstants.Organisation,
+            ProviderId = ProviderConstants.Altinn3,
+            AreaId = AreaConstants.BusinessAffairs,
+        },
+        EN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Technical interaction with the Norwegian Tax Agency"),
             KeyValuePair.Create("Description", "This access package authorizes services to manage and coordinate technical interfaces with the Swedish Tax Agency. In the event of regulatory changes or the introduction of new digital services, there may be changes in the access that the authorization provides.")
         ),
-            NN = TranslationEntryList.Create(
+        NN = TranslationEntryList.Create(
             KeyValuePair.Create("Name", "Teknisk samhandling med Skatteetaten"),
             KeyValuePair.Create("Description", "Denne tilgangspakken gir fullmakter til tenester for å forvalta og koordinera tekniske grensesnitt mot Skatteetaten. Ved regelverksendringar eller innføring av nye digitale tenester kan det bli endringar i tilgangar som fullmakta gir.")
         ),
