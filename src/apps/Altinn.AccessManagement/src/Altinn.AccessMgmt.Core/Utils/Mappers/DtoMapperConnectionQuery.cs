@@ -201,11 +201,6 @@ public partial class DtoMapper : IDtoMapper
         foreach (var client in clients)
         {
             var organization = client.First();
-            if (organization.From.TypeId != EntityTypeConstants.Organisation)
-            {
-                continue;
-            }
-
             var party = new ClientDto.ClientParty
             {
                 Id = organization.From.Id,
