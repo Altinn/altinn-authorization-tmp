@@ -2843,7 +2843,7 @@ public static class RoleConstants
             EntityTypeId = EntityTypeConstants.Organisation,
             ProviderId = ProviderConstants.Altinn2,
             Name = "Konkursbo tilgangsstyring",
-            Code = "boadm"
+            Code = "boadm",
             Description = "Denne rollen gir advokater mulighet til å styre hvem som har rettigheter til konkursbo.",
             Urn = "urn:altinn:rolecode:boadm",
             IsKeyRole = false,
