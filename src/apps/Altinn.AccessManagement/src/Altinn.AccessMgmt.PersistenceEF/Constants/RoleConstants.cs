@@ -119,7 +119,7 @@ public static class RoleConstants
     /// Represents the 'Agent' role.
     /// </summary>
     /// <remarks>
-    /// - <c>Id:</c> ff4c33f5-03f7-4445-85ed-1e60b8aafb30
+    /// - <c>Id:</c> 961f6ebb-ecf7-4fc6-ab5a-ca0841db4931
     /// - <c>URN:</c> urn:altinn:role:agent
     /// - <c>Provider:</c> Altinn3
     /// - <c>Code:</c> agent
