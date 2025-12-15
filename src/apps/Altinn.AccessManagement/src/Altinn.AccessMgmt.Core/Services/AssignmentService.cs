@@ -738,4 +738,59 @@ public class AssignmentService(AppDbContext db) : IAssignmentService
     {
         throw new UnreachableException();
     }
+
+    public Task<int> RevokeImportedAssignmentResource(Guid fromId, Guid toId, string resourceRef, AuditValues audit, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<int> ImportAssignmentResourceChange(Guid fromId, Guid toId, string resourceRef, string blobStoragePolicyPath, string blobStorageVersionId, AuditValues audit, CancellationToken cancellationToken = default)
+    {
+        var resource = await db.Resources
+            .AsNoTracking()
+            .Where(a => a.RefId == resourceRef)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (resource is null)
+        {
+            // Handle as error the resource is missing should not happen
+            throw new NotImplementedException();
+        }
+
+        var resourceType = await db.ResourceTypes
+            .AsNoTracking()
+            .Where(a => a.Name == "MaskinportenSchema")
+            .FirstOrDefaultAsync(cancellationToken);
+
+        Role assignmentRole = RoleConstants.Rightholder;
+
+        if (resourceType.Id == resource.TypeId)
+        {
+            assignmentRole = RoleConstants.Supplier;
+        }
+
+        var assignment = await db.Assignments
+            .AsNoTracking()
+            .Where(a => a.FromId == fromId)
+            .Where(a => a.ToId == toId)
+            .Where(a => a.RoleId == assignmentRole.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (assignment is null)
+        {
+            assignment = new Assignment()
+            {
+                FromId = fromId,
+                ToId = toId,
+                RoleId = assignmentRole.Id,
+                Audit_ValidFrom = audit?.ValidFrom ?? DateTimeOffset.UtcNow,
+            };
+            await db.Assignments.AddAsync(assignment, cancellationToken);
+            await db.SaveChangesAsync(audit, cancellationToken);
+        }
+
+        //Upsert the AssignmentResource
+
+        return 1;
+    }
 }

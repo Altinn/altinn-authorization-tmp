@@ -5,6 +5,7 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.Host.Lease;
+using Altinn.Authorization.Integration.Platform.AccessManagement;
 using Altinn.Authorization.Integration.Platform.SblBridge;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -16,28 +17,28 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="AltinnAdminRoleSyncService"/> class.
         /// </summary>
-        /// <param name="role">The role service used for streaming roles.</param>
+        /// <param name="singleRights">The single rights service used for streaming roles.</param>
         /// <param name="serviceProvider">object used for creating a scope and fetching a scoped service (IDelegationService) based on this scope</param>
         /// <param name="logger">The logger instance for logging information and errors.</param>
         public SingleAppRightSyncService(
             IServiceProvider serviceProvider,
-            IAltinnSblBridge role,
+            IAltinnAccessManagement singleRights,
             ILogger<SingleAppRightSyncService> logger
         )
         {
-            _role = role;
+            _singleRights = singleRights;
             _serviceProivider = serviceProvider;
             _logger = logger;
         }
 
-        private readonly IAltinnSblBridge _role;
+        private readonly IAltinnAccessManagement _singleRights;
         private readonly ILogger<SingleAppRightSyncService> _logger;
         private readonly IServiceProvider _serviceProivider;
 
         public async Task SyncSingleAppRights(ILease lease, CancellationToken cancellationToken)
         {
             var leaseData = await lease.Get<SingleAppRightLease>(cancellationToken);
-            var singleAppRightDelegations = await _role.StreamRoles("11", leaseData.SingleAppRightStreamNextPageLink, cancellationToken);
+            var singleAppRightDelegations = await _singleRights.StreamAppRightDelegations(leaseData.SingleAppRightStreamNextPageLink, cancellationToken);
 
             await foreach (var page in singleAppRightDelegations)
             {
@@ -60,74 +61,59 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                 {
                     foreach (var item in page.Content.Data)
                     {
-                        // Do not process admin roles for EC-Users
-                        if (item.ToUserType == UserType.EnterpriseIdentified)
-                        {
-                            continue;
-                        }
-
                         await using var scope = _serviceProivider.CreateAsyncScope();
                         IAssignmentService assignmentService = scope.ServiceProvider.GetRequiredService<IAssignmentService>();
+                        
+                        if (!Guid.TryParse(item.PerformedByUuid, out Guid performedByGuid))
+                        {
+                            performedByGuid = SystemEntityConstants.Altinn2RoleImportSystem.Id;
+                        }
 
                         AuditValues values = new AuditValues(
-                            item.PerformedByUserUuid ?? SystemEntityConstants.Altinn2RoleImportSystem,
+                            performedByGuid,
                             SystemEntityConstants.Altinn2RoleImportSystem,
                             batchId.ToString(),
-                            item.DelegationChangeDateTime?.ToUniversalTime() ?? DateTime.UtcNow);
+                            item.Created?.ToUniversalTime() ?? DateTime.UtcNow);
 
-                        List<string> packageUrns = GetAdminPackageFromRoleTypeCode(item.RoleTypeCode, cancellationToken);
+                        string[] appValues = item.ResourceId.Split('/', 2, StringSplitOptions.TrimEntries);
+                        string resourceUrn = $"urn:altinn:resource:app_{appValues[0].ToLower()}_{appValues[1].ToLower()}";
 
-                        if (item.DelegationAction == DelegationAction.Revoke)
+                        if (item.DelegationChangeType == AccessManagement.Core.Models.DelegationChangeType.RevokeLast)
                         {
-                            // If the action is Revoke, we should delete the assignmentPackages
-                            if (item.ToUserPartyUuid == null)
-                            {
-                                _logger.LogWarning(
-                                    "The delegation is missing ToUserPartyUuid so it is not a valid admin delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
-                                continue;
-                            }
-
-                            int revokes = await assignmentService.RevokeAssignmentPackages(
-                                item.FromPartyUuid,
-                                item.ToUserPartyUuid.Value,
-                                packageUrns,
+                            int revokes = await assignmentService.RevokeImportedAssignmentResource(
+                                item.FromUuid.Value,
+                                item.ToUuid.Value,
+                                resourceUrn,
                                 values,
-                                true,
                                 cancellationToken);
 
                             if (revokes == 0)
                             {
                                 _logger.LogWarning(
-                                    "Failed to delete assignmentpackages for FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {packageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
+                                    "Failed to delete assignmentresource for FromParty: {FromParty}, ToParty: {ToParty}",
+                                    item.FromUuid,
+                                    item.ToUuid);
                             }
                         }
                         else
                         {
-                            if (item.ToUserPartyUuid == null)
-                            {
-                                _logger.LogWarning(
-                                    "The delegation is missing ToUserPartyUuid so it is not a valid admin delegation {FromParty}, ToParty: {ToParty}, PackageUrns: {PackageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
-                                continue;
-                            }
+                            int adds = await assignmentService.ImportAssignmentResourceChange(
+                                item.FromUuid.Value,
+                                item.ToUuid.Value,
+                                resourceUrn,
+                                item.BlobStoragePolicyPath,
+                                item.BlobStorageVersionId,
+                                values,
+                                cancellationToken);
 
-                            List<AssignmentPackageDto> adds = await assignmentService.ImportAssignmentPackages(item.FromPartyUuid, item.ToUserPartyUuid.Value, packageUrns, values, cancellationToken);
-                            if (adds.Count == 0)
+                            if (adds == 0)
                             {
                                 _logger.LogWarning(
                                     "Failed to import delegation for FromParty: {FromParty}, ToParty: {ToParty}, PackageUrns: {packageUrn}",
-                                    item.FromPartyUuid,
-                                    item.ToUserPartyUuid,
-                                    string.Join(", ", packageUrns));
-                            }
+                                    item.FromUuid,
+                                    item.ToUuid,
+                                    resourceUrn);
+                            }                                                        
                         }
 
                     }
