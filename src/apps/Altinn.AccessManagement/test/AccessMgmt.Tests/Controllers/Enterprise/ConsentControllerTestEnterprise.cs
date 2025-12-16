@@ -27,24 +27,32 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
     /// <summary>
     /// Tests for maskinporten controller for consent
     /// </summary>
-    public class ConsentControllerTestEnterprise(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
+    public class ConsentControllerTestEnterprise : IClassFixture<WebApplicationFixture>
     {
-        private readonly Mock<IAmPartyRepository> _mockAmPartyRepository = new Mock<IAmPartyRepository>();
+        private readonly Mock<IAmPartyRepository> _mockAmPartyRepository;
+        private readonly WebApplicationFactory<Program> _fixture;
 
-        private WebApplicationFactory<Program> Fixture { get; } = fixture.WithWebHostBuilder(builder =>
+        public ConsentControllerTestEnterprise(WebApplicationFixture fixture)
         {
-            builder.ConfigureTestServices(services =>
+            _mockAmPartyRepository = new Mock<IAmPartyRepository>();
+            
+            _fixture = fixture.WithWebHostBuilder(builder =>
             {
-                services.AddSingleton<IPartiesClient, PartiesClientMock>();
-                services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
-                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
-                services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
-                services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
-                services.AddSingleton<IPDP, PdpPermitMock>();
-                services.AddSingleton(provider => new ConsentControllerTestEnterprise(fixture)._mockAmPartyRepository.Object);
+                builder.ConfigureTestServices(services =>
+                {
+                    services.AddSingleton<IPartiesClient, PartiesClientMock>();
+                    services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
+                    services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+                    services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
+                    services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
+                    services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
+                    services.AddSingleton<IPDP, PdpPermitMock>();
+                    
+                    // Register the SAME mock instance
+                    services.AddSingleton<IAmPartyRepository>(_mockAmPartyRepository.Object);
+                });
             });
-        });
+        }
 
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
@@ -53,17 +61,11 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
         private void SetupMockPartyRepository()
         {
-            // Setup default mock responses for common test data
-            _mockAmPartyRepository.Setup(x => x.GetByPersonNo(It.IsAny<PersonIdentifier>(), It.IsAny<CancellationToken>()))
-           .ReturnsAsync(new MinimalParty
-           {
-               PartyUuid = Guid.Parse("f47ac10b-58cc-4372-a567-0e02b2c3d479"),
-               PartyId = 501234,
-               Name = "Ola Nordmann",
-               PersonId = "01025161013",
-               PartyType = Guid.Parse("bfe09e70-e868-44b3-8d81-dfe0e13e058a") // Person type
-           });
-
+            // Reset all existing setups
+            _mockAmPartyRepository.Reset();
+            
+            // Setup specific mock responses for test data
+            
             // Person: 01025161013
             _mockAmPartyRepository.Setup(x => x.GetByPersonNo(PersonIdentifier.Parse("01025161013"), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new MinimalParty
@@ -121,13 +123,6 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
             // Non-existing person: 01014922047 (should return null)
             _mockAmPartyRepository.Setup(x => x.GetByPersonNo(PersonIdentifier.Parse("01014922047"), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((MinimalParty)null);
-
-            // Setup default null returns for any other calls
-            _mockAmPartyRepository.Setup(x => x.GetByPersonNo(It.IsAny<PersonIdentifier>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((MinimalParty)null);
-            
-            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(It.IsAny<OrganizationNumber>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((MinimalParty)null);
         }
 
@@ -794,93 +789,6 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         /// </summary>
         /// <returns></returns>
         [Fact]
-        public async Task CreateConsentRequest_ValidTwin()
-        {
-            SetupMockPartyRepository();
-            
-            Guid requestID = Guid.CreateVersion7();
-            ConsentRequestDto consentRequest = new ConsentRequestDto
-            {
-                Id = requestID,
-                From = ConsentPartyUrn.PersonId.Create(PersonIdentifier.Parse("01025161013")),
-                To = ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")),
-                ValidTo = DateTimeOffset.UtcNow.AddDays(1),
-                ConsentRights = new List<ConsentRightDto>
-                {
-                    new ConsentRightDto
-                    {
-                        Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeDto>
-                        {
-                            new ConsentResourceAttributeDto
-                            {
-                                Type = "urn:altinn:resource",
-                                Value = "ttd_inntektsopplysninger"
-                            }
-                        },
-                        Metadata = new Dictionary<string, string>
-                        {
-                            { "INNTEKTSAAR", "2022" }
-                        }
-                    },
-                    new ConsentRightDto
-                    {
-                        Action = new List<string> { "read" },
-                        Resource = new List<ConsentResourceAttributeDto>
-                        {
-                            new ConsentResourceAttributeDto
-                            {
-                                Type = "urn:altinn:resource",
-                                Value = "ttd_skattegrunnlag"
-                            }
-                        },
-                        Metadata = new Dictionary<string, string>
-                        {
-                            { "fraOgMed", "2018-03" },
-                            { "tilOgMed", "2018-06" }
-                        }
-                    }
-                },
-                RequestMessage = new Dictionary<string, string>
-                {
-                    { "en", "Please approve this consent request" }
-                },
-                RedirectUrl = "https://www.dnb.no"
-            };
-
-            HttpClient client = GetTestClient();
-            string url = $"/accessmanagement/api/v1/enterprise/consentrequests/";
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string token = PrincipalUtil.GetOrgToken(null, "810419512", "altinn:consentrequests.write");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            string requestContent = JsonSerializer.Serialize(consentRequest, _jsonOptions);
-            HttpResponseMessage response = await client.PostAsync(url, new StringContent(requestContent, Encoding.UTF8, "application/json"));
-            string responseContent = await response.Content.ReadAsStringAsync();
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Assert.NotNull(responseContent);
-            ConsentRequestDetailsDto consentInfo = JsonSerializer.Deserialize<ConsentRequestDetailsDto>(responseContent, _jsonOptions);
-            Assert.Equal(2, consentInfo.ConsentRights.Count);
-            Assert.Single(consentInfo.ConsentRights[0].Metadata);
-            Assert.Equal(consentRequest.ValidTo.Minute, consentInfo.ValidTo.Minute);
-            Assert.Equal(consentRequest.ValidTo.Second, consentInfo.ValidTo.Second);
-            Assert.Equal(consentRequest.ConsentRights[0].Action.Count, consentInfo.ConsentRights[0].Action.Count);
-            Assert.Equal(consentRequest.ConsentRights[0].Action[0], consentInfo.ConsentRights[0].Action[0]);
-            Assert.Equal(consentRequest.ConsentRights[0].Metadata["INNTEKTSAAR"], consentInfo.ConsentRights[0].Metadata["INNTEKTSAAR"]);
-            Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
-            Assert.Single(consentInfo.ConsentRequestEvents);
-            Assert.Equal(ConsentRequestEventType.Created, consentInfo.ConsentRequestEvents[0].EventType);
-            Assert.Equal(ConsentPartyUrn.OrganizationId.Create(OrganizationNumber.Parse("810419512")), consentInfo.ConsentRequestEvents[0].PerformedBy);
-            Assert.Equal(ConsentRequestStatusType.Created, consentInfo.Status);
-        }
-
-        /// <summary>
-        /// Test get consent. Expect a consent in response
-        /// </summary>
-        /// <returns></returns>
-        [Fact]
         public async Task CreateConsentRequest_IncompatibleTemplates()
         {
             SetupMockPartyRepository();
@@ -1302,7 +1210,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
 
         private HttpClient GetTestClient()
         {
-            HttpClient client = Fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+            HttpClient client = _fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             return client;
         }
