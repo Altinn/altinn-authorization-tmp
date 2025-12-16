@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Contexts;
+﻿using Altinn.AccessMgmt.PersistenceEF.Constants;
+using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +17,6 @@ public static partial class StaticDataIngest
     {
         var packages = (await dbContext.Packages.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id, StringComparer.OrdinalIgnoreCase);
         var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id, StringComparer.OrdinalIgnoreCase);
-        var variants = (await dbContext.EntityVariants.ToListAsync()).ToDictionary(t => t.Name, t => t.Id, StringComparer.OrdinalIgnoreCase);
 
         var roleDagl = roles["urn:altinn:external-role:ccr:daglig-leder"];
         var roleLede = roles["urn:altinn:external-role:ccr:styreleder"];
@@ -83,8 +83,8 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:revisor"], PackageId = packages["urn:altinn:accesspackage:ansvarlig-revisor"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:revisor"], PackageId = packages["urn:altinn:accesspackage:revisormedarbeider"], EntityVariantId = null, CanDelegate = false, HasAccess = true },
 
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["ESEK"], CanDelegate = false, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = variants["BRL"], CanDelegate = false, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = EntityVariantConstants.ESEK.Id, CanDelegate = false, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:forretningsforer"], PackageId = packages["urn:altinn:accesspackage:forretningsforer-eiendom"], EntityVariantId = EntityVariantConstants.BRL.Id, CanDelegate = false, HasAccess = true },
 
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:konkursbo-lesetilgang"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:konkursbo-skrivetilgang"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
@@ -654,8 +654,8 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes"], EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
-            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:kontaktperson-nuf"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes-nuf"], EntityVariantId = variants["NUF"], CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes-nuf"], EntityVariantId = variants["NUF"], CanDelegate = true, HasAccess = false },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:kontaktperson-nuf"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes-nuf"], EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:role:hovedadministrator"], PackageId = packages["urn:altinn:accesspackage:maskinporten-scopes-nuf"], EntityVariantId = EntityVariantConstants.NUF.Id, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:maskinlesbare-hendelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:maskinlesbare-hendelser"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
