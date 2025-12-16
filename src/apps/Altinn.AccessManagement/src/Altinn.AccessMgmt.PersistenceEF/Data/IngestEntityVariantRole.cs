@@ -14,8 +14,8 @@ public static partial class StaticDataIngest
     /// </summary>
     public static async Task IngestEntityVariantRole(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
-        var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
-        var variants = (await dbContext.EntityVariants.ToListAsync()).ToDictionary(t => t.Name, t => t.Id);
+        var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id, StringComparer.OrdinalIgnoreCase);
+        var variants = (await dbContext.EntityVariants.ToListAsync()).ToDictionary(t => t.Name, t => t.Id, StringComparer.OrdinalIgnoreCase);
 
         var data = new List<EntityVariantRole>()
         {

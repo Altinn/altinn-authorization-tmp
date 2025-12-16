@@ -14,9 +14,9 @@ public static partial class StaticDataIngest
     /// </summary>
     public async static Task IngestRolePackage(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
-        var packages = (await dbContext.Packages.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
-        var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
-        var variants = (await dbContext.EntityVariants.ToListAsync()).ToDictionary(t => t.Name, t => t.Id);
+        var packages = (await dbContext.Packages.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id, StringComparer.OrdinalIgnoreCase);
+        var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id, StringComparer.OrdinalIgnoreCase);
+        var variants = (await dbContext.EntityVariants.ToListAsync()).ToDictionary(t => t.Name, t => t.Id, StringComparer.OrdinalIgnoreCase);
 
         var roleDagl = roles["urn:altinn:external-role:ccr:daglig-leder"];
         var roleLede = roles["urn:altinn:external-role:ccr:styreleder"];
