@@ -72,7 +72,7 @@ public class AuthorizedPartiesServiceEf(
 
                 // Enterprise user can also have key role (ECKeyRole) for their organization. Will still need to get these via SBL Bridge until A2-role import is complete.
                 IEnumerable<Entity> eckeyroleEntities = [];
-                if (filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto || filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True)
+                if (subject.UserId.HasValue && (filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto || filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True))
                 {
                     // A2 lookup of key role parties includes subunits by default
                     List<int> keyRolePartyIds = await contextRetrievalService.GetKeyRolePartyIds(subject.UserId.Value, cancellationToken);
