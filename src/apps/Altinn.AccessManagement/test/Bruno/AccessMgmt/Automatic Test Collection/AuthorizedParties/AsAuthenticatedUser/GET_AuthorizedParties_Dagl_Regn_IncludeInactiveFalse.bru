@@ -23,6 +23,8 @@ headers {
 }
 
 script:pre-request {
+  bru.runner.skipRequest();
+  
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
@@ -42,8 +44,6 @@ script:pre-request {
 }
 
 tests {
-  bru.runner.skipRequest();
-  
   const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   const body = res.getBody();
   const requestName = bru.getVar("requestName");
