@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Net;
-using System.Net.Mime;
-using Altinn.AccessManagement.Core;
+﻿using Altinn.AccessManagement.Core;
 using Altinn.AccessManagement.Core.Configuration;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Helpers;
@@ -10,10 +7,15 @@ using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Models;
 using Altinn.AccessManagement.Utilities;
+using Altinn.Authorization.Integration.Platform;
 using AutoMapper;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
+using System.Net.Mime;
 
 namespace Altinn.AccessManagement.Controllers
 {
@@ -422,6 +424,93 @@ namespace Altinn.AccessManagement.Controllers
             }
 
             return Ok();
+        }
+
+        ////[Authorize(Policy = AuthzConstants.PLATFORM_ACCESSTOKEN_ISSUER_ISPLATFORM)]
+        [ActionName(nameof(SingleAppRightsFeed))]
+        [HttpGet("internal/singleright/appdelegation")]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SingleAppRightsFeed([FromQuery]long singleAppDelegationEventId, CancellationToken cancellationToken)
+        {
+            // get the data
+            var data = await _rights.GetNextPageAppDelegationChanges(singleAppDelegationEventId);
+            
+            // calculate nextlink
+            string nextLink = null;
+            if (data.Any())
+            {
+                long nextEventId = data.Last().DelegationChangeId + 1;
+                nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?singleAppDelegationEventId={nextEventId}";
+            }
+
+            // create reult
+            Paginated<DelegationChange> result;
+            PaginatedLinks link = new PaginatedLinks(nextLink);
+            result = new Paginated<DelegationChange>(link, data);
+
+            // return result
+            return Ok(result);
+        }
+
+        ////[Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ)]
+        [ActionName(nameof(SingleResourceRightsFeed))]
+        [HttpGet("internal/singleright/resourcedelegation")]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SingleResourceRightsFeed([FromQuery] long singleResourceDelegationEventId, CancellationToken cancellationToken)
+        {
+            // get the data
+            var data = await _rights.GetNextPageResourceDelegationChanges(singleResourceDelegationEventId);
+
+            // calculate nextlink
+            string nextLink = null;
+            if (data.Any())
+            {
+                long nextEventId = data.Last().ResourceRegistryDelegationChangeId + 1;
+                nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?singleResourceDelegationEventId={nextEventId}";
+            }
+
+            // create reult
+            Paginated<DelegationChange> result;
+            PaginatedLinks link = new PaginatedLinks(nextLink);
+            result = new Paginated<DelegationChange>(link, data);
+
+            // return result
+            return Ok(result);
+        }
+
+        ////[Authorize(Policy = AuthzConstants.POLICY_ACCESS_MANAGEMENT_READ)]
+        [ActionName(nameof(SingleInstanceRightsFeed))]
+        [HttpGet("internal/singleright/instancedelegation")]
+        [ProducesResponseType(typeof(void), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SingleInstanceRightsFeed([FromQuery] long singleInstanceDelegationEventId, CancellationToken cancellationToken)
+        {
+            // get the data
+            var data = await _rights.GetNextPageInstanceDelegationChanges(singleInstanceDelegationEventId);
+
+            // calculate nextlink
+            string nextLink = null;
+            if (data.Any())
+            {
+                long nextEventId = data.Last().InstanceDelegationChangeId + 1;
+                nextLink = $"{Request.Scheme}://{Request.Host}{Request.Path}?singleInstanceDelegationEventId={nextEventId}";
+            }
+
+            // create result
+            Paginated<InstanceDelegationChange> result;
+            PaginatedLinks link = new PaginatedLinks(nextLink);
+            result = new Paginated<InstanceDelegationChange>(link, data);
+
+            // return result
+            return Ok(result);
         }
     }
 }
