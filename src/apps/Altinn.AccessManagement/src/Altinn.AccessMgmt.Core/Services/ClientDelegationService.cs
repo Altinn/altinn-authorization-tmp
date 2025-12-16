@@ -17,7 +17,7 @@ public partial class ClientDelegationService(
     AppDbContext db,
     ConnectionQuery connectionQuery) : IClientDelegationService
 {
-    public async Task<Result<List<ClientDelegationAgentDto>>> GetAgentsAsync(Guid partyId, CancellationToken cancellationToken = default)
+    public async Task<Result<List<AgentDto>>> GetAgentsAsync(Guid partyId, CancellationToken cancellationToken = default)
     {
         var connections = await connectionQuery.GetConnectionsToOthersAsync(
             new ConnectionQueryFilter
@@ -63,10 +63,12 @@ public partial class ClientDelegationService(
         }
 
         var entity = await db.Entities.FirstOrDefaultAsync(e => e.Id == toUuid, cancellationToken);
-        if (entity is null
-            || (entity.TypeId != EntityTypeConstants.Person)
-            || (entity.TypeId != EntityTypeConstants.SystemUser && entity.VariantId == EntityVariantConstants.AgentSystem)
-            )
+        if (entity is null)
+        {
+            return Problems.EntityTypeNotFound;
+        }
+
+        if ((entity.TypeId != EntityTypeConstants.Person) && entity.TypeId != EntityTypeConstants.SystemUser && entity.VariantId == EntityVariantConstants.AgentSystem)
         {
             return Problems.UnsupportedEntityType;
         }
@@ -100,7 +102,7 @@ public interface IClientDelegationService
 {
     Task<Result<List<ClientDto>>> GetClientsAsync(Guid partyId, CancellationToken cancellationToken = default);
 
-    Task<Result<List<ClientDelegationAgentDto>>> GetAgentsAsync(Guid partyId, CancellationToken cancellationToken = default);
+    Task<Result<List<AgentDto>>> GetAgentsAsync(Guid partyId, CancellationToken cancellationToken = default);
 
     Task<Result<AssignmentDto>> AddAgent(Guid partyId, Guid toUuid, CancellationToken cancellationToken = default);
 
