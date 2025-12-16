@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Errors;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
+using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
@@ -18,6 +20,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace AccessMgmt.Tests.Controllers.Enterprise
 {
@@ -26,6 +29,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
     /// </summary>
     public class ConsentControllerTestEnterprise(WebApplicationFixture fixture) : IClassFixture<WebApplicationFixture>
     {
+        private readonly Mock<IAmPartyRepository> _mockAmPartyRepository = new Mock<IAmPartyRepository>();
+
         private WebApplicationFactory<Program> Fixture { get; } = fixture.WithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
@@ -37,6 +42,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                 services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
                 services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                 services.AddSingleton<IPDP, PdpPermitMock>();
+                services.AddSingleton(provider => new ConsentControllerTestEnterprise(fixture)._mockAmPartyRepository.Object);
             });
         });
 
@@ -45,6 +51,86 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
+        private void SetupMockPartyRepository()
+        {
+            // Setup default mock responses for common test data
+            _mockAmPartyRepository.Setup(x => x.GetByPersonNo(It.IsAny<PersonIdentifier>(), It.IsAny<CancellationToken>()))
+           .ReturnsAsync(new MinimalParty
+           {
+               PartyUuid = Guid.Parse("f47ac10b-58cc-4372-a567-0e02b2c3d479"),
+               PartyId = 501234,
+               Name = "Ola Nordmann",
+               PersonId = "01025161013",
+               PartyType = Guid.Parse("bfe09e70-e868-44b3-8d81-dfe0e13e058a") // Person type
+           });
+
+            // Person: 01025161013
+            _mockAmPartyRepository.Setup(x => x.GetByPersonNo(PersonIdentifier.Parse("01025161013"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MinimalParty
+                {
+                    PartyUuid = Guid.Parse("f47ac10b-58cc-4372-a567-0e02b2c3d479"),
+                    PartyId = 501234,
+                    Name = "Ola Nordmann",
+                    PersonId = "01025161013",
+                    PartyType = Guid.Parse("bfe09e70-e868-44b3-8d81-dfe0e13e058a") // Person type
+                });
+
+            // Organization: 810419512
+            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse("810419512"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MinimalParty
+                {
+                    PartyUuid = Guid.Parse("a47ac10b-58cc-4372-a567-0e02b2c3d480"),
+                    PartyId = 501235,
+                    Name = "Test Organization AS",
+                    OrganizationId = "810419512",
+                    PartyType = Guid.Parse("8c216e2f-afdd-4234-9ba2-691c727bb33d") // Organization type
+                });
+
+            // Organization: 991825827
+            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse("991825827"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MinimalParty
+                {
+                    PartyUuid = Guid.Parse("b47ac10b-58cc-4372-a567-0e02b2c3d481"),
+                    PartyId = 501236,
+                    Name = "Another Test Organization AS",
+                    OrganizationId = "991825827",
+                    PartyType = Guid.Parse("8c216e2f-afdd-4234-9ba2-691c727bb33d") // Organization type
+                });
+
+            // Organization: 810418192
+            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse("810418192"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MinimalParty
+                {
+                    PartyUuid = Guid.Parse("c47ac10b-58cc-4372-a567-0e02b2c3d482"),
+                    PartyId = 501237,
+                    Name = "Handler Organization AS",
+                    OrganizationId = "810418192",
+                    PartyType = Guid.Parse("8c216e2f-afdd-4234-9ba2-691c727bb33d") // Organization type
+                });
+
+            // Person: 01025181049 (for duplicate test)
+            _mockAmPartyRepository.Setup(x => x.GetByPersonNo(PersonIdentifier.Parse("01025181049"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MinimalParty
+                {
+                    PartyUuid = Guid.Parse("d47ac10b-58cc-4372-a567-0e02b2c3d483"),
+                    PartyId = 501238,
+                    Name = "Kari Nordmann",
+                    PersonId = "01025181049",
+                    PartyType = Guid.Parse("bfe09e70-e868-44b3-8d81-dfe0e13e058a") // Person type
+                });
+
+            // Non-existing person: 01014922047 (should return null)
+            _mockAmPartyRepository.Setup(x => x.GetByPersonNo(PersonIdentifier.Parse("01014922047"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((MinimalParty)null);
+
+            // Setup default null returns for any other calls
+            _mockAmPartyRepository.Setup(x => x.GetByPersonNo(It.IsAny<PersonIdentifier>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((MinimalParty)null);
+            
+            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(It.IsAny<OrganizationNumber>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((MinimalParty)null);
+        }
+
         /// <summary>
         /// Test get consent. Expect a consent in response
         /// </summary>
@@ -52,6 +138,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_Valid()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -117,6 +205,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequestByOrg_Valid()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -184,6 +274,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequestByOrg_InvalidUrl()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -241,6 +333,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequestDuplicatePost_Valid()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -318,6 +412,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequestDuplicatePost_InvalidDifferentFrom()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -389,6 +485,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_AndCheckStatus_Valid()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -468,6 +566,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequestRequiredDelegator_AndCheckStatus_Valid()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -548,6 +648,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequestHandledByParty_AndCheckStatus_Valid()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -632,6 +734,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_ValidWithoutMetadata()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -692,6 +796,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_ValidTwin()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -777,6 +883,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_IncompatibleTemplates()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -850,6 +958,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_MissingMetadata()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -901,6 +1011,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_WrongNamingMetadata()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -976,6 +1088,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_UnknownMetadata()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -1034,6 +1148,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_MissingRights()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -1071,6 +1187,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_MissingAction()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
@@ -1128,6 +1246,8 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         [Fact]
         public async Task CreateConsentRequest_FromIsNonExistingPerson()
         {
+            SetupMockPartyRepository();
+            
             Guid requestID = Guid.CreateVersion7();
             ConsentRequestDto consentRequest = new ConsentRequestDto
             {
