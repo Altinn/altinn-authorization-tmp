@@ -101,7 +101,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             {
                 Log.SyncError(_logger, ex);
             }
-
         }
 
         private async Task SyncAltinnClientRoles(ILease lease, CancellationToken cancellationToken)
@@ -150,7 +149,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices
             GC.SuppressFinalize(this);
         }
 
-        /// <inheritdoc/>
         public void Dispose(bool disposing)
         {
             if (disposing)
