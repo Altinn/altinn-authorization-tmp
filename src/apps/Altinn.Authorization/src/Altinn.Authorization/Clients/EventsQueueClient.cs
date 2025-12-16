@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -14,6 +16,7 @@ using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IO;
 
 namespace Altinn.Platform.Authorization.Clients
 {
@@ -27,6 +30,7 @@ namespace Altinn.Platform.Authorization.Clients
 
         private QueueClient _authenticationEventQueueClient;
         private readonly ILogger<EventsQueueClient> _logger;
+        private static readonly RecyclableMemoryStreamManager _manager = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EventsQueueClient"/> class.
@@ -42,28 +46,17 @@ namespace Altinn.Platform.Authorization.Clients
         }
 
         /// <inheritdoc/>
-        public async Task<QueuePostReceipt> EnqueueAuthorizationEvent(string content, CancellationToken cancellationToken = default)
+        public async Task<QueuePostReceipt> EnqueueAuthorizationEvent(AuthorizationEvent authorizationEvent, CancellationToken cancellationToken = default)
         {
             try
             {
                 QueueClient client = await GetAuthorizationEventQueueClient();
                 TimeSpan timeToLive = TimeSpan.FromDays(_settings.TimeToLive);
 
-                // Prepare the message as UTF-8 bytes and Base64 encode (if you must keep Base64)
-                byte[] utf8Bytes = Encoding.UTF8.GetBytes(content);
-                string base64Content = Convert.ToBase64String(utf8Bytes);
+                byte[] data = CompressAuthorizationEvent(authorizationEvent, cancellationToken);
 
-                var options = new JsonSerializerOptions
+                if (data.Length > 64 * 1024)
                 {
-                    PropertyNameCaseInsensitive = true,
-                };
-                options.Converters.Add(new JsonStringEnumConverter());
-                // Azure Storage Queue message size limit is 64 KB (65536 bytes)
-                if (base64Content.Length > 64 * 1024)
-                {
-                    AuthorizationEvent? authorizationEvent = JsonSerializer.Deserialize<AuthorizationEvent>(content, options);
-                    
-                    // Replace with a small JSON message and a GitHub link
                     var fallbackJson = System.Text.Json.JsonSerializer.Serialize(new
                     {
                         message = "ContextRequestJson is not available due to size limitations.",
@@ -71,11 +64,10 @@ namespace Altinn.Platform.Authorization.Clients
                     });
 
                     authorizationEvent.ContextRequestJson = fallbackJson;
-
-                    base64Content = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(authorizationEvent, options)));
                 }
 
-                await client.SendMessageAsync(base64Content, null, timeToLive, cancellationToken);      
+                data = CompressAuthorizationEvent(authorizationEvent, cancellationToken);
+                await client.SendMessageAsync(BinaryData.FromBytes(data), null, timeToLive, cancellationToken);      
             }
             catch (OperationCanceledException ex)
             {
@@ -100,6 +92,20 @@ namespace Altinn.Platform.Authorization.Clients
             }
 
             return _authenticationEventQueueClient;
+        }
+
+        private byte[] CompressAuthorizationEvent(AuthorizationEvent authorizationEvent, CancellationToken cancellationToken)
+        {
+            using var stream = _manager.GetStream();
+            stream.Write("01"u8 /* version header */);
+            {
+                using var compressor = new BrotliStream(stream, CompressionLevel.Fastest, leaveOpen: true);
+                JsonSerializer.Serialize(compressor, authorizationEvent, JsonSerializerOptions.Web);
+            }
+
+            stream.Position = 0;
+            byte[] data = new byte[stream.Length];
+            return data;
         }
     }
 }
