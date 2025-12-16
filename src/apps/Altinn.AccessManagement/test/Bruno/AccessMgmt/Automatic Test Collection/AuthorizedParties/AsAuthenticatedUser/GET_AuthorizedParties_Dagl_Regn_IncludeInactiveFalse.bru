@@ -1,11 +1,11 @@
 meta {
-  name: POST_ResourceOwner_AuthorizedParties_Dagl_Forretningsforer
+  name: GET_AuthorizedParties_Dagl_Regn_IncludeInactiveFalse
   type: http
-  seq: 7
+  seq: 15
 }
 
-post {
-  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true
+get {
+  url: {{baseUrl}}/accessmanagement/api/v1/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true&includeInactiveParties=false
   body: json
   auth: inherit
 }
@@ -14,6 +14,7 @@ params:query {
   includeAltinn2: true
   includeAltinn3: true
   includeAccessPackages: true
+  includeInactiveParties: false
 }
 
 headers {
@@ -21,25 +22,21 @@ headers {
   Accept: application/json
 }
 
-body:json {
-  {
-    "type": "urn:altinn:person:identifier-no",
-    "value": "{{personId}}"
-  }
-}
-
 script:pre-request {
+  bru.runner.skipRequest();
+  
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_Dagl_Forretningsforer");
-  bru.setVar("personId", testdata.forretningsforerNonfigurativEmosjonellPuma.dagligleder.pid);
+  bru.setVar("requestName", "GET_AuthorizedParties_Dagl_Regn_IncludeInactiveFalse");
   
   var getTokenParameters = {
-    auth_org: sharedtestdata.serviceOwners.digdir.org,
-    auth_orgNo: sharedtestdata.serviceOwners.digdir.orgno,
-    auth_tokenType: sharedtestdata.authTokenType.enterprise,
-    auth_scopes: sharedtestdata.auth_scopes.authorizedPartiesResourceOwner
+    auth_userId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.userId,
+    auth_partyId: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyId,
+    auth_partyUuid: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.partyUuid,
+    auth_ssn: testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid,
+    auth_tokenType: sharedtestdata.authTokenType.personal,
+    auth_scopes: sharedtestdata.auth_scopes.portalEnduser
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
@@ -146,28 +143,54 @@ tests {
   
   });
   
-  test(requestName + "|Find expected forretningsforer Clients AuthorizedParty and AuthorizedAccessPackages", function() {  
+  test(requestName + "|Find expected Client AuthorizedParty and AuthorizedAccessPackages", function() {  
     // Test that the expected client party exists in the response with the expected packages
     
     const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
-    const esekTargetParty = allParties.find(party => party.partyUuid === testdata.forretningsforerNonfigurativEmosjonellPuma.esekClient.partyUuid);
-    const nonBrlEsekTargetParty = allParties.find(party => party.partyUuid === testdata.forretningsforerNonfigurativEmosjonellPuma.nonBrlEsekClient.partyUuid);
+    const targetParty = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_USENSUELL_UVIRKSOM_TIGER.partyUuid);
   
-    assert.exists(esekTargetParty, 'Expected ESEK-ClientParty: '+testdata.forretningsforerNonfigurativEmosjonellPuma.esekClient.name+' to exist');
-    assert.exists(nonBrlEsekTargetParty, 'Expected NonBrlESEK-ClientParty: '+testdata.forretningsforerNonfigurativEmosjonellPuma.nonBrlEsekClient.name+' to exist');  
+    assert.exists(targetParty, 'Expected ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_USENSUELL_UVIRKSOM_TIGER.name+' to exist');
+    assert.includeMembers(targetParty.authorizedAccessPackages, ["regnskapsforer-lonn", "regnskapsforer-med-signeringsrettighet", "regnskapsforer-uten-signeringsrettighet"]);
+    expect(targetParty.authorizedAccessPackages.length, `authorizedAccessPackages for Client contains unexpected packages`).to.equal(3);
     
-    assert.includeMembers(esekTargetParty.authorizedAccessPackages, ["forretningsforer-eiendom"]);
-    assert.notIncludeMembers(nonBrlEsekTargetParty.authorizedAccessPackages, ["forretningsforer-eiendom"]);
+  });
+  
+  test(requestName + "|Find expected Innehaver of ENK Client AuthorizedParty and AuthorizedAccessPackages", function() {  
+    // Test that the expected client party exists in the response with the expected packages
+    
+    const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
+    const innehaverOfActiveEnk = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.innehaver.partyUuid);
+  
+    assert.exists(innehaverOfActiveEnk, 'Expected Innehaver of Enk-ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_HUMAN_TOPP_KATT_BIL.innehaver.name+' to exist');
+    assert.includeMembers(innehaverOfActiveEnk.authorizedAccessPackages, ["regnskapsforer-lonn", "regnskapsforer-med-signeringsrettighet", "regnskapsforer-uten-signeringsrettighet"]);
+    expect(innehaverOfActiveEnk.authorizedAccessPackages.length, `authorizedAccessPackages for Client contains unexpected packages`).to.equal(3);
+    
+    assert.exists(innehaverOfDeletedEnkLessThanTwoYears, 'Expected Innehaver of Enk-ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2025_11_27_InnehaverAccess.innehaver.name+' to exist');
+    assert.includeMembers(innehaverOfDeletedEnkLessThanTwoYears.authorizedAccessPackages, ["regnskapsforer-lonn", "regnskapsforer-med-signeringsrettighet", "regnskapsforer-uten-signeringsrettighet"]);
+    expect(innehaverOfDeletedEnkLessThanTwoYears.authorizedAccessPackages.length, `authorizedAccessPackages for Client contains unexpected packages`).to.equal(3);
+    
+    assert.strictEqual(innehaverOfDeletedEnkMoreThanTwoYears, undefined, 'Expected Innehaver of Enk-ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2023_11_01_NoInnehaverAccess.innehaver.name+' to NOT exist');
+    
   });
   
   test(requestName + "|Find expected KeyRole AuthorizedParty and AuthorizedAccessPackages", function() {    
     const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
-    const targetParty = allParties.find(party => party.partyUuid === testdata.forretningsforerNonfigurativEmosjonellPuma.partyUuid);
+    const targetParty = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
   
-    assert.exists(targetParty, 'Expected KeyRole-party: '+testdata.forretningsforerNonfigurativEmosjonellPuma.name+' to exist');
+    assert.exists(targetParty, 'Expected KeyRole-party: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.name+' to exist');
     assert.notIncludeMembers(targetParty.authorizedAccessPackages, ["eksplisitt", "maskinporten-scopes-nuf", "post-til-virksomheten-med-taushetsbelagt-innhold"]);
     expect(targetParty.authorizedAccessPackages.length, `authorizedAccessPackages for Dagl-KeyRole-Party contains unexpected packages`).to.equal(124);
     
+  });
+  
+  test(requestName + "|Check deleted AuthorizedParties are not included", function() {    
+    const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
+    const deletedEnkLessThanTwoYears = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2025_11_27_InnehaverAccess.partyUuid);
+    const innehaverOfDeletedEnkLessThanTwoYears = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2025_11_27_InnehaverAccess.innehaver.partyUuid);
+  
+    assert.strictEqual(deletedEnkLessThanTwoYears, undefined, 'Expected Deleted Enk-ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2023_11_01_NoInnehaverAccess.name+' to NOT exist');
+    assert.strictEqual(innehaverOfDeletedEnkLessThanTwoYears, undefined, 'Expected Innehaver of deleted Enk-ClientParty: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.client_ENK_DELETED_2023_11_01_NoInnehaverAccess.innehaver.name+' to NOT exist');  
+   
   });
   
   
