@@ -15,25 +15,22 @@ public static partial class StaticDataIngest
     /// </summary>
     public async static Task IngestRolePackage(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
-        var packages = (await dbContext.Packages.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id, StringComparer.OrdinalIgnoreCase);
-        var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id, StringComparer.OrdinalIgnoreCase);
+        var roleDagl = RoleConstants.ManagingDirector.Id;
+        var roleLede = RoleConstants.ChairOfTheBoard.Id;
+        var roleInnh = RoleConstants.Innehaver.Id;
+        var roleDtso = RoleConstants.ParticipantFullResponsibility.Id;
+        var roleDtpr = RoleConstants.ParticipantSharedResponsibility.Id;
+        var roleKomp = RoleConstants.GeneralPartner.Id;
+        var roleBest = RoleConstants.ManagingShipowner.Id;
+        var roleBobe = RoleConstants.EstateAdministrator.Id;
+        var roleKnuf = RoleConstants.ContactPersonNUF.Id;
+        var roleHadm = RoleConstants.MainAdministrator.Id;
 
-        var roleDagl = roles["urn:altinn:external-role:ccr:daglig-leder"];
-        var roleLede = roles["urn:altinn:external-role:ccr:styreleder"];
-        var roleInnh = roles["urn:altinn:external-role:ccr:innehaver"];
-        var roleDtso = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"];
-        var roleDtpr = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"];
-        var roleKomp = roles["urn:altinn:external-role:ccr:komplementar"];
-        var roleBest = roles["urn:altinn:external-role:ccr:bestyrende-reder"];
-        var roleBobe = roles["urn:altinn:external-role:ccr:bostyrer"];
-        var roleKnuf = roles["urn:altinn:external-role:ccr:kontaktperson-nuf"];
-        var roleHadm = roles["urn:altinn:role:hovedadministrator"];
-
-        var packageKA = packages["urn:altinn:accesspackage:klientadministrator"];
-        var packageTS = packages["urn:altinn:accesspackage:tilgangsstyrer"];
-        var packageHA = packages["urn:altinn:accesspackage:hovedadministrator"];
-        var packageMPA = packages["urn:altinn:accesspackage:maskinporten-administrator"];
-        var packageKTS = packages["urn:altinn:accesspackage:konkursbo-tilgangsstyrer"];
+        var packageKA = PackageConstants.ClientAdministrator.Id;
+        var packageTS = PackageConstants.AccessManager.Id;
+        var packageHA = PackageConstants.MainAdministrator.Id;
+        var packageMPA = PackageConstants.MaskinportenAdministrator.Id;
+        var packageKTS = PackageConstants.KonkursboAdministrator.Id;
 
         var data = new List<RolePackage>()
         {
