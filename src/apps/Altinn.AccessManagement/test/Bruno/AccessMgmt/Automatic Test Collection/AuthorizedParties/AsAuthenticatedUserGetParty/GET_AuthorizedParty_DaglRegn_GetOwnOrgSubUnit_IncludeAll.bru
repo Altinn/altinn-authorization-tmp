@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/accessmanagement/api/v1/authorizedparty/{{partyId}}?includeAltinn2=true&includeAltinn3=true&includeRoles=true&includeAccessPackages=true&includeResources=true&includeInstances=true
+  url: {{baseUrl}}/accessmanagement/api/v1/authorizedparty/{{partyId}}?includeAltinn2=true&includeAltinn3=true&includeRoles=true&includeAccessPackages=true&includeResources=true&includeInstances=true&includePartiesViaKeyRoles=true&includeSubParties=true&includeInactiveParties=true
   body: json
   auth: inherit
 }
@@ -17,6 +17,9 @@ params:query {
   includeAccessPackages: true
   includeResources: true
   includeInstances: true
+  includePartiesViaKeyRoles: true
+  includeSubParties: true
+  includeInactiveParties: true
 }
 
 headers {
