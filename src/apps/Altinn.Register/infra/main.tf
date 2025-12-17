@@ -158,7 +158,7 @@ module "key_vault" {
     [
       for rbac in var.key_vault_rbac :
       {
-        operation_id         = "grant_${kv_rbac.id}_${rbac.rolename}"
+        operation_id         = "grant_${kv_rbac.id}_${replace(lower(kv_rbac.rolename), " ", "_")}"
         principal_id         = rbac.id
         role_definition_name = rbac.rolename
       }
