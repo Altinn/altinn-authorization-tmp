@@ -156,6 +156,14 @@ module "key_vault" {
     }
     ],
     [
+      for rbac in var.key_vault_rbac :
+      {
+        operation_id         = "grant_${kv_rbac.id}_${rbac.rolename}"
+        principal_id         = rbac.id
+        role_definition_name = rbac.rolename
+      }
+    ],
+    [
       for principal_id in var.platform_workflow_principal_ids :
       {
         operation_id         = "grant_register_platform_app_secret_user_${principal_id}"
