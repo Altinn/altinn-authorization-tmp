@@ -34,19 +34,6 @@ namespace Altinn.Platform.Authorization.Services.Implementation
             _timeProvider = timeProvider;
         }
 
-        /// <summary>
-        /// Queues an authorization event to the logqueue
-        /// </summary>
-        /// <param name="authorizationEvent">authorization event</param>
-        /// <param name="cancellationToken">The cancellationToken</param>
-        public void CreateAuthorizationEvent(AuthorizationEvent authorizationEvent, CancellationToken cancellationToken = default)
-        {
-            if (authorizationEvent != null)
-            {
-                _queueClient.EnqueueAuthorizationEvent(authorizationEvent, cancellationToken);
-            }
-        }
-
         /// <inheritdoc />
         public async Task CreateAuthorizationEvent(IFeatureManager featureManager, XacmlContextRequest contextRequest, HttpContext context, XacmlContextResponse contextResponse, CancellationToken cancellationToken = default)
         {
