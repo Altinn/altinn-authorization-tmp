@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessMgmt.Core.Utils;
 using Altinn.AccessMgmt.PersistenceEF.Constants;

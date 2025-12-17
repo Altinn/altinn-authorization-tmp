@@ -167,7 +167,7 @@ public partial class DtoMapper : IDtoMapper
             var party = Convert(entity.To);
             var roles = agent.GroupBy(c => c.Role.Id);
             var roleAccess = new List<AgentDto.AgentRoleAccessPackages>();
-            
+
             foreach (var role in roles)
             {
                 var access = new AgentDto.AgentRoleAccessPackages
@@ -196,13 +196,13 @@ public partial class DtoMapper : IDtoMapper
 
         foreach (var client in clients)
         {
-            var organization = client.First();
+            var entity = client.First().From;
             var party = new ClientDto.ClientParty
             {
-                Id = organization.From.Id,
-                Name = organization.From.Name,
-                OrganizationNumber = organization.From.OrganizationIdentifier,
-                UnitType = organization.From.Variant.Name,
+                Id = entity.Id,
+                Name = entity.Name,
+                OrganizationNumber = entity.OrganizationIdentifier,
+                UnitType = entity.Variant.Name,
             };
 
             var roles = client.GroupBy(c => c.Role.Id);
