@@ -8,7 +8,6 @@ using Altinn.Authorization.Api.Contracts.AccessManagement;
 using Altinn.Authorization.ProblemDetails;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SystemuserClientDto = Altinn.Authorization.Api.Contracts.AccessManagement.SystemuserClientDto;
 using CreateSystemDelegationRequestDto = Altinn.Authorization.Api.Contracts.AccessManagement.CreateSystemDelegationRequestDto;
 
 namespace Altinn.AccessManagement.Api.Internal.Controllers;
