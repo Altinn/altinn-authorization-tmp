@@ -1,15 +1,12 @@
-﻿using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using Altinn.AccessManagement.Core.Clients.Interfaces;
+﻿using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Errors;
-using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Models.Party;
+using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
 using Altinn.AccessManagement.Tests.Util;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.Consent;
 using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
@@ -21,6 +18,10 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace AccessMgmt.Tests.Controllers.Enterprise
 {
@@ -63,52 +64,84 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
         {
             // Reset all existing setups
             _mockAmPartyRepository.Reset();
-            
             // Setup specific mock responses for test data
             
+            MinimalParty elenafjear = new MinimalParty
+            {
+                PartyUuid = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"),
+                PartyId = 513370001,
+                Name = "ELENA FJÆR",
+                PersonId = "01025161013",
+                PartyType = EntityTypeConstants.Person // Person type
+            };
+
             // Person: 01025161013
             _mockAmPartyRepository.Setup(x => x.GetByPersonNo(PersonIdentifier.Parse("01025161013"), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new MinimalParty
-                {
-                    PartyUuid = Guid.Parse("f47ac10b-58cc-4372-a567-0e02b2c3d479"),
-                    PartyId = 501234,
-                    Name = "Ola Nordmann",
-                    PersonId = "01025161013",
-                    PartyType = Guid.Parse("bfe09e70-e868-44b3-8d81-dfe0e13e058a") // Person type
-                });
+                .ReturnsAsync(elenafjear);
+
+            _mockAmPartyRepository.Setup(x => x.GetByPartyId(elenafjear.PartyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(elenafjear);
+
+            _mockAmPartyRepository.Setup(x => x.GetByUuid(elenafjear.PartyUuid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(elenafjear);
 
             // Organization: 810419512
-            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse("810419512"), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new MinimalParty
-                {
-                    PartyUuid = Guid.Parse("a47ac10b-58cc-4372-a567-0e02b2c3d480"),
-                    PartyId = 501235,
-                    Name = "Test Organization AS",
-                    OrganizationId = "810419512",
-                    PartyType = Guid.Parse("8c216e2f-afdd-4234-9ba2-691c727bb33d") // Organization type
-                });
+            MinimalParty smekkFullBank = new MinimalParty
+            {
+                PartyUuid = Guid.Parse("a47ac10b-58cc-4372-a567-0e02b2c3d480"),
+                PartyId = 501235,
+                Name = "SmekkFull Bank AS",
+                OrganizationId = "810419512",
+                PartyType = EntityTypeConstants.Organisation // Organization type
+            };
+            
+            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse(smekkFullBank.OrganizationId), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(smekkFullBank);
+
+            _mockAmPartyRepository.Setup(x => x.GetByPartyId(smekkFullBank.PartyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(smekkFullBank);
+
+            _mockAmPartyRepository.Setup(x => x.GetByUuid(smekkFullBank.PartyUuid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(smekkFullBank);
 
             // Organization: 991825827
-            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse("991825827"), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new MinimalParty
-                {
-                    PartyUuid = Guid.Parse("b47ac10b-58cc-4372-a567-0e02b2c3d481"),
-                    PartyId = 501236,
-                    Name = "Another Test Organization AS",
-                    OrganizationId = "991825827",
-                    PartyType = Guid.Parse("8c216e2f-afdd-4234-9ba2-691c727bb33d") // Organization type
-                });
+            MinimalParty digitaliseringsdirektoratet = new MinimalParty
+            {
+                PartyUuid = Guid.Parse("CDDA2F11-95C5-4BE4-9690-54206FF663F6"),
+                PartyId = 501236,
+                Name = "DIGITALISERINGSDIREKTORATET",
+                OrganizationId = "991825827",
+                PartyType = EntityTypeConstants.Organisation // Organization type
+            };
+
+            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse(digitaliseringsdirektoratet.OrganizationId), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(digitaliseringsdirektoratet);
+
+            _mockAmPartyRepository.Setup(x => x.GetByPartyId(digitaliseringsdirektoratet.PartyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(digitaliseringsdirektoratet);
+
+            _mockAmPartyRepository.Setup(x => x.GetByUuid(digitaliseringsdirektoratet.PartyUuid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(digitaliseringsdirektoratet);
 
             // Organization: 810418192
+
+            MinimalParty banksupplierorg = new MinimalParty
+            {
+                PartyUuid = Guid.Parse("00000000-0000-0000-0005-000000004219"),
+                PartyId = 50004219,
+                Name = "KOLSAAS OG FLAAM",
+                OrganizationId = "810418192",
+                PartyType = EntityTypeConstants.Organisation // Organization type
+            };
+
             _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse("810418192"), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new MinimalParty
-                {
-                    PartyUuid = Guid.Parse("c47ac10b-58cc-4372-a567-0e02b2c3d482"),
-                    PartyId = 501237,
-                    Name = "Handler Organization AS",
-                    OrganizationId = "810418192",
-                    PartyType = Guid.Parse("8c216e2f-afdd-4234-9ba2-691c727bb33d") // Organization type
-                });
+                .ReturnsAsync(banksupplierorg);
+
+            _mockAmPartyRepository.Setup(x => x.GetByPartyId(banksupplierorg.PartyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(banksupplierorg);
+
+            _mockAmPartyRepository.Setup(x => x.GetByUuid(banksupplierorg.PartyUuid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(banksupplierorg);
 
             // Person: 01025181049 (for duplicate test)
             _mockAmPartyRepository.Setup(x => x.GetByPersonNo(PersonIdentifier.Parse("01025181049"), It.IsAny<CancellationToken>()))
@@ -118,7 +151,7 @@ namespace AccessMgmt.Tests.Controllers.Enterprise
                     PartyId = 501238,
                     Name = "Kari Nordmann",
                     PersonId = "01025181049",
-                    PartyType = Guid.Parse("bfe09e70-e868-44b3-8d81-dfe0e13e058a") // Person type
+                    PartyType = EntityTypeConstants.Person // Person type
                 });
 
             // Non-existing person: 01014922047 (should return null)
