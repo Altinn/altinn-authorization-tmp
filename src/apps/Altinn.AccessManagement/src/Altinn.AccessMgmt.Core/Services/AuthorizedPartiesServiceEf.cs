@@ -12,6 +12,7 @@ using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
+using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 
 namespace Altinn.AccessManagement.Core.Services;
 
@@ -45,19 +46,24 @@ public class AuthorizedPartiesServiceEf(
             return await Task.FromResult(new List<AuthorizedParty>());
         }
 
+        filter = await ProcessAutoFilters(filter, subject, cancellationToken);
+
         switch (subject.TypeId)
         {
             case var id when id == EntityTypeConstants.Person.Id:
-
-                // Persons can have key roles for other parties, meaning they inherit access to others via these parties.
-                var keyRoleAssignments = await repoService.GetKeyRoleAssignments(subject.Id, cancellationToken);
-                List<Guid> keyRoleEntities = keyRoleAssignments.Select(t => t.FromId).Distinct().ToList();
-
-                // Also get any sub-units of key role entities
-                if (keyRoleEntities.Count > 0)
+                List<Guid> keyRoleEntities = [];
+                if (filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto || filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True)
                 {
-                    var subUnits = await repoService.GetSubunits(keyRoleEntities, cancellationToken);
-                    keyRoleEntities.AddRange(subUnits.Select(t => t.Id));
+                    // Persons can have key roles for other parties, meaning they inherit access to others via these parties.
+                    var keyRoleAssignments = await repoService.GetKeyRoleAssignments(subject.Id, cancellationToken);
+                    keyRoleEntities = keyRoleAssignments.Select(t => t.FromId).Distinct().ToList();
+
+                    // Also get any sub-units of key role entities
+                    if (keyRoleEntities.Count > 0)
+                    {
+                        var subUnits = await repoService.GetSubunits(keyRoleEntities, cancellationToken);
+                        keyRoleEntities.AddRange(subUnits.Select(t => t.Id));
+                    }
                 }
 
                 return await GetAuthorizedParties(filter, subject, keyRoleEntities, cancellationToken);
@@ -65,15 +71,15 @@ public class AuthorizedPartiesServiceEf(
             case var id when id == EntityTypeConstants.EnterpriseUser.Id:
 
                 // Enterprise user can also have key role (ECKeyRole) for their organization. Will still need to get these via SBL Bridge until A2-role import is complete.
-                IEnumerable<Entity> ecKeyRoleEntities = [];
-                if (subject.UserId.HasValue)
+                IEnumerable<Entity> eckeyroleEntities = [];
+                if (subject.UserId.HasValue && (filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto || filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True))
                 {
                     // A2 lookup of key role parties includes subunits by default
                     List<int> keyRolePartyIds = await contextRetrievalService.GetKeyRolePartyIds(subject.UserId.Value, cancellationToken);
-                    ecKeyRoleEntities = await repoService.GetEntitiesByPartyIds(keyRolePartyIds, cancellationToken);
+                    eckeyroleEntities = await repoService.GetEntitiesByPartyIds(keyRolePartyIds, cancellationToken);
                 }
 
-                return await GetAuthorizedParties(filter, subject, ecKeyRoleEntities.Select(t => t.Id), cancellationToken);
+                return await GetAuthorizedParties(filter, subject, eckeyroleEntities.Select(t => t.Id), cancellationToken);
 
             case var id when id == EntityTypeConstants.Organisation.Id:
 
@@ -196,9 +202,7 @@ public class AuthorizedPartiesServiceEf(
         {
             switch (partyAttribute.Type)
             {
-                case AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute:
                 case AltinnXacmlConstants.MatchAttributeIdentifiers.PersonUuid:
-                case AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid:
                 case AltinnXacmlConstants.MatchAttributeIdentifiers.EnterpriseUserUuid:
                 case AltinnXacmlConstants.MatchAttributeIdentifiers.SystemUserUuid:
                     if (!Guid.TryParse(partyAttribute.Value, out Guid partyUuid))
@@ -208,6 +212,27 @@ public class AuthorizedPartiesServiceEf(
 
                     // Directly adds the uuid we don't bother checking existence here
                     partyUuids.Add(partyUuid);
+
+                    break;
+                case AltinnXacmlConstants.MatchAttributeIdentifiers.PartyUuidAttribute:
+                case AltinnXacmlConstants.MatchAttributeIdentifiers.OrganizationUuid:
+                    if (!Guid.TryParse(partyAttribute.Value, out partyUuid))
+                    {
+                        throw new ArgumentException(message: $"Not a well-formed uuid: {partyAttribute.Value}", paramName: nameof(partyAttributes));
+                    }
+
+                    var uuidEntity = await repoService.GetEntity(partyUuid, cancellationToken);
+                    if (uuidEntity != null)
+                    {
+                        partyUuids.Add(uuidEntity.Id);
+
+                        if (uuidEntity.ParentId.HasValue)
+                        {
+                            // Also add parent uuid to cover subunit filters
+                            partyUuids.Add(uuidEntity.ParentId.Value);
+                        }
+                    }
+
                     break;
                 case AltinnXacmlConstants.MatchAttributeIdentifiers.PartyAttribute:
                     if (!int.TryParse(partyAttribute.Value, out int partyId))
@@ -215,10 +240,16 @@ public class AuthorizedPartiesServiceEf(
                         throw new ArgumentException(message: $"Not a valid integer: {partyAttribute.Value}", paramName: nameof(partyAttributes));
                     }
 
-                    var entity = await repoService.GetEntityByPartyId(partyId, cancellationToken);
-                    if (entity != null)
+                    var partyIdEntity = await repoService.GetEntityByPartyId(partyId, cancellationToken);
+                    if (partyIdEntity != null)
                     {
-                        partyUuids.Add(entity.Id);
+                        partyUuids.Add(partyIdEntity.Id);
+
+                        if (partyIdEntity.ParentId.HasValue)
+                        {
+                            // Also add parent uuid to cover subunit filters
+                            partyUuids.Add(partyIdEntity.ParentId.Value);
+                        }
                     }
 
                     break;
@@ -248,19 +279,43 @@ public class AuthorizedPartiesServiceEf(
                     if (orgEntity != null)
                     {
                         partyUuids.Add(orgEntity.Id);
+
+                        if (orgEntity.ParentId.HasValue)
+                        {
+                            // Also add parent uuid to cover subunit filters
+                            partyUuids.Add(orgEntity.ParentId.Value);
+                        }
                     }
 
                     break;
                 case AltinnXacmlConstants.MatchAttributeIdentifiers.EnterpriseUserName:
-                    var entEntity = await repoService.GetEntityByUsername(partyAttribute.Value, cancellationToken);
-                    if (entEntity != null)
+                    var enterpriseUserEntity = await repoService.GetEntityByUsername(partyAttribute.Value, cancellationToken);
+                    if (enterpriseUserEntity != null)
                     {
-                        partyUuids.Add(entEntity.Id);
+                        partyUuids.Add(enterpriseUserEntity.Id);
                     }
 
                     break;
                 default:
                     throw new ArgumentException(message: $"Unknown attribute type: {partyAttribute.Type}", paramName: nameof(partyAttributes));
+            }
+        }
+
+        return partyUuids;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<Guid>> GetPartyFilterUuids(IEnumerable<Guid> filterUuids, CancellationToken cancellationToken = default)
+    {
+        List<Guid> partyUuids = new();
+        var entities = await repoService.GetEntities(filterUuids, cancellationToken);
+        foreach (var entity in entities)
+        {
+            partyUuids.Add(entity.Id);
+            if (entity.ParentId.HasValue)
+            {
+                // Also add parent uuid to cover subunit filters
+                partyUuids.Add(entity.ParentId.Value);
             }
         }
 
@@ -276,7 +331,7 @@ public class AuthorizedPartiesServiceEf(
         {
             a2Task = Task.Run(async () =>
             {
-                var a2AuthorizedParties = await altinnRolesClient.GetAuthorizedPartiesWithRoles(userSubject.UserId.Value, cancellationToken);
+                var a2AuthorizedParties = await altinnRolesClient.GetAuthorizedPartiesWithRoles(userSubject.UserId.Value, filter.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True, cancellationToken);
 
                 if (filter.PartyFilter?.Count() > 0)
                 {
@@ -649,6 +704,60 @@ public class AuthorizedPartiesServiceEf(
         }
 
         return party;
+    }
+
+    private async Task<AuthorizedPartiesFilters> ProcessAutoFilters(AuthorizedPartiesFilters filters, Entity subject, CancellationToken cancellationToken)
+    {
+        if (filters.IncludePartiesViaKeyRoles != AuthorizedPartiesIncludeFilter.Auto &&
+            filters.IncludeSubParties != AuthorizedPartiesIncludeFilter.Auto &&
+            filters.IncludeInactiveParties != AuthorizedPartiesIncludeFilter.Auto)
+        {
+            // No auto processing needed
+            return filters;
+        }
+
+        if (subject.TypeId != EntityTypeConstants.Person.Id &&
+            subject.TypeId != EntityTypeConstants.SelfIdentified.Id &&
+            subject.TypeId != EntityTypeConstants.EnterpriseUser.Id)
+        {
+            // Only users have profile settings, for other entity types we default to including all
+            filters.IncludePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True;
+            filters.IncludeSubParties = AuthorizedPartiesIncludeFilter.True;
+            filters.IncludeInactiveParties = AuthorizedPartiesIncludeFilter.True;
+            return filters;
+        }
+
+        if (!subject.UserId.HasValue)
+        {
+            Unreachable();
+        }
+
+        var userProfile = await contextRetrievalService.GetNewUserProfile(subject.UserId.Value, cancellationToken);
+        if (userProfile == null)
+        {
+            // Should not happen, but if it does (brand new user perhaps?) we default to including all
+            filters.IncludePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True;
+            filters.IncludeSubParties = AuthorizedPartiesIncludeFilter.True;
+            filters.IncludeInactiveParties = AuthorizedPartiesIncludeFilter.True;
+            return filters;
+        }
+
+        if (filters.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.Auto)
+        {
+            filters.IncludePartiesViaKeyRoles = userProfile.ProfileSettingPreference.ShowClientUnits ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+        }
+
+        if (filters.IncludeSubParties == AuthorizedPartiesIncludeFilter.Auto)
+        {
+            filters.IncludeSubParties = userProfile.ProfileSettingPreference.ShouldShowSubEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+        }
+
+        if (filters.IncludeInactiveParties == AuthorizedPartiesIncludeFilter.Auto)
+        {
+            filters.IncludeInactiveParties = userProfile.ProfileSettingPreference.ShouldShowDeletedEntities ? AuthorizedPartiesIncludeFilter.True : AuthorizedPartiesIncludeFilter.False;
+        }
+
+        return filters;
     }
 
     [DoesNotReturn]

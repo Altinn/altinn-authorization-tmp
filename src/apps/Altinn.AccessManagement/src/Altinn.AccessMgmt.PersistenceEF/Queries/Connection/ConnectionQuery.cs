@@ -7,14 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 
-public enum ConnectionQueryDirection { FromOthers, ToOthers }
-
 /// <summary>
 /// A query based on assignments and delegations
 /// </summary>
 public class ConnectionQuery(AppDbContext db)
 {
-
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
     {
         return await GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, useNewQuery, ct);
@@ -22,7 +19,7 @@ public class ConnectionQuery(AppDbContext db)
 
     public async Task<List<ConnectionQueryExtendedRecord>> GetConnectionsToOthersAsync(ConnectionQueryFilter filter, bool useNewQuery = true, CancellationToken ct = default)
     {
-        return await GetConnectionsAsync(filter, ConnectionQueryDirection.FromOthers, useNewQuery, ct);
+        return await GetConnectionsAsync(filter, ConnectionQueryDirection.ToOthers, useNewQuery, ct);
     }
 
     /// <summary>
@@ -88,6 +85,29 @@ public class ConnectionQuery(AppDbContext db)
         catch (Exception ex)
         {
             throw new Exception($"Failed to get connections with filter: {JsonSerializer.Serialize(filter)}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Slightly optimized connection packages lookup for PIP API
+    /// </summary>
+    public async Task<List<ConnectionQueryExtendedRecord>> GetPipConnectionPackagesAsync(ConnectionQueryFilter filter, CancellationToken ct = default)
+    {
+        try
+        {
+            var baseQuery = BuildBaseQueryFromOthersNew(db, filter);
+            var queryString = baseQuery.ToQueryString();
+
+            var query = EnrichFromEntities(filter, baseQuery);
+            var data = await query.AsNoTracking().ToListAsync(ct);
+            var result = data.Select(ToDtoEmpty).ToList();
+
+            var pkgs = await LoadPackagesByKeyAsync(query, filter, ct);
+            return Attach(result, pkgs, p => p.Id, (dto, list) => dto.Packages = list);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to get pip connection packages with filter: {JsonSerializer.Serialize(filter)}", ex);
         }
     }
 
@@ -198,10 +218,12 @@ public class ConnectionQuery(AppDbContext db)
                     });
 
         var delegations =
-            a1
+            db.Assignments
+                .Where(t => t.ToId == toId)   
+                .Where(t => t.RoleId == RoleConstants.Agent.Id)
                 .Join(
                     db.Delegations,
-                    dkr => dkr.AssignmentId,
+                    dkr => dkr.Id,
                     d => d.ToId,
                     (dkr, d) => new { dkr, d }
                 )
@@ -256,8 +278,9 @@ public class ConnectionQuery(AppDbContext db)
             join enk in db.Entities on innehaverConnection.FromId equals enk.Id
             where reviRegnRoleSet.Contains(reviRegnConnection.RoleId)
                && innehaverConnection.RoleId == RoleConstants.Innehaver.Id
+               && enk.VariantId == EntityVariantConstants.ENK.Id
                && innehaver.DateOfDeath == null
-               && (!enk.IsDeleted || (enk.DeletedAt != null && enk.DeletedAt.Value.AddYears(2) < DateTime.UtcNow))
+               && (!enk.IsDeleted || (enk.DeletedAt != null && enk.DeletedAt.Value.AddYears(2) > DateTime.UtcNow))
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = reviRegnConnection.AssignmentId,
@@ -491,8 +514,9 @@ public class ConnectionQuery(AppDbContext db)
             join enk in db.Entities on innehaverConnection.FromId equals enk.Id
             where (reviRegnConnection.RoleId == RoleConstants.Accountant.Id || reviRegnConnection.RoleId == RoleConstants.Auditor.Id)
                && innehaverConnection.RoleId == RoleConstants.Innehaver.Id
+               && enk.VariantId == EntityVariantConstants.ENK.Id
                && innehaver.DateOfDeath == null
-               && (!enk.IsDeleted || (enk.DeletedAt != null && enk.DeletedAt.Value.AddYears(2) < DateTime.UtcNow))
+               && (!enk.IsDeleted || (enk.DeletedAt != null && enk.DeletedAt.Value.AddYears(2) > DateTime.UtcNow))
             select new ConnectionQueryBaseRecord()
             {
                 AssignmentId = reviRegnConnection.AssignmentId,
@@ -697,6 +721,29 @@ public class ConnectionQuery(AppDbContext db)
                 Role = x.r,
                 Via = x.via,
                 ViaRole = x.viaRole,
+                Reason = x.c.Reason,
+            });
+
+        return query;
+    }
+
+    private IQueryable<ConnectionQueryRecord> EnrichFromEntities(ConnectionQueryFilter filter, IQueryable<ConnectionQueryBaseRecord> allKeys)
+    {
+        var entities = db.Entities.AsQueryable();
+
+        var query = allKeys
+            .Join(entities, c => c.FromId, e => e.Id, (c, f) => new { c, f })
+            .WhereIf(filter.ExcludeDeleted, x => !x.f.IsDeleted)
+            .Select(x => new ConnectionQueryRecord
+            {
+                FromId = x.c.FromId,
+                ToId = x.c.ToId,
+                RoleId = x.c.RoleId,
+                AssignmentId = x.c.AssignmentId,
+                DelegationId = x.c.DelegationId,
+                ViaId = x.c.ViaId,
+                ViaRoleId = x.c.ViaRoleId,
+                From = x.f,
                 Reason = x.c.Reason,
             });
 
@@ -991,5 +1038,10 @@ internal static class ConnectionQueryExtensions
 
         return query.Where(t => ids.Contains(t.RoleId));
     }
+}
 
+public enum ConnectionQueryDirection
+{
+    FromOthers,
+    ToOthers
 }
