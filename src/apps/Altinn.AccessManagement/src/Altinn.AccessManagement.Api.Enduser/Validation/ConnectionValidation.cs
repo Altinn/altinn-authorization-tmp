@@ -32,7 +32,7 @@ internal static class ConnectionValidation
     /// </summary>
     internal static RuleExpression ValidateAddAssignmentWithPersonInput(string personIdentifier, string personLastName) =>
         ValidationComposer.All(
-            ConnectionParameterRules.PersonInput(personIdentifier, personLastName),
+            ConnectionParameterRules.PersonInput(personIdentifier, personLastName)
         );
 
     /// <summary>

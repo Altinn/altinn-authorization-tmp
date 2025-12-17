@@ -197,22 +197,15 @@ public partial class DtoMapper : IDtoMapper
         foreach (var client in clients)
         {
             var entity = client.First().From;
-            var party = new ClientDto.ClientParty
-            {
-                Id = entity.Id,
-                Name = entity.Name,
-                OrganizationNumber = entity.OrganizationIdentifier,
-                UnitType = entity.Variant.Name,
-            };
-
+            var party = Convert(entity);
             var roles = client.GroupBy(c => c.Role.Id);
-            var roleAccess = new List<ClientDto.ClientRoleAccessPackages>();
+            var roleAccess = new List<ClientDto.RoleAccessPackages>();
             foreach (var role in roles)
             {
-                var access = new ClientDto.ClientRoleAccessPackages
+                var access = new ClientDto.RoleAccessPackages
                 {
-                    Role = role.First().Role.Urn,
-                    Packages = role.SelectMany(r => r.Packages.Select(p => p.Name)).Distinct().ToArray(),
+                    Role = ConvertCompactRole(role.First().Role),
+                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToArray(),
                 };
 
                 roleAccess.Add(access);
@@ -220,7 +213,7 @@ public partial class DtoMapper : IDtoMapper
 
             result.Add(new ClientDto
             {
-                Party = party,
+                Client = party,
                 Access = roleAccess,
             });
         }
