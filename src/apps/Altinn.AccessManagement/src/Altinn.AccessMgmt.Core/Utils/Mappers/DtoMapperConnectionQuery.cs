@@ -156,36 +156,32 @@ public partial class DtoMapper : IDtoMapper
         };
     }
 
-    public static List<ClientDelegationAgentDto> ConvertToClientDelegationAgentDto(List<ConnectionQueryExtendedRecord> connections)
+    public static List<AgentDto> ConvertToClientDelegationAgentDto(List<ConnectionQueryExtendedRecord> connections)
     {
         var agents = connections.GroupBy(c => c.ToId);
-        var result = new List<ClientDelegationAgentDto>();
+        var result = new List<AgentDto>();
 
         foreach (var agent in agents)
         {
-            var person = agent.First();
-            var party = new ClientDelegationAgentDto.ClientParty
-            {
-                Id = agent.First().To.Id,
-                Name = agent.First().To.Name,
-            };
-
+            var entity = agent.First();
+            var party = Convert(entity.To);
             var roles = agent.GroupBy(c => c.Role.Id);
-            var roleAccess = new List<ClientDelegationAgentDto.ClientRoleAccessPackages>();
+            var roleAccess = new List<AgentDto.AgentRoleAccessPackages>();
+
             foreach (var role in roles)
             {
-                var access = new ClientDelegationAgentDto.ClientRoleAccessPackages
+                var access = new AgentDto.AgentRoleAccessPackages
                 {
-                    Role = role.First().Role.Urn,
-                    Packages = role.SelectMany(r => r.Packages.Select(p => p.Name)).Distinct().ToArray(),
+                    Role = ConvertCompactRole(role.First().Role),
+                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToArray(),
                 };
 
                 roleAccess.Add(access);
             }
 
-            result.Add(new ClientDelegationAgentDto
+            result.Add(new AgentDto
             {
-                Party = party,
+                Agent = party,
                 Access = roleAccess,
             });
         }
@@ -200,28 +196,16 @@ public partial class DtoMapper : IDtoMapper
 
         foreach (var client in clients)
         {
-            var organization = client.First();
-            if (organization.From.TypeId != EntityTypeConstants.Organisation)
-            {
-                continue;
-            }
-
-            var party = new ClientDto.ClientParty
-            {
-                Id = organization.From.Id,
-                Name = organization.From.Name,
-                OrganizationNumber = organization.From.OrganizationIdentifier,
-                UnitType = organization.From.Variant.Name,
-            };
-
+            var entity = client.First().From;
+            var party = Convert(entity);
             var roles = client.GroupBy(c => c.Role.Id);
-            var roleAccess = new List<ClientDto.ClientRoleAccessPackages>();
+            var roleAccess = new List<ClientDto.RoleAccessPackages>();
             foreach (var role in roles)
             {
-                var access = new ClientDto.ClientRoleAccessPackages
+                var access = new ClientDto.RoleAccessPackages
                 {
-                    Role = role.First().Role.Urn,
-                    Packages = role.SelectMany(r => r.Packages.Select(p => p.Name)).Distinct().ToArray(),
+                    Role = ConvertCompactRole(role.First().Role),
+                    Packages = role.SelectMany(r => r.Packages.Select(p => ConvertCompactPackage(p))).Distinct().ToArray(),
                 };
 
                 roleAccess.Add(access);
@@ -229,7 +213,7 @@ public partial class DtoMapper : IDtoMapper
 
             result.Add(new ClientDto
             {
-                Party = party,
+                Client = party,
                 Access = roleAccess,
             });
         }

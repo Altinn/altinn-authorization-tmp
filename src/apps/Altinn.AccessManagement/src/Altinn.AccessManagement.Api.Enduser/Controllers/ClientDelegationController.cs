@@ -1,10 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using Altinn.AccessManagement.Api.Enduser.Models;
+using Altinn.AccessManagement.Api.Enduser.Utils;
+using Altinn.AccessManagement.Api.Enduser.Validation;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessMgmt.Core;
 using Altinn.AccessMgmt.Core.Services;
+using Altinn.AccessMgmt.Core.Services.Contracts;
+using Altinn.AccessMgmt.Core.Validation;
 using Altinn.AccessMgmt.PersistenceEF.Audit;
 using Altinn.AccessMgmt.PersistenceEF.Utils;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -19,11 +24,14 @@ namespace Altinn.AccessManagement.Api.Enduser.Controllers;
 [Route("accessmanagement/api/v1/enduser/clientdelegations")]
 [FeatureGate(AccessMgmtFeatureFlags.EnduserControllerClientDelegation)]
 [Authorize(Policy = AuthzConstants.SCOPE_PORTAL_ENDUSER)]
-public class ClientDelegationController(IClientDelegationService clientDelegationService) : ControllerBase
+public class ClientDelegationController(
+    IClientDelegationService clientDelegationService,
+    IUserProfileLookupService UserProfileLookupService,
+    IEntityService EntityService) : ControllerBase
 {
     [HttpGet("clients")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
-    [ProducesResponseType<PaginatedResult<ConnectionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<PaginatedResult<Altinn.Authorization.Api.Contracts.AccessManagement.ClientDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -43,7 +51,7 @@ public class ClientDelegationController(IClientDelegationService clientDelegatio
 
     [HttpGet("agents")]
     [Authorize(Policy = AuthzConstants.SCOPE_ENDUSER_CLIENTDELEGATION_READ)]
-    [ProducesResponseType<PaginatedResult<ConnectionDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
+    [ProducesResponseType<PaginatedResult<Altinn.Authorization.Api.Contracts.AccessManagement.ClientDto>>(StatusCodes.Status200OK, MediaTypeNames.Application.Json)]
     [ProducesResponseType<AltinnProblemDetails>(StatusCodes.Status400BadRequest, MediaTypeNames.Application.Json)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -70,10 +78,36 @@ public class ClientDelegationController(IClientDelegationService clientDelegatio
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> AddAgent(
         [FromQuery(Name = "party")][Required] Guid party,
-        [FromQuery(Name = "to")][Required] Guid to,
+        [FromQuery(Name = "to")] Guid? to,
+        [FromBody] PersonInput? person,
         CancellationToken cancellationToken = default)
     {
-        var result = await clientDelegationService.AddAgent(party, to, cancellationToken);
+        bool hasPersonInputParameter = person is { };
+
+        var validationErrors = ValidationComposer.Validate(
+            ValidationComposer.Any(
+                ConnectionValidation.ValidateAddAssignmentWithPersonInput(person.PersonIdentifier, person.LastName),
+                ConnectionParameterRules.ToIsGuid(to)
+            )
+        );
+
+        if (validationErrors is { })
+        {
+            return validationErrors.ToActionResult();
+        }
+
+        var resolver = new ToUuidResolver(EntityService, UserProfileLookupService);
+        var resolveResult = hasPersonInputParameter
+            ? await resolver.ResolveWithPersonInputAsync(person, HttpContext, cancellationToken)
+            : await resolver.ResolveWithConnectionInputAsync((Guid)to, false, cancellationToken);
+
+        if (!resolveResult.Success)
+        {
+            return resolveResult.ErrorResult!;
+        }
+
+        var result = await clientDelegationService.AddAgent(party, resolveResult.ToUuid, cancellationToken);
+
         if (result.IsProblem)
         {
             return result.Problem.ToActionResult();
