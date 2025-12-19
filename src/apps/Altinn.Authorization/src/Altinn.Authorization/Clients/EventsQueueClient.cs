@@ -1,20 +1,11 @@
-﻿using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using Altinn.Platform.Authorization.Clients.Interfaces;
 using Altinn.Platform.Authorization.Configuration;
 using Altinn.Platform.Authorization.Models;
 using Altinn.Platform.Authorization.Models.EventLog;
-using Azure;
 using Azure.Storage.Queues;
-using Azure.Storage.Queues.Models;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IO;
 
@@ -24,8 +15,14 @@ namespace Altinn.Platform.Authorization.Clients
     /// Implementation of the <see ref="IEventsQueueClient"/> using Azure Storage Queues.
     /// </summary>
     [ExcludeFromCodeCoverage]
-    public class EventsQueueClient : IEventsQueueClient
+    public partial class EventsQueueClient : IEventsQueueClient
     {
+        private static readonly JsonElement FallbackContextRequestJson = JsonSerializer.SerializeToElement(new
+        {
+            message = "ContextRequestJson is not available due to size limitations.",
+            info = "See the following link for more details https://github.com/Altinn/altinn-authorization-tmp/issues/1858",
+        });
+
         private readonly QueueStorageSettings _settings;
 
         private QueueClient _authenticationEventQueueClient;
@@ -53,30 +50,31 @@ namespace Altinn.Platform.Authorization.Clients
                 QueueClient client = await GetAuthorizationEventQueueClient();
                 TimeSpan timeToLive = TimeSpan.FromDays(_settings.TimeToLive);
 
-                byte[] data = CompressAuthorizationEvent(authorizationEvent, cancellationToken);
+                using var stream = _manager.GetStream();
+                CompressAuthorizationEvent(stream, authorizationEvent);
 
-                if (data.Length > 64 * 1024)
+                if (stream.Length > 64 * 1024)
                 {
-                    var fallbackJson = System.Text.Json.JsonSerializer.Serialize(new
-                    {
-                        message = "ContextRequestJson is not available due to size limitations.",
-                        info = "See the following link for more details https://github.com/Altinn/altinn-authorization-tmp/issues/1858",
-                    });
+                    Log.AuthorizationEventTooLarge(_logger, stream.Length);
+                    authorizationEvent.ContextRequestJson = FallbackContextRequestJson;
 
-                    authorizationEvent.ContextRequestJson = fallbackJson;
+                    stream.SetLength(0);
+                    CompressAuthorizationEvent(stream, authorizationEvent);
                 }
 
-                data = CompressAuthorizationEvent(authorizationEvent, cancellationToken);
-                await client.SendMessageAsync(BinaryData.FromBytes(data), null, timeToLive, cancellationToken);      
+                var buffer = stream.GetBuffer();
+                var data = BinaryData.FromBytes(buffer.AsMemory(checked((int)stream.Length)));
+                
+                await client.SendMessageAsync(data, null, timeToLive, cancellationToken);
             }
             catch (OperationCanceledException ex)
             {
-                _logger.LogError(ex, ex.Message);
+                Log.OperationCanceled(_logger, ex);
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
+                Log.Error(_logger, ex);
                 return new QueuePostReceipt { Success = false, Exception = ex };
             }
 
@@ -94,18 +92,26 @@ namespace Altinn.Platform.Authorization.Clients
             return _authenticationEventQueueClient;
         }
 
-        private byte[] CompressAuthorizationEvent(AuthorizationEvent authorizationEvent, CancellationToken cancellationToken)
+        private void CompressAuthorizationEvent(Stream stream, AuthorizationEvent authorizationEvent)
         {
-            using var stream = _manager.GetStream();
             stream.Write("01"u8 /* version header */);
-            {
-                using var compressor = new BrotliStream(stream, CompressionLevel.Fastest, leaveOpen: true);
-                JsonSerializer.Serialize(compressor, authorizationEvent, JsonSerializerOptions.Web);
-            }
+            
+            using var compressor = new BrotliStream(stream, CompressionLevel.Fastest, leaveOpen: true);
+            JsonSerializer.Serialize(compressor, authorizationEvent, JsonSerializerOptions.Web);
 
             stream.Position = 0;
-            byte[] data = new byte[stream.Length];
-            return data;
+        }
+
+        private static partial class Log
+        {
+            [LoggerMessage(1, LogLevel.Warning, "Authorization event size {size} bytes exceeds maximum allowed size for queue messages.")]
+            public static partial void AuthorizationEventTooLarge(ILogger logger, long size);
+
+            [LoggerMessage(2, LogLevel.Warning, "Operation was canceled.")]
+            public static partial void OperationCanceled(ILogger logger, Exception exception);
+
+            [LoggerMessage(3, LogLevel.Error, "An error occurred while enqueuing authorization event.")]
+            public static partial void Error(ILogger logger, Exception exception);
         }
     }
 }

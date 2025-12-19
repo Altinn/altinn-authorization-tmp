@@ -286,7 +286,7 @@ namespace Altinn.Platform.Authorization.IntegrationTests.Util
         {
             eventQueue.Verify(
                 e => e.EnqueueAuthorizationEvent(
-                    It.Is<AuthorizationEvent>(q => q.ContextRequestJson == expectedAuthorizationEvent.ContextRequestJson &&
+                    It.Is<AuthorizationEvent>(q => JsonElement.DeepEquals(q.ContextRequestJson, expectedAuthorizationEvent.ContextRequestJson) &&
                                                     q.Operation == expectedAuthorizationEvent.Operation &&
                                                     q.Created == expectedAuthorizationEvent.Created &&
                                                     q.InstanceId == expectedAuthorizationEvent.InstanceId &&
