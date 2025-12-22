@@ -1,9 +1,7 @@
-﻿using Altinn.AccessMgmt.Core.Models;
-using Altinn.AccessMgmt.Persistence.Services.Models;
+﻿using Altinn.AccessManagement.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Models;
+using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
-using Altinn.Authorization.ProblemDetails;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Altinn.AccessMgmt.Core.Services.Contracts;
 
@@ -93,7 +91,13 @@ public interface IAuthorizedPartyRepoServiceEf
     /// Get list of packages the to party has access to, on behalf of the from party
     /// </summary>
     /// <returns>Enumerable of package permissions</returns>
-    Task<IEnumerable<PackagePermissionDto>> GetPackagesFromOthers(Guid toId, Guid? fromId = null, IEnumerable<Guid>? packageIds = null, CancellationToken ct = default);
+    Task<List<ConnectionQueryExtendedRecord>> GetConnectionsFromOthers(Guid toId, AuthorizedPartiesFilters filters = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Get list of packages the to party has access to, on behalf of the from party
+    /// </summary>
+    /// <returns>Enumerable of package permissions</returns>
+    Task<List<ConnectionQueryExtendedRecord>> GetPipConnectionsFromOthers(Guid toId, AuthorizedPartiesFilters filters = null, CancellationToken ct = default);
 
     /// <summary>
     /// Get resources by provider code and/or resource ids

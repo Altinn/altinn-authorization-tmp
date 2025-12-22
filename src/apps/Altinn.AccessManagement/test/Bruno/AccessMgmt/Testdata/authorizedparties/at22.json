@@ -1,7 +1,12 @@
 {
   "env": "at22",
   "resources": {
-    "clientDelgResourceId": "devtest_gar_bruno_client_resource"
+    "clientDelgResourceId": "devtest_gar_bruno_client_resource",
+    "appInstanceDelegation": {
+            "resourceId": "app_ttd_authz-bruno-instancedelegation",
+            "org": "ttd",
+            "app":  "authz-bruno-instancedelegation"
+        }
   },
   "REGN_ULASTELIG_RETTFERDIG_TIGER": {
     "name": "ULASTELIG RETTFERDIG TIGER AS",
@@ -46,6 +51,12 @@
         "userId": 20013167,
         "partyId": 50175254,
         "partyUuid": "00273506-3b4a-4e8e-a1f7-b7f28c4b411b"
+      },
+      "subunit": {
+        "name": "HUMAN TOPP KATT BIL",
+        "orgno": "315821525",
+        "partyId": 51818525,
+        "partyUuid": "ae9e37d4-0818-4c9f-9869-45e8049b64e0"
       }
     },
     "client_WITHOUT_CLIENTDELEGATION": {
@@ -86,10 +97,65 @@
         "name": "STOLT BETYDELIG TIGER AS",
         "orgno": "315043336",
         "partyId": 51747770,
-        "partyUuid": "1044638b-f6ad-4e6c-a341-11a6eac4d8b8"
+        "partyUuid": "1044638b-f6ad-4e6c-a341-11a6eac4d8b8",
+        "packageDelegatedToPerson": "skatt-naering",
+        "packageDelegatedToKeyRoleUnit": "kjop-og-salg-eiendom",
+        "roleDelegatedToPerson": "HVASK",
+        "roleDelegatedToKeyRoleUnit": "LOPER",
+        "resourceIdDelegatedToPerson": "devtest_gar_authparties-sub-to-person",
+        "resourceIdDelegatedToKeyRoleUnit": "devtest_gar_authparties-sub-to-org",
+        "instanceIdDelegatedToPerson": "9158bcbc-fca0-44d5-b049-93a78fce7a70",
+        "instanceIdDelegatedToKeyRoleUnit": "a8084cad-202d-4435-be49-8c4bffd48b0c"
       },
       "directPackageToDelegate": "mobler-og-annen-industri",
-      "directPackageToDelegate2": "revisorattesterer"
+      "directPackageToDelegate2": "revisorattesterer",
+      "packageDelegatedToPerson": "lonn",
+      "roleDelegatedToPerson": "UTINN",
+      "roleDelegatedToKeyRoleUnit": "REGNA",
+      "resourceIdDelegatedToPerson": "devtest_gar_authparties-main-to-person",
+      "resourceIdDelegatedToKeyRoleUnit": "devtest_gar_authparties-main-to-org",
+      "appIdDelegatedToPerson": "app_ttd_authz-bruno-testapp1",
+      "appIdDelegatedToKeyRoleUnit": "app_ttd_authz-bruno-testapp2",
+      "instanceIdDelegatedToPerson": "4d52d719-b48d-474f-ba5c-022e5f2704b9",
+      "instanceIdDelegatedToKeyRoleUnit": "f54e6f9c-f9cd-437e-9c75-8436252a2821"
+    },
+    "client_ENK_DELETED_2025_11_27_InnehaverAccess": {
+      "name": "SJELDEN REN KATT KONJAKK",
+      "orgno": "313744019",
+      "partyId": 51653406,
+      "partyUuid": "1fbd06a3-3654-460b-8917-d9f4f9664625",
+      "innehaver": {
+        "name": "PRATSOM SKOLE",
+        "pid": "19846999968",
+        "userId": 20820830,
+        "partyId": 51175128,
+        "partyUuid": "ab0e4f41-4dbe-4198-bc69-6429cbfb6989"
+      },
+      "subunit": {
+        "name": "SJELDEN REN KATT KONJAKK",
+        "orgno": "314964055",
+        "partyId": 51740562,
+        "partyUuid": "ce662cb7-f781-4771-bbd3-2cbb291e523f"
+      }
+    },
+    "client_ENK_DELETED_2023_11_01_NoInnehaverAccess": {
+      "name": "OMSORGSFULL KUL KATT SKATOLL",
+      "orgno": "312282054",
+      "partyId": 51545196,
+      "partyUuid": "2c3b1064-2289-4217-b5de-41038ea86158",
+      "innehaver": {
+        "name": "SYMPATISK LINJE",
+        "pid": "24887299168",
+        "userId": 20946709,
+        "partyId": 50218861,
+        "partyUuid": "c5950a52-d4b4-454d-8cdf-a9c78bda6ff8"
+      },
+      "subunit": {
+        "name": "OMSORGSFULL KUL KATT SKATOLL",
+        "orgno": "315252946",
+        "partyId": 51766826,
+        "partyUuid": "893c7aae-e228-4e64-9643-38116d67eb39"
+      }
     },
     "a2_klientadministrator": {
       "name": "RUSTEN AKVARELL",
@@ -165,5 +231,51 @@
     "userId": 21226091,
     "partyId": 50088610,
     "partyUuid": "B2139D9E-811B-48BD-81A7-7EDD79A84D69"
+  },
+  "forretningsforerNonfigurativEmosjonellPuma": {
+    "name": "NONFIGURATIV EMOSJONELL PUMA",
+    "orgno": "313760243",
+    "partyId": 51317416,
+    "partyUuid": "a3846553-4f56-4dd3-addc-d2a79b663b51",
+    "dagligleder": {
+      "name": "SPETTETE DALSIDE",
+      "pid": "08817696563",
+      "userId": 21129089,
+      "partyId": 50639183,
+      "partyUuid": "ec30c235-d7f6-432b-b060-bdbbe9cdd8ec"
+    },
+    "subunit": {
+      "name": "NONFIGURATIV EMOSJONELL PUMA",
+      "orgno": "312145529",
+      "partyId": 51535215,
+      "partyUuid": "480c7f77-4ca2-4467-aff2-c358d8288f6e"
+    },
+    "esekClient": {
+      "name": "LETT SLEM LØVE SAMEIE",
+      "orgno": "313184390",
+      "partyId": 51614735,
+      "partyUuid": "1d53cb86-18e0-45d7-b777-8a06c3d55fc3",
+      "dagligleder": {
+        "name": "??",
+        "pid": "??",
+        "userId": 0,
+        "partyId": 0,
+        "partyUuid": "??"
+      },
+      "clientPackage": "forretningsforer-eiendom"
+    },
+    "nonBrlEsekClient": {
+      "name": "SKEPTISK LILLA HEST BORETTSLAG",
+      "orgno": "311115057",
+      "partyId": 51409777,
+      "partyUuid": "02f2e6c8-b67e-4ee7-b98d-8c6541eb0bfa",
+      "dagligleder": {
+        "name": "??",
+        "pid": "??",
+        "userId": 0,
+        "partyId": 0,
+        "partyUuid": "??"
+      }
+    }
   }
 }

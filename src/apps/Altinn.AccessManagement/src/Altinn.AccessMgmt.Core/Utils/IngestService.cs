@@ -52,7 +52,7 @@ public class IngestService : IIngestService
     }
 
     /// <inheritdoc />
-    public async Task<int> MergeTempData<T>(Guid ingestId, AuditValues auditValues, IEnumerable<string> matchColumns = null, CancellationToken cancellationToken = default)
+    public async Task<int> MergeTempData<T>(Guid ingestId, AuditValues auditValues, IEnumerable<string> matchColumns = null, IEnumerable<string> ignoreColumns = null, CancellationToken cancellationToken = default)
     {
         if (matchColumns == null || matchColumns.Count() == 0)
         {
@@ -61,6 +61,11 @@ public class IngestService : IIngestService
 
         var table = GetTableName<T>(DbContext.Model);
         var ingestColumns = GetColumns<T>(DbContext.Model);
+
+        if (ignoreColumns != null && ignoreColumns.Count() > 0)
+        {
+            ingestColumns.RemoveAll(t => ignoreColumns.Contains(t.Name));
+        }
 
         string columnStatement = string.Join(',', ingestColumns.Select(t => t.Name));
 
@@ -99,13 +104,15 @@ public class IngestService : IIngestService
 
         var sb = new StringBuilder();
 
+        sb.AppendLine("BEGIN TRANSACTION;");
         sb.AppendLine(GetAuditVariables(auditValues));
         sb.AppendLine($"MERGE INTO {table.SchemaName}.{table.TableName} AS target USING {ingestTableName} AS source ON {mergeMatchStatement}");
         sb.AppendLine($"WHEN MATCHED AND ({mergeUpdateUnMatchStatement}) THEN ");
         sb.AppendLine($"UPDATE SET {mergeUpdateStatement}");
         sb.AppendLine($"WHEN NOT MATCHED THEN ");
-        // sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
+        //// sb.AppendLine($"INSERT ({insertColumns}) VALUES ({insertValues});");
         sb.AppendLine($"INSERT ({insertColumns},audit_changedby,audit_changedbysystem,audit_changeoperation) VALUES ({insertValues},'{auditValues.ChangedBy}','{auditValues.ChangedBySystem}','{auditValues.OperationId}');");
+        sb.AppendLine("COMMIT TRANSACTION;");
 
         string mergeStatement = sb.ToString();
 
@@ -127,7 +134,7 @@ public class IngestService : IIngestService
     {
         var ingestId = Guid.CreateVersion7();
         await IngestTempData(data, ingestId, cancellationToken);
-        var res = await MergeTempData<T>(ingestId, auditValues, matchColumns, cancellationToken);
+        var res = await MergeTempData<T>(ingestId, auditValues, matchColumns, null, cancellationToken);
 
         return res;
     }
@@ -164,7 +171,6 @@ public class IngestService : IIngestService
                     catch
                     {
                         Console.WriteLine($"Failed to write null in column '{c.Name}' for '{tableName}'.");
-                        //throw;
                     }
                 }
             }
@@ -246,7 +252,7 @@ public interface IIngestService
     /// <summary>
     /// Merge data from temp table to original
     /// </summary>
-    Task<int> MergeTempData<T>(Guid ingestId, AuditValues auditValues, IEnumerable<string> matchColumns = null, CancellationToken cancellationToken = default);
+    Task<int> MergeTempData<T>(Guid ingestId, AuditValues auditValues, IEnumerable<string> matchColumns = null, IEnumerable<string> ignoreColumns = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Ingest data to temp table, using original table as template
