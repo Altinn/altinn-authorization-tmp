@@ -95,9 +95,11 @@ namespace Altinn.Platform.Authorization.Clients
         private void CompressAuthorizationEvent(Stream stream, AuthorizationEvent authorizationEvent)
         {
             stream.Write("01"u8 /* version header */);
-            
-            using var compressor = new BrotliStream(stream, CompressionLevel.Fastest, leaveOpen: true);
-            JsonSerializer.Serialize(compressor, authorizationEvent, JsonSerializerOptions.Web);
+
+            using (var compressor = new BrotliStream(stream, CompressionLevel.Fastest, leaveOpen: true))
+            {
+                JsonSerializer.Serialize(compressor, authorizationEvent, JsonSerializerOptions.Web);
+            }
 
             stream.Position = 0;
         }

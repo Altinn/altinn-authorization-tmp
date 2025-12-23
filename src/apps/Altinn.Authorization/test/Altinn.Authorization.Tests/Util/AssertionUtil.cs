@@ -284,9 +284,17 @@ namespace Altinn.Platform.Authorization.IntegrationTests.Util
 
         public static void AssertAuthorizationEvent(Mock<IEventsQueueClient> eventQueue, AuthorizationEvent expectedAuthorizationEvent, Times numberOfTimes)
         {
+            foreach (var invocation in eventQueue.Invocations)
+            {
+                if (invocation.Arguments[0] is AuthorizationEvent evt)
+                {
+                    Console.WriteLine(evt.ContextRequestJson.GetRawText());
+                }
+            }
+
             eventQueue.Verify(
                 e => e.EnqueueAuthorizationEvent(
-                    It.Is<AuthorizationEvent>(q => JsonElement.DeepEquals(q.ContextRequestJson, expectedAuthorizationEvent.ContextRequestJson) &&
+                    It.Is<AuthorizationEvent>(q => q.ContextRequestJson.GetRawText().ToLower() == expectedAuthorizationEvent.ContextRequestJson.GetRawText().ToLower() &&
                                                     q.Operation == expectedAuthorizationEvent.Operation &&
                                                     q.Created == expectedAuthorizationEvent.Created &&
                                                     q.InstanceId == expectedAuthorizationEvent.InstanceId &&
@@ -299,7 +307,7 @@ namespace Altinn.Platform.Authorization.IntegrationTests.Util
                                                     q.ResourcePartyId == expectedAuthorizationEvent.ResourcePartyId &&
                                                     q.SubjectOrgCode == expectedAuthorizationEvent.SubjectOrgCode &&
                                                     q.SubjectOrgNumber == expectedAuthorizationEvent.SubjectOrgNumber &&
-                                                    q.SubjectUserId == expectedAuthorizationEvent.SubjectUserId), 
+                                                    q.SubjectUserId == expectedAuthorizationEvent.SubjectUserId),
                     It.IsAny<CancellationToken>()), 
                 numberOfTimes);
         }
