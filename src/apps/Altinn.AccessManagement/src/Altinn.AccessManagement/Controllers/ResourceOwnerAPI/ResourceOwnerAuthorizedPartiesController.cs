@@ -79,6 +79,23 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
                 IncludeInactiveParties = includeInactiveParties
             };
 
+            var isAdmin = User.FindFirst("scope")?.Value.Contains(AuthzConstants.SCOPE_AUTHORIZEDPARTIES_ADMIN);
+            if (isAdmin != true)
+            {
+                var providerCode = User.FindFirst("urn:altinn:org")?.Value;
+                if (string.IsNullOrEmpty(providerCode))
+                {
+                    /* 
+                     * Not sure if we can introduce this as a hard limitation. Will require that all existing serviceowner use go through token exchange.
+                     * Or this must be rewritten to only use organization number to identify provider.
+                     */
+                    ModelState.AddModelError(providerCode, "Provider code could not be determined from token for resourceowner access");
+                    return new ObjectResult(ProblemDetailsFactory.CreateValidationProblemDetails(HttpContext, ModelState));
+                }
+
+                filters.ProviderCode = providerCode;
+            }
+
             if (await featureManager.IsEnabledAsync(AccessMgmtFeatureFlags.AuthorizedPartiesEfEnabled) && subject.PartyFilter?.Count() > 0)
             {
                 var partyFilters = subject.PartyFilter.Select(attr => new BaseAttribute(attr.Type, attr.Value)).ToList();

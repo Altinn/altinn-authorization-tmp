@@ -28,11 +28,9 @@ public class AuthorizedPartiesFilters
 
     public AuthorizedPartiesIncludeFilter IncludeInactiveParties { get; set; } = AuthorizedPartiesIncludeFilter.True;
 
-    /* Future filters to implement
     public string ProviderCode { get; set; } = null;
 
     public string[] AnyOfResourceIds { get; set; } = null;
 
     public string[] AllOfResourceIds { get; set; } = null;
-    */
 }
