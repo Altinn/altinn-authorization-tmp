@@ -108,7 +108,7 @@ public class ConnectionQuery(AppDbContext db)
             var data = await query.AsNoTracking().ToListAsync(ct);
             var result = data.Select(ToDtoEmpty).ToList();
 
-            var pkgs = await LoadPackagesByKeyAsync(query, filter, ct);
+            var pkgs = await LoadPackagesByKeyAsync(baseQuery, filter, ct);
             return Attach(result, pkgs, p => p.Id, (dto, list) => dto.Packages = list);
         }
         catch (Exception ex)
