@@ -39,15 +39,21 @@ public class ConnectionQuery(AppDbContext db)
 
             if (filter.EnrichEntities || filter.ExcludeDeleted || filter.IncludePackages || filter.EnrichPackageResources)
             {
-                var query = EnrichEntities(filter, baseQuery);
-                var data = await query.AsNoTracking().ToListAsync(ct);
-                result = data.Select(ToDtoEmpty).ToList();
+                if (filter.EnrichEntities)
+                {
+                    var data = await EnrichEntities(filter, baseQuery).AsNoTracking().ToListAsync(ct);
+                    result = data.Select(ToDtoEmpty).ToList();
+                }
+                else
+                {
+                    result = (await baseQuery.AsNoTracking().ToListAsync(ct)).Select(ToDtoEmpty).ToList();
+                }
 
                 try
                 {
                     if (filter.IncludePackages || filter.EnrichPackageResources)
                     {
-                        var pkgs = await LoadPackagesByKeyAsync(query, filter, ct);
+                        var pkgs = await LoadPackagesByKeyAsync(baseQuery, filter, ct);
                         if (filter.EnrichPackageResources)
                         {
                             await EnrichPackageResourcesAsync(pkgs, filter, ct);
@@ -163,7 +169,7 @@ public class ConnectionQuery(AppDbContext db)
                     IsMainUnitAccess = false,
                     IsRoleMap = false
                 });
-        
+
         var keyrole =
             direct
                 .Join(
@@ -195,7 +201,7 @@ public class ConnectionQuery(AppDbContext db)
         var a1 = filter.IncludeKeyRole
             ? direct.Concat(keyrole)
             : direct;
-        
+
         var rolemap =
             a1
                 .Join(
@@ -219,7 +225,7 @@ public class ConnectionQuery(AppDbContext db)
 
         var delegations =
             db.Assignments
-                .Where(t => t.ToId == toId)   
+                .Where(t => t.ToId == toId)
                 .Where(t => t.RoleId == RoleConstants.Agent.Id)
                 .Join(
                     db.Delegations,
@@ -750,7 +756,7 @@ public class ConnectionQuery(AppDbContext db)
         return query;
     }
 
-    private async Task<ConnectionIndex<ConnectionQueryPackage>> LoadPackagesByKeyAsync(IQueryable<ConnectionQueryRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
+    private async Task<ConnectionIndex<ConnectionQueryPackage>> LoadPackagesByKeyAsync(IQueryable<ConnectionQueryBaseRecord> allKeys, ConnectionQueryFilter filter, CancellationToken ct)
     {
         var packageSet = filter.PackageIds?.Count > 0 ? new HashSet<Guid>(filter.PackageIds) : null;
 
@@ -760,7 +766,7 @@ public class ConnectionQuery(AppDbContext db)
 
         var rolePackages = allKeys
             .Join(db.RolePackages, c => c.RoleId, rp => rp.RoleId, (c, rp) => new { c, rp })
-            .Where(t => t.rp.HasAccess && (t.rp.EntityVariantId == null || t.rp.EntityVariantId == t.c.From.VariantId))
+            .Where(t => t.rp.HasAccess && (t.rp.EntityVariantId == null || db.Entities.Any(e => t.c.FromId == e.Id && t.rp.EntityVariantId == e.VariantId)))
             .WhereIf(packageSet is not null, x => packageSet!.Contains(x.rp.PackageId));
 
         var delegationPackages = allKeys
