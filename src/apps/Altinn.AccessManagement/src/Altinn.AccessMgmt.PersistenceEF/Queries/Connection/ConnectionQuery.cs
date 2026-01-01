@@ -2,6 +2,7 @@
 using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.AccessMgmt.PersistenceEF.Contexts;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
+using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,44 +34,23 @@ public class ConnectionQuery(AppDbContext db)
                 ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter) : BuildBaseQueryFromOthers(db, filter)
                 : BuildBaseQueryToOthers(db, filter);
 
-            var queryString = baseQuery.ToQueryString();
-
-            List<ConnectionQueryExtendedRecord> result;
-
-            if (filter.EnrichEntities || filter.ExcludeDeleted || filter.IncludePackages || filter.EnrichPackageResources)
+            var result = (await baseQuery.AsNoTracking().ToListAsync(ct)).Select(ToDtoEmpty).ToList();
+            if (filter.IncludePackages || filter.EnrichPackageResources)
             {
-                if (filter.EnrichEntities)
-                {
-                    var data = await EnrichEntities(filter, baseQuery).AsNoTracking().ToListAsync(ct);
-                    result = data.Select(ToDtoEmpty).ToList();
-                }
-                else
-                {
-                    result = (await baseQuery.AsNoTracking().ToListAsync(ct)).Select(ToDtoEmpty).ToList();
-                }
-
                 try
                 {
-                    if (filter.IncludePackages || filter.EnrichPackageResources)
+                    var pkgs = await LoadPackagesByKeyAsync(baseQuery, filter, ct);
+                    if (filter.EnrichPackageResources)
                     {
-                        var pkgs = await LoadPackagesByKeyAsync(baseQuery, filter, ct);
-                        if (filter.EnrichPackageResources)
-                        {
-                            await EnrichPackageResourcesAsync(pkgs, filter, ct);
-                        }
-
-                        result = Attach(result, pkgs, p => p.Id, (dto, list) => dto.Packages = list);
+                        await EnrichPackageResourcesAsync(pkgs, filter, ct);
                     }
+
+                    result = Attach(result, pkgs, p => p.Id, (dto, list) => dto.Packages = list);
                 }
                 catch (Exception ex)
                 {
                     throw new Exception("Failed to include packages", ex);
                 }
-            }
-            else
-            {
-                var data = await baseQuery.AsNoTracking().ToListAsync(ct);
-                result = data.Select(ToDtoEmpty).ToList();
             }
 
             try
@@ -84,6 +64,16 @@ public class ConnectionQuery(AppDbContext db)
             catch (Exception ex)
             {
                 throw new Exception("Failed to include resources", ex);
+            }
+
+            if (filter.EnrichEntities)
+            {
+                result = await EnrichEntities(result, ct);
+            }
+
+            if (filter.ExcludeDeleted)
+            {
+                result = await ExcludeDeleted(result);
             }
 
             return result;
@@ -114,25 +104,6 @@ public class ConnectionQuery(AppDbContext db)
         catch (Exception ex)
         {
             throw new Exception($"Failed to get pip connection packages with filter: {JsonSerializer.Serialize(filter)}", ex);
-        }
-    }
-
-    /// <summary>
-    /// Returns connections between to entities based on assignments and delegations
-    /// </summary>
-    public string GenerateDebugQuery(ConnectionQueryFilter filter, ConnectionQueryDirection direction, bool useNewQuery = true)
-    {
-        var baseQuery = direction == ConnectionQueryDirection.FromOthers
-                ? useNewQuery ? BuildBaseQueryFromOthersNew(db, filter) : BuildBaseQueryFromOthers(db, filter)
-                : BuildBaseQueryToOthers(db, filter);
-
-        if (filter.EnrichEntities || filter.ExcludeDeleted)
-        {
-            return EnrichEntities(filter, baseQuery).ToQueryString();
-        }
-        else
-        {
-            return baseQuery.ToQueryString();
         }
     }
 
@@ -700,37 +671,100 @@ public class ConnectionQuery(AppDbContext db)
             .RoleIdContains(roleSet);
     }
 
-    private IQueryable<ConnectionQueryRecord> EnrichEntities(ConnectionQueryFilter filter, IQueryable<ConnectionQueryBaseRecord> allKeys)
+    private async Task<List<ConnectionQueryExtendedRecord>> EnrichEntities(List<ConnectionQueryExtendedRecord> allKeys, CancellationToken ct)
     {
-        var entities = db.Entities.AsQueryable();
-
-        var query = allKeys
-            .Join(entities, c => c.FromId, e => e.Id, (c, f) => new { c, f })
-            .Join(entities, x => x.c.ToId, t => t.Id, (x, t) => new { x.c, x.f, t })
-            .SelectMany(x => db.Roles.Include(r => r.Provider).ThenInclude(p => p.Type).Where(r => r.Id == x.c.RoleId).DefaultIfEmpty(), (x, r) => new { x.c, x.f, x.t, r })
-            .SelectMany(x => db.Entities.Where(v => v.Id == x.c.ViaId).DefaultIfEmpty(), (x, via) => new { x.c, x.f, x.t, x.r, via })
-            .SelectMany(x => db.Roles.Where(vr => vr.Id == x.c.ViaRoleId).DefaultIfEmpty(), (x, viaRole) => new { x.c, x.f, x.t, x.r, x.via, viaRole })
-            .WhereIf(filter.ExcludeDeleted, x => !x.f.IsDeleted)
-            .WhereIf(filter.ExcludeDeleted, x => !x.t.IsDeleted)
-            .WhereIf(filter.ExcludeDeleted, x => x.via == null || !x.via.IsDeleted)
-            .Select(x => new ConnectionQueryRecord
+        SortedSet<Guid> parties = [];
+        foreach (var item in allKeys)
+        {
+            if (!parties.Contains(item.FromId))
             {
-                FromId = x.c.FromId,
-                ToId = x.c.ToId,
-                RoleId = x.c.RoleId,
-                AssignmentId = x.c.AssignmentId,
-                DelegationId = x.c.DelegationId,
-                ViaId = x.c.ViaId,
-                ViaRoleId = x.c.ViaRoleId,
-                From = x.f,
-                To = x.t,
-                Role = x.r,
-                Via = x.via,
-                ViaRole = x.viaRole,
-                Reason = x.c.Reason,
-            });
+                parties.Add(item.FromId);
+            }
 
-        return query;
+            if (!parties.Contains(item.ToId))
+            {
+                parties.Add(item.ToId);
+            }
+
+            if (item.ViaId != null && !parties.Contains((Guid)item.ViaId))
+            {
+                parties.Add((Guid)item.ViaId);
+            }
+        }
+
+        SortedList<string, Entity> entityDict = [];
+        var entitites = await db
+            .Entities
+            .AsNoTracking()
+            .Where(e => parties.Contains(e.Id))
+            .Include(t => t.Parent)
+            .Select(e => new Entity()
+            {
+                Id = e.Id,
+                Name = e.Name,
+                OrganizationIdentifier = e.OrganizationIdentifier,
+                ParentId = e.ParentId,
+                PersonIdentifier = e.PersonIdentifier,
+                DateOfBirth = e.DateOfBirth,
+                DateOfDeath = e.DateOfDeath,
+                PartyId = e.PartyId,
+                IsDeleted = e.IsDeleted,
+                DeletedAt = e.DeletedAt,
+                UserId = e.UserId,
+                Username = e.Username,
+                TypeId = e.TypeId,
+                VariantId = e.VariantId,
+                Parent = e.Parent != null ? new Entity()
+                {
+                    Id = e.Parent.Id,
+                    Name = e.Parent.Name,
+                    OrganizationIdentifier = e.Parent.OrganizationIdentifier,
+                    ParentId = e.Parent.ParentId,
+                    PersonIdentifier = e.Parent.PersonIdentifier,
+                    DateOfBirth = e.Parent.DateOfBirth,
+                    DateOfDeath = e.Parent.DateOfDeath,
+                    PartyId = e.Parent.PartyId,
+                    IsDeleted = e.Parent.IsDeleted,
+                    DeletedAt = e.Parent.DeletedAt,
+                    UserId = e.Parent.UserId,
+                    Username = e.Parent.Username,
+                    TypeId = e.Parent.TypeId,
+                    VariantId = e.Parent.VariantId
+                }
+                : null
+            })
+            .Distinct()
+            .AsNoTracking()
+            .ToListAsync(ct);
+
+        foreach (var entity in entitites)
+        {
+            entityDict.Add(entity.Id.ToString(), entity);
+        }
+
+        // Could be cached
+        var roles = await db.Roles.Include(r => r.Provider).ThenInclude(p => p.Type).ToListAsync();
+        SortedList<string, Role> sortedRoles = [];
+        foreach (var role in roles)
+        {
+            sortedRoles.Add(role.Id.ToString(), role);
+        }
+
+        foreach (var c in allKeys)
+        {
+            c.From = entityDict[c.FromId.ToString()];
+            c.To = entityDict[c.ToId.ToString()];
+            c.Via = c.ViaId != null ? entityDict[c.ViaId.ToString()] : null;
+            c.Role = c.RoleId != Guid.Empty ? sortedRoles[c.RoleId.ToString()] : null;
+            c.ViaRole = c.ViaRoleId != null && c?.ViaRoleId != Guid.Empty ? sortedRoles[c.ViaRoleId.ToString()] : null;
+        }
+
+        return allKeys;
+    }
+
+    private static async Task<List<ConnectionQueryExtendedRecord>> ExcludeDeleted(List<ConnectionQueryExtendedRecord> allKeys)
+    {
+        return allKeys.Where(k => !k.From.IsDeleted && !k.To.IsDeleted && (k.Via == null || !k.Via.IsDeleted)).ToList();
     }
 
     private IQueryable<ConnectionQueryRecord> EnrichFromEntities(ConnectionQueryFilter filter, IQueryable<ConnectionQueryBaseRecord> allKeys)
