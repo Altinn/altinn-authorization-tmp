@@ -68,7 +68,7 @@ public class ConnectionQuery(AppDbContext db)
 
             if (filter.EnrichEntities || filter.ExcludeDeleted)
             {
-                result = await EnrichEntities(result, filter.ExcludeDeleted, ct);
+                result = await EnrichEntities(result, filter.ExcludeDeleted, direction, ct);
             }
 
             return result;
@@ -666,7 +666,7 @@ public class ConnectionQuery(AppDbContext db)
             .RoleIdContains(roleSet);
     }
 
-    private async Task<List<ConnectionQueryExtendedRecord>> EnrichEntities(List<ConnectionQueryExtendedRecord> allKeys, bool excludeDeleted, CancellationToken ct)
+    private async Task<List<ConnectionQueryExtendedRecord>> EnrichEntities(List<ConnectionQueryExtendedRecord> allKeys, bool excludeDeleted, ConnectionQueryDirection direction, CancellationToken ct)
     {
         SortedSet<Guid> parties = [];
         foreach (var item in allKeys)
@@ -756,7 +756,9 @@ public class ConnectionQuery(AppDbContext db)
 
         if (excludeDeleted)
         {
-            return allKeys.Where(k => !k.From.IsDeleted && !k.To.IsDeleted && (k.Via == null || !k.Via.IsDeleted)).ToList();
+            return direction == ConnectionQueryDirection.FromOthers
+                ? [.. allKeys.Where(k => !k.From.IsDeleted)]
+                : [.. allKeys.Where(k => !k.To.IsDeleted)];
         }
 
         return allKeys;
