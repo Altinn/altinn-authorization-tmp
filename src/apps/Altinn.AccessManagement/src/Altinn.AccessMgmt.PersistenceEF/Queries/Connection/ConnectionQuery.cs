@@ -66,14 +66,9 @@ public class ConnectionQuery(AppDbContext db)
                 throw new Exception("Failed to include resources", ex);
             }
 
-            if (filter.EnrichEntities)
+            if (filter.EnrichEntities || filter.ExcludeDeleted)
             {
-                result = await EnrichEntities(result, ct);
-            }
-
-            if (filter.ExcludeDeleted)
-            {
-                result = await ExcludeDeleted(result);
+                result = await EnrichEntities(result, filter.ExcludeDeleted, ct);
             }
 
             return result;
@@ -671,7 +666,7 @@ public class ConnectionQuery(AppDbContext db)
             .RoleIdContains(roleSet);
     }
 
-    private async Task<List<ConnectionQueryExtendedRecord>> EnrichEntities(List<ConnectionQueryExtendedRecord> allKeys, CancellationToken ct)
+    private async Task<List<ConnectionQueryExtendedRecord>> EnrichEntities(List<ConnectionQueryExtendedRecord> allKeys, bool excludeDeleted, CancellationToken ct)
     {
         SortedSet<Guid> parties = [];
         foreach (var item in allKeys)
@@ -759,12 +754,12 @@ public class ConnectionQuery(AppDbContext db)
             c.ViaRole = c.ViaRoleId != null && c?.ViaRoleId != Guid.Empty ? sortedRoles[c.ViaRoleId.ToString()] : null;
         }
 
-        return allKeys;
-    }
+        if (excludeDeleted)
+        {
+            return allKeys.Where(k => !k.From.IsDeleted && !k.To.IsDeleted && (k.Via == null || !k.Via.IsDeleted)).ToList();
+        }
 
-    private static async Task<List<ConnectionQueryExtendedRecord>> ExcludeDeleted(List<ConnectionQueryExtendedRecord> allKeys)
-    {
-        return allKeys.Where(k => !k.From.IsDeleted && !k.To.IsDeleted && (k.Via == null || !k.Via.IsDeleted)).ToList();
+        return allKeys;
     }
 
     private IQueryable<ConnectionQueryRecord> EnrichFromEntities(ConnectionQueryFilter filter, IQueryable<ConnectionQueryBaseRecord> allKeys)
