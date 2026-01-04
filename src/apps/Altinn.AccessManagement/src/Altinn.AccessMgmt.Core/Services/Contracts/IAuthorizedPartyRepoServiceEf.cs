@@ -106,23 +106,32 @@ public interface IAuthorizedPartyRepoServiceEf
     /// <param name="resourceIds">Resource ids</param>
     /// <param name="ct">The <see cref="CancellationToken"/></param>
     /// <returns>Enumerable of resources</returns>
-    Task<Dictionary<string, Resource>> GetResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
+    Task<SortedDictionary<string, Resource>> GetResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
 
     /// <summary>
-    /// Get role resources by provider code and/or resource ids
+    /// Get resources filtered by provider code and/or resource ids, grouped by role codes (including legacy code)
     /// </summary>
     /// <param name="providerCode">Provider code</param>
     /// <param name="resourceIds">Resource ids</param>
     /// <param name="ct">The <see cref="CancellationToken"/></param>
-    /// <returns>Enumerable of role resources</returns>
-    Task<Dictionary<Guid, IEnumerable<RoleResource>>> GetRoleResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
+    /// <returns>Dictionary of resources keyed by role code and legacy code</returns>
+    Task<SortedDictionary<string, List<Resource>>> GetResourcesGroupedByRoleCode(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
 
     /// <summary>
-    /// Get package resources by provider code and/or resource ids
+    /// Get resources filtered by provider code and/or resource ids, grouped by package id
     /// </summary>
     /// <param name="providerCode">Provider code</param>
     /// <param name="resourceIds">Resource ids</param>
     /// <param name="ct">The <see cref="CancellationToken"/></param>
-    /// <returns>Enumerable of package resources</returns>
-    Task<Dictionary<Guid, IEnumerable<PackageResource>>> GetPackageResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
+    /// <returns>Dictionary of resources keyed by package id</returns>
+    Task<SortedDictionary<Guid, List<Resource>>> GetResourcesGroupedByPackageId(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Get roles filtered by role ids and/or package ids, grouped by package id
+    /// </summary>
+    /// <param name="roleIds">List of role ids</param>
+    /// <param name="packageIds">List of package ids</param>
+    /// <param name="ct">Cancellation token</param>
+    /// <returns>Dictionary of roles grouped by package id</returns>
+    Task<SortedDictionary<Guid, List<Role>>> GetRolesGroupedByPackageId(IEnumerable<Guid>? roleIds = null, IEnumerable<Guid>? packageIds = null, CancellationToken ct = default);
 }

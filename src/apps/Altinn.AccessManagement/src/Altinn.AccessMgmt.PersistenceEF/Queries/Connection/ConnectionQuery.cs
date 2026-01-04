@@ -48,7 +48,7 @@ public class ConnectionQuery(AppDbContext db)
                     if (filter.IncludePackages || filter.EnrichPackageResources)
                     {
                         var pkgs = await LoadPackagesByKeyAsync(query, filter, ct);
-                        if (filter.EnrichPackageResources)
+                        if (filter.EnrichPackageResources) // missing enrichment of role resources
                         {
                             await EnrichPackageResourcesAsync(pkgs, filter, ct);
                         }

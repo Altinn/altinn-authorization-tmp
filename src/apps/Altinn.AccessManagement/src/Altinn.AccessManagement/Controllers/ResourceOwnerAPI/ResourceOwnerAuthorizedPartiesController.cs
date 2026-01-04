@@ -34,6 +34,7 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
     /// <param name="includePartiesViaKeyRoles">Optional (Default: True): Whether authorized parties via organizations the user has a key role for, should be included in the result set.</param>
     /// <param name="includeSubParties">Optional (Default: True): Whether sub-parties of authorized parties should be included in the result set.</param>
     /// <param name="includeInactiveParties">Optional (Default: True): Whether inactive authorized parties should be included in the result set.</param>
+    /// <param name="anyResource">Optional: Filter for only returning authorized parties where the subject has access to any (OR) of the provided resource ids. Invalid resource ids are ignored.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/></param>
     /// <response code="200" cref="List{AuthorizedParty}">Ok</response>
     /// <response code="401">Unauthorized</response>
@@ -60,6 +61,7 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
         [FromQuery] AuthorizedPartiesIncludeFilter includePartiesViaKeyRoles = AuthorizedPartiesIncludeFilter.True,
         [FromQuery] AuthorizedPartiesIncludeFilter includeSubParties = AuthorizedPartiesIncludeFilter.True,
         [FromQuery] AuthorizedPartiesIncludeFilter includeInactiveParties = AuthorizedPartiesIncludeFilter.True,
+        [FromQuery] string[] anyResource = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -76,7 +78,8 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
                 IncludeInstances = includeInstances,
                 IncludePartiesViaKeyRoles = includePartiesViaKeyRoles,
                 IncludeSubParties = includeSubParties,
-                IncludeInactiveParties = includeInactiveParties
+                IncludeInactiveParties = includeInactiveParties,
+                AnyOfResourceIds = anyResource
             };
 
             var isAdmin = User.FindFirst("scope")?.Value.Contains(AuthzConstants.SCOPE_AUTHORIZEDPARTIES_ADMIN);
@@ -100,7 +103,10 @@ public class ResourceOwnerAuthorizedPartiesController(ILogger<ResourceOwnerAutho
             {
                 var partyFilters = subject.PartyFilter.Select(attr => new BaseAttribute(attr.Type, attr.Value)).ToList();
                 var partyUuids = await authorizedPartiesService.GetPartyFilterUuids(partyFilters, cancellationToken);
-                filters.PartyFilter = partyUuids?.Distinct().ToDictionary(k => k, v => v);
+                foreach (var partyUuid in partyUuids?.Distinct())
+                {
+                    filters.PartyFilter[partyUuid] = partyUuid;
+                }
             }
 
             List<AuthorizedParty> authorizedParties = await authorizedPartiesService.GetAuthorizedParties(subjectAttribute, filters, cancellationToken);

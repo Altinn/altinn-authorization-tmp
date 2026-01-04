@@ -7,6 +7,7 @@ using Altinn.AccessMgmt.PersistenceEF.Queries.Connection;
 using Altinn.AccessMgmt.PersistenceEF.Queries.Connection.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 
 namespace Altinn.AccessMgmt.Core.Services;
 
@@ -105,8 +106,8 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
         {
             ToIds = [toId],
             FromIds = filters?.PartyFilter?.Keys.ToList(),
-            PackageIds = null,
-            EnrichEntities = true,
+            PackageIds = filters?.PackageFilter?.Keys.ToList(),
+            EnrichEntities = filters?.IncludeAccessPackages ?? false,
             IncludeSubConnections = true,
             IncludeKeyRole = filters?.IncludePartiesViaKeyRoles == AuthorizedPartiesIncludeFilter.True ? true : false,
             IncludeMainUnitConnections = true,
@@ -146,42 +147,88 @@ public class AuthorizedPartyRepoServiceEf(AppDbContext db, ConnectionQuery conne
         ct);
     }
 
-    public async Task<Dictionary<string, Resource>> GetResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
+    public async Task<SortedDictionary<string, Resource>> GetResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
     {
-        return await db.Resources
+        var list = await db.Resources
             .AsNoTracking()
             .Include(res => res.Provider)
             .WhereIf(providerCode != null, res => res.Provider.Code == providerCode)
-            .WhereIf(resourceIds != null, res => resourceIds.Contains(res.RefId))
-            .ToDictionaryAsync(res => res.RefId, res => res, ct);
+            .WhereIf(resourceIds != null, res => resourceIds!.Contains(res.RefId))
+            .ToListAsync(ct);
+
+        var sorted = new SortedDictionary<string, Resource>(StringComparer.Ordinal);
+        foreach (var item in list)
+        {
+            sorted[item.RefId] = item;
+        }
+
+        return sorted;
+
     }
 
-    public async Task<Dictionary<Guid, IEnumerable<RoleResource>>> GetRoleResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
+    public async Task<SortedDictionary<string, List<Resource>>> GetResourcesGroupedByRoleCode(
+        string? providerCode = null,
+        IEnumerable<string>? resourceIds = null,
+        CancellationToken ct = default)
     {
         var roleResources = await db.RoleResources
             .AsNoTracking()
             .Include(rr => rr.Role)
             .Include(rr => rr.Resource)
-            .ThenInclude(res => res.Provider)
+                .ThenInclude(res => res.Provider)
             .WhereIf(providerCode != null, rr => rr.Resource.Provider.Code == providerCode)
-            .WhereIf(resourceIds != null, rr => resourceIds.Contains(rr.Resource.RefId))
+            .WhereIf(resourceIds != null, rr => resourceIds!.Contains(rr.Resource.RefId))
             .ToListAsync(ct);
 
-        return roleResources.GroupBy(rr => rr.RoleId)
-            .ToDictionary(g => g.Key, g => g.AsEnumerable());
+        var sorted = new SortedDictionary<string, List<Resource>>();
+        foreach (var group in roleResources.GroupBy(rr => rr.RoleId))
+        {
+            Role role = group.First().Role;
+            sorted[role.Code] = group.Select(rr => rr.Resource).ToList();
+
+            if (role.LegacyCode != null)
+            {
+                sorted[role.LegacyCode] = sorted[role.Code];
+            }
+        }
+
+        return sorted;
     }
 
-    public async Task<Dictionary<Guid, IEnumerable<PackageResource>>> GetPackageResourcesByProvider(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
+    public async Task<SortedDictionary<Guid, List<Resource>>> GetResourcesGroupedByPackageId(string? providerCode = null, IEnumerable<string>? resourceIds = null, CancellationToken ct = default)
     {
         var packageResources = await db.PackageResources
             .AsNoTracking()
             .Include(pr => pr.Resource)
-            .ThenInclude(res => res.Provider)
+                .ThenInclude(res => res.Provider)
             .WhereIf(providerCode != null, pr => pr.Resource.Provider.Code == providerCode)
             .WhereIf(resourceIds != null, pr => resourceIds.Contains(pr.Resource.RefId))
             .ToListAsync(ct);
 
-        return packageResources.GroupBy(pr => pr.PackageId)
-            .ToDictionary(g => g.Key, g => g.AsEnumerable());
+        var sorted = new SortedDictionary<Guid, List<Resource>>();
+        foreach (var group in packageResources.GroupBy(pr => pr.PackageId))
+        {
+            sorted[group.Key] = group.Select(pr => pr.Resource).ToList();
+        }
+
+        return sorted;
+    }
+
+    public async Task<SortedDictionary<Guid, List<Role>>> GetRolesGroupedByPackageId(IEnumerable<Guid>? roleIds = null, IEnumerable<Guid>? packageIds = null, CancellationToken ct = default)
+    {
+        var rolePackages = await db.RolePackages
+            .AsNoTracking()
+            .Include(rp => rp.Role)
+            .WhereIf(roleIds != null, rp => roleIds.Contains(rp.RoleId))
+            .WhereIf(packageIds != null, rp => packageIds.Contains(rp.PackageId))
+            .ToListAsync(ct);
+
+        var sorted = new SortedDictionary<Guid, List<Role>>();
+        foreach (var group in rolePackages.GroupBy(rp => rp.PackageId))
+        {
+            sorted[group.Key] = group.Select(rp => rp.Role).ToList();
+        }
+
+        return sorted;
     }
 }
