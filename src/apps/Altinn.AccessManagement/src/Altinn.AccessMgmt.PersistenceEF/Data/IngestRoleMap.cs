@@ -4,16 +4,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Data;
 
+/// <summary>
+/// Partial StaticDataIngest
+/// </summary>
 public static partial class StaticDataIngest 
 {
     /// <summary>
     /// Ingest RoleMap data
     /// </summary>
-    /// <param name="cancellationToken">CancellationToken</param>
-    /// <returns></returns>
     public static async Task IngestRoleMap(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
-        var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id);
+        var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id, StringComparer.OrdinalIgnoreCase);
 
         Guid GetRoleId(string urn, string name) =>
             roles.TryGetValue(urn, out var id)
@@ -65,7 +66,7 @@ public static partial class StaticDataIngest
         /*SAM*/
         var roleSam = GetRoleId("urn:altinn:external-role:ccr:sameier", "sameier");
         /*SENS*/
-        var roleSens = GetRoleId("urn:altinn:rolecode:SENS", "Sensitive-tjenester");
+        var roleSens = GetRoleId("urn:altinn:rolecode:sens", "Sensitive-tjenester");
         /*SREVA*/
         var roleSreva = GetRoleId("urn:altinn:external-role:ccr:kontaktperson-revisor", "kontaktperson-revisor");
 

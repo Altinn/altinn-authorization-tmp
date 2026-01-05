@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿using System.Diagnostics.CodeAnalysis;
 using Altinn.AccessMgmt.Persistence.Core.Contracts;
 using Altinn.AccessMgmt.Persistence.Core.Models;
 using Altinn.AccessMgmt.Persistence.Core.Services;
@@ -12,6 +12,7 @@ namespace Altinn.AccessMgmt.Persistence.Data;
 /// <summary>
 /// Service for running data migrations
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class DbDataMigrationService(
         IProviderRepository providerRepository,
         IProviderTypeRepository providerTypeRepository,
@@ -116,10 +117,10 @@ public class DbDataMigrationService(
             await migrationService.LogMigration<Area>(dataKey, string.Empty, 6);
         }
 
-        if (migrationService.NeedMigration<Package>(dataKey, 11))
+        if (migrationService.NeedMigration<Package>(dataKey, 12))
         {
             await IngestPackage(options: options, cancellationToken: cancellationToken);
-            await migrationService.LogMigration<Package>(dataKey, string.Empty, 11);
+            await migrationService.LogMigration<Package>(dataKey, string.Empty, 12);
         }
 
         if (migrationService.NeedMigration<RolePackage>(dataKey, 10))
@@ -3093,7 +3094,7 @@ public class DbDataMigrationService(
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bestyrende-reder"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:bostyrer"], PackageId = packages["urn:altinn:accesspackage:lonn-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
 
-                        new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:daglig-leder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:styreleder"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-fullt-ansvar"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roles["urn:altinn:external-role:ccr:deltaker-delt-ansvar"], PackageId = packages["urn:altinn:accesspackage:sykefravaer-personopplysninger-saerlig-kategori"], EntityVariantId = null, CanDelegate = true, HasAccess = true },
