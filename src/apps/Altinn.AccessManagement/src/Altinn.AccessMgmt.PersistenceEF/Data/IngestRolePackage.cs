@@ -15,6 +15,9 @@ public static partial class StaticDataIngest
     /// </summary>
     public async static Task IngestRolePackage(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
+        /*
+         55bd7d4d-08dd-46ee-ac8e-3a44d800d752, 2ee6e972-2423-4f3a-bd3c-d4871fcc9876
+         */
         var roleDagl = RoleConstants.ManagingDirector.Id;
         var roleLede = RoleConstants.ChairOfTheBoard.Id;
         var roleInnh = RoleConstants.Innehaver.Id;
@@ -798,15 +801,15 @@ public static partial class StaticDataIngest
             new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.MunicipalDoctor.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.MunicipalDoctor.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
-            new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.HelfoServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleLede, PackageId = PackageConstants.HelfoServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleInnh, PackageId = PackageConstants.HelfoServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleDtso, PackageId = PackageConstants.HelfoServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleDtpr, PackageId = PackageConstants.HelfoServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.HelfoServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.HelfoServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.HelfoServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
-            new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.HelfoServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
+            new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.HealthServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleLede, PackageId = PackageConstants.HealthServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleInnh, PackageId = PackageConstants.HealthServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtso, PackageId = PackageConstants.HealthServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleDtpr, PackageId = PackageConstants.HealthServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleKomp, PackageId = PackageConstants.HealthServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBest, PackageId = PackageConstants.HealthServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleBobe, PackageId = PackageConstants.HealthServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
+            new RolePackage() { RoleId = roleHadm, PackageId = PackageConstants.HealthServicesSpecialCategory.Id, EntityVariantId = null, CanDelegate = true, HasAccess = false },
 
             new RolePackage() { RoleId = roleDagl, PackageId = PackageConstants.HealthServices.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
             new RolePackage() { RoleId = roleLede, PackageId = PackageConstants.HealthServices.Id, EntityVariantId = null, CanDelegate = true, HasAccess = true },
