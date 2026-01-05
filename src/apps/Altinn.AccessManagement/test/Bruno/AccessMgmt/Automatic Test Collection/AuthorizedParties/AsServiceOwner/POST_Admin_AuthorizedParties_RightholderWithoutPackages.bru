@@ -1,11 +1,11 @@
 meta {
-  name: POST_ResourceOwner_AuthorizedParties_Dagl_Regn_WithoutAccessInfo
+  name: POST_Admin_AuthorizedParties_RightholderWithoutPackages
   type: http
-  seq: 9
+  seq: 3
 }
 
 post {
-  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeRoles=false&includeAccessPackages=false&includeResources=false&includeInstances=false
+  url: {{baseUrl}}/accessmanagement/api/v1/resourceowner/authorizedparties?includeAltinn2=true&includeAltinn3=true&includeAccessPackages=true
   body: json
   auth: inherit
 }
@@ -13,10 +13,7 @@ post {
 params:query {
   includeAltinn2: true
   includeAltinn3: true
-  includeRoles: false
-  includeAccessPackages: false
-  includeResources: false
-  includeInstances: false
+  includeAccessPackages: true
 }
 
 headers {
@@ -27,13 +24,7 @@ headers {
 body:json {
   {
     "type": "urn:altinn:person:identifier-no",
-    "value": "{{personId}}",
-    "partyFilter": [
-      {
-        "type": "urn:altinn:organization:identifier-no",
-        "value": "{{filterOrg}}"
-      }
-    ]
+    "value": "{{personId}}"
   }
 }
 
@@ -41,15 +32,14 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_Dagl_Regn_WithPartyFilter");
-  bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid);
-  bru.setVar("filterOrg", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.orgno);
+  bru.setVar("requestName", "POST_Admin_AuthorizedParties_RightholderWithoutPackages");
+  bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.employee_rightholderWithoutPackages.pid);
   
   var getTokenParameters = {
     auth_org: sharedtestdata.serviceOwners.digdir.org,
     auth_orgNo: sharedtestdata.serviceOwners.digdir.orgno,
     auth_tokenType: sharedtestdata.authTokenType.enterprise,
-    auth_scopes: sharedtestdata.auth_scopes.authorizedPartiesResourceOwner
+    auth_scopes: sharedtestdata.auth_scopes.authorizedPartiesAdmin
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
@@ -65,15 +55,40 @@ tests {
     expect(res.status).to.equal(200);
   });
   
-  test(requestName + "|Verify all expected parties exists", function() {    
-    const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
-    const targetParty = allParties.find(party => party.partyUuid === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.partyUuid);
+  test(requestName + "|Inherits all mainunit accesses on subunits", function() {  
+    // Test that all authorized rights on main units also exists on all subunits
+    body.forEach((party, partyIndex) => {
+      if (party.subunits && party.subunits.length > 0) {
+        party.subunits.forEach((subunit, subunitIndex) => {
+          try {
+            assert.includeMembers(
+              subunit.authorizedAccessPackages,
+              party.authorizedAccessPackages,
+              `Subunit ${subunitIndex} of party ${partyIndex} does not include all authorizedAccessPackages`
+            );
   
-    assert.exists(targetParty, 'Expected MainUnit Party: '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.name+' to exist');
-    expect(allParties.length, `Result should only contain the parties filtered`).to.equal(1);
+            assert.includeMembers(
+              subunit.authorizedResources,
+              party.authorizedResources,
+              `Subunit ${subunitIndex} of party ${partyIndex} does not include all authorizedResources`
+            );
+  
+            assert.includeMembers(
+              subunit.authorizedRoles,
+              party.authorizedRoles,
+              `Subunit ${subunitIndex} of party ${partyIndex} does not include all authorizedRoles`
+            );
+          } catch (error) {
+            console.error(error.message);
+            throw error; // Re-throw to make sure Bruno registers the test as failed
+          }
+        });
+      }
+    });
+    
   });
   
-  test(requestName + "|Mainunit AuthorizedInstances not inherited to subunits", function() {  
+  test(requestName + "|Mainunit AuthorizedInstances not inheirited to subunits", function() {  
     // Test that any authorized instances on main units does not exist on any subunits
     body.forEach((party, partyIndex) => {
       const parentInstances = party.authorizedInstances || [];
@@ -130,7 +145,4 @@ tests {
     expect(duplicates.length, `Duplicate partyUuid(s) found: ${duplicates.join(', ')}`).to.equal(0);
   
   });
-  
-  
-  
 }

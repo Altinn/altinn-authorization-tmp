@@ -1,7 +1,7 @@
 meta {
-  name: POST_ResourceOwner_AuthorizedParties_Dagl_Forretningsforer
+  name: POST_Admin_AuthorizedParties_RightholderWithPackages
   type: http
-  seq: 7
+  seq: 4
 }
 
 post {
@@ -32,14 +32,14 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_Dagl_Forretningsforer");
-  bru.setVar("personId", testdata.forretningsforerNonfigurativEmosjonellPuma.dagligleder.pid);
+  bru.setVar("requestName", "POST_Admin_AuthorizedParties_RightholderWithPackages");
+  bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.employee_rightholderWithPackages.pid);
   
   var getTokenParameters = {
     auth_org: sharedtestdata.serviceOwners.digdir.org,
     auth_orgNo: sharedtestdata.serviceOwners.digdir.orgno,
     auth_tokenType: sharedtestdata.authTokenType.enterprise,
-    auth_scopes: sharedtestdata.auth_scopes.authorizedPartiesResourceOwner
+    auth_scopes: sharedtestdata.auth_scopes.authorizedPartiesAdmin
   }
   
   const token = await testTokenGenerator.getToken(getTokenParameters);
@@ -55,7 +55,7 @@ tests {
     expect(res.status).to.equal(200);
   });
   
-  test(requestName + "|Inheirits all mainunit accesses on subunits", function() {  
+  test(requestName + "|Inherits all mainunit accesses on subunits", function() {  
     // Test that all authorized rights on main units also exists on all subunits
     body.forEach((party, partyIndex) => {
       if (party.subunits && party.subunits.length > 0) {
@@ -88,7 +88,7 @@ tests {
     
   });
   
-  test(requestName + "|Mainunit AuthorizedInstances not inherited to subunits", function() {  
+  test(requestName + "|Mainunit AuthorizedInstances not inheirited to subunits", function() {  
     // Test that any authorized instances on main units does not exist on any subunits
     body.forEach((party, partyIndex) => {
       const parentInstances = party.authorizedInstances || [];
@@ -146,29 +146,15 @@ tests {
   
   });
   
-  test(requestName + "|Find expected forretningsforer Clients AuthorizedParty and AuthorizedAccessPackages", function() {  
-    // Test that the expected client party exists in the response with the expected packages
+  test(requestName + "|Find expected AuthorizedParty and AuthorizedAccessPackages", function() {  
+    // Test that the expected party exists in the response with the expected packages
     
     const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
-    const esekTargetParty = allParties.find(party => party.partyUuid === testdata.forretningsforerNonfigurativEmosjonellPuma.esekClient.partyUuid);
-    const nonBrlEsekTargetParty = allParties.find(party => party.partyUuid === testdata.forretningsforerNonfigurativEmosjonellPuma.nonBrlEsekClient.partyUuid);
+    const targetParty = allParties.find(party => party.organizationNumber === testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.orgno);
   
-    assert.exists(esekTargetParty, 'Expected ESEK-ClientParty: '+testdata.forretningsforerNonfigurativEmosjonellPuma.esekClient.name+' to exist');
-    assert.exists(nonBrlEsekTargetParty, 'Expected NonBrlESEK-ClientParty: '+testdata.forretningsforerNonfigurativEmosjonellPuma.nonBrlEsekClient.name+' to exist');  
-    
-    assert.includeMembers(esekTargetParty.authorizedAccessPackages, ["forretningsforer-eiendom"]);
-    assert.notIncludeMembers(nonBrlEsekTargetParty.authorizedAccessPackages, ["forretningsforer-eiendom"]);
+    assert.exists(targetParty, 'Party with organizationNumber '+testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.orgno+' should exist');
+    assert.includeMembers(targetParty.authorizedAccessPackages, ["revisorattesterer", "tilgangsstyrer"]);
+  
   });
-  
-  test(requestName + "|Find expected KeyRole AuthorizedParty and AuthorizedAccessPackages", function() {    
-    const allParties = body.flatMap(party => [party, ...(party.subunits || [])]);
-    const targetParty = allParties.find(party => party.partyUuid === testdata.forretningsforerNonfigurativEmosjonellPuma.partyUuid);
-  
-    assert.exists(targetParty, 'Expected KeyRole-party: '+testdata.forretningsforerNonfigurativEmosjonellPuma.name+' to exist');
-    assert.notIncludeMembers(targetParty.authorizedAccessPackages, ["eksplisitt", "maskinporten-scopes-nuf", "post-til-virksomheten-med-taushetsbelagt-innhold"]);
-    expect(targetParty.authorizedAccessPackages.length, `authorizedAccessPackages for Dagl-KeyRole-Party contains unexpected packages`).to.equal(124);
-    
-  });
-  
   
 }

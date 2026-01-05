@@ -1,7 +1,7 @@
 meta {
   name: POST_Admin_AuthorizedParties_Dagl_Regn_ResourceFilter
   type: http
-  seq: 13
+  seq: 12
 }
 
 post {
@@ -27,8 +27,7 @@ headers {
 body:json {
   {
     "type": "urn:altinn:person:identifier-no",
-    //"value": "{{personId}}"
-    "value": "07124912037"
+    "value": "{{personId}}"
   }
 }
 
@@ -36,7 +35,7 @@ script:pre-request {
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
-  bru.setVar("requestName", "POST_ResourceOwner_AuthorizedParties_Dagl_Regn_AutoFilters");
+  bru.setVar("requestName", "POST_Admin_AuthorizedParties_Dagl_Regn_ResourceFilter");
   bru.setVar("personId", testdata.REGN_ULASTELIG_RETTFERDIG_TIGER.dagligleder.pid);
   
   var getTokenParameters = {
