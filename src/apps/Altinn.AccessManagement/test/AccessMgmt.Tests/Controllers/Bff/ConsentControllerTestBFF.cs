@@ -22,28 +22,39 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit.Abstractions;
 
 namespace AccessMgmt.Tests.Controllers.Bff
 {
-    public class ConsentControllerTestBFF(WebApplicationFixture fixture, ITestOutputHelper output) : IClassFixture<WebApplicationFixture>
+    public class ConsentControllerTestBFF: IClassFixture<WebApplicationFixture>
     {
-        private readonly ITestOutputHelper _output = output;
+        private readonly Mock<IAmPartyRepository> _mockAmPartyRepository;
+        private readonly WebApplicationFactory<Program> _fixture;
+        private readonly ITestOutputHelper _output;
 
-        private WebApplicationFactory<Program> Fixture { get; } = fixture.WithWebHostBuilder(builder =>
+        public ConsentControllerTestBFF(WebApplicationFixture fixture, ITestOutputHelper output)
         {
-            builder.ConfigureTestServices(services =>
+            _mockAmPartyRepository = new Mock<IAmPartyRepository>();
+            _output = output;
+
+            _fixture = fixture.WithWebHostBuilder(builder =>
             {
-                services.AddSingleton<IPartiesClient, PartiesClientMock>();
-                services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
-                services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
-                services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
-                services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
-                services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
-                services.AddSingleton<IProfileClient, ProfileClientMock>();
-                services.AddSingleton<IPDP, PdpPermitMock>();
+                builder.ConfigureTestServices(services =>
+                {
+                    services.AddSingleton<IPartiesClient, PartiesClientMock>();
+                    services.AddSingleton<IPostConfigureOptions<JwtCookieOptions>, JwtCookiePostConfigureOptionsStub>();
+                    services.AddSingleton<IPublicSigningKeyProvider, SigningKeyResolverMock>();
+                    services.AddSingleton<IResourceRegistryClient, ResourceRegistryClientMock>();
+                    services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
+                    services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
+                    services.AddSingleton<IPDP, PdpPermitMock>();
+
+                    // Register the SAME mock instance
+                    services.AddSingleton<IAmPartyRepository>(_mockAmPartyRepository.Object);
+                });
             });
-        });
+        }
 
         private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
@@ -60,7 +71,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
 
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
@@ -87,7 +98,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
 
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(-1)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
@@ -104,7 +115,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         {
             Guid requestId = Guid.Parse("e579b7a2-7994-4636-9aca-59e114915b70");
 
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
@@ -129,7 +140,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         public async Task AcceptRequest_Valid()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
@@ -160,7 +171,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         public async Task AcceptRequest_ValidToExpired()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(-10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
@@ -191,7 +202,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         public async Task AcceptRequestWithRequiredDelegator_Valid()
         {
             Guid requestId = Guid.Parse("a4253d59-b40f-409a-a3f7-c6395f065192");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
@@ -230,7 +241,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             await repositgo.RejectConsentRequest(requestId,performedBy, default);
             HttpClient client = GetTestClient();
@@ -259,7 +270,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         public async Task RejectRequest_Valid()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
@@ -273,7 +284,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         public async Task ListRequests_One_Valid()
         {
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             HttpClient client = GetTestClient();
             string token = PrincipalUtil.GetToken(20001337, 50003899, 2, Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"), AuthzConstants.SCOPE_PORTAL_ENDUSER);
@@ -289,7 +300,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(-10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             ConsentContextDto consentContextExternal = new ConsentContextDto
             {
@@ -313,7 +324,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId2 = Guid.Parse("e579b7a2-7994-4636-9aca-59e114915b70");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId2, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             await repositgo.RejectConsentRequest(requestId2, performedBy, default);
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
@@ -339,7 +350,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             ConsentContextDto consentContextExternal = new ConsentContextDto
             {
@@ -369,7 +380,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         {
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             ConsentContextDto consentContextExternal = new ConsentContextDto
             {
@@ -410,7 +421,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
 
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
             ConsentContextDto consentContextExternal = new ConsentContextDto
             {
@@ -438,7 +449,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
 
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
-            IConsentRepository repositgo = Fixture.Services.GetRequiredService<IConsentRepository>();
+            IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
 
             HttpClient client = GetTestClient();
@@ -455,7 +466,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
 
         private HttpClient GetTestClient()
         {
-            HttpClient client = Fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+            HttpClient client = _fixture.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             return client;
         }
