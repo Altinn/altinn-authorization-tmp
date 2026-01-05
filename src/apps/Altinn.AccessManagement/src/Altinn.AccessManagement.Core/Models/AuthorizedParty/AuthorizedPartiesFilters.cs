@@ -31,6 +31,8 @@ public class AuthorizedPartiesFilters
 
     public SortedDictionary<Guid, Guid>? PackageFilter { get; set; } = null;
 
+    public SortedDictionary<string, string> ResourceFilter { get; set; } = null;
+
     public string ProviderCode { get; set; } = null;
 
     public string[] AnyOfRoleIds { get; set; } = null;
