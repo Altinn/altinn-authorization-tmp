@@ -32,6 +32,8 @@ body:json {
 }
 
 script:pre-request {
+  bru.runner.skipRequest(); // ToDo: Update/complete test after AT22 Deploy
+  
   const sharedtestdata = require(`./Testdata/sharedtestdata.json`);
   const testdata = require(`./Testdata/authorizedparties/${bru.getEnvVar("tokenEnv")}.json`);
   
