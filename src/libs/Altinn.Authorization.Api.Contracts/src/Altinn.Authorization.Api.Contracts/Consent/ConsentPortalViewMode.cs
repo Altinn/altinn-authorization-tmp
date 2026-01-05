@@ -7,13 +7,10 @@ namespace Altinn.Authorization.Api.Contracts.Consent
     /// </summary>
     public enum ConsentPortalViewMode
     {
-        [EnumMember(Value = "undefined")]
-        Undefined = 0,
-
         [EnumMember(Value = "hide")]
-        Hide = 1,
+        Hide = 0,
 
         [EnumMember(Value = "show")]
-        Show = 2,
+        Show = 1,
     }
 }
