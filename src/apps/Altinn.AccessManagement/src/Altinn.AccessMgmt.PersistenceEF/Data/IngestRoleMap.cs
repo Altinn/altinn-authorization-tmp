@@ -92,9 +92,9 @@ public static partial class StaticDataIngest
         /*ADMAI*/
         var roleADMAI = RoleConstants.AccessManager.Id; // GetRoleId("urn:altinn:rolecode:ADMAI", "ADMAI");
         /*APIADM*/
-        var roleAPIADM = RoleConstants.ApplicationProgrammingInterface.Id; // GetRoleId("urn:altinn:rolecode:APIADM", "APIADM");
+        var roleAPIADM = RoleConstants.APIADM.Id; // GetRoleId("urn:altinn:rolecode:APIADM", "APIADM");
         /*APIADMNUF*/
-        var roleAPIADMNUF = RoleConstants.Apidfmnuf.Id; // GetRoleId("urn:altinn:rolecode:APIADMNUF", "APIADMNUF");
+        var roleAPIADMNUF = RoleConstants.APIADMNUF.Id; // GetRoleId("urn:altinn:rolecode:APIADMNUF", "APIADMNUF");
         /*ATTST*/
         var roleATTST = RoleConstants.Attst.Id; // GetRoleId("urn:altinn:rolecode:ATTST", "ATTST");
         /*BOADM*/

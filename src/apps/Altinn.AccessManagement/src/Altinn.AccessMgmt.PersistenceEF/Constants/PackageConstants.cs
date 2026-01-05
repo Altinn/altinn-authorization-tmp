@@ -1498,7 +1498,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne fullmakten gir tilgang til tjenester innen drift av opplæringskontor som opplæringskontorleder er ansvarlig for. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
     /// </remarks>
-    public static ConstantDefinition<Package> OfficeLeader { get; } = new ConstantDefinition<Package>("40397a93-b047-4011-a6b8-6b8af16b6324")
+    public static ConstantDefinition<Package> TrainingOfficeLeader { get; } = new ConstantDefinition<Package>("40397a93-b047-4011-a6b8-6b8af16b6324")
     {
         Entity = new()
         {
@@ -3226,7 +3226,7 @@ public static class PackageConstants
     /// - <c>Provider:</c> Altinn3
     /// - <c>Description:</c> Denne tilgangspakken gir fullmakter til tjenester knyttet til industri i forbindelse med reparasjon og installasjon av maskiner og utstyr. Ved regelverksendringer eller innføring av nye digitale tjenester kan det bli endringer i tilganger som fullmakten gir.
     /// </remarks>
-    public static ConstantDefinition<Package> ResponsibleAuditor { get; } = new ConstantDefinition<Package>("ec492675-3a48-4ad9-b864-2d6865020642")
+    public static ConstantDefinition<Package> RepairInstallationMachineryAndEquipment { get; } = new ConstantDefinition<Package>("ec492675-3a48-4ad9-b864-2d6865020642")
     {
         Entity = new()
         {
