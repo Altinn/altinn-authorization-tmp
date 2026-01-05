@@ -15,13 +15,6 @@ public static partial class StaticDataIngest
     /// </summary>
     public static async Task IngestRoleMap(AppDbContext dbContext, CancellationToken cancellationToken = default)
     {
-        var roles = (await dbContext.Roles.ToListAsync()).ToDictionary(t => t.Urn, t => t.Id, StringComparer.OrdinalIgnoreCase);
-
-        Guid GetRoleId(string urn, string name) =>
-            roles.TryGetValue(urn, out var id)
-                ? id
-                : throw new KeyNotFoundException(string.Format("Role not found '{0}'", name));
-
         /*DAGL*/
         var roleDagl = RoleConstants.ManagingDirector.Id; // GetRoleId("urn:altinn:external-role:ccr:daglig-leder", "daglig-leder");
         /*LEDE*/
