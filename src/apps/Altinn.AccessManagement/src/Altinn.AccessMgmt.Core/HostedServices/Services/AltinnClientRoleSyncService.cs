@@ -85,7 +85,7 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
                         if (item.DelegationAction == DelegationAction.Revoke)
                         {
                             // If the action is Revoke, we should delete the delegation
-                            int deleted = await delegationService.RevokeClientDelegation(delegationData, audit, true, cancellationToken);
+                            int deleted = await delegationService.RevokeImportedClientDelegation(delegationData, audit, true, cancellationToken);
                             if (deleted <= 0)
                             {
                                 _logger.LogWarning(
@@ -111,7 +111,6 @@ namespace Altinn.AccessMgmt.Core.HostedServices.Services
 
                             IEnumerable<CreateDelegationResponseDto> delegations = await delegationService.ImportClientDelegation(delegationData, audit, cancellationToken);
                         }
-
                     }
                 }
 

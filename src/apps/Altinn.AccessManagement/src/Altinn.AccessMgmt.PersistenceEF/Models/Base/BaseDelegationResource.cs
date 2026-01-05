@@ -1,6 +1,6 @@
-﻿using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Altinn.AccessMgmt.PersistenceEF.Models.Audit.Base;
 using Altinn.AccessMgmt.PersistenceEF.Models.Extensions;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Altinn.AccessMgmt.PersistenceEF.Models.Base;
 
@@ -46,6 +46,4 @@ public class BaseDelegationResource : BaseAudit
     /// Resource identifier
     /// </summary>
     public Guid ResourceId { get; set; }
-
-    //// public Guid DependencyId { get; set; }
 }

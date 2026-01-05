@@ -1,4 +1,5 @@
-﻿using Altinn.AccessMgmt.Core.Models;
+﻿using Altinn.AccessManagement.Core.Models;
+using Altinn.AccessMgmt.Core.Models;
 using Altinn.AccessMgmt.PersistenceEF.Extensions;
 using Altinn.AccessMgmt.PersistenceEF.Models;
 using Altinn.Authorization.Api.Contracts.AccessManagement;
@@ -13,15 +14,16 @@ public interface IAssignmentService
 {
     /// <summary>
     /// Removes packages from the assignment between the two parties.
+    /// This method is created for the Altinn 2 import scenario where we need to remove packages from an existing assignment and also revoke the assignment when last package is revoked.
     /// </summary>
     /// <returns></returns>
-    Task<int> RevokeAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default);
+    Task<int> RevokeImportedAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, bool onlyRemoveA2Packages = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Add packages to an assignment (creates the assignment if it does not exist) between the two parties.
     /// </summary>
     /// <returns></returns>
-    Task<List<AssignmentPackageDto>> ImportAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, CancellationToken cancellationToken = default);
+    Task<List<Authorization.Api.Contracts.AccessManagement.AssignmentPackageDto>> ImportAssignmentPackages(Guid fromId, Guid toId, List<string> packageUrns, AuditValues values = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets assignment and creates if not exists.
@@ -46,7 +48,17 @@ public interface IAssignmentService
     /// Deletes an assignment by the assignment id.
     /// </summary>
     /// <returns></returns>
-    Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, CancellationToken cancellationToken = default);
+    Task<ProblemInstance> DeleteAssignment(Guid assignmentId, bool cascade = false, AuditValues audit = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Validates whether revoking the specified assignment will result in cascading revocations of related assignments. 
+    /// If three are cascading effects, these are captured as validation errors in the returned ValidationErrorBuilder.
+    /// </summary>
+    /// <param name="assignmentId">The unique identifier of the assignment to check for cascading revocation effects.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A ValidationErrorBuilder with any any validation errors representing a cascading revocation due to a dependency. 
+    /// If no dependencys are found, the error builder will be empty. meaning a delete can be performed without cascading effects.</returns>
+    Task<ValidationErrorBuilder> CheckCascadingAssignmentRevoke(Guid assignmentId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets assignment and creates if not exits
@@ -58,7 +70,7 @@ public interface IAssignmentService
     /// Adds a package to the delegation
     /// </summary>
     /// <returns></returns>
-    Task<bool> AddPackageToAssignment(Guid userId, Guid assignmentId, Guid packageId, CancellationToken cancellationToken = default);
+    Task<bool> AddAssignmentPackage(Guid userId, Guid assignmentId, Guid packageId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a package to the delegation
@@ -70,7 +82,43 @@ public interface IAssignmentService
     /// Adds a resource to the delegation
     /// </summary>
     /// <returns></returns>
-    Task<bool> AddResourceToAssignment(Guid userId, Guid assignmentId, Guid resourceId, CancellationToken cancellationToken = default);
+    Task<bool> AddAssignmentResource(Guid userId, Guid assignmentId, Guid resourceId, string policyPath, string policyVersion, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a resource to the delegation
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> AddAssignmentInstance(Guid userId, Guid assignmentId, Guid resourceId, string instanceId, string policyPath, string policyVersion, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Inserts or updates a resource to the delegation
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> UpsertAssignmentResource(Guid userId, Guid assignmentId, Guid resourceId, string policyPath, string policyVersion, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Inserts or updates a resource to the delegation
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> UpsertAssignmentInstance(Guid userId, Guid assignmentId, Guid resourceId, string instanceId, string policyPath, string policyVersion, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a package to the delegation
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> RemoveAssignmentPackage(Guid userId, Guid assignmentId, Guid packageId, CancellationToken cancellationToken = default);
+   
+    /// <summary>
+    /// Adds a resource to the delegation
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> RemoveAssignmentResource(Guid userId, Guid assignmentId, Guid resourceId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a resource to the delegation
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> RemoveAssignmentInstance(Guid userId, Guid assignmentId, Guid resourceId, string instanceId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a resource to the delegation
@@ -110,7 +158,7 @@ public interface IAssignmentService
     /// Fetches Client assignments.
     /// </summary>
     /// <returns></returns>
-    Task<IEnumerable<ClientDto>> GetClients(Guid toId, string[] roles, string[] packages, CancellationToken cancellationToken = default);
+    Task<IEnumerable<SystemuserClientDto>> GetClients(Guid toId, string[] roles, string[] packages, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Fetches all assignment packages or role packages for a given assignments.
@@ -119,8 +167,26 @@ public interface IAssignmentService
     Task<IEnumerable<AssignmentOrRolePackageAccess>> GetPackagesForAssignment(Guid assignmentId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Fetches all assignment packages for a given assignments.
+    /// </summary>
+    /// <returns></returns>
+    Task<IEnumerable<AssignmentPackage>> GetAssignmentPackages(Guid assignmentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Fetches all assignment packages or role packages for a given assignments.
     /// </summary>
     /// <returns></returns>
-    Task<IEnumerable<Resource>> GetAssignmentResources(Guid assignmentId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<AssignmentResource>> GetAssignmentResources(Guid assignmentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Fetches all assignment instances for a given assignments.
+    /// </summary>
+    /// <returns></returns>
+    Task<IEnumerable<AssignmentInstance>> GetAssignmentInstances(Guid assignmentId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Fetches all assignment instances for a given assignments.
+    /// </summary>
+    /// <returns></returns>
+    Task<IEnumerable<AssignmentInstance>> GetAssignmentInstances(Guid assignmentId, Guid resourceId, CancellationToken cancellationToken = default);
 }

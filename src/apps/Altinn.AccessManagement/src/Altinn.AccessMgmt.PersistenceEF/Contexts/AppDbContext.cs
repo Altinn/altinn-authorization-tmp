@@ -43,6 +43,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<AssignmentResource> AssignmentResources => Set<AssignmentResource>();
 
+    public DbSet<AssignmentInstance> AssignmentInstances => Set<AssignmentInstance>();
+
     public DbSet<Delegation> Delegations => Set<Delegation>();
 
     public DbSet<DelegationPackage> DelegationPackages => Set<DelegationPackage>();
@@ -76,8 +78,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ResourceElementType> ResourceElementTypes => Set<ResourceElementType>();
 
     public DbSet<Role> Roles => Set<Role>();
-
-    public DbSet<RoleLookup> RoleLookups => Set<RoleLookup>();
 
     public DbSet<RoleMap> RoleMaps => Set<RoleMap>();
 
@@ -129,8 +129,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<AuditRole> AuditRoles => Set<AuditRole>();
 
-    public DbSet<AuditRoleLookup> AuditRoleLookups => Set<AuditRoleLookup>();
-
     public DbSet<AuditRoleMap> AuditRoleMaps => Set<AuditRoleMap>();
 
     public DbSet<AuditRolePackage> AuditRolePackages => Set<AuditRolePackage>();
@@ -150,12 +148,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     private void ApplyViewConfiguration(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration<Connection>(new ConnectionConfiguration());
-        //modelBuilder.ApplyConfiguration<CompactEntity>(new CompactEntityConfiguration());
-        //modelBuilder.ApplyConfiguration<CompactRole>(new CompactRoleConfiguration());
-        //modelBuilder.ApplyConfiguration<CompactPackage>(new CompactPackageConfiguration());
-        //modelBuilder.ApplyConfiguration<CompactResource>(new CompactResourceConfiguration());
-
-        // modelBuilder.ApplyConfiguration<Relation>(new RelationConfiguration2());
+        
+        /*
+        modelBuilder.ApplyConfiguration<CompactEntity>(new CompactEntityConfiguration());
+        modelBuilder.ApplyConfiguration<CompactRole>(new CompactRoleConfiguration());
+        modelBuilder.ApplyConfiguration<CompactPackage>(new CompactPackageConfiguration());
+        modelBuilder.ApplyConfiguration<CompactResource>(new CompactResourceConfiguration());
+        
+        modelBuilder.ApplyConfiguration<Relation>(new RelationConfiguration2());
+        */
     }
 
     private void ApplyAuditConfiguration(ModelBuilder modelBuilder)
@@ -165,6 +166,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<AuditAssignment>(new AuditAssignmentConfiguration());
         modelBuilder.ApplyConfiguration<AuditAssignmentPackage>(new AuditAssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditAssignmentResource>(new AuditAssignmentResourceConfiguration());
+        modelBuilder.ApplyConfiguration<AuditAssignmentInstance>(new AuditAssignmentInstanceConfiguration());
         modelBuilder.ApplyConfiguration<AuditDelegation>(new AuditDelegationConfiguration());
         modelBuilder.ApplyConfiguration<AuditDelegationPackage>(new AuditDelegationPackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditDelegationResource>(new AuditDelegationResourceConfiguration());
@@ -180,7 +182,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<AuditResource>(new AuditResourceConfiguration());
         modelBuilder.ApplyConfiguration<AuditResourceType>(new AuditResourceTypeConfiguration());
         modelBuilder.ApplyConfiguration<AuditRole>(new AuditRoleConfiguration());
-        modelBuilder.ApplyConfiguration<AuditRoleLookup>(new AuditRoleLookupConfiguration());
         modelBuilder.ApplyConfiguration<AuditRoleMap>(new AuditRoleMapConfiguration());
         modelBuilder.ApplyConfiguration<AuditRolePackage>(new AuditRolePackageConfiguration());
         modelBuilder.ApplyConfiguration<AuditRoleResource>(new AuditRoleResourceConfiguration());
@@ -205,6 +206,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<Assignment>(new AssignmentConfiguration());
         modelBuilder.ApplyConfiguration<AssignmentPackage>(new AssignmentPackageConfiguration());
         modelBuilder.ApplyConfiguration<AssignmentResource>(new AssignmentResourceConfiguration());
+        modelBuilder.ApplyConfiguration<AssignmentInstance>(new AssignmentInstanceConfiguration());
         modelBuilder.ApplyConfiguration<Delegation>(new DelegationConfiguration());
         modelBuilder.ApplyConfiguration<DelegationPackage>(new DelegationPackageConfiguration());
         modelBuilder.ApplyConfiguration<DelegationResource>(new DelegationResourceConfiguration());
@@ -221,7 +223,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration<Resource>(new ResourceConfiguration());
         modelBuilder.ApplyConfiguration<ResourceType>(new ResourceTypeConfiguration());
         modelBuilder.ApplyConfiguration<Role>(new RoleConfiguration());
-        modelBuilder.ApplyConfiguration<RoleLookup>(new RoleLookupConfiguration());
         modelBuilder.ApplyConfiguration<RoleMap>(new RoleMapConfiguration());
         modelBuilder.ApplyConfiguration<RolePackage>(new RolePackageConfiguration());
         modelBuilder.ApplyConfiguration<RoleResource>(new RoleResourceConfiguration());
