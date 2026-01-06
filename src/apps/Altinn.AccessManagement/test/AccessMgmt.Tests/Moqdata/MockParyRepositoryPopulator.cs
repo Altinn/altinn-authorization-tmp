@@ -6,6 +6,9 @@ using Moq;
 
 namespace AccessMgmt.Tests.Moqdata
 {
+    /// <summary>
+    /// Utility class for populating a mock IAmPartyRepository with test data
+    /// </summary>
     public static class MockParyRepositoryPopulator
     {
         public static void SetupMockPartyRepository(Mock<IAmPartyRepository> _mockAmPartyRepository)
@@ -72,7 +75,6 @@ namespace AccessMgmt.Tests.Moqdata
                 .ReturnsAsync(digitaliseringsdirektoratet);
 
             // Organization: 810418192
-
             MinimalParty banksupplierorg = new MinimalParty
             {
                 PartyUuid = Guid.Parse("00000000-0000-0000-0005-000000004219"),
@@ -90,6 +92,25 @@ namespace AccessMgmt.Tests.Moqdata
 
             _mockAmPartyRepository.Setup(x => x.GetByUuid(banksupplierorg.PartyUuid, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(banksupplierorg);
+
+            // Organization: 810418192
+            MinimalParty lepsoyogTonstad = new MinimalParty
+            {
+                PartyUuid = Guid.Parse("00000000-0000-0000-0005-000000006078"),
+                PartyId = 50006078,
+                Name = "LEPSØY OG TONSTAD",
+                OrganizationId = "910493353",
+                PartyType = EntityTypeConstants.Organisation // Organization type
+            };
+
+            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse("910493353"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(lepsoyogTonstad);
+
+            _mockAmPartyRepository.Setup(x => x.GetByPartyId(lepsoyogTonstad.PartyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(lepsoyogTonstad);
+
+            _mockAmPartyRepository.Setup(x => x.GetByUuid(lepsoyogTonstad.PartyUuid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(lepsoyogTonstad);
 
             // Person: 01025181049 (for duplicate test)
             _mockAmPartyRepository.Setup(x => x.GetByPersonNo(PersonIdentifier.Parse("01025181049"), It.IsAny<CancellationToken>()))
