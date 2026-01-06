@@ -1,10 +1,12 @@
 ﻿using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Altinn.Authorization.Api.Contracts.Consent
 {
     /// <summary>
     /// Defines the view mode of the consent portal for external users.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum ConsentPortalViewMode
     {
         [EnumMember(Value = "hide")]

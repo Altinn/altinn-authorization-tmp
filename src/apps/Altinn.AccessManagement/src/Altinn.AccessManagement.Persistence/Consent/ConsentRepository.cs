@@ -472,6 +472,7 @@ namespace Altinn.AccessManagement.Persistence.Consent
                     ConsentRequestEvents = await GetEvents(consentRequestId, cancellationToken: cancellationToken),
                     TemplateId = await reader.GetFieldValueAsync<string>("templateId", cancellationToken: cancellationToken),
                     TemplateVersion = await reader.GetFieldValueAsync<int?>("templateVersion", cancellationToken: cancellationToken),
+                    PortalViewMode = await reader.GetFieldValueAsync<ConsentPortalViewMode>("portalviewmode", cancellationToken: cancellationToken)
                 };
 
                 results.Add(item);
