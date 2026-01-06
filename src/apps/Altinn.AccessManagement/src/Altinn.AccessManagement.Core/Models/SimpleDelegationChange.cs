@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Altinn.AccessManagement.Core.Models
 {
@@ -11,7 +11,7 @@ namespace Altinn.AccessManagement.Core.Models
         /// Gets or sets the delegation change id
         /// </summary>
         [JsonPropertyName("i")]
-        public int DelegationChangeId { get; set; }
+        public long DelegationChangeId { get; set; }
 
         /// <summary>
         /// Gets or sets the altinnappid. E.g. skd/skattemelding

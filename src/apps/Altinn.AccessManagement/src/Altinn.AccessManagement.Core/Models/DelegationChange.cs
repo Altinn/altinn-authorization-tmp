@@ -49,7 +49,7 @@ namespace Altinn.AccessManagement.Core.Models
         /// Gets or sets the offeredbypartyid, refering to the party id of the user or organization offering the delegation.
         /// </summary>
         [JsonPropertyName("offeredbypartyid")]
-        public int? OfferedByPartyId { get; set; }
+        public int OfferedByPartyId { get; set; }
 
         /// <summary>
         /// The uuid of the party the right is on behalf of
