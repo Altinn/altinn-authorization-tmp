@@ -1,19 +1,18 @@
-﻿using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
-using Altinn.AccessManagement.Api.Internal.Extensions;
+﻿using Altinn.AccessManagement.Api.Internal.Extensions;
 using Altinn.AccessManagement.Core.Clients.Interfaces;
 using Altinn.AccessManagement.Core.Constants;
 using Altinn.AccessManagement.Core.Errors;
 using Altinn.AccessManagement.Core.Models.Consent;
+using Altinn.AccessManagement.Core.Models.Party;
 using Altinn.AccessManagement.Core.Repositories.Interfaces;
 using Altinn.AccessManagement.Core.Services.Interfaces;
 using Altinn.AccessManagement.Tests.Fixtures;
 using Altinn.AccessManagement.Tests.Mocks;
+using Altinn.AccessManagement.Tests.Seeds;
 using Altinn.AccessManagement.Tests.Util;
+using Altinn.AccessMgmt.PersistenceEF.Constants;
 using Altinn.Authorization.Api.Contracts.Consent;
+using Altinn.Authorization.Api.Contracts.Register;
 using Altinn.Authorization.ProblemDetails;
 using Altinn.Common.AccessToken.Services;
 using Altinn.Common.PEP.Interfaces;
@@ -23,6 +22,11 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using Xunit.Abstractions;
 
 namespace AccessMgmt.Tests.Controllers.Bff
@@ -49,6 +53,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
                     services.AddSingleton<IPolicyRetrievalPoint, PolicyRetrievalPointMock>();
                     services.AddSingleton<IAltinnRolesClient, AltinnRolesClientMock>();
                     services.AddSingleton<IPDP, PdpPermitMock>();
+                    services.AddSingleton<IProfileClient, ProfileClientMock>();
 
                     // Register the SAME mock instance
                     services.AddSingleton<IAmPartyRepository>(_mockAmPartyRepository.Object);
@@ -61,6 +66,105 @@ namespace AccessMgmt.Tests.Controllers.Bff
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
+        private void SetupMockPartyRepository()
+        {
+            // Reset all existing setups
+            _mockAmPartyRepository.Reset();
+            // Setup specific mock responses for test data
+
+            MinimalParty elenafjear = new MinimalParty
+            {
+                PartyUuid = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5"),
+                PartyId = 513370001,
+                Name = "ELENA FJÆR",
+                PersonId = "01025161013",
+                PartyType = EntityTypeConstants.Person // Person type
+            };
+
+            // Person: 01025161013
+            _mockAmPartyRepository.Setup(x => x.GetByPersonNo(PersonIdentifier.Parse("01025161013"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(elenafjear);
+
+            _mockAmPartyRepository.Setup(x => x.GetByPartyId(elenafjear.PartyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(elenafjear);
+
+            _mockAmPartyRepository.Setup(x => x.GetByUuid(elenafjear.PartyUuid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(elenafjear);
+
+            // Organization: 810419512
+            MinimalParty smekkFullBank = new MinimalParty
+            {
+                PartyUuid = Guid.Parse("a47ac10b-58cc-4372-a567-0e02b2c3d480"),
+                PartyId = 501235,
+                Name = "SmekkFull Bank AS",
+                OrganizationId = "810419512",
+                PartyType = EntityTypeConstants.Organisation // Organization type
+            };
+
+            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse(smekkFullBank.OrganizationId), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(smekkFullBank);
+
+            _mockAmPartyRepository.Setup(x => x.GetByPartyId(smekkFullBank.PartyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(smekkFullBank);
+
+            _mockAmPartyRepository.Setup(x => x.GetByUuid(smekkFullBank.PartyUuid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(smekkFullBank);
+
+            // Organization: 991825827
+            MinimalParty digitaliseringsdirektoratet = new MinimalParty
+            {
+                PartyUuid = Guid.Parse("CDDA2F11-95C5-4BE4-9690-54206FF663F6"),
+                PartyId = 501236,
+                Name = "DIGITALISERINGSDIREKTORATET",
+                OrganizationId = "991825827",
+                PartyType = EntityTypeConstants.Organisation // Organization type
+            };
+
+            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse(digitaliseringsdirektoratet.OrganizationId), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(digitaliseringsdirektoratet);
+
+            _mockAmPartyRepository.Setup(x => x.GetByPartyId(digitaliseringsdirektoratet.PartyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(digitaliseringsdirektoratet);
+
+            _mockAmPartyRepository.Setup(x => x.GetByUuid(digitaliseringsdirektoratet.PartyUuid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(digitaliseringsdirektoratet);
+
+            // Organization: 810418192
+
+            MinimalParty banksupplierorg = new MinimalParty
+            {
+                PartyUuid = Guid.Parse("00000000-0000-0000-0005-000000004219"),
+                PartyId = 50004219,
+                Name = "KOLSAAS OG FLAAM",
+                OrganizationId = "810418192",
+                PartyType = EntityTypeConstants.Organisation // Organization type
+            };
+
+            _mockAmPartyRepository.Setup(x => x.GetByOrgNo(OrganizationNumber.Parse("810418192"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(banksupplierorg);
+
+            _mockAmPartyRepository.Setup(x => x.GetByPartyId(banksupplierorg.PartyId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(banksupplierorg);
+
+            _mockAmPartyRepository.Setup(x => x.GetByUuid(banksupplierorg.PartyUuid, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(banksupplierorg);
+
+            // Person: 01025181049 (for duplicate test)
+            _mockAmPartyRepository.Setup(x => x.GetByPersonNo(PersonIdentifier.Parse("01025181049"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new MinimalParty
+                {
+                    PartyUuid = Guid.Parse("d47ac10b-58cc-4372-a567-0e02b2c3d483"),
+                    PartyId = 501238,
+                    Name = "Kari Nordmann",
+                    PersonId = "01025181049",
+                    PartyType = EntityTypeConstants.Person // Person type
+                });
+
+            // Non-existing person: 01014922047 (should return null)
+            _mockAmPartyRepository.Setup(x => x.GetByPersonNo(PersonIdentifier.Parse("01014922047"), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((MinimalParty)null);
+        }
+
         /// <summary>
         /// Test case: Get consent request
         /// Scenario: User is authenticated and is the same person that has been request to accept the request
@@ -69,6 +173,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task GetConsentRequest()
         {
+            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
 
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -96,6 +201,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task GetConsentRequest_WithExpiredEvent()
         {
+            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
 
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -113,6 +219,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task GetConsentRequestWithoutMessagehandledby()
         {
+            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e579b7a2-7994-4636-9aca-59e114915b70");
 
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -139,6 +246,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task AcceptRequest_Valid()
         {
+            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
@@ -170,6 +278,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task AcceptRequest_ValidToExpired()
         {
+            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(-10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
@@ -201,6 +310,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task AcceptRequestWithRequiredDelegator_Valid()
         {
+            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("a4253d59-b40f-409a-a3f7-c6395f065192");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
@@ -239,6 +349,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task AcceptRequest_AlreadyRejected()
         {
+            SetupMockPartyRepository();
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
@@ -269,6 +380,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task RejectRequest_Valid()
         {
+            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
@@ -283,6 +395,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task ListRequests_One_Valid()
         {
+            SetupMockPartyRepository();
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
             await repositgo.CreateRequest(await GetRequest(requestId, DateTimeOffset.Now.AddDays(10)), Altinn.AccessManagement.Core.Models.Consent.ConsentPartyUrn.PartyUuid.Create(Guid.Parse("8ef5e5fa-94e1-4869-8635-df86b6219181")), default);
@@ -298,6 +411,7 @@ namespace AccessMgmt.Tests.Controllers.Bff
         [Fact]
         public async Task ListRequests_One_AcceptedAndExpired()
         {
+            SetupMockPartyRepository();
             Guid performedBy = Guid.Parse("d5b861c8-8e3b-44cd-9952-5315e5990cf5");
             Guid requestId = Guid.Parse("e2071c55-6adf-487b-af05-9198a230ed44");
             IConsentRepository repositgo = _fixture.Services.GetRequiredService<IConsentRepository>();
