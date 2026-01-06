@@ -40,8 +40,8 @@ public sealed class OrganizationNumber
     /// <inheritdoc/>
     public static IEnumerable<OrganizationNumber>? GetExamples(ExampleDataOptions options)
     {
-        yield return Parse("123456785");
-        yield return Parse("987654325");
+        yield return Parse("937884117");
+        yield return Parse("923609016");
     }
 
     /// <inheritdoc cref="IParsable{TSelf}.Parse(string, IFormatProvider?)"/>
