@@ -11,6 +11,7 @@ public class CleanUpService
     Sjekk alle cleanup tabellene. 
     Om tiden nærmer seg => Send notifikasjon
     Om tiden er over => Fjern det refererte objektet
+    Om tiden+18mnd er over => Slett oppføringer (?)
 
 
     Bruke samme felt som audit for å slippe å ha en modell til? Eller holder det med ID'er? Kan alt være i samme tabell? 
