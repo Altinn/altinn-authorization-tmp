@@ -9,10 +9,10 @@ public static class TestDataSeeds
     {
         #region Entities
         db.Entities.AddRange([
-            Entities.PersonPaula,
-            Entities.PersonOrjan,
-            Entities.OrganizationNordisAS,
-            Entities.OrganizationVerdiqAS,
+            TestEntities.PersonPaula,
+            TestEntities.PersonOrjan,
+            TestEntities.OrganizationNordisAS,
+            TestEntities.OrganizationVerdiqAS,
         ]);
         #endregion
 

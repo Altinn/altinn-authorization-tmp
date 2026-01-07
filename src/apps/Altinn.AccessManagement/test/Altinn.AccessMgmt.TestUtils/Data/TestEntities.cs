@@ -3,7 +3,7 @@ using Altinn.AccessMgmt.PersistenceEF.Models;
 
 namespace Altinn.AccessMgmt.TestUtils.Data;
 
-public static class Entities
+public static class TestEntities
 {
     #region Persons
     public static ConstantDefinition<Entity> PersonPaula { get; } = new("3f36376b-a013-442d-a84c-3d98c3ffb2a7")

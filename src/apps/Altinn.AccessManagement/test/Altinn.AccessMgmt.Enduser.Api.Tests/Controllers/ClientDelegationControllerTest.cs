@@ -55,21 +55,21 @@ public class ClientDelegationControllerTest
             {
                 var rightholderfromNordisToVerdiq = new Assignment()
                 {
-                    FromId = Entities.OrganizationNordisAS.Id,
-                    ToId = Entities.OrganizationVerdiqAS.Id,
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
                     RoleId = RoleConstants.Rightholder,
                 };
 
                 var accountantFromNordisToVerdiq = new Assignment()
                 {
-                    FromId = Entities.OrganizationNordisAS.Id,
-                    ToId = Entities.OrganizationVerdiqAS.Id,
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.OrganizationVerdiqAS.Id,
                     RoleId = RoleConstants.Accountant,
                 };
                 var agentFromPaulaToNordis = new Assignment()
                 {
-                    FromId = Entities.OrganizationNordisAS.Id,
-                    ToId = Entities.PersonPaula,
+                    FromId = TestEntities.OrganizationNordisAS.Id,
+                    ToId = TestEntities.PersonPaula,
                     RoleId = RoleConstants.Agent,
                 };
 
@@ -128,7 +128,7 @@ public class ClientDelegationControllerTest
 
             var client = CreateClient();
 
-            var response = await client.GetAsync($"{Route}/clients?party={Entities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
@@ -148,15 +148,15 @@ public class ClientDelegationControllerTest
         {
             var client = CreateClient();
 
-            var response = await client.GetAsync($"{Route}/clients?party={Entities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/clients?party={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var result = JsonSerializer.Deserialize<PaginatedResult<Authorization.Api.Contracts.AccessManagement.ClientDto>>(data);
 
-            var connection = result.Items.FirstOrDefault(p => p.Client.Id == Entities.OrganizationNordisAS.Id);
+            var connection = result.Items.FirstOrDefault(p => p.Client.Id == TestEntities.OrganizationNordisAS.Id);
             Assert.NotNull(connection);
-            Assert.Equal(connection.Client.Id, Entities.OrganizationNordisAS.Id);
+            Assert.Equal(connection.Client.Id, TestEntities.OrganizationNordisAS.Id);
 
             var access = connection.Access.FirstOrDefault(a => a.Role.Id == RoleConstants.Rightholder);
             Assert.NotNull(access);
@@ -184,15 +184,15 @@ public class ClientDelegationControllerTest
         public async Task ListAgent_ForPersonWithAgentAssignment_ReturnsOk()
         {
             var client = CreateClient();
-            var response = await client.GetAsync($"{Route}/agents?party={Entities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/agents?party={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var result = JsonSerializer.Deserialize<PaginatedResult<AgentDto>>(data);
             
-            var connection = result.Items.FirstOrDefault(p => p.Agent.Id == Entities.PersonPaula);
+            var connection = result.Items.FirstOrDefault(p => p.Agent.Id == TestEntities.PersonPaula);
             Assert.NotNull(connection);
-            Assert.Equal(Entities.PersonPaula.Id, connection.Agent.Id);
+            Assert.Equal(TestEntities.PersonPaula.Id, connection.Agent.Id);
 
             var access = connection.Access.FirstOrDefault(r => r.Role.Id == RoleConstants.Agent);
             Assert.NotNull(access);
@@ -203,13 +203,13 @@ public class ClientDelegationControllerTest
         public async Task ListAgent_ForPersonWithAgentAssignmentToAnotherOrganization_ReturnsOk()
         {
             var client = CreateClient();
-            var response = await client.GetAsync($"{Route}/agents?party={Entities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/agents?party={TestEntities.OrganizationVerdiqAS.Id}", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var result = JsonSerializer.Deserialize<PaginatedResult<AgentDto>>(data);
             
-            var connection = result.Items.FirstOrDefault(p => p.Agent.Id == Entities.PersonPaula);
+            var connection = result.Items.FirstOrDefault(p => p.Agent.Id == TestEntities.PersonPaula);
             Assert.Null(connection);
         }
 
@@ -217,13 +217,13 @@ public class ClientDelegationControllerTest
         public async Task ListAgent_ForNoAgentAssignment_ReturnsOk()
         {
             var client = CreateClient();
-            var response = await client.GetAsync($"{Route}/agents?party={Entities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
+            var response = await client.GetAsync($"{Route}/agents?party={TestEntities.OrganizationNordisAS.Id}", TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
             var result = JsonSerializer.Deserialize<PaginatedResult<AgentDto>>(data);
 
-            var connection = result.Items.FirstOrDefault(p => p.Agent.Id == Entities.PersonOrjan);
+            var connection = result.Items.FirstOrDefault(p => p.Agent.Id == TestEntities.PersonOrjan);
             Assert.Null(connection);
         }
 
