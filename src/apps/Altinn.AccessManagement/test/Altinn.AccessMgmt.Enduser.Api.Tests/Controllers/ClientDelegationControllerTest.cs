@@ -45,9 +45,9 @@ public class ClientDelegationControllerTest
         public ApiFixture Fixture { get; }
     }
 
-    public class FeatureFlagClientDelegationEnabled : IClassFixture<ApiFixture>
+    public class GetClientDelegations : IClassFixture<ApiFixture>
     {
-        public FeatureFlagClientDelegationEnabled(ApiFixture fixture)
+        public GetClientDelegations(ApiFixture fixture)
         {
             Fixture = fixture;
             Fixture.WithEnabledFeatureFlag(AccessMgmtFeatureFlags.EnduserControllerClientDelegation);
