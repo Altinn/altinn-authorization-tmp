@@ -6,6 +6,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\Altinn.AccessManagement\src\Altinn.AccessManagement.Api.Enterprise\Altinn.AccessManagement.Api.Enterprise.csproj" />
         <ProjectReference Include="..\..\src\Altinn.Authorization\Altinn.Authorization.csproj" />
     </ItemGroup>
 
