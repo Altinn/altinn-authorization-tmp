@@ -26,7 +26,7 @@ public static class TestTokenGenerator
         new(() =>
         {
             var req = new CertificateRequest(
-                "CN=TestSigning",
+                "CN=Xunit",
                 RootCertificateKey,
                 HashAlgorithmName.SHA256,
                 RSASignaturePadding.Pkcs1
